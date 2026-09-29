@@ -1,6 +1,6 @@
 <template>
   <!-- Right Bottom Controls Dock (Figma Node 97:3400) -->
-  <div class="fixed right-[24px] bottom-[20px] z-[60] select-none backdrop-blur-[4px] bg-[#f5f5f5]/20 border border-black/10 border-solid flex gap-[8px] items-center p-[6px] rounded-[14px] shadow-[0px_12px_40px_0px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.03)] animate-apple-slide-up">
+  <div class="fixed right-[24px] bottom-[20px] z-[60] select-none backdrop-blur-[4px] bg-[#f5f5f5]/20 border border-black/10 border-solid flex gap-[8px] items-center p-[6px] rounded-[14px] shadow-[0px_12px_40px_0px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.03)]">
     <!-- 1. Zoom Indicator Pill (Shows dynamic scale e.g. 100% Fit to Screen) -->
     <div class="flex h-[40px] items-center justify-center relative rounded-[8px] shrink-0">
       <button 

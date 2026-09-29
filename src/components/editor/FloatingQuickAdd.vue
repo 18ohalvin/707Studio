@@ -1,6 +1,6 @@
 <template>
   <!-- Center Bottom Toolbar Container (Figma Node 63:3395) -->
-  <div class="fixed left-[calc(50%+1px)] bottom-[20px] z-[60] select-none backdrop-blur-[4px] bg-[#f5f5f5]/20 border border-black/10 border-solid flex gap-[8px] items-center p-[6px] rounded-[14px] shadow-[0px_12px_40px_0px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.03)] animate-apple-slide-up-center">
+  <div class="fixed left-1/2 -translate-x-1/2 bottom-[20px] z-[60] select-none backdrop-blur-[4px] bg-[#f5f5f5]/20 border border-black/10 border-solid flex gap-[8px] items-center p-[6px] rounded-[14px] shadow-[0px_12px_40px_0px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.03)]">
 
     <!-- 1. Plus / Add Block Button -->
     <div 

@@ -636,7 +636,6 @@ export const useEditorStore = defineStore('editor', () => {
     isTextSidebarOpen.value = false;
     isButtonSidebarOpen.value = false;
     isLayersOpen.value = false;
-    isPagesOpen.value = false;
   }
 
   function addMediaBannerWidget(ratio: string, index?: number) {

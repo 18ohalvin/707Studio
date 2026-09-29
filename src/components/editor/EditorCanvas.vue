@@ -95,30 +95,29 @@
       @select-request-widget="handleSelectRequestWidget"
     />
 
-    <!-- Center Floating Bottom Toolbar (Figma Node 63:3395) or Single 'Done' Action Button on Overview (Hidden in Preview Mode) -->
-    <Transition name="apple-dock-fade" mode="out-in">
-      <!-- Done Action Button when in Pages Overview (Level 1 Dock Hidden) -->
+    <!-- Done Action Button when in Pages Overview Mode (Access to exit overview page) -->
+    <Transition name="apple-dock-fade">
       <div 
         v-if="editorStore.isPagesOpen && !editorStore.isPreviewMode"
-        key="overview-done-btn"
-        class="fixed left-1/2 -translate-x-1/2 bottom-[20px] z-[60] select-none animate-apple-slide-up-center"
+        class="fixed left-1/2 -translate-x-1/2 bottom-[24px] z-[70] select-none pointer-events-auto"
       >
         <button
           @click="editorStore.closePages()"
-          class="apple-glass-btn-dark content-stretch flex items-center justify-center gap-2 px-[24px] h-[40px] rounded-full shadow-[0px_10px_30px_rgba(0,0,0,0.22)] apple-press cursor-pointer border border-white/20 transition-all hover:bg-neutral-900"
-          title="Exit Overview Mode (Return to Canvas)"
+          class="apple-glass-btn-dark flex items-center justify-center gap-2 px-[28px] h-[44px] rounded-full shadow-[0px_10px_30px_rgba(0,0,0,0.25)] border border-white/20 cursor-pointer text-white hover:bg-neutral-900 active:scale-95 transition-all"
+          title="Exit Overview Page (Return to Canvas)"
         >
           <Check class="w-4 h-4 text-white stroke-[2.5]" />
-          <span class="font-707 font-medium text-white text-[13px] tracking-wide">
+          <span class="font-707 font-medium text-white text-[14px] tracking-wide">
             Done
           </span>
         </button>
       </div>
+    </Transition>
 
-      <!-- Center Floating Level 1 Bottom Toolbar when in normal canvas edit mode -->
+    <!-- Center Floating Level 1 Bottom Toolbar when in normal canvas edit mode -->
+    <Transition name="apple-dock-fade">
       <FloatingQuickAdd 
-        v-else-if="!editorStore.isPagesOpen && !editorStore.isPreviewMode"
-        key="level-1-dock"
+        v-if="!editorStore.isPagesOpen && !editorStore.isPreviewMode"
         @click.stop
         @toggle-layers="toggleLayers"
         @toggle-pages="togglePages"
