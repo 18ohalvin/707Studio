@@ -332,8 +332,8 @@
                     :class="[
                       widget.props.isSolidSpace 
                         ? 'bg-black hover:bg-[#383838] text-white' 
-                        : 'bg-white hover:bg-[#e4e4e4] text-black shadow-sm',
-                      'font-707 font-medium text-btn h-[42px] px-[16px] py-[12px] transition-colors cursor-pointer whitespace-nowrap flex items-center justify-center uppercase'
+                        : 'bg-white hover:bg-[#e4e4e4] text-black shadow-none',
+                      'font-707 font-medium text-btn h-[42px] px-[16px] py-[12px] transition-colors cursor-pointer whitespace-nowrap flex items-center justify-center uppercase border-0 border-none outline-none'
                     ]"
                   >
                     {{ widget.props.buttonText || widget.props.ctaLabel || 'Action' }}
@@ -749,12 +749,12 @@
                   @click.stop="handleActionButtonClick(widget)"
                   :class="[
                     widget.props.variant === 'white'
-                      ? 'bg-white text-black border border-[#d4d4d4] hover:bg-[#f7f7f7]'
+                      ? 'bg-white text-black hover:bg-[#f7f7f7]'
                       : (widget.props.variant === 'grey' ? 'bg-[#e4e4e4] text-black hover:bg-[#d9d9d9]' : 'bg-black text-white hover:bg-neutral-900'),
                     widget.props.disabled ? 'opacity-50 cursor-not-allowed' : 'apple-press'
                   ]"
                   :style="{ height: `${widget.props.height || 42}px` }"
-                  class="w-full px-[16px] py-[12px] rounded-[0px] flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal transition-all shadow-sm cursor-pointer"
+                  class="w-full px-[16px] py-[12px] rounded-[0px] flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal transition-all cursor-pointer border-0 border-none outline-none shadow-none"
                 >
                   <!-- Action Icon -->
                   <component :is="getButtonIcon(widget)" v-if="widget.props.showIcon" class="size-[16px] shrink-0" />
@@ -824,12 +824,12 @@
           @click.stop="handleActionButtonClick(stickyButtonForThisPage)"
           :class="[
             isStickyButtonOnDarkBackground
-              ? 'bg-white text-black border-t border-[#d4d4d4] hover:bg-[#f7f7f7]'
+              ? 'bg-white text-black hover:bg-[#f7f7f7]'
               : 'bg-black text-white hover:bg-neutral-900',
             stickyButtonForThisPage.props?.disabled ? 'opacity-50 cursor-not-allowed' : 'apple-press'
           ]"
           :style="{ height: `${stickyButtonForThisPage.props?.height || 42}px` }"
-          class="w-full px-[16px] py-[12px] rounded-none flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal transition-all shadow-sm cursor-pointer"
+          class="w-full px-[16px] py-[12px] rounded-none flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal transition-all cursor-pointer border-0 border-none outline-none shadow-none"
         >
           <!-- Action Icon -->
           <component :is="getButtonIcon(stickyButtonForThisPage)" v-if="stickyButtonForThisPage.props?.showIcon" class="size-[16px] shrink-0" />

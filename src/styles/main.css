@@ -312,8 +312,7 @@ textarea, input, .select-text, .select-text * {
   border-color: rgba(0, 0, 0, 0.25);
 }
 
-/* Enforce 0.5px outline/border weight across all button elements and states */
-button,
+/* Enforce 0.5px outline/border weight across Apple glass controls only */
 .apple-glass-btn,
 .apple-glass-btn-dark,
 .apple-glass-icon-btn,
@@ -321,10 +320,6 @@ button,
   border-width: 0.5px;
 }
 
-button:hover,
-button:active,
-button:focus,
-button:disabled,
 .apple-glass-btn:hover,
 .apple-glass-btn:active,
 .apple-glass-btn:focus,
@@ -342,6 +337,17 @@ button:disabled,
 .apple-glass-pill:focus,
 .apple-glass-pill:disabled {
   border-width: 0.5px;
+}
+
+/* Explicitly remove all borders and outlines from every CTA button */
+.btn-cta,
+.btn-707,
+button[data-cta],
+.cta-button {
+  border: none !important;
+  border-width: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 /* ==========================================================================

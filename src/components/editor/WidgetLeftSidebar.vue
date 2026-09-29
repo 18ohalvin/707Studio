@@ -276,7 +276,7 @@
           title="Drag to canvas or click to add"
         >
           <div class="border border-[#c9c9c9] flex flex-col items-center justify-center h-[76px] rounded-[8px] shrink-0 w-[112px] bg-white group-hover:border-black transition-colors shadow-sm px-2.5 overflow-hidden">
-            <div class="w-full bg-white text-black border border-[#d4d4d4] h-[32px] rounded-[0px] flex items-center justify-center font-707 font-medium text-[10px] tracking-normal uppercase px-2 shadow-sm">
+            <div class="w-full bg-[#f2f2f2] text-black h-[32px] rounded-[0px] flex items-center justify-center font-707 font-medium text-[10px] tracking-normal uppercase px-2 shadow-none border-0 border-none outline-none">
               Button CTA
             </div>
           </div>
