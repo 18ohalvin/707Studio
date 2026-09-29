@@ -703,26 +703,20 @@
               data-node-id="244:11560"
               data-name="Action Button Container"
             >
-              <!-- Container with dynamic dashed border -->
+              <!-- Container with sharp edges -->
               <div 
-                class="w-full relative flex items-center justify-center rounded-[8px] transition-all p-0"
-                :class="[
-                  !isMiniPreview && (editorStore.selectedWidgetId === widget.id || hoveredWidgetId === widget.id)
-                    ? 'ring-1 ring-black/40' 
-                    : ''
-                ]"
+                class="w-full relative flex items-center justify-center rounded-none transition-all p-0"
               >
                 <!-- Floating Action Toolbar for ActionButton (Figma Node 180:5844) -->
                 <div 
                   v-if="!isMiniPreview && hoveredWidgetId === widget.id"
-                  class="absolute z-30 apple-glass-modal flex gap-[5px] items-center p-[4px] rounded-[10px] shadow-[0px_8px_24px_rgba(0,0,0,0.12)] border border-white/80 transition-all animate-in fade-in duration-150 select-none"
-                  :class="index === 0 ? 'top-[6px] right-[6px]' : '-top-[26px] right-0'"
+                  class="absolute z-40 apple-glass-modal flex gap-[4px] items-center p-[4px] rounded-[8px] shadow-[0px_4px_16px_rgba(0,0,0,0.18)] transition-all animate-in fade-in duration-150 select-none top-1/2 -translate-y-1/2 right-[8px]"
                   data-name="Buttons Container"
                 >
                   <!-- Button 1: Adjust / Open Button Setup Sidebar -->
                   <button 
                     @click.stop="handleAdjustWidget(widget)"
-                    class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer"
+                    class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black hover:bg-black/10 cursor-pointer"
                     title="Button Setup"
                   >
                     <SlidersHorizontal class="w-3.5 h-3.5" />
@@ -731,7 +725,7 @@
                   <!-- Button 2: Duplicate -->
                   <button 
                     @click.stop="editorStore.duplicateWidget(widget.id)"
-                    class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer"
+                    class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black hover:bg-black/10 cursor-pointer"
                     title="Duplicate"
                   >
                     <Copy class="w-3.5 h-3.5" />
@@ -740,7 +734,7 @@
                   <!-- Button 3: Remove -->
                   <button 
                     @click.stop="editorStore.removeWidget(widget.id)"
-                    class="apple-glass-icon-btn size-[24px] hover:text-red-600 flex items-center justify-center rounded-[6px] text-black cursor-pointer"
+                    class="apple-glass-icon-btn size-[24px] hover:text-red-600 flex items-center justify-center rounded-[6px] text-black hover:bg-red-50 cursor-pointer"
                     title="Remove"
                   >
                     <Trash2 class="w-3.5 h-3.5" />
