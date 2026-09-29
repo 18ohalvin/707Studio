@@ -359,7 +359,7 @@ export const useEditorStore = defineStore('editor', () => {
           showIcon: false,
           iconName: 'arrow-right',
           iconPosition: 'leading',
-          height: 42,
+          height: 48,
           disabled: false
         };
         break;

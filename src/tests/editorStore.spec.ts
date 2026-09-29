@@ -153,19 +153,19 @@ describe('707 Activation Builder Stores', () => {
       label: 'BUTTON CTA',
       variant: 'black',
       actionType: 'submit',
-      height: 42
+      height: 48
     });
 
     expect(blackBtn.type).toBe('ActionButton');
     expect(blackBtn.props.variant).toBe('black');
     expect(blackBtn.props.label).toBe('BUTTON CTA');
-    expect(blackBtn.props.height).toBe(42);
+    expect(blackBtn.props.height).toBe(48);
 
     const whiteBtn = editorStore.addWidget('ActionButton', undefined, {
       label: 'BUTTON CTA',
       variant: 'white',
       actionType: 'submit',
-      height: 42
+      height: 48
     });
 
     expect(whiteBtn.type).toBe('ActionButton');

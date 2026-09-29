@@ -333,7 +333,7 @@
                       widget.props.isSolidSpace 
                         ? 'bg-black hover:bg-[#383838] text-white' 
                         : 'bg-white hover:bg-[#e4e4e4] text-black shadow-none',
-                      'font-707 font-medium text-btn h-[42px] px-[16px] py-[12px] transition-colors cursor-pointer whitespace-nowrap flex items-center justify-center uppercase border-0 border-none outline-none'
+                      'font-707 font-medium text-btn h-[48px] px-[16px] py-[12px] transition-colors cursor-pointer whitespace-nowrap flex items-center justify-center uppercase border-0 border-none outline-none'
                     ]"
                   >
                     {{ widget.props.buttonText || widget.props.ctaLabel || 'Action' }}
@@ -417,7 +417,7 @@
                 </div>
               </div>
 
-              <button class="w-full h-10 bg-black text-white font-bold text-[11px] tracking-wider uppercase rounded hover:bg-neutral-800 transition-colors">
+              <button class="w-full h-[48px] bg-black text-white font-bold text-[12px] tracking-wider uppercase rounded hover:bg-neutral-800 transition-colors">
                 {{ widget.props.ctaLabel || 'SUBMIT ENTRY' }}
               </button>
             </div>
@@ -463,7 +463,7 @@
                 </div>
               </div>
 
-              <button class="w-full h-10 bg-black text-white font-bold text-[11px] tracking-wider uppercase rounded hover:bg-neutral-800 transition-colors">
+              <button class="w-full h-[48px] bg-black text-white font-bold text-[12px] tracking-wider uppercase rounded hover:bg-neutral-800 transition-colors">
                 {{ widget.props.ctaLabel || 'CLAIM PASS' }}
               </button>
             </div>
@@ -753,7 +753,7 @@
                       : (widget.props.variant === 'grey' ? 'bg-[#e4e4e4] text-black hover:bg-[#d9d9d9]' : 'bg-black text-white hover:bg-neutral-900'),
                     widget.props.disabled ? 'opacity-50 cursor-not-allowed' : 'apple-press'
                   ]"
-                  :style="{ height: `${widget.props.height || 42}px` }"
+                  :style="{ height: `${widget.props.height || 48}px` }"
                   class="w-full px-[16px] py-[12px] rounded-[0px] flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal transition-all cursor-pointer border-0 border-none outline-none shadow-none"
                 >
                   <!-- Action Icon -->
@@ -828,7 +828,7 @@
               : 'bg-black text-white hover:bg-neutral-900',
             stickyButtonForThisPage.props?.disabled ? 'opacity-50 cursor-not-allowed' : 'apple-press'
           ]"
-          :style="{ height: `${stickyButtonForThisPage.props?.height || 42}px` }"
+          :style="{ height: `${stickyButtonForThisPage.props?.height || 48}px` }"
           class="w-full px-[16px] py-[12px] rounded-none flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal transition-all cursor-pointer border-0 border-none outline-none shadow-none"
         >
           <!-- Action Icon -->

@@ -250,7 +250,7 @@
         <!-- Action Button 1: Standard Black Button (Figma Node 176:5763) -->
         <div 
           draggable="true"
-          @dragstart="handleDragStart($event, { type: 'ActionButton', label: 'Black Action Button', customProps: { label: 'BUTTON CTA', variant: 'black', actionType: 'submit', height: 42 } })"
+          @dragstart="handleDragStart($event, { type: 'ActionButton', label: 'Black Action Button', customProps: { label: 'BUTTON CTA', variant: 'black', actionType: 'submit', height: 48 } })"
           @dragend="handleDragEnd"
           @click="addActionButton('black')"
           class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group"
@@ -269,7 +269,7 @@
         <!-- Action Button 2: Standard White Button (Figma Node 176:5741) -->
         <div 
           draggable="true"
-          @dragstart="handleDragStart($event, { type: 'ActionButton', label: 'White Action Button', customProps: { label: 'BUTTON CTA', variant: 'white', actionType: 'submit', height: 42 } })"
+          @dragstart="handleDragStart($event, { type: 'ActionButton', label: 'White Action Button', customProps: { label: 'BUTTON CTA', variant: 'white', actionType: 'submit', height: 48 } })"
           @dragend="handleDragEnd"
           @click="addActionButton('white')"
           class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group"
@@ -531,7 +531,7 @@ function addActionButton(variant: 'black' | 'white' = 'black') {
     variant: variant,
     actionType: 'submit',
     url: '',
-    height: 42
+    height: 48
   });
   emit('close');
 }
