@@ -246,26 +246,26 @@
                 @dragleave.prevent.stop="isDragOverLogoSlot = null"
                 @drop.prevent.stop="handleLogoDropOnBanner($event, widget.id)"
               >
-                <!-- Render brand logo if url exists -->
-                <div v-if="widget.props.brandLogoUrl" class="max-h-[24px] h-[24px] flex items-center">
+                <!-- Render brand logo if url exists (Max height 32px) -->
+                <div v-if="widget.props.brandLogoUrl" class="max-h-[32px] h-[32px] flex items-center">
                   <img 
                     :src="widget.props.brandLogoUrl" 
                     alt="Brand Logo" 
-                    class="max-h-[24px] h-[24px] w-auto object-contain transition-transform"
+                    class="max-h-[32px] h-[32px] w-auto object-contain transition-transform"
                   />
                 </div>
                 <!-- Placeholder if enabled but no logo uploaded yet -->
                 <div 
                   v-else
                   @click.stop="handleOpenLogoPicker(widget.id)"
-                  class="h-[28px] px-3 border border-dashed rounded-[6px] flex items-center gap-1.5 text-[11px] font-707 cursor-pointer transition-colors"
+                  class="h-[32px] px-3 border border-dashed rounded-[6px] flex items-center gap-1.5 text-[11px] font-707 cursor-pointer transition-colors"
                   :class="[
                     widget.props.isSolidSpace ? 'bg-black/5 border-black/30 text-black/70 hover:bg-black/10' : 'bg-white/20 border-white/40 text-white hover:bg-white/30 backdrop-blur-sm',
                     isDragOverLogoSlot === widget.id ? 'border-black ring-2 ring-black' : ''
                   ]"
-                  title="Click or drop brand logo (Max height 24px)"
+                  title="Click or drop brand logo (Max height 32px)"
                 >
-                  <span>Select / Drop Brand Logo (Max 24px)</span>
+                  <span>Select / Drop Brand Logo (Max 32px)</span>
                 </div>
               </div>
 
@@ -313,9 +313,9 @@
                   </span>
                 </div>
 
-                <!-- CTA Button automatically under subheadline with auto light/dark color adaptation -->
+                <!-- CTA Button automatically under subheadline with auto light/dark color adaptation (only rendered in-flow if not sticky bottom) -->
                 <div 
-                  v-if="(widget.props.isCtaEnabled ?? (!!widget.props.buttonText || !!widget.props.ctaLabel || !!widget.props.showButton)) && (widget.props.buttonText || widget.props.ctaLabel || widget.props.showButton)" 
+                  v-if="(widget.props.isCtaEnabled ?? (!!widget.props.buttonText || !!widget.props.ctaLabel || !!widget.props.showButton)) && (widget.props.buttonText || widget.props.ctaLabel || widget.props.showButton) && widget.props.ctaPositionMode !== 'sticky-bottom' && widget.props.positionMode !== 'sticky-bottom'" 
                   class="mt-4 flex"
                   :class="[
                     widget.props.textAlign === 'center' ? 'justify-center w-full' : 
@@ -330,7 +330,7 @@
                       widget.props.isSolidSpace 
                         ? 'bg-black hover:bg-[#383838] text-white' 
                         : 'bg-white hover:bg-[#e4e4e4] text-black shadow-sm',
-                      'font-707 font-medium text-btn h-[42px] px-[16px] py-[12px] transition-colors cursor-pointer whitespace-nowrap flex items-center justify-center'
+                      'font-707 font-medium text-btn h-[42px] px-[16px] py-[12px] transition-colors cursor-pointer whitespace-nowrap flex items-center justify-center uppercase'
                     ]"
                   >
                     {{ widget.props.buttonText || widget.props.ctaLabel || 'Action' }}
@@ -808,7 +808,7 @@
             <SlidersHorizontal class="w-3.5 h-3.5" />
           </button>
           <button 
-            @click.stop="editorStore.removeWidget(stickyButtonForThisPage.id)"
+            @click.stop="handleRemoveStickyButton(stickyButtonForThisPage)"
             class="apple-glass-icon-btn size-[22px] hover:text-red-600 flex items-center justify-center rounded-[6px] text-black cursor-pointer"
             title="Remove Sticky Button"
           >
@@ -830,7 +830,7 @@
         >
           <!-- Action Icon -->
           <component :is="getButtonIcon(stickyButtonForThisPage)" v-if="stickyButtonForThisPage.props?.showIcon" class="size-[16px] shrink-0" />
-          <span class="whitespace-nowrap uppercase">{{ stickyButtonForThisPage.props?.label || 'BUTTON CTA' }}</span>
+          <span class="whitespace-nowrap uppercase">{{ stickyButtonForThisPage.props?.label || stickyButtonForThisPage.props?.buttonText || stickyButtonForThisPage.props?.ctaLabel || 'BUTTON CTA' }}</span>
         </button>
       </div>
     </div>
@@ -1558,14 +1558,43 @@ const isLastWidgetText = computed(() => {
   return tree[tree.length - 1]?.type === 'TextBanner';
 });
 
+function handleRemoveStickyButton(widget: any) {
+  if (!widget) return;
+  if (widget.type === 'HeroDrop') {
+    editorStore.updateWidgetProps(widget.id, {
+      isCtaEnabled: false,
+      showButton: false,
+      positionMode: 'in-flow',
+      ctaPositionMode: 'in-flow'
+    });
+  } else {
+    editorStore.removeWidget(widget.id);
+  }
+}
+
 const stickyButtonForThisPage = computed(() => {
   for (const p of editorStore.pages) {
+    // 1. Check ActionButton
     const btn = p.widget_tree.find(w => w.type === 'ActionButton' && w.props?.positionMode === 'sticky-bottom');
     if (btn) {
       const scope = btn.props?.stickyScope || 'current';
       if (scope === 'all') return btn;
       if (scope === 'current' && p.id === activePage.value.id) return btn;
       if (scope === 'custom' && (btn.props?.stickyPageIds || []).includes(activePage.value.id)) return btn;
+    }
+    // 2. Check HeroDrop with sticky CTA
+    const heroWithStickyCta = p.widget_tree.find(w => 
+      w.type === 'HeroDrop' && 
+      (w.props?.isCtaEnabled ?? (!!w.props?.buttonText || !!w.props?.ctaLabel || !!w.props?.showButton)) && 
+      (w.props?.buttonText || w.props?.ctaLabel || w.props?.showButton) &&
+      (w.props?.ctaPositionMode === 'sticky-bottom' || w.props?.positionMode === 'sticky-bottom')
+    );
+    if (heroWithStickyCta) {
+      const scope = heroWithStickyCta.props?.ctaStickyScope || heroWithStickyCta.props?.stickyScope || 'current';
+      if (scope === 'all') return heroWithStickyCta;
+      if (scope === 'current' && p.id === activePage.value.id) return heroWithStickyCta;
+      const pageIds = heroWithStickyCta.props?.ctaStickyPageIds || heroWithStickyCta.props?.stickyPageIds || [];
+      if (scope === 'custom' && pageIds.includes(activePage.value.id)) return heroWithStickyCta;
     }
   }
   return null;
