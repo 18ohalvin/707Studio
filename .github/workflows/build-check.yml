@@ -1,0 +1,43 @@
+# Catches build breakages on push instead of at deploy time.
+#
+# Type errors in the editor components have twice reached production and failed
+# the deploy there, where the only visible symptom is a red "Failed" row with no
+# explanation. This runs the same two builds the Docker image runs, so a broken
+# push is reported here first.
+#
+# It only builds and reports — it does not deploy anything.
+
+name: Build check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Frontend and API build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build frontend (vue-tsc + vite)
+        run: npm run build
+
+      - name: Install API dependencies
+        run: npm ci
+        working-directory: server
+
+      - name: Build API (tsc)
+        run: npm run build
+        working-directory: server
