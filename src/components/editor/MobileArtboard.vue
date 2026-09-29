@@ -92,10 +92,11 @@
         ref="scrollContainerRef"
         @click.self="handleArtboardClick"
         @scroll="handleScroll"
-        class="artboard-scroll-container flex-1 flex flex-col overflow-y-auto no-scrollbar px-0 pt-0 pb-0 relative cursor-default overscroll-contain will-change-scroll"
+        class="artboard-scroll-container flex-1 flex flex-col no-scrollbar px-0 pt-0 pb-0 relative cursor-default overscroll-contain will-change-scroll"
         :class="[
           isPreviewModal ? 'bg-white' : 'bg-[#f5f5f5]',
-          isDragOver ? 'bg-neutral-200/60' : ''
+          isDragOver ? 'bg-neutral-200/60' : '',
+          isSingleFullScreenHero ? 'overflow-hidden' : 'overflow-y-auto'
         ]"
         style="scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch;"
         @dragenter.prevent="handleDragEnter"
@@ -141,7 +142,10 @@
           v-else 
           @click.self="handleArtboardClick"
           class="flex-1 flex flex-col w-full shrink-0 min-h-full cursor-default"
-          :class="containerBottomPaddingClass"
+          :class="[
+            containerBottomPaddingClass,
+            isSingleFullScreenHero ? 'h-full' : ''
+          ]"
         >
           <!-- If widgets are added, render them sequentially -->
           <div 
@@ -156,6 +160,7 @@
             :class="[
               widget.type === 'TextBanner' ? 'overflow-visible' : 'overflow-hidden',
               getWidgetMarginTopClass(index),
+              (isSingleFullScreenHero && widget.type === 'HeroDrop') ? 'h-full min-h-full flex-1' : '',
               'group relative cursor-pointer shrink-0 w-full'
             ]"
           >
@@ -1299,7 +1304,7 @@ function getRatioClass(ratio?: string) {
       return 'min-h-[76px] py-[16px] px-0 w-full shrink-0 flex flex-col justify-center';
     case 'Full screen landing page':
     default:
-      return 'h-[560px] md:h-[592px] min-h-[560px] md:min-h-[592px] w-full shrink-0';
+      return 'h-full min-h-full flex-1 w-full shrink-0 min-h-[580px]';
   }
 }
 
@@ -1591,6 +1596,11 @@ function handleFieldInputChange(e: Event, widget: any) {
   }
 }
 
+
+const isSingleFullScreenHero = computed(() => {
+  const tree = activePage.value.widget_tree;
+  return tree.length === 1 && tree[0].type === 'HeroDrop' && (tree[0].props.ratio === 'Full screen landing page' || !tree[0].props.ratio);
+});
 
 const isLastWidgetHero = computed(() => {
   const tree = activePage.value.widget_tree;
