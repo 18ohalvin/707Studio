@@ -95,11 +95,11 @@
       @select-request-widget="handleSelectRequestWidget"
     />
 
-    <!-- Center Floating Bottom Toolbar (Figma Node 63:3395) or Single 'Done' Action Button on Overview -->
+    <!-- Center Floating Bottom Toolbar (Figma Node 63:3395) or Single 'Done' Action Button on Overview (Hidden in Preview Mode) -->
     <Transition name="apple-dock-fade" mode="out-in">
       <!-- Done Action Button when in Pages Overview (Level 1 Dock Hidden) -->
       <div 
-        v-if="editorStore.isPagesOpen"
+        v-if="editorStore.isPagesOpen && !editorStore.isPreviewMode"
         key="overview-done-btn"
         class="fixed left-1/2 -translate-x-1/2 bottom-[20px] z-[60] select-none animate-apple-slide-up-center"
       >
@@ -117,7 +117,7 @@
 
       <!-- Center Floating Level 1 Bottom Toolbar when in normal canvas edit mode -->
       <FloatingQuickAdd 
-        v-else
+        v-else-if="!editorStore.isPagesOpen && !editorStore.isPreviewMode"
         key="level-1-dock"
         @click.stop
         @toggle-layers="toggleLayers"
@@ -125,10 +125,10 @@
       />
     </Transition>
 
-    <!-- Right Bottom Dock Tools (Figma Node 97:3400) - Hidden in Pages Overview Mode -->
+    <!-- Right Bottom Dock Tools (Figma Node 97:3400) - Hidden in Pages Overview Mode & Preview Mode -->
     <Transition name="apple-dock-fade">
       <ViewportControls 
-        v-if="!editorStore.isPagesOpen"
+        v-if="!editorStore.isPagesOpen && !editorStore.isPreviewMode"
         @click.stop
         @open-settings="editorStore.isReviewModalOpen = true"
       />
