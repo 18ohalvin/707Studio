@@ -284,7 +284,7 @@
                 :class="[
                   widget.props.textPosition === 'top' ? ((index === 0 && (widget.props.isBrandLogoEnabled || widget.props.brandLogoUrl)) ? 'top-0 pt-[68px] pb-[24px]' : 'top-0 pt-[36px] pb-[24px]') : 
                   widget.props.textPosition === 'center' ? 'top-1/2 -translate-y-1/2 py-[24px]' : 
-                  'bottom-0 pt-[24px] pb-[64px]',
+                  (stickyButtonForThisPage ? 'bottom-0 pt-[24px] pb-[80px]' : 'bottom-0 pt-[24px] pb-[32px]'),
                   widget.props.textAlign === 'center' ? 'text-center items-center' : 
                   widget.props.textAlign === 'right' ? 'text-right' : 
                   'text-left items-start'
@@ -1628,19 +1628,15 @@ const stickyButtonForThisPage = computed(() => {
       if (scope === 'current' && p.id === activePage.value.id) return btn;
       if (scope === 'custom' && (btn.props?.stickyPageIds || []).includes(activePage.value.id)) return btn;
     }
-    // 2. Check HeroDrop with sticky CTA
+    // 2. Check HeroDrop with sticky CTA (Strictly isolated to active page only)
     const heroWithStickyCta = p.widget_tree.find(w => 
       w.type === 'HeroDrop' && 
       (w.props?.isCtaEnabled ?? (!!w.props?.buttonText || !!w.props?.ctaLabel || !!w.props?.showButton)) && 
       (w.props?.buttonText || w.props?.ctaLabel || w.props?.showButton) &&
       (w.props?.ctaPositionMode === 'sticky-bottom' || w.props?.positionMode === 'sticky-bottom')
     );
-    if (heroWithStickyCta) {
-      const scope = heroWithStickyCta.props?.ctaStickyScope || heroWithStickyCta.props?.stickyScope || 'current';
-      if (scope === 'all') return heroWithStickyCta;
-      if (scope === 'current' && p.id === activePage.value.id) return heroWithStickyCta;
-      const pageIds = heroWithStickyCta.props?.ctaStickyPageIds || heroWithStickyCta.props?.stickyPageIds || [];
-      if (scope === 'custom' && pageIds.includes(activePage.value.id)) return heroWithStickyCta;
+    if (heroWithStickyCta && p.id === activePage.value.id) {
+      return heroWithStickyCta;
     }
   }
   return null;

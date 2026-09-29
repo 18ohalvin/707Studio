@@ -542,7 +542,7 @@
             </div>
           </div>
 
-          <!-- Sticky Page Targeting (Appears when Sticky Bottom is active) -->
+          <!-- Sticky Notice (Appears when Sticky Bottom is active - strictly applied to this page only) -->
           <Transition
             enter-active-class="transition duration-200 ease-out"
             enter-from-class="transform opacity-0 -translate-y-2"
@@ -551,63 +551,13 @@
             leave-from-class="transform opacity-100 translate-y-0"
             leave-to-class="transform opacity-0 -translate-y-2"
           >
-            <div v-if="ctaPositionMode === 'sticky-bottom'" class="flex flex-col gap-[10px] w-full pt-1">
-              <div class="flex items-center justify-between w-full">
-                <p class="font-707 font-medium text-[12px] text-neutral-600">
-                  Apply to Pages
-                </p>
-                <div class="flex gap-[6px] items-center">
-                  <button 
-                    type="button"
-                    @click="setCtaStickyScope('current')"
-                    :class="ctaStickyScope === 'current' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                    class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer"
-                  >
-                    Current Page
-                  </button>
-                  <button 
-                    type="button"
-                    @click="setCtaStickyScope('all')"
-                    :class="ctaStickyScope === 'all' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                    class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer"
-                  >
-                    All Pages
-                  </button>
-                  <button 
-                    type="button"
-                    @click="setCtaStickyScope('custom')"
-                    :class="ctaStickyScope === 'custom' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                    class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer"
-                  >
-                    Select
-                  </button>
-                </div>
-              </div>
-
-              <!-- Page checklist when 'Select' is active -->
-              <div v-if="ctaStickyScope === 'custom'" class="flex flex-col gap-1.5 pt-1">
-                <div 
-                  v-for="(page, idx) in editorStore.pages" 
-                  :key="page.id"
-                  @click="togglePageSticky(page.id)"
-                  class="flex items-center justify-between p-2 rounded-[6px] bg-white/80 border border-neutral-200 hover:border-black/40 cursor-pointer transition-colors"
-                >
-                  <div class="flex items-center gap-2">
-                    <input 
-                      type="checkbox" 
-                      :checked="isPageStickySelected(page.id)" 
-                      @click.stop="togglePageSticky(page.id)"
-                      class="rounded accent-black cursor-pointer"
-                    />
-                    <span class="font-707 text-[12px] text-black">
-                      Page {{ idx + 1 }}: {{ page.page_name || page.title || 'Untitled' }}
-                    </span>
-                  </div>
-                  <span v-if="editorStore.currentPage.id === page.id" class="text-[9px] font-mono uppercase bg-neutral-100 text-neutral-600 px-1.5 py-0.5 rounded">
-                    Active
-                  </span>
-                </div>
-              </div>
+            <div v-if="ctaPositionMode === 'sticky-bottom'" class="flex items-center justify-between w-full pt-1">
+              <span class="font-707 text-[12px] text-neutral-500">
+                Applied to this page only
+              </span>
+              <span class="font-707 text-[10px] text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-[4px] border border-neutral-200">
+                Current Page Only
+              </span>
             </div>
           </Transition>
 
@@ -815,14 +765,16 @@ function selectLinkTo(val: string) {
 
 function setCtaPositionMode(mode: 'in-flow' | 'sticky-bottom') {
   ctaPositionMode.value = mode;
-  const pageIds = ctaStickyPageIds.value.length ? ctaStickyPageIds.value : [editorStore.currentPage.id];
-  ctaStickyPageIds.value = pageIds;
+  ctaStickyScope.value = 'current';
+  ctaStickyPageIds.value = [editorStore.currentPage.id];
   if (editorStore.selectedWidgetId) {
     editorStore.updateWidgetProps(editorStore.selectedWidgetId, { 
       positionMode: mode,
       ctaPositionMode: mode,
-      stickyPageIds: pageIds,
-      ctaStickyPageIds: pageIds
+      stickyScope: 'current',
+      ctaStickyScope: 'current',
+      stickyPageIds: [editorStore.currentPage.id],
+      ctaStickyPageIds: [editorStore.currentPage.id]
     });
   }
 }
