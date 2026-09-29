@@ -83,14 +83,14 @@
       </div>
     </header>
 
-    <!-- 2. Centered Main Content Hub (Figma Node 212:7066) -->
+    <!-- 2. Centered Main Content Hub (Figma Node 212:7066) - Locked Fixed Top Coordinates with Scrollable Recent Projects -->
     <main 
-      class="flex flex-col items-center justify-center flex-1 w-full max-w-[664px] mx-auto px-4 gap-[80px] md:gap-[110px]"
+      class="flex flex-col items-center justify-start flex-1 w-full max-w-[664px] mx-auto px-4 pt-[44px] md:pt-[64px] pb-[20px] overflow-hidden"
       data-node-id="212:7066"
       data-name="Main Content Container"
     >
-      <!-- Intro Greeting & 5 Action Cards (Figma Node 212:7033) -->
-      <section class="flex flex-col items-center gap-[32px] w-full" data-node-id="212:7033" data-name="Intro Container">
+      <!-- Intro Greeting & 5 Action Cards (Figma Node 212:7033) - Position 100% Fixed & Stable -->
+      <section class="flex flex-col items-center gap-[32px] w-full shrink-0" data-node-id="212:7033" data-name="Intro Container">
         <h1 class="font-707 text-[28px] md:text-[30px] font-normal text-black text-center tracking-[-0.56px] leading-[34px] whitespace-nowrap" data-node-id="198:6839">
           Hello Fellas! Let’s build something cool.
         </h1>
@@ -184,42 +184,45 @@
         </div>
       </section>
 
-      <!-- Recent Projects List Section (Figma Node 212:7057) - Realtime Project Based -->
+      <!-- Recent Projects List Section (Figma Node 212:7057) - Fixed position & scrollable with luxury mask -->
       <section 
         ref="projectsSectionRef"
-        class="flex flex-col gap-[16px] items-start w-full max-w-[631px]"
+        class="flex flex-col items-start w-full max-w-[631px] mt-[44px] md:mt-[56px] shrink-0"
         data-node-id="212:7057"
         data-name="Project Info Container"
       >
-        <div 
-          v-for="project in editorStore.projects"
-          :key="project.id"
-          class="flex items-center justify-between w-full py-1 hover:bg-black/[0.02] px-2 rounded-lg transition-colors group cursor-pointer"
-          data-name="Project Details Container"
-          @click="openProject(project.id)"
-        >
-          <p class="font-707 text-[14px] text-black font-normal leading-[20px] whitespace-nowrap truncate max-w-[380px]">
-            {{ project.title }}
-          </p>
-          <div class="flex gap-[12px] items-center justify-end shrink-0" data-name="Project Time Container">
-            <p class="font-707 text-[11px] text-neutral-500 font-normal leading-[14px] whitespace-nowrap">
-              {{ editorStore.formatRelativeTime(project.updated_at) }}
+        <!-- Fixed Scrollable Container with Luxury Mask & Sleek Styling -->
+        <div class="w-full h-[210px] md:h-[230px] overflow-y-auto pr-1 flex flex-col gap-[8px] luxury-scroll-mask overscroll-contain">
+          <div 
+            v-for="project in editorStore.projects"
+            :key="project.id"
+            class="flex items-center justify-between w-full py-1.5 hover:bg-black/[0.03] px-3 rounded-[10px] transition-all group cursor-pointer border border-transparent hover:border-black/5"
+            data-name="Project Details Container"
+            @click="openProject(project.id)"
+          >
+            <p class="font-707 text-[14px] text-black font-normal leading-[20px] whitespace-nowrap truncate max-w-[380px]">
+              {{ project.title }}
             </p>
-            <button 
-              class="border-[#d9d9d9] hover:border-black/30 border-[0.5px] border-solid flex h-[32px] items-center justify-center px-[12px] rounded-[10px] shrink-0 bg-white/80 hover:bg-black hover:text-white transition-all apple-press cursor-pointer"
-              data-name="Save Info Container"
-              @click.stop="openProject(project.id)"
-            >
-              <span class="font-707 text-[12px] font-light whitespace-nowrap">
-                Continue
-              </span>
-            </button>
+            <div class="flex gap-[12px] items-center justify-end shrink-0" data-name="Project Time Container">
+              <p class="font-707 text-[11px] text-neutral-500 font-normal leading-[14px] whitespace-nowrap">
+                {{ editorStore.formatRelativeTime(project.updated_at) }}
+              </p>
+              <button 
+                class="border-[#d9d9d9] hover:border-black/30 border-[0.5px] border-solid flex h-[32px] items-center justify-center px-[14px] rounded-[8px] shrink-0 bg-white/90 hover:bg-black hover:text-white transition-all apple-cta-btn cursor-pointer shadow-sm"
+                data-name="Save Info Container"
+                @click.stop="openProject(project.id)"
+              >
+                <span class="font-707 text-[12px] font-light whitespace-nowrap">
+                  Continue
+                </span>
+              </button>
+            </div>
           </div>
-        </div>
 
-        <!-- Empty state fallback if no projects -->
-        <div v-if="!editorStore.projects.length" class="py-4 text-center w-full text-neutral-400 font-707 text-[13px]">
-          No projects yet. Click "Create a new project" to begin.
+          <!-- Empty state fallback if no projects -->
+          <div v-if="!editorStore.projects.length" class="h-full flex items-center justify-center text-neutral-400 font-707 text-[13px]">
+            No projects yet. Click "Create a new project" to begin.
+          </div>
         </div>
       </section>
     </main>

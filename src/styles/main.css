@@ -767,6 +767,31 @@ button[data-cta],
   transform: translateY(-4px) scale(0.98);
 }
 
+/* Luxury Scroll Mask for Landing Page & Floating Lists */
+.luxury-scroll-mask {
+  mask-image: linear-gradient(to bottom, transparent 0%, black 12px, black calc(100% - 12px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 12px, black calc(100% - 12px), transparent 100%);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.18) transparent;
+}
+
+.luxury-scroll-mask::-webkit-scrollbar {
+  width: 4px;
+}
+
+.luxury-scroll-mask::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.luxury-scroll-mask::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.16);
+  border-radius: 4px;
+}
+
+.luxury-scroll-mask::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.35);
+}
+
 /* Apple Dock Fade Transition */
 .apple-dock-fade-enter-active,
 .apple-dock-fade-leave-active {
