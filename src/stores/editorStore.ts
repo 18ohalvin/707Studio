@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
 import type { WidgetItem, WidgetType, ActivationPage, ViewportMode, PageStatus, ProjectItem } from '../types/editor.ts';
 
-export type MediaGalleryTarget = 'bannerImage' | 'brandLogo' | 'replaceBannerImage';
+export type MediaGalleryTarget = 'bannerImage' | 'brandLogo' | 'replaceBannerImage' | 'addNewMedia';
 
 export const useEditorStore = defineStore('editor', () => {
   // Realtime Projects List (Synced with API & Local Storage)

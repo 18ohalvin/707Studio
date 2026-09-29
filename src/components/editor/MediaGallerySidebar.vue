@@ -392,11 +392,11 @@ function handleMediaDragStart(event: DragEvent, media: MediaItem) {
 
 function applyMediaToArtboard(media: MediaItem) {
   const isBrandLogoTarget = editorStore.mediaGalleryTarget === 'brandLogo';
-  const isReplaceTarget = editorStore.mediaGalleryTarget === 'replaceBannerImage';
+  const isAddNewTarget = editorStore.mediaGalleryTarget === 'addNewMedia';
 
-  // Only target selected hero if user explicitly clicked "Change/Replace"
+  // Target selected hero banner widget if one is currently selected and we are not explicitly adding a new block
   const isHeroSelected = editorStore.selectedWidget && editorStore.selectedWidget.type === 'HeroDrop';
-  const targetHero = (isReplaceTarget && isHeroSelected) ? editorStore.selectedWidget : null;
+  const targetHero = (!isAddNewTarget && isHeroSelected) ? editorStore.selectedWidget : null;
 
   if (isBrandLogoTarget) {
     // 1. BRAND LOGO SELECTION: Strictly update brandLogoUrl and activate brand logo
@@ -422,7 +422,7 @@ function applyMediaToArtboard(media: MediaItem) {
   } else {
     // 2. HERO BANNER IMAGE SELECTION:
     if (targetHero) {
-      // Explicitly replace the selected hero banner's image
+      // Explicitly update the selected hero banner's image
       editorStore.updateWidgetProps(targetHero.id, {
         imageUrl: media.url,
         isSolidSpace: false

@@ -2,7 +2,7 @@
   <div class="h-screen w-screen overflow-hidden flex flex-col justify-between bg-[#f5f5f5] text-black font-sans relative select-none">
     <!-- 1. Main Header (Consistent 48px Header Height with Editor) -->
     <header 
-      class="w-full h-[48px] px-[20px] flex items-center justify-between z-40 bg-transparent shrink-0"
+      class="absolute top-0 left-0 right-0 w-full h-[48px] px-[20px] flex items-center justify-between z-40 bg-transparent shrink-0"
       data-node-id="198:6791"
       data-name="Header"
     >
@@ -83,9 +83,9 @@
       </div>
     </header>
 
-    <!-- 2. Centered Main Content Hub (Figma Node 212:7066) - Locked Fixed Top Coordinates with Scrollable Recent Projects -->
+    <!-- 2. Centered Main Content Hub (Figma Node 212:7066) - Grouped and Centered in Viewport -->
     <main 
-      class="flex flex-col items-center justify-start flex-1 w-full max-w-[664px] mx-auto px-4 pt-[44px] md:pt-[64px] pb-[20px] overflow-hidden"
+      class="flex flex-col items-center justify-center flex-1 w-full max-w-[664px] mx-auto px-4 h-full my-auto overflow-hidden"
       data-node-id="212:7066"
       data-name="Main Content Container"
     >

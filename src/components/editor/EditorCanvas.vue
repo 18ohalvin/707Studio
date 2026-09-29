@@ -332,7 +332,7 @@ function handleSelectWidget() {
 }
 
 function handleSelectMedia() {
-  editorStore.openMediaGallery();
+  editorStore.openMediaGallery('addNewMedia');
 }
 
 function handleSelectNewPage() {
