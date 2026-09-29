@@ -1299,7 +1299,7 @@ function getRatioClass(ratio?: string) {
       return 'min-h-[76px] py-[16px] px-0 w-full shrink-0 flex flex-col justify-center';
     case 'Full screen landing page':
     default:
-      return 'h-[598px] md:h-[632px] min-h-[598px] md:min-h-[632px] w-full shrink-0';
+      return 'h-[560px] md:h-[592px] min-h-[560px] md:min-h-[592px] w-full shrink-0';
   }
 }
 
