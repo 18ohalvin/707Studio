@@ -117,7 +117,7 @@
 
         <!-- Blank Canvas State Dropzone -->
         <div 
-          v-if="activePage.widget_tree.length === 0" 
+          v-if="inFlowWidgets.length === 0" 
           @click="handleArtboardClick"
           class="flex-1 flex flex-col items-center justify-center p-6 w-full min-h-[300px] cursor-default"
         >
@@ -149,7 +149,7 @@
         >
           <!-- If widgets are added, render them sequentially -->
           <div 
-            v-for="(widget, index) in activePage.widget_tree" 
+            v-for="(widget, index) in inFlowWidgets" 
             :key="widget.id"
             :data-widget-id="widget.id"
             @click.stop="handleWidgetClick(widget)"
@@ -1309,7 +1309,7 @@ function getRatioClass(ratio?: string) {
 }
 
 function getWidgetMarginTopClass(index: number) {
-  const tree = activePage.value.widget_tree;
+  const tree = inFlowWidgets.value;
   const currentWidget = tree[index];
 
   if (index === 0) {
@@ -1326,32 +1326,40 @@ function getWidgetMarginTopClass(index: number) {
     return 'mt-0';
   }
 
-  // 2. If text widget is the top widget (index 0) and followed by form input, banner, or any other widget: exclusive 24px bottom spacing
+  // 2. If hero banner meets ActionButton or ActionButton meets HeroDrop: 0px spacing
+  if (currentWidget?.type === 'ActionButton' && prevWidget?.type === 'HeroDrop') {
+    return 'mt-0';
+  }
+  if (currentWidget?.type === 'HeroDrop' && prevWidget?.type === 'ActionButton') {
+    return 'mt-0';
+  }
+
+  // 3. If text widget is the top widget (index 0) and followed by form input, banner, or any other widget: exclusive 24px bottom spacing
   if (index === 1 && prevWidget?.type === 'TextBanner' && currentWidget?.type !== 'TextBanner') {
     return 'mt-[24px]';
   }
 
-  // 3. If text widget meets another text widget (Text meets Text), exclusive 4px spacing between them
+  // 4. If text widget meets another text widget (Text meets Text), exclusive 4px spacing between them
   if (currentWidget?.type === 'TextBanner' && prevWidget?.type === 'TextBanner') {
     return 'mt-[4px]';
   }
 
-  // 4. If text widget is followed by FieldInput or Banner anywhere in stack: 24px spacing
+  // 5. If text widget is followed by FieldInput or Banner anywhere in stack: 24px spacing
   if (prevWidget?.type === 'TextBanner' && (currentWidget?.type === 'FieldInput' || currentWidget?.type === 'HeroDrop')) {
     return 'mt-[24px]';
   }
 
-  // 5. If FieldInput meets another FieldInput, 12px spacing between them
+  // 6. If FieldInput meets another FieldInput, 12px spacing between them
   if (currentWidget?.type === 'FieldInput' && prevWidget?.type === 'FieldInput') {
     return 'mt-[12px]';
   }
 
-  // 6. If ActionButton meets another ActionButton, 8px spacing between them
+  // 7. If ActionButton meets another ActionButton, 8px spacing between them
   if (currentWidget?.type === 'ActionButton' && prevWidget?.type === 'ActionButton') {
     return 'mt-[8px]';
   }
 
-  // 7. Default spacing between different widget types
+  // 8. Default spacing between different widget types
   return 'mt-[16px]';
 }
 
@@ -1597,19 +1605,23 @@ function handleFieldInputChange(e: Event, widget: any) {
 }
 
 
+const inFlowWidgets = computed(() => {
+  return activePage.value.widget_tree.filter(w => !(w.type === 'ActionButton' && w.props?.positionMode === 'sticky-bottom'));
+});
+
 const isSingleFullScreenHero = computed(() => {
-  const tree = activePage.value.widget_tree;
+  const tree = inFlowWidgets.value;
   return tree.length === 1 && tree[0].type === 'HeroDrop' && (tree[0].props.ratio === 'Full screen landing page' || !tree[0].props.ratio);
 });
 
 const isLastWidgetHero = computed(() => {
-  const tree = activePage.value.widget_tree;
+  const tree = inFlowWidgets.value;
   if (tree.length === 0) return false;
   return tree[tree.length - 1]?.type === 'HeroDrop';
 });
 
 const isLastWidgetText = computed(() => {
-  const tree = activePage.value.widget_tree;
+  const tree = inFlowWidgets.value;
   if (tree.length === 0) return false;
   return tree[tree.length - 1]?.type === 'TextBanner';
 });
@@ -1662,7 +1674,7 @@ const isStickyButtonOnDarkBackground = computed(() => {
   }
 
   // 2. If it's an ActionButton, check if it sits directly over a Hero banner at the bottom of the page
-  const tree = activePage.value.widget_tree;
+  const tree = inFlowWidgets.value;
   const bottomHero = tree.length > 0 && tree[tree.length - 1]?.type === 'HeroDrop' ? tree[tree.length - 1] : null;
   if (bottomHero) {
     return !!bottomHero.props?.imageUrl && !bottomHero.props?.isSolidSpace;
@@ -1673,7 +1685,7 @@ const isStickyButtonOnDarkBackground = computed(() => {
 });
 
 const containerBottomPaddingClass = computed(() => {
-  const tree = activePage.value.widget_tree;
+  const tree = inFlowWidgets.value;
   if (tree.length === 0) return 'pb-0';
   if (isLastWidgetHero.value) return 'pb-0';
   if (stickyButtonForThisPage.value) return 'pb-[72px]';
