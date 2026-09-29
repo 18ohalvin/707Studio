@@ -134,7 +134,7 @@
       </div>
     </div>
 
-    <!-- Add Brand Logo Section (Maximum height 24px, Select from media gallery / drag) -->
+    <!-- Add Brand Logo Section (Maximum height 32px, Select from media gallery / drag) -->
     <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
       <!-- Title row with Apple Style Toggle Switch -->
       <div class="flex items-center justify-between w-full">
@@ -189,8 +189,8 @@
             class="relative border border-[#d9d9d9] rounded-[8px] p-2.5 flex items-center justify-between bg-white hover:border-black transition-colors"
           >
             <div class="flex items-center gap-3">
-              <div class="h-[28px] max-w-[140px] flex items-center justify-center bg-neutral-50 px-2 rounded border border-neutral-200">
-                <img :src="brandLogoUrl" alt="Brand Logo" class="max-h-[24px] h-[24px] w-auto object-contain" />
+              <div class="h-[36px] max-w-[150px] flex items-center justify-center bg-neutral-50 px-2 rounded border border-neutral-200">
+                <img :src="brandLogoUrl" alt="Brand Logo" class="max-h-[32px] h-[32px] w-auto object-contain" />
               </div>
               <span class="text-[12px] font-707 text-neutral-600 truncate max-w-[140px]">Brand Logo</span>
             </div>
@@ -242,7 +242,7 @@
               </button>
               <span> or Drag</span>
             </p>
-            <span class="text-[10px] font-707 text-neutral-400">Maximum height 24px</span>
+            <span class="text-[10px] font-707 text-neutral-400">Maximum height 32px</span>
           </div>
 
           <!-- Logo Alignment (Left, Center, Right) -->
@@ -339,7 +339,7 @@
           </div>
           <div v-else class="flex flex-col gap-1.5 w-full">
             <div class="flex items-center justify-between">
-              <span class="font-707 text-[11px] font-medium text-neutral-600">Tag / Badge (Under Sub Headline)</span>
+              <span class="font-707 text-[11px] font-medium text-neutral-600">Tag / Badge (Top of Headline)</span>
               <button 
                 type="button" 
                 @click="removeBadge" 
@@ -511,21 +511,149 @@
         leave-to-class="transform opacity-0 -translate-y-2"
       >
         <div v-if="isCtaEnabled" class="flex flex-col gap-[12px] w-full pt-1">
+          <!-- Button Text Input -->
           <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
             <input 
               v-model="buttonText"
               placeholder="Button Text (e.g. Enter Raffle)"
-              class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400"
+              class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
             />
           </div>
 
+          <!-- Position Selector (Standard vs Sticky Bottom) -->
           <div class="flex items-center justify-between w-full pt-1">
             <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Position
+            </p>
+            <div class="flex gap-[6px] items-center">
+              <button 
+                v-for="pos in ctaPositionModes" 
+                :key="pos.value"
+                type="button"
+                @click="setCtaPositionMode(pos.value)"
+                :class="ctaPositionMode === pos.value ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                class="px-3.5 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
+              >
+                {{ pos.label }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Sticky Page Targeting (Appears when Sticky Bottom is active) -->
+          <Transition
+            enter-active-class="transition duration-200 ease-out"
+            enter-from-class="transform opacity-0 -translate-y-2"
+            enter-to-class="transform opacity-100 translate-y-0"
+            leave-active-class="transition duration-150 ease-in"
+            leave-from-class="transform opacity-100 translate-y-0"
+            leave-to-class="transform opacity-0 -translate-y-2"
+          >
+            <div v-if="ctaPositionMode === 'sticky-bottom'" class="flex flex-col gap-[10px] w-full pt-1">
+              <div class="flex items-center justify-between w-full">
+                <p class="font-707 font-medium text-[12px] text-neutral-600">
+                  Apply to Pages
+                </p>
+                <div class="flex gap-[6px] items-center">
+                  <button 
+                    type="button"
+                    @click="setCtaStickyScope('current')"
+                    :class="ctaStickyScope === 'current' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                    class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer"
+                  >
+                    Current Page
+                  </button>
+                  <button 
+                    type="button"
+                    @click="setCtaStickyScope('all')"
+                    :class="ctaStickyScope === 'all' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                    class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer"
+                  >
+                    All Pages
+                  </button>
+                  <button 
+                    type="button"
+                    @click="setCtaStickyScope('custom')"
+                    :class="ctaStickyScope === 'custom' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                    class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer"
+                  >
+                    Select
+                  </button>
+                </div>
+              </div>
+
+              <!-- Page checklist when 'Select' is active -->
+              <div v-if="ctaStickyScope === 'custom'" class="flex flex-col gap-1.5 pt-1">
+                <div 
+                  v-for="(page, idx) in editorStore.pages" 
+                  :key="page.id"
+                  @click="togglePageSticky(page.id)"
+                  class="flex items-center justify-between p-2 rounded-[6px] bg-white/80 border border-neutral-200 hover:border-black/40 cursor-pointer transition-colors"
+                >
+                  <div class="flex items-center gap-2">
+                    <input 
+                      type="checkbox" 
+                      :checked="isPageStickySelected(page.id)" 
+                      @click.stop="togglePageSticky(page.id)"
+                      class="rounded accent-black cursor-pointer"
+                    />
+                    <span class="font-707 text-[12px] text-black">
+                      Page {{ idx + 1 }}: {{ page.page_name || page.title || 'Untitled' }}
+                    </span>
+                  </div>
+                  <span v-if="editorStore.currentPage.id === page.id" class="text-[9px] font-mono uppercase bg-neutral-100 text-neutral-600 px-1.5 py-0.5 rounded">
+                    Active
+                  </span>
+                </div>
+              </div>
+            </div>
+          </Transition>
+
+          <!-- Link to Dropdown (Matching Set Media Fits style) -->
+          <div class="content-stretch flex items-center justify-between w-full pt-1 relative">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
               Link to
             </p>
-            <div class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] rounded-[8px] w-[240px] cursor-pointer">
-              <span class="text-[13px] text-black font-707">Next Page</span>
-              <ChevronDown class="size-[15px] text-black" />
+            <div class="relative">
+              <button
+                type="button"
+                @click="isLinkToDropdownOpen = !isLinkToDropdownOpen"
+                class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-[240px] cursor-pointer text-left"
+              >
+                <span class="font-707 text-[13px] text-black">{{ selectedActionLabel }}</span>
+                <ChevronDown 
+                  class="size-[15px] text-black transition-transform duration-200" 
+                  :class="isLinkToDropdownOpen ? 'rotate-180' : ''"
+                />
+              </button>
+
+              <!-- Dropdown Menu -->
+              <div 
+                v-if="isLinkToDropdownOpen" 
+                class="absolute right-0 top-[44px] w-[240px] bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-lg py-1 z-30 flex flex-col"
+              >
+                <button
+                  v-for="opt in linkToOptions"
+                  :key="opt.value"
+                  type="button"
+                  @click="selectLinkTo(opt.value)"
+                  class="flex items-center justify-between px-[14px] py-[8px] text-left hover:bg-black/5 transition-colors cursor-pointer"
+                  :class="ctaActionType === opt.value ? 'font-medium text-black bg-black/5' : 'text-neutral-700'"
+                >
+                  <span class="font-707 text-[13px]">{{ opt.label }}</span>
+                  <Check v-if="ctaActionType === opt.value" class="size-[15px] text-black" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Conditional URL Input if External URL is selected -->
+          <div v-if="ctaActionType === 'link'" class="w-full pt-1 animate-in fade-in duration-150">
+            <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+              <input 
+                v-model="ctaUrl" 
+                placeholder="https://..." 
+                class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
+              />
             </div>
           </div>
         </div>
@@ -644,6 +772,94 @@ const isBannerTextEnabled = ref(false);
 const isOverlayEnabled = ref(false);
 const overlayOpacity = ref(50);
 const isCtaEnabled = ref(false);
+
+const ctaPositionModes = [
+  { label: 'Standard', value: 'in-flow' },
+  { label: 'Sticky Bottom', value: 'sticky-bottom' }
+] as const;
+
+const ctaPositionMode = ref<'in-flow' | 'sticky-bottom'>('in-flow');
+const ctaStickyScope = ref<'current' | 'all' | 'custom'>('current');
+const ctaStickyPageIds = ref<string[]>([]);
+const isLinkToDropdownOpen = ref(false);
+
+const linkToOptions = [
+  { label: 'Next Page', value: 'next_page' },
+  { label: 'Submit Form', value: 'submit' },
+  { label: 'External URL', value: 'link' },
+  { label: 'Popup Modal', value: 'modal' },
+  { label: 'Scroll to Section', value: 'scroll' }
+] as const;
+
+const ctaActionType = ref('next_page');
+const ctaUrl = ref('');
+
+const selectedActionLabel = computed(() => {
+  const opt = linkToOptions.find(o => o.value === ctaActionType.value);
+  return opt ? opt.label : 'Next Page';
+});
+
+function selectLinkTo(val: string) {
+  ctaActionType.value = val;
+  isLinkToDropdownOpen.value = false;
+  if (editorStore.selectedWidgetId) {
+    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { 
+      actionType: val,
+      ctaActionType: val
+    });
+  }
+}
+
+function setCtaPositionMode(mode: 'in-flow' | 'sticky-bottom') {
+  ctaPositionMode.value = mode;
+  const pageIds = ctaStickyPageIds.value.length ? ctaStickyPageIds.value : [editorStore.currentPage.id];
+  ctaStickyPageIds.value = pageIds;
+  if (editorStore.selectedWidgetId) {
+    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { 
+      positionMode: mode,
+      ctaPositionMode: mode,
+      stickyPageIds: pageIds,
+      ctaStickyPageIds: pageIds
+    });
+  }
+}
+
+function setCtaStickyScope(scope: 'current' | 'all' | 'custom') {
+  ctaStickyScope.value = scope;
+  const defaultPageIds = scope === 'all' 
+    ? editorStore.pages.map(p => p.id) 
+    : [editorStore.currentPage.id];
+  ctaStickyPageIds.value = defaultPageIds;
+  if (editorStore.selectedWidgetId) {
+    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { 
+      stickyScope: scope,
+      ctaStickyScope: scope,
+      stickyPageIds: defaultPageIds,
+      ctaStickyPageIds: defaultPageIds
+    });
+  }
+}
+
+function isPageStickySelected(pageId: string): boolean {
+  return ctaStickyPageIds.value.includes(pageId);
+}
+
+function togglePageSticky(pageId: string) {
+  const currentList = [...ctaStickyPageIds.value];
+  const idx = currentList.indexOf(pageId);
+  if (idx >= 0) {
+    currentList.splice(idx, 1);
+  } else {
+    currentList.push(pageId);
+  }
+  ctaStickyPageIds.value = currentList;
+  if (editorStore.selectedWidgetId) {
+    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { 
+      stickyPageIds: currentList,
+      ctaStickyPageIds: currentList
+    });
+  }
+}
 
 function toggleBrandLogo() {
   if (!isTopPosition.value) return;
@@ -901,6 +1117,12 @@ watch(() => editorStore.selectedWidget, (widget) => {
       isCtaEnabled.value = !!(widget.props.buttonText || widget.props.ctaLabel || widget.props.showButton);
     }
 
+    ctaPositionMode.value = widget.props.ctaPositionMode || widget.props.positionMode || 'in-flow';
+    ctaStickyScope.value = widget.props.ctaStickyScope || widget.props.stickyScope || 'current';
+    ctaStickyPageIds.value = widget.props.ctaStickyPageIds || widget.props.stickyPageIds || [editorStore.currentPage.id];
+    ctaActionType.value = widget.props.ctaActionType || widget.props.actionType || 'next_page';
+    ctaUrl.value = widget.props.ctaUrl || widget.props.url || '';
+
     if (typeof widget.props.showBannerText === 'boolean') {
       isBannerTextEnabled.value = widget.props.showBannerText;
     } else {
@@ -953,6 +1175,15 @@ watch(overlayOpacity, (newVal) => {
 watch(isCtaEnabled, (newVal) => {
   if (editorStore.selectedWidgetId) {
     editorStore.updateWidgetProps(editorStore.selectedWidgetId, { isCtaEnabled: newVal, showButton: newVal });
+  }
+});
+
+watch(ctaUrl, (newUrl) => {
+  if (editorStore.selectedWidgetId) {
+    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { 
+      url: newUrl, 
+      ctaUrl: newUrl 
+    });
   }
 });
 
