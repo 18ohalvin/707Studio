@@ -186,13 +186,16 @@
           <!-- Logo Preview or Drop/Select Area -->
           <div 
             v-if="brandLogoUrl" 
-            class="relative border border-[#d9d9d9] rounded-[8px] p-2.5 flex items-center justify-between bg-white hover:border-black transition-colors"
+            class="relative border border-[#d9d9d9] rounded-[8px] p-3 flex items-center justify-between bg-white hover:border-black transition-colors"
           >
             <div class="flex items-center gap-3">
-              <div class="h-[36px] max-w-[150px] flex items-center justify-center bg-neutral-50 px-2 rounded border border-neutral-200">
-                <img :src="brandLogoUrl" alt="Brand Logo" class="max-h-[32px] h-[32px] w-auto object-contain" />
+              <div class="h-[52px] min-w-[52px] max-w-[150px] flex items-center justify-center bg-neutral-50 px-2 rounded border border-neutral-200">
+                <img :src="brandLogoUrl" alt="Brand Logo" class="max-h-[48px] h-[48px] w-auto object-contain" />
               </div>
-              <span class="text-[12px] font-707 text-neutral-600 truncate max-w-[140px]">Brand Logo</span>
+              <div class="flex flex-col">
+                <span class="text-[12px] font-707 font-medium text-black truncate max-w-[130px]">Brand Logo</span>
+                <span class="text-[10px] font-707 text-neutral-400">Height: 48px</span>
+              </div>
             </div>
             <div class="flex items-center gap-1.5">
               <button 
@@ -242,7 +245,7 @@
               </button>
               <span> or Drag</span>
             </p>
-            <span class="text-[10px] font-707 text-neutral-400">Maximum height 32px</span>
+            <span class="text-[10px] font-707 text-neutral-400">Fixed height 48px</span>
           </div>
 
           <!-- Logo Alignment (Left, Center, Right) -->
@@ -1143,8 +1146,14 @@ watch(isBrandLogoEnabled, (newVal) => {
 });
 
 watch(brandLogoUrl, (newUrl) => {
-  if (editorStore.selectedWidgetId) {
+  if (editorStore.selectedWidgetId && editorStore.selectedWidget?.props?.brandLogoUrl !== newUrl) {
     editorStore.updateWidgetProps(editorStore.selectedWidgetId, { brandLogoUrl: newUrl });
+  }
+});
+
+watch(() => editorStore.selectedWidget?.props?.brandLogoUrl, (storeUrl) => {
+  if (storeUrl !== undefined && storeUrl !== brandLogoUrl.value) {
+    brandLogoUrl.value = storeUrl || '';
   }
 });
 

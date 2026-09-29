@@ -608,6 +608,25 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
+  function togglePreviewMode() {
+    isPreviewMode.value = !isPreviewMode.value;
+    isTestFormModalOpen.value = isPreviewMode.value;
+    if (isPreviewMode.value) {
+      closeAllSidebars();
+    }
+  }
+
+  function openPreviewMode() {
+    closeAllSidebars();
+    isPreviewMode.value = true;
+    isTestFormModalOpen.value = true;
+  }
+
+  function closePreviewMode() {
+    isPreviewMode.value = false;
+    isTestFormModalOpen.value = false;
+  }
+
   function closeAllSidebars() {
     cleanupEmptyTextWidgets();
     isAddMenuOpen.value = false;
@@ -931,6 +950,9 @@ export const useEditorStore = defineStore('editor', () => {
     openPages,
     closePages,
     togglePages,
+    togglePreviewMode,
+    openPreviewMode,
+    closePreviewMode,
     closeAllSidebars,
     removeWidget,
     duplicateWidget,

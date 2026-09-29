@@ -249,26 +249,26 @@
                 @dragleave.prevent.stop="isDragOverLogoSlot = null"
                 @drop.prevent.stop="handleLogoDropOnBanner($event, widget.id)"
               >
-                <!-- Render brand logo if url exists (Max height 32px) -->
-                <div v-if="widget.props.brandLogoUrl" class="max-h-[32px] h-[32px] flex items-center">
+                <!-- Render brand logo if url exists (Fixed height 48px, width auto to maintain aspect ratio) -->
+                <div v-if="widget.props.brandLogoUrl" class="max-h-[48px] h-[48px] flex items-center shrink-0">
                   <img 
                     :src="widget.props.brandLogoUrl" 
                     alt="Brand Logo" 
-                    class="max-h-[32px] h-[32px] w-auto object-contain transition-transform"
+                    class="max-h-[48px] h-[48px] w-auto object-contain transition-transform"
                   />
                 </div>
                 <!-- Placeholder if enabled but no logo uploaded yet -->
                 <div 
                   v-else
                   @click.stop="handleOpenLogoPicker(widget.id)"
-                  class="h-[32px] px-3 border border-dashed rounded-[6px] flex items-center gap-1.5 text-[11px] font-707 cursor-pointer transition-colors"
+                  class="h-[48px] px-3 border border-dashed rounded-[8px] flex items-center gap-1.5 text-[11px] font-707 cursor-pointer transition-colors"
                   :class="[
                     widget.props.isSolidSpace ? 'bg-black/5 border-black/30 text-black/70 hover:bg-black/10' : 'bg-white/20 border-white/40 text-white hover:bg-white/30 backdrop-blur-sm',
                     isDragOverLogoSlot === widget.id ? 'border-black ring-2 ring-black' : ''
                   ]"
-                  title="Click or drop brand logo (Max height 32px)"
+                  title="Click or drop brand logo (Height 48px)"
                 >
-                  <span>Select / Drop Brand Logo (Max 32px)</span>
+                  <span>Select / Drop Brand Logo (48px)</span>
                 </div>
               </div>
 
@@ -277,7 +277,7 @@
                 v-if="((widget.props.showBannerText ?? true) && (widget.props.title || widget.props.headline || widget.props.subtitle || widget.props.subheadline)) || ((widget.props.isCtaEnabled ?? (!!widget.props.buttonText || !!widget.props.ctaLabel || !!widget.props.showButton)) && (widget.props.buttonText || widget.props.ctaLabel || widget.props.showButton))" 
                 class="absolute left-0 right-0 px-[16px] z-20 flex flex-col transition-all duration-200"
                 :class="[
-                  widget.props.textPosition === 'top' ? ((index === 0 && (widget.props.isBrandLogoEnabled || widget.props.brandLogoUrl)) ? 'top-0 pt-[52px] pb-[24px]' : 'top-0 pt-[36px] pb-[24px]') : 
+                  widget.props.textPosition === 'top' ? ((index === 0 && (widget.props.isBrandLogoEnabled || widget.props.brandLogoUrl)) ? 'top-0 pt-[68px] pb-[24px]' : 'top-0 pt-[36px] pb-[24px]') : 
                   widget.props.textPosition === 'center' ? 'top-1/2 -translate-y-1/2 py-[24px]' : 
                   'bottom-0 pt-[24px] pb-[64px]',
                   widget.props.textAlign === 'center' ? 'text-center items-center' : 
