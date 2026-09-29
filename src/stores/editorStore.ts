@@ -3,6 +3,8 @@ import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
 import type { WidgetItem, WidgetType, ActivationPage, ViewportMode, PageStatus, ProjectItem } from '../types/editor.ts';
 
+export type MediaGalleryTarget = 'bannerImage' | 'brandLogo' | 'replaceBannerImage';
+
 export const useEditorStore = defineStore('editor', () => {
   // Realtime Projects List (Synced with API & Local Storage)
   const projects = ref<ProjectItem[]>([]);
@@ -64,7 +66,11 @@ export const useEditorStore = defineStore('editor', () => {
   const isWidgetSidebarOpen = ref<boolean>(false);
   const isMediaSidebarOpen = ref<boolean>(false);
   const isMediaGalleryOpen = ref<boolean>(false);
-  const mediaGalleryTarget = ref<'bannerImage' | 'brandLogo'>('bannerImage');
+  // 'replaceBannerImage' is read by MediaGallerySidebar to swap the image on an
+  // already-selected hero widget. Nothing sets it yet — the Change/Replace
+  // trigger still has to be wired up — so it is declared here to keep the
+  // consumer side type-correct until that lands.
+  const mediaGalleryTarget = ref<MediaGalleryTarget>('bannerImage');
   const isTextSidebarOpen = ref<boolean>(false);
   const isButtonSidebarOpen = ref<boolean>(false);
   const isLayersOpen = ref<boolean>(false);
@@ -493,7 +499,7 @@ export const useEditorStore = defineStore('editor', () => {
     isWidgetSidebarOpen.value = true;
   }
 
-  function openMediaGallery(target: 'bannerImage' | 'brandLogo' = 'bannerImage') {
+  function openMediaGallery(target: MediaGalleryTarget = 'bannerImage') {
     mediaGalleryTarget.value = target;
     isAddMenuOpen.value = false;
     isWidgetSidebarOpen.value = false;
