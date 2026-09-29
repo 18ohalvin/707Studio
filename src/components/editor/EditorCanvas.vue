@@ -19,62 +19,64 @@
         @click.stop
         class="origin-center flex items-center justify-center my-auto shrink-0 select-none relative"
         :class="[
-          isPanning ? 'transition-none' : 'transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]'
+          (isPanning || isModeTransitioning) ? 'transition-none' : 'transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]'
         ]"
         :style="{
-          transform: `translate3d(${editorStore.panX}px, ${editorStore.panY}px, 0px) scale(${editorStore.zoomLevel / 100})`
+          transform: `translate3d(${editorStore.isPagesOpen ? 0 : editorStore.panX}px, ${editorStore.isPagesOpen ? 0 : editorStore.panY}px, 0px) scale(${editorStore.zoomLevel / 100})`
         }"
       >
-        <!-- Mode 1: Scaled Down Mini Page Cards Overview (Figma Node 185:6590) - 5xX Centered Grid -->
-        <div 
-          v-if="editorStore.isPagesOpen"
-          key="pages-overview"
-          class="flex flex-wrap items-center justify-center gap-x-[24px] md:gap-x-[28px] gap-y-[64px] max-w-[805px] mx-auto shrink-0 pb-[72px] animate-zoom-out"
-          data-node-id="185:6590"
-          data-name="Pages Overview Mode"
-        >
-          <MiniPageCard 
-            v-for="(page, pIdx) in editorStore.pages" 
-            :key="page.id"
-            :page="page"
-            :page-index="pIdx"
-            :is-selected="editorStore.activePageIndex === pIdx"
-            @select="handleSelectMiniPage"
-            @open-edit="handleOpenEditMiniPage"
-          />
+        <Transition name="canvas-zoom-switch" mode="out-in">
+          <!-- Mode 1: Scaled Down Mini Page Cards Overview (Figma Node 185:6590) - 5xX Centered Grid -->
+          <div 
+            v-if="editorStore.isPagesOpen"
+            key="pages-overview"
+            class="flex flex-wrap items-center justify-center gap-x-[24px] md:gap-x-[28px] gap-y-[64px] max-w-[805px] mx-auto shrink-0 pb-[72px]"
+            data-node-id="185:6590"
+            data-name="Pages Overview Mode"
+          >
+            <MiniPageCard 
+              v-for="(page, pIdx) in editorStore.pages" 
+              :key="page.id"
+              :page="page"
+              :page-index="pIdx"
+              :is-selected="editorStore.activePageIndex === pIdx"
+              @select="handleSelectMiniPage"
+              @open-edit="handleOpenEditMiniPage"
+            />
 
-          <!-- Blank Canvas Card with Add Icon for Adding New Page -->
-          <div class="relative flex flex-col items-center select-none">
-            <div 
-              @click="handleAddNewPageFromOverview"
-              class="w-[138.6px] h-[277.2px] bg-[#f5f5f5]/50 hover:bg-[#f5f5f5] border-[0.5px] border-dashed border-black/25 hover:border-black relative flex flex-col items-center justify-center gap-2.5 cursor-pointer shrink-0 rounded-none transition-all duration-200 shadow-[0px_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0px_8px_24px_rgba(0,0,0,0.08)] group"
-              title="Add New Page"
-            >
-              <div class="size-9 rounded-full bg-white group-hover:bg-black text-black group-hover:text-white border border-black/10 group-hover:border-black flex items-center justify-center shadow-sm transition-all duration-200">
-                <Plus class="w-4 h-4 stroke-[2]" />
+            <!-- Blank Canvas Card with Add Icon for Adding New Page -->
+            <div class="relative flex flex-col items-center select-none">
+              <div 
+                @click="handleAddNewPageFromOverview"
+                class="w-[138.6px] h-[277.2px] bg-[#f5f5f5]/50 hover:bg-[#f5f5f5] border-[0.5px] border-dashed border-black/25 hover:border-black relative flex flex-col items-center justify-center gap-2.5 cursor-pointer shrink-0 rounded-none transition-all duration-200 shadow-[0px_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0px_8px_24px_rgba(0,0,0,0.08)] group"
+                title="Add New Page"
+              >
+                <div class="size-9 rounded-full bg-white group-hover:bg-black text-black group-hover:text-white border border-black/10 group-hover:border-black flex items-center justify-center shadow-sm transition-all duration-200">
+                  <Plus class="w-4 h-4 stroke-[2]" />
+                </div>
+                <span class="font-707 text-[11px] font-medium text-neutral-500 group-hover:text-black transition-colors">
+                  Add Page
+                </span>
               </div>
-              <span class="font-707 text-[11px] font-medium text-neutral-500 group-hover:text-black transition-colors">
-                Add Page
-              </span>
             </div>
           </div>
-        </div>
 
-        <!-- Mode 2: Full-Size Editable Artboard Canvas View -->
-        <div 
-          v-else
-          key="canvas-edit"
-          class="flex items-center justify-center gap-[64px] shrink-0 animate-zoom-in"
-        >
-          <MobileArtboard 
-            v-for="(page, pIdx) in editorStore.pages" 
-            :key="page.id"
-            :page="page"
-            :page-index="pIdx"
-            :is-selected="editorStore.activePageIndex === pIdx"
-            @select-page="editorStore.selectPage(pIdx)"
-          />
-        </div>
+          <!-- Mode 2: Full-Size Editable Artboard Canvas View -->
+          <div 
+            v-else
+            key="canvas-edit"
+            class="flex items-center justify-center gap-[64px] shrink-0"
+          >
+            <MobileArtboard 
+              v-for="(page, pIdx) in editorStore.pages" 
+              :key="page.id"
+              :page="page"
+              :page-index="pIdx"
+              :is-selected="editorStore.activePageIndex === pIdx"
+              @select-page="editorStore.selectPage(pIdx)"
+            />
+          </div>
+        </Transition>
       </div>
     </div>
 
@@ -171,7 +173,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { Plus, Check } from 'lucide-vue-next';
 import MobileArtboard from './MobileArtboard.vue';
@@ -188,6 +190,18 @@ import LayersSidebar from './LayersSidebar.vue';
 
 const editorStore = useEditorStore();
 const canvasRef = ref<HTMLElement | null>(null);
+
+// Overview / Canvas Mode Zoom Transition State
+const isModeTransitioning = ref(false);
+let modeTransitionTimer: ReturnType<typeof setTimeout> | null = null;
+
+watch(() => editorStore.isPagesOpen, () => {
+  isModeTransitioning.value = true;
+  if (modeTransitionTimer) clearTimeout(modeTransitionTimer);
+  modeTransitionTimer = setTimeout(() => {
+    isModeTransitioning.value = false;
+  }, 260);
+});
 
 // Adobe Artwork Canvas Pan / Zoom State
 const isSpacePressed = ref(false);
@@ -365,6 +379,7 @@ onUnmounted(() => {
   window.removeEventListener('mousemove', handleWindowMouseMove);
   window.removeEventListener('mouseup', handleWindowMouseUp);
   if (wheelEndTimer) clearTimeout(wheelEndTimer);
+  if (modeTransitionTimer) clearTimeout(modeTransitionTimer);
   if (canvasRef.value) {
     canvasRef.value.removeEventListener('wheel', handleWheel);
   }
