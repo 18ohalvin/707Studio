@@ -861,7 +861,8 @@ import {
   LayoutGrid,
   ArrowRight,
   Ticket,
-  Phone
+  Phone,
+  Instagram
 } from 'lucide-vue-next';
 import { uploadMediaDirectly } from '../../services/mediaService.ts';
 import type { ActivationPage } from '../../types/editor.ts';
@@ -1182,6 +1183,7 @@ function getButtonIcon(widget: any) {
     case 'grid': return LayoutGrid;
     case 'ticket': return Ticket;
     case 'whatsapp': return Phone;
+    case 'instagram': return Instagram;
     case 'arrow-right':
     default: return ArrowRight;
   }
@@ -1207,11 +1209,16 @@ function handleButtonClick(widget: any) {
       scrollToWidget(firstInvalidWidget.id);
       return;
     }
-    editorStore.isTestFormModalOpen = true;
+    const currentIdx = typeof props.pageIndex === 'number' ? props.pageIndex : editorStore.activePageIndex;
+    if (currentIdx < editorStore.pages.length - 1) {
+      editorStore.selectPage(currentIdx + 1);
+    } else {
+      editorStore.isTestFormModalOpen = true;
+    }
   } else if (actionType === 'next_page') {
     const currentIdx = typeof props.pageIndex === 'number' ? props.pageIndex : editorStore.activePageIndex;
     if (currentIdx < editorStore.pages.length - 1) {
-      editorStore.focusPage(currentIdx + 1);
+      editorStore.selectPage(currentIdx + 1);
     } else {
       editorStore.isTestFormModalOpen = true;
     }

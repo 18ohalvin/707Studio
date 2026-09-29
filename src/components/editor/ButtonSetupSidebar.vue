@@ -279,6 +279,14 @@
           >
             <Phone class="size-3.5" /> WhatsApp
           </button>
+          <button 
+            type="button"
+            @click="setIconName('instagram')"
+            :class="iconName === 'instagram' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+            class="shrink-0 whitespace-nowrap content-stretch flex h-[34px] items-center justify-center gap-1.5 px-[14px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+          >
+            <Instagram class="size-3.5" /> Instagram
+          </button>
         </div>
       </Transition>
     </div>
@@ -295,7 +303,8 @@ import {
   ArrowRight, 
   LayoutGrid, 
   Ticket, 
-  Phone 
+  Phone,
+  Instagram 
 } from 'lucide-vue-next';
 
 defineProps<{

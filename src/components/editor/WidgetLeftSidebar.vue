@@ -405,7 +405,7 @@ import {
   Cake, 
   Users, 
   UserCheck, 
-  Share2, 
+  Instagram, 
   Type, 
   Hash, 
   AlignLeft, 
@@ -471,7 +471,7 @@ const currentTabFields = computed(() => {
         { name: 'Email', icon: Mail },
         { name: 'WhatsApp Number', icon: Phone },
         { name: 'National ID / KTP', icon: UserCheck },
-        { name: 'Instagram Handle', icon: Share2 }
+        { name: 'Instagram Handle', icon: Instagram }
       ];
   }
 });
