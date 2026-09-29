@@ -5,84 +5,12 @@ import type { WidgetItem, WidgetType, ActivationPage, ViewportMode, PageStatus, 
 
 export const useEditorStore = defineStore('editor', () => {
   // Realtime Projects List (Synced with API & Local Storage)
-  const projects = ref<ProjectItem[]>([
-    {
-      id: 'proj-asics-1',
-      brand_id: '1',
-      brand_slug: 'atmos',
-      title: 'atmos x ASICS Gel Kayano',
-      slug: 'asics-gel-kayano-pandan',
-      description: 'Exclusive limited RSVP activation for atmos x ASICS',
-      status: 'draft',
-      current_version: 1,
-      widget_tree: [
-        {
-          id: 'hero_asics_1',
-          type: 'HeroDrop',
-          props: {
-            ratio: '4:5',
-            title: 'ATMOS X ASICS',
-            headline: 'GEL KAYANO PANDAN',
-            subtitle: 'LIMITED RAFFLE LAUNCH'
-          }
-        },
-        {
-          id: 'text_asics_1',
-          type: 'TextBanner',
-          props: {
-            text: 'SELECT YOUR SIZE',
-            placeholder: 'WRITE YOUR TEXT HERE',
-            typographyStyle: 'headline-1'
-          }
-        },
-        {
-          id: 'raffle_asics_1',
-          type: 'RaffleForm',
-          props: {
-            heading: 'OFFICIAL ENTRY FORM'
-          }
-        }
-      ],
-      created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
-      updated_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
-    },
-    {
-      id: 'proj-raffle-2',
-      brand_id: '1',
-      brand_slug: 'atmos',
-      title: 'Raffle Projects',
-      slug: 'raffle-projects',
-      description: 'Multi-brand seasonal raffle drop hub',
-      status: 'draft',
-      current_version: 1,
-      widget_tree: [
-        {
-          id: 'hero_raffle_1',
-          type: 'HeroDrop',
-          props: {
-            ratio: '16:9',
-            title: 'SEASONAL RAFFLE HUB',
-            headline: 'SUMMER 2026',
-            subtitle: 'EXCLUSIVE ENTRIES'
-          }
-        },
-        {
-          id: 'raffle_form_2',
-          type: 'RaffleForm',
-          props: {
-            heading: 'ENTER RAFFLE DETAILS'
-          }
-        }
-      ],
-      created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // 1 month ago
-      updated_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-    }
-  ]);
+  const projects = ref<ProjectItem[]>([]);
 
-  const currentProjectId = ref<string>('proj-asics-1');
+  const currentProjectId = ref<string>('');
 
   // Global Project Campaign Title (Applies to entire project, independent of page switching)
-  const projectTitle = ref<string>('atmos x ASICS Gel Kayano Pandan RSVP Form');
+  const projectTitle = ref<string>('Untitled Project');
 
   // Multi-page Activation Pages Array (Default single page for new project)
   const pages = ref<ActivationPage[]>([
@@ -92,14 +20,14 @@ export const useEditorStore = defineStore('editor', () => {
       brand_slug: 'atmos',
       title: 'Landing Page',
       page_name: 'Landing Page',
-      slug: 'asics-gel-kayano-pandan',
-      description: 'Exclusive limited RSVP activation for atmos x ASICS',
+      slug: 'landing-page',
+      description: 'New 707 Activation Campaign',
       status: 'draft',
       current_version: 1,
       widget_tree: [], // Blank space canvas by default as per Figma design
       page_settings: {
-        seoTitle: 'atmos x ASICS Gel Kayano Pandan RSVP',
-        seoDescription: 'Enter the official 707 activation for atmos x ASICS.',
+        seoTitle: '707 Activation Page',
+        seoDescription: 'Enter the official 707 activation.',
         theme: 'the-707-standard'
       },
       created_at: new Date().toISOString(),
@@ -737,7 +665,7 @@ export const useEditorStore = defineStore('editor', () => {
       const res = await apiFetch('/api/pages');
       if (res.ok) {
         const json = await res.json();
-        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+        if (json.success && Array.isArray(json.data)) {
           projects.value = json.data;
           saveProjectsToStorage();
           return;
@@ -765,7 +693,7 @@ export const useEditorStore = defineStore('editor', () => {
         const stored = localStorage.getItem('707_saved_projects');
         if (stored) {
           const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) {
+          if (Array.isArray(parsed)) {
             projects.value = parsed;
           }
         }
