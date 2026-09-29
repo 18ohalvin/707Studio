@@ -1292,9 +1292,16 @@ function getRatioClass(ratio?: string) {
 }
 
 function getWidgetMarginTopClass(index: number) {
-  if (index === 0) return 'mt-0';
   const tree = activePage.value.widget_tree;
   const currentWidget = tree[index];
+
+  if (index === 0) {
+    // If text widget is the first top widget, apply exclusive 24px top margin for clean breathing room from header
+    if (currentWidget?.type === 'TextBanner') {
+      return 'mt-[24px]';
+    }
+    return 'mt-0';
+  }
   const prevWidget = tree[index - 1];
 
   // 1. If hero banner meets another hero banner (Hero meets Hero), 0px spacing between them
