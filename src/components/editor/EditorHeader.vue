@@ -43,15 +43,12 @@
       <!-- Preview / Editor Mode Toggle Button -->
       <button 
         @click="editorStore.togglePreviewMode()"
-        :class="editorStore.isPreviewMode 
-          ? 'apple-glass-btn-dark bg-black text-white shadow-md' 
-          : 'apple-glass-btn text-black'"
-        class="content-stretch flex items-center justify-center gap-1.5 overflow-clip px-[14px] h-[32px] rounded-[8px] apple-press cursor-pointer transition-all"
+        class="apple-glass-btn text-black content-stretch flex items-center justify-center gap-1.5 overflow-clip px-[14px] h-[32px] rounded-[8px] apple-press cursor-pointer transition-all"
         :title="editorStore.isPreviewMode ? 'Switch back to Editor Mode' : 'Live iPhone 17 Pro Preview'"
       >
-        <Edit3 v-if="editorStore.isPreviewMode" class="w-3.5 h-3.5 text-white" />
+        <Edit3 v-if="editorStore.isPreviewMode" class="w-3.5 h-3.5 text-black" />
         <Eye v-else class="w-3.5 h-3.5 text-black" />
-        <span class="font-707 font-medium text-[13px] whitespace-nowrap">
+        <span class="font-707 font-medium text-[13px] whitespace-nowrap text-black">
           {{ editorStore.isPreviewMode ? 'Editor Mode' : 'Preview' }}
         </span>
       </button>
