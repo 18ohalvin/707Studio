@@ -38,7 +38,7 @@
             @click="editorStore.addWidget(widget.type)"
             class="group w-full p-3 rounded-xl bg-[#181a1f] hover:bg-[#20232a] border border-[#272b33] hover:border-[#3d434f] text-left transition-all flex items-start gap-3 shadow-sm hover:shadow"
           >
-            <div class="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center border border-[#333742] group-hover:scale-105 transition-transform flex-shrink-0">
+            <div class="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center border border-[#333742] transition-colors flex-shrink-0">
               <component :is="widget.icon" class="w-4 h-4 text-neutral-200 group-hover:text-white" />
             </div>
             <div class="flex-1 min-w-0">

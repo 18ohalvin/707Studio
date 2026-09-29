@@ -70,7 +70,7 @@
       <div class="relative">
         <div 
           @click="showUserProfileModal = !showUserProfileModal"
-          class="w-[30px] h-[30px] rounded-full overflow-hidden border border-black/10 shrink-0 bg-white/20 backdrop-blur-[4px] flex items-center justify-center ml-0.5 transition-transform hover:scale-105 duration-200 cursor-pointer shadow-sm"
+          class="w-[30px] h-[30px] rounded-full overflow-hidden border border-black/10 hover:border-black/30 shrink-0 bg-white/20 backdrop-blur-[4px] flex items-center justify-center ml-0.5 transition-colors duration-200 cursor-pointer shadow-sm hover:opacity-90"
           title="User Profile"
         >
           <img 

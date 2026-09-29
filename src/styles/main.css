@@ -217,12 +217,11 @@ textarea, input, .select-text, .select-text * {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
 .btn-707:hover {
   background: #222222;
-  transform: translateY(-1px);
 }
 
 .btn-707:active {
@@ -593,34 +592,33 @@ button:disabled,
   will-change: transform;
 }
 
-/* Tactile Apple Press Feedback */
+/* Tactile Apple Press Feedback - Rock solid layout with zero hover twitching / jumping */
 .apple-press {
-  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.18s ease, box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s ease, color 0.18s ease;
+  transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease, color 0.18s ease;
 }
 
 .apple-press:hover {
-  transform: translateY(-1px);
+  /* Layout remains 100% fixed on hover - no translateY or jitter */
 }
 
 .apple-press:active {
-  transform: scale(0.95);
+  transform: scale(0.97);
 }
 
 .apple-press-subtle {
-  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+  transition: opacity 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .apple-press-subtle:active {
-  transform: scale(0.96);
+  transform: scale(0.98);
   opacity: 0.88;
 }
 
 .apple-card-hover {
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+  transition: box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .apple-card-hover:hover {
-  transform: translateY(-3px);
   box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.09), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
 }
 

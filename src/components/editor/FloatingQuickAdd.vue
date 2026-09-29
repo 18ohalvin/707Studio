@@ -23,7 +23,7 @@
       <button 
         @click="editorStore.toggleAddMenu()"
         :class="editorStore.isAddMenuOpen 
-          ? 'bg-black text-white shadow-[0_4px_16px_rgba(0,0,0,0.25)] scale-105' 
+          ? 'bg-black text-white shadow-[0_4px_16px_rgba(0,0,0,0.25)]' 
           : 'backdrop-blur-[4px] bg-[#ececec]/20 hover:bg-[#ececec] active:bg-[#e0e0e0] text-black border-[0.5px] border-black/10 hover:border-black/25 shadow-[0_2px_8px_rgba(0,0,0,0.02)]'"
         class="flex items-center justify-center overflow-clip p-[8px] relative rounded-[8px] shrink-0 size-[40px] apple-press cursor-pointer transition-all duration-200"
         title="Quick Add Menu"
@@ -89,7 +89,7 @@
       <button 
         @click="$emit('toggle-layers')"
         :class="editorStore.isLayersOpen 
-          ? 'bg-black text-white shadow-[0_4px_16px_rgba(0,0,0,0.25)] scale-105' 
+          ? 'bg-black text-white shadow-[0_4px_16px_rgba(0,0,0,0.25)]' 
           : 'backdrop-blur-[4px] bg-[#ececec]/20 hover:bg-[#ececec] active:bg-[#e0e0e0] text-black border-[0.5px] border-black/10 hover:border-black/25 shadow-[0_2px_8px_rgba(0,0,0,0.02)]'"
         class="flex items-center justify-center overflow-clip p-[8px] relative rounded-[8px] shrink-0 size-[40px] apple-press cursor-pointer transition-all duration-200"
         title="View Layers Stack"
@@ -126,7 +126,7 @@
       <button 
         @click="$emit('toggle-pages')"
         :class="editorStore.isPagesOpen 
-          ? 'bg-black text-white shadow-[0_4px_16px_rgba(0,0,0,0.25)] scale-105' 
+          ? 'bg-black text-white shadow-[0_4px_16px_rgba(0,0,0,0.25)]' 
           : 'backdrop-blur-[4px] bg-[#ececec]/20 hover:bg-[#ececec] active:bg-[#e0e0e0] text-black border-[0.5px] border-black/10 hover:border-black/25 shadow-[0_2px_8px_rgba(0,0,0,0.02)]'"
         class="flex items-center justify-center overflow-clip p-[8px] relative rounded-[8px] shrink-0 size-[40px] apple-press cursor-pointer transition-all duration-200"
         title="Toggle Pages Overview"

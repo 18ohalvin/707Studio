@@ -50,7 +50,7 @@
               class="w-[138.6px] h-[277.2px] bg-[#f5f5f5]/50 hover:bg-[#f5f5f5] border-[0.5px] border-dashed border-black/25 hover:border-black relative flex flex-col items-center justify-center gap-2.5 cursor-pointer shrink-0 rounded-none transition-all duration-200 shadow-[0px_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0px_8px_24px_rgba(0,0,0,0.08)] group"
               title="Add New Page"
             >
-              <div class="size-9 rounded-full bg-white group-hover:bg-black text-black group-hover:text-white border border-black/10 group-hover:border-black flex items-center justify-center shadow-sm transition-all duration-200 group-hover:scale-105">
+              <div class="size-9 rounded-full bg-white group-hover:bg-black text-black group-hover:text-white border border-black/10 group-hover:border-black flex items-center justify-center shadow-sm transition-all duration-200">
                 <Plus class="w-4 h-4 stroke-[2]" />
               </div>
               <span class="font-707 text-[11px] font-medium text-neutral-500 group-hover:text-black transition-colors">
@@ -105,7 +105,7 @@
       >
         <button
           @click="editorStore.closePages()"
-          class="apple-glass-btn-dark content-stretch flex items-center justify-center gap-2 px-[24px] h-[40px] rounded-full shadow-[0px_10px_30px_rgba(0,0,0,0.22)] apple-press cursor-pointer border border-white/20 transition-all hover:scale-105"
+          class="apple-glass-btn-dark content-stretch flex items-center justify-center gap-2 px-[24px] h-[40px] rounded-full shadow-[0px_10px_30px_rgba(0,0,0,0.22)] apple-press cursor-pointer border border-white/20 transition-all hover:bg-neutral-900"
           title="Exit Overview Mode (Return to Canvas)"
         >
           <Check class="w-4 h-4 text-white stroke-[2.5]" />

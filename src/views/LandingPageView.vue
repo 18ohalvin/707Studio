@@ -106,7 +106,7 @@
               title="Create a fresh blank project"
             >
               <div class="size-[32px] relative shrink-0 flex items-center justify-center">
-                <img :src="FIGMA_ASSETS.landingCreateProject" alt="Create new project" class="size-full object-contain pointer-events-none group-hover:scale-105 transition-transform" />
+                <img :src="FIGMA_ASSETS.landingCreateProject" alt="Create new project" class="size-full object-contain pointer-events-none" />
               </div>
             </button>
             <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal" data-node-id="198:6931">
@@ -123,7 +123,7 @@
               title="Browse pre-built activation templates"
             >
               <div class="size-[32px] relative shrink-0 flex items-center justify-center">
-                <img :src="FIGMA_ASSETS.landingBrowseTemplates" alt="Browse Templates" class="size-full object-contain pointer-events-none group-hover:scale-105 transition-transform" />
+                <img :src="FIGMA_ASSETS.landingBrowseTemplates" alt="Browse Templates" class="size-full object-contain pointer-events-none" />
               </div>
             </button>
             <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal" data-node-id="198:6868">
@@ -140,7 +140,7 @@
               title="Start with Event RSVP form template"
             >
               <div class="h-[32px] w-[28.5px] relative shrink-0 flex items-center justify-center">
-                <img :src="FIGMA_ASSETS.landingEventRegistration" alt="Event Registration" class="size-full object-contain pointer-events-none group-hover:scale-105 transition-transform" />
+                <img :src="FIGMA_ASSETS.landingEventRegistration" alt="Event Registration" class="size-full object-contain pointer-events-none" />
               </div>
             </button>
             <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal" data-node-id="198:6938">
@@ -157,7 +157,7 @@
               title="Start with QR ticketing activation"
             >
               <div class="size-[32px] relative shrink-0 flex items-center justify-center">
-                <img :src="FIGMA_ASSETS.landingTicket" alt="e-Pass QR Ticketing" class="size-full object-contain pointer-events-none group-hover:scale-105 transition-transform" />
+                <img :src="FIGMA_ASSETS.landingTicket" alt="e-Pass QR Ticketing" class="size-full object-contain pointer-events-none" />
               </div>
             </button>
             <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal" data-node-id="212:7009">
@@ -174,7 +174,7 @@
               title="View all saved projects"
             >
               <div class="size-[32px] relative shrink-0 flex items-center justify-center">
-                <img :src="FIGMA_ASSETS.landingAllProjects" alt="View all projects" class="size-full object-contain pointer-events-none group-hover:scale-105 transition-transform" />
+                <img :src="FIGMA_ASSETS.landingAllProjects" alt="View all projects" class="size-full object-contain pointer-events-none" />
               </div>
             </button>
             <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal" data-node-id="212:7042">

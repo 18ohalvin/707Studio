@@ -69,7 +69,7 @@
             <img 
               :src="filteredMedia[0].url" 
               :alt="filteredMedia[0].title"
-              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              class="w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-200"
             />
             <!-- Hover Delete Button -->
             <button 
@@ -102,7 +102,7 @@
                 <img 
                   :src="filteredMedia[1].url" 
                   :alt="filteredMedia[1].title"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  class="w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-200"
                 />
                 <!-- Hover Delete Button -->
                 <button 
@@ -130,7 +130,7 @@
                 <img 
                   :src="filteredMedia[2].url" 
                   :alt="filteredMedia[2].title"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  class="w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-200"
                 />
                 <!-- Hover Delete Button -->
                 <button 
@@ -159,7 +159,7 @@
               <img 
                 :src="filteredMedia[3].url" 
                 :alt="filteredMedia[3].title"
-                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                class="w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-200"
               />
               <!-- Hover Delete Button -->
               <button 
@@ -190,7 +190,7 @@
               <img 
                 :src="filteredMedia[4].url" 
                 :alt="filteredMedia[4].title"
-                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                class="w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-200"
               />
               <!-- Hover Delete Button -->
               <button 
@@ -218,7 +218,7 @@
               <img 
                 :src="filteredMedia[5].url" 
                 :alt="filteredMedia[5].title"
-                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                class="w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-200"
               />
               <!-- Hover Delete Button -->
               <button 
@@ -250,7 +250,7 @@
             <img 
               :src="item.url" 
               :alt="item.title"
-              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              class="w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-200"
             />
             <!-- Hover Delete Button -->
             <button 
