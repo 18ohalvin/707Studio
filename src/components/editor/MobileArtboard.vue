@@ -1,11 +1,12 @@
 <template>
   <div 
-    class="relative select-none shrink-0 w-[340px] h-[680px]"
+    class="relative select-none shrink-0"
+    :class="isPreviewModal ? 'w-full h-full' : 'w-[340px] h-[680px]'"
     @click="handleSelectThisPage"
     @dblclick="handleDoubleClickThisPage"
   >
     <!-- Artboard Tab Label (Positioned absolutely above artboard so it never pushes or shifts canvas vertical centering) -->
-    <template v-if="!isMiniPreview">
+    <template v-if="!isMiniPreview && !isPreviewModal">
       <div 
         v-if="isSelected"
         class="animate-apple-pop absolute bottom-full left-0 mb-[12px] group bg-[#ececec]/50 hover:bg-[#ececec] border-black/15 hover:border-black/50 border-[0.5px] border-solid content-stretch flex h-[24px] items-center justify-center px-[8px] rounded-[10px] shadow-sm transition-all cursor-pointer will-change-transform backdrop-blur-md z-30"
@@ -55,16 +56,18 @@
       @wheel="handleArtboardWheel"
       class="bg-[#f5f5f5] relative flex flex-col overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
       :class="[
-        isMiniPreview 
-          ? 'w-[340px] h-[680px] border-none shadow-none' 
-          : 'border-[0.5px] w-[340px] h-[680px]',
-        !isMiniPreview && isSelected 
+        isPreviewModal
+          ? 'w-full h-full border-none shadow-none'
+          : (isMiniPreview 
+              ? 'w-[340px] h-[680px] border-none shadow-none' 
+              : 'border-[0.5px] w-[340px] h-[680px]'),
+        !isMiniPreview && !isPreviewModal && isSelected 
           ? 'border-black shadow-[0px_16px_48px_rgba(0,0,0,0.12)]' 
-          : (!isMiniPreview ? 'border-neutral-300 hover:border-neutral-400 opacity-80 hover:opacity-100 shadow-[0px_0px_30px_rgba(0,0,0,0.04)] cursor-pointer' : '')
+          : (!isMiniPreview && !isPreviewModal ? 'border-neutral-300 hover:border-neutral-400 opacity-80 hover:opacity-100 shadow-[0px_0px_30px_rgba(0,0,0,0.04)] cursor-pointer' : '')
       ]"
     >
       <!-- Persistent Thin 0.5px Black Selected Page Outline Overlay (Only on selected artboard) -->
-      <div v-if="!isMiniPreview && isSelected" class="pointer-events-none absolute inset-0 z-50 border-[0.5px] border-black border-solid" />
+      <div v-if="!isMiniPreview && !isPreviewModal && isSelected" class="pointer-events-none absolute inset-0 z-50 border-[0.5px] border-black border-solid" />
 
       <!-- Fixed 48px Header with Right 707 Logo (Figma Node 107:3820) -->
       <div 
@@ -153,7 +156,7 @@
           >
             <!-- Selected / Hovered Dashed Outline Border for non-TextBanner widgets (matching Text widget outline) -->
             <div 
-              v-if="widget.type !== 'TextBanner' && (editorStore.selectedWidgetId === widget.id || hoveredWidgetId === widget.id)" 
+              v-if="!isMiniPreview && !isPreviewModal && widget.type !== 'TextBanner' && (editorStore.selectedWidgetId === widget.id || hoveredWidgetId === widget.id)" 
               class="absolute inset-0 border-[0.5px] border-black border-dashed pointer-events-none z-20 transition-opacity"
               :class="editorStore.selectedWidgetId === widget.id ? 'opacity-100' : 'opacity-60'"
             />
@@ -166,7 +169,7 @@
 
             <!-- Floating Widget Action Bar for non-TextBanner & non-ActionButton widgets (Figma Node 142:4935) -->
             <div 
-              v-if="widget.type !== 'TextBanner' && widget.type !== 'ActionButton' && hoveredWidgetId === widget.id"
+              v-if="!isMiniPreview && !isPreviewModal && widget.type !== 'TextBanner' && widget.type !== 'ActionButton' && hoveredWidgetId === widget.id"
               class="absolute top-[12px] right-[12px] z-30 apple-glass-modal flex gap-[5px] items-center p-[4px] rounded-[10px] shadow-[0px_8px_24px_rgba(0,0,0,0.12)] border border-black/10 transition-all animate-in fade-in duration-150"
               data-node-id="142:4935"
               data-name="Buttons Container"
@@ -501,7 +504,7 @@
               <div 
                 class="w-full relative flex flex-col justify-center rounded-[8px] transition-all p-0"
                 :class="[
-                  !isMiniPreview && (editorStore.selectedWidgetId === widget.id || hoveredWidgetId === widget.id)
+                  !isMiniPreview && !isPreviewModal && (editorStore.selectedWidgetId === widget.id || hoveredWidgetId === widget.id)
                     ? 'border-[0.5px] border-black border-dashed bg-transparent' 
                     : 'border-[0.5px] border-transparent'
                 ]"
@@ -510,7 +513,7 @@
               >
                 <!-- Floating Action Toolbar for Text Widget (Figma Node 180:5844 / 181:6098) -->
                 <div 
-                  v-if="!isMiniPreview && hoveredWidgetId === widget.id"
+                  v-if="!isMiniPreview && !isPreviewModal && hoveredWidgetId === widget.id"
                   class="absolute z-30 apple-glass-modal flex gap-[5px] items-center p-[4px] rounded-[10px] shadow-[0px_8px_24px_rgba(0,0,0,0.12)] border border-white/80 transition-all animate-in fade-in duration-150 select-none"
                   :class="index === 0 ? 'top-[6px] right-[6px]' : '-top-[26px] right-0'"
                   data-node-id="180:5844"
@@ -709,7 +712,7 @@
               >
                 <!-- Floating Action Toolbar for ActionButton (Figma Node 180:5844) -->
                 <div 
-                  v-if="!isMiniPreview && hoveredWidgetId === widget.id"
+                  v-if="!isMiniPreview && !isPreviewModal && hoveredWidgetId === widget.id"
                   class="absolute z-40 apple-glass-modal flex gap-[4px] items-center p-[4px] rounded-[8px] shadow-[0px_4px_16px_rgba(0,0,0,0.18)] transition-all animate-in fade-in duration-150 select-none top-1/2 -translate-y-1/2 right-[8px]"
                   data-name="Buttons Container"
                 >
@@ -797,7 +800,7 @@
       >
         <!-- Floating Toolbar on Hover for Sticky Bottom Button in Editor -->
         <div 
-          v-if="!isMiniPreview && (hoveredWidgetId === stickyButtonForThisPage.id || editorStore.selectedWidgetId === stickyButtonForThisPage.id)"
+          v-if="!isMiniPreview && !isPreviewModal && (hoveredWidgetId === stickyButtonForThisPage.id || editorStore.selectedWidgetId === stickyButtonForThisPage.id)"
           class="absolute z-40 apple-glass-modal flex gap-[5px] items-center p-[4px] rounded-[10px] shadow-[0px_8px_24px_rgba(0,0,0,0.12)] border border-white/80 transition-all -top-[28px] right-[12px] select-none"
         >
           <button 
@@ -863,9 +866,11 @@ const props = withDefaults(defineProps<{
   pageIndex?: number;
   isSelected?: boolean;
   isMiniPreview?: boolean;
+  isPreviewModal?: boolean;
 }>(), {
   isSelected: true,
-  isMiniPreview: false
+  isMiniPreview: false,
+  isPreviewModal: false
 });
 
 const emit = defineEmits<{
@@ -1124,12 +1129,14 @@ watch(() => editorStore.selectedWidgetId, async (newId) => {
 });
 
 function handleWidgetClick(widget: any) {
+  if (props.isPreviewModal || props.isMiniPreview) return;
   handleSelectThisPage();
   editorStore.selectWidget(widget.id);
   handleAdjustWidget(widget);
 }
 
 function handleAdjustWidget(widget: any) {
+  if (props.isPreviewModal || props.isMiniPreview) return;
   editorStore.selectWidget(widget.id);
   if (widget.type === 'HeroDrop') {
     editorStore.openMediaSidebar(widget.props?.ratio);
@@ -1143,12 +1150,22 @@ function handleAdjustWidget(widget: any) {
 }
 
 function handleActionButtonClick(widget: any) {
+  if (props.isPreviewModal) {
+    handleButtonClick(widget);
+    return;
+  }
+  if (props.isMiniPreview) return;
   handleSelectThisPage();
   editorStore.selectWidget(widget.id);
   handleAdjustWidget(widget);
 }
 
 function handleHeroCtaClick(widget: any) {
+  if (props.isPreviewModal) {
+    handleButtonClick(widget);
+    return;
+  }
+  if (props.isMiniPreview) return;
   handleSelectThisPage();
   editorStore.selectWidget(widget.id);
   editorStore.openButtonSidebar();
@@ -1725,20 +1742,9 @@ function handleDrop(e: DragEvent, targetIndex?: number) {
 
   if (dragData) {
     const insertIdx = typeof targetIndex === 'number' ? targetIndex : undefined;
-    const isDroppedOnExistingHero = typeof targetIndex === 'number' && activePage.value.widget_tree[targetIndex]?.type === 'HeroDrop';
 
-    if (isDroppedOnExistingHero && dragData.customProps?.imageUrl) {
-      // Replaced specific dropped hero
-      const existingHero = activePage.value.widget_tree[targetIndex!];
-      editorStore.updateWidgetProps(existingHero.id, {
-        imageUrl: dragData.customProps.imageUrl,
-        isSolidSpace: false,
-        ...(dragData.customProps.ratio ? { ratio: dragData.customProps.ratio } : {})
-      });
-      editorStore.selectWidget(existingHero.id);
-      editorStore.openMediaSidebar();
-    } else if (dragData.type === 'HeroDrop') {
-      // Insert new hero banner widget
+    if (dragData.type === 'HeroDrop') {
+      // Always insert new hero banner widget at the drop location
       const newWidget = editorStore.addWidget('HeroDrop', insertIdx, {
         ratio: 'Full screen landing page',
         isSolidSpace: !dragData.customProps?.imageUrl,

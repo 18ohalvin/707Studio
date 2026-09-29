@@ -40,13 +40,15 @@
 
     <!-- Right: Test Your Form, Ask for Review & Avatar proportioned for 48px Header -->
     <div class="content-stretch flex gap-[10px] items-center shrink-0">
-      <!-- Test Your Form Button -->
+      <!-- Preview Button -->
       <button 
         @click="editorStore.isTestFormModalOpen = true"
-        class="apple-glass-btn content-stretch flex items-center justify-center overflow-clip px-[14px] h-[32px] rounded-[8px] apple-press cursor-pointer"
+        class="apple-glass-btn content-stretch flex items-center justify-center gap-1.5 overflow-clip px-[14px] h-[32px] rounded-[8px] apple-press cursor-pointer"
+        title="Live iPhone 17 Pro Preview"
       >
+        <Eye class="w-3.5 h-3.5 text-black" />
         <span class="font-707 font-medium text-black text-[13px] whitespace-nowrap">
-          Test Your Form
+          Preview
         </span>
       </button>
 
@@ -94,6 +96,7 @@ import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
+import { Eye } from 'lucide-vue-next';
 import UserProfileModal from '../modals/UserProfileModal.vue';
 
 const router = useRouter();

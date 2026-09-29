@@ -392,10 +392,11 @@ function handleMediaDragStart(event: DragEvent, media: MediaItem) {
 
 function applyMediaToArtboard(media: MediaItem) {
   const isBrandLogoTarget = editorStore.mediaGalleryTarget === 'brandLogo';
+  const isReplaceTarget = editorStore.mediaGalleryTarget === 'replaceBannerImage';
 
-  // If a HeroDrop widget is explicitly selected on the canvas, target it
+  // Only target selected hero if user explicitly clicked "Change/Replace"
   const isHeroSelected = editorStore.selectedWidget && editorStore.selectedWidget.type === 'HeroDrop';
-  const targetHero = isHeroSelected ? editorStore.selectedWidget : null;
+  const targetHero = (isReplaceTarget && isHeroSelected) ? editorStore.selectedWidget : null;
 
   if (isBrandLogoTarget) {
     // 1. BRAND LOGO SELECTION: Strictly update brandLogoUrl and activate brand logo
@@ -408,7 +409,7 @@ function applyMediaToArtboard(media: MediaItem) {
       editorStore.selectWidget(heroToUse.id);
     } else {
       // Create top hero widget with this brand logo
-      editorStore.addWidget('HeroDrop', 0, {
+      const newWidget = editorStore.addWidget('HeroDrop', 0, {
         imageUrl: '',
         brandLogoUrl: media.url,
         isBrandLogoEnabled: true,
@@ -416,6 +417,7 @@ function applyMediaToArtboard(media: MediaItem) {
         ratio: 'Full screen landing page',
         mediaFit: 'Fill the screen'
       });
+      editorStore.selectWidget(newWidget.id);
     }
   } else {
     // 2. HERO BANNER IMAGE SELECTION:
@@ -428,7 +430,7 @@ function applyMediaToArtboard(media: MediaItem) {
       editorStore.selectWidget(targetHero.id);
     } else {
       // Add a NEW hero banner image block to the canvas!
-      editorStore.addWidget('HeroDrop', undefined, {
+      const newWidget = editorStore.addWidget('HeroDrop', undefined, {
         imageUrl: media.category === 'Logo' ? '' : media.url,
         brandLogoUrl: media.category === 'Logo' ? media.url : '',
         isBrandLogoEnabled: media.category === 'Logo',
@@ -445,6 +447,7 @@ function applyMediaToArtboard(media: MediaItem) {
         isOverlayEnabled: false,
         overlayOpacity: 50
       });
+      editorStore.selectWidget(newWidget.id);
     }
   }
 

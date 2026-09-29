@@ -1,113 +1,169 @@
 <template>
   <div 
     v-if="editorStore.isTestFormModalOpen" 
-    class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade"
-    @click.self="editorStore.isTestFormModalOpen = false"
+    class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xl flex flex-col items-center justify-center p-3 md:p-6 transition-all animate-apple-fade select-none"
+    @click.self="closeModal"
   >
-    <div class="apple-glass-modal rounded-2xl w-full max-w-md overflow-hidden animate-apple-pop select-none">
-      <div class="px-6 py-4 border-b border-black/[0.06] flex items-center justify-between bg-white/50">
-        <div class="flex items-center gap-2.5">
-          <div class="size-8 rounded-lg bg-black text-white flex items-center justify-center shadow-sm">
-            <Play class="w-4 h-4 text-white fill-white ml-0.5" />
-          </div>
-          <div>
-            <h2 class="text-[14px] font-bold text-black font-707">
-              Simulate Form Entry
-            </h2>
-            <p class="text-[11px] text-neutral-500 font-707">Test live submission flow and payload</p>
+    <!-- Top Control Bar (Apple Glass Floating Header) -->
+    <div class="w-full max-w-[500px] flex items-center justify-between px-4 py-2 mb-3 apple-glass-modal rounded-2xl border border-white/20 shadow-lg animate-apple-pop">
+      <!-- Left: Phone Device Info & Page Indicator -->
+      <div class="flex items-center gap-2.5">
+        <div class="size-7 rounded-lg bg-black text-white flex items-center justify-center shadow-sm">
+          <Smartphone class="w-4 h-4 text-white" />
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-[13px] font-bold text-black font-707">iPhone 17 Pro</span>
+            <span class="px-1.5 py-0.5 text-[9px] font-mono font-medium rounded-full bg-black/5 text-neutral-600">6.3″ Super Retina XDR</span>
           </div>
         </div>
-        <button 
-          @click="editorStore.isTestFormModalOpen = false"
-          class="apple-glass-icon-btn size-7 flex items-center justify-center rounded-full cursor-pointer"
+      </div>
+
+      <!-- Center: Page Selector Tabs (if multiple pages exist) -->
+      <div v-if="editorStore.pages.length > 1" class="hidden sm:flex items-center gap-1 bg-black/5 p-1 rounded-xl">
+        <button
+          v-for="(page, idx) in editorStore.pages"
+          :key="page.id"
+          @click="activePageIndex = idx"
+          class="px-2.5 py-1 text-[11px] font-707 font-medium rounded-lg transition-all cursor-pointer"
+          :class="activePageIndex === idx ? 'bg-white text-black shadow-sm font-semibold' : 'text-neutral-500 hover:text-black'"
         >
-          <X class="w-3.5 h-3.5" />
+          Page {{ idx + 1 }}
         </button>
       </div>
 
-      <form @submit.prevent="submitTestEntry" class="p-6 space-y-4 text-xs">
-        <div>
-          <label class="block font-707 font-medium text-black mb-1.5 text-[12px]">Full Name (KTP)</label>
-          <input 
-            v-model="formData.fullName" 
-            required 
-            placeholder="Alvin Decorous"
-            class="w-full bg-neutral-50 hover:bg-neutral-100/80 focus:bg-white border border-[#e5e5e5] focus:border-black rounded-xl p-3 text-black text-[13px] font-707 focus:outline-none transition-all placeholder:text-neutral-400 shadow-sm"
-          />
-        </div>
-        <div>
-          <label class="block font-707 font-medium text-black mb-1.5 text-[12px]">Email Address</label>
-          <input 
-            v-model="formData.email" 
-            type="email" 
-            required 
-            placeholder="alvin@707.co.id"
-            class="w-full bg-neutral-50 hover:bg-neutral-100/80 focus:bg-white border border-[#e5e5e5] focus:border-black rounded-xl p-3 text-black text-[13px] font-707 focus:outline-none transition-all placeholder:text-neutral-400 shadow-sm"
-          />
-        </div>
-        <div>
-          <label class="block font-707 font-medium text-black mb-1.5 text-[12px]">WhatsApp Phone Number</label>
-          <input 
-            v-model="formData.phone" 
-            placeholder="+62 812 8888 7707"
-            class="w-full bg-neutral-50 hover:bg-neutral-100/80 focus:bg-white border border-[#e5e5e5] focus:border-black rounded-xl p-3 text-black text-[13px] font-707 focus:outline-none transition-all placeholder:text-neutral-400 shadow-sm font-mono"
-          />
-        </div>
-        <div>
-          <label class="block font-707 font-medium text-black mb-1.5 text-[12px]">Selected Shoe Size</label>
-          <select 
-            v-model="formData.size"
-            class="w-full bg-neutral-50 hover:bg-neutral-100/80 focus:bg-white border border-[#e5e5e5] focus:border-black rounded-xl p-3 text-black text-[13px] font-707 focus:outline-none transition-all shadow-sm cursor-pointer"
-          >
-            <option value="US 8">US 8</option>
-            <option value="US 8.5">US 8.5</option>
-            <option value="US 9">US 9</option>
-            <option value="US 9.5">US 9.5</option>
-            <option value="US 10">US 10</option>
-            <option value="US 10.5">US 10.5</option>
-            <option value="US 11">US 11</option>
-          </select>
-        </div>
-
-        <div v-if="submissionResult" class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-[12px] font-707 animate-apple-pop flex items-center gap-2">
-          <span>✓</span> Entry saved to PostgreSQL database schema!
-        </div>
-
+      <!-- Right: Close Button -->
+      <div class="flex items-center gap-1.5">
         <button 
-          type="submit"
-          class="apple-glass-btn-dark w-full py-3 rounded-xl font-bold uppercase tracking-wider text-[12px] font-707 cursor-pointer mt-2"
+          @click="refreshPreview"
+          class="apple-glass-icon-btn size-7 flex items-center justify-center rounded-full cursor-pointer hover:bg-black/10 transition-colors"
+          title="Reset Interactive Preview"
         >
-          Send Test Entry
+          <RotateCcw class="w-3.5 h-3.5 text-neutral-700" />
         </button>
-      </form>
+        <button 
+          @click="closeModal"
+          class="apple-glass-icon-btn size-7 flex items-center justify-center rounded-full cursor-pointer hover:bg-black/10 transition-colors"
+          title="Close Preview (Esc)"
+        >
+          <X class="w-4 h-4 text-neutral-700" />
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Page Selector for small screens -->
+    <div v-if="editorStore.pages.length > 1" class="flex sm:hidden items-center gap-1 bg-white/40 backdrop-blur-md p-1 rounded-xl mb-2">
+      <button
+        v-for="(page, idx) in editorStore.pages"
+        :key="page.id"
+        @click="activePageIndex = idx"
+        class="px-2.5 py-1 text-[11px] font-707 font-medium rounded-lg transition-all cursor-pointer"
+        :class="activePageIndex === idx ? 'bg-white text-black shadow-sm font-semibold' : 'text-neutral-600'"
+      >
+        Page {{ idx + 1 }}
+      </button>
+    </div>
+
+    <!-- iPhone 17 Pro Titanium Hardware Mockup Chassis -->
+    <div 
+      class="relative flex flex-col items-center justify-between w-[375px] h-[760px] max-h-[82vh] bg-[#f5f5f5] rounded-[50px] border-[7px] border-[#222225] shadow-[0_25px_80px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.15)] ring-1 ring-black/40 overflow-hidden animate-apple-pop"
+      :key="refreshKey"
+    >
+      <!-- Titanium Edge Light Reflection Bevel Effect -->
+      <div class="absolute inset-0 rounded-[44px] pointer-events-none ring-1 ring-white/20 z-40" />
+
+      <!-- iOS Status Bar & Dynamic Island Header (Overlay) -->
+      <div class="sticky top-0 left-0 right-0 h-[44px] w-full bg-[#f5f5f5]/90 backdrop-blur-md z-40 flex items-center justify-between px-6 shrink-0 pointer-events-none">
+        <!-- Left: Time (9:41) -->
+        <span class="font-sans font-semibold text-[13px] text-black tracking-tight">9:41</span>
+
+        <!-- Center: Dynamic Island -->
+        <div class="absolute top-[10px] left-1/2 -translate-x-1/2 w-[110px] h-[27px] bg-black rounded-full flex items-center justify-between px-3 shadow-md">
+          <!-- Camera lens dot reflection -->
+          <div class="size-2.5 rounded-full bg-[#0a0a14] border border-[#1e1e2d] relative flex items-center justify-center">
+            <div class="size-1 rounded-full bg-[#1e293b]/60" />
+          </div>
+          <!-- TrueDepth Sensor dot -->
+          <div class="size-2 rounded-full bg-[#080811]" />
+        </div>
+
+        <!-- Right: Cellular, Wi-Fi & Battery Status Icons -->
+        <div class="flex items-center gap-1.5 text-black">
+          <!-- Cellular Signal Bars -->
+          <div class="flex items-end gap-[1.5px] h-3">
+            <div class="w-[2.5px] h-1 bg-black rounded-[0.5px]" />
+            <div class="w-[2.5px] h-1.5 bg-black rounded-[0.5px]" />
+            <div class="w-[2.5px] h-2 bg-black rounded-[0.5px]" />
+            <div class="w-[2.5px] h-2.5 bg-black rounded-[0.5px]" />
+          </div>
+          <!-- Wi-Fi Icon -->
+          <Wifi class="w-3.5 h-3.5 text-black" />
+          <!-- Battery Icon -->
+          <div class="w-[20px] h-[10px] rounded-[3px] border border-black p-[1px] flex items-center relative ml-0.5">
+            <div class="h-full w-full bg-black rounded-[1.5px]" />
+            <div class="absolute -right-[3px] top-1/2 -translate-y-1/2 w-[2px] h-[4px] bg-black rounded-r-[1px]" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Mobile Screen Viewport (Scrollable & Fully Interactive) -->
+      <div class="flex-1 w-full flex flex-col overflow-hidden relative">
+        <MobileArtboard 
+          :page="currentPage" 
+          :page-index="activePageIndex"
+          :is-selected="false"
+          :is-preview-modal="true"
+        />
+      </div>
+
+      <!-- iOS Home Bar Indicator (Bottom) -->
+      <div class="sticky bottom-0 left-0 right-0 h-[22px] w-full bg-[#f5f5f5]/80 backdrop-blur-sm z-40 flex items-center justify-center pointer-events-none shrink-0">
+        <div class="w-[128px] h-[4px] bg-black/60 rounded-full" />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useEditorStore } from '../../../stores/editorStore.ts';
-import { useBrandStore } from '../../../stores/brandStore.ts';
-import { Play, X } from 'lucide-vue-next';
+import { X, Smartphone, RotateCcw, Wifi } from 'lucide-vue-next';
+import MobileArtboard from '../MobileArtboard.vue';
 
 const editorStore = useEditorStore();
-const brandStore = useBrandStore();
+const activePageIndex = ref(0);
+const refreshKey = ref(0);
 
-const formData = ref({
-  fullName: 'Alvin Decorous',
-  email: 'alvin@707.co.id',
-  phone: '+6281288887707',
-  size: 'US 9.5'
+// Initialize active page index to editor's currently active page
+watch(() => editorStore.isTestFormModalOpen, (isOpen) => {
+  if (isOpen) {
+    activePageIndex.value = editorStore.activePageIndex;
+  }
 });
 
-const submissionResult = ref(false);
+const currentPage = computed(() => {
+  return editorStore.pages[activePageIndex.value] || editorStore.currentPage;
+});
 
-function submitTestEntry() {
-  submissionResult.value = true;
-  setTimeout(() => {
-    alert(`Success: Test entry for ${formData.value.fullName} recorded for ${brandStore.activeBrand.name}!`);
-    editorStore.isTestFormModalOpen = false;
-    submissionResult.value = false;
-  }, 500);
+function refreshPreview() {
+  refreshKey.value += 1;
 }
+
+function closeModal() {
+  editorStore.isTestFormModalOpen = false;
+}
+
+function handleKeyDown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && editorStore.isTestFormModalOpen) {
+    closeModal();
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeyDown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown);
+});
 </script>
