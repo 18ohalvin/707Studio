@@ -5,7 +5,7 @@
     ref="sidebarRef"
     @click.stop
     @wheel.stop
-    class="absolute right-[24px] top-[16px] bottom-[84px] w-[464px] backdrop-blur-2xl bg-[rgba(255,255,255,0.92)] border border-black/8 content-stretch flex flex-col items-start overflow-y-auto pb-[32px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] z-40 select-none transition-all animate-apple-slide-right no-scrollbar"
+    class="absolute right-[24px] top-[16px] w-[464px] h-auto max-h-[calc(100vh-100px)] backdrop-blur-2xl bg-[rgba(255,255,255,0.92)] border border-black/8 content-stretch flex flex-col items-start overflow-y-auto pb-[20px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] z-40 select-none transition-all animate-apple-slide-right no-scrollbar"
     data-node-id="244:11560"
     data-name="Button Setup Sidebar"
   >
