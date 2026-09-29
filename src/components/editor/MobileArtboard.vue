@@ -1,0 +1,1796 @@
+<template>
+  <div 
+    class="relative select-none shrink-0 w-[340px] h-[680px]"
+    @click="handleSelectThisPage"
+    @dblclick="handleDoubleClickThisPage"
+  >
+    <!-- Artboard Tab Label (Positioned absolutely above artboard so it never pushes or shifts canvas vertical centering) -->
+    <template v-if="!isMiniPreview">
+      <div 
+        v-if="isSelected"
+        class="animate-apple-pop absolute bottom-full left-0 mb-[12px] group bg-[#ececec]/50 hover:bg-[#ececec] border-black/15 hover:border-black/50 border-[0.5px] border-solid content-stretch flex h-[24px] items-center justify-center px-[8px] rounded-[10px] shadow-sm transition-all cursor-pointer will-change-transform backdrop-blur-md z-30"
+        :style="{
+          transform: `scale(${100 / editorStore.zoomLevel})`,
+          transformOrigin: 'bottom left'
+        }"
+        @click.stop="startEditingPageName"
+        :title="isEditingPageName ? '' : 'Click to rename page'"
+      >
+        <!-- View mode -->
+        <div v-if="!isEditingPageName" class="flex items-center gap-[6px]">
+          <p class="font-707 font-light text-caption text-black whitespace-nowrap">
+            Page {{ pageNumber }}: {{ currentPageName }}
+          </p>
+          <Pencil class="w-2.5 h-2.5 text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
+
+        <!-- Edit mode -->
+        <div v-else class="flex items-center gap-1" @click.stop>
+          <span class="font-707 font-light text-caption text-neutral-500 whitespace-nowrap select-none">
+            Page {{ pageNumber }}:
+          </span>
+          <input 
+            ref="pageNameInputRef"
+            v-model="pageNameInput"
+            @keydown.enter.prevent="savePageName"
+            @keydown.esc.prevent="cancelPageName"
+            @blur="savePageName"
+            class="font-707 font-normal text-caption text-black bg-transparent border-b border-black outline-none px-0.5 py-0 w-auto min-w-[70px] max-w-[140px]"
+          />
+          <button 
+            type="button"
+            @click.stop="savePageName" 
+            class="size-3.5 flex items-center justify-center text-emerald-600 hover:text-emerald-700 cursor-pointer"
+            title="Save Name"
+          >
+            <Check class="w-3 h-3" />
+          </button>
+        </div>
+      </div>
+    </template>
+
+    <!-- Main Artboard (Figma Node 63:3386 / 134:4207) -->
+    <div 
+      data-artboard-frame="true"
+      @wheel="handleArtboardWheel"
+      class="bg-[#f5f5f5] relative flex flex-col overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+      :class="[
+        isMiniPreview 
+          ? 'w-[340px] h-[680px] border-none shadow-none' 
+          : 'border-[0.5px] w-[340px] h-[680px]',
+        !isMiniPreview && isSelected 
+          ? 'border-black shadow-[0px_16px_48px_rgba(0,0,0,0.12)]' 
+          : (!isMiniPreview ? 'border-neutral-300 hover:border-neutral-400 opacity-80 hover:opacity-100 shadow-[0px_0px_30px_rgba(0,0,0,0.04)] cursor-pointer' : '')
+      ]"
+    >
+      <!-- Persistent Thin 0.5px Black Selected Page Outline Overlay (Only on selected artboard) -->
+      <div v-if="!isMiniPreview && isSelected" class="pointer-events-none absolute inset-0 z-50 border-[0.5px] border-black border-solid" />
+
+      <!-- Fixed 48px Header with Right 707 Logo (Figma Node 107:3820) -->
+      <div 
+        @click="handleArtboardClick"
+        class="sticky top-0 left-0 right-0 h-[48px] w-full bg-[#f5f5f5] z-30 flex items-center justify-end px-[16px] shrink-0 cursor-default"
+      >
+        <div class="h-[15px] w-[48px] relative flex items-center justify-end">
+          <img 
+            :src="FIGMA_ASSETS.logo707" 
+            alt="707 Logo" 
+            class="size-full object-contain pointer-events-none" 
+            @error="handleLogoError"
+          />
+          <span v-if="logoFailed" class="font-black text-[12px] tracking-tighter text-black">707</span>
+        </div>
+      </div>
+
+      <!-- Blank Canvas / Active Widgets Container (0px Top, Side & Bottom Padding) -->
+      <div 
+        ref="scrollContainerRef"
+        @click.self="handleArtboardClick"
+        @scroll="handleScroll"
+        class="artboard-scroll-container flex-1 flex flex-col overflow-y-auto no-scrollbar px-0 pt-0 pb-0 relative cursor-default bg-[#f5f5f5] overscroll-contain will-change-scroll"
+        :class="isDragOver ? 'bg-neutral-200/60' : ''"
+        style="scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch;"
+        @dragenter.prevent="handleDragEnter"
+        @dragover.prevent="handleDragOver($event)"
+        @dragleave="handleDragLeave"
+        @drop.prevent="handleDrop($event)"
+      >
+        <!-- Drag Active Overlay Indicator on Artboard Frame -->
+        <div 
+          v-if="isDragOver" 
+          class="absolute inset-0 pointer-events-none border-[1px] border-black/70 border-dashed m-1.5 rounded-lg z-40 bg-black/[0.02] flex items-center justify-center"
+        >
+          <div class="bg-black text-white px-3 py-1.5 rounded-full shadow-lg font-707 text-caption flex items-center gap-1.5 animate-bounce">
+            <Plus class="w-3.5 h-3.5" />
+            <span>Drop to add {{ editorStore.draggedWidget?.label || 'block' }}</span>
+          </div>
+        </div>
+
+        <!-- Blank Canvas State Dropzone -->
+        <div 
+          v-if="activePage.widget_tree.length === 0" 
+          @click="handleArtboardClick"
+          class="flex-1 flex flex-col items-center justify-center p-6 w-full min-h-[300px] cursor-default"
+        >
+          <div 
+            v-if="isDragOver"
+            class="flex flex-col items-center justify-center text-center p-8 w-full rounded-xl border border-neutral-300 bg-white/90 shadow-sm"
+          >
+            <div class="size-10 rounded-full bg-black text-white flex items-center justify-center mb-2">
+              <Plus class="w-5 h-5" />
+            </div>
+            <p class="font-707 font-medium text-bodytext text-black">
+              Drop block here
+            </p>
+            <p class="font-707 text-caption text-neutral-500 mt-0.5">
+              To assemble your activation page
+            </p>
+          </div>
+        </div>
+
+        <!-- Widgets Stack (0px top for first widget, 8px between text-text, 16px between other widgets, 32px extra bottom padding if last widget is text) -->
+        <div 
+          v-else 
+          @click.self="handleArtboardClick"
+          class="flex-1 flex flex-col w-full shrink-0 min-h-full cursor-default"
+          :class="containerBottomPaddingClass"
+        >
+          <!-- If widgets are added, render them sequentially -->
+          <div 
+            v-for="(widget, index) in activePage.widget_tree" 
+            :key="widget.id"
+            :data-widget-id="widget.id"
+            @click.stop="handleWidgetClick(widget)"
+            @mouseenter="hoveredWidgetId = widget.id"
+            @mouseleave="hoveredWidgetId = null"
+            @dragover.prevent.stop="handleDragOver($event, index)"
+            @drop.prevent.stop="handleDrop($event, index)"
+            :class="[
+              widget.type === 'TextBanner' ? 'overflow-visible' : 'overflow-hidden',
+              getWidgetMarginTopClass(index),
+              'group relative cursor-pointer shrink-0 w-full'
+            ]"
+          >
+            <!-- Selected / Hovered Dashed Outline Border for non-TextBanner widgets (matching Text widget outline) -->
+            <div 
+              v-if="widget.type !== 'TextBanner' && (editorStore.selectedWidgetId === widget.id || hoveredWidgetId === widget.id)" 
+              class="absolute inset-0 border-[0.5px] border-black border-dashed pointer-events-none z-20 transition-opacity"
+              :class="editorStore.selectedWidgetId === widget.id ? 'opacity-100' : 'opacity-60'"
+            />
+
+            <!-- Insertion Line Indicator Above Widget -->
+            <div 
+              v-if="isDragOver && dropTargetIndex === index" 
+              class="absolute top-0 left-0 right-0 h-1 bg-black z-30 shadow-md animate-pulse"
+            />
+
+            <!-- Floating Widget Action Bar for non-TextBanner & non-ActionButton widgets (Figma Node 142:4935) -->
+            <div 
+              v-if="widget.type !== 'TextBanner' && widget.type !== 'ActionButton' && hoveredWidgetId === widget.id"
+              class="absolute top-[12px] right-[12px] z-30 apple-glass-modal flex gap-[5px] items-center p-[4px] rounded-[10px] shadow-[0px_8px_24px_rgba(0,0,0,0.12)] border border-black/10 transition-all animate-in fade-in duration-150"
+              data-node-id="142:4935"
+              data-name="Buttons Container"
+            >
+              <!-- Icon 1: Adjust -> Open Media/Banner Setup (Hidden when widget is selected) -->
+              <button 
+                v-if="editorStore.selectedWidgetId !== widget.id"
+                @click.stop="handleAdjustWidget(widget)"
+                class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer"
+                title="Adjust / Setup"
+              >
+                <SlidersHorizontal class="w-3.5 h-3.5" />
+              </button>
+
+              <!-- Icon 2: Duplicate -->
+              <button 
+                @click.stop="editorStore.duplicateWidget(widget.id)"
+                class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer"
+                title="Duplicate"
+              >
+                <Copy class="w-3.5 h-3.5" />
+              </button>
+
+              <!-- Icon 3: Remove -->
+              <button 
+                @click.stop="editorStore.removeWidget(widget.id)"
+                class="apple-glass-icon-btn size-[24px] hover:text-red-600 flex items-center justify-center rounded-[6px] text-black cursor-pointer"
+                title="Remove"
+              >
+                <Trash2 class="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <!-- 1. HeroDrop / Media Banner Widget (Solid space preview blocking #EDEDED or populated media) -->
+            <div 
+              v-if="widget.type === 'HeroDrop'" 
+              class="relative overflow-hidden w-full flex flex-col justify-between transition-all"
+              :class="[
+                widget.props.isSolidSpace || !widget.props.imageUrl ? 'bg-[#ededed] text-black' : 'bg-black text-white',
+                getRatioClass(widget.props.ratio)
+              ]"
+            >
+              <!-- If image is provided and not in solid placeholder mode, display image background -->
+              <template v-if="widget.props.imageUrl && !widget.props.isSolidSpace">
+                <img 
+                  :src="widget.props.imageUrl" 
+                  alt="Drop Banner" 
+                  class="w-full h-full absolute inset-0"
+                  :class="getMediaFitClass(widget.props.mediaFit)"
+                  @error="handleHeroImageError(widget)"
+                />
+                <!-- Dynamic Image Overlay / Scrim automatically following text position (auto disabled on Center) -->
+                <div 
+                  v-if="widget.props.isOverlayEnabled && widget.props.textPosition !== 'center'" 
+                  class="absolute inset-0 z-10 pointer-events-none transition-all duration-300"
+                  :style="getOverlayStyle(widget.props)"
+                />
+              </template>
+
+              <!-- Solid space blocking placeholder (#EDEDED for layout preview per Figma Node 134:4207) -->
+              <div v-else class="size-full flex flex-col items-center justify-center p-6 text-center select-none bg-[#ededed] min-h-[160px]">
+                <p class="font-707 font-normal text-caption text-black text-center whitespace-nowrap">
+                  Your media will apppear here
+                </p>
+              </div>
+
+              <!-- Brand Logo Area under header (Only available and rendered on the top-most banner) -->
+              <div 
+                v-if="index === 0 && (widget.props.isBrandLogoEnabled || widget.props.brandLogoUrl)"
+                class="relative z-20 w-full px-[16px] pt-[16px] flex items-center transition-all"
+                :class="[
+                  widget.props.brandLogoAlign === 'center' ? 'justify-center' : 
+                  widget.props.brandLogoAlign === 'right' ? 'justify-end' : 
+                  'justify-start'
+                ]"
+                @dragover.prevent.stop="isDragOverLogoSlot = widget.id"
+                @dragleave.prevent.stop="isDragOverLogoSlot = null"
+                @drop.prevent.stop="handleLogoDropOnBanner($event, widget.id)"
+              >
+                <!-- Render brand logo if url exists -->
+                <div v-if="widget.props.brandLogoUrl" class="max-h-[24px] h-[24px] flex items-center">
+                  <img 
+                    :src="widget.props.brandLogoUrl" 
+                    alt="Brand Logo" 
+                    class="max-h-[24px] h-[24px] w-auto object-contain transition-transform"
+                  />
+                </div>
+                <!-- Placeholder if enabled but no logo uploaded yet -->
+                <div 
+                  v-else
+                  @click.stop="handleOpenLogoPicker(widget.id)"
+                  class="h-[28px] px-3 border border-dashed rounded-[6px] flex items-center gap-1.5 text-[11px] font-707 cursor-pointer transition-colors"
+                  :class="[
+                    widget.props.isSolidSpace ? 'bg-black/5 border-black/30 text-black/70 hover:bg-black/10' : 'bg-white/20 border-white/40 text-white hover:bg-white/30 backdrop-blur-sm',
+                    isDragOverLogoSlot === widget.id ? 'border-black ring-2 ring-black' : ''
+                  ]"
+                  title="Click or drop brand logo (Max height 24px)"
+                >
+                  <span>Select / Drop Brand Logo (Max 24px)</span>
+                </div>
+              </div>
+
+              <!-- Banner Text Content Overlay if present (Presets: Top, Center, Bottom) -->
+              <div 
+                v-if="((widget.props.showBannerText ?? true) && (widget.props.title || widget.props.headline || widget.props.subtitle || widget.props.subheadline)) || ((widget.props.isCtaEnabled ?? (!!widget.props.buttonText || !!widget.props.ctaLabel || !!widget.props.showButton)) && (widget.props.buttonText || widget.props.ctaLabel || widget.props.showButton))" 
+                class="absolute left-0 right-0 px-[16px] z-20 flex flex-col transition-all duration-200"
+                :class="[
+                  widget.props.textPosition === 'top' ? ((index === 0 && (widget.props.isBrandLogoEnabled || widget.props.brandLogoUrl)) ? 'top-0 pt-[52px] pb-[24px]' : 'top-0 pt-[36px] pb-[24px]') : 
+                  widget.props.textPosition === 'center' ? 'top-1/2 -translate-y-1/2 py-[24px]' : 
+                  'bottom-0 pt-[24px] pb-[64px]',
+                  widget.props.textAlign === 'center' ? 'text-center items-center' : 
+                  widget.props.textAlign === 'right' ? 'text-right' : 
+                  'text-left items-start'
+                ]"
+              >
+                <!-- 1. Headline -->
+                <h1 
+                  v-if="(widget.props.showBannerText ?? true) && (widget.props.title || widget.props.headline)" 
+                  class="font-707 font-medium text-display-h1 tracking-tight leading-[34px] whitespace-pre-line" 
+                  :class="widget.props.isSolidSpace ? 'text-black' : 'text-white'"
+                >
+                  {{ widget.props.title || widget.props.headline }}
+                </h1>
+
+                <!-- 2. Sub Headline -->
+                <p 
+                  v-if="(widget.props.showBannerText ?? true) && (widget.props.subtitle || widget.props.subheadline)" 
+                  class="font-707 font-medium text-subtext-lead tracking-normal leading-[22px] mt-1.5 whitespace-pre-line" 
+                  :class="widget.props.isSolidSpace ? 'text-neutral-700' : 'text-[#ffffff]'"
+                >
+                  {{ widget.props.subtitle || widget.props.subheadline }}
+                </p>
+
+                <!-- 3. Optional Tag / Badge (Under Sub Headline) -->
+                <div 
+                  v-if="(widget.props.showBannerText ?? true) && widget.props.badge"
+                  class="mt-2"
+                >
+                  <span 
+                    class="inline-block font-bold text-[9px] tracking-widest px-2 py-0.5 uppercase rounded-sm font-707 shadow-sm transition-colors"
+                    :class="widget.props.isSolidSpace ? 'bg-black text-white' : 'bg-white text-black'"
+                  >
+                    {{ widget.props.badge }}
+                  </span>
+                </div>
+
+                <!-- CTA Button automatically under subheadline with auto light/dark color adaptation -->
+                <div 
+                  v-if="(widget.props.isCtaEnabled ?? (!!widget.props.buttonText || !!widget.props.ctaLabel || !!widget.props.showButton)) && (widget.props.buttonText || widget.props.ctaLabel || widget.props.showButton)" 
+                  class="mt-4 flex"
+                  :class="[
+                    widget.props.textAlign === 'center' ? 'justify-center w-full' : 
+                    widget.props.textAlign === 'right' ? 'justify-end w-full' : 
+                    'justify-start'
+                  ]"
+                >
+                  <button 
+                    type="button"
+                    @click.stop="handleHeroCtaClick(widget)"
+                    :class="[
+                      widget.props.isSolidSpace 
+                        ? 'bg-black hover:bg-[#383838] text-white' 
+                        : 'bg-white hover:bg-[#e4e4e4] text-black shadow-sm',
+                      'font-707 font-medium text-btn h-[42px] px-[16px] py-[12px] transition-colors cursor-pointer whitespace-nowrap flex items-center justify-center'
+                    ]"
+                  >
+                    {{ widget.props.buttonText || widget.props.ctaLabel || 'Action' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. CountdownTimer Widget (24px top-bottom, 16px side padding) -->
+            <div 
+              v-else-if="widget.type === 'CountdownTimer'" 
+              @click.stop="handleWidgetClick(widget)"
+              class="bg-black text-white py-[24px] px-[16px] border-y border-neutral-800 text-center cursor-pointer relative"
+              :class="[
+                !isMiniPreview && (editorStore.selectedWidgetId === widget.id || hoveredWidgetId === widget.id)
+                  ? 'ring-1 ring-white/60' 
+                  : ''
+              ]"
+            >
+              <div class="text-[9px] font-mono tracking-widest uppercase text-neutral-400 mb-2">
+                {{ widget.props.label || 'RAFFLE CLOSES IN' }}
+              </div>
+              <div class="grid grid-cols-4 gap-1.5 max-w-[240px] mx-auto">
+                <div class="bg-neutral-900 border border-neutral-800 rounded p-1.5 text-center">
+                  <div class="text-base font-black font-mono">02</div>
+                  <div class="text-[8px] text-neutral-500 font-mono">DAYS</div>
+                </div>
+                <div class="bg-neutral-900 border border-neutral-800 rounded p-1.5 text-center">
+                  <div class="text-base font-black font-mono">14</div>
+                  <div class="text-[8px] text-neutral-500 font-mono">HOURS</div>
+                </div>
+                <div class="bg-neutral-900 border border-neutral-800 rounded p-1.5 text-center">
+                  <div class="text-base font-black font-mono">38</div>
+                  <div class="text-[8px] text-neutral-500 font-mono">MINS</div>
+                </div>
+                <div class="bg-neutral-900 border border-neutral-800 rounded p-1.5 text-center">
+                  <div class="text-base font-black font-mono text-emerald-400">42</div>
+                  <div class="text-[8px] text-neutral-500 font-mono">SECS</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. RaffleForm Widget (24px top-bottom, 16px side padding) -->
+            <div 
+              v-else-if="widget.type === 'RaffleForm'" 
+              @click.stop="handleWidgetClick(widget)"
+              class="py-[24px] px-[16px] bg-white text-black space-y-3.5 cursor-pointer relative"
+              :class="[
+                !isMiniPreview && (editorStore.selectedWidgetId === widget.id || hoveredWidgetId === widget.id)
+                  ? 'ring-1 ring-black/40' 
+                  : ''
+              ]"
+            >
+              <div>
+                <div class="text-[9px] font-mono uppercase tracking-wider text-neutral-500 font-bold">
+                  OFFICIAL ENTRY FORM
+                </div>
+                <h2 class="text-base font-black tracking-tight uppercase font-707">
+                  {{ widget.props.heading || 'ENTER RAFFLE' }}
+                </h2>
+                <p class="text-[11px] text-neutral-600 mt-0.5 font-707">
+                  {{ widget.props.subheading || 'One entry per verified ID/KTP' }}
+                </p>
+              </div>
+
+              <!-- Shoe Sizing Selector -->
+              <div>
+                <div class="flex items-center justify-between text-[11px] font-bold mb-1.5">
+                  <span>SELECT SIZE ({{ widget.props.sizeSystem || 'US Mens' }})</span>
+                  <span class="text-[10px] text-neutral-500 font-mono underline">Size Chart</span>
+                </div>
+                <div class="grid grid-cols-4 gap-1.5">
+                  <div 
+                    v-for="(sz, i) in (widget.props.sizes || ['7', '7.5', '8', '8.5', '9', '9.5', '10', '10.5', '11'])"
+                    :key="sz"
+                    :class="i === 3 ? 'bg-black text-white border-black' : 'bg-neutral-100 text-black border-neutral-200'"
+                    class="h-8 rounded border font-bold text-[11px] flex items-center justify-center font-mono"
+                  >
+                    {{ sz }}
+                  </div>
+                </div>
+              </div>
+
+              <button class="w-full h-10 bg-black text-white font-bold text-[11px] tracking-wider uppercase rounded hover:bg-neutral-800 transition-colors">
+                {{ widget.props.ctaLabel || 'SUBMIT ENTRY' }}
+              </button>
+            </div>
+
+            <!-- 4. RsvpForm Widget (24px top-bottom, 16px side padding) -->
+            <div 
+              v-else-if="widget.type === 'RsvpForm'" 
+              @click.stop="handleWidgetClick(widget)"
+              class="py-[24px] px-[16px] bg-white text-black space-y-3.5 cursor-pointer relative"
+              :class="[
+                !isMiniPreview && (editorStore.selectedWidgetId === widget.id || hoveredWidgetId === widget.id)
+                  ? 'ring-1 ring-black/40' 
+                  : ''
+              ]"
+            >
+              <div>
+                <div class="text-[9px] font-mono uppercase tracking-wider text-neutral-500 font-bold">
+                  PASS RESERVATION
+                </div>
+                <h2 class="text-base font-black tracking-tight uppercase font-707">
+                  {{ widget.props.heading || 'CONFIRM ATTENDANCE' }}
+                </h2>
+                <p class="text-[11px] text-neutral-600 mt-0.5 font-707">
+                  {{ widget.props.subheading }}
+                </p>
+              </div>
+
+              <!-- Sessions -->
+              <div class="space-y-1.5">
+                <div 
+                  v-for="(session, sIdx) in (widget.props.sessions || [])"
+                  :key="session.label"
+                  :class="sIdx === 0 ? 'border-black bg-neutral-50 ring-1 ring-black' : 'border-neutral-200'"
+                  class="p-2.5 rounded-lg border flex items-center justify-between text-[11px]"
+                >
+                  <div>
+                    <div class="font-bold font-707">{{ session.label }}</div>
+                    <div class="text-[9px] text-emerald-600 font-medium">● {{ session.remaining }} spots remaining</div>
+                  </div>
+                  <div class="w-3.5 h-3.5 rounded-full border-2 border-black flex items-center justify-center">
+                    <div v-if="sIdx === 0" class="w-1.5 h-1.5 rounded-full bg-black"></div>
+                  </div>
+                </div>
+              </div>
+
+              <button class="w-full h-10 bg-black text-white font-bold text-[11px] tracking-wider uppercase rounded hover:bg-neutral-800 transition-colors">
+                {{ widget.props.ctaLabel || 'CLAIM PASS' }}
+              </button>
+            </div>
+
+            <!-- 5. RulesAccordion Widget (24px top-bottom, 16px side padding) -->
+            <div 
+              v-else-if="widget.type === 'RulesAccordion'" 
+              @click.stop="handleWidgetClick(widget)"
+              class="py-[24px] px-[16px] bg-neutral-50 text-black border-t border-neutral-200 cursor-pointer relative"
+              :class="[
+                !isMiniPreview && (editorStore.selectedWidgetId === widget.id || hoveredWidgetId === widget.id)
+                  ? 'ring-1 ring-black/40' 
+                  : ''
+              ]"
+            >
+              <div class="text-[11px] font-black uppercase tracking-tight mb-2 font-707">
+                {{ widget.props.title || 'TERMS & CONDITIONS' }}
+              </div>
+              <div class="space-y-1.5">
+                <div 
+                  v-for="(item, rIdx) in (widget.props.items || [])"
+                  :key="rIdx"
+                  class="bg-white p-2.5 rounded border border-neutral-200 text-[11px]"
+                >
+                  <div class="font-bold mb-0.5 font-707">{{ item.title }}</div>
+                  <div class="text-neutral-600 text-[10px] leading-relaxed">{{ item.content }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 6. TextBanner Widget (Free Text Tool, Figma Nodes 180:5836 & 181:6087 - Zero vertical padding for precise 4px text-to-text spacing) -->
+            <div 
+              v-else-if="widget.type === 'TextBanner'" 
+              class="relative w-full px-[16px] py-0 select-text overflow-visible"
+              @click.stop="handleWidgetClick(widget)"
+            >
+              <!-- Container with dynamic dashed border (Zero padding so text starts directly on 16px global line) -->
+              <div 
+                class="w-full relative flex flex-col justify-center rounded-[8px] transition-all p-0"
+                :class="[
+                  !isMiniPreview && (editorStore.selectedWidgetId === widget.id || hoveredWidgetId === widget.id)
+                    ? 'border-[0.5px] border-black border-dashed bg-transparent' 
+                    : 'border-[0.5px] border-transparent'
+                ]"
+                data-node-id="181:5864"
+                data-name="Container"
+              >
+                <!-- Floating Action Toolbar for Text Widget (Figma Node 180:5844 / 181:6098) -->
+                <div 
+                  v-if="!isMiniPreview && hoveredWidgetId === widget.id"
+                  class="absolute z-30 apple-glass-modal flex gap-[5px] items-center p-[4px] rounded-[10px] shadow-[0px_8px_24px_rgba(0,0,0,0.12)] border border-white/80 transition-all animate-in fade-in duration-150 select-none"
+                  :class="index === 0 ? 'top-[6px] right-[6px]' : '-top-[26px] right-0'"
+                  data-node-id="180:5844"
+                  data-name="Buttons Container"
+                >
+                  <!-- Button 1: Adjust / Open Text Sidebar Setup (Hidden when widget is selected) -->
+                  <button 
+                    v-if="editorStore.selectedWidgetId !== widget.id"
+                    @click.stop="handleAdjustWidget(widget)"
+                    class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer"
+                    title="Text Setup"
+                  >
+                    <SlidersHorizontal class="w-3.5 h-3.5" />
+                  </button>
+
+                  <!-- Button 2: Duplicate -->
+                  <button 
+                    @click.stop="editorStore.duplicateWidget(widget.id)"
+                    class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer"
+                    title="Duplicate"
+                  >
+                    <Copy class="w-3.5 h-3.5" />
+                  </button>
+
+                  <!-- Button 3: Remove -->
+                  <button 
+                    @click.stop="editorStore.removeWidget(widget.id)"
+                    class="apple-glass-icon-btn size-[24px] hover:text-red-600 flex items-center justify-center rounded-[6px] text-black cursor-pointer"
+                    title="Remove"
+                  >
+                    <Trash2 class="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                <!-- Live Preview in Mini Preview Mode (Pure Semantic Paragraph, Zero JS race conditions) -->
+                <p 
+                  v-if="isMiniPreview"
+                  class="w-full min-w-0 max-w-full bg-transparent font-707 p-0 m-0 whitespace-pre-wrap break-words [overflow-wrap:anywhere] select-none pointer-events-none"
+                  :class="[
+                    getTextTypographyClass(widget),
+                    widget.props.textAlign === 'center' ? 'text-center' : (widget.props.textAlign === 'right' ? 'text-right' : 'text-left'),
+                    !widget.props.text ? 'text-neutral-400 opacity-60' : 'text-black'
+                  ]"
+                >
+                  {{ widget.props.text || widget.props.placeholder || 'WRITE YOUR TEXT HERE' }}
+                </p>
+
+                <!-- Full Editable Mode on Canvas with Auto-Sizing CSS Grid -->
+                <div 
+                  v-else
+                  class="grid w-full min-w-0 max-w-full relative"
+                >
+                  <!-- Invisible sizing twin: expands the grid row to the exact wrapped text height -->
+                  <div 
+                    class="col-start-1 row-start-1 invisible w-full min-w-0 max-w-full min-h-0 font-707 p-0 m-0 whitespace-pre-wrap break-words [overflow-wrap:anywhere] pointer-events-none select-none"
+                    :class="[
+                      getTextTypographyClass(widget),
+                      widget.props.textAlign === 'center' ? 'text-center' : (widget.props.textAlign === 'right' ? 'text-right' : 'text-left')
+                    ]"
+                    aria-hidden="true"
+                  >
+                    {{ widget.props.text || widget.props.placeholder || 'WRITE YOUR TEXT HERE' }}
+                  </div>
+
+                  <!-- Real Textarea overlaid in same grid cell: 100% width and height -->
+                  <textarea
+                    :ref="el => registerTextarea(widget.id, el)"
+                    :value="widget.props.text || ''"
+                    :placeholder="widget.props.placeholder || 'WRITE YOUR TEXT HERE'"
+                    @input="handleTextInput($event, widget.id)"
+                    @focus="handleWidgetClick(widget)"
+                    @blur="handleTextBlur(widget)"
+                    @mousedown.stop
+                    rows="1"
+                    wrap="soft"
+                    class="col-start-1 row-start-1 w-full max-w-full min-w-0 h-full min-h-0 bg-transparent resize-none border-none outline-none font-707 overflow-hidden p-0 m-0 select-text cursor-text relative z-10 block whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
+                    :class="[
+                      getTextTypographyClass(widget),
+                      widget.props.textAlign === 'center' ? 'text-center' : (widget.props.textAlign === 'right' ? 'text-right' : 'text-left')
+                    ]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- 7. FieldInput Widget (Gucci & 707 Luxury Animated Form Input - Figma Node 236:11400) -->
+            <div 
+              v-else-if="widget.type === 'FieldInput'" 
+              class="relative w-full px-[16px] py-[4px] select-text overflow-visible cursor-text"
+              @click.stop="handleFieldContainerClick(widget)"
+              data-node-id="236:11400"
+              data-name="Input field base"
+            >
+              <!-- Field Content Structure with Luxury Floating Label & Animated Sweeping Underline -->
+              <div class="w-full flex flex-col items-start relative pt-[16px]">
+                <!-- Floating Label (Translates upward smoothly when focused or active) -->
+                <label 
+                  class="luxury-floating-label font-707 left-0"
+                  :class="[
+                    isFieldLabelFloating(widget)
+                      ? 'top-[0px] text-[11px] leading-[14px] text-black font-normal'
+                      : 'top-[26px] text-[16px] leading-[22px] text-[#737373] font-normal'
+                  ]"
+                >
+                  {{ isFieldLabelFloating(widget) ? (widget.props.label || 'Email') : (widget.props.placeholder || `Enter your ${(widget.props.label || 'email').toLowerCase()}*`) }}<span v-if="isFieldLabelFloating(widget) && (widget.props.required ?? true)">*</span>
+                </label>
+
+                <!-- Input Row with Underline Stack & Jitter Shake on Error -->
+                <div 
+                  class="w-full flex items-center gap-[8px] pt-[8px] pb-[10px] relative"
+                  :class="[
+                    shakingFieldIds.has(widget.id) ? 'animate-luxury-jitter' : ''
+                  ]"
+                >
+                  <!-- WhatsApp / Phone Country Calling Code Selector with Small Chevron (Visible when active/focused or filled) -->
+                  <div 
+                    v-if="isPhoneField(widget) && isFieldLabelFloating(widget)"
+                    class="flex items-center gap-[4px] shrink-0 select-none cursor-pointer pr-[2px] group/code relative z-10 animate-in fade-in duration-200"
+                    @click.stop="toggleCountryCode(widget)"
+                    title="Click to switch Country Calling Code"
+                  >
+                    <span class="font-707 text-[16px] leading-[22px] text-black font-normal tracking-tight">
+                      {{ widget.props.countryCode || '+62' }}
+                    </span>
+                    <ChevronDown class="w-[12px] h-[12px] text-neutral-400 group-hover/code:text-black transition-colors stroke-[2]" />
+                  </div>
+
+                  <input 
+                    :ref="el => registerInputField(widget.id, el)"
+                    :value="widget.props.value || ''"
+                    :type="widget.props.inputType || 'text'"
+                    :inputmode="isPhoneField(widget) ? 'numeric' : (widget.props.inputType === 'email' || (widget.props.label && widget.props.label.toLowerCase().includes('email')) ? 'email' : 'text')"
+                    @input="handleFieldInputChange($event, widget)"
+                    @focus="handleFieldFocus(widget)"
+                    @blur="handleFieldBlur(widget)"
+                    :readonly="isMiniPreview"
+                    class="font-707 font-normal text-[16px] leading-[22px] w-full bg-transparent outline-none border-none p-0 m-0 transition-colors duration-300 relative z-10"
+                    :class="[
+                      widget.props.stateVariant === 'Wrong alert' ? 'text-[#9b0707]' : 'text-black'
+                    ]"
+                  />
+
+                  <!-- Error Alert Icon (Kept visible on error state even when dismissed) -->
+                  <div 
+                    class="size-[16px] shrink-0 flex items-center justify-center text-[#9b0707] transition-all duration-300 transform relative z-10"
+                    :class="[
+                      isFieldError(widget)
+                        ? 'opacity-100 scale-100 pointer-events-auto'
+                        : 'opacity-0 scale-75 pointer-events-none'
+                    ]"
+                  >
+                    <AlertCircle class="size-[16px] stroke-[1.75]" />
+                  </div>
+
+                  <!-- 1. Luxury Underline - Resting Base Line (Default Lighter Grey at the beginning) -->
+                  <div class="luxury-input-line-base" />
+
+                  <!-- 2. Luxury Underline - Animated Active Line (Expands on focus, shrinks back to center when dismissed/blurred) -->
+                  <div 
+                    class="luxury-input-line-active"
+                    :class="[
+                      isFieldUnderlineActive(widget)
+                        ? (isFieldError(widget) ? 'scale-x-100 bg-[#9b0707]' : 'scale-x-100 bg-black')
+                        : 'scale-x-0 bg-black'
+                    ]"
+                  />
+                </div>
+
+                <!-- Error Message Alert Helper Text with Smooth Expand/Slide Transition (Active only on-going input / focused error state) -->
+                <div 
+                  class="w-full overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                  :class="[
+                    isFieldErrorMessageVisible(widget)
+                      ? 'max-h-[36px] opacity-100 pt-[6px] translate-y-0'
+                      : 'max-h-0 opacity-0 pt-0 -translate-y-1'
+                  ]"
+                >
+                  <p class="font-707 font-normal text-[11px] leading-[14px] text-[#9b0707]">
+                    {{ widget.props.errorMessage || 'Please enter a valid email address with @domain (e.g. name@domain.com).' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 8. ActionButton Widget (707 Standard Action Button - Figma Node 244:11560) -->
+            <div 
+              v-else-if="widget.type === 'ActionButton' && widget.props.positionMode !== 'sticky-bottom'" 
+              class="relative w-full px-[16px] py-[4px] select-none group/btn"
+              @click.stop="handleActionButtonClick(widget)"
+              data-node-id="244:11560"
+              data-name="Action Button Container"
+            >
+              <!-- Container with dynamic dashed border -->
+              <div 
+                class="w-full relative flex items-center justify-center rounded-[8px] transition-all p-0"
+                :class="[
+                  !isMiniPreview && (editorStore.selectedWidgetId === widget.id || hoveredWidgetId === widget.id)
+                    ? 'ring-1 ring-black/40' 
+                    : ''
+                ]"
+              >
+                <!-- Floating Action Toolbar for ActionButton (Figma Node 180:5844) -->
+                <div 
+                  v-if="!isMiniPreview && hoveredWidgetId === widget.id"
+                  class="absolute z-30 apple-glass-modal flex gap-[5px] items-center p-[4px] rounded-[10px] shadow-[0px_8px_24px_rgba(0,0,0,0.12)] border border-white/80 transition-all animate-in fade-in duration-150 select-none"
+                  :class="index === 0 ? 'top-[6px] right-[6px]' : '-top-[26px] right-0'"
+                  data-name="Buttons Container"
+                >
+                  <!-- Button 1: Adjust / Open Button Setup Sidebar -->
+                  <button 
+                    @click.stop="handleAdjustWidget(widget)"
+                    class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer"
+                    title="Button Setup"
+                  >
+                    <SlidersHorizontal class="w-3.5 h-3.5" />
+                  </button>
+
+                  <!-- Button 2: Duplicate -->
+                  <button 
+                    @click.stop="editorStore.duplicateWidget(widget.id)"
+                    class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer"
+                    title="Duplicate"
+                  >
+                    <Copy class="w-3.5 h-3.5" />
+                  </button>
+
+                  <!-- Button 3: Remove -->
+                  <button 
+                    @click.stop="editorStore.removeWidget(widget.id)"
+                    class="apple-glass-icon-btn size-[24px] hover:text-red-600 flex items-center justify-center rounded-[6px] text-black cursor-pointer"
+                    title="Remove"
+                  >
+                    <Trash2 class="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                <button 
+                  type="button"
+                  @click.stop="handleActionButtonClick(widget)"
+                  :class="[
+                    widget.props.variant === 'white'
+                      ? 'bg-white text-black border border-[#d4d4d4] hover:bg-[#f7f7f7]'
+                      : (widget.props.variant === 'grey' ? 'bg-[#e4e4e4] text-black hover:bg-[#d9d9d9]' : 'bg-black text-white hover:bg-neutral-900'),
+                    widget.props.disabled ? 'opacity-50 cursor-not-allowed' : 'apple-press'
+                  ]"
+                  :style="{ height: `${widget.props.height || 42}px` }"
+                  class="w-full px-[16px] py-[12px] rounded-[0px] flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal transition-all shadow-sm cursor-pointer"
+                >
+                  <!-- Action Icon -->
+                  <component :is="getButtonIcon(widget)" v-if="widget.props.showIcon" class="size-[16px] shrink-0" />
+                  <span class="whitespace-nowrap uppercase">{{ widget.props.label || 'BUTTON CTA' }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Physical Bottom Clearance Spacer for Sticky Bottom Button (Disabled when last widget is a Hero banner so banner sits flush against the sticky button) -->
+          <div 
+            v-if="stickyButtonForThisPage && !isLastWidgetHero" 
+            class="h-[64px] w-full shrink-0 pointer-events-none" 
+            aria-hidden="true" 
+          />
+          <!-- Exclusive 32px bottom padding spacer when the latest order of widgets is a text widget and no sticky button -->
+          <div 
+            v-else-if="isLastWidgetText" 
+            class="h-[32px] w-full shrink-0 pointer-events-none" 
+            aria-hidden="true" 
+          />
+        </div>
+      </div>
+
+      <!-- Floating iOS-style Auto-hide Scrollbar Indicator (Zero layout space, shows only on scrolling) -->
+      <div 
+        v-if="isContentScrollable"
+        class="absolute right-[3px] w-[3px] rounded-full bg-black/40 z-40 transition-opacity duration-300 pointer-events-none"
+        :class="isScrolling ? 'opacity-100' : 'opacity-0'"
+        :style="{
+          top: `${48 + scrollIndicatorTop}px`,
+          height: `${scrollIndicatorHeight}px`
+        }"
+      />
+
+      <!-- Floating Viewport Sticky Bottom Button (Figma Node 244:11560) -->
+      <div 
+        v-if="stickyButtonForThisPage"
+        @click.stop="handleActionButtonClick(stickyButtonForThisPage)"
+        @mouseenter="hoveredWidgetId = stickyButtonForThisPage.id"
+        @mouseleave="hoveredWidgetId = null"
+        class="absolute bottom-0 inset-x-0 z-30 w-full p-0 transition-all select-none group/sticky cursor-pointer"
+      >
+        <!-- Floating Toolbar on Hover for Sticky Bottom Button in Editor -->
+        <div 
+          v-if="!isMiniPreview && (hoveredWidgetId === stickyButtonForThisPage.id || editorStore.selectedWidgetId === stickyButtonForThisPage.id)"
+          class="absolute z-40 apple-glass-modal flex gap-[5px] items-center p-[4px] rounded-[10px] shadow-[0px_8px_24px_rgba(0,0,0,0.12)] border border-white/80 transition-all -top-[28px] right-[12px] select-none"
+        >
+          <button 
+            @click.stop="handleAdjustWidget(stickyButtonForThisPage)"
+            class="apple-glass-icon-btn size-[22px] flex items-center justify-center rounded-[6px] text-black cursor-pointer"
+            title="Button Setup"
+          >
+            <SlidersHorizontal class="w-3.5 h-3.5" />
+          </button>
+          <button 
+            @click.stop="editorStore.removeWidget(stickyButtonForThisPage.id)"
+            class="apple-glass-icon-btn size-[22px] hover:text-red-600 flex items-center justify-center rounded-[6px] text-black cursor-pointer"
+            title="Remove Sticky Button"
+          >
+            <Trash2 class="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <button 
+          type="button"
+          @click.stop="handleActionButtonClick(stickyButtonForThisPage)"
+          :class="[
+            stickyButtonForThisPage.props?.variant === 'white'
+              ? 'bg-white text-black border-t border-[#d4d4d4] hover:bg-[#f7f7f7]'
+              : (stickyButtonForThisPage.props?.variant === 'grey' ? 'bg-[#e4e4e4] text-black hover:bg-[#d9d9d9]' : 'bg-black text-white hover:bg-neutral-900'),
+            stickyButtonForThisPage.props?.disabled ? 'opacity-50 cursor-not-allowed' : 'apple-press'
+          ]"
+          :style="{ height: `${stickyButtonForThisPage.props?.height || 42}px` }"
+          class="w-full px-[16px] py-[12px] rounded-none flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal transition-all shadow-sm cursor-pointer"
+        >
+          <!-- Action Icon -->
+          <component :is="getButtonIcon(stickyButtonForThisPage)" v-if="stickyButtonForThisPage.props?.showIcon" class="size-[16px] shrink-0" />
+          <span class="whitespace-nowrap uppercase">{{ stickyButtonForThisPage.props?.label || 'BUTTON CTA' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, watch, nextTick, onMounted } from 'vue';
+import { useEditorStore } from '../../stores/editorStore.ts';
+import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
+import { 
+  SlidersHorizontal, 
+  Copy, 
+  Trash2, 
+  Plus, 
+  Pencil, 
+  Check, 
+  AlertCircle, 
+  ChevronDown, 
+  LayoutGrid,
+  ArrowRight,
+  Ticket,
+  Phone
+} from 'lucide-vue-next';
+import { uploadMediaDirectly } from '../../services/mediaService.ts';
+import type { ActivationPage } from '../../types/editor.ts';
+
+const props = withDefaults(defineProps<{
+  page?: ActivationPage;
+  pageIndex?: number;
+  isSelected?: boolean;
+  isMiniPreview?: boolean;
+}>(), {
+  isSelected: true,
+  isMiniPreview: false
+});
+
+const emit = defineEmits<{
+  (e: 'select-page', index: number): void;
+}>();
+
+const editorStore = useEditorStore();
+const logoFailed = ref(false);
+
+const activePage = computed(() => {
+  return props.page || editorStore.currentPage;
+});
+
+const pageNumber = computed(() => {
+  return typeof props.pageIndex === 'number' ? props.pageIndex + 1 : 1;
+});
+
+// Page Label Editable State
+const isEditingPageName = ref(false);
+const pageNameInput = ref('');
+const pageNameInputRef = ref<HTMLInputElement | null>(null);
+
+const currentPageName = computed(() => {
+  if (activePage.value.page_name) return activePage.value.page_name;
+  return pageNumber.value === 1 ? 'Landing Page' : 'Untitled Page';
+});
+
+function handleSelectThisPage() {
+  if (typeof props.pageIndex === 'number' && !props.isSelected) {
+    editorStore.selectPage(props.pageIndex);
+    emit('select-page', props.pageIndex);
+  }
+}
+
+function handleDoubleClickThisPage(e?: MouseEvent) {
+  // If double clicking inside an active text input or textarea, allow native text selection
+  if (e?.target instanceof HTMLInputElement || e?.target instanceof HTMLTextAreaElement) {
+    return;
+  }
+  const pIdx = typeof props.pageIndex === 'number' ? props.pageIndex : editorStore.activePageIndex;
+  editorStore.focusPage(pIdx);
+}
+
+function startEditingPageName() {
+  pageNameInput.value = currentPageName.value;
+  isEditingPageName.value = true;
+  nextTick(() => {
+    pageNameInputRef.value?.focus();
+    pageNameInputRef.value?.select();
+  });
+}
+
+function savePageName() {
+  if (isEditingPageName.value) {
+    const trimmed = pageNameInput.value.trim();
+    if (trimmed) {
+      activePage.value.page_name = trimmed;
+      activePage.value.title = `Page ${pageNumber.value}: ${trimmed}`;
+    }
+    isEditingPageName.value = false;
+  }
+}
+
+function cancelPageName() {
+  isEditingPageName.value = false;
+}
+
+const isDragOver = ref(false);
+const dropTargetIndex = ref<number | null>(null);
+const hoveredWidgetId = ref<string | null>(null);
+
+const scrollContainerRef = ref<HTMLElement | null>(null);
+const isScrolling = ref(false);
+const isContentScrollable = ref(false);
+const scrollIndicatorTop = ref(0);
+const scrollIndicatorHeight = ref(30);
+let scrollTimeout: any = null;
+
+function handleScroll(e: Event) {
+  const container = e.target as HTMLElement;
+  if (!container) return;
+
+  const { scrollTop, scrollHeight, clientHeight } = container;
+  isContentScrollable.value = scrollHeight > clientHeight + 2;
+
+  if (isContentScrollable.value) {
+    const availableTrack = clientHeight - 8;
+    const thumbHeight = Math.max(20, (clientHeight / scrollHeight) * availableTrack);
+    const maxScroll = scrollHeight - clientHeight;
+    const scrollRatio = maxScroll > 0 ? scrollTop / maxScroll : 0;
+    const thumbTop = 4 + scrollRatio * (availableTrack - thumbHeight);
+
+    scrollIndicatorHeight.value = thumbHeight;
+    scrollIndicatorTop.value = thumbTop;
+
+    isScrolling.value = true;
+    if (scrollTimeout) clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      isScrolling.value = false;
+    }, 800);
+  }
+}
+
+function updateScrollMetrics() {
+  if (scrollContainerRef.value) {
+    const { scrollHeight, clientHeight } = scrollContainerRef.value;
+    isContentScrollable.value = scrollHeight > clientHeight + 4;
+  }
+}
+
+function handleArtboardWheel(e: WheelEvent) {
+  if (e.ctrlKey || e.metaKey || props.isMiniPreview) return;
+  if (!scrollContainerRef.value) return;
+
+  const container = scrollContainerRef.value;
+  const maxScroll = container.scrollHeight - container.clientHeight;
+  if (maxScroll <= 0) return;
+
+  // Prevent canvas workspace from panning while user scrolls the phone artboard content
+  e.stopPropagation();
+  e.preventDefault();
+
+  container.scrollTop += e.deltaY;
+}
+
+function scrollToWidget(id: string) {
+  if (!scrollContainerRef.value || !props.isSelected || props.isMiniPreview) return;
+  nextTick(() => {
+    const el = scrollContainerRef.value?.querySelector(`[data-widget-id="${id}"]`) as HTMLElement | null;
+    if (el && scrollContainerRef.value) {
+      const container = scrollContainerRef.value;
+      if (activePage.value.widget_tree[0]?.id === id) {
+        container.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        const containerRect = container.getBoundingClientRect();
+        const elRect = el.getBoundingClientRect();
+        if (elRect.top < containerRect.top || elRect.bottom > containerRect.bottom) {
+          const targetScrollTop = container.scrollTop + (elRect.top - containerRect.top) - 16;
+          container.scrollTo({ top: Math.max(0, targetScrollTop), behavior: 'smooth' });
+        }
+      }
+      const ta = textareaRefs.get(id);
+      if (ta && ta !== document.activeElement) {
+        ta.focus({ preventScroll: true });
+      }
+    }
+  });
+}
+
+watch(() => editorStore.selectedWidgetId, (newId) => {
+  if (newId) {
+    scrollToWidget(newId);
+  }
+});
+
+watch(() => activePage.value.widget_tree.length, (newLen, oldLen) => {
+  if (newLen > (oldLen || 0)) {
+    const lastWidget = activePage.value.widget_tree[newLen - 1];
+    if (lastWidget) {
+      scrollToWidget(lastWidget.id);
+    }
+  }
+});
+
+watch(() => activePage.value.widget_tree, async () => {
+  await nextTick();
+  updateScrollMetrics();
+}, { deep: true });
+
+let resizeObserver: ResizeObserver | null = null;
+
+onMounted(() => {
+  updateScrollMetrics();
+  if (scrollContainerRef.value && typeof ResizeObserver !== 'undefined') {
+    resizeObserver = new ResizeObserver(() => {
+      updateScrollMetrics();
+    });
+    resizeObserver.observe(scrollContainerRef.value);
+  }
+});
+
+function handleArtboardClick() {
+  handleSelectThisPage();
+  editorStore.selectWidget(null);
+  editorStore.closeAllSidebars();
+}
+
+const textareaRefs = new Map<string, HTMLTextAreaElement>();
+
+function registerTextarea(id: string, el: any) {
+  if (el) {
+    textareaRefs.set(id, el as HTMLTextAreaElement);
+    adjustTextareaHeight(el as HTMLTextAreaElement);
+  } else {
+    textareaRefs.delete(id);
+  }
+}
+
+function adjustTextareaHeight(textarea: HTMLTextAreaElement) {
+  if (!textarea) return;
+  textarea.style.height = '100%';
+}
+
+function handleTextInput(e: Event, widgetId: string) {
+  const target = e.target as HTMLTextAreaElement;
+  adjustTextareaHeight(target);
+  editorStore.updateWidgetProps(widgetId, { text: target.value });
+}
+
+function handleTextBlur(widget: any) {
+  setTimeout(() => {
+    const w = activePage.value.widget_tree.find(item => item.id === widget.id);
+    if (w && w.type === 'TextBanner' && (!w.props.text || !w.props.text.trim())) {
+      const activeEl = document.activeElement;
+      const isCanvasFocused = activeEl && activeEl.tagName === 'TEXTAREA' && activeEl.closest(`[data-widget-id="${widget.id}"]`);
+      const isSidebarFocused = activeEl && (activeEl.closest('.text-setup-sidebar') || activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
+      if (!isCanvasFocused && !isSidebarFocused) {
+        editorStore.removeWidget(widget.id);
+      }
+    }
+  }, 180);
+}
+
+function getTextTypographyClass(widget: any) {
+  const style = widget.props.typographyStyle || 'headline-1';
+  switch (style) {
+    case 'heading-2':
+      return 'text-[22px] md:text-[24px] font-medium leading-[1.15] text-black uppercase placeholder:text-black placeholder:uppercase';
+    case 'heading-3':
+      return 'text-[17px] md:text-[18px] font-medium leading-[1.2] text-black uppercase placeholder:text-black placeholder:uppercase';
+    case 'subtext-lead':
+      return 'text-[15px] md:text-[16px] font-medium leading-[1.3] text-black placeholder:text-black';
+    case 'body-text-bold':
+      return 'text-[13px] md:text-[14px] font-bold leading-[1.4] text-black placeholder:text-black';
+    case 'body-text':
+      return 'text-[13px] md:text-[14px] font-normal leading-[1.4] text-black placeholder:text-black';
+    case 'caption':
+      return 'text-[11px] md:text-[12px] font-normal leading-[1.4] text-black placeholder:text-black';
+    case 'legal-micro':
+      return 'text-[10px] md:text-[11px] font-normal leading-[1.4] text-neutral-500 placeholder:text-neutral-500';
+    case 'headline-1':
+    default:
+      return 'text-[28px] md:text-[32px] font-medium leading-[1.08] text-black uppercase placeholder:text-black placeholder:uppercase';
+  }
+}
+
+watch(() => editorStore.selectedWidgetId, async (newId) => {
+  if (newId && !props.isMiniPreview) {
+    await nextTick();
+    const textarea = textareaRefs.get(newId);
+    if (textarea && textarea !== document.activeElement) {
+      textarea.focus({ preventScroll: true });
+      adjustTextareaHeight(textarea);
+    }
+  }
+});
+
+function handleWidgetClick(widget: any) {
+  handleSelectThisPage();
+  editorStore.selectWidget(widget.id);
+  handleAdjustWidget(widget);
+}
+
+function handleAdjustWidget(widget: any) {
+  editorStore.selectWidget(widget.id);
+  if (widget.type === 'HeroDrop') {
+    editorStore.openMediaSidebar(widget.props?.ratio);
+  } else if (widget.type === 'TextBanner') {
+    editorStore.openTextSidebar();
+  } else if (widget.type === 'ActionButton') {
+    editorStore.openButtonSidebar();
+  } else {
+    editorStore.openWidgetSidebar();
+  }
+}
+
+function handleActionButtonClick(widget: any) {
+  handleSelectThisPage();
+  editorStore.selectWidget(widget.id);
+  handleAdjustWidget(widget);
+}
+
+function handleHeroCtaClick(widget: any) {
+  handleSelectThisPage();
+  editorStore.selectWidget(widget.id);
+  editorStore.openButtonSidebar();
+}
+
+function getButtonIcon(widget: any) {
+  const iconName = widget.props?.iconName || 'arrow-right';
+  switch (iconName) {
+    case 'grid': return LayoutGrid;
+    case 'ticket': return Ticket;
+    case 'whatsapp': return Phone;
+    case 'arrow-right':
+    default: return ArrowRight;
+  }
+}
+
+function handleButtonClick(widget: any) {
+  if (widget.props?.disabled) return;
+  const actionType = widget.props?.actionType || 'submit';
+
+  if (actionType === 'submit') {
+    let allValid = true;
+    let firstInvalidWidget: any = null;
+    activePage.value.widget_tree.forEach((w) => {
+      if (w.type === 'FieldInput') {
+        const isValid = validateField(w, true);
+        if (!isValid && !firstInvalidWidget) {
+          firstInvalidWidget = w;
+          allValid = false;
+        }
+      }
+    });
+    if (!allValid && firstInvalidWidget) {
+      scrollToWidget(firstInvalidWidget.id);
+      return;
+    }
+    editorStore.isTestFormModalOpen = true;
+  } else if (actionType === 'next_page') {
+    const currentIdx = typeof props.pageIndex === 'number' ? props.pageIndex : editorStore.activePageIndex;
+    if (currentIdx < editorStore.pages.length - 1) {
+      editorStore.focusPage(currentIdx + 1);
+    } else {
+      editorStore.isTestFormModalOpen = true;
+    }
+  } else if (actionType === 'link' && widget.props?.url) {
+    if (widget.props?.openInNewTab) {
+      window.open(widget.props.url, '_blank');
+    } else {
+      window.location.href = widget.props.url;
+    }
+  } else if (actionType === 'modal') {
+    editorStore.isRequestWidgetModalOpen = true;
+  }
+}
+
+function handleLogoError() {
+  logoFailed.value = true;
+}
+
+function getOverlayStyle(props: any) {
+  const alpha = Math.max(0, Math.min(100, props.overlayOpacity ?? 50)) / 100;
+  const position = props.textPosition || 'bottom';
+
+  if (position === 'top') {
+    return {
+      background: `linear-gradient(to bottom, rgba(0, 0, 0, ${alpha}) 0%, rgba(0, 0, 0, ${alpha * 0.4}) 65%, transparent 100%)`
+    };
+  } else if (position === 'center') {
+    return {
+      background: `linear-gradient(to bottom, rgba(0, 0, 0, ${alpha * 0.1}) 0%, rgba(0, 0, 0, ${alpha}) 35%, rgba(0, 0, 0, ${alpha}) 65%, rgba(0, 0, 0, ${alpha * 0.1}) 100%)`
+    };
+  } else {
+    // bottom
+    return {
+      background: `linear-gradient(to top, rgba(0, 0, 0, ${alpha}) 0%, rgba(0, 0, 0, ${alpha * 0.4}) 65%, transparent 100%)`
+    };
+  }
+}
+
+function getMediaFitClass(fit?: string) {
+  switch (fit) {
+    case 'Fit to screen':
+    case 'fit':
+      return 'object-contain object-center';
+    case 'Center':
+    case 'center':
+      return 'object-none object-center';
+    case 'Fill the screen':
+    case 'fill':
+    default:
+      return 'object-cover object-center';
+  }
+}
+
+function handleHeroImageError(widget: any) {
+  if (widget && widget.props) {
+    editorStore.updateWidgetProps(widget.id, {
+      isSolidSpace: true,
+      imageUrl: ''
+    });
+  }
+}
+
+function getRatioClass(ratio?: string) {
+  switch (ratio) {
+    case '4:5':
+      return 'aspect-[4/5] w-full shrink-0';
+    case '3:4':
+      return 'aspect-[3/4] w-full shrink-0';
+    case '4:3':
+      return 'aspect-[4/3] w-full shrink-0';
+    case '16:9':
+      return 'aspect-video w-full shrink-0';
+    case '9:16':
+      return 'aspect-[9/16] w-full shrink-0';
+    case '1:1':
+      return 'aspect-square w-full shrink-0';
+    case 'Buttons':
+      return 'min-h-[76px] py-[16px] px-0 w-full shrink-0 flex flex-col justify-center';
+    case 'Full screen landing page':
+    default:
+      return 'h-[598px] md:h-[632px] min-h-[598px] md:min-h-[632px] w-full shrink-0';
+  }
+}
+
+function getWidgetMarginTopClass(index: number) {
+  if (index === 0) return 'mt-0';
+  const tree = activePage.value.widget_tree;
+  const currentWidget = tree[index];
+  const prevWidget = tree[index - 1];
+
+  // 1. If hero banner meets another hero banner (Hero meets Hero), 0px spacing between them
+  if (currentWidget?.type === 'HeroDrop' && prevWidget?.type === 'HeroDrop') {
+    return 'mt-0';
+  }
+
+  // 2. If text widget meets another text widget (Text meets Text), exclusive 4px spacing between them
+  if (currentWidget?.type === 'TextBanner' && prevWidget?.type === 'TextBanner') {
+    return 'mt-[4px]';
+  }
+
+  // 3. If FieldInput meets another FieldInput, 12px spacing between them
+  if (currentWidget?.type === 'FieldInput' && prevWidget?.type === 'FieldInput') {
+    return 'mt-[12px]';
+  }
+
+  // 4. If ActionButton meets another ActionButton, 8px spacing between them
+  if (currentWidget?.type === 'ActionButton' && prevWidget?.type === 'ActionButton') {
+    return 'mt-[8px]';
+  }
+
+  // 5. Default spacing between different widget types
+  return 'mt-[16px]';
+}
+
+const inputFieldRefs = new Map<string, HTMLInputElement>();
+
+function registerInputField(id: string, el: any) {
+  if (el) {
+    inputFieldRefs.set(id, el as HTMLInputElement);
+  } else {
+    inputFieldRefs.delete(id);
+  }
+}
+
+const focusedFieldId = ref<string | null>(null);
+const shakingFieldIds = ref<Set<string>>(new Set());
+
+function triggerFieldShake(widgetId: string) {
+  shakingFieldIds.value.add(widgetId);
+  setTimeout(() => {
+    shakingFieldIds.value.delete(widgetId);
+  }, 500);
+}
+
+// Watch for error states to trigger the tactile jitter/shake animation
+watch(
+  () => activePage.value.widget_tree.map(w => `${w.id}_${w.props?.stateVariant}_${w.props?.showError}`),
+  (newVals, oldVals) => {
+    if (!oldVals) return;
+    newVals.forEach((val, idx) => {
+      const oldVal = oldVals[idx];
+      if (val !== oldVal) {
+        const widget = activePage.value.widget_tree[idx];
+        if (widget && widget.type === 'FieldInput') {
+          if (widget.props?.stateVariant === 'Wrong alert' || widget.props?.stateVariant === 'Wrong' || widget.props?.showError) {
+            triggerFieldShake(widget.id);
+          }
+        }
+      }
+    });
+  }
+);
+
+function handleFieldContainerClick(widget: any) {
+  handleSelectThisPage();
+  editorStore.selectWidget(widget.id);
+  handleAdjustWidget(widget);
+  if (!props.isMiniPreview) {
+    const inputEl = inputFieldRefs.get(widget.id);
+    if (inputEl && inputEl !== document.activeElement) {
+      inputEl.focus();
+    }
+  }
+}
+
+function isPhoneField(widget: any): boolean {
+  if (!widget || widget.type !== 'FieldInput') return false;
+  const label = (widget.props?.label || '').toLowerCase();
+  return widget.props?.inputType === 'tel' || label.includes('whatsapp') || label.includes('wa') || label.includes('phone') || !!widget.props?.countryCode;
+}
+
+const countryCodes = ['+62', '+65', '+60', '+1', '+44', '+61', '+81', '+971'];
+function toggleCountryCode(widget: any) {
+  const current = widget.props.countryCode || '+62';
+  const idx = countryCodes.indexOf(current);
+  widget.props.countryCode = countryCodes[(idx + 1) % countryCodes.length];
+}
+
+function validateField(widget: any, triggerShake = true): boolean {
+  if (widget.type !== 'FieldInput') return true;
+  const label = (widget.props.label || '').toLowerCase();
+  const isEmail = widget.props.inputType === 'email' || label.includes('email');
+  const isWa = isPhoneField(widget);
+  const val = (widget.props.value || '').trim();
+
+  // 1. Required Check
+  if (widget.props.required && !val) {
+    widget.props.showError = true;
+    widget.props.stateVariant = 'Wrong';
+    widget.props.errorMessage = `${widget.props.label || 'This field'} is required.`;
+    if (triggerShake) triggerFieldShake(widget.id);
+    return false;
+  }
+
+  // 2. Email Mandatory @domain Validation
+  if (isEmail && val) {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(val)) {
+      widget.props.showError = true;
+      widget.props.stateVariant = 'Wrong';
+      widget.props.errorMessage = 'Please enter a valid email address with @domain (e.g. name@domain.com).';
+      if (triggerShake) triggerFieldShake(widget.id);
+      return false;
+    }
+  }
+
+  // 3. WhatsApp / Phone Validation (8-15 digits)
+  if (isWa && val) {
+    const digits = val.replace(/\D/g, '');
+    if (digits.length < 8 || digits.length > 15) {
+      widget.props.showError = true;
+      widget.props.stateVariant = 'Wrong';
+      widget.props.errorMessage = 'Please enter a valid WhatsApp number (min 8 digits).';
+      if (triggerShake) triggerFieldShake(widget.id);
+      return false;
+    }
+  }
+
+  // 4. Clear errors when input is valid
+  if (val) {
+    widget.props.showError = false;
+    if (widget.props.stateVariant === 'Wrong' || widget.props.stateVariant === 'Wrong alert') {
+      widget.props.stateVariant = 'Input';
+    }
+  } else {
+    widget.props.showError = false;
+    widget.props.stateVariant = 'Default';
+  }
+  return true;
+}
+
+function handleFieldFocus(widget: any) {
+  focusedFieldId.value = widget.id;
+  widget.props.isFocused = true;
+}
+
+function handleFieldBlur(widget: any) {
+  if (focusedFieldId.value === widget.id) {
+    focusedFieldId.value = null;
+  }
+  widget.props.isFocused = false;
+
+  // Validate on blur if user entered value or if required field
+  if (widget.props.value || widget.props.required) {
+    validateField(widget, true);
+  }
+}
+
+function isFieldUnderlineActive(widget: any): boolean {
+  if (shakingFieldIds.value.has(widget.id)) return true;
+  if (focusedFieldId.value === widget.id || !!widget.props.isFocused) return true;
+  return false;
+}
+
+function isFieldErrorMessageVisible(widget: any): boolean {
+  if (!isFieldError(widget)) return false;
+  // Error message helper text and alert icon are shown only during on-going input / focus or during error trigger shake
+  return focusedFieldId.value === widget.id || !!widget.props.isFocused || shakingFieldIds.value.has(widget.id);
+}
+
+function isFieldLabelFloating(widget: any): boolean {
+  if (focusedFieldId.value === widget.id || !!widget.props.isFocused) return true;
+  if (widget.props.value && String(widget.props.value).trim().length > 0) return true;
+  return !!widget.props.alwaysShowLabel;
+}
+
+function isFieldError(widget: any): boolean {
+  return widget.props.stateVariant === 'Wrong alert' || widget.props.stateVariant === 'Wrong' || !!widget.props.showError;
+}
+
+function toggleFieldVariant(widget: any) {
+  const variants = ['Default', 'Input', 'Wrong alert', 'Wrong'];
+  const currentIndex = variants.indexOf(widget.props.stateVariant || 'Default');
+  const nextVariant = variants[(currentIndex + 1) % variants.length];
+  widget.props.stateVariant = nextVariant;
+  const isWa = isPhoneField(widget);
+  
+  if (nextVariant === 'Default') {
+    widget.props.value = '';
+    widget.props.showError = false;
+  } else if (nextVariant === 'Input') {
+    if (isWa) {
+      widget.props.value = '81234567890';
+    } else {
+      if (!widget.props.value || !widget.props.value.includes('@')) widget.props.value = 'lioviani@gmail.com';
+    }
+    widget.props.showError = false;
+  } else if (nextVariant === 'Wrong alert') {
+    if (isWa) {
+      widget.props.value = '812';
+      widget.props.errorMessage = 'Please enter a valid WhatsApp number (min 8 digits).';
+    } else {
+      widget.props.value = 'lioviani@gmail';
+      widget.props.errorMessage = 'Please enter a valid email address with @domain (e.g. name@domain.com).';
+    }
+    widget.props.showError = true;
+    triggerFieldShake(widget.id);
+  } else if (nextVariant === 'Wrong') {
+    if (isWa) {
+      widget.props.value = '812';
+      widget.props.errorMessage = 'Please enter a valid WhatsApp number (min 8 digits).';
+    } else {
+      widget.props.value = 'lioviani@gmail';
+      widget.props.errorMessage = 'Please enter a valid email address with @domain (e.g. name@domain.com).';
+    }
+    widget.props.showError = true;
+    triggerFieldShake(widget.id);
+  }
+}
+
+function handleFieldInputChange(e: Event, widget: any) {
+  const target = e.target as HTMLInputElement;
+  let val = target.value;
+  const isWa = isPhoneField(widget);
+
+  if (isWa) {
+    // Only allow digits, and automatically strip any leading zeros (e.g. 0812 -> 812)
+    val = val.replace(/\D/g, '').replace(/^0+/, '');
+    target.value = val;
+  }
+
+  widget.props.value = val;
+  const trimmedVal = val.trim();
+  const label = (widget.props.label || '').toLowerCase();
+  const isEmail = widget.props.inputType === 'email' || label.includes('email');
+
+  if (widget.props.showError || widget.props.stateVariant === 'Wrong alert' || widget.props.stateVariant === 'Wrong') {
+    if (isEmail) {
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (emailPattern.test(trimmedVal)) {
+        widget.props.showError = false;
+        widget.props.stateVariant = 'Input';
+      } else {
+        widget.props.stateVariant = 'Wrong';
+      }
+    } else if (isWa) {
+      if (trimmedVal.length >= 8) {
+        widget.props.showError = false;
+        widget.props.stateVariant = 'Input';
+      } else {
+        widget.props.stateVariant = 'Wrong';
+      }
+    } else if (trimmedVal) {
+      widget.props.showError = false;
+      widget.props.stateVariant = 'Input';
+    }
+  } else {
+    if (trimmedVal && widget.props.stateVariant === 'Default') {
+      widget.props.stateVariant = 'Input';
+    } else if (!trimmedVal && widget.props.stateVariant === 'Input') {
+      widget.props.stateVariant = 'Default';
+    }
+  }
+}
+
+
+const isLastWidgetHero = computed(() => {
+  const tree = activePage.value.widget_tree;
+  if (tree.length === 0) return false;
+  return tree[tree.length - 1]?.type === 'HeroDrop';
+});
+
+const isLastWidgetText = computed(() => {
+  const tree = activePage.value.widget_tree;
+  if (tree.length === 0) return false;
+  return tree[tree.length - 1]?.type === 'TextBanner';
+});
+
+const stickyButtonForThisPage = computed(() => {
+  for (const p of editorStore.pages) {
+    const btn = p.widget_tree.find(w => w.type === 'ActionButton' && w.props?.positionMode === 'sticky-bottom');
+    if (btn) {
+      const scope = btn.props?.stickyScope || 'current';
+      if (scope === 'all') return btn;
+      if (scope === 'current' && p.id === activePage.value.id) return btn;
+      if (scope === 'custom' && (btn.props?.stickyPageIds || []).includes(activePage.value.id)) return btn;
+    }
+  }
+  return null;
+});
+
+const containerBottomPaddingClass = computed(() => {
+  const tree = activePage.value.widget_tree;
+  if (tree.length === 0) return 'pb-0';
+  if (isLastWidgetHero.value) return 'pb-0';
+  if (stickyButtonForThisPage.value) return 'pb-[72px]';
+  if (isLastWidgetText.value) return 'pb-0';
+  return 'pb-[16px]';
+});
+
+function handleDragEnter() {
+  handleSelectThisPage();
+  isDragOver.value = true;
+  editorStore.isDraggingOverCanvas = true;
+}
+
+function handleDragOver(e: DragEvent, index?: number) {
+  e.preventDefault();
+  if (e.dataTransfer) {
+    e.dataTransfer.dropEffect = 'copy';
+  }
+  isDragOver.value = true;
+  dropTargetIndex.value = typeof index === 'number' ? index : null;
+}
+
+function handleDragLeave(e: DragEvent) {
+  const relatedTarget = e.relatedTarget as HTMLElement;
+  const currentTarget = e.currentTarget as HTMLElement;
+  if (!currentTarget || !currentTarget.contains(relatedTarget)) {
+    isDragOver.value = false;
+    dropTargetIndex.value = null;
+    editorStore.isDraggingOverCanvas = false;
+  }
+}
+
+function handleDrop(e: DragEvent, targetIndex?: number) {
+  e.preventDefault();
+  handleSelectThisPage();
+  isDragOver.value = false;
+  dropTargetIndex.value = null;
+  editorStore.isDraggingOverCanvas = false;
+
+  // Check if physical image file dropped from OS desktop/finder
+  const files = e.dataTransfer?.files;
+  if (files && files.length > 0 && files[0].type.startsWith('image/')) {
+    const file = files[0];
+    const reader = new FileReader();
+    reader.onload = async (uploadEvent) => {
+      const dataUrl = uploadEvent.target?.result as string;
+      if (dataUrl) {
+        // If dropped directly onto an existing HeroDrop, replace its image
+        const isDroppedOnExistingHero = typeof targetIndex === 'number' && activePage.value.widget_tree[targetIndex]?.type === 'HeroDrop';
+        let targetId: string;
+
+        if (isDroppedOnExistingHero) {
+          const existingHero = activePage.value.widget_tree[targetIndex!];
+          editorStore.updateWidgetProps(existingHero.id, {
+            imageUrl: dataUrl,
+            isSolidSpace: false
+          });
+          editorStore.selectWidget(existingHero.id);
+          targetId = existingHero.id;
+        } else {
+          // Otherwise, insert a NEW HeroDrop widget at the drop location!
+          const newWidget = editorStore.addWidget('HeroDrop', typeof targetIndex === 'number' ? targetIndex : undefined, {
+            imageUrl: dataUrl,
+            isSolidSpace: false,
+            ratio: 'Full screen landing page',
+            mediaFit: 'Fill the screen',
+            title: '',
+            headline: '',
+            subtitle: '',
+            subheadline: '',
+            showBannerText: false,
+            buttonText: '',
+            isCtaEnabled: false,
+            isOverlayEnabled: false,
+            overlayOpacity: 50,
+            isBrandLogoEnabled: false,
+            brandLogoUrl: ''
+          });
+          targetId = newWidget.id;
+          editorStore.selectWidget(newWidget.id);
+        }
+
+        // Upload to server directly in background and replace with persistent URL
+        try {
+          const savedMedia = await uploadMediaDirectly({
+            dataUrl,
+            title: file.name.replace(/\.[^/.]+$/, ''),
+            category: 'Photos',
+            filename: file.name
+          });
+
+          if (savedMedia?.url && targetId) {
+            editorStore.updateWidgetProps(targetId, {
+              imageUrl: savedMedia.url,
+              isSolidSpace: false
+            });
+          }
+        } catch (err) {
+          console.warn('Server upload background failed, retaining local preview:', err);
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+    return;
+  }
+
+  let dragData = editorStore.draggedWidget;
+  if (!dragData && e.dataTransfer) {
+    try {
+      const raw = e.dataTransfer.getData('application/json');
+      if (raw) {
+        dragData = JSON.parse(raw);
+      }
+    } catch {
+      const rawType = e.dataTransfer.getData('text/plain');
+      if (rawType) {
+        dragData = { type: rawType as any };
+      }
+    }
+  }
+
+  if (dragData) {
+    const insertIdx = typeof targetIndex === 'number' ? targetIndex : undefined;
+    const isDroppedOnExistingHero = typeof targetIndex === 'number' && activePage.value.widget_tree[targetIndex]?.type === 'HeroDrop';
+
+    if (isDroppedOnExistingHero && dragData.customProps?.imageUrl) {
+      // Replaced specific dropped hero
+      const existingHero = activePage.value.widget_tree[targetIndex!];
+      editorStore.updateWidgetProps(existingHero.id, {
+        imageUrl: dragData.customProps.imageUrl,
+        isSolidSpace: false,
+        ...(dragData.customProps.ratio ? { ratio: dragData.customProps.ratio } : {})
+      });
+      editorStore.selectWidget(existingHero.id);
+      editorStore.openMediaSidebar();
+    } else if (dragData.type === 'HeroDrop') {
+      // Insert new hero banner widget
+      const newWidget = editorStore.addWidget('HeroDrop', insertIdx, {
+        ratio: 'Full screen landing page',
+        isSolidSpace: !dragData.customProps?.imageUrl,
+        mediaFit: 'Fill the screen',
+        title: '',
+        headline: '',
+        subtitle: '',
+        subheadline: '',
+        showBannerText: false,
+        buttonText: '',
+        isCtaEnabled: false,
+        isOverlayEnabled: false,
+        overlayOpacity: 50,
+        isBrandLogoEnabled: false,
+        brandLogoUrl: '',
+        ...(dragData.customProps || {})
+      });
+      editorStore.selectWidget(newWidget.id);
+      editorStore.openMediaSidebar(newWidget.props.ratio);
+    } else {
+      editorStore.addWidget(dragData.type, insertIdx, dragData.customProps);
+    }
+  }
+}
+
+const isDragOverLogoSlot = ref<string | null>(null);
+
+function handleOpenLogoPicker(widgetId: string) {
+  editorStore.selectWidget(widgetId);
+  editorStore.updateWidgetProps(widgetId, { isBrandLogoEnabled: true });
+  editorStore.openMediaSidebar();
+}
+
+function handleLogoDropOnBanner(e: DragEvent, widgetId: string) {
+  isDragOverLogoSlot.value = null;
+  // Check if image from Media Gallery or JSON payload
+  const jsonStr = e.dataTransfer?.getData('application/json');
+  if (jsonStr) {
+    try {
+      const data = JSON.parse(jsonStr);
+      if (data?.customProps?.imageUrl) {
+        editorStore.updateWidgetProps(widgetId, {
+          brandLogoUrl: data.customProps.imageUrl,
+          isBrandLogoEnabled: true
+        });
+        editorStore.selectWidget(widgetId);
+        return;
+      }
+    } catch (_) {}
+  }
+
+  // Check if physical file dropped
+  const files = e.dataTransfer?.files;
+  if (files && files.length > 0 && files[0].type.startsWith('image/')) {
+    const file = files[0];
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const dataUrl = ev.target?.result as string;
+      if (dataUrl) {
+        // Upload to server directly
+        const savedMedia = await uploadMediaDirectly({
+          dataUrl,
+          title: file.name.replace(/\.[^/.]+$/, ''),
+          category: 'Logo',
+          filename: file.name
+        });
+
+        editorStore.updateWidgetProps(widgetId, {
+          brandLogoUrl: savedMedia.url,
+          isBrandLogoEnabled: true
+        });
+        editorStore.selectWidget(widgetId);
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+}
+</script>

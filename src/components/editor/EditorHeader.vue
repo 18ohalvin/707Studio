@@ -1,0 +1,128 @@
+<template>
+  <header class="absolute top-0 left-0 right-0 z-40 backdrop-blur-[4px] bg-white/20 content-stretch flex items-center justify-between px-[20px] h-[48px] w-full select-none transition-all">
+    <!-- Left: 707 Logo, Dynamic-Width Title, and Save Status Pill -->
+    <div class="content-stretch flex gap-[16px] md:gap-[20px] items-center flex-1 min-w-0 mr-4">
+      <!-- 707 Official Logo from Figma (Click to return to Landing Page) -->
+      <router-link to="/" class="h-[15px] w-[48px] relative shrink-0 flex items-center cursor-pointer hover:opacity-80 transition-opacity" title="Back to Design Studio">
+        <img 
+          :src="FIGMA_ASSETS.logo707" 
+          alt="707 Logo" 
+          class="inset-0 object-contain pointer-events-none size-full"
+          @error="handleLogoError"
+        />
+        <!-- Fallback if localhost asset server isn't running -->
+        <span v-if="logoFailed" class="font-black text-black text-xs tracking-tighter">707</span>
+      </router-link>
+
+      <!-- Title Container & Save Status -->
+      <div class="flex flex-row items-center gap-[8px] shrink-0 max-w-full">
+        <!-- Dynamic-Width Title Input: Span dictates 100% of width, absolute input overlays it to eliminate all browser min-width/placeholder constraints -->
+        <div class="relative inline-flex items-center font-707 text-bodytext text-black font-light p-0 m-0">
+          <span 
+            class="invisible whitespace-pre pointer-events-none select-none p-0 m-0 border-0 font-707 text-bodytext font-light leading-[20px]"
+            aria-hidden="true"
+          >{{ editorStore.projectTitle || 'atmos x ASICS Gel Kayano Pandan RSVP Form' }}</span>
+          <input 
+            v-model="editorStore.projectTitle"
+            placeholder="atmos x ASICS Gel Kayano Pandan RSVP Form"
+            class="absolute inset-0 w-full h-full bg-transparent p-0 m-0 font-707 text-bodytext text-black font-light leading-[20px] border-none outline-none focus:outline-none"
+          />
+        </div>
+
+        <!-- Save Info Pill right beside dynamic title -->
+        <div class="border-black/10 border-[0.5px] border-solid content-stretch flex h-[20px] items-center justify-center px-[7px] rounded-[10px] shrink-0 bg-[#ececec]/20 backdrop-blur-[4px] shadow-sm">
+          <p class="font-707 text-legal-micro font-light text-black whitespace-nowrap">
+            {{ saveStatusText }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Test Your Form, Ask for Review & Avatar proportioned for 48px Header -->
+    <div class="content-stretch flex gap-[10px] items-center shrink-0">
+      <!-- Test Your Form Button -->
+      <button 
+        @click="editorStore.isTestFormModalOpen = true"
+        class="apple-glass-btn content-stretch flex items-center justify-center overflow-clip px-[14px] h-[32px] rounded-[8px] apple-press cursor-pointer"
+      >
+        <span class="font-707 font-medium text-black text-[13px] whitespace-nowrap">
+          Test Your Form
+        </span>
+      </button>
+
+      <!-- Ask for Review Button -->
+      <button 
+        @click="editorStore.isReviewModalOpen = true"
+        class="apple-glass-btn-dark content-stretch flex items-center justify-center overflow-clip px-[14px] h-[32px] rounded-[8px] apple-press cursor-pointer"
+      >
+        <span class="font-707 font-medium text-white text-[13px] whitespace-nowrap">
+          Ask for Review
+        </span>
+      </button>
+
+      <!-- Profile Avatar Container with Anchored UserProfileModal -->
+      <div class="relative">
+        <div 
+          @click="showUserProfileModal = !showUserProfileModal"
+          class="w-[30px] h-[30px] rounded-full overflow-hidden border border-black/10 shrink-0 bg-white/20 backdrop-blur-[4px] flex items-center justify-center ml-0.5 transition-transform hover:scale-105 duration-200 cursor-pointer shadow-sm"
+          title="User Profile"
+        >
+          <img 
+            :src="FIGMA_ASSETS.avatar" 
+            alt="Avatar" 
+            class="size-full object-cover"
+            @error="handleAvatarError"
+          />
+          <span v-if="avatarFailed" class="text-[10px] font-bold text-neutral-600">707</span>
+        </div>
+
+        <!-- User Profile Modal (Figma Node 212:8894) anchored directly to avatar -->
+        <UserProfileModal
+          :is-open="showUserProfileModal"
+          @close="showUserProfileModal = false"
+          @open-analytics="handleAnalytics"
+          @open-settings="handleSettings"
+          @sign-out="handleSignOut"
+        />
+      </div>
+    </div>
+  </header>
+</template>
+
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { useEditorStore } from '../../stores/editorStore.ts';
+import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
+import UserProfileModal from '../modals/UserProfileModal.vue';
+
+const router = useRouter();
+const editorStore = useEditorStore();
+const logoFailed = ref(false);
+const avatarFailed = ref(false);
+const showUserProfileModal = ref(false);
+
+function handleLogoError() {
+  logoFailed.value = true;
+}
+
+function handleAvatarError() {
+  avatarFailed.value = true;
+}
+
+function handleAnalytics() {
+  alert('707 Analytics: Campaign conversions, RSVP rate, and traffic analytics dashboard is up to date.');
+}
+
+function handleSettings() {
+  editorStore.activeTab = 'settings';
+}
+
+function handleSignOut() {
+  router.push('/');
+}
+
+const saveStatusText = computed(() => {
+  return 'Saved 1 min ago';
+});
+</script>
