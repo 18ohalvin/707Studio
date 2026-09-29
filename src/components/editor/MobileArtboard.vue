@@ -289,7 +289,7 @@
                 :class="[
                   widget.props.textPosition === 'top' ? ((index === 0 && (widget.props.isBrandLogoEnabled || widget.props.brandLogoUrl)) ? 'top-0 pt-[68px] pb-[24px]' : 'top-0 pt-[36px] pb-[24px]') : 
                   widget.props.textPosition === 'center' ? 'top-1/2 -translate-y-1/2 py-[24px]' : 
-                  (stickyButtonForThisPage ? 'bottom-0 pt-[24px] pb-[80px]' : 'bottom-0 pt-[24px] pb-[32px]'),
+                  'bottom-0 pt-[24px] pb-[64px]',
                   widget.props.textAlign === 'center' ? 'text-center items-center' : 
                   widget.props.textAlign === 'right' ? 'text-right' : 
                   'text-left items-start'
