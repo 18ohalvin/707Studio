@@ -1,0 +1,36 @@
+name: CI & Live Sync Verification
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install root dependencies
+      run: npm ci
+
+    - name: Install backend dependencies
+      run: npm --prefix server ci
+
+    - name: Run unit & regression tests
+      run: npm run test
+
+    - name: Build frontend bundle
+      run: npm run build
+
+    - name: Build backend server
+      run: npm --prefix server run build
