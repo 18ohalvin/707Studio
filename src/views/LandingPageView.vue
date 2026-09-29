@@ -187,8 +187,8 @@
         </section>
       </div>
 
-      <!-- Recent Projects List Section (Figma Node 212:7057) - Fixed position anchored below centered hero -->
-      <div class="absolute left-1/2 top-[calc(50%+115px)] -translate-x-1/2 w-full max-w-[631px] px-4 pointer-events-auto">
+      <!-- Recent Projects List Section (Figma Node 212:7057) - Placed at bottom with 48px bottom padding -->
+      <div class="absolute left-1/2 bottom-[48px] -translate-x-1/2 w-full max-w-[631px] px-4 pointer-events-auto">
         <section 
           ref="projectsSectionRef"
           class="flex flex-col items-start w-full shrink-0"
