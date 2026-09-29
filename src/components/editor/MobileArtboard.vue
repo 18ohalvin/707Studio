@@ -282,28 +282,10 @@
                   'text-left items-start'
                 ]"
               >
-                <!-- 1. Headline -->
-                <h1 
-                  v-if="(widget.props.showBannerText ?? true) && (widget.props.title || widget.props.headline)" 
-                  class="font-707 font-medium text-display-h1 tracking-tight leading-[34px] whitespace-pre-line" 
-                  :class="widget.props.isSolidSpace ? 'text-black' : 'text-white'"
-                >
-                  {{ widget.props.title || widget.props.headline }}
-                </h1>
-
-                <!-- 2. Sub Headline -->
-                <p 
-                  v-if="(widget.props.showBannerText ?? true) && (widget.props.subtitle || widget.props.subheadline)" 
-                  class="font-707 font-medium text-subtext-lead tracking-normal leading-[22px] mt-1.5 whitespace-pre-line" 
-                  :class="widget.props.isSolidSpace ? 'text-neutral-700' : 'text-[#ffffff]'"
-                >
-                  {{ widget.props.subtitle || widget.props.subheadline }}
-                </p>
-
-                <!-- 3. Optional Tag / Badge (Under Sub Headline) -->
+                <!-- 1. Optional Tag / Badge (Placed on Top of H1 Headline) -->
                 <div 
                   v-if="(widget.props.showBannerText ?? true) && widget.props.badge"
-                  class="mt-2"
+                  class="mb-2"
                 >
                   <span 
                     class="inline-block font-bold text-[9px] tracking-widest px-2 py-0.5 uppercase rounded-sm font-707 shadow-sm transition-colors"
@@ -312,6 +294,24 @@
                     {{ widget.props.badge }}
                   </span>
                 </div>
+
+                <!-- 2. Headline (H1) -->
+                <h1 
+                  v-if="(widget.props.showBannerText ?? true) && (widget.props.title || widget.props.headline)" 
+                  class="font-707 font-medium text-display-h1 tracking-tight leading-[34px] whitespace-pre-line" 
+                  :class="widget.props.isSolidSpace ? 'text-black' : 'text-white'"
+                >
+                  {{ widget.props.title || widget.props.headline }}
+                </h1>
+
+                <!-- 3. Sub Headline -->
+                <p 
+                  v-if="(widget.props.showBannerText ?? true) && (widget.props.subtitle || widget.props.subheadline)" 
+                  class="font-707 font-medium text-subtext-lead tracking-normal leading-[22px] mt-1.5 whitespace-pre-line" 
+                  :class="widget.props.isSolidSpace ? 'text-neutral-700' : 'text-[#ffffff]'"
+                >
+                  {{ widget.props.subtitle || widget.props.subheadline }}
+                </p>
 
                 <!-- CTA Button automatically under subheadline with auto light/dark color adaptation (only rendered in-flow if not sticky bottom) -->
                 <div 

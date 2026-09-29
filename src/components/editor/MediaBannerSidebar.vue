@@ -339,7 +339,7 @@
           </div>
           <div v-else class="flex flex-col gap-1.5 w-full">
             <div class="flex items-center justify-between">
-              <span class="font-707 text-[11px] font-medium text-neutral-600">Tag / Badge (Under Sub Headline)</span>
+              <span class="font-707 text-[11px] font-medium text-neutral-600">Tag / Badge (Top of Headline)</span>
               <button 
                 type="button" 
                 @click="removeBadge" 
