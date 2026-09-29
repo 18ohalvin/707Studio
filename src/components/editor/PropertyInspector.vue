@@ -130,7 +130,7 @@
             v-model="editorStore.selectedWidget.props.text"
             rows="3"
             placeholder="Type your text here..."
-            class="w-full bg-[#181a1f] border border-[#2c303a] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-white transition-colors font-707 uppercase"
+            class="w-full bg-[#181a1f] border border-[#2c303a] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-white transition-colors font-707"
           ></textarea>
         </div>
         <div>

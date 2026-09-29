@@ -548,9 +548,9 @@
                   </button>
                 </div>
 
-                <!-- Live Preview in Mini Preview Mode (Pure Semantic Paragraph, Zero JS race conditions) -->
+                <!-- Live Preview in Mini Preview Mode & Preview Mode (Pure Semantic Paragraph, Zero JS race conditions, true UI testing) -->
                 <p 
-                  v-if="isMiniPreview"
+                  v-if="isMiniPreview || isPreviewModal"
                   class="w-full min-w-0 max-w-full bg-transparent font-707 p-0 m-0 whitespace-pre-wrap break-words [overflow-wrap:anywhere] select-none pointer-events-none"
                   :class="[
                     getTextTypographyClass(widget),
@@ -1098,9 +1098,9 @@ function getTextTypographyClass(widget: any) {
   const style = widget.props.typographyStyle || 'headline-1';
   switch (style) {
     case 'heading-2':
-      return 'text-[22px] md:text-[24px] font-medium leading-[1.15] text-black uppercase placeholder:text-black placeholder:uppercase';
+      return 'text-[22px] md:text-[24px] font-medium leading-[1.15] text-black placeholder:text-black';
     case 'heading-3':
-      return 'text-[17px] md:text-[18px] font-medium leading-[1.2] text-black uppercase placeholder:text-black placeholder:uppercase';
+      return 'text-[17px] md:text-[18px] font-medium leading-[1.2] text-black placeholder:text-black';
     case 'subtext-lead':
       return 'text-[15px] md:text-[16px] font-medium leading-[1.3] text-black placeholder:text-black';
     case 'body-text-bold':
@@ -1113,7 +1113,7 @@ function getTextTypographyClass(widget: any) {
       return 'text-[10px] md:text-[11px] font-normal leading-[1.4] text-neutral-500 placeholder:text-neutral-500';
     case 'headline-1':
     default:
-      return 'text-[28px] md:text-[32px] font-medium leading-[1.08] text-black uppercase placeholder:text-black placeholder:uppercase';
+      return 'text-[28px] md:text-[32px] font-medium leading-[1.08] text-black placeholder:text-black';
   }
 }
 
@@ -1309,22 +1309,32 @@ function getWidgetMarginTopClass(index: number) {
     return 'mt-0';
   }
 
-  // 2. If text widget meets another text widget (Text meets Text), exclusive 4px spacing between them
+  // 2. If text widget is the top widget (index 0) and followed by form input, banner, or any other widget: exclusive 24px bottom spacing
+  if (index === 1 && prevWidget?.type === 'TextBanner' && currentWidget?.type !== 'TextBanner') {
+    return 'mt-[24px]';
+  }
+
+  // 3. If text widget meets another text widget (Text meets Text), exclusive 4px spacing between them
   if (currentWidget?.type === 'TextBanner' && prevWidget?.type === 'TextBanner') {
     return 'mt-[4px]';
   }
 
-  // 3. If FieldInput meets another FieldInput, 12px spacing between them
+  // 4. If text widget is followed by FieldInput or Banner anywhere in stack: 24px spacing
+  if (prevWidget?.type === 'TextBanner' && (currentWidget?.type === 'FieldInput' || currentWidget?.type === 'HeroDrop')) {
+    return 'mt-[24px]';
+  }
+
+  // 5. If FieldInput meets another FieldInput, 12px spacing between them
   if (currentWidget?.type === 'FieldInput' && prevWidget?.type === 'FieldInput') {
     return 'mt-[12px]';
   }
 
-  // 4. If ActionButton meets another ActionButton, 8px spacing between them
+  // 6. If ActionButton meets another ActionButton, 8px spacing between them
   if (currentWidget?.type === 'ActionButton' && prevWidget?.type === 'ActionButton') {
     return 'mt-[8px]';
   }
 
-  // 5. Default spacing between different widget types
+  // 7. Default spacing between different widget types
   return 'mt-[16px]';
 }
 

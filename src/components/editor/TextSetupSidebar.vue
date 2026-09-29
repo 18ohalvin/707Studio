@@ -167,9 +167,9 @@ const textContent = computed({
 });
 
 const typographyOptions = [
-  { id: 'headline-1', label: 'Headline 1', size: '32px', desc: 'Display title / primary punchy headline', previewClass: 'font-medium uppercase' },
-  { id: 'heading-2', label: 'Heading 2', size: '22px', desc: 'Section header / secondary headline', previewClass: 'font-medium uppercase' },
-  { id: 'heading-3', label: 'Heading 3', size: '18px', desc: 'Sub-section heading', previewClass: 'font-medium uppercase' },
+  { id: 'headline-1', label: 'Headline 1', size: '32px', desc: 'Display title / primary punchy headline', previewClass: 'font-medium' },
+  { id: 'heading-2', label: 'Heading 2', size: '22px', desc: 'Section header / secondary headline', previewClass: 'font-medium' },
+  { id: 'heading-3', label: 'Heading 3', size: '18px', desc: 'Sub-section heading', previewClass: 'font-medium' },
   { id: 'subtext-lead', label: 'Subtext Lead', size: '16px', desc: 'Introductory lead text / bold subheader', previewClass: 'font-medium' },
   { id: 'body-text', label: 'Body Text', size: '14px', desc: 'Standard readable paragraph body text', previewClass: 'font-normal' },
   { id: 'body-text-bold', label: 'Body Text (Bold)', size: '14px', desc: 'Emphasized body copy', previewClass: 'font-bold' },
