@@ -83,148 +83,153 @@
       </div>
     </header>
 
-    <!-- 2. Centered Main Content Hub (Figma Node 212:7066) - Grouped and Centered in Viewport -->
+    <!-- 2. Centered Main Content Hub (Figma Node 212:7066) -->
     <main 
-      class="flex flex-col items-center justify-center flex-1 w-full max-w-[664px] mx-auto px-4 h-full my-auto overflow-hidden"
+      class="relative flex-1 w-full h-full overflow-hidden flex flex-col items-center select-none"
       data-node-id="212:7066"
       data-name="Main Content Container"
     >
-      <!-- Intro Greeting & 5 Action Cards (Figma Node 212:7033) - Position 100% Fixed & Stable -->
-      <section class="flex flex-col items-center gap-[32px] w-full shrink-0" data-node-id="212:7033" data-name="Intro Container">
-        <h1 class="font-707 text-[28px] md:text-[30px] font-normal text-black text-center tracking-[-0.56px] leading-[34px] whitespace-nowrap" data-node-id="198:6839">
-          Hello Fellas! Let’s build something cool.
-        </h1>
+      <!-- Grouped Headline + Categories Shortcut Section: Centered at 50vh (Vertical Center) -->
+      <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-full max-w-[664px] px-4 pointer-events-auto">
+        <!-- Intro Greeting & 5 Action Cards (Figma Node 212:7033) -->
+        <section class="flex flex-col items-center gap-[28px] md:gap-[32px] w-full shrink-0" data-node-id="212:7033" data-name="Intro Container">
+          <h1 class="font-707 text-[28px] md:text-[30px] font-normal text-black text-center tracking-[-0.56px] leading-[34px] whitespace-nowrap" data-node-id="198:6839">
+            Hello Fellas! Let’s build something cool.
+          </h1>
 
-        <!-- 5 Action Hub Quick Buttons (Figma Node 198:6840) -->
-        <div class="flex gap-[32px] md:gap-[40px] items-start justify-center px-[16px] py-[8px] w-full" data-node-id="198:6840" data-name="Buttons Container">
-          <!-- 1. Create a new project -->
-          <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-node-id="198:6926" data-name="Button Container">
-            <button 
-              @click="handleCreateNewProject"
-              class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] border-[0.5px] border-black/10 hover:border-black/25 flex items-center justify-center p-[8px] rounded-[8px] size-[88px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer transition-all duration-200 group"
-              data-node-id="198:6927"
-              title="Create a fresh blank project"
-            >
-              <div class="size-[32px] relative shrink-0 flex items-center justify-center">
-                <img :src="FIGMA_ASSETS.landingCreateProject" alt="Create new project" class="size-full object-contain pointer-events-none" />
-              </div>
-            </button>
-            <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal" data-node-id="198:6931">
-              Create a new project
-            </p>
-          </div>
-
-          <!-- 2. Browse Templates -->
-          <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-node-id="198:6869" data-name="Button Container">
-            <button 
-              @click="handleBrowseTemplates"
-              class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] border-[0.5px] border-black/10 hover:border-black/25 flex items-center justify-center p-[8px] rounded-[8px] size-[88px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer transition-all duration-200 group"
-              data-node-id="198:6863"
-              title="Browse pre-built activation templates"
-            >
-              <div class="size-[32px] relative shrink-0 flex items-center justify-center">
-                <img :src="FIGMA_ASSETS.landingBrowseTemplates" alt="Browse Templates" class="size-full object-contain pointer-events-none" />
-              </div>
-            </button>
-            <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal" data-node-id="198:6868">
-              Browse Templates
-            </p>
-          </div>
-
-          <!-- 3. Create Event Registration -->
-          <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-node-id="198:6933" data-name="Button Container">
-            <button 
-              @click="handleCreateEventRegistration"
-              class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] border-[0.5px] border-black/10 hover:border-black/25 flex items-center justify-center p-[8px] rounded-[8px] size-[88px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer transition-all duration-200 group"
-              data-node-id="198:6934"
-              title="Start with Event RSVP form template"
-            >
-              <div class="h-[32px] w-[28.5px] relative shrink-0 flex items-center justify-center">
-                <img :src="FIGMA_ASSETS.landingEventRegistration" alt="Event Registration" class="size-full object-contain pointer-events-none" />
-              </div>
-            </button>
-            <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal" data-node-id="198:6938">
-              Create Event Registration
-            </p>
-          </div>
-
-          <!-- 4. e-Pass QR Ticketing -->
-          <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-node-id="212:7004" data-name="Button Container">
-            <button 
-              @click="handleCreateTicketing"
-              class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] border-[0.5px] border-black/10 hover:border-black/25 flex items-center justify-center p-[8px] rounded-[8px] size-[88px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer transition-all duration-200 group"
-              data-node-id="212:7005"
-              title="Start with QR ticketing activation"
-            >
-              <div class="size-[32px] relative shrink-0 flex items-center justify-center">
-                <img :src="FIGMA_ASSETS.landingTicket" alt="e-Pass QR Ticketing" class="size-full object-contain pointer-events-none" />
-              </div>
-            </button>
-            <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal" data-node-id="212:7009">
-              e-Pass QR Ticketing
-            </p>
-          </div>
-
-          <!-- 5. View all projects -->
-          <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-node-id="212:7037" data-name="Button Container">
-            <button 
-              @click="handleViewAllProjects"
-              class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] border-[0.5px] border-black/10 hover:border-black/25 flex items-center justify-center p-[8px] rounded-[8px] size-[88px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer transition-all duration-200 group"
-              data-node-id="212:7038"
-              title="View all saved projects"
-            >
-              <div class="size-[32px] relative shrink-0 flex items-center justify-center">
-                <img :src="FIGMA_ASSETS.landingAllProjects" alt="View all projects" class="size-full object-contain pointer-events-none" />
-              </div>
-            </button>
-            <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal" data-node-id="212:7042">
-              View all projects
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Recent Projects List Section (Figma Node 212:7057) - Fixed position & scrollable with luxury mask -->
-      <section 
-        ref="projectsSectionRef"
-        class="flex flex-col items-start w-full max-w-[631px] mt-[44px] md:mt-[56px] shrink-0"
-        data-node-id="212:7057"
-        data-name="Project Info Container"
-      >
-        <!-- Fixed Scrollable Container with Luxury Mask & Sleek Styling -->
-        <div class="w-full h-[210px] md:h-[230px] overflow-y-auto pr-1 flex flex-col gap-[8px] luxury-scroll-mask overscroll-contain">
-          <div 
-            v-for="project in editorStore.projects"
-            :key="project.id"
-            class="flex items-center justify-between w-full py-1.5 hover:bg-black/[0.03] px-3 rounded-[10px] transition-all group cursor-pointer border border-transparent hover:border-black/5"
-            data-name="Project Details Container"
-            @click="openProject(project.id)"
-          >
-            <p class="font-707 text-[14px] text-black font-normal leading-[20px] whitespace-nowrap truncate max-w-[380px]">
-              {{ project.title }}
-            </p>
-            <div class="flex gap-[12px] items-center justify-end shrink-0" data-name="Project Time Container">
-              <p class="font-707 text-[11px] text-neutral-500 font-normal leading-[14px] whitespace-nowrap">
-                {{ editorStore.formatRelativeTime(project.updated_at) }}
-              </p>
+          <!-- 5 Action Hub Quick Buttons (Figma Node 198:6840) -->
+          <div class="flex gap-[32px] md:gap-[40px] items-start justify-center px-[16px] py-[8px] w-full" data-node-id="198:6840" data-name="Buttons Container">
+            <!-- 1. Create a new project -->
+            <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-node-id="198:6926" data-name="Button Container">
               <button 
-                class="border-[#d9d9d9] hover:border-black/30 border-[0.5px] border-solid flex h-[32px] items-center justify-center px-[14px] rounded-[8px] shrink-0 bg-white/90 hover:bg-black hover:text-white transition-all apple-cta-btn cursor-pointer shadow-sm"
-                data-name="Save Info Container"
-                @click.stop="openProject(project.id)"
+                @click="handleCreateNewProject"
+                class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] border-[0.5px] border-black/10 hover:border-black/25 flex items-center justify-center p-[8px] rounded-[8px] size-[88px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer transition-all duration-200 group"
+                data-node-id="198:6927"
+                title="Create a fresh blank project"
               >
-                <span class="font-707 text-[12px] font-light whitespace-nowrap">
-                  Continue
-                </span>
+                <div class="size-[32px] relative shrink-0 flex items-center justify-center">
+                  <img :src="FIGMA_ASSETS.landingCreateProject" alt="Create new project" class="size-full object-contain pointer-events-none" />
+                </div>
               </button>
+              <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal" data-node-id="198:6931">
+                Create a new project
+              </p>
+            </div>
+
+            <!-- 2. Browse Templates -->
+            <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-node-id="198:6869" data-name="Button Container">
+              <button 
+                @click="handleBrowseTemplates"
+                class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] border-[0.5px] border-black/10 hover:border-black/25 flex items-center justify-center p-[8px] rounded-[8px] size-[88px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer transition-all duration-200 group"
+                data-node-id="198:6863"
+                title="Browse pre-built activation templates"
+              >
+                <div class="size-[32px] relative shrink-0 flex items-center justify-center">
+                  <img :src="FIGMA_ASSETS.landingBrowseTemplates" alt="Browse Templates" class="size-full object-contain pointer-events-none" />
+                </div>
+              </button>
+              <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal" data-node-id="198:6868">
+                Browse Templates
+              </p>
+            </div>
+
+            <!-- 3. Create Event Registration -->
+            <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-node-id="198:6933" data-name="Button Container">
+              <button 
+                @click="handleCreateEventRegistration"
+                class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] border-[0.5px] border-black/10 hover:border-black/25 flex items-center justify-center p-[8px] rounded-[8px] size-[88px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer transition-all duration-200 group"
+                data-node-id="198:6934"
+                title="Start with Event RSVP form template"
+              >
+                <div class="h-[32px] w-[28.5px] relative shrink-0 flex items-center justify-center">
+                  <img :src="FIGMA_ASSETS.landingEventRegistration" alt="Event Registration" class="size-full object-contain pointer-events-none" />
+                </div>
+              </button>
+              <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal" data-node-id="198:6938">
+                Create Event Registration
+              </p>
+            </div>
+
+            <!-- 4. e-Pass QR Ticketing -->
+            <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-node-id="212:7004" data-name="Button Container">
+              <button 
+                @click="handleCreateTicketing"
+                class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] border-[0.5px] border-black/10 hover:border-black/25 flex items-center justify-center p-[8px] rounded-[8px] size-[88px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer transition-all duration-200 group"
+                data-node-id="212:7005"
+                title="Start with QR ticketing activation"
+              >
+                <div class="size-[32px] relative shrink-0 flex items-center justify-center">
+                  <img :src="FIGMA_ASSETS.landingTicket" alt="e-Pass QR Ticketing" class="size-full object-contain pointer-events-none" />
+                </div>
+              </button>
+              <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal" data-node-id="212:7009">
+                e-Pass QR Ticketing
+              </p>
+            </div>
+
+            <!-- 5. View all projects -->
+            <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-node-id="212:7037" data-name="Button Container">
+              <button 
+                @click="handleViewAllProjects"
+                class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] border-[0.5px] border-black/10 hover:border-black/25 flex items-center justify-center p-[8px] rounded-[8px] size-[88px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer transition-all duration-200 group"
+                data-node-id="212:7038"
+                title="View all saved projects"
+              >
+                <div class="size-[32px] relative shrink-0 flex items-center justify-center">
+                  <img :src="FIGMA_ASSETS.landingAllProjects" alt="View all projects" class="size-full object-contain pointer-events-none" />
+                </div>
+              </button>
+              <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal" data-node-id="212:7042">
+                View all projects
+              </p>
             </div>
           </div>
+        </section>
+      </div>
 
-          <!-- Empty state fallback if no projects -->
-          <div v-if="!editorStore.projects.length" class="h-full flex items-center justify-center text-neutral-400 font-707 text-[13px]">
-            No projects yet. Click "Create a new project" to begin.
+      <!-- Recent Projects List Section (Figma Node 212:7057) - Fixed position anchored below centered hero -->
+      <div class="absolute left-1/2 top-[calc(50%+115px)] -translate-x-1/2 w-full max-w-[631px] px-4 pointer-events-auto">
+        <section 
+          ref="projectsSectionRef"
+          class="flex flex-col items-start w-full shrink-0"
+          data-node-id="212:7057"
+          data-name="Project Info Container"
+        >
+          <!-- Fixed Scrollable Container with Luxury Mask & Sleek Styling -->
+          <div class="w-full h-[180px] md:h-[200px] overflow-y-auto pr-1 flex flex-col gap-[8px] luxury-scroll-mask overscroll-contain">
+            <div 
+              v-for="project in editorStore.projects"
+              :key="project.id"
+              class="flex items-center justify-between w-full py-1.5 hover:bg-black/[0.03] px-3 rounded-[10px] transition-all group cursor-pointer border border-transparent hover:border-black/5"
+              data-name="Project Details Container"
+              @click="openProject(project.id)"
+            >
+              <p class="font-707 text-[14px] text-black font-normal leading-[20px] whitespace-nowrap truncate max-w-[380px]">
+                {{ project.title }}
+              </p>
+              <div class="flex gap-[12px] items-center justify-end shrink-0" data-name="Project Time Container">
+                <p class="font-707 text-[11px] text-neutral-500 font-normal leading-[14px] whitespace-nowrap">
+                  {{ editorStore.formatRelativeTime(project.updated_at) }}
+                </p>
+                <button 
+                  class="border-[#d9d9d9] hover:border-black/30 border-[0.5px] border-solid flex h-[32px] items-center justify-center px-[14px] rounded-[8px] shrink-0 bg-white/90 hover:bg-black hover:text-white transition-all apple-cta-btn cursor-pointer shadow-sm"
+                  data-name="Save Info Container"
+                  @click.stop="openProject(project.id)"
+                >
+                  <span class="font-707 text-[12px] font-light whitespace-nowrap">
+                    Continue
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Empty state fallback if no projects -->
+            <div v-if="!editorStore.projects.length" class="h-full flex items-center justify-center text-neutral-400 font-707 text-[13px]">
+              No projects yet. Click "Create a new project" to begin.
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </main>
 
     <!-- Footer Space -->
