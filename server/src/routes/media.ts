@@ -1,16 +1,46 @@
 import { Router, Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
+import { resolveUploadDir } from '../uploads.js';
 
 export const mediaRouter = Router();
 
-// Ensure uploads folder exists in root public/uploads so Vite/Express serves it statically
-const rootUploadDir = fs.existsSync(path.resolve(process.cwd(), 'public'))
-  ? path.resolve(process.cwd(), 'public/uploads')
-  : path.resolve(process.cwd(), '../public/uploads');
+const rootUploadDir = resolveUploadDir();
 
 if (!fs.existsSync(rootUploadDir)) {
   fs.mkdirSync(rootUploadDir, { recursive: true });
+}
+
+/**
+ * The media list lives in a plain array, so without this it resets to the seed
+ * items on every restart and previously uploaded images become orphaned files
+ * nobody can see. Persist the index next to the files it describes.
+ */
+const mediaIndexPath = path.join(rootUploadDir, 'media-index.json');
+let hydrated = false;
+
+function ensureHydrated() {
+  if (hydrated) return;
+  hydrated = true;
+
+  try {
+    if (fs.existsSync(mediaIndexPath)) {
+      const stored = JSON.parse(fs.readFileSync(mediaIndexPath, 'utf-8'));
+      if (Array.isArray(stored)) {
+        mediaAssets = stored;
+      }
+    }
+  } catch (err) {
+    console.warn('[Media] Could not read stored media index, keeping seed list:', err);
+  }
+}
+
+function persistMedia() {
+  try {
+    fs.writeFileSync(mediaIndexPath, JSON.stringify(mediaAssets, null, 2));
+  } catch (err) {
+    console.warn('[Media] Could not persist media index:', err);
+  }
 }
 
 export interface ServerMediaItem {
@@ -84,6 +114,7 @@ let mediaAssets: ServerMediaItem[] = [
 
 // 1. GET /api/media - Get all media assets
 mediaRouter.get('/', (req: Request, res: Response) => {
+  ensureHydrated();
   res.json({
     success: true,
     data: mediaAssets
@@ -92,6 +123,7 @@ mediaRouter.get('/', (req: Request, res: Response) => {
 
 // 2. POST /api/media/upload - Store uploaded/dropped image to server directly
 mediaRouter.post('/upload', (req: Request, res: Response) => {
+  ensureHydrated();
   try {
     const { dataUrl, title, category, filename } = req.body;
     if (!dataUrl) {
@@ -127,6 +159,7 @@ mediaRouter.post('/upload', (req: Request, res: Response) => {
 
     // Prepend to top of assets list
     mediaAssets.unshift(newItem);
+    persistMedia();
 
     return res.status(201).json({
       success: true,
@@ -141,6 +174,7 @@ mediaRouter.post('/upload', (req: Request, res: Response) => {
 
 // 3. DELETE /api/media/:id - Remove media asset
 mediaRouter.delete('/:id', (req: Request, res: Response) => {
+  ensureHydrated();
   const { id } = req.params;
   const index = mediaAssets.findIndex(m => m.id === id);
 
@@ -149,6 +183,7 @@ mediaRouter.delete('/:id', (req: Request, res: Response) => {
   }
 
   const [removedItem] = mediaAssets.splice(index, 1);
+  persistMedia();
 
   // If local file exists, remove it
   if (removedItem?.filename) {

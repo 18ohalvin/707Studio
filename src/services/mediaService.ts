@@ -1,3 +1,4 @@
+import { apiFetch } from './apiClient.ts';
 import { FIGMA_ASSETS } from '../constants/figmaAssets.ts';
 
 export interface MediaItem {
@@ -60,7 +61,7 @@ export const INITIAL_CAMPAIGN_MEDIA: MediaItem[] = [
 
 export async function fetchServerMedia(): Promise<MediaItem[]> {
   try {
-    const res = await fetch('/api/media');
+    const res = await apiFetch('/api/media');
     if (res.ok) {
       const data = await res.json();
       if (data?.success && Array.isArray(data.data) && data.data.length > 0) {
@@ -80,7 +81,7 @@ export async function uploadMediaDirectly(params: {
   filename?: string;
 }): Promise<MediaItem> {
   try {
-    const res = await fetch('/api/media/upload', {
+    const res = await apiFetch('/api/media/upload', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -108,7 +109,7 @@ export async function uploadMediaDirectly(params: {
 
 export async function deleteServerMedia(id: string): Promise<boolean> {
   try {
-    const res = await fetch(`/api/media/${id}`, {
+    const res = await apiFetch(`/api/media/${id}`, {
       method: 'DELETE'
     });
     return res.ok;

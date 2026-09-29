@@ -5,16 +5,36 @@ dotenv.config();
 
 const { Pool } = pg;
 
-export const pool = new Pool({
-  host: process.env.POSTGRES_HOST || 'localhost',
-  port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
-  user: process.env.POSTGRES_USER || 'postgres',
-  password: process.env.POSTGRES_PASSWORD || 'postgres',
-  database: process.env.POSTGRES_DB || '707_activation_builder',
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-});
+// DATABASE_URL wins when present: managed Postgres (Coolify, Supabase, RDS)
+// hands out a connection string, and docker-compose already passes one. Before
+// this the string was ignored, so the API quietly fell back to in-memory
+// storage while looking like it had started correctly.
+const connectionString = process.env.DATABASE_URL;
+
+const needsSsl =
+  !!connectionString &&
+  (/sslmode=require/.test(connectionString) || process.env.POSTGRES_SSL === 'true');
+
+export const pool = new Pool(
+  connectionString
+    ? {
+        connectionString,
+        ssl: needsSsl ? { rejectUnauthorized: false } : undefined,
+        max: 20,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 5000,
+      }
+    : {
+        host: process.env.POSTGRES_HOST || 'localhost',
+        port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
+        user: process.env.POSTGRES_USER || 'postgres',
+        password: process.env.POSTGRES_PASSWORD || 'postgres',
+        database: process.env.POSTGRES_DB || '707_activation_builder',
+        max: 20,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 5000,
+      }
+);
 
 let isDbConnected = false;
 

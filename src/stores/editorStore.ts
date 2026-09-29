@@ -1,3 +1,4 @@
+import { apiFetch } from '../services/apiClient.ts';
 import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
 import type { WidgetItem, WidgetType, ActivationPage, ViewportMode, PageStatus, ProjectItem } from '../types/editor.ts';
@@ -733,7 +734,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   async function loadProjects() {
     try {
-      const res = await fetch('/api/pages');
+      const res = await apiFetch('/api/pages');
       if (res.ok) {
         const json = await res.json();
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {
@@ -804,7 +805,7 @@ export const useEditorStore = defineStore('editor', () => {
     saveProjectsToStorage();
 
     // Async sync to server
-    fetch('/api/pages', {
+    apiFetch('/api/pages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(projectData)
