@@ -195,8 +195,8 @@
           data-node-id="212:7057"
           data-name="Project Info Container"
         >
-          <!-- Fixed Scrollable Container with Luxury Mask & Sleek Styling -->
-          <div class="w-full h-[180px] md:h-[200px] overflow-y-auto pr-1 flex flex-col gap-[8px] luxury-scroll-mask overscroll-contain">
+          <!-- Fixed Scrollable Container for 2 Projects limit with Luxury Mask -->
+          <div class="w-full h-[96px] overflow-y-auto pr-1 flex flex-col gap-[8px] luxury-scroll-mask overscroll-contain">
             <div 
               v-for="project in editorStore.projects"
               :key="project.id"
