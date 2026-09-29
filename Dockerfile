@@ -14,7 +14,10 @@ FROM node:22-slim AS frontend-builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
+# --include=dev is required: the deploy platform injects NODE_ENV=production as
+# a build arg, which would otherwise make npm skip devDependencies and leave
+# vite/vue-tsc missing at build time.
+RUN npm ci --include=dev
 
 COPY . .
 RUN npm run build
@@ -25,7 +28,8 @@ FROM node:22-slim AS server-builder
 WORKDIR /app/server
 
 COPY server/package*.json ./
-RUN npm ci
+# Same reason as the frontend stage: typescript lives in devDependencies.
+RUN npm ci --include=dev
 
 COPY server/ ./
 RUN npm run build
