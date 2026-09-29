@@ -40,10 +40,10 @@
           @dragstart="handleDragStart($event, { type: 'HeroDrop', label: 'Full screen landing cover', customProps: { ratio: 'Full screen landing page', isSolidSpace: true, subtitle: 'FULL SCREEN COVER' } })"
           @dragend="handleDragEnd"
           @click="addMediaWidget('Full screen landing page')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[96px] cursor-grab active:cursor-grabbing hover:scale-[1.02] transition-transform group"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[96px] cursor-grab active:cursor-grabbing group"
           title="Drag to canvas or click to add"
         >
-          <div class="bg-[#d9d9d9] group-hover:bg-[#c8c8c8] h-[130px] rounded-[8px] shrink-0 w-[72px] transition-colors border border-transparent group-hover:border-black/20 shadow-sm" />
+          <div class="bg-[#dcdcdc] group-hover:bg-[#cecece] h-[130px] rounded-[8px] shrink-0 w-[72px] transition-colors border border-black/10 group-hover:border-black shadow-sm overflow-hidden" />
           <p class="font-707 font-normal text-[11px] text-black text-center leading-tight">
             Full screen cover
           </p>
@@ -55,10 +55,10 @@
           @dragstart="handleDragStart($event, { type: 'HeroDrop', label: '3:4', customProps: { ratio: '3:4', isSolidSpace: true, subtitle: '3:4 RATIO COVER' } })"
           @dragend="handleDragEnd"
           @click="addMediaWidget('3:4')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[96px] cursor-grab active:cursor-grabbing hover:scale-[1.02] transition-transform group"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[96px] cursor-grab active:cursor-grabbing group"
           title="Drag to canvas or click to add"
         >
-          <div class="bg-[#d9d9d9] group-hover:bg-[#c8c8c8] h-[130px] rounded-[8px] shrink-0 w-[96px] transition-colors border border-transparent group-hover:border-black/20 shadow-sm" />
+          <div class="bg-[#dcdcdc] group-hover:bg-[#cecece] h-[130px] rounded-[8px] shrink-0 w-[96px] transition-colors border border-black/10 group-hover:border-black shadow-sm overflow-hidden" />
           <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
             3:4
           </p>
@@ -70,11 +70,11 @@
           @dragstart="handleDragStart($event, { type: 'HeroDrop', label: '4:5', customProps: { ratio: '4:5', isSolidSpace: true, subtitle: '4:5 RATIO COVER' } })"
           @dragend="handleDragEnd"
           @click="addMediaWidget('4:5')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[100px] cursor-grab active:cursor-grabbing hover:scale-[1.02] transition-transform group"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[100px] cursor-grab active:cursor-grabbing group"
           title="Drag to canvas or click to add"
         >
           <div class="content-stretch flex flex-col h-[130px] items-center justify-center shrink-0 w-full">
-            <div class="aspect-[4/5] h-[130px] bg-[#d9d9d9] group-hover:bg-[#c8c8c8] rounded-[8px] transition-colors border border-transparent group-hover:border-black/20 shadow-sm" />
+            <div class="aspect-[4/5] h-[130px] bg-[#dcdcdc] group-hover:bg-[#cecece] rounded-[8px] transition-colors border border-black/10 group-hover:border-black shadow-sm overflow-hidden" />
           </div>
           <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
             4:5
@@ -87,11 +87,11 @@
           @dragstart="handleDragStart($event, { type: 'HeroDrop', label: '4:3', customProps: { ratio: '4:3', isSolidSpace: true, subtitle: '4:3 RATIO COVER' } })"
           @dragend="handleDragEnd"
           @click="addMediaWidget('4:3')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[100px] cursor-grab active:cursor-grabbing hover:scale-[1.02] transition-transform group"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[100px] cursor-grab active:cursor-grabbing group"
           title="Drag to canvas or click to add"
         >
           <div class="content-stretch flex flex-col h-[130px] items-start justify-center shrink-0 w-full">
-            <div class="aspect-[40/30] bg-[#d9d9d9] group-hover:bg-[#c8c8c8] rounded-[8px] shrink-0 w-full transition-colors border border-transparent group-hover:border-black/20 shadow-sm" />
+            <div class="aspect-[40/30] bg-[#dcdcdc] group-hover:bg-[#cecece] rounded-[8px] shrink-0 w-full transition-colors border border-black/10 group-hover:border-black shadow-sm overflow-hidden" />
           </div>
           <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
             4:3
@@ -104,11 +104,11 @@
           @dragstart="handleDragStart($event, { type: 'HeroDrop', label: '16:9', customProps: { ratio: '16:9', isSolidSpace: true, subtitle: '16:9 RATIO BANNER' } })"
           @dragend="handleDragEnd"
           @click="addMediaWidget('16:9')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[100px] cursor-grab active:cursor-grabbing hover:scale-[1.02] transition-transform group"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[100px] cursor-grab active:cursor-grabbing group"
           title="Drag to canvas or click to add"
         >
           <div class="content-stretch flex flex-col h-[130px] items-start justify-center shrink-0 w-full">
-            <div class="aspect-video bg-[#d9d9d9] group-hover:bg-[#c8c8c8] rounded-[8px] shrink-0 w-full transition-colors border border-transparent group-hover:border-black/20 shadow-sm" />
+            <div class="aspect-video bg-[#dcdcdc] group-hover:bg-[#cecece] rounded-[8px] shrink-0 w-full transition-colors border border-black/10 group-hover:border-black shadow-sm overflow-hidden" />
           </div>
           <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
             16:9
@@ -121,11 +121,11 @@
           @dragstart="handleDragStart($event, { type: 'HeroDrop', label: '9:16', customProps: { ratio: '9:16', isSolidSpace: true, subtitle: '9:16 STORY BANNER' } })"
           @dragend="handleDragEnd"
           @click="addMediaWidget('9:16')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[100px] cursor-grab active:cursor-grabbing hover:scale-[1.02] transition-transform group"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[100px] cursor-grab active:cursor-grabbing group"
           title="Drag to canvas or click to add"
         >
           <div class="content-stretch flex flex-col h-[130px] items-center justify-center shrink-0 w-full">
-            <div class="w-[72px] h-[130px] bg-[#d9d9d9] group-hover:bg-[#c8c8c8] rounded-[8px] transition-colors border border-transparent group-hover:border-black/20 shadow-sm" />
+            <div class="w-[72px] h-[130px] bg-[#dcdcdc] group-hover:bg-[#cecece] rounded-[8px] transition-colors border border-black/10 group-hover:border-black shadow-sm overflow-hidden" />
           </div>
           <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
             9:16
@@ -138,11 +138,11 @@
           @dragstart="handleDragStart($event, { type: 'HeroDrop', label: '1:1', customProps: { ratio: '1:1', isSolidSpace: true, subtitle: '1:1 SQUARE BANNER' } })"
           @dragend="handleDragEnd"
           @click="addMediaWidget('1:1')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[100px] cursor-grab active:cursor-grabbing hover:scale-[1.02] transition-transform group"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[100px] cursor-grab active:cursor-grabbing group"
           title="Drag to canvas or click to add"
         >
           <div class="content-stretch flex flex-col h-[130px] items-start justify-center shrink-0 w-full">
-            <div class="bg-[#d9d9d9] group-hover:bg-[#c8c8c8] rounded-[8px] shrink-0 size-[100px] transition-colors border border-transparent group-hover:border-black/20 shadow-sm" />
+            <div class="bg-[#dcdcdc] group-hover:bg-[#cecece] rounded-[8px] shrink-0 size-[100px] transition-colors border border-black/10 group-hover:border-black shadow-sm overflow-hidden" />
           </div>
           <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
             1:1
@@ -155,11 +155,11 @@
           @dragstart="handleDragStart($event, { type: 'HeroDrop', label: 'Buttons', customProps: { ratio: 'Buttons', isSolidSpace: true, isCtaEnabled: true, buttonText: 'Action', showBannerText: false } })"
           @dragend="handleDragEnd"
           @click="addMediaWidget('Buttons')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[104px] cursor-grab active:cursor-grabbing hover:scale-[1.02] transition-transform group"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[104px] cursor-grab active:cursor-grabbing group"
           title="Drag to canvas or click to add"
         >
           <div class="content-stretch flex flex-col h-[130px] items-center justify-center shrink-0 w-full">
-            <div class="border-[0.5px] border-[#c9c9c9] group-hover:border-black rounded-[8px] shrink-0 size-[96px] flex flex-col items-center justify-center p-2.5 bg-white group-hover:bg-neutral-50 transition-all shadow-sm gap-2">
+            <div class="border border-[#c9c9c9] group-hover:border-black rounded-[8px] shrink-0 size-[96px] flex flex-col items-center justify-center p-2.5 bg-white group-hover:bg-neutral-50 transition-colors shadow-sm gap-2 overflow-hidden">
               <!-- Primary Solid Black Button Preview -->
               <div class="w-full bg-black text-white h-[26px] px-2 flex items-center justify-center shadow-sm">
                 <span class="font-707 font-medium text-[9px] tracking-wider uppercase">Action</span>
@@ -181,11 +181,11 @@
           @dragstart="handleDragStart($event, { type: 'TextBanner', label: 'Free Text', customProps: { text: '', placeholder: 'WRITE YOUR TEXT HERE' } })"
           @dragend="handleDragEnd"
           @click="addTextWidget"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[100px] cursor-grab active:cursor-grabbing hover:scale-[1.02] transition-transform group"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[100px] cursor-grab active:cursor-grabbing group"
           title="Drag to canvas or click to add"
         >
           <div class="content-stretch flex flex-col h-[130px] items-center justify-center shrink-0 w-full">
-            <div class="border-[0.5px] border-black border-dashed rounded-[8px] shrink-0 size-[90px] flex items-center justify-center p-2 bg-white group-hover:bg-neutral-50 transition-colors shadow-sm">
+            <div class="border border-black border-dashed rounded-[8px] shrink-0 size-[90px] flex items-center justify-center p-2 bg-white group-hover:bg-neutral-50 transition-colors shadow-sm overflow-hidden">
               <span class="font-707 font-bold text-[18px] text-black">Aa</span>
             </div>
           </div>
@@ -226,10 +226,10 @@
           @dragstart="handleDragStart($event, { type: 'FieldInput', label: field.name, customProps: getFieldDefaultProps(field.name) })"
           @dragend="handleDragEnd"
           @click="addFormField(field.name)"
-          class="flex flex-col gap-[6px] items-center shrink-0 w-[56px] cursor-grab active:cursor-grabbing transition-transform group"
+          class="flex flex-col gap-[6px] items-center shrink-0 w-[56px] cursor-grab active:cursor-grabbing group"
           title="Drag to canvas or click to add"
         >
-          <div class="size-[38px] rounded-full bg-[#f5f5f5] group-hover:bg-black group-hover:border-black border border-[#d9d9d9] flex items-center justify-center transition-all duration-150 shadow-sm text-black group-hover:text-white group-hover:-translate-y-0.5 group-hover:shadow-md shrink-0">
+          <div class="size-[38px] rounded-full bg-[#f5f5f5] group-hover:bg-black group-hover:border-black border border-[#d9d9d9] flex items-center justify-center transition-all duration-150 shadow-sm text-black group-hover:text-white shrink-0">
             <component :is="field.icon" class="size-4 stroke-[1.75] transition-colors" />
           </div>
           <p class="font-707 font-normal text-[10px] text-black group-hover:font-medium text-center leading-tight transition-colors">
@@ -253,10 +253,10 @@
           @dragstart="handleDragStart($event, { type: 'ActionButton', label: 'Black Action Button', customProps: { label: 'BUTTON CTA', variant: 'black', actionType: 'submit', height: 42 } })"
           @dragend="handleDragEnd"
           @click="addActionButton('black')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing hover:scale-[1.02] transition-transform group"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group"
           title="Drag to canvas or click to add"
         >
-          <div class="border-[#c9c9c9] border-[0.5px] border-solid flex flex-col items-center justify-center h-[76px] rounded-[8px] shrink-0 w-[112px] bg-white group-hover:border-black transition-colors shadow-sm px-2.5">
+          <div class="border border-[#c9c9c9] flex flex-col items-center justify-center h-[76px] rounded-[8px] shrink-0 w-[112px] bg-white group-hover:border-black transition-colors shadow-sm px-2.5 overflow-hidden">
             <div class="w-full bg-black text-white h-[32px] rounded-[0px] flex items-center justify-center font-707 font-medium text-[10px] tracking-normal uppercase px-2 shadow-sm">
               Button CTA
             </div>
@@ -272,10 +272,10 @@
           @dragstart="handleDragStart($event, { type: 'ActionButton', label: 'White Action Button', customProps: { label: 'BUTTON CTA', variant: 'white', actionType: 'submit', height: 42 } })"
           @dragend="handleDragEnd"
           @click="addActionButton('white')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing hover:scale-[1.02] transition-transform group"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group"
           title="Drag to canvas or click to add"
         >
-          <div class="border-[#c9c9c9] border-[0.5px] border-solid flex flex-col items-center justify-center h-[76px] rounded-[8px] shrink-0 w-[112px] bg-white group-hover:border-black transition-colors shadow-sm px-2.5">
+          <div class="border border-[#c9c9c9] flex flex-col items-center justify-center h-[76px] rounded-[8px] shrink-0 w-[112px] bg-white group-hover:border-black transition-colors shadow-sm px-2.5 overflow-hidden">
             <div class="w-full bg-white text-black border border-[#d4d4d4] h-[32px] rounded-[0px] flex items-center justify-center font-707 font-medium text-[10px] tracking-normal uppercase px-2 shadow-sm">
               Button CTA
             </div>
@@ -301,10 +301,10 @@
           @dragstart="handleDragStart($event, { type: 'RsvpForm', label: 'Sneaker Sizing & Court Selector', customProps: { heading: 'TENNIS COURT RSVP & SIZING' } })"
           @dragend="handleDragEnd"
           @click="addInteractiveWidget('Sneaker Sizing & Court Selector')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing hover:scale-[1.02] transition-transform group"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group"
           title="Drag to canvas or click to add"
         >
-          <div class="border-[#c9c9c9] border-[0.5px] border-solid flex flex-col gap-[8px] h-[130px] items-center justify-center rounded-[8px] shrink-0 w-[84px] bg-white group-hover:border-black transition-colors relative overflow-hidden shadow-sm">
+          <div class="border border-[#c9c9c9] flex flex-col gap-[8px] h-[130px] items-center justify-center rounded-[8px] shrink-0 w-[84px] bg-white group-hover:border-black transition-colors relative overflow-hidden shadow-sm">
             <div class="bg-[#d9d9d9] h-[64px] rounded-[6px] w-[50px] relative flex flex-col items-center justify-center p-1.5">
               <div class="grid grid-cols-2 gap-1 w-full">
                 <div class="bg-[#aaa] rounded-sm size-2.5"></div>
@@ -321,7 +321,7 @@
       </div>
     </div>
 
-    <!-- Section 4: Pop Up Overlays -->
+    <!-- Section 5: Pop Up Overlays -->
     <div class="content-stretch flex flex-col gap-[14px] items-start py-[16px] shrink-0 w-full">
       <div class="content-stretch flex items-center justify-between px-[24px] shrink-0 w-full">
         <p class="flex-[1_0_0] font-707 font-medium text-[13px] leading-[18px] text-black">
@@ -335,10 +335,10 @@
           @dragstart="handleDragStart($event, { type: 'RulesAccordion', label: 'Center Modal', customProps: { title: 'EVENT DETAILS & PASS' } })"
           @dragend="handleDragEnd"
           @click="addOverlayWidget('Center Modal')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing hover:scale-[1.02] transition-transform group"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group"
           title="Drag to canvas or click to add"
         >
-          <div class="border-[#c9c9c9] border-[0.5px] border-solid flex flex-col gap-[8px] h-[130px] items-center justify-center rounded-[8px] shrink-0 w-[84px] bg-white group-hover:border-black transition-colors shadow-sm">
+          <div class="border border-[#c9c9c9] flex flex-col gap-[8px] h-[130px] items-center justify-center rounded-[8px] shrink-0 w-[84px] bg-white group-hover:border-black transition-colors shadow-sm overflow-hidden">
             <div class="bg-[#d9d9d9] h-[42px] rounded-[6px] w-[54px] flex items-center justify-center gap-1">
               <div class="bg-[#aaa] h-1.5 w-3.5 rounded-sm"></div>
               <div class="bg-[#aaa] h-1.5 w-3.5 rounded-sm"></div>
@@ -355,10 +355,10 @@
           @dragstart="handleDragStart($event, { type: 'RulesAccordion', label: 'Bottom Drawer', customProps: { title: 'TERMS & CONDITIONS' } })"
           @dragend="handleDragEnd"
           @click="addOverlayWidget('Bottom Drawer')"
-          class="content-stretch flex flex-col gap-[8px] items-center shrink-0 cursor-grab active:cursor-grabbing hover:scale-[1.02] transition-transform group"
+          class="content-stretch flex flex-col gap-[8px] items-center shrink-0 cursor-grab active:cursor-grabbing group"
           title="Drag to canvas or click to add"
         >
-          <div class="border-[#c9c9c9] border-[0.5px] border-solid flex flex-col justify-end rounded-[8px] shrink-0 w-[90px] h-[140px] bg-white group-hover:border-black transition-colors p-2 shadow-sm">
+          <div class="border border-[#c9c9c9] flex flex-col justify-end rounded-[8px] shrink-0 w-[90px] h-[140px] bg-white group-hover:border-black transition-colors p-2 shadow-sm overflow-hidden">
             <div class="bg-[#d9d9d9] h-[55px] rounded-[6px] w-full flex flex-col justify-end p-1">
               <div class="bg-[#aaa] h-1.5 w-full rounded-sm"></div>
             </div>
@@ -374,10 +374,10 @@
           @dragstart="handleDragStart($event, { type: 'RulesAccordion', label: 'Full Page Pass', customProps: { title: 'FULL PAGE ACCESS TERMS' } })"
           @dragend="handleDragEnd"
           @click="addOverlayWidget('Full Page Pass')"
-          class="content-stretch flex flex-col gap-[8px] items-center shrink-0 cursor-grab active:cursor-grabbing hover:scale-[1.02] transition-transform group"
+          class="content-stretch flex flex-col gap-[8px] items-center shrink-0 cursor-grab active:cursor-grabbing group"
           title="Drag to canvas or click to add"
         >
-          <div class="border-[#c9c9c9] border-[0.5px] border-solid flex flex-col justify-between rounded-[8px] shrink-0 w-[90px] h-[140px] bg-white group-hover:border-black transition-colors p-2 shadow-sm">
+          <div class="border border-[#c9c9c9] flex flex-col justify-between rounded-[8px] shrink-0 w-[90px] h-[140px] bg-white group-hover:border-black transition-colors p-2 shadow-sm overflow-hidden">
             <div class="bg-[#d9d9d9] h-full rounded-[6px] w-full flex flex-col justify-between p-1.5">
               <div class="bg-[#aaa] h-7 w-full rounded-sm"></div>
               <div class="bg-[#aaa] h-7 w-full rounded-sm"></div>

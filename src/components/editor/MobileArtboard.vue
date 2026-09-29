@@ -823,9 +823,9 @@
           type="button"
           @click.stop="handleActionButtonClick(stickyButtonForThisPage)"
           :class="[
-            stickyButtonForThisPage.props?.variant === 'white'
+            isStickyButtonOnDarkBackground
               ? 'bg-white text-black border-t border-[#d4d4d4] hover:bg-[#f7f7f7]'
-              : (stickyButtonForThisPage.props?.variant === 'grey' ? 'bg-[#e4e4e4] text-black hover:bg-[#d9d9d9]' : 'bg-black text-white hover:bg-neutral-900'),
+              : 'bg-black text-white hover:bg-neutral-900',
             stickyButtonForThisPage.props?.disabled ? 'opacity-50 cursor-not-allowed' : 'apple-press'
           ]"
           :style="{ height: `${stickyButtonForThisPage.props?.height || 42}px` }"
@@ -1622,6 +1622,26 @@ const stickyButtonForThisPage = computed(() => {
     }
   }
   return null;
+});
+
+const isStickyButtonOnDarkBackground = computed(() => {
+  if (!stickyButtonForThisPage.value) return false;
+
+  // 1. If sticky button is defined on a HeroDrop widget directly:
+  if (stickyButtonForThisPage.value.type === 'HeroDrop') {
+    const hero = stickyButtonForThisPage.value;
+    return !!hero.props?.imageUrl && !hero.props?.isSolidSpace;
+  }
+
+  // 2. If it's an ActionButton, check if it sits directly over a Hero banner at the bottom of the page
+  const tree = activePage.value.widget_tree;
+  const bottomHero = tree.length > 0 && tree[tree.length - 1]?.type === 'HeroDrop' ? tree[tree.length - 1] : null;
+  if (bottomHero) {
+    return !!bottomHero.props?.imageUrl && !bottomHero.props?.isSolidSpace;
+  }
+
+  // 3. Fallback to ActionButton variant
+  return stickyButtonForThisPage.value.props?.variant === 'white';
 });
 
 const containerBottomPaddingClass = computed(() => {
