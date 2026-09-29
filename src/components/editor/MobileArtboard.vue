@@ -54,8 +54,9 @@
     <div 
       data-artboard-frame="true"
       @wheel="handleArtboardWheel"
-      class="bg-[#f5f5f5] relative flex flex-col overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+      class="relative flex flex-col overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
       :class="[
+        isPreviewModal ? 'bg-white' : 'bg-[#f5f5f5]',
         isPreviewModal
           ? 'w-full h-full border-none shadow-none'
           : (isMiniPreview 
@@ -72,7 +73,8 @@
       <!-- Fixed 48px Header with Right 707 Logo (Figma Node 107:3820) -->
       <div 
         @click="handleArtboardClick"
-        class="sticky top-0 left-0 right-0 h-[48px] w-full bg-[#f5f5f5] z-30 flex items-center justify-end px-[16px] shrink-0 cursor-default"
+        class="sticky top-0 left-0 right-0 h-[48px] w-full z-30 flex items-center justify-end px-[16px] shrink-0 cursor-default"
+        :class="isPreviewModal ? 'bg-white' : 'bg-[#f5f5f5]'"
       >
         <div class="h-[15px] w-[48px] relative flex items-center justify-end">
           <img 
@@ -90,8 +92,11 @@
         ref="scrollContainerRef"
         @click.self="handleArtboardClick"
         @scroll="handleScroll"
-        class="artboard-scroll-container flex-1 flex flex-col overflow-y-auto no-scrollbar px-0 pt-0 pb-0 relative cursor-default bg-[#f5f5f5] overscroll-contain will-change-scroll"
-        :class="isDragOver ? 'bg-neutral-200/60' : ''"
+        class="artboard-scroll-container flex-1 flex flex-col overflow-y-auto no-scrollbar px-0 pt-0 pb-0 relative cursor-default overscroll-contain will-change-scroll"
+        :class="[
+          isPreviewModal ? 'bg-white' : 'bg-[#f5f5f5]',
+          isDragOver ? 'bg-neutral-200/60' : ''
+        ]"
         style="scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch;"
         @dragenter.prevent="handleDragEnter"
         @dragover.prevent="handleDragOver($event)"
@@ -331,9 +336,9 @@
                     @click.stop="handleHeroCtaClick(widget)"
                     :class="[
                       widget.props.isSolidSpace 
-                        ? 'bg-black hover:bg-[#383838] text-white' 
-                        : 'bg-white hover:bg-[#e4e4e4] text-black shadow-none',
-                      'font-707 font-medium text-btn h-[48px] px-[16px] py-[12px] transition-colors cursor-pointer whitespace-nowrap flex items-center justify-center uppercase border-0 border-none outline-none'
+                        ? 'bg-black hover:bg-[#262626] text-white apple-cta-btn-dark' 
+                        : 'bg-white hover:bg-[#f0f0f0] text-black shadow-none apple-cta-btn-white',
+                      'apple-cta-btn font-707 font-medium text-btn h-[48px] px-[16px] py-[12px] cursor-pointer whitespace-nowrap flex items-center justify-center uppercase border-0 border-none outline-none'
                     ]"
                   >
                     {{ widget.props.buttonText || widget.props.ctaLabel || 'Action' }}
@@ -417,7 +422,7 @@
                 </div>
               </div>
 
-              <button class="w-full h-[48px] bg-black text-white font-bold text-[12px] tracking-wider uppercase rounded hover:bg-neutral-800 transition-colors">
+              <button class="w-full h-[48px] bg-black text-white font-bold text-[12px] tracking-wider uppercase rounded-none hover:bg-[#262626] apple-cta-btn apple-cta-btn-dark border-0 border-none outline-none cursor-pointer">
                 {{ widget.props.ctaLabel || 'SUBMIT ENTRY' }}
               </button>
             </div>
@@ -463,7 +468,7 @@
                 </div>
               </div>
 
-              <button class="w-full h-[48px] bg-black text-white font-bold text-[12px] tracking-wider uppercase rounded hover:bg-neutral-800 transition-colors">
+              <button class="w-full h-[48px] bg-black text-white font-bold text-[12px] tracking-wider uppercase rounded-none hover:bg-[#262626] apple-cta-btn apple-cta-btn-dark border-0 border-none outline-none cursor-pointer">
                 {{ widget.props.ctaLabel || 'CLAIM PASS' }}
               </button>
             </div>
@@ -749,12 +754,12 @@
                   @click.stop="handleActionButtonClick(widget)"
                   :class="[
                     widget.props.variant === 'white'
-                      ? 'bg-white text-black hover:bg-[#f7f7f7]'
-                      : (widget.props.variant === 'grey' ? 'bg-[#e4e4e4] text-black hover:bg-[#d9d9d9]' : 'bg-black text-white hover:bg-neutral-900'),
-                    widget.props.disabled ? 'opacity-50 cursor-not-allowed' : 'apple-press'
+                      ? 'bg-white text-black hover:bg-[#f5f5f7] apple-cta-btn-white'
+                      : (widget.props.variant === 'grey' ? 'bg-[#e4e4e4] text-black hover:bg-[#d9d9d9] apple-cta-btn-grey' : 'bg-black text-white hover:bg-[#262626] apple-cta-btn-dark'),
+                    widget.props.disabled ? 'opacity-50 cursor-not-allowed' : 'apple-cta-btn'
                   ]"
                   :style="{ height: `${widget.props.height || 48}px` }"
-                  class="w-full px-[16px] py-[12px] rounded-[0px] flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal transition-all cursor-pointer border-0 border-none outline-none shadow-none"
+                  class="w-full px-[16px] py-[12px] rounded-[0px] flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none"
                 >
                   <!-- Action Icon -->
                   <component :is="getButtonIcon(widget)" v-if="widget.props.showIcon" class="size-[16px] shrink-0" />
@@ -824,12 +829,12 @@
           @click.stop="handleActionButtonClick(stickyButtonForThisPage)"
           :class="[
             isStickyButtonOnDarkBackground
-              ? 'bg-white text-black hover:bg-[#f7f7f7]'
-              : 'bg-black text-white hover:bg-neutral-900',
-            stickyButtonForThisPage.props?.disabled ? 'opacity-50 cursor-not-allowed' : 'apple-press'
+              ? 'bg-white text-black hover:bg-[#f5f5f7] apple-cta-btn-white'
+              : 'bg-black text-white hover:bg-[#262626] apple-cta-btn-dark',
+            stickyButtonForThisPage.props?.disabled ? 'opacity-50 cursor-not-allowed' : 'apple-cta-btn'
           ]"
           :style="{ height: `${stickyButtonForThisPage.props?.height || 48}px` }"
-          class="w-full px-[16px] py-[12px] rounded-none flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal transition-all cursor-pointer border-0 border-none outline-none shadow-none"
+          class="w-full px-[16px] py-[12px] rounded-none flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none"
         >
           <!-- Action Icon -->
           <component :is="getButtonIcon(stickyButtonForThisPage)" v-if="stickyButtonForThisPage.props?.showIcon" class="size-[16px] shrink-0" />

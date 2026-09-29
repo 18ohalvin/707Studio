@@ -1,18 +1,18 @@
 <template>
   <div 
     v-if="editorStore.isPreviewMode || editorStore.isTestFormModalOpen" 
-    class="fixed inset-0 top-[48px] z-30 bg-[#ececee]/90 backdrop-blur-md flex items-center justify-center p-3 md:p-6 overflow-hidden animate-apple-fade select-none"
+    class="fixed inset-0 top-[48px] z-30 bg-white flex items-center justify-center p-3 md:p-6 overflow-hidden animate-apple-fade select-none"
   >
     <!-- True-to-Scale iPhone 17 Pro Titanium Hardware Mockup (Exact 393:852 Screen Aspect Ratio) -->
     <div 
-      class="relative flex flex-col items-center justify-between w-auto h-full max-h-[852px] aspect-[393/852] bg-[#f5f5f5] rounded-[52px] border-[6px] border-[#222225] shadow-[0_30px_90px_rgba(0,0,0,0.38),0_0_0_1px_rgba(255,255,255,0.2)] ring-1 ring-black/40 overflow-hidden animate-apple-pop"
+      class="relative flex flex-col items-center justify-between w-auto h-full max-h-[852px] aspect-[393/852] bg-white rounded-[52px] border-[6px] border-[#222225] shadow-[0_24px_80px_rgba(0,0,0,0.18),0_0_0_1px_rgba(0,0,0,0.06)] ring-1 ring-black/20 overflow-hidden animate-apple-pop"
       style="max-width: min(393px, 100vw - 32px);"
     >
       <!-- Titanium Outer Light Reflection Bevel -->
-      <div class="absolute inset-0 rounded-[46px] pointer-events-none ring-1 ring-white/20 z-40" />
+      <div class="absolute inset-0 rounded-[46px] pointer-events-none ring-1 ring-black/5 z-40" />
 
       <!-- iOS Status Bar & Dynamic Island Header -->
-      <div class="sticky top-0 left-0 right-0 h-[46px] w-full bg-[#f5f5f5]/90 backdrop-blur-md z-40 flex items-center justify-between px-7 shrink-0 pointer-events-none">
+      <div class="sticky top-0 left-0 right-0 h-[46px] w-full bg-white/95 backdrop-blur-md z-40 flex items-center justify-between px-7 shrink-0 pointer-events-none">
         <!-- Left: Time (9:41) -->
         <span class="font-sans font-semibold text-[13px] text-black tracking-tight">9:41</span>
 
@@ -46,7 +46,7 @@
       </div>
 
       <!-- Live Mobile Screen Viewport (Interactive & Realistic) -->
-      <div class="flex-1 w-full flex flex-col overflow-hidden relative">
+      <div class="flex-1 w-full flex flex-col overflow-hidden relative bg-white">
         <MobileArtboard 
           :page="editorStore.currentPage" 
           :page-index="editorStore.activePageIndex"
@@ -56,7 +56,7 @@
       </div>
 
       <!-- iOS Home Bar Indicator (Bottom) -->
-      <div class="sticky bottom-0 left-0 right-0 h-[22px] w-full bg-[#f5f5f5]/80 backdrop-blur-sm z-40 flex items-center justify-center pointer-events-none shrink-0">
+      <div class="sticky bottom-0 left-0 right-0 h-[22px] w-full bg-white/95 backdrop-blur-sm z-40 flex items-center justify-center pointer-events-none shrink-0">
         <div class="w-[134px] h-[4.5px] bg-black/60 rounded-full" />
       </div>
     </div>
