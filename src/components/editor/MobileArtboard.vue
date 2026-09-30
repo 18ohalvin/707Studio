@@ -177,9 +177,9 @@
               class="absolute top-0 left-0 right-0 h-1 bg-black z-30 shadow-md animate-pulse"
             />
 
-            <!-- Floating Widget Action Bar for non-TextBanner & non-ActionButton widgets (Figma Node 142:4935) -->
+            <!-- Floating Widget Action Bar for generic widgets (TextBanner, ActionButton, MultipleChoice have dedicated toolbars) (Figma Node 142:4935) -->
             <div 
-              v-if="!isMiniPreview && !isPreviewModal && widget.type !== 'TextBanner' && widget.type !== 'ActionButton' && hoveredWidgetId === widget.id"
+              v-if="!isMiniPreview && !isPreviewModal && widget.type !== 'TextBanner' && widget.type !== 'ActionButton' && widget.type !== 'MultipleChoice' && hoveredWidgetId === widget.id"
               class="absolute top-[12px] right-[12px] z-30 apple-glass-modal flex gap-[5px] items-center p-[4px] rounded-[10px] shadow-[0px_8px_24px_rgba(0,0,0,0.12)] border border-black/10 transition-all animate-in fade-in duration-150"
               data-node-id="142:4935"
               data-name="Buttons Container"
