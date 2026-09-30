@@ -366,8 +366,32 @@ const editorStore = useEditorStore();
 const sidebarRef = ref<HTMLElement | null>(null);
 
 const currentWidget = computed(() => {
-  return editorStore.currentPage.widget_tree.find(w => w.id === editorStore.selectedWidgetId);
+  const selected = editorStore.currentPage.widget_tree.find(w => w.id === editorStore.selectedWidgetId);
+  if (selected && (selected.type === 'ActionButton' || selected.type === 'HeroDrop' || selected.type === 'ModalOverlay')) {
+    return selected;
+  }
+  return editorStore.currentPage.widget_tree.find(w => w.type === 'ActionButton' && w.props?.actionType === 'modal') || selected || null;
 });
+
+const targetModalData = computed(() => {
+  if (!currentWidget.value) return {};
+  if (currentWidget.value.props.modalProps) {
+    return currentWidget.value.props.modalProps;
+  }
+  return currentWidget.value.props;
+});
+
+function updateModalData(propsToUpdate: Record<string, any>) {
+  if (!currentWidget.value) return;
+  if (currentWidget.value.type === 'ActionButton' || currentWidget.value.type === 'HeroDrop') {
+    const existing = currentWidget.value.props.modalProps || {};
+    editorStore.updateWidgetProps(currentWidget.value.id, {
+      modalProps: { ...existing, ...propsToUpdate }
+    });
+  } else {
+    editorStore.updateWidgetProps(currentWidget.value.id, propsToUpdate);
+  }
+}
 
 const modalVariants = [
   { id: 'message-alert' as ModalVariant, label: 'Message / Alert', desc: 'Status notice', icon: Bell },
@@ -378,89 +402,78 @@ const modalVariants = [
 ];
 
 const currentVariant = computed<ModalVariant>({
-  get: () => currentWidget.value?.props.variant || 'message-alert',
+  get: () => targetModalData.value.variant || 'message-alert',
   set: (val) => {
-    if (!currentWidget.value) return;
-    editorStore.updateWidgetProps(currentWidget.value.id, { variant: val });
+    updateModalData({ variant: val });
   }
 });
 
 const modalTitle = computed({
-  get: () => currentWidget.value?.props.title || '',
+  get: () => targetModalData.value.title || '',
   set: (val: string) => {
-    if (!currentWidget.value) return;
-    editorStore.updateWidgetProps(currentWidget.value.id, { title: val });
+    updateModalData({ title: val });
   }
 });
 
 const modalSubtitle = computed({
-  get: () => currentWidget.value?.props.subtitle || '',
+  get: () => targetModalData.value.subtitle || '',
   set: (val: string) => {
-    if (!currentWidget.value) return;
-    editorStore.updateWidgetProps(currentWidget.value.id, { subtitle: val });
+    updateModalData({ subtitle: val });
   }
 });
 
 const fieldPlaceholder = computed({
-  get: () => currentWidget.value?.props.fieldPlaceholder || 'Enter your email*',
+  get: () => targetModalData.value.fieldPlaceholder || 'Enter your email*',
   set: (val: string) => {
-    if (!currentWidget.value) return;
-    editorStore.updateWidgetProps(currentWidget.value.id, { fieldPlaceholder: val });
+    updateModalData({ fieldPlaceholder: val });
   }
 });
 
 const fieldType = computed({
-  get: () => currentWidget.value?.props.fieldType || 'email',
+  get: () => targetModalData.value.fieldType || 'email',
   set: (val: string) => {
-    if (!currentWidget.value) return;
-    editorStore.updateWidgetProps(currentWidget.value.id, { fieldType: val });
+    updateModalData({ fieldType: val });
   }
 });
 
 const buttonText = computed({
-  get: () => currentWidget.value?.props.buttonText || 'DONE',
+  get: () => targetModalData.value.buttonText || 'DONE',
   set: (val: string) => {
-    if (!currentWidget.value) return;
-    editorStore.updateWidgetProps(currentWidget.value.id, { buttonText: val });
+    updateModalData({ buttonText: val });
   }
 });
 
 const buttonVariant = computed({
-  get: () => currentWidget.value?.props.buttonVariant || 'black',
+  get: () => targetModalData.value.buttonVariant || 'black',
   set: (val: string) => {
-    if (!currentWidget.value) return;
-    editorStore.updateWidgetProps(currentWidget.value.id, { buttonVariant: val });
+    updateModalData({ buttonVariant: val });
   }
 });
 
 const dismissible = computed({
-  get: () => currentWidget.value?.props.dismissible ?? true,
+  get: () => targetModalData.value.dismissible ?? true,
   set: (val: boolean) => {
-    if (!currentWidget.value) return;
-    editorStore.updateWidgetProps(currentWidget.value.id, { dismissible: val });
+    updateModalData({ dismissible: val });
   }
 });
 
 const options = computed<ModalOption[]>({
-  get: () => currentWidget.value?.props.options || [],
+  get: () => targetModalData.value.options || [],
   set: (val: ModalOption[]) => {
-    if (!currentWidget.value) return;
-    editorStore.updateWidgetProps(currentWidget.value.id, { options: val });
+    updateModalData({ options: val });
   }
 });
 
 const imageSlots = computed<ModalImageSlot[]>({
-  get: () => currentWidget.value?.props.imageSlots || [],
+  get: () => targetModalData.value.imageSlots || [],
   set: (val: ModalImageSlot[]) => {
-    if (!currentWidget.value) return;
-    editorStore.updateWidgetProps(currentWidget.value.id, { imageSlots: val });
+    updateModalData({ imageSlots: val });
   }
 });
 
 function selectVariant(v: ModalVariant) {
   if (!currentWidget.value) return;
   
-  // Set appropriate smart defaults based on the chosen Figma preset
   let defaultProps: Record<string, any> = { variant: v };
   
   if (v === 'message-alert') {
@@ -501,12 +514,12 @@ function selectVariant(v: ModalVariant) {
     ];
   }
 
-  editorStore.updateWidgetProps(currentWidget.value.id, defaultProps);
+  updateModalData(defaultProps);
 }
 
 function addOption() {
   if (!currentWidget.value) return;
-  const current = [...(currentWidget.value.props.options || [])];
+  const current = [...(targetModalData.value.options || [])];
   const newIdx = current.length + 1;
   const isDetailed = currentVariant.value === 'choice-detailed';
   current.push({
@@ -516,31 +529,31 @@ function addOption() {
     description: isDetailed ? 'Your Event Descriptions Detail' : undefined,
     selected: false
   });
-  editorStore.updateWidgetProps(currentWidget.value.id, { options: current });
+  updateModalData({ options: current });
 }
 
 function removeOption(index: number) {
   if (!currentWidget.value) return;
-  const current = [...(currentWidget.value.props.options || [])];
+  const current = [...(targetModalData.value.options || [])];
   current.splice(index, 1);
-  editorStore.updateWidgetProps(currentWidget.value.id, { options: current });
+  updateModalData({ options: current });
 }
 
 function toggleOptionSelected(index: number) {
   if (!currentWidget.value) return;
-  const current = [...(currentWidget.value.props.options || [])];
+  const current = [...(targetModalData.value.options || [])];
   if (current[index]) {
     current[index] = { ...current[index], selected: !current[index].selected };
-    editorStore.updateWidgetProps(currentWidget.value.id, { options: current });
+    updateModalData({ options: current });
   }
 }
 
 function toggleSlotSelected(index: number) {
   if (!currentWidget.value) return;
-  const current = [...(currentWidget.value.props.imageSlots || [])];
+  const current = [...(targetModalData.value.imageSlots || [])];
   if (current[index]) {
     current[index] = { ...current[index], selected: !current[index].selected };
-    editorStore.updateWidgetProps(currentWidget.value.id, { imageSlots: current });
+    updateModalData({ imageSlots: current });
   }
 }
 

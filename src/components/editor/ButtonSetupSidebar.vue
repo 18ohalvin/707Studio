@@ -209,6 +209,36 @@
           />
         </div>
       </div>
+
+      <!-- Conditional Modal Variant Picker & Setup Button if Modal selected -->
+      <div v-if="actionType === 'modal'" class="w-full pt-2 flex flex-col gap-3 animate-in fade-in duration-150">
+        <div class="flex items-center justify-between w-full">
+          <p class="font-707 font-medium text-[12px] text-neutral-600">
+            Modal Variant
+          </p>
+          <button 
+            type="button"
+            @click="openModalSetup"
+            class="text-[11px] font-707 font-medium text-black hover:underline flex items-center gap-1 cursor-pointer"
+          >
+            Configure Modal Setup ➔
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 w-full">
+          <button 
+            v-for="v in modalVariants" 
+            :key="v.id"
+            type="button"
+            @click="setModalVariant(v.id)"
+            :class="currentModalVariant === v.id ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+            class="flex items-center gap-2 p-2 rounded-[8px] text-left cursor-pointer transition-all"
+          >
+            <component :is="v.icon" class="size-3.5 shrink-0" />
+            <span class="font-707 text-[11px] truncate">{{ v.label }}</span>
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Section 5: Enable Icon Section with Apple Style Toggle Switch -->
@@ -304,8 +334,13 @@ import {
   LayoutGrid, 
   Ticket, 
   Phone,
-  Instagram 
+  Instagram,
+  Bell,
+  TextCursorInput,
+  ListOrdered,
+  ListFilter
 } from 'lucide-vue-next';
+import type { ModalVariant } from '../../types/editor.ts';
 
 defineProps<{
   isOpen: boolean;
@@ -317,6 +352,74 @@ defineEmits<{
 
 const editorStore = useEditorStore();
 const sidebarRef = ref<HTMLElement | null>(null);
+
+const modalVariants = [
+  { id: 'message-alert' as ModalVariant, label: 'Message / Alert', icon: Bell },
+  { id: 'message-field' as ModalVariant, label: 'Message + Field', icon: TextCursorInput },
+  { id: 'choice-detailed' as ModalVariant, label: 'Detailed Choice', icon: ListOrdered },
+  { id: 'choice-simple' as ModalVariant, label: 'Simple Choice', icon: ListFilter },
+  { id: 'image-matrix' as ModalVariant, label: 'Image Matrix', icon: LayoutGrid }
+];
+
+const currentModalVariant = computed<ModalVariant>(() => {
+  return targetWidget.value?.props?.modalProps?.variant || 'message-alert';
+});
+
+function setModalVariant(v: ModalVariant) {
+  if (!targetWidget.value) return;
+  const existing = targetWidget.value.props.modalProps || {};
+  let updated: Record<string, any> = { ...existing, variant: v };
+
+  if (v === 'message-alert') {
+    updated.title = updated.title || 'YOUR PASS HAS BEEN SENT.';
+    updated.subtitle = updated.subtitle || 'Please provide a valid email address. We will resend your E-Pass immediately.';
+    updated.buttonText = updated.buttonText || 'DONE';
+  } else if (v === 'message-field') {
+    updated.title = updated.title || 'UPDATE YOUR EMAIL';
+    updated.subtitle = updated.subtitle || 'Please provide a valid email address. We will resend your E-Pass immediately.';
+    updated.fieldPlaceholder = updated.fieldPlaceholder || 'Enter your email*';
+    updated.fieldType = updated.fieldType || 'email';
+    updated.buttonText = updated.buttonText || 'DONE';
+  } else if (v === 'choice-detailed') {
+    updated.title = updated.title || 'SELECT ARRIVAL DATE';
+    updated.subtitle = updated.subtitle || 'Please provide a valid email address. We will resend your E-Pass immediately.';
+    updated.buttonText = updated.buttonText || 'DONE';
+    updated.options = updated.options || [
+      { id: 'opt_1', label: 'Day 1', sublabel: '2 September 2026', description: 'Your Event Descriptions Detail', selected: true },
+      { id: 'opt_2', label: 'Day 2', sublabel: '3 September 2026', description: 'Your Event Descriptions Detail', selected: false }
+    ];
+  } else if (v === 'choice-simple') {
+    updated.title = updated.title || 'SELECT ARRIVAL DATE';
+    updated.subtitle = updated.subtitle || 'Please provide a valid email address. We will resend your E-Pass immediately.';
+    updated.buttonText = updated.buttonText || 'DONE';
+    updated.options = updated.options || [
+      { id: 'opt_1', label: '+62', sublabel: 'Indonesia', selected: true },
+      { id: 'opt_2', label: '+65', sublabel: 'Singapore', selected: false }
+    ];
+  } else if (v === 'image-matrix') {
+    updated.title = updated.title || 'SELECT ARRIVAL DATE';
+    updated.subtitle = updated.subtitle || 'Please provide a valid email address. We will resend your E-Pass immediately.';
+    updated.buttonText = updated.buttonText || 'DONE';
+    updated.imageSlots = updated.imageSlots || [
+      { id: 'slot_1', url: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=400&q=80', label: 'Model 01', selected: true },
+      { id: 'slot_2', url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80', label: 'Model 02', selected: false },
+      { id: 'slot_3', url: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=400&q=80', label: 'Model 03', selected: false },
+      { id: 'slot_4', url: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=400&q=80', label: 'Model 04', selected: false }
+    ];
+  }
+
+  editorStore.updateWidgetProps(targetWidget.value.id, { modalProps: updated });
+}
+
+function openModalSetup() {
+  if (targetWidget.value) {
+    if (!targetWidget.value.props.modalProps) {
+      setModalVariant('message-alert');
+    }
+    editorStore.selectWidget(targetWidget.value.id);
+    editorStore.openModalSidebar();
+  }
+}
 
 const targetWidget = computed(() => {
   if (editorStore.selectedWidget && (editorStore.selectedWidget.type === 'ActionButton' || editorStore.selectedWidget.type === 'HeroDrop')) {
