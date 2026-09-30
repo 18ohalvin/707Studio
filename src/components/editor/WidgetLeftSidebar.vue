@@ -418,7 +418,9 @@ import {
   Calendar, 
   Clock, 
   Ticket, 
-  CalendarCheck 
+  CalendarCheck,
+  LayoutGrid,
+  Image as ImageIcon
 } from 'lucide-vue-next';
 
 defineProps<{
@@ -446,10 +448,10 @@ const currentTabFields = computed(() => {
       ];
     case 'Choices':
       return [
-        { name: 'Sneaker Size', icon: Footprints },
-        { name: 'Checkbox', icon: CheckSquare },
-        { name: 'Radio Group', icon: CircleDot },
-        { name: 'Multi Choice', icon: ListChecks }
+        { name: 'Detailed Cards', icon: Ticket },
+        { name: 'Simple Rows', icon: ListChecks },
+        { name: 'Horizontal Blocks', icon: LayoutGrid },
+        { name: 'Image Matrix', icon: ImageIcon }
       ];
     case 'Dates':
       return [
@@ -502,19 +504,8 @@ function addTextWidget() {
 
 function getChoiceDefaultProps(choiceName: string) {
   switch (choiceName) {
-    case 'Sneaker Size':
-      return {
-        title: 'SELECT YOUR SESSIONS',
-        subtitle: 'Choose your preferred sessions below.',
-        variant: 'horizontal-block',
-        allowMultiple: true,
-        required: false,
-        selectedValues: [],
-        options: [
-          { id: 'opt_1', label: 'Morning' },
-          { id: 'opt_2', label: 'Afternoon' }
-        ]
-      };
+    case 'Detailed Cards':
+    case 'Detailed Card':
     case 'Checkbox':
       return {
         title: 'SELECT ARRIVALS',
@@ -540,6 +531,8 @@ function getChoiceDefaultProps(choiceName: string) {
           }
         ]
       };
+    case 'Simple Rows':
+    case 'Simple Row':
     case 'Radio Group':
       return {
         title: 'SELECT APPAREL SIZE',
@@ -547,18 +540,39 @@ function getChoiceDefaultProps(choiceName: string) {
         variant: 'simple-row',
         allowMultiple: true,
         required: false,
+        showSlotsCapacity: true,
+        globalSlotsCapacity: 25,
         selectedValues: [],
         options: [
           { id: 'opt_1', label: 'S' },
-          { id: 'opt_2', label: 'M' }
+          { id: 'opt_2', label: 'M' },
+          { id: 'opt_3', label: 'L' }
         ]
       };
+    case 'Horizontal Blocks':
+    case 'Horizontal Block':
+    case 'Sneaker Size':
+      return {
+        title: 'SELECT YOUR SESSIONS',
+        subtitle: 'Choose your preferred sessions below.',
+        variant: 'horizontal-block',
+        allowMultiple: true,
+        required: false,
+        selectedValues: [],
+        options: [
+          { id: 'opt_1', label: 'Morning' },
+          { id: 'opt_2', label: 'Afternoon' }
+        ]
+      };
+    case 'Image Matrix':
+    case 'Image Grid':
     case 'Multi Choice':
     default:
       return {
         title: 'SELECT YOUR MODEL',
         subtitle: 'Choose your preferred model below.',
         variant: 'image-grid',
+        gridColumns: 4,
         allowMultiple: true,
         required: false,
         selectedValues: [],
