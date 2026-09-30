@@ -709,10 +709,10 @@ button[data-cta],
 }
 
 /* ==========================================================================
-   LUXURY CHOICE OPTION TILE ANIMATED SELECTION BORDER (APPLE PRECISE SWEEP)
+   LUXURY CHOICE OPTION TILE ANIMATED SELECTION BORDER (TOP-LEFT ORIGIN SWEEP)
    Frame 1: Default state - unselected border (#d4d4d4 / neutral)
-   Frame 2: Selected - animated black box border appearing from left to right
-   Frame 3: De-selected - reverses animation from right back to left
+   Frame 2: Selected - animated black box border expanding from top-left (checkbox origin)
+   Frame 3: De-selected - reverses animation back to top-left
    ========================================================================== */
 .luxury-choice-tile {
   position: relative;
@@ -725,7 +725,7 @@ button[data-cta],
   inset: -1px;
   border: 1px solid #000000;
   pointer-events: none;
-  clip-path: inset(0 100% 0 0);
+  clip-path: inset(0 100% 100% 0);
   transition: clip-path 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 2;
   will-change: clip-path;
