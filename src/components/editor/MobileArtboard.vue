@@ -1768,11 +1768,6 @@ function handleChoiceAddMore(widget: any) {
   }
 
   currentOptions.push(newOption);
-  // Re-sync all options to guaranteed sequence
-  currentOptions.forEach((opt, i) => {
-    opt.label = getAutomaticOptionLabel(variant, i);
-  });
-
   editorStore.updateWidgetProps(widget.id, { options: currentOptions });
 }
 

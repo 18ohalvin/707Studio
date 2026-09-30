@@ -279,21 +279,20 @@
           :key="opt.id"
           class="flex flex-col gap-2 p-3 bg-white rounded-[8px] border border-[#d9d9d9] shadow-sm transition-all group"
         >
-          <!-- Top Row: Order Index, Fixed Auto-Named Title Box, Default Selected Checkbox, and Delete -->
+          <!-- Top Row: Order Index, Custom Option Title Input, Default Selected Checkbox, and Delete -->
           <div class="flex items-center gap-2 w-full">
             <span class="size-5 rounded-full bg-neutral-100 flex items-center justify-center font-mono text-[10px] text-neutral-500 font-bold shrink-0">
               {{ idx + 1 }}
             </span>
 
-            <!-- Locked Auto-Named Option Title Display -->
-            <div class="border border-[#e5e5e5] bg-neutral-50 rounded-[6px] px-2.5 h-[32px] flex items-center justify-between flex-1 select-none">
-              <span class="font-707 text-[12px] font-medium text-black truncate">
-                {{ getAutomaticOptionLabel(variant, idx) }}
-              </span>
-              <div class="flex items-center gap-1 text-[10px] text-neutral-400 font-707 shrink-0 ml-1.5 bg-neutral-200/60 px-1.5 py-0.5 rounded">
-                <Lock class="w-2.5 h-2.5" />
-                <span class="font-medium">Auto</span>
-              </div>
+            <!-- Editable Custom Option Title Input -->
+            <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2.5 h-[32px] flex items-center flex-1 bg-white transition-colors">
+              <input 
+                :value="opt.label"
+                @input="updateOptionLabel(idx, ($event.target as HTMLInputElement).value)"
+                :placeholder="getAutomaticOptionLabel(variant, idx)"
+                class="w-full font-707 text-[12px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
+              />
             </div>
 
             <!-- Default Selected Toggle Button -->
@@ -468,6 +467,17 @@ function parseDateComponents(dateStr?: string) {
     month: MONTHS.includes(month) ? month : 'Oct',
     year: YEARS.includes(year) ? year : '2026'
   };
+}
+
+function updateOptionLabel(index: number, val: string) {
+  if (!currentWidget.value) return;
+  const currentOptions = [...(currentWidget.value.props.options || [])];
+  if (!currentOptions[index]) return;
+  currentOptions[index] = {
+    ...currentOptions[index],
+    label: val
+  };
+  editorStore.updateWidgetProps(currentWidget.value.id, { options: currentOptions });
 }
 
 function updateOptionDate(index: number, part: 'day' | 'month' | 'year', val: string) {
@@ -744,11 +754,6 @@ function addOption() {
   }
 
   currentOptions.push(newOption);
-  // Re-sync all options to guaranteed sequence
-  currentOptions.forEach((opt, i) => {
-    opt.label = getAutomaticOptionLabel(v, i);
-  });
-
   editorStore.updateWidgetProps(currentWidget.value.id, { options: currentOptions });
 }
 
@@ -759,12 +764,6 @@ function removeOption(index: number) {
   
   const removed = currentOptions.splice(index, 1)[0];
   let selected = ((currentWidget.value.props.selectedValues || []) as string[]).filter(id => id !== removed.id);
-  
-  // Re-sync remaining options to guaranteed sequence
-  const v = variant.value;
-  currentOptions.forEach((opt, i) => {
-    opt.label = getAutomaticOptionLabel(v, i);
-  });
 
   editorStore.updateWidgetProps(currentWidget.value.id, { 
     options: currentOptions,
