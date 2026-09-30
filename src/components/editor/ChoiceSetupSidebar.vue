@@ -214,6 +214,46 @@
         </div>
       </div>
 
+      <!-- Grid Columns Option for Image Matrix (Figma Block Table Selector, Maximum 4) -->
+      <div v-if="variant === 'image-grid'" class="flex flex-col gap-[10px] w-full pt-2 border-t border-[#f0f0f0]">
+        <div class="flex items-center justify-between w-full">
+          <div class="flex flex-col">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Grid Columns
+            </p>
+            <span class="font-707 text-[11px] text-neutral-400">
+              3:4 card aspect ratio
+            </span>
+          </div>
+          <span class="font-707 text-[12px] font-medium text-black px-2 py-0.5 bg-neutral-100 rounded">
+            {{ gridColumns }} {{ gridColumns === 1 ? 'Column' : 'Columns' }}
+          </span>
+        </div>
+
+        <!-- Block Table Selector (1, 2, 3, 4 Columns) -->
+        <div class="grid grid-cols-4 gap-[8px] w-full">
+          <button 
+            v-for="col in [1, 2, 3, 4]" 
+            :key="col"
+            type="button"
+            @click="setGridColumns(col)"
+            :class="gridColumns === col ? 'bg-black text-white border-black shadow-sm ring-1 ring-black' : 'bg-white text-neutral-700 hover:bg-neutral-50 hover:border-black/40 border-[#d9d9d9]'"
+            class="h-[44px] rounded-[8px] border flex flex-col items-center justify-center gap-1 cursor-pointer transition-all font-707"
+          >
+            <!-- Visual Block Representation of Columns -->
+            <div class="flex gap-[2px] items-center h-[10px]">
+              <div 
+                v-for="b in col" 
+                :key="b" 
+                class="w-[4px] h-[9px] rounded-[1px]" 
+                :class="gridColumns === col ? 'bg-white' : 'bg-neutral-400'"
+              />
+            </div>
+            <span class="text-[11px] font-medium">{{ col }} Col</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Slots Capacity Global Toggle & Number Input (Available for Detailed Cards and Simple Rows) -->
       <div v-if="variant === 'detailed-card' || variant === 'simple-row'" class="flex flex-col gap-[10px] w-full pt-2 border-t border-[#f0f0f0]">
         <div class="flex items-center justify-between w-full">
@@ -601,6 +641,19 @@ const required = computed({
     }
   }
 });
+
+const gridColumns = computed<number>({
+  get: () => Number(currentWidget.value?.props.gridColumns) || 4,
+  set: (val: number) => {
+    if (currentWidget.value) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { gridColumns: val });
+    }
+  }
+});
+
+function setGridColumns(col: number) {
+  gridColumns.value = col;
+}
 
 const showSlotsCapacity = computed({
   get: () => currentWidget.value?.props.showSlotsCapacity ?? true,

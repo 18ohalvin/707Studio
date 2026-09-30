@@ -989,13 +989,17 @@
                 </button>
               </div>
 
-              <!-- Variant 4: Image Grid (Figma: 4 columns, 14px gap, aspect-square 74px x 74px, bg-[#ededed], 0.5px black border on active) -->
-              <div v-else-if="widget.props.variant === 'image-grid'" class="grid grid-cols-4 gap-[14px] w-full">
+              <!-- Variant 4: Image Grid (Figma: Dynamic 1-4 columns, 3:4 ratio, transparent Add more button with Add (Enter) more) -->
+              <div 
+                v-else-if="widget.props.variant === 'image-grid'" 
+                class="grid gap-[12px] w-full"
+                :class="getImageGridColsClass(widget)"
+              >
                 <div 
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="luxury-choice-tile aspect-square bg-[#ededed] relative overflow-hidden cursor-pointer select-none transition-all duration-150 rounded-none border border-solid"
+                  class="luxury-choice-tile aspect-[3/4] bg-[#ededed] relative overflow-hidden cursor-pointer select-none transition-all duration-150 rounded-none border border-solid"
                   :class="[
                     isChoiceSelected(widget, opt.id)
                       ? 'is-selected border-black'
@@ -1013,18 +1017,17 @@
                   </div>
                 </div>
 
-                <!-- Add More Tile (Figma: carbon:add-filled icon, 12px text) -->
+                <!-- Add More Tile (No container / transparent, 3:4 ratio, Add (Enter) more text) -->
                 <button 
                   v-if="!isPreviewModal"
                   type="button"
                   @click.stop="handleChoiceAddMore(widget)"
-                  class="aspect-square bg-[#ededed] hover:bg-neutral-200 border-[0.5px] border-transparent hover:border-black/40 flex flex-col gap-[8px] items-center justify-center cursor-pointer transition-all select-none rounded-none p-1.5"
+                  class="aspect-[3/4] bg-transparent hover:bg-black/5 border border-dashed border-[#ccc] hover:border-black flex flex-col gap-[6px] items-center justify-center cursor-pointer transition-all select-none rounded-none p-1.5"
                   title="Add more models"
                 >
-                  <img :src="FIGMA_ASSETS.addFilled" class="size-[22px] shrink-0 pointer-events-none" alt="Add" />
-                  <span class="font-707 whitespace-nowrap" :class="getChoiceOptionTypographyClass(widget)">
-                    Add more
-                  </span>
+                  <img :src="FIGMA_ASSETS.addFilled" class="size-[20px] shrink-0 pointer-events-none" alt="Add" />
+                  <span class="font-707 text-center leading-[14px] whitespace-pre-line" :class="getChoiceOptionTypographyClass(widget)">Add
+more</span>
                 </button>
               </div>
             </div>
@@ -1431,6 +1434,17 @@ function getOptionSlotsBadge(widget: any): string {
     ? widget.props.globalSlotsCapacity 
     : 25;
   return formatSlotsBadge(val);
+}
+
+function getImageGridColsClass(widget: any): string {
+  const cols = Number(widget.props?.gridColumns) || 4;
+  switch (cols) {
+    case 1: return 'grid-cols-1';
+    case 2: return 'grid-cols-2';
+    case 3: return 'grid-cols-3';
+    case 4:
+    default: return 'grid-cols-4';
+  }
 }
 
 watch(() => editorStore.selectedWidgetId, async (newId) => {
