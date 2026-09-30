@@ -825,8 +825,8 @@
                 </p>
               </div>
 
-              <!-- Variant 1: Detailed Cards (Figma: 16px padding, 24px gap between checkbox and text, 10px gap between title and description) -->
-              <div v-if="(widget.props.variant || 'detailed-card') === 'detailed-card'" class="flex flex-col gap-[16px] w-full">
+              <!-- Variant 1: Detailed Cards (8px gap between button tiles, 16px padding, 24px gap between checkbox and text) -->
+              <div v-if="(widget.props.variant || 'detailed-card') === 'detailed-card'" class="flex flex-col gap-[8px] w-full">
                 <div 
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
@@ -872,8 +872,8 @@
                 </button>
               </div>
 
-              <!-- Variant 2: Simple Rows (Global 48px height, 16px padding, 24px gap with checkbox) -->
-              <div v-else-if="widget.props.variant === 'simple-row'" class="flex flex-col gap-[16px] w-full">
+              <!-- Variant 2: Simple Rows (Global 48px height, 8px pile gap, 16px padding, 24px gap with checkbox) -->
+              <div v-else-if="widget.props.variant === 'simple-row'" class="flex flex-col gap-[8px] w-full">
                 <div 
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
@@ -913,8 +913,8 @@
                 </button>
               </div>
 
-              <!-- Variant 3: Horizontal Blocks (Global 48px height, 16px padding, 16px gap) -->
-              <div v-else-if="widget.props.variant === 'horizontal-block'" class="flex gap-[16px] items-start w-full overflow-x-auto no-scrollbar pb-1">
+              <!-- Variant 3: Horizontal Blocks (Global 48px height, 8px pile gap, 16px padding) -->
+              <div v-else-if="widget.props.variant === 'horizontal-block'" class="flex gap-[8px] items-start w-full overflow-x-auto no-scrollbar pb-1">
                 <div 
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
