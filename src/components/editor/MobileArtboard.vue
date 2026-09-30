@@ -185,8 +185,9 @@
               data-node-id="142:4935"
               data-name="Buttons Container"
             >
-              <!-- Icon 1: Adjust -> Open Media/Banner Setup -->
+              <!-- Icon 1: Adjust -> Open Media/Banner Setup (Hidden when setup modal is open) -->
               <button 
+                v-if="!isWidgetSetupModalOpen(widget)"
                 @click.stop="handleAdjustWidget(widget)"
                 class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer hover:bg-black/10"
                 title="Adjust / Setup"
@@ -535,8 +536,9 @@
                   data-node-id="180:5844"
                   data-name="Buttons Container"
                 >
-                  <!-- Button 1: Adjust / Open Text Sidebar Setup -->
+                  <!-- Button 1: Adjust / Open Text Sidebar Setup (Hidden when setup modal is open) -->
                   <button 
+                    v-if="!isWidgetSetupModalOpen(widget)"
                     @click.stop="handleAdjustWidget(widget)"
                     class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer hover:bg-black/10"
                     title="Text Setup"
@@ -731,8 +733,9 @@
                   class="absolute z-40 apple-glass-modal flex gap-[4px] items-center p-[4px] rounded-[8px] shadow-[0px_4px_16px_rgba(0,0,0,0.18)] transition-all animate-in fade-in duration-150 select-none top-1/2 -translate-y-1/2 right-[8px]"
                   data-name="Buttons Container"
                 >
-                  <!-- Button 1: Adjust / Open Button Setup Sidebar -->
+                  <!-- Button 1: Adjust / Open Button Setup Sidebar (Hidden when setup modal is open) -->
                   <button 
+                    v-if="!isWidgetSetupModalOpen(widget)"
                     @click.stop="handleAdjustWidget(widget)"
                     class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black hover:bg-black/10 cursor-pointer"
                     title="Button Setup"
@@ -792,8 +795,9 @@
                 class="absolute z-40 apple-glass-modal flex gap-[4px] items-center p-[4px] rounded-[8px] shadow-[0px_4px_16px_rgba(0,0,0,0.18)] transition-all animate-in fade-in duration-150 select-none top-[8px] right-[12px]"
                 data-name="Choice Toolbar"
               >
-                <!-- Button 1: Adjust / Open Choice Setup Sidebar -->
+                <!-- Button 1: Adjust / Open Choice Setup Sidebar (Hidden when setup modal is open) -->
                 <button 
+                  v-if="!isWidgetSetupModalOpen(widget)"
                   @click.stop="handleAdjustWidget(widget)"
                   class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black hover:bg-black/10 cursor-pointer"
                   title="Choice Setup"
@@ -1127,6 +1131,7 @@ more</span>
           class="absolute z-40 apple-glass-modal flex gap-[5px] items-center p-[4px] rounded-[10px] shadow-[0px_8px_24px_rgba(0,0,0,0.12)] border border-white/80 transition-all -top-[28px] right-[12px] select-none"
         >
           <button 
+            v-if="!isWidgetSetupModalOpen(stickyButtonForThisPage)"
             @click.stop="handleAdjustWidget(stickyButtonForThisPage)"
             class="apple-glass-icon-btn size-[22px] flex items-center justify-center rounded-[6px] text-black cursor-pointer"
             title="Button Setup"
@@ -1764,6 +1769,26 @@ function handleWidgetClick(widget: any) {
   handleSelectThisPage();
   editorStore.selectWidget(widget.id);
   handleAdjustWidget(widget);
+}
+
+function isWidgetSetupModalOpen(widget: any): boolean {
+  if (!widget) return false;
+  if (widget.type === 'HeroDrop') {
+    return editorStore.isMediaSidebarOpen || editorStore.isMediaGalleryOpen;
+  }
+  if (widget.type === 'TextBanner') {
+    return editorStore.isTextSidebarOpen;
+  }
+  if (widget.type === 'ActionButton') {
+    return editorStore.isButtonSidebarOpen;
+  }
+  if (widget.type === 'MultipleChoice') {
+    return editorStore.isChoiceSidebarOpen;
+  }
+  if (widget.type === 'ModalOverlay') {
+    return editorStore.isModalSidebarOpen;
+  }
+  return editorStore.isWidgetSidebarOpen;
 }
 
 function handleAdjustWidget(widget: any) {
