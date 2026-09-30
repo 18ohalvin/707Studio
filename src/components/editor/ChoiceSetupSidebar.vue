@@ -224,85 +224,85 @@
           </button>
         </div>
       </div>
+    </div>
 
-      <!-- Grid Columns Option for Image Matrix (Figma Block Table Selector, Maximum 4) -->
-      <div v-if="variant === 'image-grid'" class="flex flex-col gap-[10px] w-full pt-2 border-t border-[#f0f0f0]">
-        <div class="flex items-center justify-between w-full">
-          <div class="flex flex-col">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Grid Columns
-            </p>
-            <span class="font-707 text-[11px] text-neutral-400">
-              3:4 card aspect ratio
-            </span>
-          </div>
-          <span class="font-707 text-[12px] font-medium text-black px-2 py-0.5 bg-neutral-100 rounded">
-            {{ gridColumns }} {{ gridColumns === 1 ? 'Column' : 'Columns' }}
+    <!-- Section 5: Grid Columns Option for Image Matrix -->
+    <div v-if="variant === 'image-grid'" class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
+      <div class="flex items-center justify-between w-full">
+        <div class="flex flex-col">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Grid Columns
+          </p>
+          <span class="font-707 text-[11px] text-neutral-400">
+            3:4 card aspect ratio
           </span>
         </div>
-
-        <!-- Block Table Selector (1, 2, 3, 4 Columns) -->
-        <div class="grid grid-cols-4 gap-[8px] w-full">
-          <button 
-            v-for="col in [1, 2, 3, 4]" 
-            :key="col"
-            type="button"
-            @click="setGridColumns(col)"
-            :class="gridColumns === col ? 'bg-black text-white border-black shadow-sm ring-1 ring-black' : 'bg-white text-neutral-700 hover:bg-neutral-50 hover:border-black/40 border-[#d9d9d9]'"
-            class="h-[44px] rounded-[8px] border flex flex-col items-center justify-center gap-1 cursor-pointer transition-all font-707"
-          >
-            <!-- Visual Block Representation of Columns -->
-            <div class="flex gap-[2px] items-center h-[10px]">
-              <div 
-                v-for="b in col" 
-                :key="b" 
-                class="w-[4px] h-[9px] rounded-[1px]" 
-                :class="gridColumns === col ? 'bg-white' : 'bg-neutral-400'"
-              />
-            </div>
-            <span class="text-[11px] font-medium">{{ col }} Col</span>
-          </button>
-        </div>
+        <span class="font-707 text-[12px] font-medium text-black px-2.5 py-1 bg-neutral-100 rounded-[6px]">
+          {{ gridColumns }} {{ gridColumns === 1 ? 'Column' : 'Columns' }}
+        </span>
       </div>
 
-      <!-- Slots Capacity Global Toggle & Number Input (Available for Detailed Cards and Simple Rows) -->
-      <div v-if="variant === 'detailed-card' || variant === 'simple-row'" class="flex flex-col gap-[10px] w-full pt-2 border-t border-[#f0f0f0]">
-        <div class="flex items-center justify-between w-full">
-          <div class="flex flex-col">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Slots Capacity
-            </p>
-            <span class="font-707 text-[11px] text-neutral-400">
-              Badge on option tiles
-            </span>
-          </div>
-          <!-- 707 Switch Toggle -->
-          <button 
-            type="button"
-            @click="toggleSlotsCapacity"
-            :class="showSlotsCapacity ? 'bg-black' : 'bg-neutral-200'"
-            class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
-          >
-            <span 
-              :class="showSlotsCapacity ? 'translate-x-[18px]' : 'translate-x-0'"
-              class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+      <!-- Block Table Selector (1, 2, 3, 4 Columns) -->
+      <div class="grid grid-cols-4 gap-[8px] w-full pt-1">
+        <button 
+          v-for="col in [1, 2, 3, 4]" 
+          :key="col"
+          type="button"
+          @click="setGridColumns(col)"
+          :class="gridColumns === col ? 'bg-black text-white border-black shadow-sm ring-1 ring-black' : 'bg-white text-neutral-700 hover:bg-neutral-50 hover:border-black/40 border-[#d9d9d9]'"
+          class="h-[44px] rounded-[8px] border flex flex-col items-center justify-center gap-1 cursor-pointer transition-all font-707"
+        >
+          <!-- Visual Block Representation of Columns -->
+          <div class="flex gap-[2px] items-center h-[10px]">
+            <div 
+              v-for="b in col" 
+              :key="b" 
+              class="w-[4px] h-[9px] rounded-[1px]" 
+              :class="gridColumns === col ? 'bg-white' : 'bg-neutral-400'"
             />
-          </button>
-        </div>
+          </div>
+          <span class="text-[11px] font-medium">{{ col }} Col</span>
+        </button>
+      </div>
+    </div>
 
-        <!-- Global Slots Input -->
-        <div v-if="showSlotsCapacity" class="flex flex-col gap-[6px] w-full animate-in fade-in slide-in-from-top-1 duration-150">
-          <div class="flex items-center justify-between">
-            <span class="font-707 text-[12px] font-medium text-neutral-700">Slots per Option</span>
-            <span class="font-707 text-[11px] text-neutral-400">Applies to all options</span>
-          </div>
-          <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-3 h-[34px] flex items-center w-full bg-white transition-colors">
-            <input 
-              v-model="globalSlotsCapacity"
-              placeholder="e.g. 25"
-              class="w-full font-707 text-[12px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
-            />
-          </div>
+    <!-- Section 6: Slots Capacity (For Detailed Cards and Simple Rows) -->
+    <div v-if="variant === 'detailed-card' || variant === 'simple-row'" class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
+      <div class="flex items-center justify-between w-full">
+        <div class="flex flex-col">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Slots Capacity
+          </p>
+          <span class="font-707 text-[11px] text-neutral-400">
+            Badge on option tiles
+          </span>
+        </div>
+        <!-- 707 Switch Toggle -->
+        <button 
+          type="button"
+          @click="toggleSlotsCapacity"
+          :class="showSlotsCapacity ? 'bg-black' : 'bg-neutral-200'"
+          class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+        >
+          <span 
+            :class="showSlotsCapacity ? 'translate-x-[18px]' : 'translate-x-0'"
+            class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+          />
+        </button>
+      </div>
+
+      <!-- Global Slots Input -->
+      <div v-if="showSlotsCapacity" class="flex flex-col gap-[8px] w-full pt-1 animate-in fade-in slide-in-from-top-1 duration-150">
+        <div class="flex items-center justify-between">
+          <span class="font-707 text-[12px] font-medium text-neutral-700">Slots per Option</span>
+          <span class="font-707 text-[11px] text-neutral-400">Applies to all options</span>
+        </div>
+        <div class="border border-[#aaa] focus-within:border-black rounded-[8px] px-3.5 h-[38px] flex items-center w-full bg-white transition-colors">
+          <input 
+            v-model="globalSlotsCapacity"
+            placeholder="e.g. 25"
+            class="w-full font-707 text-[13px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
+          />
         </div>
       </div>
     </div>
