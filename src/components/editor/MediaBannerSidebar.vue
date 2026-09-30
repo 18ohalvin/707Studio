@@ -22,7 +22,7 @@
     </div>
 
     <!-- Upload or Drag Media Section -->
-    <div class="content-stretch flex flex-col items-start py-[20px] px-[24px] shrink-0 w-full">
+    <div class="content-stretch flex flex-col items-start p-[24px] shrink-0 w-full">
       <input 
         type="file" 
         ref="fileInputRef" 
@@ -79,7 +79,7 @@
     </div>
 
     <!-- Ratio Presets -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start py-[16px] px-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
+    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
       <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
         Ratio Presets
       </p>
@@ -97,7 +97,7 @@
     </div>
 
     <!-- Set Media Fits -->
-    <div class="content-stretch flex items-center justify-between py-[16px] px-[24px] shrink-0 w-full border-t border-[#f0f0f0] relative">
+    <div class="content-stretch flex items-center justify-between p-[24px] shrink-0 w-full border-t border-[#f0f0f0] relative">
       <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
         Set Media Fits
       </p>

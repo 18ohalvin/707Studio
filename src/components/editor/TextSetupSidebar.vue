@@ -28,7 +28,7 @@
     </div>
 
     <!-- Section 0: Text Content Input (Direct access from sidebar) -->
-    <div class="content-stretch flex flex-col gap-[8px] items-start py-[16px] px-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+    <div class="content-stretch flex flex-col gap-[8px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="flex items-center justify-between w-full">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
           Text Content
@@ -49,8 +49,8 @@
     </div>
 
     <!-- Section 1: Typography Style (Figma Node 181:6024) -->
-    <div class="content-stretch flex flex-col items-start py-[16px] shrink-0 w-full border-b border-[#f0f0f0] overflow-visible" data-node-id="181:6024">
-      <div class="content-stretch flex gap-[32px] items-center justify-between px-[24px] shrink-0 w-full overflow-visible" data-node-id="181:6025">
+    <div class="content-stretch flex flex-col items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0] overflow-visible" data-node-id="181:6024">
+      <div class="content-stretch flex gap-[32px] items-center justify-between shrink-0 w-full overflow-visible" data-node-id="181:6025">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap shrink-0 w-[140px]" data-node-id="181:6026">
           Typography Style
         </p>
@@ -94,8 +94,8 @@
     </div>
 
     <!-- Section 2: Text Alignment (Figma Node 181:6033) -->
-    <div class="content-stretch flex flex-col items-start py-[16px] shrink-0 w-full" data-node-id="181:6033">
-      <div class="content-stretch flex gap-[32px] items-center justify-between px-[24px] shrink-0 w-full" data-node-id="181:6059">
+    <div class="content-stretch flex flex-col items-start p-[24px] shrink-0 w-full" data-node-id="181:6033">
+      <div class="content-stretch flex gap-[32px] items-center justify-between shrink-0 w-full" data-node-id="181:6059">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap shrink-0 w-[140px]" data-node-id="181:6060">
           Text Alignment
         </p>

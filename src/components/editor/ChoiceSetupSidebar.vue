@@ -102,7 +102,7 @@
     </div>
 
     <!-- Section 2: Option Tile Font Style Preset -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start py-[16px] px-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
+    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
       <div class="flex flex-col gap-[6px] w-full">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
           Option Tile Font Style
@@ -146,7 +146,7 @@
     </div>
 
     <!-- Section 3: Style Presets (4 Figma Variants with Minimal Icons) -->
-    <div class="content-stretch flex flex-col gap-[12px] items-start py-[16px] px-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
+    <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
       <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
         Choice Style Variant
       </p>
@@ -176,7 +176,7 @@
     </div>
 
     <!-- Section 4: Selection Mode & Required Rules -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start py-[16px] px-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
+    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
       <div class="flex items-center justify-between w-full">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
           Selection Rule
@@ -308,7 +308,7 @@
     </div>
 
     <!-- Section 5: Options Manager -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start py-[16px] px-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
+    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
       <div class="flex items-center justify-between w-full">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
           Options ({{ options.length }})

@@ -29,7 +29,7 @@
     </div>
 
     <!-- Layers Stack List (Dynamic Height Following Number of Layers) -->
-    <div class="content-stretch flex flex-col gap-[12px] items-start p-[20px] shrink-0 w-full" data-node-id="184:6199" data-name="Container">
+    <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] shrink-0 w-full" data-node-id="184:6199" data-name="Container">
       <!-- Empty State if no widgets -->
       <div 
         v-if="editorStore.currentPage.widget_tree.length === 0" 

@@ -28,8 +28,8 @@
     </div>
 
     <!-- Smart Category Filter Tabs (Figma Node 171:5056 & 171:5059) -->
-    <div class="content-stretch flex flex-col gap-[16px] items-start py-[16px] shrink-0 w-full border-b border-[#f0f0f0]">
-      <div class="flex gap-[8px] items-center px-[24px] overflow-x-auto w-full no-scrollbar pb-1">
+    <div class="content-stretch flex flex-col gap-[16px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+      <div class="flex gap-[8px] items-center overflow-x-auto w-full no-scrollbar pb-1">
         <button
           v-for="cat in categories"
           :key="cat"

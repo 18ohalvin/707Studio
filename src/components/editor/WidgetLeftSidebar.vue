@@ -27,13 +27,13 @@
     </div>
 
     <!-- Section 1: Media/Banners -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start py-[16px] shrink-0 w-full border-b border-[#f0f0f0]">
-      <div class="content-stretch flex items-center justify-between px-[24px] shrink-0 w-full">
+    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+      <div class="content-stretch flex items-center justify-between shrink-0 w-full">
         <p class="flex-[1_0_0] font-707 font-medium text-[13px] leading-[18px] text-black">
           Media/Banners
         </p>
       </div>
-      <div class="content-stretch flex gap-[14px] items-start px-[24px] overflow-x-auto w-full pb-2 no-scrollbar">
+      <div class="content-stretch flex gap-[14px] items-start overflow-x-auto w-full pb-2 no-scrollbar">
         <!-- Full screen landing cover -->
         <div 
           draggable="true"
@@ -197,15 +197,15 @@
     </div>
 
     <!-- Section 2: Add Form Inputs -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start py-[16px] shrink-0 w-full border-b border-[#f0f0f0]">
-      <div class="content-stretch flex items-center justify-between px-[24px] shrink-0 w-full">
+    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+      <div class="content-stretch flex items-center justify-between shrink-0 w-full">
         <p class="flex-[1_0_0] font-707 font-medium text-[13px] leading-[18px] text-black">
           Add Form Inputs
         </p>
       </div>
 
       <!-- Filter Buttons (Category Pills) -->
-      <div class="content-stretch flex gap-[6px] items-start px-[24px] overflow-x-auto w-full no-scrollbar pb-[8px]">
+      <div class="content-stretch flex gap-[6px] items-start overflow-x-auto w-full no-scrollbar pb-[8px]">
         <button 
           v-for="tab in formTabs" 
           :key="tab"
@@ -218,7 +218,7 @@
       </div>
 
       <!-- Form Field Options Grid -->
-      <div class="content-stretch flex gap-[12px] items-start px-[24px] overflow-x-auto w-full pt-[6px] pb-[8px] no-scrollbar">
+      <div class="content-stretch flex gap-[12px] items-start overflow-x-auto w-full pt-[6px] pb-[8px] no-scrollbar">
         <div 
           v-for="field in currentTabFields" 
           :key="field.name"
@@ -240,13 +240,13 @@
     </div>
 
     <!-- Section 3: Action Button (Figma Node 244:11560) -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start py-[16px] shrink-0 w-full border-b border-[#f0f0f0]">
-      <div class="content-stretch flex items-center justify-between px-[24px] shrink-0 w-full">
+    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+      <div class="content-stretch flex items-center justify-between shrink-0 w-full">
         <p class="flex-[1_0_0] font-707 font-medium text-[13px] leading-[18px] text-black">
           Action Button
         </p>
       </div>
-      <div class="content-stretch flex gap-[14px] items-start px-[24px] overflow-x-auto w-full no-scrollbar pb-[4px]">
+      <div class="content-stretch flex gap-[14px] items-start overflow-x-auto w-full no-scrollbar pb-[4px]">
         <!-- Action Button 1: Standard Black Button (Figma Node 176:5763) -->
         <div 
           draggable="true"
@@ -288,13 +288,13 @@
     </div>
 
     <!-- Section 4: Interactive & Activations -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start py-[16px] shrink-0 w-full border-b border-[#f0f0f0]">
-      <div class="content-stretch flex items-center justify-between px-[24px] shrink-0 w-full">
+    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+      <div class="content-stretch flex items-center justify-between shrink-0 w-full">
         <p class="flex-[1_0_0] font-707 font-medium text-[13px] leading-[18px] text-black">
           Interactive & Activations
         </p>
       </div>
-      <div class="content-stretch flex gap-[14px] items-start px-[24px] overflow-x-auto w-full no-scrollbar">
+      <div class="content-stretch flex gap-[14px] items-start overflow-x-auto w-full no-scrollbar">
         <!-- Interactive Card 1: Tennis Court / Sneaker Sizing Grid -->
         <div 
           draggable="true"
@@ -322,13 +322,13 @@
     </div>
 
     <!-- Section 5: Pop Up Overlays -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start py-[16px] shrink-0 w-full">
-      <div class="content-stretch flex items-center justify-between px-[24px] shrink-0 w-full">
+    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
+      <div class="content-stretch flex items-center justify-between shrink-0 w-full">
         <p class="flex-[1_0_0] font-707 font-medium text-[13px] leading-[18px] text-black">
           Pop Up Overlays
         </p>
       </div>
-      <div class="content-stretch flex gap-[14px] items-start px-[24px] overflow-x-auto w-full no-scrollbar">
+      <div class="content-stretch flex gap-[14px] items-start overflow-x-auto w-full no-scrollbar">
         <!-- Center Overlay -->
         <div 
           draggable="true"
