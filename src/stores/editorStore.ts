@@ -1,7 +1,7 @@
 import { apiFetch } from '../services/apiClient.ts';
 import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
-import type { WidgetItem, WidgetType, ActivationPage, ViewportMode, PageStatus, ProjectItem, ChoiceOptionItem } from '../types/editor.ts';
+import type { WidgetItem, WidgetType, ActivationPage, ViewportMode, PageStatus, ProjectItem } from '../types/editor.ts';
 
 export type MediaGalleryTarget = 'bannerImage' | 'brandLogo' | 'replaceBannerImage' | 'addNewMedia';
 
@@ -365,79 +365,30 @@ export const useEditorStore = defineStore('editor', () => {
           disabled: false
         };
         break;
-      case 'MultipleChoice': {
-        const variant = (customProps?.variant as string) || 'arrivals-card';
-        let defaultTitle = 'SELECT ARRIVALS';
-        let defaultSubtitle = 'Choose your preferred attendance day below.';
-        let defaultOptions: ChoiceOptionItem[] = [
-          {
-            id: 'opt_1',
-            label: 'Day 1',
-            secondaryLabel: '2 September 2026',
-            description: 'Your Event Descriptions Detail'
-          },
-          {
-            id: 'opt_2',
-            label: 'Day 2',
-            secondaryLabel: '3 September 2026',
-            description: 'Your Event Descriptions Detail'
-          }
-        ];
-
-        if (variant === 'simple-row') {
-          defaultTitle = 'SELECT APPAREL SIZE';
-          defaultSubtitle = 'Choose your preferred size below.';
-          defaultOptions = [
-            { id: 'opt_s', label: 'S', secondaryLabel: 'In Stock' },
-            { id: 'opt_m', label: 'M', secondaryLabel: 'In Stock' },
-            { id: 'opt_l', label: 'L', secondaryLabel: 'In Stock' },
-            { id: 'opt_xl', label: 'XL', secondaryLabel: 'In Stock' }
-          ];
-        } else if (variant === 'horizontal-block') {
-          defaultTitle = 'SELECT YOUR SESSIONS';
-          defaultSubtitle = 'Choose your preferred sessions below.';
-          defaultOptions = [
-            { id: 'opt_morning', label: 'Morning' },
-            { id: 'opt_afternoon', label: 'Afternoon' }
-          ];
-        } else if (variant === 'image-grid') {
-          defaultTitle = 'SELECT YOUR MODEL';
-          defaultSubtitle = 'Choose your preferred model below.';
-          defaultOptions = [
-            {
-              id: 'opt_img_1',
-              label: 'Model 01',
-              imageUrl: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&q=80'
-            },
-            {
-              id: 'opt_img_2',
-              label: 'Model 02',
-              imageUrl: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=300&q=80'
-            },
-            {
-              id: 'opt_img_3',
-              label: 'Model 03',
-              imageUrl: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=300&q=80'
-            },
-            {
-              id: 'opt_img_4',
-              label: 'Model 04',
-              imageUrl: 'https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?w=300&q=80'
-            }
-          ];
-        }
-
+      case 'MultipleChoice':
         defaultProps = {
-          title: defaultTitle,
-          subtitle: defaultSubtitle,
-          variant,
+          title: 'SELECT ARRIVALS',
+          subtitle: 'Select one or more entry slots',
+          variant: 'detailed-card',
           allowMultiple: true,
-          required: true,
-          selectedIds: [],
-          options: defaultOptions
+          required: false,
+          selectedValues: [],
+          options: [
+            {
+              id: 'opt_1',
+              label: 'VIP Pass & Early Entry',
+              sublabel: '24 Oct 2026',
+              description: 'Early access to the showroom and private lounge'
+            },
+            {
+              id: 'opt_2',
+              label: 'General Admission',
+              sublabel: '25 Oct 2026',
+              description: 'Access to exhibition and main stage events'
+            }
+          ]
         };
         break;
-      }
       default:
         defaultProps = { text: 'Custom block content' };
     }
@@ -497,9 +448,9 @@ export const useEditorStore = defineStore('editor', () => {
       isWidgetSidebarOpen.value = false;
       isMediaSidebarOpen.value = false;
       isTextSidebarOpen.value = false;
-      isMediaGalleryOpen.value = false;
       isButtonSidebarOpen.value = false;
       isChoiceSidebarOpen.value = false;
+      isMediaGalleryOpen.value = false;
     }
     if (currentPage.value.widget_tree.length === 0) {
       selectedWidgetId.value = null;
@@ -562,6 +513,7 @@ export const useEditorStore = defineStore('editor', () => {
     isMediaGalleryOpen.value = false;
     isTextSidebarOpen.value = false;
     isButtonSidebarOpen.value = false;
+    isChoiceSidebarOpen.value = false;
     isLayersOpen.value = false;
     isPagesOpen.value = false;
     isMediaSidebarOpen.value = true;
@@ -573,6 +525,7 @@ export const useEditorStore = defineStore('editor', () => {
     isMediaGalleryOpen.value = false;
     isTextSidebarOpen.value = false;
     isButtonSidebarOpen.value = false;
+    isChoiceSidebarOpen.value = false;
     isLayersOpen.value = false;
     isPagesOpen.value = false;
     isWidgetSidebarOpen.value = true;

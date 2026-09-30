@@ -1,276 +1,255 @@
 <template>
-  <!-- Choice Setup Sidebar Menu (Matching ButtonSetupSidebar.vue & TextSetupSidebar.vue) -->
+  <!-- Choice Setup Sidebar Drawer (Matching Apple Glass Style & 707 Standards) -->
   <aside 
-    v-if="isOpen"
+    v-if="isOpen && currentWidget"
     ref="sidebarRef"
     @click.stop
     @wheel.stop
-    class="absolute right-[24px] top-1/2 -translate-y-1/2 w-[464px] h-auto max-h-[calc(100vh-140px)] backdrop-blur-2xl bg-[rgba(255,255,255,0.92)] border border-black/8 content-stretch flex flex-col items-start overflow-y-auto pb-[20px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] z-40 select-none transition-all animate-apple-slide-right-center no-scrollbar"
+    class="absolute right-[24px] top-1/2 -translate-y-1/2 w-[464px] h-auto max-h-[calc(100vh-140px)] backdrop-blur-2xl bg-[rgba(255,255,255,0.92)] border border-black/8 content-stretch flex flex-col items-start overflow-y-auto pb-[24px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] z-40 select-none transition-all animate-apple-slide-right-center no-scrollbar"
     data-node-id="276:4224"
     data-name="Choice Setup Sidebar"
   >
-    <!-- Widget Container & Header -->
+    <!-- Header -->
     <div class="content-stretch flex flex-col items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
         <div class="flex items-center gap-2">
-          <ListChecks class="size-4 text-black stroke-[2]" />
+          <ListChecks class="w-4 h-4 text-black" />
           <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
             Choice Setup
           </p>
         </div>
         <button 
           @click="$emit('close')"
-          class="apple-glass-icon-btn size-7 flex items-center justify-center rounded-full cursor-pointer hover:bg-black/5 transition-colors"
+          class="apple-glass-icon-btn size-7 flex items-center justify-center rounded-full cursor-pointer hover:bg-neutral-200/60 transition-colors"
         >
           <img :src="FIGMA_ASSETS.closeIcon" class="w-3.5 h-3.5" alt="Close" />
         </button>
       </div>
     </div>
 
-    <!-- Section 1: Question Title & Subtitle -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
-      <div class="w-full space-y-1">
-        <label class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Question Title
-        </label>
-        <div class="border border-[#d4d4d4] focus-within:border-black flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+    <!-- Section 1: Title & Subtitle -->
+    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
+      <div class="flex flex-col gap-[6px] w-full">
+        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+          Title
+        </p>
+        <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
           <input 
-            v-model="choiceTitle"
+            v-model="title"
             placeholder="e.g. SELECT ARRIVALS"
-            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
+            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase tracking-tight"
           />
         </div>
       </div>
 
-      <div class="w-full space-y-1">
-        <label class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Subtitle / Helper Instructions
-        </label>
-        <div class="border border-[#d4d4d4] focus-within:border-black flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+      <div class="flex flex-col gap-[6px] w-full">
+        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+          Subtitle
+        </p>
+        <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
           <input 
-            v-model="choiceSubtitle"
-            placeholder="e.g. Choose your preferred attendance day below."
+            v-model="subtitle"
+            placeholder="e.g. Select one or more options"
             class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400"
           />
         </div>
       </div>
     </div>
 
-    <!-- Section 2: Layout Style Preset (4 Figma Types) -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start py-[16px] px-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
-      <div class="flex items-center justify-between w-full">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Widget Layout Style
-        </p>
-        <span class="text-[11px] font-mono text-neutral-400">4 Types</span>
-      </div>
+    <!-- Section 2: Style Preset Variants (4 Variants from Figma 276:4224) -->
+    <div class="content-stretch flex flex-col gap-[14px] items-start py-[16px] px-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
+      <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+        Choice Style Variant
+      </p>
       <div class="grid grid-cols-2 gap-[8px] w-full">
         <button 
+          v-for="v in variants"
+          :key="v.id"
           type="button"
-          v-for="layout in layoutVariants"
-          :key="layout.id"
-          @click="setLayoutVariant(layout.id)"
-          :class="currentVariant === layout.id ? 'apple-glass-btn-dark font-medium shadow-sm ring-1 ring-black' : 'apple-glass-btn'"
-          class="flex flex-col items-start p-[10px] rounded-[8px] text-left cursor-pointer transition-all gap-1"
+          @click="setVariant(v.id)"
+          :class="variant === v.id ? 'apple-glass-btn-dark font-medium shadow-sm ring-1 ring-black' : 'apple-glass-btn'"
+          class="flex flex-col items-start gap-1 p-[12px] rounded-[8px] text-[12px] font-707 cursor-pointer transition-all text-left"
         >
-          <div class="flex items-center gap-1.5">
-            <component :is="layout.icon" class="size-3.5 stroke-[2]" />
-            <span class="font-707 text-[12px] font-medium">{{ layout.label }}</span>
+          <div class="flex items-center gap-2">
+            <component :is="v.icon" class="size-3.5 shrink-0" />
+            <span class="font-semibold">{{ v.label }}</span>
           </div>
-          <p class="text-[10px] opacity-70 line-clamp-1 leading-tight font-707">
-            {{ layout.description }}
-          </p>
+          <span class="text-[10px] opacity-70 leading-tight">{{ v.desc }}</span>
         </button>
       </div>
     </div>
 
-    <!-- Section 3: Selection Behavior & Rules -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start py-[16px] px-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+    <!-- Section 3: Behavior & Selection Settings -->
+    <div class="content-stretch flex flex-col gap-[12px] items-start py-[16px] px-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
       <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
         Selection Rules
       </p>
-
+      
       <!-- Multi-select toggle -->
-      <div class="flex items-center justify-between w-full">
+      <div class="flex items-center justify-between w-full bg-white/60 p-3 rounded-[8px] border border-[#e5e5e5]">
         <div class="flex flex-col">
-          <span class="font-707 text-[12px] font-medium text-black">Allow Multiple Choice</span>
-          <span class="font-707 text-[11px] text-neutral-500">Users can pick more than one option</span>
+          <span class="font-707 font-medium text-[13px] text-black">Multiple Selections</span>
+          <span class="font-707 text-[11px] text-neutral-500">Allow users to select more than one answer</span>
         </div>
         <button 
           type="button"
           @click="toggleAllowMultiple"
-          :class="allowMultiple ? 'bg-black text-white' : 'bg-neutral-200 text-neutral-600'"
-          class="w-[44px] h-[24px] rounded-full transition-colors relative flex items-center px-0.5 cursor-pointer"
+          :class="allowMultiple ? 'bg-black text-white' : 'bg-[#e5e5e5] text-neutral-600'"
+          class="w-[44px] h-[24px] rounded-full flex items-center p-0.5 transition-colors cursor-pointer relative"
         >
           <div 
             :class="allowMultiple ? 'translate-x-[20px] bg-white' : 'translate-x-0 bg-white'"
-            class="size-[20px] rounded-full shadow-sm transition-transform duration-200"
+            class="size-[20px] rounded-full shadow-sm transition-transform duration-200 ease-out"
           />
         </button>
       </div>
 
-      <!-- Required toggle -->
-      <div class="flex items-center justify-between w-full pt-1 border-t border-[#f5f5f5]">
+      <!-- Required Field toggle -->
+      <div class="flex items-center justify-between w-full bg-white/60 p-3 rounded-[8px] border border-[#e5e5e5]">
         <div class="flex flex-col">
-          <span class="font-707 text-[12px] font-medium text-black">Required Field</span>
-          <span class="font-707 text-[11px] text-neutral-500">Must select at least one before submit</span>
+          <span class="font-707 font-medium text-[13px] text-black">Required Choice</span>
+          <span class="font-707 text-[11px] text-neutral-500">Form cannot be submitted without selecting</span>
         </div>
         <button 
           type="button"
           @click="toggleRequired"
-          :class="isRequired ? 'bg-black text-white' : 'bg-neutral-200 text-neutral-600'"
-          class="w-[44px] h-[24px] rounded-full transition-colors relative flex items-center px-0.5 cursor-pointer"
+          :class="required ? 'bg-black text-white' : 'bg-[#e5e5e5] text-neutral-600'"
+          class="w-[44px] h-[24px] rounded-full flex items-center p-0.5 transition-colors cursor-pointer relative"
         >
           <div 
-            :class="isRequired ? 'translate-x-[20px] bg-white' : 'translate-x-0 bg-white'"
-            class="size-[20px] rounded-full shadow-sm transition-transform duration-200"
+            :class="required ? 'translate-x-[20px] bg-white' : 'translate-x-0 bg-white'"
+            class="size-[20px] rounded-full shadow-sm transition-transform duration-200 ease-out"
           />
         </button>
       </div>
     </div>
 
-    <!-- Section 4: Options List -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start py-[16px] px-[24px] shrink-0 w-full">
+    <!-- Section 4: Options Manager -->
+    <div class="content-stretch flex flex-col gap-[14px] items-start py-[16px] px-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
       <div class="flex items-center justify-between w-full">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Options ({{ currentOptions.length }})
+          Options List ({{ options.length }})
         </p>
         <button 
           type="button"
-          @click="addNewOption"
-          class="apple-glass-btn flex items-center gap-1 px-2.5 h-[28px] rounded-[6px] text-[11px] font-707 cursor-pointer hover:bg-black hover:text-white transition-colors"
+          @click="addOption"
+          class="apple-glass-btn px-2.5 py-1 rounded-[6px] text-[11px] font-medium flex items-center gap-1 cursor-pointer"
         >
-          <Plus class="size-3 stroke-[2.5]" />
+          <Plus class="w-3 h-3" />
           <span>Add Option</span>
         </button>
       </div>
 
-      <!-- Option Items Stack -->
+      <!-- Options items list -->
       <div class="flex flex-col gap-[10px] w-full">
         <div 
-          v-for="(option, idx) in currentOptions" 
-          :key="option.id"
-          class="flex flex-col gap-2 p-3 bg-white border border-[#e5e5e5] rounded-[8px] transition-all hover:border-[#bbb] shadow-sm"
+          v-for="(opt, idx) in options" 
+          :key="opt.id"
+          class="flex flex-col gap-2 p-3 bg-white rounded-[8px] border border-[#d9d9d9] shadow-sm transition-all group"
         >
-          <!-- Option Header: Drag handle / index / Remove -->
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="font-mono text-[10px] text-neutral-400 bg-neutral-100 px-1.5 py-0.5 rounded">
-                #{{ idx + 1 }}
-              </span>
-              <span class="font-707 text-[11px] font-medium text-black">
-                {{ option.label || 'Untitled Option' }}
-              </span>
-            </div>
-            <div class="flex items-center gap-1">
-              <!-- Move Up -->
-              <button 
-                type="button"
-                v-if="idx > 0"
-                @click="moveOption(idx, idx - 1)"
-                class="size-6 flex items-center justify-center text-neutral-400 hover:text-black rounded hover:bg-neutral-100 cursor-pointer"
-                title="Move up"
-              >
-                <ArrowUp class="size-3" />
-              </button>
-              <!-- Move Down -->
-              <button 
-                type="button"
-                v-if="idx < currentOptions.length - 1"
-                @click="moveOption(idx, idx + 1)"
-                class="size-6 flex items-center justify-center text-neutral-400 hover:text-black rounded hover:bg-neutral-100 cursor-pointer"
-                title="Move down"
-              >
-                <ArrowDown class="size-3" />
-              </button>
-              <!-- Remove -->
-              <button 
-                type="button"
-                @click="removeOption(idx)"
-                class="size-6 flex items-center justify-center text-neutral-400 hover:text-red-600 rounded hover:bg-red-50 cursor-pointer"
-                title="Delete option"
-              >
-                <Trash2 class="size-3" />
-              </button>
-            </div>
-          </div>
+          <!-- Top Row: Order badge, label input, Default Checked, and Delete -->
+          <div class="flex items-center gap-2 w-full">
+            <span class="size-5 rounded-full bg-neutral-100 flex items-center justify-center font-mono text-[10px] text-neutral-500 font-bold shrink-0">
+              {{ idx + 1 }}
+            </span>
 
-          <!-- Option Inputs Grid -->
-          <div class="grid grid-cols-2 gap-2 pt-1">
-            <!-- Label -->
-            <div class="flex flex-col gap-1">
-              <span class="font-707 text-[10px] text-neutral-500">Label</span>
-              <input 
-                :value="option.label"
-                @input="updateOptionField(idx, 'label', ($event.target as HTMLInputElement).value)"
-                placeholder="Label"
-                class="h-[30px] px-2 border border-[#d4d4d4] focus:border-black rounded-[6px] text-[12px] font-707 outline-none bg-[#fafafa] focus:bg-white"
-              />
-            </div>
-
-            <!-- Secondary Text / Date / Stock -->
-            <div class="flex flex-col gap-1">
-              <span class="font-707 text-[10px] text-neutral-500">
-                {{ currentVariant === 'arrivals-card' ? 'Date / Time' : 'Secondary Label' }}
-              </span>
-              <input 
-                :value="option.secondaryLabel"
-                @input="updateOptionField(idx, 'secondaryLabel', ($event.target as HTMLInputElement).value)"
-                placeholder="Optional subtext"
-                class="h-[30px] px-2 border border-[#d4d4d4] focus:border-black rounded-[6px] text-[12px] font-707 outline-none bg-[#fafafa] focus:bg-white"
-              />
-            </div>
-          </div>
-
-          <!-- Description (For Arrivals Card) -->
-          <div v-if="currentVariant === 'arrivals-card'" class="flex flex-col gap-1 pt-1">
-            <span class="font-707 text-[10px] text-neutral-500">Description Detail</span>
             <input 
-              :value="option.description"
-              @input="updateOptionField(idx, 'description', ($event.target as HTMLInputElement).value)"
-              placeholder="e.g. Your Event Descriptions Detail"
-              class="h-[30px] px-2 border border-[#d4d4d4] focus:border-black rounded-[6px] text-[12px] font-707 outline-none bg-[#fafafa] focus:bg-white"
+              v-model="opt.label"
+              placeholder="Option Title / Label"
+              class="flex-1 font-707 text-[13px] font-medium text-black focus:outline-none border-b border-transparent focus:border-black pb-0.5 transition-colors"
+            />
+
+            <!-- Default Selected Toggle -->
+            <button 
+              type="button"
+              @click="toggleOptionSelected(opt.id)"
+              :class="isOptionSelected(opt.id) ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-400 hover:text-black'"
+              class="size-6 rounded-[4px] flex items-center justify-center cursor-pointer transition-colors border border-black/10 shrink-0"
+              title="Toggle Default Selected state"
+            >
+              <Check class="w-3.5 h-3.5 stroke-[2.5]" />
+            </button>
+
+            <!-- Delete Option -->
+            <button 
+              type="button"
+              @click="removeOption(idx)"
+              :disabled="options.length <= 1"
+              :class="options.length <= 1 ? 'opacity-30 cursor-not-allowed' : 'hover:text-red-600 hover:bg-red-50 text-neutral-400 cursor-pointer'"
+              class="size-6 rounded-[4px] flex items-center justify-center transition-colors shrink-0"
+              title="Remove Option"
+            >
+              <Trash2 class="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <!-- Variant Specific Fields -->
+          <!-- Sublabel / Date field (useful for detailed-card) -->
+          <div v-if="variant === 'detailed-card'" class="flex items-center gap-2 pl-7">
+            <input 
+              v-model="opt.sublabel"
+              placeholder="Sublabel / Date (e.g. 24 Oct 2026)"
+              class="w-full font-707 text-[11px] text-neutral-600 focus:outline-none border-b border-neutral-200 focus:border-black pb-0.5"
             />
           </div>
 
-          <!-- Image URL (For Image Grid) -->
-          <div v-if="currentVariant === 'image-grid'" class="flex flex-col gap-1 pt-1">
-            <span class="font-707 text-[10px] text-neutral-500">Image URL</span>
-            <div class="flex items-center gap-2">
+          <!-- Description field (useful for detailed-card) -->
+          <div v-if="variant === 'detailed-card'" class="pl-7">
+            <textarea 
+              v-model="opt.description"
+              rows="2"
+              placeholder="Description text..."
+              class="w-full font-707 text-[11px] text-neutral-600 focus:outline-none border border-neutral-200 focus:border-black rounded-[4px] p-1.5 resize-none leading-tight"
+            />
+          </div>
+
+          <!-- Image URL field (for image-grid) -->
+          <div v-if="variant === 'image-grid'" class="flex items-center gap-2 pl-7">
+            <div class="size-8 rounded border border-neutral-200 overflow-hidden bg-neutral-100 shrink-0 flex items-center justify-center">
               <img 
-                v-if="option.imageUrl"
-                :src="option.imageUrl"
-                class="size-7 rounded object-cover border border-black/10 shrink-0"
+                v-if="opt.imageUrl" 
+                :src="opt.imageUrl" 
+                class="w-full h-full object-cover" 
+                alt="Option Preview" 
               />
-              <input 
-                :value="option.imageUrl"
-                @input="updateOptionField(idx, 'imageUrl', ($event.target as HTMLInputElement).value)"
-                placeholder="https://images.unsplash.com/..."
-                class="h-[30px] px-2 flex-1 border border-[#d4d4d4] focus:border-black rounded-[6px] text-[11px] font-mono outline-none bg-[#fafafa] focus:bg-white"
-              />
+              <ImageIcon v-else class="w-4 h-4 text-neutral-400" />
             </div>
+            <input 
+              v-model="opt.imageUrl"
+              placeholder="Image URL (https://...)"
+              class="flex-1 font-707 text-[11px] text-neutral-600 focus:outline-none border-b border-neutral-200 focus:border-black pb-0.5"
+            />
           </div>
         </div>
       </div>
+
+      <!-- Quick Add Option Button at bottom -->
+      <button 
+        type="button"
+        @click="addOption"
+        class="w-full py-2 rounded-[8px] border border-dashed border-[#aaa] hover:border-black text-neutral-600 hover:text-black font-707 text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer bg-white/50"
+      >
+        <Plus class="w-3.5 h-3.5" />
+        <span>Add Another Option</span>
+      </button>
     </div>
   </aside>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
-import type { ChoiceWidgetVariant, ChoiceOptionItem } from '../../types/editor.ts';
+import type { ChoiceVariant, ChoiceOption } from '../../types/editor.ts';
 import { 
   ListChecks, 
-  CreditCard, 
+  Layers, 
   AlignJustify, 
   LayoutGrid, 
-  Image as ImageIcon, 
   Plus, 
   Trash2, 
-  ArrowUp, 
-  ArrowDown 
+  Check, 
+  Image as ImageIcon 
 } from 'lucide-vue-next';
 
 defineProps<{
@@ -284,151 +263,181 @@ defineEmits<{
 const editorStore = useEditorStore();
 const sidebarRef = ref<HTMLElement | null>(null);
 
-const activeWidget = computed(() => {
-  if (editorStore.selectedWidget?.type === 'MultipleChoice') {
-    return editorStore.selectedWidget;
-  }
-  return null;
-});
-
-const layoutVariants = [
-  {
-    id: 'arrivals-card' as ChoiceWidgetVariant,
-    label: 'Detailed Cards',
-    description: 'Header, date & description details',
-    icon: CreditCard
+const variants: { id: ChoiceVariant; label: string; desc: string; icon: any }[] = [
+  { 
+    id: 'detailed-card', 
+    label: 'Detailed Cards', 
+    desc: 'Checkbox + title, date & description', 
+    icon: Layers 
   },
-  {
-    id: 'simple-row' as ChoiceWidgetVariant,
-    label: 'Simple Rows',
-    description: 'Minimal row list with checkmark',
-    icon: AlignJustify
+  { 
+    id: 'simple-row', 
+    label: 'Simple Rows', 
+    desc: '56px clean rows with checkbox & label', 
+    icon: AlignJustify 
   },
-  {
-    id: 'horizontal-block' as ChoiceWidgetVariant,
-    label: 'Session Blocks',
-    description: 'Compact 2-column action tiles',
-    icon: LayoutGrid
+  { 
+    id: 'horizontal-block', 
+    label: 'Horizontal Blocks', 
+    desc: 'Side-by-side blocks (S, M, L, XL)', 
+    icon: LayoutGrid 
   },
-  {
-    id: 'image-grid' as ChoiceWidgetVariant,
-    label: 'Image Grid',
-    description: '4-column product/model matrix',
-    icon: ImageIcon
+  { 
+    id: 'image-grid', 
+    label: 'Image Matrix', 
+    desc: '4-column product & model tiles', 
+    icon: LayoutGrid 
   }
 ];
 
-const choiceTitle = computed({
-  get: () => activeWidget.value?.props?.title ?? 'SELECT ARRIVALS',
+const currentWidget = computed(() => {
+  if (!editorStore.selectedWidgetId) return null;
+  const w = editorStore.selectedWidget;
+  if (!w || w.type !== 'MultipleChoice') return null;
+  return w;
+});
+
+const title = computed({
+  get: () => currentWidget.value?.props.title || '',
   set: (val: string) => {
-    if (activeWidget.value) {
-      editorStore.updateWidgetProps(activeWidget.value.id, { title: val });
+    if (currentWidget.value) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { title: val });
     }
   }
 });
 
-const choiceSubtitle = computed({
-  get: () => activeWidget.value?.props?.subtitle ?? 'Choose your preferred attendance day below.',
+const subtitle = computed({
+  get: () => currentWidget.value?.props.subtitle || '',
   set: (val: string) => {
-    if (activeWidget.value) {
-      editorStore.updateWidgetProps(activeWidget.value.id, { subtitle: val });
+    if (currentWidget.value) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { subtitle: val });
     }
   }
 });
 
-const currentVariant = computed<ChoiceWidgetVariant>(() => {
-  return (activeWidget.value?.props?.variant as ChoiceWidgetVariant) || 'arrivals-card';
-});
-
-const allowMultiple = computed<boolean>(() => {
-  return activeWidget.value?.props?.allowMultiple ?? true;
-});
-
-const isRequired = computed<boolean>(() => {
-  return activeWidget.value?.props?.required ?? true;
-});
-
-const currentOptions = computed<ChoiceOptionItem[]>(() => {
-  return activeWidget.value?.props?.options || [];
-});
-
-function setLayoutVariant(variant: ChoiceWidgetVariant) {
-  if (!activeWidget.value) return;
-
-  // Set default title & options if empty
-  let updates: Record<string, any> = { variant };
-
-  if (variant === 'arrivals-card' && (!choiceTitle.value || choiceTitle.value.startsWith('SELECT'))) {
-    updates.title = 'SELECT ARRIVALS';
-    updates.subtitle = 'Choose your preferred attendance day below.';
-  } else if (variant === 'simple-row' && (!choiceTitle.value || choiceTitle.value.startsWith('SELECT'))) {
-    updates.title = 'SELECT APPAREL SIZE';
-    updates.subtitle = 'Choose your preferred size below.';
-  } else if (variant === 'horizontal-block' && (!choiceTitle.value || choiceTitle.value.startsWith('SELECT'))) {
-    updates.title = 'SELECT YOUR SESSIONS';
-    updates.subtitle = 'Choose your preferred sessions below.';
-  } else if (variant === 'image-grid' && (!choiceTitle.value || choiceTitle.value.startsWith('SELECT'))) {
-    updates.title = 'SELECT YOUR MODEL';
-    updates.subtitle = 'Choose your preferred model below.';
+const variant = computed<ChoiceVariant>({
+  get: () => (currentWidget.value?.props.variant as ChoiceVariant) || 'detailed-card',
+  set: (val: ChoiceVariant) => {
+    if (currentWidget.value) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { variant: val });
+    }
   }
+});
 
-  editorStore.updateWidgetProps(activeWidget.value.id, updates);
+const allowMultiple = computed({
+  get: () => currentWidget.value?.props.allowMultiple ?? true,
+  set: (val: boolean) => {
+    if (currentWidget.value) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { allowMultiple: val });
+    }
+  }
+});
+
+const required = computed({
+  get: () => currentWidget.value?.props.required ?? false,
+  set: (val: boolean) => {
+    if (currentWidget.value) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { required: val });
+    }
+  }
+});
+
+const options = computed<ChoiceOption[]>({
+  get: () => currentWidget.value?.props.options || [],
+  set: (val: ChoiceOption[]) => {
+    if (currentWidget.value) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { options: val });
+    }
+  }
+});
+
+function setVariant(v: ChoiceVariant) {
+  variant.value = v;
 }
 
 function toggleAllowMultiple() {
-  if (!activeWidget.value) return;
-  const nextVal = !allowMultiple.value;
-  let updates: Record<string, any> = { allowMultiple: nextVal };
-  // If switching to single select and multiple are selected, keep only first
-  if (!nextVal && activeWidget.value.props.selectedIds?.length > 1) {
-    updates.selectedIds = [activeWidget.value.props.selectedIds[0]];
+  allowMultiple.value = !allowMultiple.value;
+  // If switched to single select and multiple are selected, keep only the first selected
+  if (!allowMultiple.value && currentWidget.value) {
+    const selected = (currentWidget.value.props.selectedValues || []) as string[];
+    if (selected.length > 1) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { selectedValues: [selected[0]] });
+    }
   }
-  editorStore.updateWidgetProps(activeWidget.value.id, updates);
 }
 
 function toggleRequired() {
-  if (!activeWidget.value) return;
-  editorStore.updateWidgetProps(activeWidget.value.id, { required: !isRequired.value });
+  required.value = !required.value;
 }
 
-function addNewOption() {
-  if (!activeWidget.value) return;
-  const count = currentOptions.value.length + 1;
-  const newOption: ChoiceOptionItem = {
+function isOptionSelected(id: string): boolean {
+  if (!currentWidget.value) return false;
+  const selected = (currentWidget.value.props.selectedValues || []) as string[];
+  return selected.includes(id);
+}
+
+function toggleOptionSelected(id: string) {
+  if (!currentWidget.value) return;
+  let selected = [...((currentWidget.value.props.selectedValues || []) as string[])];
+  
+  if (selected.includes(id)) {
+    selected = selected.filter(x => x !== id);
+  } else {
+    if (allowMultiple.value) {
+      selected.push(id);
+    } else {
+      selected = [id];
+    }
+  }
+  editorStore.updateWidgetProps(currentWidget.value.id, { selectedValues: selected });
+}
+
+function addOption() {
+  if (!currentWidget.value) return;
+  const currentOptions = [...(currentWidget.value.props.options || [])];
+  const nextNum = currentOptions.length + 1;
+  
+  let newOption: ChoiceOption = {
     id: `opt_${Date.now()}`,
-    label: currentVariant.value === 'arrivals-card' ? `Day ${count}` : `Option ${count}`,
-    secondaryLabel: currentVariant.value === 'arrivals-card' ? `${count} September 2026` : undefined,
-    description: currentVariant.value === 'arrivals-card' ? 'Your Event Descriptions Detail' : undefined,
-    imageUrl: currentVariant.value === 'image-grid' ? 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&q=80' : undefined
+    label: `Option ${nextNum}`
   };
-  const updated = [...currentOptions.value, newOption];
-  editorStore.updateWidgetProps(activeWidget.value.id, { options: updated });
+
+  if (variant.value === 'detailed-card') {
+    newOption = {
+      id: `opt_${Date.now()}`,
+      label: `Pass Option ${nextNum}`,
+      sublabel: `${23 + nextNum} Oct 2026`,
+      description: 'Access to activation area and special event lounge'
+    };
+  } else if (variant.value === 'image-grid') {
+    const defaultImages = [
+      'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=300&q=80',
+      'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&q=80',
+      'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=300&q=80',
+      'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=300&q=80'
+    ];
+    newOption = {
+      id: `opt_${Date.now()}`,
+      label: `Model 0${nextNum}`,
+      imageUrl: defaultImages[(nextNum - 1) % defaultImages.length]
+    };
+  }
+
+  currentOptions.push(newOption);
+  editorStore.updateWidgetProps(currentWidget.value.id, { options: currentOptions });
 }
 
 function removeOption(index: number) {
-  if (!activeWidget.value) return;
-  const optionId = currentOptions.value[index]?.id;
-  const updated = currentOptions.value.filter((_, i) => i !== index);
-  const selectedIds = (activeWidget.value.props.selectedIds || []).filter((id: string) => id !== optionId);
-  editorStore.updateWidgetProps(activeWidget.value.id, { options: updated, selectedIds });
-}
-
-function moveOption(fromIndex: number, toIndex: number) {
-  if (!activeWidget.value) return;
-  const list = [...currentOptions.value];
-  const item = list.splice(fromIndex, 1)[0];
-  list.splice(toIndex, 0, item);
-  editorStore.updateWidgetProps(activeWidget.value.id, { options: list });
-}
-
-function updateOptionField(index: number, field: keyof ChoiceOptionItem, value: string) {
-  if (!activeWidget.value) return;
-  const list = currentOptions.value.map((opt, i) => {
-    if (i === index) {
-      return { ...opt, [field]: value };
-    }
-    return opt;
+  if (!currentWidget.value) return;
+  const currentOptions = [...(currentWidget.value.props.options || [])];
+  if (currentOptions.length <= 1) return;
+  
+  const removed = currentOptions.splice(index, 1)[0];
+  let selected = ((currentWidget.value.props.selectedValues || []) as string[]).filter(id => id !== removed.id);
+  
+  editorStore.updateWidgetProps(currentWidget.value.id, { 
+    options: currentOptions,
+    selectedValues: selected
   });
-  editorStore.updateWidgetProps(activeWidget.value.id, { options: list });
 }
 </script>

@@ -18,27 +18,15 @@ export type WidgetType =
      it is used on a live page. */
   | 'PassCTA';
 
-export type ChoiceWidgetVariant = 'arrivals-card' | 'simple-row' | 'horizontal-block' | 'image-grid';
+export type ChoiceVariant = 'detailed-card' | 'simple-row' | 'horizontal-block' | 'image-grid';
 
-export interface ChoiceOptionItem {
+export interface ChoiceOption {
   id: string;
   label: string;
-  secondaryLabel?: string;
+  sublabel?: string;
   description?: string;
   imageUrl?: string;
-  value?: string;
-}
-
-export interface MultipleChoiceProps {
-  title?: string;
-  subtitle?: string;
-  variant?: ChoiceWidgetVariant;
-  allowMultiple?: boolean;
-  required?: boolean;
-  selectedIds?: string[];
-  options?: ChoiceOptionItem[];
-  minSelections?: number;
-  maxSelections?: number;
+  disabled?: boolean;
 }
 
 export interface WidgetItem {

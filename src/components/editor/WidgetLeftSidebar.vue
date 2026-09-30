@@ -223,7 +223,7 @@
           v-for="field in currentTabFields" 
           :key="field.name"
           draggable="true"
-          @dragstart="handleFormFieldDragStart($event, field.name)"
+          @dragstart="handleFieldDragStart($event, field.name)"
           @dragend="handleDragEnd"
           @click="addFormField(field.name)"
           class="flex flex-col gap-[6px] items-center shrink-0 w-[56px] cursor-grab active:cursor-grabbing group"
@@ -500,6 +500,95 @@ function addTextWidget() {
   emit('close');
 }
 
+function getChoiceDefaultProps(choiceName: string) {
+  switch (choiceName) {
+    case 'Sneaker Size':
+      return {
+        title: 'SELECT APPAREL SIZE',
+        subtitle: 'Choose your desired size',
+        variant: 'horizontal-block',
+        allowMultiple: true,
+        required: false,
+        selectedValues: [],
+        options: [
+          { id: 'opt_s', label: 'S' },
+          { id: 'opt_m', label: 'M' },
+          { id: 'opt_l', label: 'L' },
+          { id: 'opt_xl', label: 'XL' }
+        ]
+      };
+    case 'Checkbox':
+      return {
+        title: 'SELECT ARRIVALS',
+        subtitle: 'Select one or more entry slots',
+        variant: 'detailed-card',
+        allowMultiple: true,
+        required: false,
+        selectedValues: [],
+        options: [
+          {
+            id: 'opt_1',
+            label: 'VIP Pass & Early Entry',
+            sublabel: '24 Oct 2026',
+            description: 'Early access to the showroom and private lounge'
+          },
+          {
+            id: 'opt_2',
+            label: 'General Admission',
+            sublabel: '25 Oct 2026',
+            description: 'Access to exhibition and main stage events'
+          }
+        ]
+      };
+    case 'Radio Group':
+      return {
+        title: 'SELECT PREFERENCE',
+        subtitle: 'Choose your preferred package',
+        variant: 'simple-row',
+        allowMultiple: true,
+        required: false,
+        selectedValues: [],
+        options: [
+          { id: 'opt_1', label: 'Standard Pass' },
+          { id: 'opt_2', label: 'VIP Pass' },
+          { id: 'opt_3', label: 'All-Access Pass' }
+        ]
+      };
+    case 'Multi Choice':
+    default:
+      return {
+        title: 'SELECT YOUR MODEL',
+        subtitle: 'Select one or more models',
+        variant: 'image-grid',
+        allowMultiple: true,
+        required: false,
+        selectedValues: [],
+        options: [
+          { id: 'opt_1', label: 'Model 01', imageUrl: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=300&q=80' },
+          { id: 'opt_2', label: 'Model 02', imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&q=80' },
+          { id: 'opt_3', label: 'Model 03', imageUrl: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=300&q=80' },
+          { id: 'opt_4', label: 'Model 04', imageUrl: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=300&q=80' }
+        ]
+      };
+  }
+}
+
+function handleFieldDragStart(event: DragEvent, fieldName: string) {
+  if (selectedFormTab.value === 'Choices') {
+    handleDragStart(event, {
+      type: 'MultipleChoice',
+      label: fieldName,
+      customProps: getChoiceDefaultProps(fieldName)
+    });
+  } else {
+    handleDragStart(event, {
+      type: 'FieldInput',
+      label: fieldName,
+      customProps: getFieldDefaultProps(fieldName)
+    });
+  }
+}
+
 function getFieldDefaultProps(fieldName: string) {
   const isEmail = fieldName.toLowerCase().includes('email');
   const isWa = fieldName.toLowerCase().includes('whatsapp') || fieldName.toLowerCase().includes('phone');
@@ -520,43 +609,12 @@ function getFieldDefaultProps(fieldName: string) {
   };
 }
 
-function getFieldDragItem(fieldName: string): { type: WidgetType; label: string; customProps?: Record<string, any> } {
-  if (selectedFormTab.value === 'Choices') {
-    let variant = 'arrivals-card';
-    if (fieldName === 'Checkbox') variant = 'simple-row';
-    else if (fieldName === 'Sneaker Size') variant = 'horizontal-block';
-    else if (fieldName === 'Radio Group') variant = 'image-grid';
-    else if (fieldName === 'Multi Choice') variant = 'arrivals-card';
-    return {
-      type: 'MultipleChoice',
-      label: fieldName,
-      customProps: { variant }
-    };
-  }
-  return {
-    type: 'FieldInput',
-    label: fieldName,
-    customProps: getFieldDefaultProps(fieldName)
-  };
-}
-
-function handleFormFieldDragStart(event: DragEvent, fieldName: string) {
-  const item = getFieldDragItem(fieldName);
-  handleDragStart(event, item);
-}
-
 function addFormField(fieldName: string) {
   if (selectedFormTab.value === 'Choices') {
-    let variant = 'arrivals-card';
-    if (fieldName === 'Checkbox') variant = 'simple-row';
-    else if (fieldName === 'Sneaker Size') variant = 'horizontal-block';
-    else if (fieldName === 'Radio Group') variant = 'image-grid';
-    else if (fieldName === 'Multi Choice') variant = 'arrivals-card';
-    editorStore.addWidget('MultipleChoice', undefined, { variant });
-    emit('close');
-    return;
+    editorStore.addWidget('MultipleChoice', undefined, getChoiceDefaultProps(fieldName));
+  } else {
+    editorStore.addWidget('FieldInput', undefined, getFieldDefaultProps(fieldName));
   }
-  editorStore.addWidget('FieldInput', undefined, getFieldDefaultProps(fieldName));
   emit('close');
 }
 

@@ -198,55 +198,42 @@ describe('707 Activation Builder Stores', () => {
     expect(btn.props.stickyPageIds).toContain('page_1');
   });
 
-  it('supports MultipleChoice widget creation, 4 variants, and sidebar setup (Figma 276:4224)', () => {
+  it('supports MultipleChoice widget creation, 4 variants, and sidebar management (Figma 276:4224)', () => {
     const editorStore = useEditorStore();
     expect(editorStore.isChoiceSidebarOpen).toBe(false);
 
-    // 1. Detailed Cards variant (arrivals-card)
-    const arrivalsWidget = editorStore.addWidget('MultipleChoice', undefined, {
-      variant: 'arrivals-card'
+    // Adding MultipleChoice widget
+    const choiceWidget = editorStore.addWidget('MultipleChoice', undefined, {
+      title: 'SELECT ARRIVALS',
+      subtitle: 'Select one or more entry slots',
+      variant: 'detailed-card',
+      allowMultiple: true,
+      options: [
+        { id: 'opt_1', label: 'VIP Pass', sublabel: '24 Oct 2026', description: 'Early access' },
+        { id: 'opt_2', label: 'General Admission', sublabel: '25 Oct 2026', description: 'Standard access' }
+      ]
     });
 
-    expect(arrivalsWidget.type).toBe('MultipleChoice');
-    expect(arrivalsWidget.props.variant).toBe('arrivals-card');
-    expect(arrivalsWidget.props.title).toBe('SELECT ARRIVALS');
-    expect(arrivalsWidget.props.allowMultiple).toBe(true);
-    expect(arrivalsWidget.props.options.length).toBe(2);
-    expect(arrivalsWidget.props.selectedIds).toEqual([]);
+    expect(choiceWidget.type).toBe('MultipleChoice');
+    expect(choiceWidget.props.title).toBe('SELECT ARRIVALS');
+    expect(choiceWidget.props.allowMultiple).toBe(true);
+    expect(choiceWidget.props.variant).toBe('detailed-card');
+    expect(choiceWidget.props.options.length).toBe(2);
     expect(editorStore.isChoiceSidebarOpen).toBe(true);
 
-    // Toggle multi-select selection state
-    editorStore.updateWidgetProps(arrivalsWidget.id, {
-      selectedIds: ['opt_1', 'opt_2']
-    });
-    expect(arrivalsWidget.props.selectedIds).toEqual(['opt_1', 'opt_2']);
-
-    // 2. Simple Rows variant (simple-row)
-    const sizeWidget = editorStore.addWidget('MultipleChoice', undefined, {
-      variant: 'simple-row'
-    });
-    expect(sizeWidget.props.title).toBe('SELECT APPAREL SIZE');
-    expect(sizeWidget.props.options.length).toBe(4);
-
-    // 3. Horizontal Blocks variant (horizontal-block)
-    const sessionWidget = editorStore.addWidget('MultipleChoice', undefined, {
-      variant: 'horizontal-block'
-    });
-    expect(sessionWidget.props.title).toBe('SELECT YOUR SESSIONS');
-    expect(sessionWidget.props.options.length).toBe(2);
-
-    // 4. Image Grid variant (image-grid)
-    const modelWidget = editorStore.addWidget('MultipleChoice', undefined, {
-      variant: 'image-grid'
-    });
-    expect(modelWidget.props.title).toBe('SELECT YOUR MODEL');
-    expect(modelWidget.props.options.length).toBe(4);
-    expect(modelWidget.props.options[0].imageUrl).toBeDefined();
-
-    // Choice sidebar open / close / toggle
-    editorStore.closeChoiceSidebar();
-    expect(editorStore.isChoiceSidebarOpen).toBe(false);
+    // Toggle choice sidebar
     editorStore.toggleChoiceSidebar();
+    expect(editorStore.isChoiceSidebarOpen).toBe(false);
+    editorStore.openChoiceSidebar();
     expect(editorStore.isChoiceSidebarOpen).toBe(true);
+
+    // Update variant to image-grid
+    editorStore.updateWidgetProps(choiceWidget.id, { variant: 'image-grid' });
+    expect(choiceWidget.props.variant).toBe('image-grid');
+
+    // Remove widget closes choice sidebar
+    editorStore.removeWidget(choiceWidget.id);
+    expect(editorStore.currentPage.widget_tree.length).toBe(0);
+    expect(editorStore.isChoiceSidebarOpen).toBe(false);
   });
 });

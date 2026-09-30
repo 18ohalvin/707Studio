@@ -152,7 +152,7 @@ function getWidgetDisplayName(widget: WidgetItem): string {
     case 'ActionButton':
       return 'Action Button';
     case 'MultipleChoice':
-      return 'Multiple Choice';
+      return 'Choice Options';
     case 'FieldInput':
       return widget.props.label ? `${widget.props.label} Field` : 'Form Input';
     case 'HeroDrop':
@@ -183,7 +183,7 @@ function getWidgetSummary(widget: WidgetItem): string {
     case 'ActionButton':
       return widget.props.label || 'BUTTON CTA';
     case 'MultipleChoice':
-      return widget.props.title ? `${widget.props.title} • ${(widget.props.options || []).length} OPTIONS` : 'CHOICE QUESTION';
+      return widget.props.title || widget.props.subtitle || 'MULTIPLE CHOICE OPTIONS';
     case 'FieldInput':
       return widget.props.placeholder || widget.props.label || 'INPUT FIELD';
     case 'HeroDrop':
