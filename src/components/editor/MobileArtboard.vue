@@ -831,9 +831,12 @@
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="luxury-choice-tile border border-solid border-[#d4d4d4] flex gap-[24px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
+                  class="luxury-choice-tile border border-solid border-[#d4d4d4] flex gap-[24px] w-full select-none transition-all duration-150 rounded-none"
                   :class="[
                     isChoiceSelected(widget, opt.id) ? 'is-selected' : '',
+                    isChoiceOptionDisabled(widget, opt)
+                      ? 'opacity-40 cursor-not-allowed pointer-events-none bg-neutral-100/50'
+                      : 'cursor-pointer bg-transparent',
                     opt.description && opt.description.trim()
                       ? 'items-start p-[16px]'
                       : 'items-center min-h-[48px] h-[48px] px-[16px] py-[12px]'
@@ -865,9 +868,12 @@
                         {{ opt.description }}
                       </div>
                       <!-- Badge Label "XX Slots Available" Under Event Description -->
-                      <div v-if="getOptionSlotsBadge(widget)" class="inline-flex items-center pt-[2px]">
-                        <span class="inline-flex items-center px-[8px] py-[2px] bg-neutral-100 border border-[#e0e0e0] rounded-[4px] font-707 text-[10px] font-medium leading-[14px] text-neutral-700">
-                          {{ getOptionSlotsBadge(widget) }}
+                      <div v-if="getOptionSlotsBadge(widget, opt)" class="inline-flex items-center pt-[2px]">
+                        <span 
+                          class="inline-flex items-center px-[8px] py-[2px] border rounded-[4px] font-707 text-[10px] font-medium leading-[14px]"
+                          :class="isChoiceOptionDisabled(widget, opt) ? 'bg-neutral-200 text-neutral-500 border-neutral-300' : 'bg-neutral-100 border-[#e0e0e0] text-neutral-700'"
+                        >
+                          {{ getOptionSlotsBadge(widget, opt) }}
                         </span>
                       </div>
                     </template>
@@ -878,8 +884,12 @@
                         <span class="font-707 truncate" :class="getChoiceOptionTypographyClass(widget, opt)">{{ opt.label }}</span>
                         <div class="flex flex-col items-end shrink-0 gap-[3px]">
                           <span v-if="opt.sublabel" class="font-707 font-normal text-[12px] leading-[16px] text-neutral-500">{{ opt.sublabel }}</span>
-                          <span v-if="getOptionSlotsBadge(widget)" class="inline-flex items-center px-[6px] py-[1.5px] bg-neutral-100 border border-[#e0e0e0] rounded-[4px] font-707 text-[10px] font-medium leading-[13px] text-neutral-700">
-                            {{ getOptionSlotsBadge(widget) }}
+                          <span 
+                            v-if="getOptionSlotsBadge(widget, opt)" 
+                            class="inline-flex items-center px-[6px] py-[1.5px] border rounded-[4px] font-707 text-[10px] font-medium leading-[13px]"
+                            :class="isChoiceOptionDisabled(widget, opt) ? 'bg-neutral-200 text-neutral-500 border-neutral-300' : 'bg-neutral-100 border-[#e0e0e0] text-neutral-700'"
+                          >
+                            {{ getOptionSlotsBadge(widget, opt) }}
                           </span>
                         </div>
                       </div>
@@ -909,10 +919,13 @@
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="luxury-choice-tile border border-solid border-[#d4d4d4] flex gap-[24px] px-[16px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
+                  class="luxury-choice-tile border border-solid border-[#d4d4d4] flex gap-[24px] px-[16px] w-full select-none transition-all duration-150 rounded-none"
                   :class="[
                     isChoiceSelected(widget, opt.id) ? 'is-selected' : '',
-                    getOptionSlotsBadge(widget)
+                    isChoiceOptionDisabled(widget, opt)
+                      ? 'opacity-40 cursor-not-allowed pointer-events-none bg-neutral-100/50'
+                      : 'cursor-pointer bg-transparent',
+                    getOptionSlotsBadge(widget, opt)
                       ? 'items-start py-[12px]'
                       : 'items-center min-h-[48px] h-[48px] py-[12px]'
                   ]"
@@ -920,7 +933,7 @@
                   <!-- Checkbox Container (18px outer square with 12px inner square when active) -->
                   <div 
                     class="relative shrink-0 size-[18px] border border-black border-solid flex items-center justify-center bg-transparent"
-                    :class="getOptionSlotsBadge(widget) ? 'mt-[1px]' : ''"
+                    :class="getOptionSlotsBadge(widget, opt) ? 'mt-[1px]' : ''"
                   >
                     <div 
                       class="size-[12px] bg-black border border-black border-solid transition-all duration-150 transform"
@@ -929,12 +942,15 @@
                   </div>
 
                   <!-- Label & Slot Capacity under option title -->
-                  <div v-if="getOptionSlotsBadge(widget)" class="flex-1 flex flex-col items-start gap-[4px] min-w-0">
+                  <div v-if="getOptionSlotsBadge(widget, opt)" class="flex-1 flex flex-col items-start gap-[4px] min-w-0">
                     <span class="font-707 truncate" :class="getChoiceOptionTypographyClass(widget, opt)">
                       {{ opt.label }}
                     </span>
-                    <span class="inline-flex items-center px-[6px] py-[1.5px] bg-neutral-100 border border-[#e0e0e0] rounded-[4px] font-707 text-[10px] font-medium leading-[13px] text-neutral-700">
-                      {{ getOptionSlotsBadge(widget) }}
+                    <span 
+                      class="inline-flex items-center px-[6px] py-[1.5px] border rounded-[4px] font-707 text-[10px] font-medium leading-[13px]"
+                      :class="isChoiceOptionDisabled(widget, opt) ? 'bg-neutral-200 text-neutral-500 border-neutral-300' : 'bg-neutral-100 border-[#e0e0e0] text-neutral-700'"
+                    >
+                      {{ getOptionSlotsBadge(widget, opt) }}
                     </span>
                   </div>
                   <div v-else class="flex-1 font-707 truncate" :class="getChoiceOptionTypographyClass(widget, opt)">
@@ -964,9 +980,12 @@
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="luxury-choice-tile min-w-[128px] max-w-[200px] min-h-[48px] h-[48px] px-[16px] py-[12px] flex items-center justify-start shrink-0 border border-solid border-[#d4d4d4] cursor-pointer select-none transition-all duration-150 bg-transparent font-707 rounded-none"
+                  class="luxury-choice-tile min-w-[128px] max-w-[200px] min-h-[48px] h-[48px] px-[16px] py-[12px] flex items-center justify-start shrink-0 border border-solid border-[#d4d4d4] select-none transition-all duration-150 font-707 rounded-none"
                   :class="[
-                    isChoiceSelected(widget, opt.id) ? 'is-selected' : ''
+                    isChoiceSelected(widget, opt.id) ? 'is-selected' : '',
+                    isChoiceOptionDisabled(widget, opt)
+                      ? 'opacity-40 cursor-not-allowed pointer-events-none bg-neutral-100/50'
+                      : 'cursor-pointer bg-transparent'
                   ]"
                 >
                   <span class="font-707 truncate" :class="getChoiceOptionTypographyClass(widget, opt)">{{ opt.label }}</span>
@@ -999,9 +1018,12 @@
                   @dragover.prevent="dragOverChoiceOptionId = `${widget.id}_${opt.id}`"
                   @dragleave="dragOverChoiceOptionId = null"
                   @drop.prevent="handleChoiceImageDrop($event, widget, opt.id)"
-                  class="luxury-choice-tile aspect-[3/4] bg-[#ededed] relative overflow-hidden cursor-pointer select-none transition-all duration-150 rounded-none border border-solid border-transparent group/imagecard"
+                  class="luxury-choice-tile aspect-[3/4] bg-[#ededed] relative overflow-hidden select-none transition-all duration-150 rounded-none border border-solid border-transparent group/imagecard"
                   :class="[
                     isChoiceSelected(widget, opt.id) ? 'is-selected' : '',
+                    isChoiceOptionDisabled(widget, opt)
+                      ? 'opacity-40 cursor-not-allowed pointer-events-none grayscale'
+                      : 'cursor-pointer',
                     dragOverChoiceOptionId === `${widget.id}_${opt.id}` ? 'ring-2 ring-black ring-offset-1' : ''
                   ]"
                 >
@@ -1439,21 +1461,49 @@ function getChoiceOptionTypographyClass(widget: any, opt?: any) {
   }
 }
 
+function getOptionSlotsCapacity(widget: any, opt?: any): number | null {
+  if (widget?.props?.showSlotsCapacity === false) return null;
+  if (opt?.slotsCapacity !== undefined && opt?.slotsCapacity !== null && String(opt.slotsCapacity).trim() !== '') {
+    const num = Number(opt.slotsCapacity);
+    if (!isNaN(num)) return num;
+  }
+  if (widget?.props?.globalSlotsCapacity !== undefined && widget?.props?.globalSlotsCapacity !== null && String(widget.props.globalSlotsCapacity).trim() !== '') {
+    const num = Number(widget.props.globalSlotsCapacity);
+    if (!isNaN(num)) return num;
+  }
+  return 25;
+}
+
+function isChoiceOptionDisabled(widget: any, opt: any): boolean {
+  if (!opt) return false;
+  if (opt.disabled) return true;
+  if (widget?.props?.showSlotsCapacity) {
+    const capacity = getOptionSlotsCapacity(widget, opt);
+    if (capacity !== null && capacity <= 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function formatSlotsBadge(val?: string | number): string {
   if (val === undefined || val === null) return '';
   const str = String(val).trim();
   if (!str) return '';
   if (/slots/i.test(str)) return str;
+  const num = Number(str);
+  if (!isNaN(num) && num <= 0) {
+    return '0 Slots Available (Full)';
+  }
   return `${str} Slots Available`;
 }
 
-function getOptionSlotsBadge(widget: any): string {
-  const v = widget.props?.variant || 'detailed-card';
+function getOptionSlotsBadge(widget: any, opt?: any): string {
+  const v = widget?.props?.variant || 'detailed-card';
   if (v !== 'detailed-card' && v !== 'simple-row') return '';
-  if (widget.props?.showSlotsCapacity === false) return '';
-  const val = (widget.props?.globalSlotsCapacity !== undefined && widget.props?.globalSlotsCapacity !== '') 
-    ? widget.props.globalSlotsCapacity 
-    : 25;
+  if (widget?.props?.showSlotsCapacity === false) return '';
+  const val = getOptionSlotsCapacity(widget, opt);
+  if (val === null) return '';
   return formatSlotsBadge(val);
 }
 
@@ -1734,6 +1784,11 @@ function toggleChoiceOption(widget: any, optId: string) {
   if (props.isMiniPreview) return;
   handleSelectThisPage();
   editorStore.selectWidget(widget.id);
+
+  const opt = (widget.props?.options || []).find((o: any) => o.id === optId);
+  if (opt && isChoiceOptionDisabled(widget, opt)) {
+    return;
+  }
 
   const allowMultiple = widget.props?.allowMultiple ?? true;
   let selected = [...((widget.props?.selectedValues || []) as string[])];

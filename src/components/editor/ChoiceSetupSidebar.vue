@@ -825,6 +825,20 @@ function setRequired(val: boolean) {
   required.value = val;
 }
 
+function isOptionDisabled(opt: ChoiceOption): boolean {
+  if (opt.disabled) return true;
+  if (showSlotsCapacity.value) {
+    if (opt.slotsCapacity !== undefined && opt.slotsCapacity !== null && String(opt.slotsCapacity).trim() !== '') {
+      const n = Number(opt.slotsCapacity);
+      if (!isNaN(n) && n <= 0) return true;
+    } else if (globalSlotsCapacity.value !== undefined && globalSlotsCapacity.value !== null && String(globalSlotsCapacity.value).trim() !== '') {
+      const n = Number(globalSlotsCapacity.value);
+      if (!isNaN(n) && n <= 0) return true;
+    }
+  }
+  return false;
+}
+
 function isOptionSelected(id: string): boolean {
   if (!currentWidget.value) return false;
   const selected = (currentWidget.value.props.selectedValues || []) as string[];
@@ -833,6 +847,9 @@ function isOptionSelected(id: string): boolean {
 
 function toggleOptionSelected(id: string) {
   if (!currentWidget.value) return;
+  const opt = (currentWidget.value.props.options || []).find((o: any) => o.id === id);
+  if (opt && isOptionDisabled(opt)) return;
+
   let selected = [...((currentWidget.value.props.selectedValues || []) as string[])];
   
   if (selected.includes(id)) {
