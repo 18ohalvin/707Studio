@@ -1179,10 +1179,10 @@ more</span>
           <div class="flex flex-col gap-[20px] items-start w-full">
             <!-- Header: Title + Subtitle -->
             <div class="flex flex-col gap-[8px] items-start w-full">
-              <h2 class="font-707 font-medium text-[20px] leading-[26px] text-black uppercase tracking-tight">
+              <h2 class="font-707 font-medium text-heading-h2 text-black uppercase tracking-tight whitespace-pre-line">
                 {{ modalDisplayProps.title || 'SELECT ARRIVAL DATE' }}
               </h2>
-              <p class="font-707 font-light text-[13px] leading-[18px] text-neutral-600">
+              <p class="font-707 font-normal text-bodytext text-neutral-700 whitespace-pre-line">
                 {{ modalDisplayProps.subtitle || 'Please provide a valid email address. We will resend your E-Pass immediately.' }}
               </p>
             </div>
@@ -1196,7 +1196,7 @@ more</span>
                   v-model="modalInputValue"
                   :placeholder="modalDisplayProps.fieldPlaceholder || 'Enter your email*'"
                   :type="modalDisplayProps.fieldType || 'email'"
-                  class="w-full font-707 text-[15px] leading-[20px] text-black placeholder:text-neutral-400 bg-transparent border-none outline-none p-0 m-0"
+                  class="w-full font-707 text-subtext-lead text-black placeholder:text-neutral-400 bg-transparent border-none outline-none p-0 m-0"
                 />
               </div>
             </div>
@@ -1214,11 +1214,11 @@ more</span>
                   <div v-if="isModalOptionSelected(opt)" class="size-[12px] bg-black"></div>
                 </div>
                 <div class="flex-1 flex flex-col gap-[4px] min-w-0">
-                  <div class="flex items-center justify-between font-707 font-medium text-[14px] leading-tight text-black">
-                    <span>{{ opt.label }}</span>
-                    <span v-if="opt.sublabel" class="text-neutral-500 font-normal text-[12px]">{{ opt.sublabel }}</span>
+                  <div class="flex items-center justify-between font-707 gap-2">
+                    <span class="font-707 font-medium text-bodytext-medium text-black truncate">{{ opt.label }}</span>
+                    <span v-if="opt.sublabel" class="font-707 font-normal text-[12px] leading-[18px] text-neutral-500 shrink-0">{{ opt.sublabel }}</span>
                   </div>
-                  <p v-if="opt.description" class="font-707 font-normal text-[12px] leading-relaxed text-neutral-500">
+                  <p v-if="opt.description" class="font-707 font-normal text-bodytext text-neutral-600 whitespace-pre-line">
                     {{ opt.description }}
                   </p>
                 </div>
@@ -1237,9 +1237,9 @@ more</span>
                 <div class="size-[20px] border border-black flex items-center justify-center shrink-0">
                   <div v-if="isModalOptionSelected(opt)" class="size-[12px] bg-black"></div>
                 </div>
-                <div class="flex-1 flex items-center justify-between font-707 font-medium text-[14px] text-black">
-                  <span>{{ opt.label }}</span>
-                  <span v-if="opt.sublabel" class="text-neutral-500 font-normal text-[12px]">{{ opt.sublabel }}</span>
+                <div class="flex-1 flex items-center justify-between font-707 gap-2">
+                  <span class="font-707 font-medium text-bodytext-medium text-black truncate">{{ opt.label }}</span>
+                  <span v-if="opt.sublabel" class="font-707 font-normal text-[12px] leading-[18px] text-neutral-500 shrink-0">{{ opt.sublabel }}</span>
                 </div>
               </div>
             </div>
@@ -1265,7 +1265,7 @@ more</span>
               <button 
                 type="button"
                 @click.stop="handleModalDoneClick"
-                class="w-full h-[48px] flex items-center justify-center font-707 font-medium text-[13px] leading-[18px] tracking-normal uppercase border border-solid shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] cursor-pointer transition-colors"
+                class="w-full h-[48px] flex items-center justify-center font-707 font-medium text-btn tracking-normal uppercase border border-solid shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] cursor-pointer transition-colors"
                 :class="modalDisplayProps.buttonVariant === 'white' ? 'bg-white text-black border-black hover:bg-neutral-50' : 'bg-black text-white border-black hover:bg-[#262626]'"
               >
                 {{ modalDisplayProps.buttonText || 'DONE' }}
@@ -2359,24 +2359,27 @@ function handleRemoveStickyButton(widget: any) {
 }
 
 const stickyButtonForThisPage = computed(() => {
+  // 1. Check if active page has a HeroDrop with sticky CTA (part of Hero banner)
+  const heroWithStickyCta = activePage.value.widget_tree.find(w => 
+    w.type === 'HeroDrop' && 
+    (w.props?.isCtaEnabled ?? (!!w.props?.buttonText || !!w.props?.ctaLabel || !!w.props?.showButton)) && 
+    (w.props?.buttonText || w.props?.ctaLabel || w.props?.showButton) &&
+    (w.props?.ctaPositionMode === 'sticky-bottom' || w.props?.positionMode === 'sticky-bottom')
+  );
+  if (heroWithStickyCta) return heroWithStickyCta;
+
+  // 2. Check if active page has an independent ActionButton with sticky-bottom
+  const localBtn = activePage.value.widget_tree.find(w => w.type === 'ActionButton' && w.props?.positionMode === 'sticky-bottom');
+  if (localBtn) return localBtn;
+
+  // 3. Check other pages for global/shared ActionButton sticky (scope === 'all' or custom)
   for (const p of editorStore.pages) {
-    // 1. Check ActionButton
+    if (p.id === activePage.value.id) continue;
     const btn = p.widget_tree.find(w => w.type === 'ActionButton' && w.props?.positionMode === 'sticky-bottom');
     if (btn) {
       const scope = btn.props?.stickyScope || 'current';
       if (scope === 'all') return btn;
-      if (scope === 'current' && p.id === activePage.value.id) return btn;
       if (scope === 'custom' && (btn.props?.stickyPageIds || []).includes(activePage.value.id)) return btn;
-    }
-    // 2. Check HeroDrop with sticky CTA (Strictly isolated to active page only)
-    const heroWithStickyCta = p.widget_tree.find(w => 
-      w.type === 'HeroDrop' && 
-      (w.props?.isCtaEnabled ?? (!!w.props?.buttonText || !!w.props?.ctaLabel || !!w.props?.showButton)) && 
-      (w.props?.buttonText || w.props?.ctaLabel || w.props?.showButton) &&
-      (w.props?.ctaPositionMode === 'sticky-bottom' || w.props?.positionMode === 'sticky-bottom')
-    );
-    if (heroWithStickyCta && p.id === activePage.value.id) {
-      return heroWithStickyCta;
     }
   }
   return null;

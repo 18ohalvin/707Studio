@@ -69,31 +69,34 @@
         Header Copywriting
       </p>
 
-      <!-- Title Input -->
+      <!-- Title Textarea (Multiline dynamic editing) -->
       <div class="flex flex-col gap-[6px] w-full">
         <p class="font-707 text-[12px] text-neutral-600">
           Modal Title
         </p>
-        <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
-          <input 
+        <div class="border border-[#aaa] focus-within:border-black border-solid flex min-h-[38px] h-auto items-center px-[14px] py-[8px] rounded-[8px] w-full bg-white transition-all">
+          <textarea 
             v-model="modalTitle"
+            rows="1"
+            @input="handleTitleInput"
             placeholder="e.g. SELECT ARRIVAL DATE"
-            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase tracking-tight"
+            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase tracking-tight resize-none bg-transparent leading-[20px] overflow-hidden p-0 m-0"
           />
         </div>
       </div>
 
-      <!-- Subtitle Textarea -->
+      <!-- Subtitle Textarea (Multiline dynamic editing) -->
       <div class="flex flex-col gap-[6px] w-full">
         <p class="font-707 text-[12px] text-neutral-600">
           Modal Description
         </p>
-        <div class="border border-[#aaa] focus-within:border-black border-solid flex items-center p-[10px] rounded-[8px] w-full bg-white transition-colors">
+        <div class="border border-[#aaa] focus-within:border-black border-solid flex min-h-[38px] h-auto items-center px-[14px] py-[8px] rounded-[8px] w-full bg-white transition-all">
           <textarea 
             v-model="modalSubtitle"
             rows="2"
+            @input="handleSubtitleInput"
             placeholder="e.g. Please provide a valid email address. We will resend your E-Pass immediately."
-            class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400 resize-none"
+            class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400 resize-none bg-transparent leading-[18px] overflow-hidden p-0 m-0"
           />
         </div>
       </div>
@@ -578,6 +581,20 @@ function openGalleryForSlot(slotId: string) {
 function handleOptionsUpdate() {
   if (!currentWidget.value) return;
   updateModalData({ options: [...options.value] });
+}
+
+function autoResize(el: HTMLTextAreaElement | null) {
+  if (!el) return;
+  el.style.height = 'auto';
+  el.style.height = `${el.scrollHeight}px`;
+}
+
+function handleTitleInput(e: Event) {
+  autoResize(e.target as HTMLTextAreaElement);
+}
+
+function handleSubtitleInput(e: Event) {
+  autoResize(e.target as HTMLTextAreaElement);
 }
 
 function handleBackToCaller() {
