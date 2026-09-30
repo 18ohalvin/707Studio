@@ -158,7 +158,7 @@
             @dragover.prevent.stop="handleDragOver($event, index)"
             @drop.prevent.stop="handleDrop($event, index)"
             :class="[
-              widget.type === 'TextBanner' ? 'overflow-visible' : 'overflow-hidden',
+              (widget.type === 'TextBanner' || widget.type === 'MultipleChoice' || widget.type === 'FieldInput' || widget.type === 'ActionButton') ? 'overflow-visible' : 'overflow-hidden',
               getWidgetMarginTopClass(index),
               (isSingleFullScreenHero && widget.type === 'HeroDrop') ? 'h-full min-h-full flex-1' : '',
               'group relative cursor-pointer shrink-0 w-full'
@@ -784,7 +784,7 @@
               <!-- Floating Action Toolbar for MultipleChoice (Figma Node 180:5844) -->
               <div 
                 v-if="!isMiniPreview && !isPreviewModal && (hoveredWidgetId === widget.id || editorStore.selectedWidgetId === widget.id)"
-                class="absolute z-40 apple-glass-modal flex gap-[4px] items-center p-[4px] rounded-[8px] shadow-[0px_4px_16px_rgba(0,0,0,0.18)] transition-all animate-in fade-in duration-150 select-none -top-[14px] right-[12px]"
+                class="absolute z-40 apple-glass-modal flex gap-[4px] items-center p-[4px] rounded-[8px] shadow-[0px_4px_16px_rgba(0,0,0,0.18)] transition-all animate-in fade-in duration-150 select-none top-[8px] right-[12px]"
                 data-name="Choice Toolbar"
               >
                 <!-- Button 1: Adjust / Open Choice Setup Sidebar -->
