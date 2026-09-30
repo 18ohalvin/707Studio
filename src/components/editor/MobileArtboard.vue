@@ -831,28 +831,37 @@
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="border border-solid flex gap-[24px] items-start p-[16px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
+                  class="border border-solid flex gap-[24px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
                   :class="[
                     isChoiceSelected(widget, opt.id)
                       ? 'border-black'
-                      : 'border-[#d4d4d4] hover:border-black/60'
+                      : 'border-[#d4d4d4] hover:border-black/60',
+                    opt.description && opt.description.trim()
+                      ? 'items-start p-[16px]'
+                      : 'items-center min-h-[48px] h-[48px] px-[16px] py-[12px]'
                   ]"
                 >
-                  <!-- Checkbox Container (24px outer square with 18px inner square when active) -->
-                  <div class="relative shrink-0 size-[24px] border border-black border-solid flex items-center justify-center bg-transparent mt-[1px]">
+                  <!-- Checkbox Container (18px outer square with 12px inner square when active) -->
+                  <div 
+                    class="relative shrink-0 size-[18px] border border-black border-solid flex items-center justify-center bg-transparent"
+                    :class="opt.description && opt.description.trim() ? 'mt-[1px]' : ''"
+                  >
                     <div 
-                      class="size-[18px] bg-black border border-black border-solid transition-all duration-150 transform"
+                      class="size-[12px] bg-black border border-black border-solid transition-all duration-150 transform"
                       :class="isChoiceSelected(widget, opt.id) ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
                     />
                   </div>
 
-                  <!-- Option Content (Zero text bleeding, crisp line-height) -->
-                  <div class="flex-1 flex flex-col gap-[10px] items-start min-w-0">
+                  <!-- Option Content (Zero text bleeding, crisp line-height, vertically centered when no description) -->
+                  <div 
+                    class="flex-1 flex min-w-0"
+                    :class="opt.description && opt.description.trim() ? 'flex-col gap-[10px] items-start' : 'items-center'"
+                  >
                     <div class="flex items-baseline justify-between w-full font-707 gap-3">
                       <span class="font-707 truncate" :class="getChoiceOptionTypographyClass(widget, opt)">{{ opt.label }}</span>
                       <span v-if="opt.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[18px] text-neutral-500">{{ opt.sublabel }}</span>
                     </div>
-                    <div v-if="opt.description" class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-600 whitespace-pre-line">
+                    <div v-if="opt.description && opt.description.trim()" class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-600 whitespace-pre-line">
                       {{ opt.description }}
                     </div>
                   </div>
@@ -885,10 +894,10 @@
                       : 'border-[#d4d4d4] hover:border-black/60'
                   ]"
                 >
-                  <!-- Checkbox Container -->
-                  <div class="relative shrink-0 size-[24px] border border-black border-solid flex items-center justify-center bg-transparent">
+                  <!-- Checkbox Container (18px outer square with 12px inner square when active) -->
+                  <div class="relative shrink-0 size-[18px] border border-black border-solid flex items-center justify-center bg-transparent">
                     <div 
-                      class="size-[18px] bg-black border border-black border-solid transition-all duration-150 transform"
+                      class="size-[12px] bg-black border border-black border-solid transition-all duration-150 transform"
                       :class="isChoiceSelected(widget, opt.id) ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
                     />
                   </div>
