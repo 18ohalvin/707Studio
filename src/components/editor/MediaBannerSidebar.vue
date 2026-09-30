@@ -609,6 +609,18 @@
               />
             </div>
           </div>
+
+          <!-- Conditional Modal Setup Button if Popup Modal is selected -->
+          <div v-if="ctaActionType === 'modal'" class="w-full pt-1 animate-in fade-in duration-150">
+            <button 
+              type="button"
+              @click="openModalSetup"
+              class="apple-glass-btn-dark w-full h-[36px] rounded-[8px] flex items-center justify-center gap-1.5 font-707 text-[12px] cursor-pointer"
+            >
+              <span>Configure Pop Up Modal</span>
+              <span class="text-xs">➔</span>
+            </button>
+          </div>
         </div>
       </Transition>
     </div>
@@ -756,10 +768,38 @@ function selectLinkTo(val: string) {
   ctaActionType.value = val;
   isLinkToDropdownOpen.value = false;
   if (editorStore.selectedWidgetId) {
+    const currentProps = editorStore.selectedWidget?.props || {};
+    const defaultModalProps = currentProps.modalProps || {
+      variant: 'message-alert',
+      title: 'YOUR PASS HAS BEEN SENT.',
+      subtitle: 'Please provide a valid email address. We will resend your E-Pass immediately.',
+      buttonText: 'DONE'
+    };
     editorStore.updateWidgetProps(editorStore.selectedWidgetId, { 
       actionType: val,
-      ctaActionType: val
+      ctaActionType: val,
+      modalProps: defaultModalProps
     });
+    if (val === 'modal') {
+      editorStore.openModalSidebar();
+    }
+  }
+}
+
+function openModalSetup() {
+  if (editorStore.selectedWidgetId) {
+    const currentProps = editorStore.selectedWidget?.props || {};
+    if (!currentProps.modalProps) {
+      editorStore.updateWidgetProps(editorStore.selectedWidgetId, {
+        modalProps: {
+          variant: 'message-alert',
+          title: 'YOUR PASS HAS BEEN SENT.',
+          subtitle: 'Please provide a valid email address. We will resend your E-Pass immediately.',
+          buttonText: 'DONE'
+        }
+      });
+    }
+    editorStore.openModalSidebar();
   }
 }
 

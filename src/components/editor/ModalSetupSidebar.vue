@@ -12,9 +12,19 @@
     <!-- Widget Container & Header -->
     <div class="content-stretch flex flex-col items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
-        <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
-          Pop Up Modal Setup
-        </p>
+        <div class="flex items-center gap-2">
+          <button 
+            type="button"
+            @click="handleBackToCaller"
+            class="apple-glass-icon-btn size-7 flex items-center justify-center rounded-full cursor-pointer hover:bg-neutral-200/60 transition-colors"
+            title="Back to Setup"
+          >
+            <ArrowLeft class="w-4 h-4 text-black" />
+          </button>
+          <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
+            Pop Up Modal Setup
+          </p>
+        </div>
         <button 
           @click="$emit('close')"
           class="apple-glass-icon-btn size-7 flex items-center justify-center rounded-full cursor-pointer hover:bg-neutral-200/60 transition-colors"
@@ -185,6 +195,7 @@
               <p class="text-[11px] text-neutral-500 mb-1">Left Label</p>
               <input 
                 v-model="opt.label" 
+                @input="handleOptionsUpdate"
                 class="w-full h-8 px-2.5 text-[12px] border border-neutral-200 rounded focus:border-black focus:outline-none"
                 placeholder="e.g. Day 1 / +62"
               />
@@ -193,6 +204,7 @@
               <p class="text-[11px] text-neutral-500 mb-1">Right Sublabel</p>
               <input 
                 v-model="opt.sublabel" 
+                @input="handleOptionsUpdate"
                 class="w-full h-8 px-2.5 text-[12px] border border-neutral-200 rounded focus:border-black focus:outline-none"
                 placeholder="e.g. 2 Sept / Indonesia"
               />
@@ -204,6 +216,7 @@
             <p class="text-[11px] text-neutral-500 mb-1">Event Description</p>
             <input 
               v-model="opt.description" 
+              @input="handleOptionsUpdate"
               class="w-full h-8 px-2.5 text-[12px] border border-neutral-200 rounded focus:border-black focus:outline-none"
               placeholder="e.g. Your Event Descriptions Detail"
             />
@@ -351,7 +364,8 @@ import {
   ListFilter, 
   LayoutGrid, 
   Plus, 
-  Trash2 
+  Trash2,
+  ArrowLeft
 } from 'lucide-vue-next';
 
 defineProps<{
@@ -559,5 +573,18 @@ function toggleSlotSelected(index: number) {
 
 function openGalleryForSlot(slotId: string) {
   editorStore.openMediaGalleryForChoiceOption(slotId);
+}
+
+function handleOptionsUpdate() {
+  if (!currentWidget.value) return;
+  updateModalData({ options: [...options.value] });
+}
+
+function handleBackToCaller() {
+  if (currentWidget.value?.type === 'HeroDrop') {
+    editorStore.openMediaSidebar(currentWidget.value.props?.ratio);
+  } else {
+    editorStore.openButtonSidebar();
+  }
 }
 </script>

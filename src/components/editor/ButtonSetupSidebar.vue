@@ -485,6 +485,13 @@ const selectedActionLabel = computed(() => {
 function selectLinkTo(val: string) {
   actionType.value = val;
   isLinkToDropdownOpen.value = false;
+  if (val === 'modal' && targetWidget.value) {
+    if (!targetWidget.value.props.modalProps) {
+      setModalVariant('message-alert');
+    }
+    editorStore.selectWidget(targetWidget.value.id);
+    editorStore.openModalSidebar();
+  }
 }
 
 const actionUrl = computed({
