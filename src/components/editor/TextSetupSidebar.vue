@@ -171,10 +171,10 @@ const typographyOptions = [
   { id: 'heading-2', label: 'Heading 2', size: '22px', desc: 'Section header / secondary headline', previewClass: 'font-medium' },
   { id: 'heading-3', label: 'Heading 3', size: '18px', desc: 'Sub-section heading', previewClass: 'font-medium' },
   { id: 'subtext-lead', label: 'Subtext Lead', size: '16px', desc: 'Introductory lead text / bold subheader', previewClass: 'font-medium' },
-  { id: 'body-text', label: 'Body Text', size: '14px', desc: 'Standard readable paragraph body text', previewClass: 'font-normal' },
-  { id: 'body-text-bold', label: 'Body Text (Bold)', size: '14px', desc: 'Emphasized body copy', previewClass: 'font-bold' },
-  { id: 'caption', label: 'Caption', size: '12px', desc: 'Secondary annotations and instructions', previewClass: 'font-normal' },
-  { id: 'legal-micro', label: 'Legal / Micro', size: '11px', desc: 'Footnotes, terms, and micro meta', previewClass: 'font-normal text-neutral-500' }
+  { id: 'body-text', label: 'Body Text', size: '12px', desc: 'Standard readable paragraph body text', previewClass: 'font-normal text-[12px]' },
+  { id: 'body-text-bold', label: 'Body Text (Bold)', size: '12px', desc: 'Emphasized body copy', previewClass: 'font-bold text-[12px]' },
+  { id: 'caption', label: 'Caption', size: '11px', desc: 'Secondary annotations and instructions', previewClass: 'font-normal text-[11px]' },
+  { id: 'legal-micro', label: 'Legal / Micro', size: '11px', desc: 'Footnotes, terms, and micro meta', previewClass: 'font-normal text-[11px] text-neutral-500' }
 ];
 
 const targetWidget = computed(() => {

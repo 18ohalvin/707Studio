@@ -1316,13 +1316,13 @@ function getTextTypographyClass(widget: any) {
     case 'subtext-lead':
       return 'text-[15px] md:text-[16px] font-medium leading-[1.3] text-black placeholder:text-black';
     case 'body-text-bold':
-      return 'text-[13px] md:text-[14px] font-bold leading-[1.4] text-black placeholder:text-black';
+      return 'text-[12px] font-bold leading-[1.4] text-black placeholder:text-black';
     case 'body-text':
-      return 'text-[13px] md:text-[14px] font-normal leading-[1.4] text-black placeholder:text-black';
+      return 'text-[12px] font-normal leading-[1.4] text-black placeholder:text-black';
     case 'caption':
-      return 'text-[11px] md:text-[12px] font-normal leading-[1.4] text-black placeholder:text-black';
+      return 'text-[11px] font-normal leading-[1.4] text-black placeholder:text-black';
     case 'legal-micro':
-      return 'text-[10px] md:text-[11px] font-normal leading-[1.4] text-neutral-500 placeholder:text-neutral-500';
+      return 'text-[11px] font-normal leading-[1.4] text-neutral-500 placeholder:text-neutral-500';
     case 'headline-1':
     default:
       return 'text-[28px] md:text-[32px] font-medium leading-[1.08] text-black placeholder:text-black';

@@ -188,20 +188,22 @@ textarea, input, .select-text, .select-text * {
 }
 
 .text-bodytext {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 12px;
+  line-height: 18px;
   letter-spacing: 0;
 }
 
 .text-btn {
   font-size: 14px;
   line-height: 18px;
+  font-weight: 500;
+  text-transform: uppercase;
   letter-spacing: 0;
 }
 
 .text-caption {
-  font-size: 12px;
-  line-height: 16px;
+  font-size: 11px;
+  line-height: 14px;
   letter-spacing: 0;
 }
 
