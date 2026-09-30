@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isMobileViewport" class="fixed inset-0 z-[9999] bg-[#0c0d0e] flex flex-col items-center justify-center p-8 text-center text-white">
+  <div v-if="isMobileViewport && !isDismissed" class="fixed inset-0 z-[9999] bg-[#0c0d0e] flex flex-col items-center justify-center p-8 text-center text-white">
     <div class="w-16 h-16 rounded-2xl bg-[#1e2023] border border-[#2c2f35] flex items-center justify-center mb-6 shadow-2xl">
       <Monitor class="w-8 h-8 text-white" />
     </div>
@@ -10,10 +10,17 @@
     <p class="text-sm text-neutral-400 max-w-sm mb-6 leading-relaxed">
       The 707 Campaign & Raffle Editor requires a desktop or laptop display (minimum width 1024px) for precision layout building and UI/UX review.
     </p>
-    <div class="p-4 rounded-xl bg-[#16181a] border border-[#2c2f35] text-xs text-neutral-400 max-w-xs text-left">
+    <div class="p-4 rounded-xl bg-[#16181a] border border-[#2c2f35] text-xs text-neutral-400 max-w-xs text-left mb-6">
       <div class="font-semibold text-neutral-200 mb-1">Current Screen Width:</div>
       <div class="font-mono text-white">{{ windowWidth }}px (Requires ≥ 1024px)</div>
     </div>
+    <button 
+      type="button" 
+      @click="isDismissed = true"
+      class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-mono text-neutral-300 hover:text-white border border-white/20 transition-all cursor-pointer"
+    >
+      Preview On Mobile Anyway (Local Testing)
+    </button>
   </div>
 </template>
 
@@ -23,6 +30,7 @@ import { Monitor, AlertTriangle } from 'lucide-vue-next';
 
 const windowWidth = ref(window.innerWidth);
 const isMobileViewport = ref(window.innerWidth < 1024);
+const isDismissed = ref(false);
 
 function handleResize() {
   windowWidth.value = window.innerWidth;

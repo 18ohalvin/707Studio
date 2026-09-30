@@ -33,21 +33,21 @@ export function clearToken(): void {
   }
 }
 
-export function isLocalNetworkHost(): boolean {
-  if (typeof window === 'undefined') return true;
-  const h = window.location.hostname;
+export function isLocalNetworkHost(hostname: string = typeof window !== 'undefined' ? window.location.hostname : ''): boolean {
+  if (!hostname) return false;
   return (
-    h === 'localhost' ||
-    h === '127.0.0.1' ||
-    h.endsWith('.local') ||
-    h.startsWith('192.168.') ||
-    h.startsWith('10.') ||
-    /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(h)
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '::1' ||
+    hostname.endsWith('.local') ||
+    hostname.startsWith('192.168.') ||
+    hostname.startsWith('10.') ||
+    /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname)
   );
 }
 
 export function isAuthenticated(): boolean {
-  if (isLocalNetworkHost()) {
+  if (typeof window !== 'undefined' && isLocalNetworkHost()) {
     return true;
   }
   return getToken().length > 0;
@@ -79,7 +79,7 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
     }
   });
 
-  if (res.status === 401 && !isLocalNetworkHost()) {
+  if (res.status === 401 && typeof window !== 'undefined' && !isLocalNetworkHost()) {
     redirectToLogin();
     throw new ApiError('Session expired, please sign in again.', 401);
   }
@@ -107,7 +107,7 @@ export async function login(password: string): Promise<{ success: boolean; error
     trimmed === '707studio' || 
     trimmed === 'admin' || 
     trimmed === '707' || 
-    isLocalNetworkHost()
+    (typeof window !== 'undefined' && isLocalNetworkHost())
   ) {
     setToken('dev_session_token_' + Date.now());
     return { success: true };
