@@ -295,4 +295,36 @@ describe('707 Activation Builder Stores', () => {
     editorStore.isMediaSidebarOpen = false;
     expect(editorStore.selectedWidgetId).toBe(editorStore.currentPage.widget_tree[0].id);
   });
+
+  it('supports Dynamic Fit preset, 1-screen responsive layout and enforces layer limits (1 Hero + 1 Text + 1 Button)', () => {
+    const editorStore = useEditorStore();
+    editorStore.currentPage.widget_tree = [];
+
+    // 1. Add Hero Banner with Dynamic Fit
+    const hero = editorStore.addWidget('HeroDrop', undefined, { ratio: 'Dynamic Fit' });
+    expect(hero).toBeTruthy();
+    expect(editorStore.isCurrentPageDynamicFit).toBe(true);
+
+    // 2. Add 1 Text block (Allowed)
+    const text = editorStore.addWidget('TextBanner', undefined, { text: 'DYNAMIC FIT HEADING' });
+    expect(text).toBeTruthy();
+    expect(editorStore.currentPage.widget_tree.length).toBe(2);
+
+    // 3. Add a 2nd Text block (Blocked by limit)
+    const secondText = editorStore.addWidget('TextBanner', undefined, { text: 'ANOTHER TEXT' });
+    expect(secondText).toBeNull();
+    expect(editorStore.currentPage.widget_tree.length).toBe(2);
+    expect(editorStore.activeToastMessage).toContain('Dynamic Fit preset allows only 1 Text Block');
+
+    // 4. Add 1 Action Button (Allowed)
+    const btn = editorStore.addWidget('ActionButton', undefined, { label: 'EXPLORE NOW' });
+    expect(btn).toBeTruthy();
+    expect(editorStore.currentPage.widget_tree.length).toBe(3);
+
+    // 5. Try adding another ActionButton or MultipleChoice (Blocked)
+    const extraChoice = editorStore.addWidget('MultipleChoice');
+    expect(extraChoice).toBeNull();
+    expect(editorStore.currentPage.widget_tree.length).toBe(3);
+    expect(editorStore.activeToastMessage).toContain('Dynamic Fit preset is optimized for 1 Banner + 1 Text + 1 Action Button');
+  });
 });

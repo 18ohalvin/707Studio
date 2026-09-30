@@ -161,7 +161,7 @@
               (widget.type === 'TextBanner' || widget.type === 'MultipleChoice' || widget.type === 'FieldInput' || widget.type === 'ActionButton') ? 'overflow-visible' : 'overflow-hidden',
               getWidgetMarginTopClass(index),
               (isHeroWithButtonOnly && widget.type === 'HeroDrop') ? 'h-full min-h-0 flex-1' : '',
-              (isHeroWithButtonOnly && widget.type === 'ActionButton') ? 'shrink-0' : '',
+              (isHeroWithButtonOnly && (widget.type === 'ActionButton' || widget.type === 'TextBanner')) ? 'shrink-0' : '',
               'group relative cursor-pointer shrink-0 w-full'
             ]"
           >
@@ -1949,6 +1949,8 @@ function handleHeroImageError(widget: any) {
 
 function getRatioClass(ratio?: string) {
   switch (ratio) {
+    case 'Dynamic Fit':
+      return 'h-full min-h-0 flex-1 w-full shrink-0';
     case '4:5':
       return 'aspect-[4/5] w-full shrink-0';
     case '3:4':
@@ -2508,8 +2510,8 @@ const isHeroWithButtonOnly = computed(() => {
   const tree = inFlowWidgets.value;
   if (tree.length === 0) return false;
   
-  // 1. Solo HeroDrop with 'Full screen landing page' (or default ratio)
-  if (tree.length === 1 && tree[0].type === 'HeroDrop' && (tree[0].props.ratio === 'Full screen landing page' || !tree[0].props.ratio)) {
+  // 1. Solo HeroDrop with 'Full screen landing page' or 'Dynamic Fit' (or default ratio)
+  if (tree.length === 1 && tree[0].type === 'HeroDrop' && (tree[0].props.ratio === 'Full screen landing page' || tree[0].props.ratio === 'Dynamic Fit' || !tree[0].props.ratio)) {
     return true;
   }
   
@@ -2519,6 +2521,16 @@ const isHeroWithButtonOnly = computed(() => {
     (tree[0].props.ratio === 'Full screen landing page' || !tree[0].props.ratio) &&
     tree.length > 1 &&
     tree.slice(1).every(w => w.type === 'ActionButton')
+  ) {
+    return true;
+  }
+
+  // 3. 'Dynamic Fit' preset: HeroDrop + optional 1 TextBanner + optional 1 ActionButton
+  if (
+    tree[0].type === 'HeroDrop' &&
+    tree[0].props.ratio === 'Dynamic Fit' &&
+    tree.length <= 3 &&
+    tree.slice(1).every(w => w.type === 'TextBanner' || w.type === 'ActionButton')
   ) {
     return true;
   }
@@ -2739,9 +2751,14 @@ function handleDrop(e: DragEvent, targetIndex?: number) {
     const insertIdx = typeof targetIndex === 'number' ? targetIndex : undefined;
 
     if (dragData.type === 'HeroDrop') {
+      const check = editorStore.canAddWidget('HeroDrop');
+      if (!check.allowed) {
+        if (check.reason) editorStore.showToast(check.reason);
+        return;
+      }
       // Always insert new hero banner widget at the drop location
       const newWidget = editorStore.addWidget('HeroDrop', insertIdx, {
-        ratio: 'Full screen landing page',
+        ratio: 'Dynamic Fit',
         isSolidSpace: !dragData.customProps?.imageUrl,
         mediaFit: 'Fill the screen',
         title: '',
@@ -2757,11 +2774,18 @@ function handleDrop(e: DragEvent, targetIndex?: number) {
         brandLogoUrl: '',
         ...(dragData.customProps || {})
       });
-      editorStore.selectWidget(newWidget.id);
-      if (!editorStore.isWidgetSidebarOpen) {
-        editorStore.openMediaSidebar(newWidget.props.ratio);
+      if (newWidget) {
+        editorStore.selectWidget(newWidget.id);
+        if (!editorStore.isWidgetSidebarOpen) {
+          editorStore.openMediaSidebar(newWidget.props.ratio);
+        }
       }
     } else {
+      const check = editorStore.canAddWidget(dragData.type);
+      if (!check.allowed) {
+        if (check.reason) editorStore.showToast(check.reason);
+        return;
+      }
       editorStore.addWidget(dragData.type, insertIdx, dragData.customProps);
     }
   }

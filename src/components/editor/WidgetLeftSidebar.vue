@@ -49,6 +49,27 @@
           </p>
         </div>
 
+        <!-- Dynamic Fit (Responsive 1-Screen) -->
+        <div 
+          draggable="true"
+          @dragstart="handleDragStart($event, { type: 'HeroDrop', label: 'Dynamic Fit', customProps: { ratio: 'Dynamic Fit', isSolidSpace: true, subtitle: 'DYNAMIC FIT COVER' } })"
+          @dragend="handleDragEnd"
+          @click="addMediaWidget('Dynamic Fit')"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[96px] cursor-grab active:cursor-grabbing group"
+          title="Drag to canvas or click to add (Dynamic 1-screen adaptive fit)"
+        >
+          <div class="bg-[#dcdcdc] group-hover:bg-[#cecece] h-[130px] rounded-[8px] shrink-0 w-[72px] transition-colors border border-black/10 group-hover:border-black shadow-sm overflow-hidden flex flex-col justify-between p-2">
+            <div class="w-full h-2 bg-black/20 rounded-full" />
+            <div class="w-full flex flex-col gap-1">
+              <div class="w-3/4 h-1.5 bg-black/20 rounded-full" />
+              <div class="w-full h-3 bg-black/30 rounded-xs" />
+            </div>
+          </div>
+          <p class="font-707 font-normal text-[11px] text-black text-center leading-tight">
+            Dynamic Fit
+          </p>
+        </div>
+
         <!-- 3:4 -->
         <div 
           draggable="true"

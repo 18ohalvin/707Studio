@@ -99,6 +99,53 @@ export const useEditorStore = defineStore('editor', () => {
   const isTestFormModalOpen = ref<boolean>(false);
   const isRequestWidgetModalOpen = ref<boolean>(false);
 
+  // Floating Toast Notification
+  const activeToastMessage = ref<string | null>(null);
+  let toastTimer: any = null;
+
+  function showToast(message: string, durationMs = 3200) {
+    if (toastTimer) clearTimeout(toastTimer);
+    activeToastMessage.value = message;
+    toastTimer = setTimeout(() => {
+      activeToastMessage.value = null;
+    }, durationMs);
+  }
+
+  const isCurrentPageDynamicFit = computed(() => {
+    const tree = currentPage.value?.widget_tree || [];
+    const hero = tree.find(w => w.type === 'HeroDrop');
+    return hero?.props?.ratio === 'Dynamic Fit';
+  });
+
+  function canAddWidget(type: WidgetType): { allowed: boolean; reason?: string } {
+    const tree = currentPage.value?.widget_tree || [];
+    const hero = tree.find(w => w.type === 'HeroDrop');
+    if (hero?.props?.ratio === 'Dynamic Fit') {
+      if (type === 'HeroDrop') {
+        return { allowed: false, reason: 'Dynamic Fit preset is limited to 1 Hero Banner, 1 Text Block, and 1 Action Button.' };
+      }
+      if (type === 'TextBanner') {
+        const hasText = tree.some(w => w.type === 'TextBanner');
+        if (hasText) {
+          return { allowed: false, reason: 'Dynamic Fit preset allows only 1 Text Block.' };
+        }
+        return { allowed: true };
+      }
+      if (type === 'ActionButton') {
+        const hasBtn = tree.some(w => w.type === 'ActionButton');
+        if (hasBtn) {
+          return { allowed: false, reason: 'Dynamic Fit preset allows only 1 Action Button.' };
+        }
+        return { allowed: true };
+      }
+      return { 
+        allowed: false, 
+        reason: 'Dynamic Fit preset is optimized for 1 Banner + 1 Text + 1 Action Button. Switch preset to add more widget types.' 
+      };
+    }
+    return { allowed: true };
+  }
+
   // History Stack (Undo / Redo)
   const historyStack = ref<string[]>([]);
   const historyIndex = ref<number>(-1);
@@ -391,6 +438,12 @@ export const useEditorStore = defineStore('editor', () => {
         defaultProps = { text: 'Custom block content' };
     }
 
+    const check = canAddWidget(type);
+    if (!check.allowed) {
+      if (check.reason) showToast(check.reason);
+      return null as any;
+    }
+
     const newWidget: WidgetItem = {
       id: newId,
       type,
@@ -428,6 +481,11 @@ export const useEditorStore = defineStore('editor', () => {
     const index = currentPage.value.widget_tree.findIndex(w => w.id === id);
     if (index === -1) return;
     const source = currentPage.value.widget_tree[index];
+    const check = canAddWidget(source.type);
+    if (!check.allowed) {
+      if (check.reason) showToast(check.reason);
+      return;
+    }
     const newId = `${source.type.toLowerCase()}_${Date.now()}`;
     const clonedWidget: WidgetItem = {
       id: newId,
@@ -741,6 +799,11 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   function addMediaBannerWidget(ratio: string, index?: number) {
+    const check = canAddWidget('HeroDrop');
+    if (!check.allowed) {
+      if (check.reason) showToast(check.reason);
+      return;
+    }
     const isButtonsRatio = ratio === 'Buttons';
     addWidget('HeroDrop', index, {
       ratio,
@@ -1076,6 +1139,10 @@ export const useEditorStore = defineStore('editor', () => {
     duplicateWidget,
     moveWidget,
     updateWidgetProps,
+    isCurrentPageDynamicFit,
+    canAddWidget,
+    activeToastMessage,
+    showToast,
     loadTemplate,
     setPageStatus,
     setDraggedWidget,

@@ -177,6 +177,19 @@
       @close="editorStore.isModalSidebarOpen = false"
     />
 
+    <!-- Global Apple-Glass Floating Toast Notification -->
+    <Transition name="apple-dock-fade">
+      <div 
+        v-if="editorStore.activeToastMessage" 
+        class="fixed top-[76px] left-1/2 -translate-x-1/2 z-[80] select-none pointer-events-none"
+      >
+        <div class="backdrop-blur-2xl bg-black/85 text-white border border-white/20 px-4 py-2 rounded-full text-[12px] font-707 font-medium shadow-[0px_10px_30px_rgba(0,0,0,0.25)] flex items-center gap-2 tracking-tight animate-apple-pop">
+          <AlertCircle class="w-4 h-4 text-amber-400 shrink-0" />
+          <span>{{ editorStore.activeToastMessage }}</span>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Layer Button Sidebar Menu (Figma Node 184:6137) -->
     <LayersSidebar 
       @click.stop
@@ -189,7 +202,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
-import { Plus, Check } from 'lucide-vue-next';
+import { Plus, Check, AlertCircle } from 'lucide-vue-next';
 import MobileArtboard from './MobileArtboard.vue';
 import MiniPageCard from './MiniPageCard.vue';
 import FloatingQuickAdd from './FloatingQuickAdd.vue';

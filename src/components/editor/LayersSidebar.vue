@@ -23,9 +23,17 @@
           <img :src="FIGMA_ASSETS.closeIcon" class="w-3.5 h-3.5" alt="Close" />
         </button>
       </div>
-      <p class="font-707 font-normal text-[12px] leading-[16px] text-neutral-500" data-node-id="184:6144">
-        Select blocks to assemble your campaign page.
-      </p>
+      <div class="flex items-center justify-between w-full">
+        <p class="font-707 font-normal text-[12px] leading-[16px] text-neutral-500" data-node-id="184:6144">
+          Select blocks to assemble your campaign page.
+        </p>
+        <span 
+          v-if="editorStore.isCurrentPageDynamicFit"
+          class="font-707 text-[10px] font-medium px-2 py-0.5 rounded bg-black/5 text-neutral-600 tracking-wide uppercase whitespace-nowrap"
+        >
+          Dynamic Fit: {{ editorStore.currentPage.widget_tree.length }}/3
+        </span>
+      </div>
     </div>
 
     <!-- Layers Stack List (Dynamic Height Following Number of Layers) -->
