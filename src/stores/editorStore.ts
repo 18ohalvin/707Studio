@@ -55,6 +55,7 @@ export const useEditorStore = defineStore('editor', () => {
   const panY = ref<number>(0);
   const isPreviewMode = ref<boolean>(false);
   const isSaving = ref<boolean>(false);
+  const lastSavedAt = ref<Date>(new Date());
   const activeTab = ref<'widgets' | 'layers' | 'settings' | 'templates'>('widgets');
 
   // Drag and Drop State
@@ -728,6 +729,7 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   function saveCurrentProject() {
+    isSaving.value = true;
     const now = new Date().toISOString();
     const existingIndex = projects.value.findIndex(p => p.id === currentProjectId.value);
     
@@ -755,13 +757,18 @@ export const useEditorStore = defineStore('editor', () => {
     // Sort projects so newest is at the top
     projects.value.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
     saveProjectsToStorage();
+    lastSavedAt.value = new Date();
 
     // Async sync to server
     apiFetch('/api/pages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(projectData)
-    }).catch(err => console.warn('Failed to sync page to API:', err));
+    })
+      .catch(err => console.warn('Failed to sync page to API:', err))
+      .finally(() => {
+        isSaving.value = false;
+      });
   }
 
   function createNewProject(title: string, slug?: string, widgets?: WidgetItem[]): ProjectItem {
@@ -906,6 +913,7 @@ export const useEditorStore = defineStore('editor', () => {
     resetPan,
     isPreviewMode,
     isSaving,
+    lastSavedAt,
     activeTab,
     draggedWidget,
     isDraggingOverCanvas,

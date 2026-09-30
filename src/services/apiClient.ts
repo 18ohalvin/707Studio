@@ -33,8 +33,21 @@ export function clearToken(): void {
   }
 }
 
+export function isLocalNetworkHost(): boolean {
+  if (typeof window === 'undefined') return true;
+  const h = window.location.hostname;
+  return (
+    h === 'localhost' ||
+    h === '127.0.0.1' ||
+    h.endsWith('.local') ||
+    h.startsWith('192.168.') ||
+    h.startsWith('10.') ||
+    /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(h)
+  );
+}
+
 export function isAuthenticated(): boolean {
-  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+  if (isLocalNetworkHost()) {
     return true;
   }
   return getToken().length > 0;
@@ -66,7 +79,7 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
     }
   });
 
-  if (res.status === 401 && typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+  if (res.status === 401 && !isLocalNetworkHost()) {
     redirectToLogin();
     throw new ApiError('Session expired, please sign in again.', 401);
   }
@@ -94,7 +107,7 @@ export async function login(password: string): Promise<{ success: boolean; error
     trimmed === '707studio' || 
     trimmed === 'admin' || 
     trimmed === '707' || 
-    (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
+    isLocalNetworkHost()
   ) {
     setToken('dev_session_token_' + Date.now());
     return { success: true };

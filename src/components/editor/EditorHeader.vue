@@ -93,18 +93,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { Eye, Edit3 } from 'lucide-vue-next';
 import UserProfileModal from '../modals/UserProfileModal.vue';
+import { logout } from '../../services/apiClient.ts';
 
 const router = useRouter();
 const editorStore = useEditorStore();
 const logoFailed = ref(false);
 const avatarFailed = ref(false);
 const showUserProfileModal = ref(false);
+const nowTicker = ref(Date.now());
+
+let tickerTimer: any = null;
+onMounted(() => {
+  tickerTimer = setInterval(() => {
+    nowTicker.value = Date.now();
+  }, 10000);
+});
+
+onUnmounted(() => {
+  if (tickerTimer) clearInterval(tickerTimer);
+});
 
 function handleLogoError() {
   logoFailed.value = true;
@@ -120,13 +133,27 @@ function handleAnalytics() {
 
 function handleSettings() {
   editorStore.activeTab = 'settings';
+  editorStore.isReviewModalOpen = true;
 }
 
-function handleSignOut() {
-  router.push('/');
+async function handleSignOut() {
+  await logout();
+  router.push('/login');
 }
 
 const saveStatusText = computed(() => {
-  return 'Saved 1 min ago';
+  if (editorStore.isSaving) {
+    return 'Saving...';
+  }
+  const lastSaved = editorStore.lastSavedAt ? editorStore.lastSavedAt.getTime() : nowTicker.value;
+  const diffSec = Math.max(0, Math.floor((nowTicker.value - lastSaved) / 1000));
+  if (diffSec < 15) {
+    return 'Saved just now';
+  }
+  if (diffSec < 60) {
+    return `Saved ${diffSec}s ago`;
+  }
+  const mins = Math.floor(diffSec / 60);
+  return `Saved ${mins} min${mins === 1 ? '' : 's'} ago`;
 });
 </script>

@@ -149,6 +149,10 @@ function getWidgetDisplayName(widget: WidgetItem): string {
   switch (widget.type) {
     case 'TextBanner':
       return 'Text Tool';
+    case 'ActionButton':
+      return 'Action Button';
+    case 'FieldInput':
+      return widget.props.label ? `${widget.props.label} Field` : 'Form Input';
     case 'HeroDrop':
       return widget.props.ratio === 'Buttons' ? 'Button CTA' : 'Hero Banner';
     case 'RaffleForm':
@@ -174,6 +178,10 @@ function getWidgetSummary(widget: WidgetItem): string {
   switch (widget.type) {
     case 'TextBanner':
       return widget.props.text || widget.props.placeholder || 'STANLEY FAVORITE BEST OF THE BEST';
+    case 'ActionButton':
+      return widget.props.label || 'BUTTON CTA';
+    case 'FieldInput':
+      return widget.props.placeholder || widget.props.label || 'INPUT FIELD';
     case 'HeroDrop':
       if (widget.props.ratio === 'Buttons') {
         return widget.props.buttonText || widget.props.ctaLabel || 'ACTION CTA';
@@ -196,6 +204,8 @@ function handleSelectLayer(widget: WidgetItem) {
     editorStore.openMediaSidebar(widget.props.ratio || 'Full screen landing page');
   } else if (widget.type === 'TextBanner') {
     editorStore.openTextSidebar();
+  } else if (widget.type === 'ActionButton') {
+    editorStore.openButtonSidebar();
   }
 }
 
@@ -205,6 +215,8 @@ function handleAdjustLayer(widget: WidgetItem) {
     editorStore.openMediaSidebar(widget.props.ratio || 'Full screen landing page');
   } else if (widget.type === 'TextBanner') {
     editorStore.openTextSidebar();
+  } else if (widget.type === 'ActionButton') {
+    editorStore.openButtonSidebar();
   }
 }
 
