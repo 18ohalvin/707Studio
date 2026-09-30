@@ -896,7 +896,9 @@
                   @click.stop="handleChoiceAddMore(widget)"
                   class="border border-[#d4d4d4] hover:border-black border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
                 >
-                  <img :src="FIGMA_ASSETS.addFilled" class="size-[24px] shrink-0 pointer-events-none" alt="Add" />
+                  <div class="relative shrink-0 size-[18px] flex items-center justify-center">
+                    <img :src="FIGMA_ASSETS.addFilled" class="size-[18px] shrink-0 pointer-events-none object-contain" alt="Add" />
+                  </div>
                   <span class="font-707 truncate" :class="getChoiceOptionTypographyClass(widget)">
                     Add more
                   </span>
@@ -948,7 +950,9 @@
                   @click.stop="handleChoiceAddMore(widget)"
                   class="border border-[#d4d4d4] hover:border-black border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
                 >
-                  <img :src="FIGMA_ASSETS.addFilled" class="size-[24px] shrink-0 pointer-events-none" alt="Add" />
+                  <div class="relative shrink-0 size-[18px] flex items-center justify-center">
+                    <img :src="FIGMA_ASSETS.addFilled" class="size-[18px] shrink-0 pointer-events-none object-contain" alt="Add" />
+                  </div>
                   <span class="font-707 truncate" :class="getChoiceOptionTypographyClass(widget)">
                     Add more
                   </span>
