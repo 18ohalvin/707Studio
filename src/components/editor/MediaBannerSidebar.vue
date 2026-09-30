@@ -672,7 +672,7 @@ const isDragOverMedia = ref(false);
 const currentImageUrl = ref('');
 const isCurrentSolidSpace = ref(true);
 
-const ratios = ['Full screen landing page', '3:4', '4:5', '4:3', '16:9', '9:16', '1:1', 'Buttons'];
+const ratios = ['Full screen landing page', '3:4', '4:5', '4:3', '16:9', '9:16', '1:1'];
 const selectedRatio = ref(editorStore.selectedMediaRatio || 'Full screen landing page');
 
 const mediaFitOptions = ['Fill the screen', 'Fit to screen', 'Center'] as const;

@@ -148,51 +148,6 @@
             1:1
           </p>
         </div>
-
-        <!-- Buttons Option (Figma & 707 Button UI Style) -->
-        <div 
-          draggable="true"
-          @dragstart="handleDragStart($event, { type: 'HeroDrop', label: 'Buttons', customProps: { ratio: 'Buttons', isSolidSpace: true, isCtaEnabled: true, buttonText: 'Action', showBannerText: false } })"
-          @dragend="handleDragEnd"
-          @click="addMediaWidget('Buttons')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[104px] cursor-grab active:cursor-grabbing group"
-          title="Drag to canvas or click to add"
-        >
-          <div class="content-stretch flex flex-col h-[130px] items-center justify-center shrink-0 w-full">
-            <div class="border border-[#c9c9c9] group-hover:border-black rounded-[8px] shrink-0 size-[96px] flex flex-col items-center justify-center p-2.5 bg-white group-hover:bg-neutral-50 transition-colors shadow-sm gap-2 overflow-hidden">
-              <!-- Primary Solid Black Button Preview -->
-              <div class="w-full bg-black text-white h-[26px] px-2 flex items-center justify-center shadow-sm">
-                <span class="font-707 font-medium text-[9px] tracking-wider uppercase">Action</span>
-              </div>
-              <!-- Secondary Outline Button Preview -->
-              <div class="w-full border border-black bg-white text-black h-[22px] px-2 flex items-center justify-center">
-                <span class="font-707 font-medium text-[8px] tracking-wider uppercase">Outline</span>
-              </div>
-            </div>
-          </div>
-          <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
-            Buttons
-          </p>
-        </div>
-
-        <!-- Free Text Heading Block (Figma Node 180:5836) -->
-        <div 
-          draggable="true"
-          @dragstart="handleDragStart($event, { type: 'TextBanner', label: 'Free Text', customProps: { text: '', placeholder: 'WRITE YOUR TEXT HERE' } })"
-          @dragend="handleDragEnd"
-          @click="addTextWidget"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[100px] cursor-grab active:cursor-grabbing group"
-          title="Drag to canvas or click to add"
-        >
-          <div class="content-stretch flex flex-col h-[130px] items-center justify-center shrink-0 w-full">
-            <div class="border border-black border-dashed rounded-[8px] shrink-0 size-[90px] flex items-center justify-center p-2 bg-white group-hover:bg-neutral-50 transition-colors shadow-sm overflow-hidden">
-              <span class="font-707 font-bold text-[18px] text-black">Aa</span>
-            </div>
-          </div>
-          <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
-            Free Text
-          </p>
-        </div>
       </div>
     </div>
 
