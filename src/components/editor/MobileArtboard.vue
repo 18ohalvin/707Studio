@@ -1094,6 +1094,12 @@ more</span>
             class="h-[32px] w-full shrink-0 pointer-events-none" 
             aria-hidden="true" 
           />
+          <!-- Exclusive 48px bottom padding spacer when the latest order of widgets is a standard (not sticky) button widget -->
+          <div 
+            v-else-if="isLastWidgetButton" 
+            class="h-[48px] w-full shrink-0 pointer-events-none" 
+            aria-hidden="true" 
+          />
         </div>
       </div>
 
@@ -2491,6 +2497,13 @@ const isLastWidgetText = computed(() => {
   return tree[tree.length - 1]?.type === 'TextBanner';
 });
 
+const isLastWidgetButton = computed(() => {
+  const tree = inFlowWidgets.value;
+  if (tree.length === 0) return false;
+  const last = tree[tree.length - 1];
+  return last?.type === 'ActionButton' && (last.props?.positionMode === 'in-flow' || !last.props?.positionMode);
+});
+
 function handleRemoveStickyButton(widget: any) {
   if (!widget) return;
   if (widget.type === 'HeroDrop') {
@@ -2557,6 +2570,7 @@ const containerBottomPaddingClass = computed(() => {
   if (tree.length === 0) return 'pb-0';
   if (isLastWidgetHero.value) return 'pb-0';
   if (stickyButtonForThisPage.value) return 'pb-[72px]';
+  if (isLastWidgetButton.value) return 'pb-0';
   if (isLastWidgetText.value) return 'pb-0';
   return 'pb-[16px]';
 });
