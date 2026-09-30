@@ -831,11 +831,11 @@
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="luxury-choice-tile border border-solid flex gap-[24px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
+                  class="luxury-choice-tile border border-solid border-[#d4d4d4] flex gap-[24px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
                   :class="[
                     isChoiceSelected(widget, opt.id)
-                      ? 'is-selected border-black'
-                      : 'border-[#d4d4d4] hover:border-black/60',
+                      ? 'is-selected'
+                      : 'hover:border-black/60',
                     opt.description && opt.description.trim()
                       ? 'items-start p-[16px]'
                       : 'items-center min-h-[48px] h-[48px] px-[16px] py-[12px]'
@@ -911,11 +911,11 @@
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="luxury-choice-tile border border-solid flex gap-[24px] px-[16px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
+                  class="luxury-choice-tile border border-solid border-[#d4d4d4] flex gap-[24px] px-[16px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
                   :class="[
                     isChoiceSelected(widget, opt.id)
-                      ? 'is-selected border-black'
-                      : 'border-[#d4d4d4] hover:border-black/60',
+                      ? 'is-selected'
+                      : 'hover:border-black/60',
                     getOptionSlotsBadge(widget)
                       ? 'items-start py-[12px]'
                       : 'items-center min-h-[48px] h-[48px] py-[12px]'
@@ -968,11 +968,11 @@
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="luxury-choice-tile min-w-[128px] max-w-[200px] min-h-[48px] h-[48px] px-[16px] py-[12px] flex items-center justify-start shrink-0 border border-solid cursor-pointer select-none transition-all duration-150 bg-transparent font-707 rounded-none"
+                  class="luxury-choice-tile min-w-[128px] max-w-[200px] min-h-[48px] h-[48px] px-[16px] py-[12px] flex items-center justify-start shrink-0 border border-solid border-[#d4d4d4] cursor-pointer select-none transition-all duration-150 bg-transparent font-707 rounded-none"
                   :class="[
                     isChoiceSelected(widget, opt.id)
-                      ? 'is-selected border-black'
-                      : 'border-[#d4d4d4] hover:border-black/60'
+                      ? 'is-selected'
+                      : 'hover:border-black/60'
                   ]"
                 >
                   <span class="font-707 truncate" :class="getChoiceOptionTypographyClass(widget, opt)">{{ opt.label }}</span>
@@ -1002,11 +1002,11 @@
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="luxury-choice-tile aspect-[3/4] bg-[#ededed] relative overflow-hidden cursor-pointer select-none transition-all duration-150 rounded-none border border-solid"
+                  class="luxury-choice-tile aspect-[3/4] bg-[#ededed] relative overflow-hidden cursor-pointer select-none transition-all duration-150 rounded-none border border-solid border-transparent"
                   :class="[
                     isChoiceSelected(widget, opt.id)
-                      ? 'is-selected border-black'
-                      : 'border-transparent hover:border-black/30'
+                      ? 'is-selected'
+                      : 'hover:border-black/30'
                   ]"
                 >
                   <img 

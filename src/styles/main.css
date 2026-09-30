@@ -709,8 +709,10 @@ button[data-cta],
 }
 
 /* ==========================================================================
-   LUXURY CHOICE OPTION TILE ANIMATED SELECTION BORDER
-   (Matches FieldInput Center-origin Expanding Luxury Outline Animation)
+   LUXURY CHOICE OPTION TILE ANIMATED SELECTION BORDER (APPLE PRECISE SWEEP)
+   Frame 1: Default state - unselected border (#d4d4d4 / neutral)
+   Frame 2: Selected - animated black box border appearing from left to right
+   Frame 3: De-selected - reverses animation from right back to left
    ========================================================================== */
 .luxury-choice-tile {
   position: relative;
@@ -723,16 +725,14 @@ button[data-cta],
   inset: -1px;
   border: 1px solid #000000;
   pointer-events: none;
-  opacity: 0;
-  transform: scale(0.97);
-  transform-origin: center center;
-  transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1), transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 2;
+  will-change: clip-path;
 }
 
 .luxury-choice-tile.is-selected::after {
-  opacity: 1;
-  transform: scale(1);
+  clip-path: inset(0 0 0 0);
 }
 
 /* Tactile Apple Press Feedback - Rock solid layout with zero hover twitching / jumping */
