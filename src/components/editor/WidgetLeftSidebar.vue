@@ -449,12 +449,10 @@ function handleDragEnd() {
 
 function addMediaWidget(ratio: string) {
   editorStore.addMediaBannerWidget(ratio);
-  emit('close');
 }
 
 function addTextWidget() {
   editorStore.addWidget('TextBanner', undefined, { text: '', placeholder: 'WRITE YOUR TEXT HERE' });
-  emit('close');
 }
 
 function getChoiceDefaultProps(choiceName: string) {
@@ -582,7 +580,6 @@ function addFormField(fieldName: string) {
   } else {
     editorStore.addWidget('FieldInput', undefined, getFieldDefaultProps(fieldName));
   }
-  emit('close');
 }
 
 function addActionButton(variant: 'black' | 'white' = 'black') {
@@ -593,16 +590,13 @@ function addActionButton(variant: 'black' | 'white' = 'black') {
     url: '',
     height: 48
   });
-  emit('close');
 }
 
 function addInteractiveWidget(name: string) {
   editorStore.addWidget('RsvpForm', undefined, { heading: name.toUpperCase() });
-  emit('close');
 }
 
 function addOverlayWidget(type: string) {
   editorStore.addWidget('RulesAccordion', undefined, { title: `${type.toUpperCase()} RULES` });
-  emit('close');
 }
 </script>

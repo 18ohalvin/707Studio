@@ -405,17 +405,19 @@ export const useEditorStore = defineStore('editor', () => {
     selectedWidgetId.value = newId;
     pushHistory();
 
-    // Auto open corresponding sidebar when widget is added
-    if (type === 'HeroDrop') {
-      openMediaSidebar(newWidget.props.ratio);
-    } else if (type === 'TextBanner') {
-      openTextSidebar();
-    } else if (type === 'ActionButton') {
-      openButtonSidebar();
-    } else if (type === 'MultipleChoice') {
-      openChoiceSidebar();
-    } else {
-      openWidgetSidebar();
+    // Auto open corresponding sidebar when widget is added (unless widget sidebar is currently open)
+    if (!isWidgetSidebarOpen.value) {
+      if (type === 'HeroDrop') {
+        openMediaSidebar(newWidget.props.ratio);
+      } else if (type === 'TextBanner') {
+        openTextSidebar();
+      } else if (type === 'ActionButton') {
+        openButtonSidebar();
+      } else if (type === 'MultipleChoice') {
+        openChoiceSidebar();
+      } else {
+        openWidgetSidebar();
+      }
     }
 
     return newWidget;
@@ -704,6 +706,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   function addMediaBannerWidget(ratio: string, index?: number) {
     const isButtonsRatio = ratio === 'Buttons';
+    const wasWidgetModalOpen = isWidgetSidebarOpen.value;
     addWidget('HeroDrop', index, {
       ratio,
       isSolidSpace: true,
@@ -720,7 +723,9 @@ export const useEditorStore = defineStore('editor', () => {
       isCtaEnabled: isButtonsRatio,
       isBrandLogoEnabled: false
     });
-    openMediaSidebar(ratio);
+    if (!wasWidgetModalOpen) {
+      openMediaSidebar(ratio);
+    }
   }
 
   function resetPan() {

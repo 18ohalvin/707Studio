@@ -2329,7 +2329,9 @@ function handleDrop(e: DragEvent, targetIndex?: number) {
         ...(dragData.customProps || {})
       });
       editorStore.selectWidget(newWidget.id);
-      editorStore.openMediaSidebar(newWidget.props.ratio);
+      if (!editorStore.isWidgetSidebarOpen) {
+        editorStore.openMediaSidebar(newWidget.props.ratio);
+      }
     } else {
       editorStore.addWidget(dragData.type, insertIdx, dragData.customProps);
     }
