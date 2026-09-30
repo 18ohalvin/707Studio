@@ -145,21 +145,32 @@
       </div>
     </div>
 
-    <!-- Section 3: Style Presets (4 Figma Variants) -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start py-[16px] px-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
+    <!-- Section 3: Style Presets (4 Figma Variants with Minimal Icons) -->
+    <div class="content-stretch flex flex-col gap-[12px] items-start py-[16px] px-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
       <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
         Choice Style Variant
       </p>
-      <div class="flex flex-wrap gap-[8px] items-center w-full">
+      <div class="grid grid-cols-4 gap-[8px] w-full pt-1">
         <button 
           v-for="v in variants" 
           :key="v.id"
           type="button"
           @click="setVariant(v.id)"
-          :class="variant === v.id ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-          class="shrink-0 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[14px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer transition-all"
+          class="flex flex-col gap-[6px] items-center p-2 rounded-[8px] border transition-all cursor-pointer group"
+          :class="variant === v.id ? 'bg-black text-white border-black shadow-sm ring-1 ring-black' : 'bg-white hover:bg-neutral-50 text-black border-[#d9d9d9]'"
         >
-          {{ v.label }}
+          <div 
+            class="size-[36px] rounded-full flex items-center justify-center transition-all duration-150 shadow-sm shrink-0"
+            :class="variant === v.id ? 'bg-white text-black' : 'bg-[#f5f5f5] group-hover:bg-black group-hover:text-white text-black border border-[#d9d9d9]'"
+          >
+            <component :is="v.icon" class="size-4 stroke-[1.75]" />
+          </div>
+          <span 
+            class="font-707 text-[10px] leading-tight text-center truncate w-full"
+            :class="variant === v.id ? 'font-medium text-white' : 'font-normal text-black group-hover:font-medium'"
+          >
+            {{ v.label }}
+          </span>
         </button>
       </div>
     </div>
@@ -525,9 +536,12 @@ import {
   Plus, 
   Trash2, 
   Check, 
-  ChevronDown,
-  Lock,
-  Calendar,
+  ChevronDown, 
+  Lock, 
+  Calendar, 
+  Ticket, 
+  ListChecks, 
+  LayoutGrid, 
   Image as ImageIcon 
 } from 'lucide-vue-next';
 
@@ -608,11 +622,11 @@ const typographyOptions = [
   { id: 'legal-micro', label: 'Legal / Micro', size: '11px', desc: 'Footnotes, terms, and micro meta', previewClass: 'font-normal text-[11px] text-neutral-500' }
 ];
 
-const variants: { id: ChoiceVariant; label: string }[] = [
-  { id: 'detailed-card', label: 'Detailed Cards' },
-  { id: 'simple-row', label: 'Simple Rows' },
-  { id: 'horizontal-block', label: 'Horizontal Blocks' },
-  { id: 'image-grid', label: 'Image Matrix' }
+const variants: { id: ChoiceVariant; label: string; icon: any }[] = [
+  { id: 'detailed-card', label: 'Detailed Cards', icon: Ticket },
+  { id: 'simple-row', label: 'Simple Rows', icon: ListChecks },
+  { id: 'horizontal-block', label: 'Horizontal Blocks', icon: LayoutGrid },
+  { id: 'image-grid', label: 'Image Matrix', icon: ImageIcon }
 ];
 
 const currentWidget = computed(() => {
