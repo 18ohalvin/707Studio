@@ -216,9 +216,11 @@ textarea, input, .select-text, .select-text * {
 .btn-707 {
   background: #000000;
   color: #ffffff;
-  font-weight: 700;
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0;
   position: relative;
   overflow: hidden;
   user-select: none;

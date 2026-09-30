@@ -427,7 +427,7 @@
                 </div>
               </div>
 
-              <button class="w-full h-[48px] bg-black text-white font-bold text-[12px] tracking-wider uppercase rounded-none hover:bg-[#262626] apple-cta-btn apple-cta-btn-dark border-0 border-none outline-none cursor-pointer">
+              <button class="w-full h-[48px] bg-black text-white font-707 font-medium text-[14px] leading-[18px] tracking-normal uppercase rounded-none hover:bg-[#262626] apple-cta-btn apple-cta-btn-dark border-0 border-none outline-none cursor-pointer">
                 {{ widget.props.ctaLabel || 'SUBMIT ENTRY' }}
               </button>
             </div>
@@ -473,7 +473,7 @@
                 </div>
               </div>
 
-              <button class="w-full h-[48px] bg-black text-white font-bold text-[12px] tracking-wider uppercase rounded-none hover:bg-[#262626] apple-cta-btn apple-cta-btn-dark border-0 border-none outline-none cursor-pointer">
+              <button class="w-full h-[48px] bg-black text-white font-707 font-medium text-[14px] leading-[18px] tracking-normal uppercase rounded-none hover:bg-[#262626] apple-cta-btn apple-cta-btn-dark border-0 border-none outline-none cursor-pointer">
                 {{ widget.props.ctaLabel || 'CLAIM PASS' }}
               </button>
             </div>
@@ -499,7 +499,7 @@
                   class="bg-white p-2.5 rounded border border-neutral-200 text-[11px]"
                 >
                   <div class="font-bold mb-0.5 font-707">{{ item.title }}</div>
-                  <div class="text-neutral-600 text-[10px] leading-relaxed">{{ item.content }}</div>
+                  <div class="text-neutral-600 text-[11px] leading-relaxed">{{ item.content }}</div>
                 </div>
               </div>
             </div>
@@ -852,7 +852,7 @@
                       <span class="truncate">{{ opt.label }}</span>
                       <span v-if="opt.sublabel" class="shrink-0 text-[16px]">{{ opt.sublabel }}</span>
                     </div>
-                    <div v-if="opt.description" class="font-707 font-normal text-[14px] leading-[14px] text-black">
+                    <div v-if="opt.description" class="font-707 font-normal text-[12px] leading-[18px] text-black">
                       {{ opt.description }}
                     </div>
                   </div>
