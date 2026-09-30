@@ -863,7 +863,7 @@
                   v-if="!isPreviewModal"
                   type="button"
                   @click.stop="handleChoiceAddMore(widget)"
-                  class="border border-[#d4d4d4] hover:border-black border-solid flex gap-[24px] items-center p-[16px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
+                  class="border border-[#d4d4d4] hover:border-black border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
                 >
                   <img :src="FIGMA_ASSETS.addFilled" class="size-[24px] shrink-0 pointer-events-none" alt="Add" />
                   <span class="font-707 font-medium text-[14px] md:text-[16px] leading-[22px] text-black">
@@ -872,13 +872,13 @@
                 </button>
               </div>
 
-              <!-- Variant 2: Simple Rows (Figma: 56px height, 16px padding, 24px gap with checkbox) -->
+              <!-- Variant 2: Simple Rows (Global 48px height, 16px padding, 24px gap with checkbox) -->
               <div v-else-if="widget.props.variant === 'simple-row'" class="flex flex-col gap-[16px] w-full">
                 <div 
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="border border-solid min-h-[56px] h-auto flex gap-[24px] items-center p-[16px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
+                  class="border border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
                   :class="[
                     isChoiceSelected(widget, opt.id)
                       ? 'border-black'
@@ -904,7 +904,7 @@
                   v-if="!isPreviewModal"
                   type="button"
                   @click.stop="handleChoiceAddMore(widget)"
-                  class="border border-[#d4d4d4] hover:border-black border-solid min-h-[56px] h-auto flex gap-[24px] items-center p-[16px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
+                  class="border border-[#d4d4d4] hover:border-black border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
                 >
                   <img :src="FIGMA_ASSETS.addFilled" class="size-[24px] shrink-0 pointer-events-none" alt="Add" />
                   <span class="font-707 font-medium text-[14px] md:text-[16px] leading-[22px] text-black">
@@ -913,13 +913,13 @@
                 </button>
               </div>
 
-              <!-- Variant 3: Horizontal Blocks (Figma: 128px width, 56px height, 16px padding, 16px gap) -->
+              <!-- Variant 3: Horizontal Blocks (Global 48px height, 16px padding, 16px gap) -->
               <div v-else-if="widget.props.variant === 'horizontal-block'" class="flex gap-[16px] items-start w-full overflow-x-auto no-scrollbar pb-1">
                 <div 
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="min-w-[128px] max-w-[200px] min-h-[56px] h-auto p-[16px] flex items-center justify-start shrink-0 border border-solid cursor-pointer select-none transition-all duration-150 bg-transparent font-707 rounded-none"
+                  class="min-w-[128px] max-w-[200px] min-h-[48px] h-[48px] px-[16px] py-[12px] flex items-center justify-start shrink-0 border border-solid cursor-pointer select-none transition-all duration-150 bg-transparent font-707 rounded-none"
                   :class="[
                     isChoiceSelected(widget, opt.id)
                       ? 'border-black'
@@ -934,7 +934,7 @@
                   v-if="!isPreviewModal"
                   type="button"
                   @click.stop="handleChoiceAddMore(widget)"
-                  class="min-h-[56px] h-auto p-[16px] border border-[#d4d4d4] hover:border-black border-solid flex gap-[16px] items-center shrink-0 cursor-pointer transition-colors bg-transparent select-none rounded-none"
+                  class="min-h-[48px] h-[48px] px-[16px] py-[12px] border border-[#d4d4d4] hover:border-black border-solid flex gap-[16px] items-center shrink-0 cursor-pointer transition-colors bg-transparent select-none rounded-none"
                 >
                   <img :src="FIGMA_ASSETS.addFilled" class="size-[24px] shrink-0 pointer-events-none" alt="Add" />
                   <span class="font-707 font-medium text-[14px] md:text-[16px] leading-[20px] text-black whitespace-nowrap">
