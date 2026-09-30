@@ -282,7 +282,7 @@
             <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2 h-[30px] flex items-center w-full bg-white">
               <input 
                 v-model="opt.sublabel"
-                placeholder="Date / Sublabel (e.g. 2 September 2026)"
+                placeholder="Date / Sublabel (e.g. 24 Oct 2026)"
                 class="w-full font-707 text-[11px] text-neutral-700 focus:outline-none"
               />
             </div>
@@ -485,8 +485,8 @@ function setVariant(v: ChoiceVariant) {
       title: 'SELECT ARRIVALS',
       subtitle: 'Choose your preferred attendance day below.',
       options: [
-        { id: 'opt_1', label: 'Day 1', sublabel: '2 September 2026', description: 'Your Event Descriptions Detail' },
-        { id: 'opt_2', label: 'Day 2', sublabel: '3 September 2026', description: 'Your Event Descriptions Detail' }
+        { id: 'opt_1', label: 'Pass Option 1', sublabel: '24 Oct 2026', description: 'Access to activation area and special event lounge' },
+        { id: 'opt_2', label: 'Pass Option 2', sublabel: '25 Oct 2026', description: 'Access to activation area and special event lounge' }
       ]
     });
   } else if (v === 'simple-row' && (!currentWidget.value.props.title || currentWidget.value.props.title === 'SELECT ARRIVALS')) {
@@ -575,9 +575,9 @@ function addOption() {
   if (variant.value === 'detailed-card') {
     newOption = {
       id: `opt_${Date.now()}`,
-      label: `Day ${nextNum}`,
-      sublabel: `${nextNum + 1} September 2026`,
-      description: 'Your Event Descriptions Detail'
+      label: `Pass Option ${nextNum}`,
+      sublabel: `${23 + nextNum} Oct 2026`,
+      description: 'Access to activation area and special event lounge'
     };
   } else if (variant.value === 'simple-row') {
     const sizes = ['S', 'M', 'L', 'XL', 'XXL'];

@@ -370,15 +370,15 @@ export const useEditorStore = defineStore('editor', () => {
           options: [
             {
               id: 'opt_1',
-              label: 'Day 1',
-              sublabel: '2 September 2026',
-              description: 'Your Event Descriptions Detail'
+              label: 'Pass Option 1',
+              sublabel: '24 Oct 2026',
+              description: 'Access to activation area and special event lounge'
             },
             {
               id: 'opt_2',
-              label: 'Day 2',
-              sublabel: '3 September 2026',
-              description: 'Your Event Descriptions Detail'
+              label: 'Pass Option 2',
+              sublabel: '25 Oct 2026',
+              description: 'Access to activation area and special event lounge'
             }
           ]
         };
