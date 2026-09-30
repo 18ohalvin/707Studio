@@ -911,18 +911,21 @@
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="luxury-choice-tile border border-solid flex gap-[24px] items-center px-[16px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
+                  class="luxury-choice-tile border border-solid flex gap-[24px] px-[16px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
                   :class="[
                     isChoiceSelected(widget, opt.id)
                       ? 'is-selected border-black'
                       : 'border-[#d4d4d4] hover:border-black/60',
                     getOptionSlotsBadge(widget)
-                      ? 'min-h-[52px] py-[8px]'
-                      : 'min-h-[48px] h-[48px] py-[12px]'
+                      ? 'items-start py-[12px]'
+                      : 'items-center min-h-[48px] h-[48px] py-[12px]'
                   ]"
                 >
                   <!-- Checkbox Container (18px outer square with 12px inner square when active) -->
-                  <div class="relative shrink-0 size-[18px] border border-black border-solid flex items-center justify-center bg-transparent">
+                  <div 
+                    class="relative shrink-0 size-[18px] border border-black border-solid flex items-center justify-center bg-transparent"
+                    :class="getOptionSlotsBadge(widget) ? 'mt-[1px]' : ''"
+                  >
                     <div 
                       class="size-[12px] bg-black border border-black border-solid transition-all duration-150 transform"
                       :class="isChoiceSelected(widget, opt.id) ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
@@ -930,7 +933,7 @@
                   </div>
 
                   <!-- Label & Slot Capacity under option title -->
-                  <div v-if="getOptionSlotsBadge(widget)" class="flex-1 flex flex-col items-start gap-[2px] min-w-0">
+                  <div v-if="getOptionSlotsBadge(widget)" class="flex-1 flex flex-col items-start gap-[4px] min-w-0">
                     <span class="font-707 truncate" :class="getChoiceOptionTypographyClass(widget, opt)">
                       {{ opt.label }}
                     </span>
