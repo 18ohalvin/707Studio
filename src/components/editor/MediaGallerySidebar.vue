@@ -391,6 +391,25 @@ function handleMediaDragStart(event: DragEvent, media: MediaItem) {
 }
 
 function applyMediaToArtboard(media: MediaItem) {
+  const isChoiceOptionTarget = editorStore.mediaGalleryTarget === 'choiceOptionImage';
+  if (isChoiceOptionTarget) {
+    if (editorStore.selectedWidget && editorStore.selectedWidget.type === 'MultipleChoice') {
+      const options = [...(editorStore.selectedWidget.props.options || [])];
+      const targetOptId = editorStore.choiceOptionTargetId;
+      const optIdx = options.findIndex((o: any) => o.id === targetOptId);
+      if (optIdx !== -1) {
+        options[optIdx] = {
+          ...options[optIdx],
+          imageUrl: media.url
+        };
+        editorStore.updateWidgetProps(editorStore.selectedWidget.id, { options });
+      }
+    }
+    editorStore.openChoiceSidebar();
+    editorStore.mediaGalleryTarget = 'bannerImage';
+    return;
+  }
+
   const isBrandLogoTarget = editorStore.mediaGalleryTarget === 'brandLogo';
   const isAddNewTarget = editorStore.mediaGalleryTarget === 'addNewMedia';
 

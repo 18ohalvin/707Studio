@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
 import type { WidgetItem, WidgetType, ActivationPage, ViewportMode, PageStatus, ProjectItem } from '../types/editor.ts';
 
-export type MediaGalleryTarget = 'bannerImage' | 'brandLogo' | 'replaceBannerImage' | 'addNewMedia';
+export type MediaGalleryTarget = 'bannerImage' | 'brandLogo' | 'replaceBannerImage' | 'addNewMedia' | 'choiceOptionImage';
 
 export const useEditorStore = defineStore('editor', () => {
   // Realtime Projects List (Synced with API & Local Storage)
@@ -72,6 +72,7 @@ export const useEditorStore = defineStore('editor', () => {
   // trigger still has to be wired up — so it is declared here to keep the
   // consumer side type-correct until that lands.
   const mediaGalleryTarget = ref<MediaGalleryTarget>('bannerImage');
+  const choiceOptionTargetId = ref<string | null>(null);
   const isTextSidebarOpen = ref<boolean>(false);
   const isButtonSidebarOpen = ref<boolean>(false);
   const isChoiceSidebarOpen = ref<boolean>(false);
@@ -540,6 +541,11 @@ export const useEditorStore = defineStore('editor', () => {
     isMediaGalleryOpen.value = true;
   }
 
+  function openMediaGalleryForChoiceOption(optionId: string) {
+    choiceOptionTargetId.value = optionId;
+    openMediaGallery('choiceOptionImage');
+  }
+
   function closeMediaGallery() {
     isMediaGalleryOpen.value = false;
   }
@@ -979,6 +985,8 @@ export const useEditorStore = defineStore('editor', () => {
     isMediaSidebarOpen,
     isMediaGalleryOpen,
     mediaGalleryTarget,
+    choiceOptionTargetId,
+    openMediaGalleryForChoiceOption,
     isTextSidebarOpen,
     isButtonSidebarOpen,
     isChoiceSidebarOpen,

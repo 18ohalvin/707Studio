@@ -992,21 +992,25 @@
                 </button>
               </div>
 
-              <!-- Variant 4: Image Grid (Figma: Dynamic 1-4 columns, 3:4 ratio, transparent Add more button with Add (Enter) more) -->
+              <!-- Variant 4: Image Grid (Figma: Dynamic 1-4 columns, 3:4 ratio, 8px grid gap, transparent Add more button with Add (Enter) more) -->
               <div 
                 v-else-if="widget.props.variant === 'image-grid'" 
-                class="grid gap-[12px] w-full"
+                class="grid gap-[8px] w-full"
                 :class="getImageGridColsClass(widget)"
               >
                 <div 
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="luxury-choice-tile aspect-[3/4] bg-[#ededed] relative overflow-hidden cursor-pointer select-none transition-all duration-150 rounded-none border border-solid border-transparent"
+                  @dragover.prevent="dragOverChoiceOptionId = `${widget.id}_${opt.id}`"
+                  @dragleave="dragOverChoiceOptionId = null"
+                  @drop.prevent="handleChoiceImageDrop($event, widget, opt.id)"
+                  class="luxury-choice-tile aspect-[3/4] bg-[#ededed] relative overflow-hidden cursor-pointer select-none transition-all duration-150 rounded-none border border-solid border-transparent group/imagecard"
                   :class="[
                     isChoiceSelected(widget, opt.id)
                       ? 'is-selected'
-                      : 'hover:border-black/30'
+                      : 'hover:border-black/30',
+                    dragOverChoiceOptionId === `${widget.id}_${opt.id}` ? 'ring-2 ring-black ring-offset-1' : ''
                   ]"
                 >
                   <img 
@@ -1015,8 +1019,16 @@
                     :alt="opt.label"
                     class="size-full object-cover pointer-events-none" 
                   />
-                  <div v-else class="size-full flex items-center justify-center font-707 font-medium text-[11px] leading-[14px] text-black p-1 text-center" :class="getChoiceOptionTypographyClass(widget, opt)">
-                    {{ opt.label }}
+                  <div v-else class="size-full flex flex-col items-center justify-center font-707 font-medium text-[11px] leading-[14px] text-black p-1 text-center bg-[#ededed]">
+                    <span>{{ opt.label }}</span>
+                  </div>
+
+                  <!-- Drop Highlight Overlay -->
+                  <div 
+                    v-if="dragOverChoiceOptionId === `${widget.id}_${opt.id}`" 
+                    class="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-707 text-[10px] font-medium z-10 pointer-events-none"
+                  >
+                    Drop image
                   </div>
                 </div>
 
@@ -2309,6 +2321,69 @@ function handleLogoDropOnBanner(e: DragEvent, widgetId: string) {
           isBrandLogoEnabled: true
         });
         editorStore.selectWidget(widgetId);
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+const dragOverChoiceOptionId = ref<string | null>(null);
+
+async function handleChoiceImageDrop(e: DragEvent, widget: any, optId: string) {
+  dragOverChoiceOptionId.value = null;
+  editorStore.selectWidget(widget.id);
+
+  // Check if image from Media Gallery or JSON payload
+  const jsonStr = e.dataTransfer?.getData('application/json');
+  if (jsonStr) {
+    try {
+      const data = JSON.parse(jsonStr);
+      if (data?.customProps?.imageUrl) {
+        const options = [...(widget.props.options || [])];
+        const optIdx = options.findIndex((o: any) => o.id === optId);
+        if (optIdx !== -1) {
+          options[optIdx] = { ...options[optIdx], imageUrl: data.customProps.imageUrl };
+          editorStore.updateWidgetProps(widget.id, { options });
+        }
+        return;
+      }
+    } catch (_) {}
+  }
+
+  // Check if physical file dropped
+  const files = e.dataTransfer?.files;
+  if (files && files.length > 0 && files[0].type.startsWith('image/')) {
+    const file = files[0];
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const dataUrl = ev.target?.result as string;
+      if (dataUrl) {
+        const options = [...(widget.props.options || [])];
+        const optIdx = options.findIndex((o: any) => o.id === optId);
+        if (optIdx !== -1) {
+          options[optIdx] = { ...options[optIdx], imageUrl: dataUrl };
+          editorStore.updateWidgetProps(widget.id, { options });
+        }
+
+        try {
+          const savedMedia = await uploadMediaDirectly({
+            dataUrl,
+            title: file.name.replace(/\.[^/.]+$/, ''),
+            category: 'Product Catalog',
+            filename: file.name
+          });
+
+          if (savedMedia?.url) {
+            const currentOpts = [...(widget.props.options || [])];
+            const currentIdx = currentOpts.findIndex((o: any) => o.id === optId);
+            if (currentIdx !== -1) {
+              currentOpts[currentIdx] = { ...currentOpts[currentIdx], imageUrl: savedMedia.url };
+              editorStore.updateWidgetProps(widget.id, { options: currentOpts });
+            }
+          }
+        } catch (err) {
+          console.warn('Background upload failed, retaining preview:', err);
+        }
       }
     };
     reader.readAsDataURL(file);

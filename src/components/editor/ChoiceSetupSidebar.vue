@@ -421,24 +421,83 @@
             />
           </div>
 
-          <!-- Image URL field (for image-grid) -->
-          <div v-if="variant === 'image-grid'" class="flex items-center gap-2 pl-7">
-            <div class="size-8 rounded border border-neutral-300 overflow-hidden bg-[#ededed] shrink-0 flex items-center justify-center">
-              <img 
-                v-if="opt.imageUrl" 
-                :src="opt.imageUrl" 
-                class="w-full h-full object-cover" 
-                alt="Shoe Preview" 
-              />
-              <ImageIcon v-else class="w-4 h-4 text-neutral-400" />
+          <!-- Image Selector & Dropzone (for image-grid) -->
+          <div v-if="variant === 'image-grid'" class="pl-7 w-full flex flex-col gap-2">
+            <!-- If image exists: preview with Gallery, Upload, and Remove buttons -->
+            <div 
+              v-if="opt.imageUrl" 
+              class="relative border border-[#d9d9d9] rounded-[8px] p-2 flex items-center justify-between bg-white hover:border-black transition-colors"
+            >
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="size-[44px] rounded bg-neutral-50 overflow-hidden border border-neutral-200 shrink-0">
+                  <img :src="opt.imageUrl" :alt="opt.label" class="size-full object-cover" />
+                </div>
+                <div class="flex flex-col min-w-0">
+                  <span class="text-[11px] font-707 font-medium text-black truncate">{{ opt.label || 'Model Image' }}</span>
+                  <span class="text-[9px] font-707 text-neutral-400">3:4 aspect ratio</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-1 shrink-0">
+                <button 
+                  type="button"
+                  @click="openMediaGalleryForOption(opt.id)"
+                  class="apple-glass-btn text-[10px] font-707 px-2 py-1 rounded-[6px] cursor-pointer"
+                  title="Select from Media Gallery"
+                >
+                  Gallery
+                </button>
+                <button 
+                  type="button"
+                  @click="triggerOptionFileUpload(idx)"
+                  class="apple-glass-btn text-[10px] font-707 px-2 py-1 rounded-[6px] cursor-pointer"
+                  title="Upload from computer"
+                >
+                  Upload
+                </button>
+                <button 
+                  type="button"
+                  @click="removeOptionImage(idx)"
+                  class="apple-glass-icon-btn size-6 rounded-[6px] flex items-center justify-center text-neutral-500 hover:text-red-600 cursor-pointer"
+                  title="Remove Image"
+                >
+                  <Trash2 class="w-3 h-3" />
+                </button>
+              </div>
             </div>
-            <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2 h-[30px] flex items-center flex-1 bg-white">
-              <input 
-                v-model="opt.imageUrl"
-                placeholder="Image URL (https://...)"
-                class="w-full font-707 text-[11px] text-neutral-700 focus:outline-none"
-              />
+
+            <!-- If no image: Drag & Drop / Select From Media Gallery area -->
+            <div 
+              v-else
+              @click="triggerOptionFileUpload(idx)"
+              @dragover.prevent="activeDragOptionIdx = idx"
+              @dragleave="activeDragOptionIdx = null"
+              @drop.prevent="handleOptionImageDrop($event, idx)"
+              :class="[
+                activeDragOptionIdx === idx ? 'border-black bg-neutral-100' : 'bg-[#f5f5f5] hover:bg-[#efefef] border-[#d9d9d9]',
+                'border border-dashed flex flex-col gap-1 py-3 px-3 items-center justify-center rounded-[8px] w-full cursor-pointer transition-all'
+              ]"
+            >
+              <p class="font-707 text-[11px] text-neutral-700 text-center">
+                <button 
+                  type="button" 
+                  @click.stop="openMediaGalleryForOption(opt.id)"
+                  class="font-medium text-black underline hover:text-neutral-700 cursor-pointer"
+                >
+                  Select From Media Gallery
+                </button>
+                <span> or Drag</span>
+              </p>
+              <span class="text-[9px] font-707 text-neutral-400">Fixed 3:4 ratio</span>
             </div>
+
+            <!-- Hidden File Input for this option -->
+            <input 
+              type="file" 
+              :ref="(el) => setFileInputRef(el, idx)" 
+              accept="image/*" 
+              @change="handleOptionFileChange($event, idx)" 
+              class="hidden" 
+            />
           </div>
         </div>
       </div>
@@ -460,6 +519,7 @@
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
+import { uploadMediaDirectly } from '../../services/mediaService.ts';
 import type { ChoiceVariant, ChoiceOption } from '../../types/editor.ts';
 import { 
   Plus, 
@@ -822,6 +882,103 @@ function removeOption(index: number) {
     options: currentOptions,
     selectedValues: selected
   });
+}
+
+const activeDragOptionIdx = ref<number | null>(null);
+const fileInputRefs = ref<Record<number, HTMLInputElement | null>>({});
+
+function setFileInputRef(el: any, idx: number) {
+  if (el) {
+    fileInputRefs.value[idx] = el as HTMLInputElement;
+  }
+}
+
+function triggerOptionFileUpload(idx: number) {
+  const input = fileInputRefs.value[idx];
+  if (input) {
+    input.value = '';
+    input.click();
+  }
+}
+
+function openMediaGalleryForOption(optId: string) {
+  editorStore.openMediaGalleryForChoiceOption(optId);
+}
+
+function removeOptionImage(idx: number) {
+  if (!currentWidget.value) return;
+  const options = [...(currentWidget.value.props.options || [])];
+  if (options[idx]) {
+    options[idx] = { ...options[idx], imageUrl: '' };
+    editorStore.updateWidgetProps(currentWidget.value.id, { options });
+  }
+}
+
+async function handleOptionFileChange(event: Event, idx: number) {
+  const input = event.target as HTMLInputElement;
+  const files = input.files;
+  if (!files || files.length === 0) return;
+  const file = files[0];
+  await processOptionImageFile(file, idx);
+}
+
+async function handleOptionImageDrop(event: DragEvent, idx: number) {
+  activeDragOptionIdx.value = null;
+  // Check if dropped from Media Gallery (JSON)
+  const jsonStr = event.dataTransfer?.getData('application/json');
+  if (jsonStr) {
+    try {
+      const data = JSON.parse(jsonStr);
+      if (data?.customProps?.imageUrl && currentWidget.value) {
+        const options = [...(currentWidget.value.props.options || [])];
+        if (options[idx]) {
+          options[idx] = { ...options[idx], imageUrl: data.customProps.imageUrl };
+          editorStore.updateWidgetProps(currentWidget.value.id, { options });
+        }
+        return;
+      }
+    } catch (_) {}
+  }
+
+  // Check if physical file dropped
+  const files = event.dataTransfer?.files;
+  if (files && files.length > 0 && files[0].type.startsWith('image/')) {
+    await processOptionImageFile(files[0], idx);
+  }
+}
+
+async function processOptionImageFile(file: File, idx: number) {
+  if (!currentWidget.value) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const dataUrl = e.target?.result as string;
+    if (dataUrl && currentWidget.value) {
+      const options = [...(currentWidget.value.props.options || [])];
+      if (options[idx]) {
+        options[idx] = { ...options[idx], imageUrl: dataUrl };
+        editorStore.updateWidgetProps(currentWidget.value.id, { options });
+      }
+
+      try {
+        const saved = await uploadMediaDirectly({
+          dataUrl,
+          title: file.name.replace(/\.[^/.]+$/, ''),
+          category: 'Product Catalog',
+          filename: file.name
+        });
+        if (saved?.url && currentWidget.value) {
+          const currentOpts = [...(currentWidget.value.props.options || [])];
+          if (currentOpts[idx]) {
+            currentOpts[idx] = { ...currentOpts[idx], imageUrl: saved.url };
+            editorStore.updateWidgetProps(currentWidget.value.id, { options: currentOpts });
+          }
+        }
+      } catch (err) {
+        console.warn('Background upload failed, retaining dataUrl:', err);
+      }
+    }
+  };
+  reader.readAsDataURL(file);
 }
 
 function handleClickOutside(event: MouseEvent) {
