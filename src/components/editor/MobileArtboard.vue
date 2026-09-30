@@ -1699,26 +1699,41 @@ function toggleChoiceOption(widget: any, optId: string) {
   editorStore.updateWidgetProps(widget.id, { selectedValues: selected });
 }
 
+function getAutomaticOptionLabel(v: string, index: number): string {
+  if (v === 'detailed-card') return `Pass Option ${index + 1}`;
+  if (v === 'simple-row') {
+    const sizes = ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
+    return sizes[index] || `Option ${index + 1}`;
+  }
+  if (v === 'horizontal-block') {
+    const sessions = ['Morning', 'Afternoon', 'Evening', 'Night', 'Session 5', 'Session 6'];
+    return sessions[index] || `Session ${index + 1}`;
+  }
+  if (v === 'image-grid') return `Model ${String(index + 1).padStart(2, '0')}`;
+  return `Option ${index + 1}`;
+}
+
 function handleChoiceAddMore(widget: any) {
   if (props.isMiniPreview) return;
   handleSelectThisPage();
   editorStore.selectWidget(widget.id);
 
   const currentOptions = [...(widget.props?.options || [])];
-  const nextNum = currentOptions.length + 1;
+  const nextIdx = currentOptions.length;
   const variant = widget.props?.variant || 'detailed-card';
+  const autoLabel = getAutomaticOptionLabel(variant, nextIdx);
 
   let newOption: any = {
     id: `opt_${Date.now()}`,
-    label: `Option ${nextNum}`
+    label: autoLabel
   };
 
   if (variant === 'detailed-card') {
+    const defaultDay = String(Math.min(24 + nextIdx, 31)).padStart(2, '0');
     newOption = {
       id: `opt_${Date.now()}`,
-      label: `Pass Option ${nextNum}`,
-      sublabel: `${23 + nextNum} Oct 2026`,
-      slotsCapacity: 20,
+      label: autoLabel,
+      sublabel: `${defaultDay} Oct 2026`,
       description: 'Access to activation area and special event lounge'
     };
   } else if (variant === 'image-grid') {
@@ -1730,12 +1745,17 @@ function handleChoiceAddMore(widget: any) {
     ];
     newOption = {
       id: `opt_${Date.now()}`,
-      label: `Model 0${nextNum}`,
-      imageUrl: defaultImages[(nextNum - 1) % defaultImages.length]
+      label: autoLabel,
+      imageUrl: defaultImages[nextIdx % defaultImages.length]
     };
   }
 
   currentOptions.push(newOption);
+  // Re-sync all options to guaranteed sequence
+  currentOptions.forEach((opt, i) => {
+    opt.label = getAutomaticOptionLabel(variant, i);
+  });
+
   editorStore.updateWidgetProps(widget.id, { options: currentOptions });
 }
 

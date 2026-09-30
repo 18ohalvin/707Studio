@@ -279,18 +279,21 @@
           :key="opt.id"
           class="flex flex-col gap-2 p-3 bg-white rounded-[8px] border border-[#d9d9d9] shadow-sm transition-all group"
         >
-          <!-- Top Row: Order Index, Label Input, Default Selected Checkbox, and Delete -->
+          <!-- Top Row: Order Index, Fixed Auto-Named Title Box, Default Selected Checkbox, and Delete -->
           <div class="flex items-center gap-2 w-full">
             <span class="size-5 rounded-full bg-neutral-100 flex items-center justify-center font-mono text-[10px] text-neutral-500 font-bold shrink-0">
               {{ idx + 1 }}
             </span>
 
-            <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2 h-[32px] flex items-center flex-1 bg-white">
-              <input 
-                v-model="opt.label"
-                placeholder="Option Title (e.g. Day 1, S, Morning)"
-                class="w-full font-707 text-[12px] font-medium text-black focus:outline-none"
-              />
+            <!-- Locked Auto-Named Option Title Display -->
+            <div class="border border-[#e5e5e5] bg-neutral-50 rounded-[6px] px-2.5 h-[32px] flex items-center justify-between flex-1 select-none">
+              <span class="font-707 text-[12px] font-medium text-black truncate">
+                {{ getAutomaticOptionLabel(variant, idx) }}
+              </span>
+              <div class="flex items-center gap-1 text-[10px] text-neutral-400 font-707 shrink-0 ml-1.5 bg-neutral-200/60 px-1.5 py-0.5 rounded">
+                <Lock class="w-2.5 h-2.5" />
+                <span class="font-medium">Auto</span>
+              </div>
             </div>
 
             <!-- Default Selected Toggle Button -->
@@ -318,25 +321,54 @@
           </div>
 
           <!-- Variant Specific Fields -->
-          <!-- Sublabel / Date field (for detailed-card - locked to DD MMM YYYY) -->
-          <div v-if="variant === 'detailed-card'" class="flex items-center gap-2 pl-7">
-            <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2 h-[30px] flex items-center w-full bg-white">
-              <input 
-                v-model="opt.sublabel"
-                placeholder="Date (DD MMM YYYY e.g. 24 Oct 2026)"
-                class="w-full font-707 text-[11px] text-neutral-700 focus:outline-none"
-              />
+          <!-- Sublabel / Date field (for detailed-card - locked to DD MMM YYYY 3-select picker) -->
+          <div v-if="variant === 'detailed-card'" class="flex flex-col gap-1.5 pl-7">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-707 font-medium text-neutral-600 flex items-center gap-1">
+                <Calendar class="w-3 h-3 text-neutral-400" />
+                <span>Date (DD MMM YYYY)</span>
+              </span>
+              <span class="text-[10px] font-mono text-neutral-400 font-medium">
+                {{ parseDateComponents(opt.sublabel).day }} {{ parseDateComponents(opt.sublabel).month }} {{ parseDateComponents(opt.sublabel).year }}
+              </span>
             </div>
-          </div>
+            
+            <div class="grid grid-cols-3 gap-1.5 w-full">
+              <!-- Day Select -->
+              <div class="relative">
+                <select 
+                  :value="parseDateComponents(opt.sublabel).day"
+                  @change="updateOptionDate(idx, 'day', ($event.target as HTMLSelectElement).value)"
+                  class="w-full h-[30px] px-2 appearance-none bg-white border border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
+                >
+                  <option v-for="d in DAYS" :key="d" :value="d">{{ d }}</option>
+                </select>
+                <ChevronDown class="w-3 h-3 text-neutral-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
 
-          <!-- Slots Capacity / Badge field (for detailed-card) -->
-          <div v-if="variant === 'detailed-card'" class="flex items-center gap-2 pl-7">
-            <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2 h-[30px] flex items-center w-full bg-white">
-              <input 
-                v-model="opt.slotsCapacity"
-                placeholder="Slots Capacity (e.g. 25 or 25 Slots Available)"
-                class="w-full font-707 text-[11px] text-neutral-700 focus:outline-none"
-              />
+              <!-- Month Select -->
+              <div class="relative">
+                <select 
+                  :value="parseDateComponents(opt.sublabel).month"
+                  @change="updateOptionDate(idx, 'month', ($event.target as HTMLSelectElement).value)"
+                  class="w-full h-[30px] px-2 appearance-none bg-white border border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
+                >
+                  <option v-for="m in MONTHS" :key="m" :value="m">{{ m }}</option>
+                </select>
+                <ChevronDown class="w-3 h-3 text-neutral-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+
+              <!-- Year Select -->
+              <div class="relative">
+                <select 
+                  :value="parseDateComponents(opt.sublabel).year"
+                  @change="updateOptionDate(idx, 'year', ($event.target as HTMLSelectElement).value)"
+                  class="w-full h-[30px] px-2 appearance-none bg-white border border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
+                >
+                  <option v-for="y in YEARS" :key="y" :value="y">{{ y }}</option>
+                </select>
+                <ChevronDown class="w-3 h-3 text-neutral-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
             </div>
           </div>
 
@@ -395,6 +427,8 @@ import {
   Trash2, 
   Check, 
   ChevronDown,
+  Lock,
+  Calendar,
   Image as ImageIcon 
 } from 'lucide-vue-next';
 
@@ -405,6 +439,46 @@ defineProps<{
 defineEmits<{
   (e: 'close'): void;
 }>();
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const DAYS = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
+const YEARS = ['2026', '2027', '2028', '2029', '2030'];
+
+function getAutomaticOptionLabel(v: ChoiceVariant, index: number): string {
+  if (v === 'detailed-card') return `Pass Option ${index + 1}`;
+  if (v === 'simple-row') {
+    const sizes = ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
+    return sizes[index] || `Option ${index + 1}`;
+  }
+  if (v === 'horizontal-block') {
+    const sessions = ['Morning', 'Afternoon', 'Evening', 'Night', 'Session 5', 'Session 6'];
+    return sessions[index] || `Session ${index + 1}`;
+  }
+  if (v === 'image-grid') return `Model ${String(index + 1).padStart(2, '0')}`;
+  return `Option ${index + 1}`;
+}
+
+function parseDateComponents(dateStr?: string) {
+  const parts = (dateStr || '24 Oct 2026').trim().split(/\s+/);
+  const day = parts[0] ? parts[0].padStart(2, '0') : '24';
+  const month = parts[1] || 'Oct';
+  const year = parts[2] || '2026';
+  return {
+    day: DAYS.includes(day) ? day : '24',
+    month: MONTHS.includes(month) ? month : 'Oct',
+    year: YEARS.includes(year) ? year : '2026'
+  };
+}
+
+function updateOptionDate(index: number, part: 'day' | 'month' | 'year', val: string) {
+  if (!currentWidget.value) return;
+  const currentOptions = [...(currentWidget.value.props.options || [])];
+  if (!currentOptions[index]) return;
+  const parsed = parseDateComponents(currentOptions[index].sublabel);
+  parsed[part] = val;
+  currentOptions[index].sublabel = `${parsed.day} ${parsed.month} ${parsed.year}`;
+  editorStore.updateWidgetProps(currentWidget.value.id, { options: currentOptions });
+}
 
 const editorStore = useEditorStore();
 const sidebarRef = ref<HTMLElement | null>(null);
@@ -559,8 +633,8 @@ function setVariant(v: ChoiceVariant) {
       title: 'SELECT ARRIVALS',
       subtitle: 'Choose your preferred attendance day below.',
       options: [
-        { id: 'opt_1', label: 'Pass Option 1', sublabel: '24 Oct 2026', slotsCapacity: 25, description: 'Access to activation area and special event lounge' },
-        { id: 'opt_2', label: 'Pass Option 2', sublabel: '25 Oct 2026', slotsCapacity: 12, description: 'Access to activation area and special event lounge' }
+        { id: 'opt_1', label: 'Pass Option 1', sublabel: '24 Oct 2026', description: 'Access to activation area and special event lounge' },
+        { id: 'opt_2', label: 'Pass Option 2', sublabel: '25 Oct 2026', description: 'Access to activation area and special event lounge' }
       ]
     });
   } else if (v === 'simple-row' && (!currentWidget.value.props.title || currentWidget.value.props.title === 'SELECT ARRIVALS')) {
@@ -639,34 +713,24 @@ function toggleOptionSelected(id: string) {
 function addOption() {
   if (!currentWidget.value) return;
   const currentOptions = [...(currentWidget.value.props.options || [])];
-  const nextNum = currentOptions.length + 1;
+  const nextIdx = currentOptions.length;
+  const v = variant.value;
+  const autoLabel = getAutomaticOptionLabel(v, nextIdx);
   
   let newOption: ChoiceOption = {
     id: `opt_${Date.now()}`,
-    label: `Option ${nextNum}`
+    label: autoLabel
   };
 
-  if (variant.value === 'detailed-card') {
+  if (v === 'detailed-card') {
+    const defaultDay = String(Math.min(24 + nextIdx, 31)).padStart(2, '0');
     newOption = {
       id: `opt_${Date.now()}`,
-      label: `Pass Option ${nextNum}`,
-      sublabel: `${23 + nextNum} Oct 2026`,
-      slotsCapacity: 20,
+      label: autoLabel,
+      sublabel: `${defaultDay} Oct 2026`,
       description: 'Access to activation area and special event lounge'
     };
-  } else if (variant.value === 'simple-row') {
-    const sizes = ['S', 'M', 'L', 'XL', 'XXL'];
-    newOption = {
-      id: `opt_${Date.now()}`,
-      label: sizes[nextNum - 1] || `Option ${nextNum}`
-    };
-  } else if (variant.value === 'horizontal-block') {
-    const sessions = ['Morning', 'Afternoon', 'Evening', 'Night'];
-    newOption = {
-      id: `opt_${Date.now()}`,
-      label: sessions[nextNum - 1] || `Session ${nextNum}`
-    };
-  } else if (variant.value === 'image-grid') {
+  } else if (v === 'image-grid') {
     const defaultImages = [
       'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=300&q=80',
       'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&q=80',
@@ -674,12 +738,17 @@ function addOption() {
     ];
     newOption = {
       id: `opt_${Date.now()}`,
-      label: `Model 0${nextNum}`,
-      imageUrl: defaultImages[(nextNum - 1) % defaultImages.length]
+      label: autoLabel,
+      imageUrl: defaultImages[nextIdx % defaultImages.length]
     };
   }
 
   currentOptions.push(newOption);
+  // Re-sync all options to guaranteed sequence
+  currentOptions.forEach((opt, i) => {
+    opt.label = getAutomaticOptionLabel(v, i);
+  });
+
   editorStore.updateWidgetProps(currentWidget.value.id, { options: currentOptions });
 }
 
@@ -691,6 +760,12 @@ function removeOption(index: number) {
   const removed = currentOptions.splice(index, 1)[0];
   let selected = ((currentWidget.value.props.selectedValues || []) as string[]).filter(id => id !== removed.id);
   
+  // Re-sync remaining options to guaranteed sequence
+  const v = variant.value;
+  currentOptions.forEach((opt, i) => {
+    opt.label = getAutomaticOptionLabel(v, i);
+  });
+
   editorStore.updateWidgetProps(currentWidget.value.id, { 
     options: currentOptions,
     selectedValues: selected
