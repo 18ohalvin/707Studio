@@ -504,23 +504,21 @@ function getChoiceDefaultProps(choiceName: string) {
   switch (choiceName) {
     case 'Sneaker Size':
       return {
-        title: 'SELECT APPAREL SIZE',
-        subtitle: 'Choose your desired size',
+        title: 'SELECT YOUR SESSIONS',
+        subtitle: 'Choose your preferred sessions below.',
         variant: 'horizontal-block',
         allowMultiple: true,
         required: false,
         selectedValues: [],
         options: [
-          { id: 'opt_s', label: 'S' },
-          { id: 'opt_m', label: 'M' },
-          { id: 'opt_l', label: 'L' },
-          { id: 'opt_xl', label: 'XL' }
+          { id: 'opt_1', label: 'Morning' },
+          { id: 'opt_2', label: 'Afternoon' }
         ]
       };
     case 'Checkbox':
       return {
         title: 'SELECT ARRIVALS',
-        subtitle: 'Select one or more entry slots',
+        subtitle: 'Choose your preferred attendance day below.',
         variant: 'detailed-card',
         allowMultiple: true,
         required: false,
@@ -528,37 +526,36 @@ function getChoiceDefaultProps(choiceName: string) {
         options: [
           {
             id: 'opt_1',
-            label: 'VIP Pass & Early Entry',
-            sublabel: '24 Oct 2026',
-            description: 'Early access to the showroom and private lounge'
+            label: 'Day 1',
+            sublabel: '2 September 2026',
+            description: 'Your Event Descriptions Detail'
           },
           {
             id: 'opt_2',
-            label: 'General Admission',
-            sublabel: '25 Oct 2026',
-            description: 'Access to exhibition and main stage events'
+            label: 'Day 2',
+            sublabel: '3 September 2026',
+            description: 'Your Event Descriptions Detail'
           }
         ]
       };
     case 'Radio Group':
       return {
-        title: 'SELECT PREFERENCE',
-        subtitle: 'Choose your preferred package',
+        title: 'SELECT APPAREL SIZE',
+        subtitle: 'Choose your preferred size below.',
         variant: 'simple-row',
         allowMultiple: true,
         required: false,
         selectedValues: [],
         options: [
-          { id: 'opt_1', label: 'Standard Pass' },
-          { id: 'opt_2', label: 'VIP Pass' },
-          { id: 'opt_3', label: 'All-Access Pass' }
+          { id: 'opt_1', label: 'S' },
+          { id: 'opt_2', label: 'M' }
         ]
       };
     case 'Multi Choice':
     default:
       return {
         title: 'SELECT YOUR MODEL',
-        subtitle: 'Select one or more models',
+        subtitle: 'Choose your preferred model below.',
         variant: 'image-grid',
         allowMultiple: true,
         required: false,
@@ -566,8 +563,7 @@ function getChoiceDefaultProps(choiceName: string) {
         options: [
           { id: 'opt_1', label: 'Model 01', imageUrl: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=300&q=80' },
           { id: 'opt_2', label: 'Model 02', imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&q=80' },
-          { id: 'opt_3', label: 'Model 03', imageUrl: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=300&q=80' },
-          { id: 'opt_4', label: 'Model 04', imageUrl: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=300&q=80' }
+          { id: 'opt_3', label: 'Model 03', imageUrl: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=300&q=80' }
         ]
       };
   }

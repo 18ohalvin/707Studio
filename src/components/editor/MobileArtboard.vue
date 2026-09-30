@@ -773,10 +773,10 @@
               </div>
             </div>
 
-            <!-- 9. MultipleChoice Widget (Figma Node 276:4224 - 4 Variants, Multi/Single Select, Outline Animations) -->
+            <!-- 9. MultipleChoice Widget (Figma Node 276:4224 - Exact Dimensions, Typography, Checkbox Inset & Add-Filled Icon) -->
             <div 
               v-else-if="widget.type === 'MultipleChoice'" 
-              class="relative w-full px-[16px] py-[12px] select-none group/choice bg-white text-black"
+              class="relative w-full px-[16px] py-[12px] select-none group/choice text-black"
               @click.stop="handleMultipleChoiceContainerClick(widget)"
               data-node-id="276:4224"
               data-name="Multiple Choice Container"
@@ -815,92 +815,87 @@
                 </button>
               </div>
 
-              <!-- Title & Subtitle Header -->
-              <div v-if="widget.props.title || widget.props.subtitle" class="w-full flex flex-col items-start mb-[14px]">
-                <h3 v-if="widget.props.title" class="font-707 font-medium text-[22px] leading-[28px] text-black tracking-tight uppercase">
+              <!-- Title & Subtitle Header (Figma: 22px Medium uppercase title, 16px Light subtitle, 8px gap, 24px bottom spacing) -->
+              <div v-if="widget.props.title || widget.props.subtitle" class="w-full flex flex-col gap-[8px] items-start mb-[24px]">
+                <h3 v-if="widget.props.title" class="font-707 font-medium text-[22px] leading-[28px] text-black tracking-normal uppercase">
                   {{ widget.props.title }}<span v-if="widget.props.required" class="text-neutral-400 text-[18px] ml-0.5">*</span>
                 </h3>
-                <p v-if="widget.props.subtitle" class="font-707 font-light text-[16px] leading-[22px] text-[#525252] mt-[4px]">
+                <p v-if="widget.props.subtitle" class="font-707 font-light text-[16px] leading-[22px] text-black">
                   {{ widget.props.subtitle }}
                 </p>
               </div>
 
-              <!-- Variant 1: Detailed Cards (Checkbox + Title Left + Date/Sublabel Right + Description) -->
-              <div v-if="(widget.props.variant || 'detailed-card') === 'detailed-card'" class="flex flex-col gap-[12px] w-full">
+              <!-- Variant 1: Detailed Cards (Figma: 16px padding, 24px gap between checkbox and text, 16px gap between title and description) -->
+              <div v-if="(widget.props.variant || 'detailed-card') === 'detailed-card'" class="flex flex-col gap-[16px] w-full">
                 <div 
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="border p-[16px] flex flex-col gap-[8px] bg-white transition-all duration-200 cursor-pointer select-none rounded-[0px] relative"
+                  class="border border-solid flex gap-[24px] items-start p-[16px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
                   :class="[
                     isChoiceSelected(widget, opt.id)
-                      ? 'border-black shadow-[0_0_0_1px_#000]'
-                      : 'border-[#d4d4d4] hover:border-black/50'
+                      ? 'border-black'
+                      : 'border-[#d4d4d4] hover:border-black/60'
                   ]"
                 >
-                  <div class="flex items-center justify-between w-full">
-                    <div class="flex items-center gap-[12px]">
-                      <!-- Checkbox Box with 18px Inner Square (Figma Specs) -->
-                      <div 
-                        class="size-[24px] border flex items-center justify-center bg-white shrink-0 transition-colors duration-200"
-                        :class="isChoiceSelected(widget, opt.id) ? 'border-black' : 'border-[#d4d4d4]'"
-                      >
-                        <div 
-                          class="size-[18px] bg-black transition-all duration-200 transform"
-                          :class="isChoiceSelected(widget, opt.id) ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
-                        />
-                      </div>
-                      <span class="font-707 font-medium text-[16px] leading-[22px] text-black">
-                        {{ opt.label }}
-                      </span>
-                    </div>
-                    <span v-if="opt.sublabel" class="font-707 font-light text-[14px] leading-[20px] text-neutral-500">
-                      {{ opt.sublabel }}
-                    </span>
-                  </div>
-                  <p v-if="opt.description" class="font-707 font-normal text-[14px] leading-[20px] text-neutral-600 pl-[36px]">
-                    {{ opt.description }}
-                  </p>
-                </div>
-
-                <!-- Add More Slot (Figma Node 276:4224) -->
-                <button 
-                  v-if="!isPreviewModal"
-                  type="button"
-                  @click.stop="handleChoiceAddMore(widget)"
-                  class="w-full border border-[#d4d4d4] hover:border-black py-[12px] px-[16px] flex items-center justify-center gap-[8px] font-707 font-medium text-[14px] text-black bg-white transition-colors cursor-pointer rounded-[0px]"
-                >
-                  <Plus class="size-4 stroke-[2.5]" />
-                  <span>Add more</span>
-                </button>
-              </div>
-
-              <!-- Variant 2: Simple Rows (56px Height Row with Checkbox & Label) -->
-              <div v-else-if="widget.props.variant === 'simple-row'" class="flex flex-col gap-[10px] w-full">
-                <div 
-                  v-for="opt in (widget.props.options || [])" 
-                  :key="opt.id"
-                  @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="border h-[56px] px-[16px] flex items-center bg-white transition-all duration-200 cursor-pointer select-none rounded-[0px] relative"
-                  :class="[
-                    isChoiceSelected(widget, opt.id)
-                      ? 'border-black shadow-[0_0_0_1px_#000]'
-                      : 'border-[#d4d4d4] hover:border-black/50'
-                  ]"
-                >
-                  <div class="flex items-center gap-[14px] w-full">
+                  <!-- Checkbox Container (24px outer square with 18px inner square when active) -->
+                  <div class="relative shrink-0 size-[24px] border border-black border-solid flex items-center justify-center bg-transparent">
                     <div 
-                      class="size-[24px] border flex items-center justify-center bg-white shrink-0 transition-colors duration-200"
-                      :class="isChoiceSelected(widget, opt.id) ? 'border-black' : 'border-[#d4d4d4]'"
-                    >
-                      <div 
-                        class="size-[18px] bg-black transition-all duration-200 transform"
-                        :class="isChoiceSelected(widget, opt.id) ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
-                      />
+                      class="size-[18px] bg-black border border-black border-solid transition-all duration-150 transform"
+                      :class="isChoiceSelected(widget, opt.id) ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
+                    />
+                  </div>
+
+                  <!-- Option Content -->
+                  <div class="flex-1 flex flex-col gap-[16px] items-start min-w-0">
+                    <div class="flex items-center justify-between w-full font-707 font-medium text-[16px] leading-[14px] text-black">
+                      <span class="truncate">{{ opt.label }}</span>
+                      <span v-if="opt.sublabel" class="shrink-0 text-[16px]">{{ opt.sublabel }}</span>
                     </div>
-                    <span class="font-707 font-medium text-[16px] leading-[22px] text-black">
-                      {{ opt.label }}
-                    </span>
+                    <div v-if="opt.description" class="font-707 font-normal text-[14px] leading-[14px] text-black">
+                      {{ opt.description }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Add More Slot (Figma: border-[#d4d4d4], 24px gap with carbon:add-filled icon and 16px medium text) -->
+                <button 
+                  v-if="!isPreviewModal"
+                  type="button"
+                  @click.stop="handleChoiceAddMore(widget)"
+                  class="border border-[#d4d4d4] hover:border-black border-solid flex gap-[24px] items-center p-[16px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
+                >
+                  <img :src="FIGMA_ASSETS.addFilled" class="size-[24px] shrink-0 pointer-events-none" alt="Add" />
+                  <span class="font-707 font-medium text-[16px] leading-[14px] text-black">
+                    Add more
+                  </span>
+                </button>
+              </div>
+
+              <!-- Variant 2: Simple Rows (Figma: 56px height, 16px padding, 24px gap with checkbox) -->
+              <div v-else-if="widget.props.variant === 'simple-row'" class="flex flex-col gap-[16px] w-full">
+                <div 
+                  v-for="opt in (widget.props.options || [])" 
+                  :key="opt.id"
+                  @click.stop="toggleChoiceOption(widget, opt.id)"
+                  class="border border-solid h-[56px] flex gap-[24px] items-center p-[16px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
+                  :class="[
+                    isChoiceSelected(widget, opt.id)
+                      ? 'border-black'
+                      : 'border-[#d4d4d4] hover:border-black/60'
+                  ]"
+                >
+                  <!-- Checkbox Container -->
+                  <div class="relative shrink-0 size-[24px] border border-black border-solid flex items-center justify-center bg-transparent">
+                    <div 
+                      class="size-[18px] bg-black border border-black border-solid transition-all duration-150 transform"
+                      :class="isChoiceSelected(widget, opt.id) ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
+                    />
+                  </div>
+
+                  <!-- Label -->
+                  <div class="flex-1 font-707 font-medium text-[16px] leading-[14px] text-black truncate">
+                    {{ opt.label }}
                   </div>
                 </div>
 
@@ -909,85 +904,81 @@
                   v-if="!isPreviewModal"
                   type="button"
                   @click.stop="handleChoiceAddMore(widget)"
-                  class="w-full border border-[#d4d4d4] hover:border-black h-[56px] px-[16px] flex items-center justify-center gap-[8px] font-707 font-medium text-[14px] text-black bg-white transition-colors cursor-pointer rounded-[0px]"
+                  class="border border-[#d4d4d4] hover:border-black border-solid h-[56px] flex gap-[24px] items-center p-[16px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
                 >
-                  <Plus class="size-4 stroke-[2.5]" />
-                  <span>Add more</span>
+                  <img :src="FIGMA_ASSETS.addFilled" class="size-[24px] shrink-0 pointer-events-none" alt="Add" />
+                  <span class="font-707 font-medium text-[16px] leading-[14px] text-black">
+                    Add more
+                  </span>
                 </button>
               </div>
 
-              <!-- Variant 3: Horizontal Blocks (128px × 56px Blocks) -->
-              <div v-else-if="widget.props.variant === 'horizontal-block'" class="flex flex-wrap gap-[10px] w-full">
+              <!-- Variant 3: Horizontal Blocks (Figma: 128px width, 56px height, 16px padding, 16px gap) -->
+              <div v-else-if="widget.props.variant === 'horizontal-block'" class="flex gap-[16px] items-start w-full overflow-x-auto no-scrollbar pb-1">
                 <div 
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="flex-1 min-w-[120px] max-w-[calc(50%-5px)] h-[56px] px-[16px] flex items-center justify-center border bg-white transition-all duration-200 cursor-pointer text-center relative select-none rounded-[0px]"
+                  class="w-[128px] h-[56px] p-[16px] flex items-center justify-start shrink-0 border border-solid cursor-pointer select-none transition-all duration-150 bg-transparent font-707 font-medium text-[16px] leading-[14px] text-black rounded-none"
                   :class="[
                     isChoiceSelected(widget, opt.id)
-                      ? 'border-black shadow-[0_0_0_1px_#000] font-semibold text-black'
-                      : 'border-[#d4d4d4] hover:border-black/50 font-medium text-black'
+                      ? 'border-black'
+                      : 'border-[#d4d4d4] hover:border-black/60'
                   ]"
                 >
-                  <span class="font-707 text-[15px] leading-[20px]">
-                    {{ opt.label }}
-                  </span>
+                  <span class="truncate">{{ opt.label }}</span>
                 </div>
 
-                <!-- Add More Slot -->
+                <!-- Add More Button -->
                 <button 
                   v-if="!isPreviewModal"
                   type="button"
                   @click.stop="handleChoiceAddMore(widget)"
-                  class="min-w-[120px] flex-1 max-w-[calc(50%-5px)] h-[56px] px-[16px] border border-[#d4d4d4] hover:border-black flex items-center justify-center gap-[6px] font-707 font-medium text-[14px] text-black bg-white transition-colors cursor-pointer rounded-[0px]"
+                  class="h-[56px] p-[16px] border border-[#d4d4d4] hover:border-black border-solid flex gap-[24px] items-center shrink-0 cursor-pointer transition-colors bg-transparent select-none rounded-none"
                 >
-                  <Plus class="size-4 stroke-[2.5]" />
-                  <span>Add more</span>
+                  <img :src="FIGMA_ASSETS.addFilled" class="size-[24px] shrink-0 pointer-events-none" alt="Add" />
+                  <span class="font-707 font-medium text-[16px] leading-[14px] text-black whitespace-nowrap">
+                    Add more
+                  </span>
                 </button>
               </div>
 
-              <!-- Variant 4: Image Grid (4-Column Matrix with 74px × 74px Square Tiles) -->
-              <div v-else-if="widget.props.variant === 'image-grid'" class="grid grid-cols-4 gap-[10px] w-full">
+              <!-- Variant 4: Image Grid (Figma: 4 columns, 14px gap, aspect-square 74px x 74px, bg-[#ededed], 0.5px black border on active) -->
+              <div v-else-if="widget.props.variant === 'image-grid'" class="grid grid-cols-4 gap-[14px] w-full">
                 <div 
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="aspect-square w-full border bg-neutral-100 relative overflow-hidden cursor-pointer transition-all duration-200 group rounded-[0px]"
+                  class="aspect-square bg-[#ededed] relative overflow-hidden cursor-pointer select-none transition-all duration-150 rounded-none"
                   :class="[
                     isChoiceSelected(widget, opt.id)
-                      ? 'border-black shadow-[0_0_0_2px_#000]'
-                      : 'border-[#d4d4d4] hover:border-black/50'
+                      ? 'border-[0.5px] border-black border-solid'
+                      : 'border-[0.5px] border-transparent hover:border-black/30'
                   ]"
                 >
                   <img 
                     v-if="opt.imageUrl" 
                     :src="opt.imageUrl" 
                     :alt="opt.label"
-                    class="w-full h-full object-cover" 
+                    class="size-full object-cover pointer-events-none" 
                   />
-                  <div v-else class="w-full h-full flex items-center justify-center text-neutral-400 font-707 text-[10px] p-1 text-center">
+                  <div v-else class="size-full flex items-center justify-center font-707 font-medium text-[11px] text-black p-1 text-center">
                     {{ opt.label }}
-                  </div>
-
-                  <!-- Selection badge indicator -->
-                  <div 
-                    v-if="isChoiceSelected(widget, opt.id)"
-                    class="absolute bottom-1 right-1 size-4 bg-black text-white rounded-full flex items-center justify-center shadow-sm"
-                  >
-                    <Check class="size-2.5 stroke-[3]" />
                   </div>
                 </div>
 
-                <!-- Add More Tile -->
+                <!-- Add More Tile (Figma: 87px height, carbon:add-filled icon, 12px text) -->
                 <button 
                   v-if="!isPreviewModal"
                   type="button"
                   @click.stop="handleChoiceAddMore(widget)"
-                  class="aspect-square w-full border border-dashed border-[#d4d4d4] hover:border-black flex flex-col items-center justify-center gap-1 text-neutral-500 hover:text-black transition-colors cursor-pointer bg-white rounded-[0px]"
+                  class="aspect-square bg-[#ededed] hover:bg-neutral-200 border-[0.5px] border-transparent hover:border-black/40 flex flex-col gap-[9px] items-center justify-center cursor-pointer transition-all select-none rounded-none"
                   title="Add more models"
                 >
-                  <Plus class="size-4 stroke-[2.5]" />
-                  <span class="font-707 text-[10px] font-medium leading-none">Add</span>
+                  <img :src="FIGMA_ASSETS.addFilled" class="size-[24px] shrink-0 pointer-events-none" alt="Add" />
+                  <span class="font-707 font-medium text-[12px] leading-[14px] text-black whitespace-nowrap">
+                    Add more
+                  </span>
                 </button>
               </div>
             </div>

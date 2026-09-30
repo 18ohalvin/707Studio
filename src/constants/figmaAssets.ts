@@ -49,5 +49,8 @@ export const FIGMA_ASSETS = {
   landingAllProjects: "/assets/69b4489c46ef42f256e9bf06a2bb809c49d8c452.svg",
   landingNotification: "/assets/7406b0422afd95331148ee444dc4d8cb0115e723.svg",
   landingSettings: "/assets/41e66f70745099976d7d9d9a304e92e4d30c5f9a.svg",
-  landingAvatar: "/assets/61a97ef35fc4fba46f48cf6cb9fd8a84610b6c3c.svg"
+  landingAvatar: "/assets/61a97ef35fc4fba46f48cf6cb9fd8a84610b6c3c.svg",
+
+  // Choice Icons (Node 276:4224)
+  addFilled: "/assets/carbon_add_filled.svg"
 };

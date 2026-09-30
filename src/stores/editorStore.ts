@@ -368,7 +368,7 @@ export const useEditorStore = defineStore('editor', () => {
       case 'MultipleChoice':
         defaultProps = {
           title: 'SELECT ARRIVALS',
-          subtitle: 'Select one or more entry slots',
+          subtitle: 'Choose your preferred attendance day below.',
           variant: 'detailed-card',
           allowMultiple: true,
           required: false,
@@ -376,15 +376,15 @@ export const useEditorStore = defineStore('editor', () => {
           options: [
             {
               id: 'opt_1',
-              label: 'VIP Pass & Early Entry',
-              sublabel: '24 Oct 2026',
-              description: 'Early access to the showroom and private lounge'
+              label: 'Day 1',
+              sublabel: '2 September 2026',
+              description: 'Your Event Descriptions Detail'
             },
             {
               id: 'opt_2',
-              label: 'General Admission',
-              sublabel: '25 Oct 2026',
-              description: 'Access to exhibition and main stage events'
+              label: 'Day 2',
+              sublabel: '3 September 2026',
+              description: 'Your Event Descriptions Detail'
             }
           ]
         };
