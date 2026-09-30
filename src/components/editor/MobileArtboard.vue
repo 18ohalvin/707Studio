@@ -1179,7 +1179,10 @@ more</span>
           <div class="flex flex-col gap-[20px] items-start w-full">
             <!-- Header: Title + Subtitle -->
             <div class="flex flex-col gap-[8px] items-start w-full">
-              <h2 class="font-707 font-medium text-heading-h2 text-black tracking-tight whitespace-pre-line">
+              <h2 
+                class="font-707 font-medium text-black tracking-tight whitespace-pre-line"
+                :class="modalDisplayProps.titleTypographyStyle === 'heading-2' ? 'text-heading-h2' : 'text-heading-h3'"
+              >
                 {{ modalDisplayProps.title || 'Select Arrival Date' }}
               </h2>
               <p class="font-707 font-normal text-bodytext text-neutral-700 whitespace-pre-line">
@@ -1201,47 +1204,146 @@ more</span>
               </div>
             </div>
 
-            <!-- Variant 3: Multiple Choice (Detailed) -->
+            <!-- Variant 3: Multiple Choice (Detailed) (Strictly following MultipleChoice widget styling & functions) -->
             <div v-else-if="modalDisplayProps.variant === 'choice-detailed'" class="w-full flex flex-col gap-[8px]">
               <div 
                 v-for="(opt, oIdx) in (modalDisplayProps.options || [])"
                 :key="opt.id || oIdx"
                 @click="toggleModalOption(opt.id || oIdx)"
-                class="border border-solid p-[14px] flex gap-[14px] items-start w-full transition-all cursor-pointer select-none"
-                :class="isModalOptionSelected(opt) ? 'border-black bg-white shadow-xs ring-[0.5px] ring-black' : 'border-[#d4d4d4] bg-white hover:border-black/50'"
+                class="luxury-choice-tile border border-solid border-[#d4d4d4] flex gap-[24px] w-full select-none transition-all duration-150 rounded-none cursor-pointer"
+                :class="[
+                  isModalOptionSelected(opt) ? 'is-selected border-black bg-white shadow-xs ring-[0.5px] ring-black' : 'border-[#d4d4d4] bg-white hover:border-black/50',
+                  opt.description && opt.description.trim()
+                    ? 'items-start p-[16px]'
+                    : 'items-center min-h-[48px] h-[48px] px-[16px] py-[12px]'
+                ]"
               >
-                <div class="size-[20px] border border-black flex items-center justify-center shrink-0 mt-0.5">
-                  <div v-if="isModalOptionSelected(opt)" class="size-[12px] bg-black"></div>
+                <!-- Checkbox Container (18px outer square with 12px inner square when active) -->
+                <div 
+                  class="relative shrink-0 size-[18px] border border-black border-solid flex items-center justify-center bg-transparent"
+                  :class="opt.description && opt.description.trim() ? 'mt-[1px]' : ''"
+                >
+                  <div 
+                    class="luxury-choice-checkbox-inner size-[12px] bg-black border border-black border-solid transform transition-all duration-150"
+                    :class="isModalOptionSelected(opt) ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
+                  />
                 </div>
-                <div class="flex-1 flex flex-col gap-[4px] min-w-0">
-                  <div class="flex items-center justify-between font-707 gap-2">
-                    <span class="font-707 font-medium text-bodytext-medium text-black truncate">{{ opt.label }}</span>
-                    <span v-if="opt.sublabel" class="font-707 font-normal text-[12px] leading-[18px] text-neutral-500 shrink-0">{{ opt.sublabel }}</span>
-                  </div>
-                  <p v-if="opt.description" class="font-707 font-normal text-bodytext text-neutral-600 whitespace-pre-line">
-                    {{ opt.description }}
-                  </p>
+
+                <!-- Option Content (Zero text bleeding, crisp line-height, vertically centered when no description) -->
+                <div 
+                  class="flex-1 flex min-w-0"
+                  :class="opt.description && opt.description.trim() ? 'flex-col gap-[8px] items-start' : 'items-center'"
+                >
+                  <!-- Layout A: With Event Description -->
+                  <template v-if="opt.description && opt.description.trim()">
+                    <div class="flex items-baseline justify-between w-full font-707 gap-3">
+                      <span class="font-707 font-medium text-bodytext-medium text-black truncate">{{ opt.label }}</span>
+                      <span v-if="opt.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[18px] text-neutral-500">{{ opt.sublabel }}</span>
+                    </div>
+                    <div class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-600 whitespace-pre-line">
+                      {{ opt.description }}
+                    </div>
+                    <!-- Badge Label "XX Slots Available" Under Event Description -->
+                    <div v-if="getModalOptionSlotsBadge(opt)" class="inline-flex items-center pt-[2px]">
+                      <span 
+                        class="inline-flex items-center px-[8px] py-[2px] border rounded-[4px] font-707 text-[10px] font-medium leading-[14px] bg-neutral-100 border-[#e0e0e0] text-neutral-700"
+                      >
+                        {{ getModalOptionSlotsBadge(opt) }}
+                      </span>
+                    </div>
+                  </template>
+
+                  <!-- Layout B: Without Event Description (Badge Label Under the Date) -->
+                  <template v-else>
+                    <div class="flex items-center justify-between w-full font-707 gap-3">
+                      <span class="font-707 font-medium text-bodytext-medium text-black truncate">{{ opt.label }}</span>
+                      <div class="flex flex-col items-end shrink-0 gap-[3px]">
+                        <span v-if="opt.sublabel" class="font-707 font-normal text-[12px] leading-[16px] text-neutral-500">{{ opt.sublabel }}</span>
+                        <span 
+                          v-if="getModalOptionSlotsBadge(opt)" 
+                          class="inline-flex items-center px-[6px] py-[1.5px] border rounded-[4px] font-707 text-[10px] font-medium leading-[13px] bg-neutral-100 border-[#e0e0e0] text-neutral-700"
+                        >
+                          {{ getModalOptionSlotsBadge(opt) }}
+                        </span>
+                      </div>
+                    </div>
+                  </template>
                 </div>
               </div>
+
+              <!-- Add More Slot -->
+              <button 
+                v-if="!isPreviewModal"
+                type="button"
+                @click.stop="handleModalAddOption"
+                class="border border-[#d4d4d4] hover:border-black border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
+              >
+                <div class="relative shrink-0 size-[18px] flex items-center justify-center">
+                  <img :src="FIGMA_ASSETS.addFilled" class="size-[18px] shrink-0 pointer-events-none object-contain" alt="Add" />
+                </div>
+                <span class="font-707 font-medium text-bodytext-medium text-black truncate">
+                  Add more
+                </span>
+              </button>
             </div>
 
-            <!-- Variant 4: Simple Multiple Choice -->
+            <!-- Variant 4: Simple Multiple Choice (Strictly following MultipleChoice simple-row widget) -->
             <div v-else-if="modalDisplayProps.variant === 'choice-simple'" class="w-full flex flex-col gap-[8px]">
               <div 
                 v-for="(opt, oIdx) in (modalDisplayProps.options || [])"
                 :key="opt.id || oIdx"
                 @click="toggleModalOption(opt.id || oIdx)"
-                class="border border-solid h-[50px] px-[14px] flex items-center gap-[14px] w-full transition-all cursor-pointer select-none"
-                :class="isModalOptionSelected(opt) ? 'border-black bg-white shadow-xs ring-[0.5px] ring-black' : 'border-[#d4d4d4] bg-white hover:border-black/50'"
+                class="luxury-choice-tile border border-solid border-[#d4d4d4] flex gap-[24px] px-[16px] w-full select-none rounded-none"
+                :class="[
+                  isModalOptionSelected(opt) ? 'is-selected border-black bg-white shadow-xs ring-[0.5px] ring-black' : 'border-[#d4d4d4] bg-white hover:border-black/50',
+                  getModalOptionSlotsBadge(opt)
+                    ? 'items-start py-[12px]'
+                    : 'items-center min-h-[48px] h-[48px] py-[12px]'
+                ]"
               >
-                <div class="size-[20px] border border-black flex items-center justify-center shrink-0">
-                  <div v-if="isModalOptionSelected(opt)" class="size-[12px] bg-black"></div>
+                <!-- Checkbox Container (18px outer square with 12px inner square when active) -->
+                <div 
+                  class="relative shrink-0 size-[18px] border border-black border-solid flex items-center justify-center bg-transparent"
+                  :class="getModalOptionSlotsBadge(opt) ? 'mt-[1px]' : ''"
+                >
+                  <div 
+                    class="luxury-choice-checkbox-inner size-[12px] bg-black border border-black border-solid transform transition-all duration-150"
+                    :class="isModalOptionSelected(opt) ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
+                  />
                 </div>
-                <div class="flex-1 flex items-center justify-between font-707 gap-2">
+
+                <!-- Label & Slot Capacity under option title, or right sublabel -->
+                <div v-if="getModalOptionSlotsBadge(opt)" class="flex-1 flex flex-col items-start gap-[4px] min-w-0">
+                  <div class="flex items-center justify-between w-full font-707 gap-2">
+                    <span class="font-707 font-medium text-bodytext-medium text-black truncate">{{ opt.label }}</span>
+                    <span v-if="opt.sublabel" class="font-707 font-normal text-[12px] leading-[18px] text-neutral-500 shrink-0">{{ opt.sublabel }}</span>
+                  </div>
+                  <span 
+                    class="inline-flex items-center px-[6px] py-[1.5px] border rounded-[4px] font-707 text-[10px] font-medium leading-[13px] bg-neutral-100 border-[#e0e0e0] text-neutral-700"
+                  >
+                    {{ getModalOptionSlotsBadge(opt) }}
+                  </span>
+                </div>
+                <div v-else class="flex-1 flex items-center justify-between font-707 gap-2">
                   <span class="font-707 font-medium text-bodytext-medium text-black truncate">{{ opt.label }}</span>
                   <span v-if="opt.sublabel" class="font-707 font-normal text-[12px] leading-[18px] text-neutral-500 shrink-0">{{ opt.sublabel }}</span>
                 </div>
               </div>
+
+              <!-- Add More Slot -->
+              <button 
+                v-if="!isPreviewModal"
+                type="button"
+                @click.stop="handleModalAddOption"
+                class="border border-[#d4d4d4] hover:border-black border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
+              >
+                <div class="relative shrink-0 size-[18px] flex items-center justify-center">
+                  <img :src="FIGMA_ASSETS.addFilled" class="size-[18px] shrink-0 pointer-events-none object-contain" alt="Add" />
+                </div>
+                <span class="font-707 font-medium text-bodytext-medium text-black truncate">
+                  Add more
+                </span>
+              </button>
             </div>
 
             <!-- Variant 5: Matrix Image Pop Up (3:4 ratio) -->
@@ -2292,16 +2394,63 @@ function isModalSlotSelected(slot: any): boolean {
   return !!slot.selected;
 }
 
+function getModalOptionSlotsBadge(opt: any): string | null {
+  if (!modalDisplayProps.value.showSlotsCapacity) return null;
+  const rawSlots = opt.slotsCapacity !== undefined && opt.slotsCapacity !== ''
+    ? opt.slotsCapacity
+    : modalDisplayProps.value.globalSlotsCapacity ?? 25;
+  const num = parseInt(String(rawSlots), 10);
+  if (isNaN(num)) return `${rawSlots} Slots Available`;
+  return `${num} Slots Available`;
+}
+
+function handleModalAddOption() {
+  const mProps = modalDisplayProps.value;
+  if (!mProps.options) mProps.options = [];
+  const current = mProps.options;
+  const newIdx = current.length + 1;
+  const isDetailed = mProps.variant === 'choice-detailed';
+  current.push({
+    id: `opt_${Date.now()}`,
+    label: isDetailed ? `Pass Option ${newIdx}` : `Option ${newIdx}`,
+    sublabel: isDetailed ? `${String(newIdx + 23).padStart(2, '0')} Oct 2026` : undefined,
+    description: isDetailed ? 'Access to activation area and special event lounge' : undefined,
+    selected: false
+  });
+  
+  // Persist update back to editor store if applicable
+  const selected = editorStore.selectedWidget;
+  if (selected) {
+    if (selected.props?.modalProps) {
+      editorStore.updateWidgetProps(selected.id, {
+        modalProps: { ...selected.props.modalProps, options: current }
+      });
+    } else if (selected.type === 'ModalOverlay') {
+      editorStore.updateWidgetProps(selected.id, { options: current });
+    }
+  }
+}
+
 function toggleModalOption(optIdOrIdx: any) {
   const mProps = modalDisplayProps.value;
   if (!mProps.options) return;
-  mProps.options.forEach((o: any, idx: number) => {
-    if (o.id === optIdOrIdx || idx === optIdOrIdx) {
-      o.selected = !o.selected;
-    } else if (mProps.variant === 'choice-simple') {
-      o.selected = false;
-    }
-  });
+  const isMulti = mProps.allowMultiple ?? (mProps.variant === 'choice-detailed');
+  
+  if (isMulti) {
+    mProps.options.forEach((o: any, idx: number) => {
+      if (o.id === optIdOrIdx || idx === optIdOrIdx) {
+        o.selected = !o.selected;
+      }
+    });
+  } else {
+    mProps.options.forEach((o: any, idx: number) => {
+      if (o.id === optIdOrIdx || idx === optIdOrIdx) {
+        o.selected = !o.selected;
+      } else {
+        o.selected = false;
+      }
+    });
+  }
 }
 
 function toggleModalSlot(slotIdOrIdx: any) {

@@ -63,7 +63,7 @@
       </div>
     </div>
 
-    <!-- Section 2: Header Copywriting (Title & Subtitle) -->
+    <!-- Section 2: Header Copywriting (Title, Font Style & Subtitle) -->
     <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
       <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
         Header Copywriting
@@ -82,6 +82,38 @@
             placeholder="e.g. Select Arrival Date"
             class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 tracking-tight resize-none bg-transparent leading-[20px] overflow-hidden p-0 m-0"
           />
+        </div>
+      </div>
+
+      <!-- Title Font Style Selector: H3 (18px) [Default] vs H2 (22px) -->
+      <div class="flex flex-col gap-[6px] w-full">
+        <div class="flex items-center justify-between">
+          <p class="font-707 text-[12px] text-neutral-600">
+            Title Font Style
+          </p>
+          <span class="font-707 text-[11px] text-neutral-400">
+            {{ titleTypographyStyle === 'heading-2' ? 'Heading 2 (22px)' : 'Heading 3 (18px) [Default]' }}
+          </span>
+        </div>
+        <div class="flex gap-2 w-full">
+          <button 
+            type="button"
+            @click="titleTypographyStyle = 'heading-3'"
+            :class="titleTypographyStyle === 'heading-3' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+            class="flex-1 h-[34px] rounded-[8px] text-[12px] font-707 flex items-center justify-center gap-1 cursor-pointer"
+          >
+            <span>H3</span>
+            <span class="text-[10px] opacity-70 font-normal">(18px - Default)</span>
+          </button>
+          <button 
+            type="button"
+            @click="titleTypographyStyle = 'heading-2'"
+            :class="titleTypographyStyle === 'heading-2' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+            class="flex-1 h-[34px] rounded-[8px] text-[12px] font-707 flex items-center justify-center gap-1 cursor-pointer"
+          >
+            <span>H2</span>
+            <span class="text-[10px] opacity-70 font-normal">(22px)</span>
+          </button>
         </div>
       </div>
 
@@ -144,88 +176,229 @@
       </div>
     </div>
 
-    <!-- 3B. Choice Options Configuration (Detailed & Simple) -->
+    <!-- 3B. Choice Options Configuration (Strictly following MultipleChoice widget config & functions) -->
     <div 
       v-if="currentVariant === 'choice-detailed' || currentVariant === 'choice-simple'" 
       class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]"
     >
+      <!-- Selection Mode: Multiple vs Single -->
       <div class="flex items-center justify-between w-full">
+        <div class="flex flex-col">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Selection Rule
+          </p>
+          <span class="font-707 text-[11px] text-neutral-400">
+            Allow user to pick one or more
+          </span>
+        </div>
+        <div class="flex gap-[6px] items-center">
+          <button 
+            type="button"
+            @click="allowMultiple = true"
+            :class="allowMultiple ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+            class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
+          >
+            Multiple
+          </button>
+          <button 
+            type="button"
+            @click="allowMultiple = false"
+            :class="!allowMultiple ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+            class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
+          >
+            Single
+          </button>
+        </div>
+      </div>
+
+      <!-- Slots Capacity Toggle & Global Value -->
+      <div class="flex items-center justify-between w-full pt-1 border-t border-neutral-100">
+        <div class="flex flex-col">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Slots Capacity
+          </p>
+          <span class="font-707 text-[11px] text-neutral-400">
+            Badge on choice tiles
+          </span>
+        </div>
+        <button 
+          type="button"
+          @click="showSlotsCapacity = !showSlotsCapacity"
+          :class="showSlotsCapacity ? 'bg-black' : 'bg-neutral-200'"
+          class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+        >
+          <span 
+            :class="showSlotsCapacity ? 'translate-x-[18px]' : 'translate-x-0'"
+            class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+          />
+        </button>
+      </div>
+
+      <!-- Global Slots per Option Input -->
+      <div v-if="showSlotsCapacity" class="flex flex-col gap-[6px] w-full animate-in fade-in slide-in-from-top-1 duration-150">
+        <div class="flex items-center justify-between">
+          <span class="font-707 text-[12px] font-medium text-neutral-700">Slots per Option</span>
+          <span class="font-707 text-[11px] text-neutral-400">Applies to all options</span>
+        </div>
+        <div class="border border-[#aaa] focus-within:border-black rounded-[8px] px-3.5 h-[38px] flex items-center w-full bg-white transition-colors">
+          <input 
+            v-model="globalSlotsCapacity"
+            placeholder="e.g. 25"
+            class="w-full font-707 text-[13px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
+          />
+        </div>
+      </div>
+
+      <!-- Options Manager Section Header -->
+      <div class="flex items-center justify-between w-full pt-1 border-t border-neutral-100">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Modal Options
+          Options ({{ options.length }})
         </p>
         <button 
           type="button"
           @click="addOption"
-          class="flex items-center gap-1 text-[11px] font-707 font-medium text-black hover:underline cursor-pointer"
+          class="apple-glass-btn px-2.5 h-[28px] rounded-[6px] text-[11px] font-medium flex items-center gap-1 cursor-pointer"
         >
           <Plus class="size-3.5" />
-          Add Option
+          <span>Add Option</span>
         </button>
       </div>
 
+      <!-- Options List Items -->
       <div class="flex flex-col gap-3 w-full">
         <div 
           v-for="(opt, idx) in options" 
           :key="opt.id"
-          class="p-3 bg-white border border-neutral-200 rounded-[8px] flex flex-col gap-2.5 shadow-sm relative group"
+          class="p-3 bg-white border border-[#d9d9d9] rounded-[8px] flex flex-col gap-2.5 shadow-sm relative group"
         >
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-[10px] font-mono text-neutral-400">#{{ idx + 1 }}</span>
-            <div class="flex items-center gap-1.5">
-              <label class="flex items-center gap-1 text-[11px] text-neutral-600 cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  :checked="opt.selected"
-                  @change="toggleOptionSelected(idx)"
-                  class="accent-black rounded"
-                />
-                Selected
-              </label>
-              <button 
-                type="button" 
-                @click="removeOption(idx)"
-                class="size-6 rounded flex items-center justify-center text-neutral-400 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                title="Remove option"
-              >
-                <Trash2 class="size-3.5" />
-              </button>
-            </div>
-          </div>
+          <!-- Top Row: Index, Option Title, Pre-selected Checkbox, Delete -->
+          <div class="flex items-center gap-2 w-full">
+            <span class="size-5 rounded-full bg-neutral-100 flex items-center justify-center font-mono text-[10px] text-neutral-500 font-bold shrink-0">
+              {{ idx + 1 }}
+            </span>
 
-          <!-- Label & Right Sublabel -->
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <p class="text-[11px] text-neutral-500 mb-1">Left Label</p>
+            <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2.5 h-[32px] flex items-center flex-1 bg-white transition-colors">
               <input 
                 v-model="opt.label" 
                 @input="handleOptionsUpdate"
-                class="w-full h-8 px-2.5 text-[12px] border border-neutral-200 rounded focus:border-black focus:outline-none"
-                placeholder="e.g. Day 1 / +62"
+                :placeholder="currentVariant === 'choice-detailed' ? `Pass Option ${idx + 1}` : `Option ${idx + 1}`"
+                class="w-full font-707 text-[12px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
               />
             </div>
-            <div>
-              <p class="text-[11px] text-neutral-500 mb-1">Right Sublabel</p>
-              <input 
-                v-model="opt.sublabel" 
-                @input="handleOptionsUpdate"
-                class="w-full h-8 px-2.5 text-[12px] border border-neutral-200 rounded focus:border-black focus:outline-none"
-                placeholder="e.g. 2 Sept / Indonesia"
-              />
+
+            <!-- Pre-selected Toggle -->
+            <button 
+              type="button"
+              @click="toggleOptionSelected(idx)"
+              :class="opt.selected ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-400 hover:text-black'"
+              class="size-[32px] rounded-[6px] flex items-center justify-center cursor-pointer transition-colors border border-black/10 shrink-0"
+              title="Toggle Pre-selected state"
+            >
+              <Check class="w-3.5 h-3.5 stroke-[2.5]" />
+            </button>
+
+            <!-- Delete Option -->
+            <button 
+              type="button" 
+              @click="removeOption(idx)"
+              :disabled="options.length <= 1"
+              :class="options.length <= 1 ? 'opacity-30 cursor-not-allowed' : 'hover:text-red-600 hover:bg-red-50 text-neutral-400 cursor-pointer'"
+              class="size-[32px] rounded-[6px] flex items-center justify-center transition-colors shrink-0"
+              title="Remove option"
+            >
+              <Trash2 class="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <!-- Variant Specific Fields -->
+          <!-- Detailed Choice: Date Picker Components (DD MMM YYYY) -->
+          <div v-if="currentVariant === 'choice-detailed'" class="flex flex-col gap-1.5 pl-7">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-707 font-medium text-neutral-600 flex items-center gap-1">
+                <Calendar class="w-3 h-3 text-neutral-400" />
+                <span>Date (DD MMM YYYY)</span>
+              </span>
+              <span class="text-[10px] font-mono text-neutral-400 font-medium">
+                {{ parseDateComponents(opt.sublabel).day }} {{ parseDateComponents(opt.sublabel).month }} {{ parseDateComponents(opt.sublabel).year }}
+              </span>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-1.5 w-full">
+              <!-- Day Select -->
+              <div class="relative">
+                <select 
+                  :value="parseDateComponents(opt.sublabel).day"
+                  @change="updateOptionDate(idx, 'day', ($event.target as HTMLSelectElement).value)"
+                  class="w-full h-[30px] px-2 appearance-none bg-white border border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
+                >
+                  <option v-for="d in DAYS" :key="d" :value="d">{{ d }}</option>
+                </select>
+                <ChevronDown class="w-3 h-3 text-neutral-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+
+              <!-- Month Select -->
+              <div class="relative">
+                <select 
+                  :value="parseDateComponents(opt.sublabel).month"
+                  @change="updateOptionDate(idx, 'month', ($event.target as HTMLSelectElement).value)"
+                  class="w-full h-[30px] px-2 appearance-none bg-white border border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
+                >
+                  <option v-for="m in MONTHS" :key="m" :value="m">{{ m }}</option>
+                </select>
+                <ChevronDown class="w-3 h-3 text-neutral-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+
+              <!-- Year Select -->
+              <div class="relative">
+                <select 
+                  :value="parseDateComponents(opt.sublabel).year"
+                  @change="updateOptionDate(idx, 'year', ($event.target as HTMLSelectElement).value)"
+                  class="w-full h-[30px] px-2 appearance-none bg-white border border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
+                >
+                  <option v-for="y in YEARS" :key="y" :value="y">{{ y }}</option>
+                </select>
+                <ChevronDown class="w-3 h-3 text-neutral-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
             </div>
           </div>
 
-          <!-- Description (Detailed only) -->
-          <div v-if="currentVariant === 'choice-detailed'">
-            <p class="text-[11px] text-neutral-500 mb-1">Event Description</p>
-            <input 
-              v-model="opt.description" 
+          <!-- Detailed Choice: Event Description Textarea -->
+          <div v-if="currentVariant === 'choice-detailed'" class="pl-7">
+            <textarea 
+              v-model="opt.description"
+              rows="2"
               @input="handleOptionsUpdate"
-              class="w-full h-8 px-2.5 text-[12px] border border-neutral-200 rounded focus:border-black focus:outline-none"
-              placeholder="e.g. Your Event Descriptions Detail"
+              placeholder="Event Description Detail..."
+              class="w-full font-707 text-[11px] text-neutral-700 focus:outline-none border border-[#ccc] focus:border-black rounded-[6px] p-1.5 resize-none leading-relaxed bg-white"
             />
+          </div>
+
+          <!-- Simple Choice: Right Sublabel -->
+          <div v-if="currentVariant === 'choice-simple'" class="pl-7">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[11px] font-707 text-neutral-500">Right Sublabel (Optional)</span>
+            </div>
+            <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2.5 h-[30px] flex items-center bg-white">
+              <input 
+                v-model="opt.sublabel" 
+                @input="handleOptionsUpdate"
+                placeholder="e.g. Indonesia / 2 Sept"
+                class="w-full font-707 text-[11px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
+              />
+            </div>
           </div>
         </div>
       </div>
+
+      <!-- Quick Add Option Button -->
+      <button 
+        type="button"
+        @click="addOption"
+        class="w-full h-[36px] rounded-[8px] border border-dashed border-[#aaa] hover:border-black text-neutral-600 hover:text-black font-707 text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer bg-white/50 mt-1"
+      >
+        <Plus class="w-3.5 h-3.5" />
+        <span>Add Option</span>
+      </button>
     </div>
 
     <!-- 3C. Image Matrix Configuration (3:4 Ratio) -->
@@ -364,7 +537,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import type { ModalVariant, ModalOption, ModalImageSlot } from '../../types/editor.ts';
@@ -376,7 +549,10 @@ import {
   LayoutGrid, 
   Plus, 
   Trash2,
-  ArrowLeft
+  ArrowLeft,
+  Check,
+  Calendar,
+  ChevronDown
 } from 'lucide-vue-next';
 
 defineProps<{
@@ -386,6 +562,34 @@ defineProps<{
 defineEmits<{
   (e: 'close'): void;
 }>();
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const DAYS = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
+const YEARS = ['2026', '2027', '2028', '2029', '2030'];
+
+function parseDateComponents(dateStr?: string) {
+  const parts = (dateStr || '24 Oct 2026').trim().split(/\s+/);
+  const day = parts[0] ? parts[0].padStart(2, '0') : '24';
+  const month = parts[1] || 'Oct';
+  const year = parts[2] || '2026';
+  return {
+    day: DAYS.includes(day) ? day : '24',
+    month: MONTHS.includes(month) ? month : 'Oct',
+    year: YEARS.includes(year) ? year : '2026'
+  };
+}
+
+function updateOptionDate(index: number, part: 'day' | 'month' | 'year', val: string) {
+  const currentOptions = [...(options.value || [])];
+  if (!currentOptions[index]) return;
+  const parsed = parseDateComponents(currentOptions[index].sublabel);
+  parsed[part] = val;
+  currentOptions[index] = {
+    ...currentOptions[index],
+    sublabel: `${parsed.day} ${parsed.month} ${parsed.year}`
+  };
+  updateModalData({ options: currentOptions });
+}
 
 const editorStore = useEditorStore();
 const sidebarRef = ref<HTMLElement | null>(null);
@@ -440,10 +644,38 @@ const modalTitle = computed({
   }
 });
 
+const titleTypographyStyle = computed<'heading-3' | 'heading-2'>({
+  get: () => targetModalData.value.titleTypographyStyle || 'heading-3',
+  set: (val: 'heading-3' | 'heading-2') => {
+    updateModalData({ titleTypographyStyle: val });
+  }
+});
+
 const modalSubtitle = computed({
   get: () => targetModalData.value.subtitle || '',
   set: (val: string) => {
     updateModalData({ subtitle: val });
+  }
+});
+
+const allowMultiple = computed({
+  get: () => targetModalData.value.allowMultiple ?? true,
+  set: (val: boolean) => {
+    updateModalData({ allowMultiple: val });
+  }
+});
+
+const showSlotsCapacity = computed({
+  get: () => targetModalData.value.showSlotsCapacity ?? false,
+  set: (val: boolean) => {
+    updateModalData({ showSlotsCapacity: val });
+  }
+});
+
+const globalSlotsCapacity = computed({
+  get: () => targetModalData.value.globalSlotsCapacity ?? 25,
+  set: (val: string | number) => {
+    updateModalData({ globalSlotsCapacity: val });
   }
 });
 
@@ -499,7 +731,10 @@ const imageSlots = computed<ModalImageSlot[]>({
 function selectVariant(v: ModalVariant) {
   if (!currentWidget.value) return;
   
-  let defaultProps: Record<string, any> = { variant: v };
+  let defaultProps: Record<string, any> = { 
+    variant: v,
+    titleTypographyStyle: targetModalData.value.titleTypographyStyle || 'heading-3'
+  };
   
   if (v === 'message-alert') {
     defaultProps.title = 'Your Pass Has Been Sent';
@@ -518,18 +753,23 @@ function selectVariant(v: ModalVariant) {
     defaultProps.subtitle = 'Please provide a valid email address. We will resend your E-Pass immediately.';
     defaultProps.buttonText = 'Done';
     defaultProps.buttonVariant = 'black';
+    defaultProps.allowMultiple = true;
+    defaultProps.showSlotsCapacity = true;
+    defaultProps.globalSlotsCapacity = 25;
     defaultProps.options = [
-      { id: 'opt_1', label: 'Day 1', sublabel: '2 September 2026', description: 'Your Event Descriptions Detail', selected: true },
-      { id: 'opt_2', label: 'Day 2', sublabel: '3 September 2026', description: 'Your Event Descriptions Detail', selected: false }
+      { id: 'opt_1', label: 'Pass Option 1', sublabel: '24 Oct 2026', description: 'Access to activation area and special event lounge', selected: true },
+      { id: 'opt_2', label: 'Pass Option 2', sublabel: '25 Oct 2026', description: 'Access to activation area and special event lounge', selected: false }
     ];
   } else if (v === 'choice-simple') {
     defaultProps.title = 'Select Arrival Date';
     defaultProps.subtitle = 'Please provide a valid email address. We will resend your E-Pass immediately.';
     defaultProps.buttonText = 'Done';
     defaultProps.buttonVariant = 'black';
+    defaultProps.allowMultiple = false;
+    defaultProps.showSlotsCapacity = false;
     defaultProps.options = [
-      { id: 'opt_1', label: '+62', sublabel: 'Indonesia', selected: true },
-      { id: 'opt_2', label: '+65', sublabel: 'Singapore', selected: false }
+      { id: 'opt_1', label: 'Day 1', sublabel: '2 Sept', selected: true },
+      { id: 'opt_2', label: 'Day 2', sublabel: '3 Sept', selected: false }
     ];
   } else if (v === 'image-matrix') {
     defaultProps.title = 'Select Arrival Date';
@@ -554,9 +794,9 @@ function addOption() {
   const isDetailed = currentVariant.value === 'choice-detailed';
   current.push({
     id: `opt_${Date.now()}`,
-    label: isDetailed ? `Day ${newIdx}` : `+${newIdx}`,
-    sublabel: isDetailed ? `${newIdx + 1} September 2026` : `Option ${newIdx}`,
-    description: isDetailed ? 'Your Event Descriptions Detail' : undefined,
+    label: isDetailed ? `Pass Option ${newIdx}` : `Option ${newIdx}`,
+    sublabel: isDetailed ? `${String(newIdx + 23).padStart(2, '0')} Oct 2026` : undefined,
+    description: isDetailed ? 'Access to activation area and special event lounge' : undefined,
     selected: false
   });
   updateModalData({ options: current });
@@ -573,7 +813,15 @@ function toggleOptionSelected(index: number) {
   if (!currentWidget.value) return;
   const current = [...(targetModalData.value.options || [])];
   if (current[index]) {
-    current[index] = { ...current[index], selected: !current[index].selected };
+    const isMulti = allowMultiple.value;
+    if (isMulti) {
+      current[index] = { ...current[index], selected: !current[index].selected };
+    } else {
+      const willBeSelected = !current[index].selected;
+      current.forEach((o, i) => {
+        o.selected = i === index ? willBeSelected : false;
+      });
+    }
     updateModalData({ options: current });
   }
 }

@@ -28,6 +28,7 @@ export interface ModalOption {
   label: string;
   sublabel?: string;
   description?: string;
+  slotsCapacity?: number | string;
   selected?: boolean;
 }
 
