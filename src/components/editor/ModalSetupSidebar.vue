@@ -63,7 +63,7 @@
       </div>
     </div>
 
-    <!-- Section 2: Header Copywriting (Title, Font Style & Subtitle) -->
+    <!-- Section 2: Header Copywriting (Title & Subtitle) -->
     <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
       <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
         Header Copywriting
@@ -82,38 +82,6 @@
             placeholder="e.g. Select Arrival Date"
             class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 tracking-tight resize-none bg-transparent leading-[20px] overflow-hidden p-0 m-0"
           />
-        </div>
-      </div>
-
-      <!-- Title Font Style Selector: H3 (18px) [Default] vs H2 (22px) -->
-      <div class="flex flex-col gap-[6px] w-full">
-        <div class="flex items-center justify-between">
-          <p class="font-707 text-[12px] text-neutral-600">
-            Title Font Style
-          </p>
-          <span class="font-707 text-[11px] text-neutral-400">
-            {{ titleTypographyStyle === 'heading-2' ? 'Heading 2 (22px)' : 'Heading 3 (18px) [Default]' }}
-          </span>
-        </div>
-        <div class="flex gap-2 w-full">
-          <button 
-            type="button"
-            @click="titleTypographyStyle = 'heading-3'"
-            :class="titleTypographyStyle === 'heading-3' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="flex-1 h-[34px] rounded-[8px] text-[12px] font-707 flex items-center justify-center gap-1 cursor-pointer"
-          >
-            <span>H3</span>
-            <span class="text-[10px] opacity-70 font-normal">(18px - Default)</span>
-          </button>
-          <button 
-            type="button"
-            @click="titleTypographyStyle = 'heading-2'"
-            :class="titleTypographyStyle === 'heading-2' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="flex-1 h-[34px] rounded-[8px] text-[12px] font-707 flex items-center justify-center gap-1 cursor-pointer"
-          >
-            <span>H2</span>
-            <span class="text-[10px] opacity-70 font-normal">(22px)</span>
-          </button>
         </div>
       </div>
 

@@ -1179,12 +1179,9 @@ more</span>
           <div class="flex flex-col gap-[20px] items-start w-full">
             <!-- Header: Title + Subtitle -->
             <div class="flex flex-col gap-[8px] items-start w-full">
-              <h2 
-                class="font-707 font-medium text-black tracking-tight whitespace-pre-line"
-                :class="modalDisplayProps.titleTypographyStyle === 'heading-2' ? 'text-heading-h2' : 'text-heading-h3'"
-              >
+              <h3 class="font-707 font-medium text-heading-h3 text-black tracking-tight whitespace-pre-line">
                 {{ modalDisplayProps.title || 'Select Arrival Date' }}
-              </h2>
+              </h3>
               <p class="font-707 font-normal text-bodytext text-neutral-700 whitespace-pre-line">
                 {{ modalDisplayProps.subtitle || 'Please provide a valid email address. We will resend your E-Pass immediately.' }}
               </p>
