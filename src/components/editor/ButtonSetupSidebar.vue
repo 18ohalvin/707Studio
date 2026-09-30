@@ -210,34 +210,16 @@
         </div>
       </div>
 
-      <!-- Conditional Modal Variant Picker & Setup Button if Modal selected -->
-      <div v-if="actionType === 'modal'" class="w-full pt-2 flex flex-col gap-3 animate-in fade-in duration-150">
-        <div class="flex items-center justify-between w-full">
-          <p class="font-707 font-medium text-[12px] text-neutral-600">
-            Modal Variant
-          </p>
-          <button 
-            type="button"
-            @click="openModalSetup"
-            class="text-[11px] font-707 font-medium text-black hover:underline flex items-center gap-1 cursor-pointer"
-          >
-            Configure Modal Setup ➔
-          </button>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2 w-full">
-          <button 
-            v-for="v in modalVariants" 
-            :key="v.id"
-            type="button"
-            @click="setModalVariant(v.id)"
-            :class="currentModalVariant === v.id ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="flex items-center gap-2 p-2 rounded-[8px] text-left cursor-pointer transition-all"
-          >
-            <component :is="v.icon" class="size-3.5 shrink-0" />
-            <span class="font-707 text-[11px] truncate">{{ v.label }}</span>
-          </button>
-        </div>
+      <!-- Conditional Modal Setup Button if Popup Modal is selected (Consistent with Hero Banner) -->
+      <div v-if="actionType === 'modal'" class="w-full pt-1 animate-in fade-in duration-150">
+        <button 
+          type="button"
+          @click="openModalSetup"
+          class="apple-glass-btn-dark w-full h-[36px] rounded-[8px] flex items-center justify-center gap-1.5 font-707 text-[12px] cursor-pointer"
+        >
+          <span>Configure Pop Up Modal</span>
+          <span class="text-xs">➔</span>
+        </button>
       </div>
     </div>
 
