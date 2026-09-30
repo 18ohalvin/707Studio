@@ -815,17 +815,17 @@
                 </button>
               </div>
 
-              <!-- Title & Subtitle Header (Figma: 22px Medium uppercase title, 16px Light subtitle, 8px gap, 24px bottom spacing) -->
+              <!-- Title & Subtitle Header (Figma: Title with preset, Subtitle with Body Text style: 12px, 8px gap, 24px bottom spacing) -->
               <div v-if="widget.props.title || widget.props.subtitle" class="w-full flex flex-col gap-[8px] items-start mb-[24px]">
-                <h3 v-if="widget.props.title" class="font-707 font-medium text-[22px] leading-[28px] text-black tracking-normal uppercase">
+                <h3 v-if="widget.props.title" class="font-707" :class="getChoiceTitleTypographyClass(widget)">
                   {{ widget.props.title }}<span v-if="widget.props.required" class="text-neutral-400 text-[18px] ml-0.5">*</span>
                 </h3>
-                <p v-if="widget.props.subtitle" class="font-707 font-light text-[16px] leading-[22px] text-black">
+                <p v-if="widget.props.subtitle" class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-700 whitespace-pre-line">
                   {{ widget.props.subtitle }}
                 </p>
               </div>
 
-              <!-- Variant 1: Detailed Cards (Figma: 16px padding, 24px gap between checkbox and text, 16px gap between title and description) -->
+              <!-- Variant 1: Detailed Cards (Figma: 16px padding, 24px gap between checkbox and text, 10px gap between title and description) -->
               <div v-if="(widget.props.variant || 'detailed-card') === 'detailed-card'" class="flex flex-col gap-[16px] w-full">
                 <div 
                   v-for="opt in (widget.props.options || [])" 
@@ -839,26 +839,26 @@
                   ]"
                 >
                   <!-- Checkbox Container (24px outer square with 18px inner square when active) -->
-                  <div class="relative shrink-0 size-[24px] border border-black border-solid flex items-center justify-center bg-transparent">
+                  <div class="relative shrink-0 size-[24px] border border-black border-solid flex items-center justify-center bg-transparent mt-[1px]">
                     <div 
                       class="size-[18px] bg-black border border-black border-solid transition-all duration-150 transform"
                       :class="isChoiceSelected(widget, opt.id) ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
                     />
                   </div>
 
-                  <!-- Option Content -->
-                  <div class="flex-1 flex flex-col gap-[16px] items-start min-w-0">
-                    <div class="flex items-center justify-between w-full font-707 font-medium text-[16px] leading-[14px] text-black">
-                      <span class="truncate">{{ opt.label }}</span>
-                      <span v-if="opt.sublabel" class="shrink-0 text-[16px]">{{ opt.sublabel }}</span>
+                  <!-- Option Content (Zero text bleeding, crisp line-height) -->
+                  <div class="flex-1 flex flex-col gap-[10px] items-start min-w-0">
+                    <div class="flex items-baseline justify-between w-full font-707 gap-3">
+                      <span class="font-707 truncate" :class="getChoiceOptionTypographyClass(widget, opt)">{{ opt.label }}</span>
+                      <span v-if="opt.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[18px] text-neutral-500">{{ opt.sublabel }}</span>
                     </div>
-                    <div v-if="opt.description" class="font-707 font-normal text-[12px] leading-[18px] text-black">
+                    <div v-if="opt.description" class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-600 whitespace-pre-line">
                       {{ opt.description }}
                     </div>
                   </div>
                 </div>
 
-                <!-- Add More Slot (Figma: border-[#d4d4d4], 24px gap with carbon:add-filled icon and 16px medium text) -->
+                <!-- Add More Slot -->
                 <button 
                   v-if="!isPreviewModal"
                   type="button"
@@ -866,7 +866,7 @@
                   class="border border-[#d4d4d4] hover:border-black border-solid flex gap-[24px] items-center p-[16px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
                 >
                   <img :src="FIGMA_ASSETS.addFilled" class="size-[24px] shrink-0 pointer-events-none" alt="Add" />
-                  <span class="font-707 font-medium text-[16px] leading-[14px] text-black">
+                  <span class="font-707 font-medium text-[14px] md:text-[16px] leading-[22px] text-black">
                     Add more
                   </span>
                 </button>
@@ -878,7 +878,7 @@
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="border border-solid h-[56px] flex gap-[24px] items-center p-[16px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
+                  class="border border-solid min-h-[56px] h-auto flex gap-[24px] items-center p-[16px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
                   :class="[
                     isChoiceSelected(widget, opt.id)
                       ? 'border-black'
@@ -894,7 +894,7 @@
                   </div>
 
                   <!-- Label -->
-                  <div class="flex-1 font-707 font-medium text-[16px] leading-[14px] text-black truncate">
+                  <div class="flex-1 font-707 truncate" :class="getChoiceOptionTypographyClass(widget, opt)">
                     {{ opt.label }}
                   </div>
                 </div>
@@ -904,10 +904,10 @@
                   v-if="!isPreviewModal"
                   type="button"
                   @click.stop="handleChoiceAddMore(widget)"
-                  class="border border-[#d4d4d4] hover:border-black border-solid h-[56px] flex gap-[24px] items-center p-[16px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
+                  class="border border-[#d4d4d4] hover:border-black border-solid min-h-[56px] h-auto flex gap-[24px] items-center p-[16px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
                 >
                   <img :src="FIGMA_ASSETS.addFilled" class="size-[24px] shrink-0 pointer-events-none" alt="Add" />
-                  <span class="font-707 font-medium text-[16px] leading-[14px] text-black">
+                  <span class="font-707 font-medium text-[14px] md:text-[16px] leading-[22px] text-black">
                     Add more
                   </span>
                 </button>
@@ -919,14 +919,14 @@
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="w-[128px] h-[56px] p-[16px] flex items-center justify-start shrink-0 border border-solid cursor-pointer select-none transition-all duration-150 bg-transparent font-707 font-medium text-[16px] leading-[14px] text-black rounded-none"
+                  class="min-w-[128px] max-w-[200px] min-h-[56px] h-auto p-[16px] flex items-center justify-start shrink-0 border border-solid cursor-pointer select-none transition-all duration-150 bg-transparent font-707 rounded-none"
                   :class="[
                     isChoiceSelected(widget, opt.id)
                       ? 'border-black'
                       : 'border-[#d4d4d4] hover:border-black/60'
                   ]"
                 >
-                  <span class="truncate">{{ opt.label }}</span>
+                  <span class="font-707 truncate" :class="getChoiceOptionTypographyClass(widget, opt)">{{ opt.label }}</span>
                 </div>
 
                 <!-- Add More Button -->
@@ -934,10 +934,10 @@
                   v-if="!isPreviewModal"
                   type="button"
                   @click.stop="handleChoiceAddMore(widget)"
-                  class="h-[56px] p-[16px] border border-[#d4d4d4] hover:border-black border-solid flex gap-[24px] items-center shrink-0 cursor-pointer transition-colors bg-transparent select-none rounded-none"
+                  class="min-h-[56px] h-auto p-[16px] border border-[#d4d4d4] hover:border-black border-solid flex gap-[16px] items-center shrink-0 cursor-pointer transition-colors bg-transparent select-none rounded-none"
                 >
                   <img :src="FIGMA_ASSETS.addFilled" class="size-[24px] shrink-0 pointer-events-none" alt="Add" />
-                  <span class="font-707 font-medium text-[16px] leading-[14px] text-black whitespace-nowrap">
+                  <span class="font-707 font-medium text-[14px] md:text-[16px] leading-[20px] text-black whitespace-nowrap">
                     Add more
                   </span>
                 </button>
@@ -962,21 +962,21 @@
                     :alt="opt.label"
                     class="size-full object-cover pointer-events-none" 
                   />
-                  <div v-else class="size-full flex items-center justify-center font-707 font-medium text-[11px] text-black p-1 text-center">
+                  <div v-else class="size-full flex items-center justify-center font-707 font-medium text-[11px] leading-[14px] text-black p-1 text-center" :class="getChoiceOptionTypographyClass(widget, opt)">
                     {{ opt.label }}
                   </div>
                 </div>
 
-                <!-- Add More Tile (Figma: 87px height, carbon:add-filled icon, 12px text) -->
+                <!-- Add More Tile (Figma: carbon:add-filled icon, 12px text) -->
                 <button 
                   v-if="!isPreviewModal"
                   type="button"
                   @click.stop="handleChoiceAddMore(widget)"
-                  class="aspect-square bg-[#ededed] hover:bg-neutral-200 border-[0.5px] border-transparent hover:border-black/40 flex flex-col gap-[9px] items-center justify-center cursor-pointer transition-all select-none rounded-none"
+                  class="aspect-square bg-[#ededed] hover:bg-neutral-200 border-[0.5px] border-transparent hover:border-black/40 flex flex-col gap-[8px] items-center justify-center cursor-pointer transition-all select-none rounded-none p-1.5"
                   title="Add more models"
                 >
-                  <img :src="FIGMA_ASSETS.addFilled" class="size-[24px] shrink-0 pointer-events-none" alt="Add" />
-                  <span class="font-707 font-medium text-[12px] leading-[14px] text-black whitespace-nowrap">
+                  <img :src="FIGMA_ASSETS.addFilled" class="size-[22px] shrink-0 pointer-events-none" alt="Add" />
+                  <span class="font-707 font-medium text-[11px] md:text-[12px] leading-[14px] text-black whitespace-nowrap">
                     Add more
                   </span>
                 </button>
@@ -1326,6 +1326,52 @@ function getTextTypographyClass(widget: any) {
     case 'headline-1':
     default:
       return 'text-[28px] md:text-[32px] font-medium leading-[1.08] text-black placeholder:text-black';
+  }
+}
+
+function getChoiceTitleTypographyClass(widget: any) {
+  const style = widget.props.titleTypographyStyle || widget.props.typographyStyle || 'heading-2';
+  switch (style) {
+    case 'headline-1':
+      return 'text-[28px] md:text-[32px] font-medium leading-[34px] text-black tracking-normal uppercase';
+    case 'heading-3':
+      return 'text-[18px] font-medium leading-[24px] text-black tracking-normal uppercase';
+    case 'subtext-lead':
+      return 'text-[16px] font-medium leading-[22px] text-black tracking-normal uppercase';
+    case 'body-text-bold':
+      return 'text-[12px] font-bold leading-[18px] text-black tracking-normal uppercase';
+    case 'body-text':
+      return 'text-[12px] font-normal leading-[18px] text-black tracking-normal uppercase';
+    case 'caption':
+      return 'text-[11px] font-normal leading-[14px] text-black tracking-normal uppercase';
+    case 'legal-micro':
+      return 'text-[11px] font-normal leading-[14px] text-neutral-500 tracking-normal uppercase';
+    case 'heading-2':
+    default:
+      return 'text-[22px] font-medium leading-[28px] text-black tracking-normal uppercase';
+  }
+}
+
+function getChoiceOptionTypographyClass(widget: any, opt?: any) {
+  const style = opt?.typographyStyle || widget.props.optionTypographyStyle || 'subtext-lead';
+  switch (style) {
+    case 'headline-1':
+      return 'text-[24px] md:text-[28px] font-medium leading-[32px] text-black';
+    case 'heading-2':
+      return 'text-[20px] md:text-[22px] font-medium leading-[26px] text-black uppercase';
+    case 'heading-3':
+      return 'text-[17px] md:text-[18px] font-medium leading-[24px] text-black';
+    case 'body-text-bold':
+      return 'text-[12px] font-bold leading-[18px] text-black';
+    case 'body-text':
+      return 'text-[12px] font-normal leading-[18px] text-black';
+    case 'caption':
+      return 'text-[11px] font-normal leading-[14px] text-black';
+    case 'legal-micro':
+      return 'text-[11px] font-normal leading-[14px] text-neutral-500';
+    case 'subtext-lead':
+    default:
+      return 'text-[16px] font-medium leading-[22px] text-black';
   }
 }
 

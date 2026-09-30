@@ -39,10 +39,58 @@
         </div>
       </div>
 
+      <!-- Title Typography Preset Dropdown -->
       <div class="flex flex-col gap-[6px] w-full">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Subtitle Text
+          Title Font Style
         </p>
+        <div class="relative w-full" ref="titleDropdownRef">
+          <button 
+            type="button"
+            @click="isTitleDropdownOpen = !isTitleDropdownOpen"
+            class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-full cursor-pointer bg-white"
+          >
+            <span class="font-707 font-normal text-[12px] leading-[18px] text-black whitespace-nowrap truncate">
+              {{ currentTitleTypographyLabel }}
+            </span>
+            <ChevronDown 
+              class="w-4 h-4 text-black transition-transform duration-150 shrink-0 ml-2" 
+              :class="isTitleDropdownOpen ? 'rotate-180' : ''" 
+            />
+          </button>
+
+          <!-- Dropdown Options Menu -->
+          <div 
+            v-if="isTitleDropdownOpen"
+            class="absolute top-full left-0 right-0 mt-1.5 bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-[0px_4px_20px_rgba(0,0,0,0.12)] z-50 overflow-y-auto max-h-[220px] py-1 animate-in fade-in slide-in-from-top-1 duration-150"
+          >
+            <button 
+              v-for="opt in typographyOptions"
+              :key="opt.id"
+              @click="selectTitleTypography(opt.id)"
+              :class="currentTitleTypographyId === opt.id ? 'bg-black/5 font-medium text-black' : 'text-neutral-700 hover:bg-black/5'"
+              class="w-full text-left px-4 py-2 text-[12px] font-707 flex items-center justify-between transition-colors cursor-pointer border-b border-neutral-100 last:border-b-0"
+            >
+              <div class="flex flex-col">
+                <span :class="opt.previewClass">{{ opt.label }}</span>
+                <span class="text-[10px] text-neutral-400 font-normal">{{ opt.desc }}</span>
+              </div>
+              <span class="text-[11px] text-neutral-400 font-mono shrink-0 ml-2">{{ opt.size }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subtitle (Uses Body Text style 12px) -->
+      <div class="flex flex-col gap-[6px] w-full">
+        <div class="flex items-center justify-between">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Subtitle Text
+          </p>
+          <span class="font-707 text-[11px] text-neutral-400">
+            Body Text (12px)
+          </span>
+        </div>
         <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
           <input 
             v-model="subtitle"
@@ -53,7 +101,51 @@
       </div>
     </div>
 
-    <!-- Section 2: Style Presets (4 Figma Variants) -->
+    <!-- Section 2: Option Tile Font Style Preset -->
+    <div class="content-stretch flex flex-col gap-[14px] items-start py-[16px] px-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
+      <div class="flex flex-col gap-[6px] w-full">
+        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+          Option Tile Font Style
+        </p>
+        <div class="relative w-full" ref="optionDropdownRef">
+          <button 
+            type="button"
+            @click="isOptionDropdownOpen = !isOptionDropdownOpen"
+            class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-full cursor-pointer bg-white"
+          >
+            <span class="font-707 font-normal text-[12px] leading-[18px] text-black whitespace-nowrap truncate">
+              {{ currentOptionTypographyLabel }}
+            </span>
+            <ChevronDown 
+              class="w-4 h-4 text-black transition-transform duration-150 shrink-0 ml-2" 
+              :class="isOptionDropdownOpen ? 'rotate-180' : ''" 
+            />
+          </button>
+
+          <!-- Dropdown Options Menu -->
+          <div 
+            v-if="isOptionDropdownOpen"
+            class="absolute top-full left-0 right-0 mt-1.5 bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-[0px_4px_20px_rgba(0,0,0,0.12)] z-50 overflow-y-auto max-h-[220px] py-1 animate-in fade-in slide-in-from-top-1 duration-150"
+          >
+            <button 
+              v-for="opt in typographyOptions"
+              :key="opt.id"
+              @click="selectOptionTypography(opt.id)"
+              :class="currentOptionTypographyId === opt.id ? 'bg-black/5 font-medium text-black' : 'text-neutral-700 hover:bg-black/5'"
+              class="w-full text-left px-4 py-2 text-[12px] font-707 flex items-center justify-between transition-colors cursor-pointer border-b border-neutral-100 last:border-b-0"
+            >
+              <div class="flex flex-col">
+                <span :class="opt.previewClass">{{ opt.label }}</span>
+                <span class="text-[10px] text-neutral-400 font-normal">{{ opt.desc }}</span>
+              </div>
+              <span class="text-[11px] text-neutral-400 font-mono shrink-0 ml-2">{{ opt.size }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Style Presets (4 Figma Variants) -->
     <div class="content-stretch flex flex-col gap-[14px] items-start py-[16px] px-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
       <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
         Choice Style Variant
@@ -72,7 +164,7 @@
       </div>
     </div>
 
-    <!-- Section 3: Selection Mode & Required Rules -->
+    <!-- Section 4: Selection Mode & Required Rules -->
     <div class="content-stretch flex flex-col gap-[14px] items-start py-[16px] px-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
       <div class="flex items-center justify-between w-full">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
@@ -123,7 +215,7 @@
       </div>
     </div>
 
-    <!-- Section 4: Options Manager -->
+    <!-- Section 5: Options Manager -->
     <div class="content-stretch flex flex-col gap-[14px] items-start py-[16px] px-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
       <div class="flex items-center justify-between w-full">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
@@ -202,7 +294,7 @@
               v-model="opt.description"
               rows="2"
               placeholder="Event Description Detail..."
-              class="w-full font-707 text-[11px] text-neutral-700 focus:outline-none border border-[#ccc] focus:border-black rounded-[6px] p-1.5 resize-none leading-tight bg-white"
+              class="w-full font-707 text-[11px] text-neutral-700 focus:outline-none border border-[#ccc] focus:border-black rounded-[6px] p-1.5 resize-none leading-relaxed bg-white"
             />
           </div>
 
@@ -242,7 +334,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import type { ChoiceVariant, ChoiceOption } from '../../types/editor.ts';
@@ -250,6 +342,7 @@ import {
   Plus, 
   Trash2, 
   Check, 
+  ChevronDown,
   Image as ImageIcon 
 } from 'lucide-vue-next';
 
@@ -263,6 +356,21 @@ defineEmits<{
 
 const editorStore = useEditorStore();
 const sidebarRef = ref<HTMLElement | null>(null);
+const titleDropdownRef = ref<HTMLElement | null>(null);
+const optionDropdownRef = ref<HTMLElement | null>(null);
+const isTitleDropdownOpen = ref(false);
+const isOptionDropdownOpen = ref(false);
+
+const typographyOptions = [
+  { id: 'headline-1', label: 'Headline 1', size: '32px', desc: 'Display title / primary punchy headline', previewClass: 'font-medium text-[15px]' },
+  { id: 'heading-2', label: 'Heading 2', size: '22px', desc: 'Section header / secondary headline', previewClass: 'font-medium text-[14px]' },
+  { id: 'heading-3', label: 'Heading 3', size: '18px', desc: 'Sub-section heading', previewClass: 'font-medium text-[13px]' },
+  { id: 'subtext-lead', label: 'Subtext Lead', size: '16px', desc: 'Introductory lead text / bold subheader', previewClass: 'font-medium text-[13px]' },
+  { id: 'body-text', label: 'Body Text', size: '12px', desc: 'Standard readable paragraph body text', previewClass: 'font-normal text-[12px]' },
+  { id: 'body-text-bold', label: 'Body Text (Bold)', size: '12px', desc: 'Emphasized body copy', previewClass: 'font-bold text-[12px]' },
+  { id: 'caption', label: 'Caption', size: '11px', desc: 'Secondary annotations and instructions', previewClass: 'font-normal text-[11px]' },
+  { id: 'legal-micro', label: 'Legal / Micro', size: '11px', desc: 'Footnotes, terms, and micro meta', previewClass: 'font-normal text-[11px] text-neutral-500' }
+];
 
 const variants: { id: ChoiceVariant; label: string }[] = [
   { id: 'detailed-card', label: 'Detailed Cards' },
@@ -286,6 +394,41 @@ const title = computed({
     }
   }
 });
+
+const currentTitleTypographyId = computed(() => {
+  return currentWidget.value?.props.titleTypographyStyle || currentWidget.value?.props.typographyStyle || 'heading-2';
+});
+
+const currentTitleTypographyLabel = computed(() => {
+  const opt = typographyOptions.find(o => o.id === currentTitleTypographyId.value);
+  return opt ? opt.label : 'Heading 2';
+});
+
+function selectTitleTypography(id: string) {
+  if (currentWidget.value) {
+    editorStore.updateWidgetProps(currentWidget.value.id, { 
+      titleTypographyStyle: id,
+      typographyStyle: id 
+    });
+  }
+  isTitleDropdownOpen.value = false;
+}
+
+const currentOptionTypographyId = computed(() => {
+  return currentWidget.value?.props.optionTypographyStyle || 'subtext-lead';
+});
+
+const currentOptionTypographyLabel = computed(() => {
+  const opt = typographyOptions.find(o => o.id === currentOptionTypographyId.value);
+  return opt ? opt.label : 'Subtext Lead (16px)';
+});
+
+function selectOptionTypography(id: string) {
+  if (currentWidget.value) {
+    editorStore.updateWidgetProps(currentWidget.value.id, { optionTypographyStyle: id });
+  }
+  isOptionDropdownOpen.value = false;
+}
 
 const subtitle = computed({
   get: () => currentWidget.value?.props.subtitle || '',
@@ -478,4 +621,22 @@ function removeOption(index: number) {
     selectedValues: selected
   });
 }
+
+function handleClickOutside(event: MouseEvent) {
+  const target = event.target as Node;
+  if (titleDropdownRef.value && !titleDropdownRef.value.contains(target)) {
+    isTitleDropdownOpen.value = false;
+  }
+  if (optionDropdownRef.value && !optionDropdownRef.value.contains(target)) {
+    isOptionDropdownOpen.value = false;
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
 </script>
