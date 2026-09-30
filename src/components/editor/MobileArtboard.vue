@@ -772,6 +772,260 @@
                 </button>
               </div>
             </div>
+
+            <!-- 9. MultipleChoice Widget (Figma Node 276:4224 - 4 Layout Types & Luxury Outline Animation) -->
+            <div 
+              v-else-if="widget.type === 'MultipleChoice'" 
+              class="relative w-full px-[16px] py-[12px] select-none group/choice"
+              @click.stop="handleChoiceWidgetClick(widget)"
+              data-node-id="276:4224"
+              data-name="Multiple Choice Container"
+            >
+              <!-- Floating Action Toolbar for MultipleChoice -->
+              <div 
+                v-if="!isMiniPreview && !isPreviewModal && hoveredWidgetId === widget.id"
+                class="absolute z-40 apple-glass-modal flex gap-[4px] items-center p-[4px] rounded-[8px] shadow-[0px_4px_16px_rgba(0,0,0,0.18)] transition-all animate-in fade-in duration-150 select-none top-2 right-4"
+                data-name="Buttons Container"
+              >
+                <!-- Adjust -->
+                <button 
+                  @click.stop="handleAdjustWidget(widget)"
+                  class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black hover:bg-black/10 cursor-pointer"
+                  title="Choice Setup"
+                >
+                  <SlidersHorizontal class="w-3.5 h-3.5" />
+                </button>
+                <!-- Duplicate -->
+                <button 
+                  @click.stop="editorStore.duplicateWidget(widget.id)"
+                  class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black hover:bg-black/10 cursor-pointer"
+                  title="Duplicate"
+                >
+                  <Copy class="w-3.5 h-3.5" />
+                </button>
+                <!-- Remove -->
+                <button 
+                  @click.stop="editorStore.removeWidget(widget.id)"
+                  class="apple-glass-icon-btn size-[24px] hover:text-red-600 flex items-center justify-center rounded-[6px] text-black hover:bg-red-50 cursor-pointer"
+                  title="Remove"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <!-- Question Header (Headline Title & Subtitle) -->
+              <div class="w-full flex flex-col items-start mb-[14px]">
+                <h3 class="font-707 font-medium text-[22px] leading-[28px] text-black uppercase tracking-tight">
+                  {{ widget.props.title || 'SELECT ARRIVALS' }}<span v-if="widget.props.required ?? true" class="text-black ml-0.5">*</span>
+                </h3>
+                <p v-if="widget.props.subtitle" class="font-707 font-normal text-[15px] leading-[20px] text-[#737373] mt-[2px]">
+                  {{ widget.props.subtitle }}
+                </p>
+              </div>
+
+              <!-- Variant 1: Detailed Cards (arrivals-card) -->
+              <div v-if="!widget.props.variant || widget.props.variant === 'arrivals-card'" class="flex flex-col gap-[10px] w-full">
+                <div 
+                  v-for="opt in (widget.props.options || [])"
+                  :key="opt.id"
+                  @click.stop="toggleChoiceOption(widget, opt.id)"
+                  class="w-full border rounded-[8px] p-[16px] flex flex-col gap-[8px] cursor-pointer transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] select-none"
+                  :class="[
+                    isOptionSelected(widget, opt.id)
+                      ? 'border-black ring-1 ring-black bg-black/[0.015] shadow-sm'
+                      : 'border-[#d4d4d4] bg-white hover:border-[#999]'
+                  ]"
+                >
+                  <!-- Top Row: Checkbox + Label (Left), Date (Right) -->
+                  <div class="flex items-center justify-between w-full">
+                    <div class="flex items-center gap-[12px]">
+                      <!-- Checkbox Box 24px x 24px -->
+                      <div 
+                        class="w-[24px] h-[24px] rounded-[4px] border flex items-center justify-center shrink-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                        :class="[
+                          isOptionSelected(widget, opt.id)
+                            ? 'border-black bg-white'
+                            : 'border-[#d4d4d4] bg-white'
+                        ]"
+                      >
+                        <!-- Inner 16px x 16px solid black square matching Figma -->
+                        <div 
+                          class="w-[16px] h-[16px] bg-black rounded-[2px] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                          :class="[
+                            isOptionSelected(widget, opt.id)
+                              ? 'scale-100 opacity-100'
+                              : 'scale-0 opacity-0'
+                          ]"
+                        />
+                      </div>
+                      <span class="font-707 font-medium text-[16px] leading-[22px] text-black">
+                        {{ opt.label }}
+                      </span>
+                    </div>
+                    <span v-if="opt.secondaryLabel" class="font-707 font-normal text-[14px] leading-[20px] text-[#737373]">
+                      {{ opt.secondaryLabel }}
+                    </span>
+                  </div>
+
+                  <!-- Bottom Row: Description -->
+                  <div v-if="opt.description" class="pl-[36px] w-full">
+                    <p class="font-707 font-normal text-[13px] leading-[18px] text-[#737373]">
+                      {{ opt.description }}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Inline Add More Button in Editor -->
+                <button 
+                  v-if="!isMiniPreview && !isPreviewModal"
+                  type="button"
+                  @click.stop="handleInlineAddOption(widget)"
+                  class="w-full h-[44px] border border-dashed border-[#d4d4d4] hover:border-black rounded-[8px] flex items-center justify-center gap-1.5 font-707 text-[12px] text-neutral-500 hover:text-black transition-colors cursor-pointer bg-white/50 hover:bg-white"
+                >
+                  <Plus class="size-3.5 stroke-[2]" />
+                  <span>Add option</span>
+                </button>
+              </div>
+
+              <!-- Variant 2: Simple Rows (simple-row) -->
+              <div v-else-if="widget.props.variant === 'simple-row'" class="flex flex-col gap-[8px] w-full">
+                <div 
+                  v-for="opt in (widget.props.options || [])"
+                  :key="opt.id"
+                  @click.stop="toggleChoiceOption(widget, opt.id)"
+                  class="w-full h-[56px] px-[16px] border rounded-[8px] flex items-center justify-between cursor-pointer transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] select-none"
+                  :class="[
+                    isOptionSelected(widget, opt.id)
+                      ? 'border-black ring-1 ring-black bg-black/[0.015] shadow-sm'
+                      : 'border-[#d4d4d4] bg-white hover:border-[#999]'
+                  ]"
+                >
+                  <div class="flex items-center gap-[12px]">
+                    <!-- Checkbox Box 24px x 24px -->
+                    <div 
+                      class="w-[24px] h-[24px] rounded-[4px] border flex items-center justify-center shrink-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                      :class="[
+                        isOptionSelected(widget, opt.id)
+                          ? 'border-black bg-white'
+                          : 'border-[#d4d4d4] bg-white'
+                      ]"
+                    >
+                      <!-- Inner 16px x 16px black square -->
+                      <div 
+                        class="w-[16px] h-[16px] bg-black rounded-[2px] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                        :class="[
+                          isOptionSelected(widget, opt.id)
+                            ? 'scale-100 opacity-100'
+                            : 'scale-0 opacity-0'
+                        ]"
+                      />
+                    </div>
+                    <span class="font-707 font-medium text-[15px] leading-[20px] text-black">
+                      {{ opt.label }}
+                    </span>
+                  </div>
+                  <span v-if="opt.secondaryLabel" class="font-707 font-normal text-[12px] text-[#737373]">
+                    {{ opt.secondaryLabel }}
+                  </span>
+                </div>
+
+                <!-- Inline Add More Button in Editor -->
+                <button 
+                  v-if="!isMiniPreview && !isPreviewModal"
+                  type="button"
+                  @click.stop="handleInlineAddOption(widget)"
+                  class="w-full h-[44px] border border-dashed border-[#d4d4d4] hover:border-black rounded-[8px] flex items-center justify-center gap-1.5 font-707 text-[12px] text-neutral-500 hover:text-black transition-colors cursor-pointer bg-white/50 hover:bg-white"
+                >
+                  <Plus class="size-3.5 stroke-[2]" />
+                  <span>Add option</span>
+                </button>
+              </div>
+
+              <!-- Variant 3: Horizontal Block Cards (horizontal-block) -->
+              <div v-else-if="widget.props.variant === 'horizontal-block'" class="flex flex-col gap-[8px] w-full">
+                <div class="grid grid-cols-2 gap-[10px] w-full">
+                  <div 
+                    v-for="opt in (widget.props.options || [])"
+                    :key="opt.id"
+                    @click.stop="toggleChoiceOption(widget, opt.id)"
+                    class="h-[56px] rounded-[8px] border flex items-center justify-center cursor-pointer transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] select-none px-3 text-center"
+                    :class="[
+                      isOptionSelected(widget, opt.id)
+                        ? 'border-black bg-black text-white shadow-sm ring-1 ring-black'
+                        : 'border-[#d4d4d4] bg-white text-black hover:border-[#999]'
+                    ]"
+                  >
+                    <span class="font-707 font-medium text-[14px] leading-[18px]">
+                      {{ opt.label }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Inline Add More Button in Editor -->
+                <button 
+                  v-if="!isMiniPreview && !isPreviewModal"
+                  type="button"
+                  @click.stop="handleInlineAddOption(widget)"
+                  class="w-full h-[40px] border border-dashed border-[#d4d4d4] hover:border-black rounded-[8px] flex items-center justify-center gap-1.5 font-707 text-[12px] text-neutral-500 hover:text-black transition-colors cursor-pointer bg-white/50 hover:bg-white mt-1"
+                >
+                  <Plus class="size-3.5 stroke-[2]" />
+                  <span>Add session</span>
+                </button>
+              </div>
+
+              <!-- Variant 4: Image Tile Grid (image-grid) -->
+              <div v-else-if="widget.props.variant === 'image-grid'" class="flex flex-col gap-[8px] w-full">
+                <div class="grid grid-cols-4 gap-[8px] w-full">
+                  <div 
+                    v-for="opt in (widget.props.options || [])"
+                    :key="opt.id"
+                    @click.stop="toggleChoiceOption(widget, opt.id)"
+                    class="aspect-square rounded-[8px] border overflow-hidden relative cursor-pointer select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group/tile bg-[#ededed]"
+                    :class="[
+                      isOptionSelected(widget, opt.id)
+                        ? 'border-[2px] border-black ring-2 ring-black/20 scale-[1.03] shadow-md'
+                        : 'border-[#d4d4d4] hover:border-[#999]'
+                    ]"
+                  >
+                    <img 
+                      v-if="opt.imageUrl" 
+                      :src="opt.imageUrl" 
+                      :alt="opt.label" 
+                      class="w-full h-full object-cover transition-transform duration-300 group-hover/tile:scale-105"
+                    />
+                    <div v-else class="w-full h-full flex items-center justify-center text-neutral-400 font-mono text-[10px]">
+                      {{ opt.label }}
+                    </div>
+
+                    <!-- Active Checked Indicator in Top Right -->
+                    <div 
+                      v-if="isOptionSelected(widget, opt.id)"
+                      class="absolute top-1.5 right-1.5 size-4 bg-black text-white rounded-full flex items-center justify-center shadow-md animate-in zoom-in-50 duration-200"
+                    >
+                      <Check class="size-2.5 stroke-[3]" />
+                    </div>
+
+                    <!-- Label Bar at Bottom -->
+                    <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-1 pt-3 flex items-end">
+                      <span class="font-707 text-[10px] text-white font-medium truncate w-full">
+                        {{ opt.label }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Inline Add More Button in Editor -->
+                <button 
+                  v-if="!isMiniPreview && !isPreviewModal"
+                  type="button"
+                  @click.stop="handleInlineAddOption(widget)"
+                  class="w-full h-[40px] border border-dashed border-[#d4d4d4] hover:border-black rounded-[8px] flex items-center justify-center gap-1.5 font-707 text-[12px] text-neutral-500 hover:text-black transition-colors cursor-pointer bg-white/50 hover:bg-white mt-1"
+                >
+                  <Plus class="size-3.5 stroke-[2]" />
+                  <span>Add model</span>
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- Physical Bottom Clearance Spacer for Sticky Bottom Button (Disabled when last widget is a Hero banner so banner sits flush against the sticky button) -->
@@ -1146,9 +1400,64 @@ function handleAdjustWidget(widget: any) {
     editorStore.openTextSidebar();
   } else if (widget.type === 'ActionButton') {
     editorStore.openButtonSidebar();
+  } else if (widget.type === 'MultipleChoice') {
+    editorStore.openChoiceSidebar();
   } else {
     editorStore.openWidgetSidebar();
   }
+}
+
+function handleChoiceWidgetClick(widget: any) {
+  if (props.isPreviewModal || props.isMiniPreview) return;
+  handleSelectThisPage();
+  editorStore.selectWidget(widget.id);
+  editorStore.openChoiceSidebar();
+}
+
+function isOptionSelected(widget: any, optionId: string): boolean {
+  const selected = widget.props?.selectedIds || [];
+  return selected.includes(optionId);
+}
+
+function toggleChoiceOption(widget: any, optionId: string) {
+  const allowMultiple = widget.props?.allowMultiple ?? true;
+  const currentSelected: string[] = [...(widget.props?.selectedIds || [])];
+
+  let nextSelected: string[];
+  if (allowMultiple) {
+    if (currentSelected.includes(optionId)) {
+      nextSelected = currentSelected.filter(id => id !== optionId);
+    } else {
+      nextSelected = [...currentSelected, optionId];
+    }
+  } else {
+    if (currentSelected.includes(optionId)) {
+      nextSelected = [];
+    } else {
+      nextSelected = [optionId];
+    }
+  }
+
+  editorStore.updateWidgetProps(widget.id, { selectedIds: nextSelected });
+}
+
+function handleInlineAddOption(widget: any) {
+  if (props.isPreviewModal || props.isMiniPreview) return;
+  const options = [...(widget.props?.options || [])];
+  const count = options.length + 1;
+  const variant = widget.props?.variant || 'arrivals-card';
+  
+  options.push({
+    id: `opt_${Date.now()}`,
+    label: variant === 'arrivals-card' ? `Day ${count}` : `Option ${count}`,
+    secondaryLabel: variant === 'arrivals-card' ? `${count} September 2026` : undefined,
+    description: variant === 'arrivals-card' ? 'Your Event Descriptions Detail' : undefined,
+    imageUrl: variant === 'image-grid' ? 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&q=80' : undefined
+  });
+
+  editorStore.updateWidgetProps(widget.id, { options });
+  editorStore.selectWidget(widget.id);
+  editorStore.openChoiceSidebar();
 }
 
 function handleActionButtonClick(widget: any) {

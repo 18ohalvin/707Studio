@@ -151,6 +151,8 @@ function getWidgetDisplayName(widget: WidgetItem): string {
       return 'Text Tool';
     case 'ActionButton':
       return 'Action Button';
+    case 'MultipleChoice':
+      return 'Multiple Choice';
     case 'FieldInput':
       return widget.props.label ? `${widget.props.label} Field` : 'Form Input';
     case 'HeroDrop':
@@ -180,6 +182,8 @@ function getWidgetSummary(widget: WidgetItem): string {
       return widget.props.text || widget.props.placeholder || 'STANLEY FAVORITE BEST OF THE BEST';
     case 'ActionButton':
       return widget.props.label || 'BUTTON CTA';
+    case 'MultipleChoice':
+      return widget.props.title ? `${widget.props.title} • ${(widget.props.options || []).length} OPTIONS` : 'CHOICE QUESTION';
     case 'FieldInput':
       return widget.props.placeholder || widget.props.label || 'INPUT FIELD';
     case 'HeroDrop':
@@ -206,6 +210,8 @@ function handleSelectLayer(widget: WidgetItem) {
     editorStore.openTextSidebar();
   } else if (widget.type === 'ActionButton') {
     editorStore.openButtonSidebar();
+  } else if (widget.type === 'MultipleChoice') {
+    editorStore.openChoiceSidebar();
   }
 }
 
@@ -217,6 +223,8 @@ function handleAdjustLayer(widget: WidgetItem) {
     editorStore.openTextSidebar();
   } else if (widget.type === 'ActionButton') {
     editorStore.openButtonSidebar();
+  } else if (widget.type === 'MultipleChoice') {
+    editorStore.openChoiceSidebar();
   }
 }
 

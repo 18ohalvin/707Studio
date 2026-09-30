@@ -12,10 +12,34 @@ export type WidgetType =
   | 'FieldInput'
   | 'ActionButton'
   | 'TextBanner'
+  | 'MultipleChoice'
   /* Used by the ticket landing page. No renderer case exists for it yet, so a
      PassCTA widget currently displays nothing — needs a display built before
      it is used on a live page. */
   | 'PassCTA';
+
+export type ChoiceWidgetVariant = 'arrivals-card' | 'simple-row' | 'horizontal-block' | 'image-grid';
+
+export interface ChoiceOptionItem {
+  id: string;
+  label: string;
+  secondaryLabel?: string;
+  description?: string;
+  imageUrl?: string;
+  value?: string;
+}
+
+export interface MultipleChoiceProps {
+  title?: string;
+  subtitle?: string;
+  variant?: ChoiceWidgetVariant;
+  allowMultiple?: boolean;
+  required?: boolean;
+  selectedIds?: string[];
+  options?: ChoiceOptionItem[];
+  minSelections?: number;
+  maxSelections?: number;
+}
 
 export interface WidgetItem {
   id: string;

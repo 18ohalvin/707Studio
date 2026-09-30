@@ -223,7 +223,7 @@
           v-for="field in currentTabFields" 
           :key="field.name"
           draggable="true"
-          @dragstart="handleDragStart($event, { type: 'FieldInput', label: field.name, customProps: getFieldDefaultProps(field.name) })"
+          @dragstart="handleFormFieldDragStart($event, field.name)"
           @dragend="handleDragEnd"
           @click="addFormField(field.name)"
           class="flex flex-col gap-[6px] items-center shrink-0 w-[56px] cursor-grab active:cursor-grabbing group"
@@ -520,7 +520,42 @@ function getFieldDefaultProps(fieldName: string) {
   };
 }
 
+function getFieldDragItem(fieldName: string): { type: WidgetType; label: string; customProps?: Record<string, any> } {
+  if (selectedFormTab.value === 'Choices') {
+    let variant = 'arrivals-card';
+    if (fieldName === 'Checkbox') variant = 'simple-row';
+    else if (fieldName === 'Sneaker Size') variant = 'horizontal-block';
+    else if (fieldName === 'Radio Group') variant = 'image-grid';
+    else if (fieldName === 'Multi Choice') variant = 'arrivals-card';
+    return {
+      type: 'MultipleChoice',
+      label: fieldName,
+      customProps: { variant }
+    };
+  }
+  return {
+    type: 'FieldInput',
+    label: fieldName,
+    customProps: getFieldDefaultProps(fieldName)
+  };
+}
+
+function handleFormFieldDragStart(event: DragEvent, fieldName: string) {
+  const item = getFieldDragItem(fieldName);
+  handleDragStart(event, item);
+}
+
 function addFormField(fieldName: string) {
+  if (selectedFormTab.value === 'Choices') {
+    let variant = 'arrivals-card';
+    if (fieldName === 'Checkbox') variant = 'simple-row';
+    else if (fieldName === 'Sneaker Size') variant = 'horizontal-block';
+    else if (fieldName === 'Radio Group') variant = 'image-grid';
+    else if (fieldName === 'Multi Choice') variant = 'arrivals-card';
+    editorStore.addWidget('MultipleChoice', undefined, { variant });
+    emit('close');
+    return;
+  }
   editorStore.addWidget('FieldInput', undefined, getFieldDefaultProps(fieldName));
   emit('close');
 }

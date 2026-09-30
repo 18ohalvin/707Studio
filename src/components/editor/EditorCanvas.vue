@@ -163,6 +163,13 @@
       @close="editorStore.isButtonSidebarOpen = false"
     />
 
+    <!-- Choice Setup Sidebar Drawer (Figma Node 276:4224) -->
+    <ChoiceSetupSidebar 
+      @click.stop
+      :is-open="editorStore.isChoiceSidebarOpen"
+      @close="editorStore.isChoiceSidebarOpen = false"
+    />
+
     <!-- Layer Button Sidebar Menu (Figma Node 184:6137) -->
     <LayersSidebar 
       @click.stop
@@ -186,6 +193,7 @@ import WidgetLeftSidebar from './WidgetLeftSidebar.vue';
 import MediaGallerySidebar from './MediaGallerySidebar.vue';
 import TextSetupSidebar from './TextSetupSidebar.vue';
 import ButtonSetupSidebar from './ButtonSetupSidebar.vue';
+import ChoiceSetupSidebar from './ChoiceSetupSidebar.vue';
 import LayersSidebar from './LayersSidebar.vue';
 
 const editorStore = useEditorStore();
