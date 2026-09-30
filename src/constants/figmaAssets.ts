@@ -52,5 +52,8 @@ export const FIGMA_ASSETS = {
   landingAvatar: "/assets/61a97ef35fc4fba46f48cf6cb9fd8a84610b6c3c.svg",
 
   // Choice Icons (Node 276:4224)
-  addFilled: "/assets/carbon_add_filled.svg"
+  addFilled: "/assets/carbon_add_filled.svg",
+
+  // Gallery Icon
+  galleryIcon: "/assets/gallery_icon.svg"
 };

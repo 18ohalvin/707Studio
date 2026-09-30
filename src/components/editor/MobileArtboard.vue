@@ -241,8 +241,12 @@
 
               <!-- Solid space blocking placeholder (#EDEDED for layout preview per Figma Node 134:4207) -->
               <div v-else class="size-full flex flex-col items-center justify-center p-6 text-center select-none bg-[#ededed] min-h-[160px]">
-                <div class="size-[44px] rounded-full bg-black/5 border border-black/5 flex items-center justify-center text-neutral-400 pointer-events-none shadow-sm">
-                  <ImageIcon class="size-5 stroke-[1.75]" />
+                <div class="size-[48px] rounded-full bg-black/5 border border-black/5 flex items-center justify-center pointer-events-none shadow-sm">
+                  <svg class="size-6 text-black/50" viewBox="0 0 94 94" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M70.0242 83.1312H20.0926C18.868 83.1338 17.655 82.8946 16.5232 82.4273C15.3913 81.96 14.3628 81.2738 13.4968 80.4081C12.6307 79.5424 11.9441 78.5143 11.4763 77.3826C11.0086 76.2509 10.7688 75.038 10.7709 73.8135V23.9602" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M77.1348 10.8668H32.947C29.5812 10.8668 26.8527 13.5953 26.8527 16.9611V61.149C26.8527 64.5148 29.5812 67.2433 32.947 67.2433H77.1348C80.5006 67.2433 83.2292 64.5148 83.2292 61.149V16.9611C83.2292 13.5953 80.5006 10.8668 77.1348 10.8668Z" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M34.6312 55.2544H74.8554L61.0061 37.7802L51.939 49.4029L45.594 42.0669L34.6312 55.2544Z" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
                 </div>
               </div>
 
