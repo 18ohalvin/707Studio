@@ -293,7 +293,7 @@ textarea, input, .select-text, .select-text * {
 }
 
 /* ==========================================================================
-   APPLE macOS LIQUID & FROSTED GLASS BUTTON SYSTEM
+   APPLE macOS LIQUID & FROSTED GLASS BUTTON SYSTEM (ZERO JITTER / SHAKE)
    ========================================================================== */
 
 .apple-glass-btn {
@@ -303,19 +303,23 @@ textarea, input, .select-text, .select-text * {
   color: #000000;
   border: 0.5px solid rgba(0, 0, 0, 0.12);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  transform: translateZ(0);
+  -webkit-font-smoothing: antialiased;
   cursor: pointer;
 }
 
 .apple-glass-btn:hover {
   background: rgba(236, 236, 236, 1);
   border-color: rgba(0, 0, 0, 0.25);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  transform: none !important;
 }
 
 .apple-glass-btn:active {
   background: #e0e0e0;
-  transform: scale(0.97);
+  transform: none !important;
+  opacity: 0.88;
 }
 
 .apple-glass-btn-dark {
@@ -325,19 +329,23 @@ textarea, input, .select-text, .select-text * {
   color: #ffffff;
   border: 0.5px solid rgba(0, 0, 0, 0.4);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  transform: translateZ(0);
+  -webkit-font-smoothing: antialiased;
   cursor: pointer;
 }
 
 .apple-glass-btn-dark:hover {
   background: rgba(0, 0, 0, 0.96);
   border-color: rgba(0, 0, 0, 0.6);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.26);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22);
+  transform: none !important;
 }
 
 .apple-glass-btn-dark:active {
   background: #000000;
-  transform: scale(0.97);
+  transform: none !important;
+  opacity: 0.88;
 }
 
 .apple-glass-icon-btn {
@@ -347,19 +355,23 @@ textarea, input, .select-text, .select-text * {
   color: #000000;
   border: 0.5px solid rgba(0, 0, 0, 0.12);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  transform: translateZ(0);
+  -webkit-font-smoothing: antialiased;
   cursor: pointer;
 }
 
 .apple-glass-icon-btn:hover {
   background: rgba(236, 236, 236, 1);
   border-color: rgba(0, 0, 0, 0.25);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  transform: none !important;
 }
 
 .apple-glass-icon-btn:active {
   background: #e0e0e0;
-  transform: scale(0.94);
+  transform: none !important;
+  opacity: 0.88;
 }
 
 .apple-glass-pill {
@@ -368,12 +380,15 @@ textarea, input, .select-text, .select-text * {
   background: rgba(236, 236, 236, 0.2);
   border: 0.5px solid rgba(0, 0, 0, 0.12);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  transform: translateZ(0);
+  -webkit-font-smoothing: antialiased;
 }
 
 .apple-glass-pill:hover {
   background: rgba(236, 236, 236, 1);
   border-color: rgba(0, 0, 0, 0.25);
+  transform: none !important;
 }
 
 /* Enforce 0.5px outline/border weight across Apple glass controls only */
@@ -684,24 +699,68 @@ button[data-cta],
 
 /* Tactile Apple Press Feedback - Rock solid layout with zero hover twitching / jumping */
 .apple-press {
-  transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease, color 0.18s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease, color 0.15s ease;
+  transform: translateZ(0);
+  -webkit-font-smoothing: antialiased;
 }
 
 .apple-press:hover {
-  /* Layout remains 100% fixed on hover - no translateY or jitter */
+  transform: none !important;
 }
 
 .apple-press:active {
-  transform: scale(0.97);
+  transform: none !important;
+  opacity: 0.85;
 }
 
 .apple-press-subtle {
   transition: opacity 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+  transform: translateZ(0);
+  -webkit-font-smoothing: antialiased;
+}
+
+.apple-press-subtle:hover {
+  transform: none !important;
 }
 
 .apple-press-subtle:active {
-  transform: scale(0.98);
-  opacity: 0.88;
+  transform: none !important;
+  opacity: 0.85;
+}
+
+/* Global Zero Jitter / Shaking Engine for all UI Buttons & Interactive Controls */
+button,
+[role="button"],
+a[role="button"],
+.apple-glass-btn,
+.apple-glass-btn-dark,
+.apple-glass-icon-btn,
+.apple-glass-pill,
+.apple-press,
+.apple-press-subtle,
+.apple-cta-btn {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+button:hover,
+button:active,
+[role="button"]:hover,
+[role="button"]:active,
+.apple-glass-btn:hover,
+.apple-glass-btn:active,
+.apple-glass-btn-dark:hover,
+.apple-glass-btn-dark:active,
+.apple-glass-icon-btn:hover,
+.apple-glass-icon-btn:active,
+.apple-press:hover,
+.apple-press:active,
+.apple-press-subtle:hover,
+.apple-press-subtle:active {
+  transform: none !important;
 }
 
 .apple-card-hover {

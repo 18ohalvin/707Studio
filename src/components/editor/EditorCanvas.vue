@@ -105,7 +105,7 @@
       >
         <button
           @click="editorStore.closePages()"
-          class="apple-glass-btn-dark flex items-center justify-center gap-2 px-[24px] h-[40px] rounded-[8px] shadow-[0px_10px_30px_rgba(0,0,0,0.25)] border border-white/20 cursor-pointer text-white hover:bg-neutral-900 active:scale-95 transition-all"
+          class="apple-glass-btn-dark flex items-center justify-center gap-2 px-[24px] h-[40px] rounded-[8px] shadow-[0px_10px_30px_rgba(0,0,0,0.25)] border border-white/20 cursor-pointer text-white hover:bg-neutral-900 transition-colors duration-150"
           title="Exit Overview Page (Return to Canvas)"
         >
           <Check class="w-4 h-4 text-white stroke-[2.5]" />
