@@ -994,17 +994,8 @@ function updateScrollMetrics() {
 
 function handleArtboardWheel(e: WheelEvent) {
   if (e.ctrlKey || e.metaKey || props.isMiniPreview) return;
-  if (!scrollContainerRef.value) return;
-
-  const container = scrollContainerRef.value;
-  const maxScroll = container.scrollHeight - container.clientHeight;
-  if (maxScroll <= 0) return;
-
-  // Prevent canvas workspace from panning while user scrolls the phone artboard content
+  // Stop event from bubbling up to parent canvas so canvas workspace doesn't pan or zoom
   e.stopPropagation();
-  e.preventDefault();
-
-  container.scrollTop += e.deltaY;
 }
 
 function scrollToWidget(id: string) {
@@ -1304,7 +1295,9 @@ function getRatioClass(ratio?: string) {
       return 'min-h-[76px] py-[16px] px-0 w-full shrink-0 flex flex-col justify-center';
     case 'Full screen landing page':
     default:
-      return 'h-full min-h-full flex-1 w-full shrink-0 min-h-[580px]';
+      return isSingleFullScreenHero.value
+        ? 'h-full min-h-full flex-1 w-full shrink-0 min-h-[580px]'
+        : 'h-[580px] min-h-[580px] w-full shrink-0';
   }
 }
 
