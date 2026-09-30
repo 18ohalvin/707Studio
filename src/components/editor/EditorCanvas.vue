@@ -170,6 +170,13 @@
       @close="editorStore.isChoiceSidebarOpen = false"
     />
 
+    <!-- Pop Up Modal Setup Sidebar Drawer (Figma Node 276:4722) -->
+    <ModalSetupSidebar 
+      @click.stop
+      :is-open="editorStore.isModalSidebarOpen"
+      @close="editorStore.isModalSidebarOpen = false"
+    />
+
     <!-- Layer Button Sidebar Menu (Figma Node 184:6137) -->
     <LayersSidebar 
       @click.stop
@@ -194,6 +201,7 @@ import MediaGallerySidebar from './MediaGallerySidebar.vue';
 import TextSetupSidebar from './TextSetupSidebar.vue';
 import ButtonSetupSidebar from './ButtonSetupSidebar.vue';
 import ChoiceSetupSidebar from './ChoiceSetupSidebar.vue';
+import ModalSetupSidebar from './ModalSetupSidebar.vue';
 import LayersSidebar from './LayersSidebar.vue';
 
 const editorStore = useEditorStore();

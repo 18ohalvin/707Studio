@@ -236,4 +236,43 @@ describe('707 Activation Builder Stores', () => {
     expect(editorStore.currentPage.widget_tree.length).toBe(0);
     expect(editorStore.isChoiceSidebarOpen).toBe(false);
   });
+
+  it('supports ModalOverlay widget creation, 5 variants, and modal sidebar management (Figma 276:4722)', () => {
+    const editorStore = useEditorStore();
+    expect(editorStore.isModalSidebarOpen).toBe(false);
+
+    // Adding ModalOverlay widget
+    const modalWidget = editorStore.addWidget('ModalOverlay', undefined, {
+      title: 'SELECT ARRIVAL DATE',
+      subtitle: 'Please provide a valid email address. We will resend your E-Pass immediately.',
+      variant: 'choice-detailed',
+      buttonText: 'DONE',
+      buttonVariant: 'black',
+      options: [
+        { id: 'opt_1', label: 'Day 1', sublabel: '2 September 2026', description: 'Your Event Descriptions Detail', selected: true },
+        { id: 'opt_2', label: 'Day 2', sublabel: '3 September 2026', description: 'Your Event Descriptions Detail', selected: false }
+      ]
+    });
+
+    expect(modalWidget.type).toBe('ModalOverlay');
+    expect(modalWidget.props.title).toBe('SELECT ARRIVAL DATE');
+    expect(modalWidget.props.variant).toBe('choice-detailed');
+    expect(modalWidget.props.options.length).toBe(2);
+    expect(editorStore.isModalSidebarOpen).toBe(true);
+
+    // Toggle modal sidebar
+    editorStore.toggleModalSidebar();
+    expect(editorStore.isModalSidebarOpen).toBe(false);
+    editorStore.openModalSidebar();
+    expect(editorStore.isModalSidebarOpen).toBe(true);
+
+    // Update variant to image-matrix
+    editorStore.updateWidgetProps(modalWidget.id, { variant: 'image-matrix' });
+    expect(modalWidget.props.variant).toBe('image-matrix');
+
+    // Remove widget closes modal sidebar
+    editorStore.removeWidget(modalWidget.id);
+    expect(editorStore.currentPage.widget_tree.length).toBe(0);
+    expect(editorStore.isModalSidebarOpen).toBe(false);
+  });
 });

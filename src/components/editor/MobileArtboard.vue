@@ -506,6 +506,107 @@
                   <div class="text-neutral-600 text-[11px] leading-relaxed">{{ item.content }}</div>
                 </div>
               </div>
+            <!-- 5b. ModalOverlay Widget (Figma Node 276:4722 - Bottom Pop-up Modal) -->
+            <div 
+              v-else-if="widget.type === 'ModalOverlay'" 
+              @click.stop="handleWidgetClick(widget)"
+              class="w-full bg-white text-black p-[24px] rounded-t-[12px] shadow-sm border border-neutral-200/80 cursor-pointer relative transition-all"
+              :class="[
+                !isMiniPreview && (editorStore.selectedWidgetId === widget.id || hoveredWidgetId === widget.id)
+                  ? 'ring-1 ring-black/40' 
+                  : ''
+              ]"
+              data-node-id="276:4722"
+              data-name="Bottom Modal Popup"
+            >
+              <div class="flex flex-col gap-[24px] items-start w-full">
+                <!-- Header: Title + Subtitle -->
+                <div class="flex flex-col gap-[8px] items-start w-full">
+                  <h2 class="font-707 font-medium text-[20px] leading-[26px] text-black uppercase tracking-tight">
+                    {{ widget.props.title || 'SELECT ARRIVAL DATE' }}
+                  </h2>
+                  <p class="font-707 font-light text-[13px] leading-[18px] text-neutral-600">
+                    {{ widget.props.subtitle || 'Please provide a valid email address. We will resend your E-Pass immediately.' }}
+                  </p>
+                </div>
+
+                <!-- Variant 1: Message / Alert (No extra inputs) -->
+
+                <!-- Variant 2: Message + Field placeholder -->
+                <div v-if="widget.props.variant === 'message-field'" class="w-full">
+                  <div class="border-b border-black py-[8px] w-full">
+                    <span class="font-707 text-[15px] text-neutral-400">
+                      {{ widget.props.fieldPlaceholder || 'Enter your email*' }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Variant 3: Multiple Choice (Detailed) -->
+                <div v-else-if="widget.props.variant === 'choice-detailed'" class="w-full flex flex-col gap-[8px]">
+                  <div 
+                    v-for="(opt, oIdx) in (widget.props.options || [])"
+                    :key="opt.id || oIdx"
+                    class="border border-solid p-[14px] flex gap-[14px] items-start w-full transition-all"
+                    :class="opt.selected ? 'border-black bg-white shadow-xs' : 'border-[#d4d4d4] bg-white'"
+                  >
+                    <div class="size-[20px] border border-black flex items-center justify-center shrink-0 mt-0.5">
+                      <div v-if="opt.selected" class="size-[12px] bg-black"></div>
+                    </div>
+                    <div class="flex-1 flex flex-col gap-[4px]">
+                      <div class="flex items-center justify-between font-707 font-medium text-[14px] text-black">
+                        <span>{{ opt.label }}</span>
+                        <span>{{ opt.sublabel }}</span>
+                      </div>
+                      <p v-if="opt.description" class="font-707 font-normal text-[12px] text-neutral-500">
+                        {{ opt.description }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Variant 4: Simple Multiple Choice -->
+                <div v-else-if="widget.props.variant === 'choice-simple'" class="w-full flex flex-col gap-[8px]">
+                  <div 
+                    v-for="(opt, oIdx) in (widget.props.options || [])"
+                    :key="opt.id || oIdx"
+                    class="border border-solid h-[50px] px-[14px] flex items-center gap-[14px] w-full transition-all"
+                    :class="opt.selected ? 'border-black bg-white shadow-xs' : 'border-[#d4d4d4] bg-white'"
+                  >
+                    <div class="size-[20px] border border-black flex items-center justify-center shrink-0">
+                      <div v-if="opt.selected" class="size-[12px] bg-black"></div>
+                    </div>
+                    <div class="flex-1 flex items-center justify-between font-707 font-medium text-[14px] text-black">
+                      <span>{{ opt.label }}</span>
+                      <span>{{ opt.sublabel }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Variant 5: Matrix Image Pop Up (3:4 ratio) -->
+                <div v-else-if="widget.props.variant === 'image-matrix'" class="w-full grid grid-cols-4 gap-[8px]">
+                  <div 
+                    v-for="(slot, sIdx) in (widget.props.imageSlots || [])"
+                    :key="slot.id || sIdx"
+                    class="aspect-[3/4] bg-[#ededed] relative overflow-hidden transition-all border border-solid"
+                    :class="slot.selected ? 'border-black ring-1 ring-black' : 'border-neutral-200'"
+                  >
+                    <img v-if="slot.url" :src="slot.url" class="w-full h-full object-cover" />
+                    <div v-if="slot.selected" class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                      <Check class="size-4 text-white stroke-[2.5]" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- CTA Action Button -->
+                <div class="w-full">
+                  <button 
+                    class="w-full h-[48px] flex items-center justify-center font-707 font-medium text-[13px] leading-[18px] tracking-normal uppercase border border-solid shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] cursor-pointer transition-colors"
+                    :class="widget.props.buttonVariant === 'white' ? 'bg-white text-black border-black hover:bg-neutral-50' : 'bg-black text-white border-black hover:bg-[#262626]'"
+                  >
+                    {{ widget.props.buttonText || 'DONE' }}
+                  </button>
+                </div>
+              </div>
             </div>
 
             <!-- 6. TextBanner Widget (Free Text Tool, Figma Nodes 180:5836 & 181:6087 - Zero vertical padding for precise 4px text-to-text spacing) -->
@@ -1552,6 +1653,8 @@ function handleAdjustWidget(widget: any) {
     editorStore.openButtonSidebar();
   } else if (widget.type === 'MultipleChoice') {
     editorStore.openChoiceSidebar();
+  } else if (widget.type === 'ModalOverlay') {
+    editorStore.openModalSidebar();
   } else {
     editorStore.openWidgetSidebar();
   }

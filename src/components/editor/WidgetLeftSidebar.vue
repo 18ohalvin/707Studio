@@ -277,70 +277,127 @@
     </div>
 
     <!-- Section 5: Pop Up Overlays -->
+    <!-- Section 5: Pop Up Overlays (Figma Node 276:4722) -->
     <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
         <p class="flex-[1_0_0] font-707 font-medium text-[13px] leading-[18px] text-black">
-          Pop Up Overlays
+          Pop Up Modal (5 Variants)
         </p>
       </div>
-      <div class="content-stretch flex gap-[14px] items-start overflow-x-auto w-full no-scrollbar">
-        <!-- Center Overlay -->
+      <div class="content-stretch flex gap-[14px] items-start overflow-x-auto w-full no-scrollbar pb-1">
+        <!-- 1. Message / Alert -->
         <div 
           draggable="true"
-          @dragstart="handleDragStart($event, { type: 'RulesAccordion', label: 'Center Modal', customProps: { title: 'EVENT DETAILS & PASS' } })"
+          @dragstart="handleDragStart($event, { type: 'ModalOverlay', label: 'Message / Alert', customProps: getModalDefaultProps('message-alert') })"
           @dragend="handleDragEnd"
-          @click="addOverlayWidget('Center Modal')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group"
+          @click="addModalOverlay('message-alert')"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group w-[88px]"
           title="Drag to canvas or click to add"
         >
-          <div class="border border-[#c9c9c9] flex flex-col gap-[8px] h-[130px] items-center justify-center rounded-[8px] shrink-0 w-[84px] bg-white group-hover:border-black transition-colors shadow-sm overflow-hidden">
-            <div class="bg-[#d9d9d9] h-[42px] rounded-[6px] w-[54px] flex items-center justify-center gap-1">
-              <div class="bg-[#aaa] h-1.5 w-3.5 rounded-sm"></div>
-              <div class="bg-[#aaa] h-1.5 w-3.5 rounded-sm"></div>
+          <div class="border border-[#c9c9c9] flex flex-col justify-end rounded-[8px] shrink-0 w-full h-[120px] bg-white group-hover:border-black transition-colors p-2 shadow-sm overflow-hidden">
+            <div class="bg-neutral-50 border border-neutral-200 rounded-[6px] w-full p-1.5 flex flex-col gap-1 shadow-sm">
+              <div class="bg-neutral-800 h-1.5 w-3/4 rounded-xs"></div>
+              <div class="bg-neutral-300 h-1 w-full rounded-xs"></div>
+              <div class="bg-black h-2.5 w-full rounded-xs mt-1"></div>
             </div>
           </div>
           <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
-            Center
+            Message/Alert
           </p>
         </div>
 
-        <!-- Bottom Sheet -->
+        <!-- 2. Message + Field -->
         <div 
           draggable="true"
-          @dragstart="handleDragStart($event, { type: 'RulesAccordion', label: 'Bottom Drawer', customProps: { title: 'TERMS & CONDITIONS' } })"
+          @dragstart="handleDragStart($event, { type: 'ModalOverlay', label: 'Message + Field', customProps: getModalDefaultProps('message-field') })"
           @dragend="handleDragEnd"
-          @click="addOverlayWidget('Bottom Drawer')"
-          class="content-stretch flex flex-col gap-[8px] items-center shrink-0 cursor-grab active:cursor-grabbing group"
+          @click="addModalOverlay('message-field')"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group w-[88px]"
           title="Drag to canvas or click to add"
         >
-          <div class="border border-[#c9c9c9] flex flex-col justify-end rounded-[8px] shrink-0 w-[90px] h-[140px] bg-white group-hover:border-black transition-colors p-2 shadow-sm overflow-hidden">
-            <div class="bg-[#d9d9d9] h-[55px] rounded-[6px] w-full flex flex-col justify-end p-1">
-              <div class="bg-[#aaa] h-1.5 w-full rounded-sm"></div>
+          <div class="border border-[#c9c9c9] flex flex-col justify-end rounded-[8px] shrink-0 w-full h-[120px] bg-white group-hover:border-black transition-colors p-2 shadow-sm overflow-hidden">
+            <div class="bg-neutral-50 border border-neutral-200 rounded-[6px] w-full p-1.5 flex flex-col gap-1 shadow-sm">
+              <div class="bg-neutral-800 h-1.5 w-3/4 rounded-xs"></div>
+              <div class="border-b border-black h-2 w-full mt-0.5"></div>
+              <div class="bg-black h-2.5 w-full rounded-xs mt-1"></div>
             </div>
           </div>
           <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
-            Bottom
+            Message+Field
           </p>
         </div>
 
-        <!-- Full Page Overlay -->
+        <!-- 3. Multiple Choice (Detailed) -->
         <div 
           draggable="true"
-          @dragstart="handleDragStart($event, { type: 'RulesAccordion', label: 'Full Page Pass', customProps: { title: 'FULL PAGE ACCESS TERMS' } })"
+          @dragstart="handleDragStart($event, { type: 'ModalOverlay', label: 'Choice (Detailed)', customProps: getModalDefaultProps('choice-detailed') })"
           @dragend="handleDragEnd"
-          @click="addOverlayWidget('Full Page Pass')"
-          class="content-stretch flex flex-col gap-[8px] items-center shrink-0 cursor-grab active:cursor-grabbing group"
+          @click="addModalOverlay('choice-detailed')"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group w-[88px]"
           title="Drag to canvas or click to add"
         >
-          <div class="border border-[#c9c9c9] flex flex-col justify-between rounded-[8px] shrink-0 w-[90px] h-[140px] bg-white group-hover:border-black transition-colors p-2 shadow-sm overflow-hidden">
-            <div class="bg-[#d9d9d9] h-full rounded-[6px] w-full flex flex-col justify-between p-1.5">
-              <div class="bg-[#aaa] h-7 w-full rounded-sm"></div>
-              <div class="bg-[#aaa] h-7 w-full rounded-sm"></div>
-              <div class="bg-[#aaa] h-2 w-full rounded-sm"></div>
+          <div class="border border-[#c9c9c9] flex flex-col justify-end rounded-[8px] shrink-0 w-full h-[120px] bg-white group-hover:border-black transition-colors p-2 shadow-sm overflow-hidden">
+            <div class="bg-neutral-50 border border-neutral-200 rounded-[6px] w-full p-1.5 flex flex-col gap-1 shadow-sm">
+              <div class="bg-neutral-800 h-1.5 w-3/4 rounded-xs"></div>
+              <div class="border border-black bg-white rounded-xs p-0.5 flex items-center gap-1">
+                <div class="size-1.5 bg-black"></div>
+                <div class="bg-neutral-400 h-1 flex-1"></div>
+              </div>
+              <div class="bg-black h-2.5 w-full rounded-xs mt-0.5"></div>
             </div>
           </div>
           <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
-            Full Page
+            Detailed Choice
+          </p>
+        </div>
+
+        <!-- 4. Simple Multiple Choice -->
+        <div 
+          draggable="true"
+          @dragstart="handleDragStart($event, { type: 'ModalOverlay', label: 'Choice (Simple)', customProps: getModalDefaultProps('choice-simple') })"
+          @dragend="handleDragEnd"
+          @click="addModalOverlay('choice-simple')"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group w-[88px]"
+          title="Drag to canvas or click to add"
+        >
+          <div class="border border-[#c9c9c9] flex flex-col justify-end rounded-[8px] shrink-0 w-full h-[120px] bg-white group-hover:border-black transition-colors p-2 shadow-sm overflow-hidden">
+            <div class="bg-neutral-50 border border-neutral-200 rounded-[6px] w-full p-1.5 flex flex-col gap-1 shadow-sm">
+              <div class="bg-neutral-800 h-1.5 w-3/4 rounded-xs"></div>
+              <div class="border border-neutral-300 bg-white rounded-xs p-0.5 flex items-center justify-between">
+                <div class="bg-neutral-400 h-1 w-3"></div>
+                <div class="bg-neutral-400 h-1 w-5"></div>
+              </div>
+              <div class="bg-black h-2.5 w-full rounded-xs mt-0.5"></div>
+            </div>
+          </div>
+          <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
+            Simple Choice
+          </p>
+        </div>
+
+        <!-- 5. Matrix Image Pop Up (3:4) -->
+        <div 
+          draggable="true"
+          @dragstart="handleDragStart($event, { type: 'ModalOverlay', label: 'Image Matrix', customProps: getModalDefaultProps('image-matrix') })"
+          @dragend="handleDragEnd"
+          @click="addModalOverlay('image-matrix')"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group w-[88px]"
+          title="Drag to canvas or click to add"
+        >
+          <div class="border border-[#c9c9c9] flex flex-col justify-end rounded-[8px] shrink-0 w-full h-[120px] bg-white group-hover:border-black transition-colors p-2 shadow-sm overflow-hidden">
+            <div class="bg-neutral-50 border border-neutral-200 rounded-[6px] w-full p-1.5 flex flex-col gap-1 shadow-sm">
+              <div class="bg-neutral-800 h-1.5 w-3/4 rounded-xs"></div>
+              <div class="grid grid-cols-4 gap-0.5 w-full my-0.5">
+                <div class="aspect-[3/4] bg-neutral-300 rounded-2xs border border-black"></div>
+                <div class="aspect-[3/4] bg-neutral-300 rounded-2xs"></div>
+                <div class="aspect-[3/4] bg-neutral-300 rounded-2xs"></div>
+                <div class="aspect-[3/4] bg-neutral-300 rounded-2xs"></div>
+              </div>
+              <div class="bg-black h-2.5 w-full rounded-xs"></div>
+            </div>
+          </div>
+          <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
+            Image Matrix
           </p>
         </div>
       </div>
@@ -352,7 +409,7 @@
 import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
-import type { WidgetType } from '../../types/editor.ts';
+import type { WidgetType, ModalVariant } from '../../types/editor.ts';
 import { 
   User, 
   Mail, 
@@ -594,6 +651,77 @@ function addActionButton(variant: 'black' | 'white' = 'black') {
 
 function addInteractiveWidget(name: string) {
   editorStore.addWidget('RsvpForm', undefined, { heading: name.toUpperCase() });
+}
+
+function getModalDefaultProps(variant: ModalVariant) {
+  if (variant === 'message-alert') {
+    return {
+      variant: 'message-alert',
+      title: 'YOUR PASS HAS BEEN SENT.',
+      subtitle: 'Please provide a valid email address. We will resend your E-Pass immediately.',
+      buttonText: 'DONE',
+      buttonVariant: 'black',
+      dismissible: true
+    };
+  }
+  if (variant === 'message-field') {
+    return {
+      variant: 'message-field',
+      title: 'UPDATE YOUR EMAIL',
+      subtitle: 'Please provide a valid email address. We will resend your E-Pass immediately.',
+      fieldPlaceholder: 'Enter your email*',
+      fieldType: 'email',
+      buttonText: 'DONE',
+      buttonVariant: 'black',
+      dismissible: true
+    };
+  }
+  if (variant === 'choice-detailed') {
+    return {
+      variant: 'choice-detailed',
+      title: 'SELECT ARRIVAL DATE',
+      subtitle: 'Please provide a valid email address. We will resend your E-Pass immediately.',
+      buttonText: 'DONE',
+      buttonVariant: 'black',
+      dismissible: true,
+      options: [
+        { id: 'opt_1', label: 'Day 1', sublabel: '2 September 2026', description: 'Your Event Descriptions Detail', selected: true },
+        { id: 'opt_2', label: 'Day 2', sublabel: '3 September 2026', description: 'Your Event Descriptions Detail', selected: false }
+      ]
+    };
+  }
+  if (variant === 'choice-simple') {
+    return {
+      variant: 'choice-simple',
+      title: 'SELECT ARRIVAL DATE',
+      subtitle: 'Please provide a valid email address. We will resend your E-Pass immediately.',
+      buttonText: 'DONE',
+      buttonVariant: 'black',
+      dismissible: true,
+      options: [
+        { id: 'opt_1', label: '+62', sublabel: 'Indonesia', selected: true },
+        { id: 'opt_2', label: '+65', sublabel: 'Singapore', selected: false }
+      ]
+    };
+  }
+  return {
+    variant: 'image-matrix',
+    title: 'SELECT ARRIVAL DATE',
+    subtitle: 'Please provide a valid email address. We will resend your E-Pass immediately.',
+    buttonText: 'DONE',
+    buttonVariant: 'black',
+    dismissible: true,
+    imageSlots: [
+      { id: 'slot_1', url: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=400&q=80', label: 'Model 01', selected: true },
+      { id: 'slot_2', url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80', label: 'Model 02', selected: false },
+      { id: 'slot_3', url: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=400&q=80', label: 'Model 03', selected: false },
+      { id: 'slot_4', url: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=400&q=80', label: 'Model 04', selected: false }
+    ]
+  };
+}
+
+function addModalOverlay(variant: ModalVariant) {
+  editorStore.addWidget('ModalOverlay', undefined, getModalDefaultProps(variant));
 }
 
 function addOverlayWidget(type: string) {

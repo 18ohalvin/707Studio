@@ -153,6 +153,8 @@ function getWidgetDisplayName(widget: WidgetItem): string {
       return 'Action Button';
     case 'MultipleChoice':
       return 'Choice Options';
+    case 'ModalOverlay':
+      return 'Pop Up Modal';
     case 'FieldInput':
       return widget.props.label ? `${widget.props.label} Field` : 'Form Input';
     case 'HeroDrop':
@@ -184,6 +186,8 @@ function getWidgetSummary(widget: WidgetItem): string {
       return widget.props.label || 'BUTTON CTA';
     case 'MultipleChoice':
       return widget.props.title || widget.props.subtitle || 'MULTIPLE CHOICE OPTIONS';
+    case 'ModalOverlay':
+      return widget.props.title || 'POP UP MODAL OVERLAY';
     case 'FieldInput':
       return widget.props.placeholder || widget.props.label || 'INPUT FIELD';
     case 'HeroDrop':
@@ -212,6 +216,8 @@ function handleSelectLayer(widget: WidgetItem) {
     editorStore.openButtonSidebar();
   } else if (widget.type === 'MultipleChoice') {
     editorStore.openChoiceSidebar();
+  } else if (widget.type === 'ModalOverlay') {
+    editorStore.openModalSidebar();
   }
 }
 
@@ -225,6 +231,8 @@ function handleAdjustLayer(widget: WidgetItem) {
     editorStore.openButtonSidebar();
   } else if (widget.type === 'MultipleChoice') {
     editorStore.openChoiceSidebar();
+  } else if (widget.type === 'ModalOverlay') {
+    editorStore.openModalSidebar();
   }
 }
 

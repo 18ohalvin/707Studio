@@ -76,6 +76,7 @@ export const useEditorStore = defineStore('editor', () => {
   const isTextSidebarOpen = ref<boolean>(false);
   const isButtonSidebarOpen = ref<boolean>(false);
   const isChoiceSidebarOpen = ref<boolean>(false);
+  const isModalSidebarOpen = ref<boolean>(false);
   const isLayersOpen = ref<boolean>(false);
   const isPagesOpen = ref<boolean>(false);
   const selectedMediaRatio = ref<string>('Full screen landing page');
@@ -415,6 +416,8 @@ export const useEditorStore = defineStore('editor', () => {
         openButtonSidebar();
       } else if (type === 'MultipleChoice') {
         openChoiceSidebar();
+      } else if (type === 'ModalOverlay') {
+        openModalSidebar();
       } else {
         openWidgetSidebar();
       }
@@ -449,6 +452,7 @@ export const useEditorStore = defineStore('editor', () => {
       isTextSidebarOpen.value = false;
       isButtonSidebarOpen.value = false;
       isChoiceSidebarOpen.value = false;
+      isModalSidebarOpen.value = false;
       isMediaGalleryOpen.value = false;
     }
     if (currentPage.value.widget_tree.length === 0) {
@@ -513,6 +517,7 @@ export const useEditorStore = defineStore('editor', () => {
     isTextSidebarOpen.value = false;
     isButtonSidebarOpen.value = false;
     isChoiceSidebarOpen.value = false;
+    isModalSidebarOpen.value = false;
     isLayersOpen.value = false;
     isPagesOpen.value = false;
     isMediaSidebarOpen.value = true;
@@ -525,6 +530,7 @@ export const useEditorStore = defineStore('editor', () => {
     isTextSidebarOpen.value = false;
     isButtonSidebarOpen.value = false;
     isChoiceSidebarOpen.value = false;
+    isModalSidebarOpen.value = false;
     isLayersOpen.value = false;
     isPagesOpen.value = false;
     isWidgetSidebarOpen.value = true;
@@ -538,6 +544,7 @@ export const useEditorStore = defineStore('editor', () => {
     isTextSidebarOpen.value = false;
     isButtonSidebarOpen.value = false;
     isChoiceSidebarOpen.value = false;
+    isModalSidebarOpen.value = false;
     isLayersOpen.value = false;
     isPagesOpen.value = false;
     isMediaGalleryOpen.value = true;
@@ -559,6 +566,7 @@ export const useEditorStore = defineStore('editor', () => {
     isMediaGalleryOpen.value = false;
     isButtonSidebarOpen.value = false;
     isChoiceSidebarOpen.value = false;
+    isModalSidebarOpen.value = false;
     isLayersOpen.value = false;
     isPagesOpen.value = false;
     isTextSidebarOpen.value = true;
@@ -576,6 +584,7 @@ export const useEditorStore = defineStore('editor', () => {
     isMediaGalleryOpen.value = false;
     isTextSidebarOpen.value = false;
     isChoiceSidebarOpen.value = false;
+    isModalSidebarOpen.value = false;
     isLayersOpen.value = false;
     isPagesOpen.value = false;
     isButtonSidebarOpen.value = true;
@@ -600,6 +609,7 @@ export const useEditorStore = defineStore('editor', () => {
     isMediaGalleryOpen.value = false;
     isTextSidebarOpen.value = false;
     isButtonSidebarOpen.value = false;
+    isModalSidebarOpen.value = false;
     isLayersOpen.value = false;
     isPagesOpen.value = false;
     isChoiceSidebarOpen.value = true;
@@ -617,6 +627,31 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
+  function openModalSidebar() {
+    isAddMenuOpen.value = false;
+    isWidgetSidebarOpen.value = false;
+    isMediaSidebarOpen.value = false;
+    isMediaGalleryOpen.value = false;
+    isTextSidebarOpen.value = false;
+    isButtonSidebarOpen.value = false;
+    isChoiceSidebarOpen.value = false;
+    isLayersOpen.value = false;
+    isPagesOpen.value = false;
+    isModalSidebarOpen.value = true;
+  }
+
+  function closeModalSidebar() {
+    isModalSidebarOpen.value = false;
+  }
+
+  function toggleModalSidebar() {
+    if (isModalSidebarOpen.value) {
+      closeModalSidebar();
+    } else {
+      openModalSidebar();
+    }
+  }
+
   function openLayers() {
     isAddMenuOpen.value = false;
     isWidgetSidebarOpen.value = false;
@@ -625,6 +660,7 @@ export const useEditorStore = defineStore('editor', () => {
     isTextSidebarOpen.value = false;
     isButtonSidebarOpen.value = false;
     isChoiceSidebarOpen.value = false;
+    isModalSidebarOpen.value = false;
     isPagesOpen.value = false;
     isLayersOpen.value = true;
   }
@@ -649,6 +685,7 @@ export const useEditorStore = defineStore('editor', () => {
     isTextSidebarOpen.value = false;
     isButtonSidebarOpen.value = false;
     isChoiceSidebarOpen.value = false;
+    isModalSidebarOpen.value = false;
     isLayersOpen.value = false;
     isPagesOpen.value = true;
     // Reset canvas pan and zoom so thumbnail overview is always centered in the viewport
@@ -701,6 +738,7 @@ export const useEditorStore = defineStore('editor', () => {
     isTextSidebarOpen.value = false;
     isButtonSidebarOpen.value = false;
     isChoiceSidebarOpen.value = false;
+    isModalSidebarOpen.value = false;
     isLayersOpen.value = false;
   }
 
@@ -995,6 +1033,7 @@ export const useEditorStore = defineStore('editor', () => {
     isTextSidebarOpen,
     isButtonSidebarOpen,
     isChoiceSidebarOpen,
+    isModalSidebarOpen,
     isLayersOpen,
     isPagesOpen,
     selectedMediaRatio,
@@ -1025,6 +1064,9 @@ export const useEditorStore = defineStore('editor', () => {
     openChoiceSidebar,
     closeChoiceSidebar,
     toggleChoiceSidebar,
+    openModalSidebar,
+    closeModalSidebar,
+    toggleModalSidebar,
     openLayers,
     closeLayers,
     toggleLayers,

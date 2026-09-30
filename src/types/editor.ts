@@ -13,12 +13,30 @@ export type WidgetType =
   | 'ActionButton'
   | 'TextBanner'
   | 'MultipleChoice'
+  | 'ModalOverlay'
   /* Used by the ticket landing page. No renderer case exists for it yet, so a
      PassCTA widget currently displays nothing — needs a display built before
      it is used on a live page. */
   | 'PassCTA';
 
 export type ChoiceVariant = 'detailed-card' | 'simple-row' | 'horizontal-block' | 'image-grid';
+
+export type ModalVariant = 'message-alert' | 'message-field' | 'choice-detailed' | 'choice-simple' | 'image-matrix';
+
+export interface ModalOption {
+  id: string;
+  label: string;
+  sublabel?: string;
+  description?: string;
+  selected?: boolean;
+}
+
+export interface ModalImageSlot {
+  id: string;
+  url: string;
+  label?: string;
+  selected?: boolean;
+}
 
 export interface ChoiceOption {
   id: string;
