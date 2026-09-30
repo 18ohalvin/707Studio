@@ -10,16 +10,16 @@
     <p class="text-sm text-neutral-400 max-w-sm mb-6 leading-relaxed">
       The 707 Campaign & Raffle Editor requires a desktop or laptop display (minimum width 1024px) for precision layout building and UI/UX review.
     </p>
-    <div class="p-4 rounded-xl bg-[#16181a] border border-[#2c2f35] text-xs text-neutral-400 max-w-xs text-left mb-6">
+    <div class="p-4 rounded-xl bg-[#16181a] border border-[#2c2f35] text-xs text-neutral-400 max-w-xs text-left">
       <div class="font-semibold text-neutral-200 mb-1">Current Screen Width:</div>
       <div class="font-mono text-white">{{ windowWidth }}px (Requires ≥ 1024px)</div>
     </div>
     <button 
       type="button" 
       @click="isDismissed = true"
-      class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-mono text-neutral-300 hover:text-white border border-white/20 transition-all cursor-pointer"
+      class="mt-6 px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-mono text-neutral-300 hover:text-white border border-white/20 transition-all cursor-pointer"
     >
-      Preview On Mobile Anyway (Local Testing)
+      Preview On Mobile (Local Testing)
     </button>
   </div>
 </template>
