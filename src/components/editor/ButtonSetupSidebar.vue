@@ -371,35 +371,40 @@ function setModalVariant(v: ModalVariant) {
   let updated: Record<string, any> = { ...existing, variant: v };
 
   if (v === 'message-alert') {
-    updated.title = updated.title || 'YOUR PASS HAS BEEN SENT.';
+    updated.title = updated.title || 'Your Pass Has Been Sent';
     updated.subtitle = updated.subtitle || 'Please provide a valid email address. We will resend your E-Pass immediately.';
-    updated.buttonText = updated.buttonText || 'DONE';
+    updated.buttonText = updated.buttonText || 'Done';
+    updated.buttonVariant = updated.buttonVariant || 'black';
   } else if (v === 'message-field') {
-    updated.title = updated.title || 'UPDATE YOUR EMAIL';
+    updated.title = updated.title || 'Update Your Email';
     updated.subtitle = updated.subtitle || 'Please provide a valid email address. We will resend your E-Pass immediately.';
     updated.fieldPlaceholder = updated.fieldPlaceholder || 'Enter your email*';
     updated.fieldType = updated.fieldType || 'email';
-    updated.buttonText = updated.buttonText || 'DONE';
+    updated.buttonText = updated.buttonText || 'Done';
+    updated.buttonVariant = updated.buttonVariant || 'black';
   } else if (v === 'choice-detailed') {
-    updated.title = updated.title || 'SELECT ARRIVAL DATE';
+    updated.title = updated.title || 'Select Arrival Date';
     updated.subtitle = updated.subtitle || 'Please provide a valid email address. We will resend your E-Pass immediately.';
-    updated.buttonText = updated.buttonText || 'DONE';
+    updated.buttonText = updated.buttonText || 'Done';
+    updated.buttonVariant = updated.buttonVariant || 'black';
     updated.options = updated.options || [
       { id: 'opt_1', label: 'Day 1', sublabel: '2 September 2026', description: 'Your Event Descriptions Detail', selected: true },
       { id: 'opt_2', label: 'Day 2', sublabel: '3 September 2026', description: 'Your Event Descriptions Detail', selected: false }
     ];
   } else if (v === 'choice-simple') {
-    updated.title = updated.title || 'SELECT ARRIVAL DATE';
+    updated.title = updated.title || 'Select Arrival Date';
     updated.subtitle = updated.subtitle || 'Please provide a valid email address. We will resend your E-Pass immediately.';
-    updated.buttonText = updated.buttonText || 'DONE';
+    updated.buttonText = updated.buttonText || 'Done';
+    updated.buttonVariant = updated.buttonVariant || 'black';
     updated.options = updated.options || [
       { id: 'opt_1', label: '+62', sublabel: 'Indonesia', selected: true },
       { id: 'opt_2', label: '+65', sublabel: 'Singapore', selected: false }
     ];
   } else if (v === 'image-matrix') {
-    updated.title = updated.title || 'SELECT ARRIVAL DATE';
+    updated.title = updated.title || 'Select Arrival Date';
     updated.subtitle = updated.subtitle || 'Please provide a valid email address. We will resend your E-Pass immediately.';
-    updated.buttonText = updated.buttonText || 'DONE';
+    updated.buttonText = updated.buttonText || 'Done';
+    updated.buttonVariant = updated.buttonVariant || 'black';
     updated.imageSlots = updated.imageSlots || [
       { id: 'slot_1', url: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=400&q=80', label: 'Model 01', selected: true },
       { id: 'slot_2', url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80', label: 'Model 02', selected: false },

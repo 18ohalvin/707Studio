@@ -771,9 +771,10 @@ function selectLinkTo(val: string) {
     const currentProps = editorStore.selectedWidget?.props || {};
     const defaultModalProps = currentProps.modalProps || {
       variant: 'message-alert',
-      title: 'YOUR PASS HAS BEEN SENT.',
+      title: 'Your Pass Has Been Sent',
       subtitle: 'Please provide a valid email address. We will resend your E-Pass immediately.',
-      buttonText: 'DONE'
+      buttonText: 'Done',
+      buttonVariant: 'black'
     };
     editorStore.updateWidgetProps(editorStore.selectedWidgetId, { 
       actionType: val,
@@ -793,9 +794,10 @@ function openModalSetup() {
       editorStore.updateWidgetProps(editorStore.selectedWidgetId, {
         modalProps: {
           variant: 'message-alert',
-          title: 'YOUR PASS HAS BEEN SENT.',
+          title: 'Your Pass Has Been Sent',
           subtitle: 'Please provide a valid email address. We will resend your E-Pass immediately.',
-          buttonText: 'DONE'
+          buttonText: 'Done',
+          buttonVariant: 'black'
         }
       });
     }

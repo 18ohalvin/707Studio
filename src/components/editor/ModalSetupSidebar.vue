@@ -69,7 +69,7 @@
         Header Copywriting
       </p>
 
-      <!-- Title Textarea (Multiline dynamic editing) -->
+      <!-- Title Textarea (Multiline dynamic editing - No uppercase lock) -->
       <div class="flex flex-col gap-[6px] w-full">
         <p class="font-707 text-[12px] text-neutral-600">
           Modal Title
@@ -79,8 +79,8 @@
             v-model="modalTitle"
             rows="1"
             @input="handleTitleInput"
-            placeholder="e.g. SELECT ARRIVAL DATE"
-            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase tracking-tight resize-none bg-transparent leading-[20px] overflow-hidden p-0 m-0"
+            placeholder="e.g. Select Arrival Date"
+            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 tracking-tight resize-none bg-transparent leading-[20px] overflow-hidden p-0 m-0"
           />
         </div>
       </div>
@@ -286,7 +286,7 @@
       </div>
     </div>
 
-    <!-- Section 4: Action Button CTA Setup (Figma Node 276:4722) -->
+    <!-- Section 4: Action Button CTA Setup (Following Global Button Rules) -->
     <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
       <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
         Action CTA Button
@@ -299,8 +299,8 @@
         <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
           <input 
             v-model="buttonText"
-            placeholder="e.g. DONE"
-            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase tracking-tight"
+            placeholder="e.g. Done"
+            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 tracking-tight"
           />
         </div>
       </div>
@@ -316,7 +316,7 @@
             :class="buttonVariant === 'black' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
             class="flex-1 h-[36px] rounded-[8px] text-[12px] font-707 cursor-pointer"
           >
-            Primary Black
+            Black
           </button>
           <button 
             type="button"
@@ -324,7 +324,15 @@
             :class="buttonVariant === 'white' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
             class="flex-1 h-[36px] rounded-[8px] text-[12px] font-707 cursor-pointer"
           >
-            White Outline
+            White
+          </button>
+          <button 
+            type="button"
+            @click="buttonVariant = 'grey'"
+            :class="buttonVariant === 'grey' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+            class="flex-1 h-[36px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+          >
+            Grey
           </button>
         </div>
       </div>
@@ -494,35 +502,40 @@ function selectVariant(v: ModalVariant) {
   let defaultProps: Record<string, any> = { variant: v };
   
   if (v === 'message-alert') {
-    defaultProps.title = 'YOUR PASS HAS BEEN SENT.';
+    defaultProps.title = 'Your Pass Has Been Sent';
     defaultProps.subtitle = 'Please provide a valid email address. We will resend your E-Pass immediately.';
-    defaultProps.buttonText = 'DONE';
+    defaultProps.buttonText = 'Done';
+    defaultProps.buttonVariant = 'black';
   } else if (v === 'message-field') {
-    defaultProps.title = 'UPDATE YOUR EMAIL';
+    defaultProps.title = 'Update Your Email';
     defaultProps.subtitle = 'Please provide a valid email address. We will resend your E-Pass immediately.';
     defaultProps.fieldPlaceholder = 'Enter your email*';
     defaultProps.fieldType = 'email';
-    defaultProps.buttonText = 'DONE';
+    defaultProps.buttonText = 'Done';
+    defaultProps.buttonVariant = 'black';
   } else if (v === 'choice-detailed') {
-    defaultProps.title = 'SELECT ARRIVAL DATE';
+    defaultProps.title = 'Select Arrival Date';
     defaultProps.subtitle = 'Please provide a valid email address. We will resend your E-Pass immediately.';
-    defaultProps.buttonText = 'DONE';
+    defaultProps.buttonText = 'Done';
+    defaultProps.buttonVariant = 'black';
     defaultProps.options = [
       { id: 'opt_1', label: 'Day 1', sublabel: '2 September 2026', description: 'Your Event Descriptions Detail', selected: true },
       { id: 'opt_2', label: 'Day 2', sublabel: '3 September 2026', description: 'Your Event Descriptions Detail', selected: false }
     ];
   } else if (v === 'choice-simple') {
-    defaultProps.title = 'SELECT ARRIVAL DATE';
+    defaultProps.title = 'Select Arrival Date';
     defaultProps.subtitle = 'Please provide a valid email address. We will resend your E-Pass immediately.';
-    defaultProps.buttonText = 'DONE';
+    defaultProps.buttonText = 'Done';
+    defaultProps.buttonVariant = 'black';
     defaultProps.options = [
       { id: 'opt_1', label: '+62', sublabel: 'Indonesia', selected: true },
       { id: 'opt_2', label: '+65', sublabel: 'Singapore', selected: false }
     ];
   } else if (v === 'image-matrix') {
-    defaultProps.title = 'SELECT ARRIVAL DATE';
+    defaultProps.title = 'Select Arrival Date';
     defaultProps.subtitle = 'Please provide a valid email address. We will resend your E-Pass immediately.';
-    defaultProps.buttonText = 'DONE';
+    defaultProps.buttonText = 'Done';
+    defaultProps.buttonVariant = 'black';
     defaultProps.imageSlots = [
       { id: 'slot_1', url: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=400&q=80', label: 'Model 01', selected: true },
       { id: 'slot_2', url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80', label: 'Model 02', selected: false },

@@ -1179,8 +1179,8 @@ more</span>
           <div class="flex flex-col gap-[20px] items-start w-full">
             <!-- Header: Title + Subtitle -->
             <div class="flex flex-col gap-[8px] items-start w-full">
-              <h2 class="font-707 font-medium text-heading-h2 text-black uppercase tracking-tight whitespace-pre-line">
-                {{ modalDisplayProps.title || 'SELECT ARRIVAL DATE' }}
+              <h2 class="font-707 font-medium text-heading-h2 text-black tracking-tight whitespace-pre-line">
+                {{ modalDisplayProps.title || 'Select Arrival Date' }}
               </h2>
               <p class="font-707 font-normal text-bodytext text-neutral-700 whitespace-pre-line">
                 {{ modalDisplayProps.subtitle || 'Please provide a valid email address. We will resend your E-Pass immediately.' }}
@@ -1260,15 +1260,20 @@ more</span>
               </div>
             </div>
 
-            <!-- CTA Action Button -->
+            <!-- CTA Action Button (Matching global Button widget) -->
             <div class="w-full pt-1">
               <button 
                 type="button"
                 @click.stop="handleModalDoneClick"
-                class="w-full h-[48px] flex items-center justify-center font-707 font-medium text-btn tracking-normal uppercase border border-solid shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] cursor-pointer transition-colors"
-                :class="modalDisplayProps.buttonVariant === 'white' ? 'bg-white text-black border-black hover:bg-neutral-50' : 'bg-black text-white border-black hover:bg-[#262626]'"
+                :class="[
+                  modalDisplayProps.buttonVariant === 'white'
+                    ? 'bg-white text-black hover:bg-[#f5f5f7] apple-cta-btn-white'
+                    : (modalDisplayProps.buttonVariant === 'grey' ? 'bg-[#e4e4e4] text-black hover:bg-[#d9d9d9] apple-cta-btn-grey' : 'bg-black text-white hover:bg-[#262626] apple-cta-btn-dark'),
+                  'apple-cta-btn'
+                ]"
+                class="w-full h-[48px] px-[16px] py-[12px] rounded-[0px] flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none"
               >
-                {{ modalDisplayProps.buttonText || 'DONE' }}
+                <span class="whitespace-nowrap uppercase">{{ modalDisplayProps.buttonText || 'DONE' }}</span>
               </button>
             </div>
           </div>
@@ -1763,9 +1768,10 @@ function handleButtonClick(widget: any) {
   } else if (actionType === 'modal') {
     activeTriggeredModal.value = widget.props?.modalProps || {
       variant: 'message-alert',
-      title: 'YOUR PASS HAS BEEN SENT.',
+      title: 'Your Pass Has Been Sent',
       subtitle: 'Please provide a valid email address. We will resend your E-Pass immediately.',
-      buttonText: 'DONE'
+      buttonText: 'Done',
+      buttonVariant: 'black'
     };
   }
 }
@@ -2270,9 +2276,10 @@ const modalDisplayProps = computed(() => {
   }
   return {
     variant: 'message-alert',
-    title: 'YOUR PASS HAS BEEN SENT.',
+    title: 'Your Pass Has Been Sent',
     subtitle: 'Please provide a valid email address. We will resend your E-Pass immediately.',
-    buttonText: 'DONE',
+    buttonText: 'Done',
+    buttonVariant: 'black',
     dismissible: true
   };
 });
