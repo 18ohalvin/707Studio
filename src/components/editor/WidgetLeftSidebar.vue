@@ -522,20 +522,20 @@ function getChoiceDefaultProps(choiceName: string) {
         variant: 'detailed-card',
         allowMultiple: true,
         required: false,
+        showSlotsCapacity: true,
+        globalSlotsCapacity: 25,
         selectedValues: [],
         options: [
           {
             id: 'opt_1',
             label: 'Pass Option 1',
             sublabel: '24 Oct 2026',
-            slotsCapacity: 25,
             description: 'Access to activation area and special event lounge'
           },
           {
             id: 'opt_2',
             label: 'Pass Option 2',
             sublabel: '25 Oct 2026',
-            slotsCapacity: 12,
             description: 'Access to activation area and special event lounge'
           }
         ]

@@ -867,9 +867,9 @@
                         {{ opt.description }}
                       </div>
                       <!-- Badge Label "XX Slots Available" Under Event Description -->
-                      <div v-if="getOptionSlotsBadge(widget, opt)" class="inline-flex items-center pt-[2px]">
+                      <div v-if="getOptionSlotsBadge(widget)" class="inline-flex items-center pt-[2px]">
                         <span class="inline-flex items-center px-[8px] py-[2px] bg-neutral-100 border border-[#e0e0e0] rounded-[4px] font-707 text-[10px] font-medium leading-[14px] text-neutral-700">
-                          {{ getOptionSlotsBadge(widget, opt) }}
+                          {{ getOptionSlotsBadge(widget) }}
                         </span>
                       </div>
                     </template>
@@ -880,8 +880,8 @@
                         <span class="font-707 truncate" :class="getChoiceOptionTypographyClass(widget, opt)">{{ opt.label }}</span>
                         <div class="flex flex-col items-end shrink-0 gap-[3px]">
                           <span v-if="opt.sublabel" class="font-707 font-normal text-[12px] leading-[16px] text-neutral-500">{{ opt.sublabel }}</span>
-                          <span v-if="getOptionSlotsBadge(widget, opt)" class="inline-flex items-center px-[6px] py-[1.5px] bg-neutral-100 border border-[#e0e0e0] rounded-[4px] font-707 text-[10px] font-medium leading-[13px] text-neutral-700">
-                            {{ getOptionSlotsBadge(widget, opt) }}
+                          <span v-if="getOptionSlotsBadge(widget)" class="inline-flex items-center px-[6px] py-[1.5px] bg-neutral-100 border border-[#e0e0e0] rounded-[4px] font-707 text-[10px] font-medium leading-[13px] text-neutral-700">
+                            {{ getOptionSlotsBadge(widget) }}
                           </span>
                         </div>
                       </div>
@@ -903,17 +903,20 @@
                 </button>
               </div>
 
-              <!-- Variant 2: Simple Rows (Global 48px height, 8px pile gap, 16px padding, 24px gap with checkbox) -->
+              <!-- Variant 2: Simple Rows (Global 48px/flexible height, 8px pile gap, 16px padding, 24px gap with checkbox) -->
               <div v-else-if="widget.props.variant === 'simple-row'" class="flex flex-col gap-[8px] w-full">
                 <div 
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="luxury-choice-tile border border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
+                  class="luxury-choice-tile border border-solid flex gap-[24px] items-center px-[16px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
                   :class="[
                     isChoiceSelected(widget, opt.id)
                       ? 'is-selected border-black'
-                      : 'border-[#d4d4d4] hover:border-black/60'
+                      : 'border-[#d4d4d4] hover:border-black/60',
+                    getOptionSlotsBadge(widget)
+                      ? 'min-h-[52px] py-[8px]'
+                      : 'min-h-[48px] h-[48px] py-[12px]'
                   ]"
                 >
                   <!-- Checkbox Container (18px outer square with 12px inner square when active) -->
@@ -924,8 +927,16 @@
                     />
                   </div>
 
-                  <!-- Label -->
-                  <div class="flex-1 font-707 truncate" :class="getChoiceOptionTypographyClass(widget, opt)">
+                  <!-- Label & Slot Capacity under option title -->
+                  <div v-if="getOptionSlotsBadge(widget)" class="flex-1 flex flex-col items-start gap-[2px] min-w-0">
+                    <span class="font-707 truncate" :class="getChoiceOptionTypographyClass(widget, opt)">
+                      {{ opt.label }}
+                    </span>
+                    <span class="inline-flex items-center px-[6px] py-[1.5px] bg-neutral-100 border border-[#e0e0e0] rounded-[4px] font-707 text-[10px] font-medium leading-[13px] text-neutral-700">
+                      {{ getOptionSlotsBadge(widget) }}
+                    </span>
+                  </div>
+                  <div v-else class="flex-1 font-707 truncate" :class="getChoiceOptionTypographyClass(widget, opt)">
                     {{ opt.label }}
                   </div>
                 </div>
@@ -1408,11 +1419,13 @@ function formatSlotsBadge(val?: string | number): string {
   return `${str} Slots Available`;
 }
 
-function getOptionSlotsBadge(widget: any, opt: any): string {
-  if (widget.props.showSlotsCapacity === false) return '';
-  const val = (opt.slotsCapacity !== undefined && opt.slotsCapacity !== '')
-    ? opt.slotsCapacity
-    : (widget.props.globalSlotsCapacity !== undefined && widget.props.globalSlotsCapacity !== '' ? widget.props.globalSlotsCapacity : 25);
+function getOptionSlotsBadge(widget: any): string {
+  const v = widget.props?.variant || 'detailed-card';
+  if (v !== 'detailed-card' && v !== 'simple-row') return '';
+  if (widget.props?.showSlotsCapacity === false) return '';
+  const val = (widget.props?.globalSlotsCapacity !== undefined && widget.props?.globalSlotsCapacity !== '') 
+    ? widget.props.globalSlotsCapacity 
+    : 25;
   return formatSlotsBadge(val);
 }
 

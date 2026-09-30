@@ -214,8 +214,8 @@
         </div>
       </div>
 
-      <!-- Slots Capacity Global Toggle & Number Input -->
-      <div class="flex flex-col gap-[10px] w-full pt-2 border-t border-[#f0f0f0]">
+      <!-- Slots Capacity Global Toggle & Number Input (Available for Detailed Cards and Simple Rows) -->
+      <div v-if="variant === 'detailed-card' || variant === 'simple-row'" class="flex flex-col gap-[10px] w-full pt-2 border-t border-[#f0f0f0]">
         <div class="flex items-center justify-between w-full">
           <div class="flex flex-col">
             <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
