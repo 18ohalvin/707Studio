@@ -1292,18 +1292,8 @@ function handleTextInput(e: Event, widgetId: string) {
   editorStore.updateWidgetProps(widgetId, { text: target.value });
 }
 
-function handleTextBlur(widget: any) {
-  setTimeout(() => {
-    const w = activePage.value.widget_tree.find(item => item.id === widget.id);
-    if (w && w.type === 'TextBanner' && (!w.props.text || !w.props.text.trim())) {
-      const activeEl = document.activeElement;
-      const isCanvasFocused = activeEl && activeEl.tagName === 'TEXTAREA' && activeEl.closest(`[data-widget-id="${widget.id}"]`);
-      const isSidebarFocused = activeEl && (activeEl.closest('.text-setup-sidebar') || activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
-      if (!isCanvasFocused && !isSidebarFocused) {
-        editorStore.removeWidget(widget.id);
-      }
-    }
-  }, 180);
+function handleTextBlur(_widget: any) {
+  // Retain unedited/empty text widgets even if user leaves them
 }
 
 function getTextTypographyClass(widget: any) {

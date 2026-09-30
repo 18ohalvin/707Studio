@@ -243,17 +243,8 @@ export const useEditorStore = defineStore('editor', () => {
     pushHistory();
   }
 
-  function cleanupEmptyTextWidgets(exceptId?: string) {
-    const toRemove = currentPage.value.widget_tree.filter(w => 
-      w.type === 'TextBanner' && 
-      w.id !== exceptId && 
-      (!w.props.text || !w.props.text.trim())
-    );
-    if (toRemove.length > 0) {
-      toRemove.forEach(w => {
-        removeWidget(w.id);
-      });
-    }
+  function cleanupEmptyTextWidgets(_exceptId?: string) {
+    // Retain unedited/empty TextBanner widgets when deselecting or leaving them
   }
 
   function selectWidget(id: string | null) {

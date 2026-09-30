@@ -91,20 +91,20 @@ describe('707 Activation Builder Stores', () => {
     expect(editorStore.isAddMenuOpen).toBe(false);
   });
 
-  it('creates TextBanner with WRITE YOUR TEXT HERE and cleans up if unedited', () => {
+  it('creates TextBanner with WRITE YOUR TEXT HERE and retains it even if left unedited', () => {
     const editorStore = useEditorStore();
     const textWidget = editorStore.addWidget('TextBanner');
     expect(textWidget.props.placeholder).toBe('WRITE YOUR TEXT HERE');
     expect(textWidget.props.text).toBe('');
     expect(editorStore.currentPage.widget_tree.length).toBe(1);
 
-    // If user clicks away (deselects or selects another widget) without editing, empty widget is auto-cleaned up
+    // If user clicks away (deselects or selects another widget) without editing, widget is NOT auto-removed
     editorStore.selectWidget(null);
-    expect(editorStore.currentPage.widget_tree.length).toBe(0);
+    expect(editorStore.currentPage.widget_tree.length).toBe(1);
+    expect(editorStore.currentPage.widget_tree[0].id).toBe(textWidget.id);
 
-    // If user inputs text, it is preserved
-    const preservedWidget = editorStore.addWidget('TextBanner');
-    editorStore.updateWidgetProps(preservedWidget.id, { text: 'CUSTOM HEADING' });
+    // If user inputs text, it updates properly
+    editorStore.updateWidgetProps(textWidget.id, { text: 'CUSTOM HEADING' });
     editorStore.selectWidget(null);
     expect(editorStore.currentPage.widget_tree.length).toBe(1);
     expect(editorStore.currentPage.widget_tree[0].props.text).toBe('CUSTOM HEADING');
