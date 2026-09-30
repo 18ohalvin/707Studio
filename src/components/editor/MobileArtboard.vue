@@ -855,15 +855,37 @@
                   <!-- Option Content (Zero text bleeding, crisp line-height, vertically centered when no description) -->
                   <div 
                     class="flex-1 flex min-w-0"
-                    :class="opt.description && opt.description.trim() ? 'flex-col gap-[10px] items-start' : 'items-center'"
+                    :class="opt.description && opt.description.trim() ? 'flex-col gap-[8px] items-start' : 'items-center'"
                   >
-                    <div class="flex items-baseline justify-between w-full font-707 gap-3">
-                      <span class="font-707 truncate" :class="getChoiceOptionTypographyClass(widget, opt)">{{ opt.label }}</span>
-                      <span v-if="opt.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[18px] text-neutral-500">{{ opt.sublabel }}</span>
-                    </div>
-                    <div v-if="opt.description && opt.description.trim()" class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-600 whitespace-pre-line">
-                      {{ opt.description }}
-                    </div>
+                    <!-- Layout A: With Event Description -->
+                    <template v-if="opt.description && opt.description.trim()">
+                      <div class="flex items-baseline justify-between w-full font-707 gap-3">
+                        <span class="font-707 truncate" :class="getChoiceOptionTypographyClass(widget, opt)">{{ opt.label }}</span>
+                        <span v-if="opt.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[18px] text-neutral-500">{{ opt.sublabel }}</span>
+                      </div>
+                      <div class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-600 whitespace-pre-line">
+                        {{ opt.description }}
+                      </div>
+                      <!-- Badge Label "XX Slots Available" Under Event Description -->
+                      <div v-if="formatSlotsBadge(opt.slotsCapacity)" class="inline-flex items-center pt-[2px]">
+                        <span class="inline-flex items-center px-[8px] py-[2px] bg-neutral-100 border border-[#e0e0e0] rounded-[4px] font-707 text-[10px] font-medium leading-[14px] text-neutral-700">
+                          {{ formatSlotsBadge(opt.slotsCapacity) }}
+                        </span>
+                      </div>
+                    </template>
+
+                    <!-- Layout B: Without Event Description (Badge Label Under the Date) -->
+                    <template v-else>
+                      <div class="flex items-center justify-between w-full font-707 gap-3">
+                        <span class="font-707 truncate" :class="getChoiceOptionTypographyClass(widget, opt)">{{ opt.label }}</span>
+                        <div class="flex flex-col items-end shrink-0 gap-[3px]">
+                          <span v-if="opt.sublabel" class="font-707 font-normal text-[12px] leading-[16px] text-neutral-500">{{ opt.sublabel }}</span>
+                          <span v-if="formatSlotsBadge(opt.slotsCapacity)" class="inline-flex items-center px-[6px] py-[1.5px] bg-neutral-100 border border-[#e0e0e0] rounded-[4px] font-707 text-[10px] font-medium leading-[13px] text-neutral-700">
+                            {{ formatSlotsBadge(opt.slotsCapacity) }}
+                          </span>
+                        </div>
+                      </div>
+                    </template>
                   </div>
                 </div>
 
@@ -1378,6 +1400,14 @@ function getChoiceOptionTypographyClass(widget: any, opt?: any) {
   }
 }
 
+function formatSlotsBadge(val?: string | number): string {
+  if (val === undefined || val === null) return '';
+  const str = String(val).trim();
+  if (!str) return '';
+  if (/slots/i.test(str)) return str;
+  return `${str} Slots Available`;
+}
+
 watch(() => editorStore.selectedWidgetId, async (newId) => {
   if (newId && !props.isMiniPreview) {
     await nextTick();
@@ -1680,6 +1710,7 @@ function handleChoiceAddMore(widget: any) {
       id: `opt_${Date.now()}`,
       label: `Pass Option ${nextNum}`,
       sublabel: `${23 + nextNum} Oct 2026`,
+      slotsCapacity: 20,
       description: 'Access to activation area and special event lounge'
     };
   } else if (variant === 'image-grid') {

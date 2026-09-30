@@ -25,6 +25,7 @@ export interface ChoiceOption {
   label: string;
   sublabel?: string;
   description?: string;
+  slotsCapacity?: number | string;
   imageUrl?: string;
   disabled?: boolean;
 }

@@ -277,12 +277,23 @@
           </div>
 
           <!-- Variant Specific Fields -->
-          <!-- Sublabel / Date field (for detailed-card) -->
+          <!-- Sublabel / Date field (for detailed-card - locked to DD MMM YYYY) -->
           <div v-if="variant === 'detailed-card'" class="flex items-center gap-2 pl-7">
             <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2 h-[30px] flex items-center w-full bg-white">
               <input 
                 v-model="opt.sublabel"
-                placeholder="Date / Sublabel (e.g. 24 Oct 2026)"
+                placeholder="Date (DD MMM YYYY e.g. 24 Oct 2026)"
+                class="w-full font-707 text-[11px] text-neutral-700 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <!-- Slots Capacity / Badge field (for detailed-card) -->
+          <div v-if="variant === 'detailed-card'" class="flex items-center gap-2 pl-7">
+            <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2 h-[30px] flex items-center w-full bg-white">
+              <input 
+                v-model="opt.slotsCapacity"
+                placeholder="Slots Capacity (e.g. 25 or 25 Slots Available)"
                 class="w-full font-707 text-[11px] text-neutral-700 focus:outline-none"
               />
             </div>
@@ -485,8 +496,8 @@ function setVariant(v: ChoiceVariant) {
       title: 'SELECT ARRIVALS',
       subtitle: 'Choose your preferred attendance day below.',
       options: [
-        { id: 'opt_1', label: 'Pass Option 1', sublabel: '24 Oct 2026', description: 'Access to activation area and special event lounge' },
-        { id: 'opt_2', label: 'Pass Option 2', sublabel: '25 Oct 2026', description: 'Access to activation area and special event lounge' }
+        { id: 'opt_1', label: 'Pass Option 1', sublabel: '24 Oct 2026', slotsCapacity: 25, description: 'Access to activation area and special event lounge' },
+        { id: 'opt_2', label: 'Pass Option 2', sublabel: '25 Oct 2026', slotsCapacity: 12, description: 'Access to activation area and special event lounge' }
       ]
     });
   } else if (v === 'simple-row' && (!currentWidget.value.props.title || currentWidget.value.props.title === 'SELECT ARRIVALS')) {
@@ -577,6 +588,7 @@ function addOption() {
       id: `opt_${Date.now()}`,
       label: `Pass Option ${nextNum}`,
       sublabel: `${23 + nextNum} Oct 2026`,
+      slotsCapacity: 20,
       description: 'Access to activation area and special event lounge'
     };
   } else if (variant.value === 'simple-row') {
