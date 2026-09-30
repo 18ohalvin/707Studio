@@ -172,7 +172,7 @@ const typographyOptions = [
   { id: 'heading-3', label: 'Heading 3', size: '18px', desc: 'Sub-section heading', previewClass: 'font-medium' },
   { id: 'subtext-lead', label: 'Subtext Lead', size: '16px', desc: 'Introductory lead text / bold subheader', previewClass: 'font-medium' },
   { id: 'body-text', label: 'Body Text', size: '12px', desc: 'Standard readable paragraph body text', previewClass: 'font-normal text-[12px]' },
-  { id: 'body-text-bold', label: 'Body Text (Bold)', size: '12px', desc: 'Emphasized body copy', previewClass: 'font-bold text-[12px]' },
+  { id: 'body-text-medium', label: 'Body Text (Medium)', size: '12px', desc: 'Emphasized body copy / subheadings', previewClass: 'font-medium text-[12px]' },
   { id: 'caption', label: 'Caption', size: '11px', desc: 'Secondary annotations and instructions', previewClass: 'font-normal text-[11px]' },
   { id: 'legal-micro', label: 'Legal / Micro', size: '11px', desc: 'Footnotes, terms, and micro meta', previewClass: 'font-normal text-[11px] text-neutral-500' }
 ];

@@ -367,7 +367,7 @@ const typographyOptions = [
   { id: 'heading-3', label: 'Heading 3', size: '18px', desc: 'Sub-section heading', previewClass: 'font-medium text-[13px]' },
   { id: 'subtext-lead', label: 'Subtext Lead', size: '16px', desc: 'Introductory lead text / bold subheader', previewClass: 'font-medium text-[13px]' },
   { id: 'body-text', label: 'Body Text', size: '12px', desc: 'Standard readable paragraph body text', previewClass: 'font-normal text-[12px]' },
-  { id: 'body-text-bold', label: 'Body Text (Bold)', size: '12px', desc: 'Emphasized body copy', previewClass: 'font-bold text-[12px]' },
+  { id: 'body-text-medium', label: 'Body Text (Medium)', size: '12px', desc: 'Emphasized body copy / tile labels', previewClass: 'font-medium text-[12px]' },
   { id: 'caption', label: 'Caption', size: '11px', desc: 'Secondary annotations and instructions', previewClass: 'font-normal text-[11px]' },
   { id: 'legal-micro', label: 'Legal / Micro', size: '11px', desc: 'Footnotes, terms, and micro meta', previewClass: 'font-normal text-[11px] text-neutral-500' }
 ];
@@ -415,12 +415,12 @@ function selectTitleTypography(id: string) {
 }
 
 const currentOptionTypographyId = computed(() => {
-  return currentWidget.value?.props.optionTypographyStyle || 'subtext-lead';
+  return currentWidget.value?.props.optionTypographyStyle || 'body-text-medium';
 });
 
 const currentOptionTypographyLabel = computed(() => {
   const opt = typographyOptions.find(o => o.id === currentOptionTypographyId.value);
-  return opt ? opt.label : 'Subtext Lead (16px)';
+  return opt ? opt.label : 'Body Text (Medium) (12px)';
 });
 
 function selectOptionTypography(id: string) {

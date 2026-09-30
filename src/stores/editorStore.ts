@@ -372,7 +372,7 @@ export const useEditorStore = defineStore('editor', () => {
           variant: 'detailed-card',
           titleTypographyStyle: 'heading-3',
           typographyStyle: 'heading-3',
-          optionTypographyStyle: 'subtext-lead',
+          optionTypographyStyle: 'body-text-medium',
           allowMultiple: true,
           required: false,
           selectedValues: [],

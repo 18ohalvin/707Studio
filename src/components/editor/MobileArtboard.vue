@@ -1315,8 +1315,9 @@ function getTextTypographyClass(widget: any) {
       return 'text-[17px] md:text-[18px] font-medium leading-[1.2] text-black placeholder:text-black';
     case 'subtext-lead':
       return 'text-[15px] md:text-[16px] font-medium leading-[1.3] text-black placeholder:text-black';
+    case 'body-text-medium':
     case 'body-text-bold':
-      return 'text-[12px] font-bold leading-[1.4] text-black placeholder:text-black';
+      return 'text-[12px] font-medium leading-[1.4] text-black placeholder:text-black';
     case 'body-text':
       return 'text-[12px] font-normal leading-[1.4] text-black placeholder:text-black';
     case 'caption':
@@ -1340,8 +1341,9 @@ function getChoiceTitleTypographyClass(widget: any) {
       return 'text-[18px] font-medium leading-[24px] text-black tracking-normal';
     case 'subtext-lead':
       return 'text-[16px] font-medium leading-[22px] text-black tracking-normal';
+    case 'body-text-medium':
     case 'body-text-bold':
-      return 'text-[12px] font-bold leading-[18px] text-black tracking-normal';
+      return 'text-[12px] font-medium leading-[18px] text-black tracking-normal';
     case 'body-text':
       return 'text-[12px] font-normal leading-[18px] text-black tracking-normal';
     case 'caption':
@@ -1354,7 +1356,7 @@ function getChoiceTitleTypographyClass(widget: any) {
 }
 
 function getChoiceOptionTypographyClass(widget: any, opt?: any) {
-  const style = opt?.typographyStyle || widget.props.optionTypographyStyle || 'subtext-lead';
+  const style = opt?.typographyStyle || widget.props.optionTypographyStyle || 'body-text-medium';
   switch (style) {
     case 'headline-1':
       return 'text-[24px] md:text-[28px] font-medium leading-[32px] text-black';
@@ -1362,17 +1364,18 @@ function getChoiceOptionTypographyClass(widget: any, opt?: any) {
       return 'text-[20px] md:text-[22px] font-medium leading-[26px] text-black';
     case 'heading-3':
       return 'text-[17px] md:text-[18px] font-medium leading-[24px] text-black';
-    case 'body-text-bold':
-      return 'text-[12px] font-bold leading-[18px] text-black';
+    case 'subtext-lead':
+      return 'text-[16px] font-medium leading-[22px] text-black';
     case 'body-text':
       return 'text-[12px] font-normal leading-[18px] text-black';
     case 'caption':
       return 'text-[11px] font-normal leading-[14px] text-black';
     case 'legal-micro':
       return 'text-[11px] font-normal leading-[14px] text-neutral-500';
-    case 'subtext-lead':
+    case 'body-text-bold':
+    case 'body-text-medium':
     default:
-      return 'text-[16px] font-medium leading-[22px] text-black';
+      return 'text-[12px] font-medium leading-[18px] text-black';
   }
 }
 
