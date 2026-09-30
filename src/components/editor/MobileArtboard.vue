@@ -1330,25 +1330,26 @@ function getTextTypographyClass(widget: any) {
 }
 
 function getChoiceTitleTypographyClass(widget: any) {
-  const style = widget.props.titleTypographyStyle || widget.props.typographyStyle || 'heading-2';
+  const style = widget.props.titleTypographyStyle || widget.props.typographyStyle || 'heading-3';
   switch (style) {
     case 'headline-1':
-      return 'text-[28px] md:text-[32px] font-medium leading-[34px] text-black tracking-normal uppercase';
-    case 'heading-3':
-      return 'text-[18px] font-medium leading-[24px] text-black tracking-normal uppercase';
-    case 'subtext-lead':
-      return 'text-[16px] font-medium leading-[22px] text-black tracking-normal uppercase';
-    case 'body-text-bold':
-      return 'text-[12px] font-bold leading-[18px] text-black tracking-normal uppercase';
-    case 'body-text':
-      return 'text-[12px] font-normal leading-[18px] text-black tracking-normal uppercase';
-    case 'caption':
-      return 'text-[11px] font-normal leading-[14px] text-black tracking-normal uppercase';
-    case 'legal-micro':
-      return 'text-[11px] font-normal leading-[14px] text-neutral-500 tracking-normal uppercase';
+      return 'text-[28px] md:text-[32px] font-medium leading-[34px] text-black tracking-normal';
     case 'heading-2':
+      return 'text-[22px] font-medium leading-[28px] text-black tracking-normal';
+    case 'heading-3':
+      return 'text-[18px] font-medium leading-[24px] text-black tracking-normal';
+    case 'subtext-lead':
+      return 'text-[16px] font-medium leading-[22px] text-black tracking-normal';
+    case 'body-text-bold':
+      return 'text-[12px] font-bold leading-[18px] text-black tracking-normal';
+    case 'body-text':
+      return 'text-[12px] font-normal leading-[18px] text-black tracking-normal';
+    case 'caption':
+      return 'text-[11px] font-normal leading-[14px] text-black tracking-normal';
+    case 'legal-micro':
+      return 'text-[11px] font-normal leading-[14px] text-neutral-500 tracking-normal';
     default:
-      return 'text-[22px] font-medium leading-[28px] text-black tracking-normal uppercase';
+      return 'text-[18px] font-medium leading-[24px] text-black tracking-normal';
   }
 }
 
@@ -1358,7 +1359,7 @@ function getChoiceOptionTypographyClass(widget: any, opt?: any) {
     case 'headline-1':
       return 'text-[24px] md:text-[28px] font-medium leading-[32px] text-black';
     case 'heading-2':
-      return 'text-[20px] md:text-[22px] font-medium leading-[26px] text-black uppercase';
+      return 'text-[20px] md:text-[22px] font-medium leading-[26px] text-black';
     case 'heading-3':
       return 'text-[17px] md:text-[18px] font-medium leading-[24px] text-black';
     case 'body-text-bold':

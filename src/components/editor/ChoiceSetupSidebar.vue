@@ -396,12 +396,12 @@ const title = computed({
 });
 
 const currentTitleTypographyId = computed(() => {
-  return currentWidget.value?.props.titleTypographyStyle || currentWidget.value?.props.typographyStyle || 'heading-2';
+  return currentWidget.value?.props.titleTypographyStyle || currentWidget.value?.props.typographyStyle || 'heading-3';
 });
 
 const currentTitleTypographyLabel = computed(() => {
   const opt = typographyOptions.find(o => o.id === currentTitleTypographyId.value);
-  return opt ? opt.label : 'Heading 2';
+  return opt ? opt.label : 'Heading 3 (18px)';
 });
 
 function selectTitleTypography(id: string) {
