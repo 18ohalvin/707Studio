@@ -866,7 +866,7 @@
                   class="border border-[#d4d4d4] hover:border-black border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
                 >
                   <img :src="FIGMA_ASSETS.addFilled" class="size-[24px] shrink-0 pointer-events-none" alt="Add" />
-                  <span class="font-707 font-medium text-[14px] md:text-[16px] leading-[22px] text-black">
+                  <span class="font-707 truncate" :class="getChoiceOptionTypographyClass(widget)">
                     Add more
                   </span>
                 </button>
@@ -907,7 +907,7 @@
                   class="border border-[#d4d4d4] hover:border-black border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
                 >
                   <img :src="FIGMA_ASSETS.addFilled" class="size-[24px] shrink-0 pointer-events-none" alt="Add" />
-                  <span class="font-707 font-medium text-[14px] md:text-[16px] leading-[22px] text-black">
+                  <span class="font-707 truncate" :class="getChoiceOptionTypographyClass(widget)">
                     Add more
                   </span>
                 </button>
@@ -937,7 +937,7 @@
                   class="min-h-[48px] h-[48px] px-[16px] py-[12px] border border-[#d4d4d4] hover:border-black border-solid flex gap-[16px] items-center shrink-0 cursor-pointer transition-colors bg-transparent select-none rounded-none"
                 >
                   <img :src="FIGMA_ASSETS.addFilled" class="size-[24px] shrink-0 pointer-events-none" alt="Add" />
-                  <span class="font-707 font-medium text-[14px] md:text-[16px] leading-[20px] text-black whitespace-nowrap">
+                  <span class="font-707 whitespace-nowrap" :class="getChoiceOptionTypographyClass(widget)">
                     Add more
                   </span>
                 </button>
@@ -976,7 +976,7 @@
                   title="Add more models"
                 >
                   <img :src="FIGMA_ASSETS.addFilled" class="size-[22px] shrink-0 pointer-events-none" alt="Add" />
-                  <span class="font-707 font-medium text-[11px] md:text-[12px] leading-[14px] text-black whitespace-nowrap">
+                  <span class="font-707 whitespace-nowrap" :class="getChoiceOptionTypographyClass(widget)">
                     Add more
                   </span>
                 </button>
