@@ -506,6 +506,8 @@
                   <div class="text-neutral-600 text-[11px] leading-relaxed">{{ item.content }}</div>
                 </div>
               </div>
+            </div>
+
             <!-- 5b. ModalOverlay Widget (Figma Node 276:4722 - Bottom Pop-up Modal) -->
             <div 
               v-else-if="widget.type === 'ModalOverlay'" 
