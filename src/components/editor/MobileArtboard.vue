@@ -137,14 +137,14 @@
           </div>
         </div>
 
-        <!-- Widgets Stack (0px top for first widget, 8px between text-text, 16px between other widgets, 32px extra bottom padding if last widget is text) -->
+        <!-- Widgets Stack (0px top for first widget, 8px between text-text, 16px between other widgets, dynamic 1-screen fit for Hero + Button) -->
         <div 
           v-else 
           @click.self="handleArtboardClick"
           class="flex-1 flex flex-col w-full shrink-0 min-h-full cursor-default"
           :class="[
             containerBottomPaddingClass,
-            isSingleFullScreenHero ? 'h-full' : ''
+            isHeroWithButtonOnly ? 'h-full justify-between' : ''
           ]"
         >
           <!-- If widgets are added, render them sequentially -->
@@ -160,7 +160,8 @@
             :class="[
               (widget.type === 'TextBanner' || widget.type === 'MultipleChoice' || widget.type === 'FieldInput' || widget.type === 'ActionButton') ? 'overflow-visible' : 'overflow-hidden',
               getWidgetMarginTopClass(index),
-              (isSingleFullScreenHero && widget.type === 'HeroDrop') ? 'h-full min-h-full flex-1' : '',
+              (isHeroWithButtonOnly && widget.type === 'HeroDrop') ? 'h-full min-h-0 flex-1' : '',
+              (isHeroWithButtonOnly && widget.type === 'ActionButton') ? 'shrink-0' : '',
               'group relative cursor-pointer shrink-0 w-full'
             ]"
           >
@@ -1094,9 +1095,9 @@ more</span>
             class="h-[32px] w-full shrink-0 pointer-events-none" 
             aria-hidden="true" 
           />
-          <!-- Exclusive 48px bottom padding spacer when the latest order of widgets is a standard (not sticky) button widget -->
+          <!-- Exclusive 48px bottom padding spacer when the latest order of widgets is a standard (not sticky) button widget (disabled when isHeroWithButtonOnly so page fits 100% in 1 screen) -->
           <div 
-            v-else-if="isLastWidgetButton" 
+            v-else-if="isLastWidgetButton && !isHeroWithButtonOnly" 
             class="h-[48px] w-full shrink-0 pointer-events-none" 
             aria-hidden="true" 
           />
@@ -1941,8 +1942,8 @@ function getRatioClass(ratio?: string) {
       return 'min-h-[76px] py-[16px] px-0 w-full shrink-0 flex flex-col justify-center';
     case 'Full screen landing page':
     default:
-      return isSingleFullScreenHero.value
-        ? 'h-full min-h-full flex-1 w-full shrink-0 min-h-[580px]'
+      return isHeroWithButtonOnly.value
+        ? 'h-full min-h-0 flex-1 w-full shrink-0'
         : 'h-[580px] min-h-[580px] w-full shrink-0';
   }
 }
@@ -2480,9 +2481,30 @@ function handleModalDoneClick() {
   }
 }
 
-const isSingleFullScreenHero = computed(() => {
+const isHeroWithButtonOnly = computed(() => {
   const tree = inFlowWidgets.value;
-  return tree.length === 1 && tree[0].type === 'HeroDrop' && (tree[0].props.ratio === 'Full screen landing page' || !tree[0].props.ratio);
+  if (tree.length === 0) return false;
+  
+  // 1. Solo HeroDrop with 'Full screen landing page' (or default ratio)
+  if (tree.length === 1 && tree[0].type === 'HeroDrop' && (tree[0].props.ratio === 'Full screen landing page' || !tree[0].props.ratio)) {
+    return true;
+  }
+  
+  // 2. HeroDrop with 'Full screen landing page' followed ONLY by ActionButton(s) in-flow
+  if (
+    tree[0].type === 'HeroDrop' && 
+    (tree[0].props.ratio === 'Full screen landing page' || !tree[0].props.ratio) &&
+    tree.length > 1 &&
+    tree.slice(1).every(w => w.type === 'ActionButton')
+  ) {
+    return true;
+  }
+  
+  return false;
+});
+
+const isSingleFullScreenHero = computed(() => {
+  return isHeroWithButtonOnly.value;
 });
 
 const isLastWidgetHero = computed(() => {
@@ -2570,6 +2592,7 @@ const containerBottomPaddingClass = computed(() => {
   if (tree.length === 0) return 'pb-0';
   if (isLastWidgetHero.value) return 'pb-0';
   if (stickyButtonForThisPage.value) return 'pb-[72px]';
+  if (isHeroWithButtonOnly.value) return 'pb-[16px]';
   if (isLastWidgetButton.value) return 'pb-0';
   if (isLastWidgetText.value) return 'pb-0';
   return 'pb-[16px]';
