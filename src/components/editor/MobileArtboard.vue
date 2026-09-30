@@ -180,16 +180,15 @@
 
             <!-- Floating Widget Action Bar for generic widgets (TextBanner, ActionButton, MultipleChoice have dedicated toolbars) (Figma Node 142:4935) -->
             <div 
-              v-if="!isMiniPreview && !isPreviewModal && widget.type !== 'TextBanner' && widget.type !== 'ActionButton' && widget.type !== 'MultipleChoice' && hoveredWidgetId === widget.id"
+              v-if="!isMiniPreview && !isPreviewModal && widget.type !== 'TextBanner' && widget.type !== 'ActionButton' && widget.type !== 'MultipleChoice' && (hoveredWidgetId === widget.id || editorStore.selectedWidgetId === widget.id)"
               class="absolute top-[12px] right-[12px] z-30 apple-glass-modal flex gap-[5px] items-center p-[4px] rounded-[10px] shadow-[0px_8px_24px_rgba(0,0,0,0.12)] border border-black/10 transition-all animate-in fade-in duration-150"
               data-node-id="142:4935"
               data-name="Buttons Container"
             >
-              <!-- Icon 1: Adjust -> Open Media/Banner Setup (Hidden when widget is selected) -->
+              <!-- Icon 1: Adjust -> Open Media/Banner Setup -->
               <button 
-                v-if="editorStore.selectedWidgetId !== widget.id"
                 @click.stop="handleAdjustWidget(widget)"
-                class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer"
+                class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer hover:bg-black/10"
                 title="Adjust / Setup"
               >
                 <SlidersHorizontal class="w-3.5 h-3.5" />
@@ -198,7 +197,7 @@
               <!-- Icon 2: Duplicate -->
               <button 
                 @click.stop="editorStore.duplicateWidget(widget.id)"
-                class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer"
+                class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer hover:bg-black/10"
                 title="Duplicate"
               >
                 <Copy class="w-3.5 h-3.5" />
@@ -207,7 +206,7 @@
               <!-- Icon 3: Remove -->
               <button 
                 @click.stop="editorStore.removeWidget(widget.id)"
-                class="apple-glass-icon-btn size-[24px] hover:text-red-600 flex items-center justify-center rounded-[6px] text-black cursor-pointer"
+                class="apple-glass-icon-btn size-[24px] hover:text-red-600 flex items-center justify-center rounded-[6px] text-black cursor-pointer hover:bg-red-50"
                 title="Remove"
               >
                 <Trash2 class="w-3.5 h-3.5" />
@@ -530,17 +529,16 @@
               >
                 <!-- Floating Action Toolbar for Text Widget (Figma Node 180:5844 / 181:6098) -->
                 <div 
-                  v-if="!isMiniPreview && !isPreviewModal && hoveredWidgetId === widget.id"
+                  v-if="!isMiniPreview && !isPreviewModal && (hoveredWidgetId === widget.id || editorStore.selectedWidgetId === widget.id)"
                   class="absolute z-30 apple-glass-modal flex gap-[5px] items-center p-[4px] rounded-[10px] shadow-[0px_8px_24px_rgba(0,0,0,0.12)] border border-white/80 transition-all animate-in fade-in duration-150 select-none"
                   :class="index === 0 ? 'top-[6px] right-[6px]' : '-top-[26px] right-0'"
                   data-node-id="180:5844"
                   data-name="Buttons Container"
                 >
-                  <!-- Button 1: Adjust / Open Text Sidebar Setup (Hidden when widget is selected) -->
+                  <!-- Button 1: Adjust / Open Text Sidebar Setup -->
                   <button 
-                    v-if="editorStore.selectedWidgetId !== widget.id"
                     @click.stop="handleAdjustWidget(widget)"
-                    class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer"
+                    class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer hover:bg-black/10"
                     title="Text Setup"
                   >
                     <SlidersHorizontal class="w-3.5 h-3.5" />
@@ -549,7 +547,7 @@
                   <!-- Button 2: Duplicate -->
                   <button 
                     @click.stop="editorStore.duplicateWidget(widget.id)"
-                    class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer"
+                    class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer hover:bg-black/10"
                     title="Duplicate"
                   >
                     <Copy class="w-3.5 h-3.5" />
@@ -558,7 +556,7 @@
                   <!-- Button 3: Remove -->
                   <button 
                     @click.stop="editorStore.removeWidget(widget.id)"
-                    class="apple-glass-icon-btn size-[24px] hover:text-red-600 flex items-center justify-center rounded-[6px] text-black cursor-pointer"
+                    class="apple-glass-icon-btn size-[24px] hover:text-red-600 flex items-center justify-center rounded-[6px] text-black cursor-pointer hover:bg-red-50"
                     title="Remove"
                   >
                     <Trash2 class="w-3.5 h-3.5" />
@@ -729,7 +727,7 @@
               >
                 <!-- Floating Action Toolbar for ActionButton (Figma Node 180:5844) -->
                 <div 
-                  v-if="!isMiniPreview && !isPreviewModal && hoveredWidgetId === widget.id"
+                  v-if="!isMiniPreview && !isPreviewModal && (hoveredWidgetId === widget.id || editorStore.selectedWidgetId === widget.id)"
                   class="absolute z-40 apple-glass-modal flex gap-[4px] items-center p-[4px] rounded-[8px] shadow-[0px_4px_16px_rgba(0,0,0,0.18)] transition-all animate-in fade-in duration-150 select-none top-1/2 -translate-y-1/2 right-[8px]"
                   data-name="Buttons Container"
                 >

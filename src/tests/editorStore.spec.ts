@@ -275,4 +275,24 @@ describe('707 Activation Builder Stores', () => {
     expect(editorStore.currentPage.widget_tree.length).toBe(0);
     expect(editorStore.isModalSidebarOpen).toBe(false);
   });
+
+  it('supports HeroDrop widget creation and directly opens MediaBannerSidebar even from widget drawer', () => {
+    const editorStore = useEditorStore();
+    editorStore.openWidgetSidebar();
+    expect(editorStore.isWidgetSidebarOpen).toBe(true);
+    expect(editorStore.isMediaSidebarOpen).toBe(false);
+
+    // Add media banner widget
+    editorStore.addMediaBannerWidget('Full screen landing page');
+    expect(editorStore.currentPage.widget_tree.length).toBe(1);
+    expect(editorStore.currentPage.widget_tree[0].type).toBe('HeroDrop');
+    expect(editorStore.currentPage.widget_tree[0].props.ratio).toBe('Full screen landing page');
+    expect(editorStore.isWidgetSidebarOpen).toBe(false);
+    expect(editorStore.isMediaSidebarOpen).toBe(true);
+    expect(editorStore.selectedMediaRatio).toBe('Full screen landing page');
+
+    // Closing media sidebar keeps widget selected
+    editorStore.isMediaSidebarOpen = false;
+    expect(editorStore.selectedWidgetId).toBe(editorStore.currentPage.widget_tree[0].id);
+  });
 });
