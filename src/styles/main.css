@@ -716,7 +716,14 @@ button[data-cta],
    ========================================================================== */
 .luxury-choice-tile {
   position: relative;
-  transition: border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s ease;
+  transition: background-color 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.12s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.luxury-choice-tile:active:not(.pointer-events-none) {
+  transform: scale(0.995);
 }
 
 .luxury-choice-tile::after {
@@ -726,13 +733,29 @@ button[data-cta],
   border: 1px solid #000000;
   pointer-events: none;
   clip-path: inset(0 100% 100% 0);
-  transition: clip-path 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: clip-path 0.38s cubic-bezier(0.22, 1, 0.36, 1);
   z-index: 2;
   will-change: clip-path;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .luxury-choice-tile.is-selected::after {
   clip-path: inset(0 0 0 0);
+}
+
+/* Apple Micro-Spring for Choice Checkbox & Checkmark Pop */
+.luxury-choice-checkbox-inner {
+  transition: transform 0.28s cubic-bezier(0.34, 1.45, 0.7, 1), opacity 0.2s ease-out;
+  transform-origin: center center;
+  will-change: transform, opacity;
+}
+
+.luxury-choice-matrix-check {
+  transition: transform 0.3s cubic-bezier(0.34, 1.45, 0.7, 1), opacity 0.22s ease-out;
+  transform-origin: center center;
+  will-change: transform, opacity;
 }
 
 /* Tactile Apple Press Feedback - Rock solid layout with zero hover twitching / jumping */

@@ -848,7 +848,7 @@
                     :class="opt.description && opt.description.trim() ? 'mt-[1px]' : ''"
                   >
                     <div 
-                      class="size-[12px] bg-black border border-black border-solid transition-all duration-150 transform"
+                      class="luxury-choice-checkbox-inner size-[12px] bg-black border border-black border-solid transform"
                       :class="isChoiceSelected(widget, opt.id) ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
                     />
                   </div>
@@ -919,7 +919,7 @@
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="luxury-choice-tile border border-solid border-[#d4d4d4] flex gap-[24px] px-[16px] w-full select-none transition-all duration-150 rounded-none"
+                  class="luxury-choice-tile border border-solid border-[#d4d4d4] flex gap-[24px] px-[16px] w-full select-none rounded-none"
                   :class="[
                     isChoiceSelected(widget, opt.id) ? 'is-selected' : '',
                     isChoiceOptionDisabled(widget, opt)
@@ -936,7 +936,7 @@
                     :class="getOptionSlotsBadge(widget, opt) ? 'mt-[1px]' : ''"
                   >
                     <div 
-                      class="size-[12px] bg-black border border-black border-solid transition-all duration-150 transform"
+                      class="luxury-choice-checkbox-inner size-[12px] bg-black border border-black border-solid transform"
                       :class="isChoiceSelected(widget, opt.id) ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
                     />
                   </div>
@@ -980,7 +980,7 @@
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="luxury-choice-tile min-w-[128px] max-w-[200px] min-h-[48px] h-[48px] px-[16px] py-[12px] flex items-center justify-start shrink-0 border border-solid border-[#d4d4d4] select-none transition-all duration-150 font-707 rounded-none"
+                  class="luxury-choice-tile min-w-[128px] max-w-[200px] min-h-[48px] h-[48px] px-[16px] py-[12px] flex items-center justify-start shrink-0 border border-solid border-[#d4d4d4] select-none font-707 rounded-none"
                   :class="[
                     isChoiceSelected(widget, opt.id) ? 'is-selected' : '',
                     isChoiceOptionDisabled(widget, opt)
@@ -1018,7 +1018,7 @@
                   @dragover.prevent="dragOverChoiceOptionId = `${widget.id}_${opt.id}`"
                   @dragleave="dragOverChoiceOptionId = null"
                   @drop.prevent="handleChoiceImageDrop($event, widget, opt.id)"
-                  class="luxury-choice-tile aspect-[3/4] bg-[#ededed] relative overflow-hidden select-none transition-all duration-150 rounded-none border border-solid border-transparent group/imagecard"
+                  class="luxury-choice-tile aspect-[3/4] bg-[#ededed] relative overflow-hidden select-none rounded-none border border-solid border-transparent group/imagecard"
                   :class="[
                     isChoiceSelected(widget, opt.id) ? 'is-selected' : '',
                     isChoiceOptionDisabled(widget, opt)
@@ -1045,8 +1045,8 @@
 
                   <!-- Centered Simple Minimal White Check Icon -->
                   <div 
-                    class="absolute inset-0 flex items-center justify-center pointer-events-none z-[2] transition-all duration-200 transform"
-                    :class="isChoiceSelected(widget, opt.id) ? 'scale-100 opacity-100' : 'scale-75 opacity-0'"
+                    class="luxury-choice-matrix-check absolute inset-0 flex items-center justify-center pointer-events-none z-[2] transform"
+                    :class="isChoiceSelected(widget, opt.id) ? 'scale-100 opacity-100' : 'scale-50 opacity-0'"
                   >
                     <Check class="size-6 text-white stroke-[2.5] drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]" />
                   </div>
