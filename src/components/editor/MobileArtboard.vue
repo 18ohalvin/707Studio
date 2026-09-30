@@ -241,9 +241,9 @@
 
               <!-- Solid space blocking placeholder (#EDEDED for layout preview per Figma Node 134:4207) -->
               <div v-else class="size-full flex flex-col items-center justify-center p-6 text-center select-none bg-[#ededed] min-h-[160px]">
-                <p class="font-707 font-normal text-caption text-black text-center whitespace-nowrap">
-                  Your media will apppear here
-                </p>
+                <div class="size-[44px] rounded-full bg-black/5 border border-black/5 flex items-center justify-center text-neutral-400 pointer-events-none shadow-sm">
+                  <ImageIcon class="size-5 stroke-[1.75]" />
+                </div>
               </div>
 
               <!-- Brand Logo Area under header (Only available and rendered on the top-most banner) -->
@@ -1169,7 +1169,8 @@ import {
   ArrowRight,
   Ticket,
   Phone,
-  Instagram
+  Instagram,
+  Image as ImageIcon
 } from 'lucide-vue-next';
 import { uploadMediaDirectly } from '../../services/mediaService.ts';
 import type { ActivationPage } from '../../types/editor.ts';
