@@ -1362,18 +1362,12 @@ more</span>
               </div>
             </div>
 
-            <!-- CTA Action Button (Matching global Button widget) -->
+            <!-- CTA Action Button -->
             <div class="w-full pt-1">
               <button 
                 type="button"
                 @click.stop="handleModalDoneClick"
-                :class="[
-                  modalDisplayProps.buttonVariant === 'white'
-                    ? 'bg-white text-black hover:bg-[#f5f5f7] apple-cta-btn-white'
-                    : (modalDisplayProps.buttonVariant === 'grey' ? 'bg-[#e4e4e4] text-black hover:bg-[#d9d9d9] apple-cta-btn-grey' : 'bg-black text-white hover:bg-[#262626] apple-cta-btn-dark'),
-                  'apple-cta-btn'
-                ]"
-                class="w-full h-[48px] px-[16px] py-[12px] rounded-[0px] flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none"
+                class="apple-cta-btn apple-cta-btn-dark bg-black text-white hover:bg-[#262626] w-full h-[48px] px-[16px] py-[12px] rounded-[0px] flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none"
               >
                 <span class="whitespace-nowrap uppercase">{{ modalDisplayProps.buttonText || 'DONE' }}</span>
               </button>

@@ -459,7 +459,7 @@
       </div>
     </div>
 
-    <!-- Section 4: Action Button CTA Setup (Following Global Button Rules) -->
+    <!-- Section 4: Action Button CTA Setup -->
     <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
       <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
         Action CTA Button
@@ -475,38 +475,6 @@
             placeholder="e.g. Done"
             class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 tracking-tight"
           />
-        </div>
-      </div>
-
-      <div class="flex flex-col gap-[6px] w-full">
-        <p class="font-707 text-[12px] text-neutral-600">
-          Button Style Preset
-        </p>
-        <div class="flex gap-2 w-full">
-          <button 
-            type="button"
-            @click="buttonVariant = 'black'"
-            :class="buttonVariant === 'black' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="flex-1 h-[36px] rounded-[8px] text-[12px] font-707 cursor-pointer"
-          >
-            Black
-          </button>
-          <button 
-            type="button"
-            @click="buttonVariant = 'white'"
-            :class="buttonVariant === 'white' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="flex-1 h-[36px] rounded-[8px] text-[12px] font-707 cursor-pointer"
-          >
-            White
-          </button>
-          <button 
-            type="button"
-            @click="buttonVariant = 'grey'"
-            :class="buttonVariant === 'grey' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="flex-1 h-[36px] rounded-[8px] text-[12px] font-707 cursor-pointer"
-          >
-            Grey
-          </button>
         </div>
       </div>
     </div>
