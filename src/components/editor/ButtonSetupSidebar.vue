@@ -43,12 +43,12 @@
       <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
         Button Style Preset
       </p>
-      <div class="flex flex-nowrap overflow-x-auto gap-[8px] items-center w-full pb-1 no-scrollbar">
+      <div class="flex gap-[8px] items-center w-full">
         <button 
           type="button"
           @click="setVariant('black')"
           :class="currentVariant === 'black' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-          class="shrink-0 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[16px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+          class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[16px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
         >
           Primary Black
         </button>
@@ -56,17 +56,9 @@
           type="button"
           @click="setVariant('white')"
           :class="currentVariant === 'white' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-          class="shrink-0 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[16px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+          class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[16px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
         >
           Primary White
-        </button>
-        <button 
-          type="button"
-          @click="setVariant('grey')"
-          :class="currentVariant === 'grey' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-          class="shrink-0 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[16px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
-        >
-          Neutral Grey
         </button>
       </div>
     </div>
@@ -507,7 +499,7 @@ const iconName = computed(() => {
   return targetWidget.value?.props?.iconName || 'arrow-right';
 });
 
-function setVariant(variant: 'black' | 'white' | 'grey') {
+function setVariant(variant: 'black' | 'white') {
   if (targetWidget.value) {
     editorStore.updateWidgetProps(targetWidget.value.id, { variant });
   }
