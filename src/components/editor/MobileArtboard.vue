@@ -831,10 +831,10 @@
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="border border-solid flex gap-[24px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
+                  class="luxury-choice-tile border border-solid flex gap-[24px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
                   :class="[
                     isChoiceSelected(widget, opt.id)
-                      ? 'border-black'
+                      ? 'is-selected border-black'
                       : 'border-[#d4d4d4] hover:border-black/60',
                     opt.description && opt.description.trim()
                       ? 'items-start p-[16px]'
@@ -867,9 +867,9 @@
                         {{ opt.description }}
                       </div>
                       <!-- Badge Label "XX Slots Available" Under Event Description -->
-                      <div v-if="formatSlotsBadge(opt.slotsCapacity)" class="inline-flex items-center pt-[2px]">
+                      <div v-if="getOptionSlotsBadge(widget, opt)" class="inline-flex items-center pt-[2px]">
                         <span class="inline-flex items-center px-[8px] py-[2px] bg-neutral-100 border border-[#e0e0e0] rounded-[4px] font-707 text-[10px] font-medium leading-[14px] text-neutral-700">
-                          {{ formatSlotsBadge(opt.slotsCapacity) }}
+                          {{ getOptionSlotsBadge(widget, opt) }}
                         </span>
                       </div>
                     </template>
@@ -880,8 +880,8 @@
                         <span class="font-707 truncate" :class="getChoiceOptionTypographyClass(widget, opt)">{{ opt.label }}</span>
                         <div class="flex flex-col items-end shrink-0 gap-[3px]">
                           <span v-if="opt.sublabel" class="font-707 font-normal text-[12px] leading-[16px] text-neutral-500">{{ opt.sublabel }}</span>
-                          <span v-if="formatSlotsBadge(opt.slotsCapacity)" class="inline-flex items-center px-[6px] py-[1.5px] bg-neutral-100 border border-[#e0e0e0] rounded-[4px] font-707 text-[10px] font-medium leading-[13px] text-neutral-700">
-                            {{ formatSlotsBadge(opt.slotsCapacity) }}
+                          <span v-if="getOptionSlotsBadge(widget, opt)" class="inline-flex items-center px-[6px] py-[1.5px] bg-neutral-100 border border-[#e0e0e0] rounded-[4px] font-707 text-[10px] font-medium leading-[13px] text-neutral-700">
+                            {{ getOptionSlotsBadge(widget, opt) }}
                           </span>
                         </div>
                       </div>
@@ -909,10 +909,10 @@
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="border border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
+                  class="luxury-choice-tile border border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
                   :class="[
                     isChoiceSelected(widget, opt.id)
-                      ? 'border-black'
+                      ? 'is-selected border-black'
                       : 'border-[#d4d4d4] hover:border-black/60'
                   ]"
                 >
@@ -950,10 +950,10 @@
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="min-w-[128px] max-w-[200px] min-h-[48px] h-[48px] px-[16px] py-[12px] flex items-center justify-start shrink-0 border border-solid cursor-pointer select-none transition-all duration-150 bg-transparent font-707 rounded-none"
+                  class="luxury-choice-tile min-w-[128px] max-w-[200px] min-h-[48px] h-[48px] px-[16px] py-[12px] flex items-center justify-start shrink-0 border border-solid cursor-pointer select-none transition-all duration-150 bg-transparent font-707 rounded-none"
                   :class="[
                     isChoiceSelected(widget, opt.id)
-                      ? 'border-black'
+                      ? 'is-selected border-black'
                       : 'border-[#d4d4d4] hover:border-black/60'
                   ]"
                 >
@@ -980,11 +980,11 @@
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="aspect-square bg-[#ededed] relative overflow-hidden cursor-pointer select-none transition-all duration-150 rounded-none"
+                  class="luxury-choice-tile aspect-square bg-[#ededed] relative overflow-hidden cursor-pointer select-none transition-all duration-150 rounded-none border border-solid"
                   :class="[
                     isChoiceSelected(widget, opt.id)
-                      ? 'border-[0.5px] border-black border-solid'
-                      : 'border-[0.5px] border-transparent hover:border-black/30'
+                      ? 'is-selected border-black'
+                      : 'border-transparent hover:border-black/30'
                   ]"
                 >
                   <img 
@@ -1406,6 +1406,14 @@ function formatSlotsBadge(val?: string | number): string {
   if (!str) return '';
   if (/slots/i.test(str)) return str;
   return `${str} Slots Available`;
+}
+
+function getOptionSlotsBadge(widget: any, opt: any): string {
+  if (widget.props.showSlotsCapacity === false) return '';
+  const val = (opt.slotsCapacity !== undefined && opt.slotsCapacity !== '')
+    ? opt.slotsCapacity
+    : (widget.props.globalSlotsCapacity !== undefined && widget.props.globalSlotsCapacity !== '' ? widget.props.globalSlotsCapacity : 25);
+  return formatSlotsBadge(val);
 }
 
 watch(() => editorStore.selectedWidgetId, async (newId) => {

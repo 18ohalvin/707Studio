@@ -213,6 +213,47 @@
           </button>
         </div>
       </div>
+
+      <!-- Slots Capacity Global Toggle & Number Input -->
+      <div class="flex flex-col gap-[10px] w-full pt-2 border-t border-[#f0f0f0]">
+        <div class="flex items-center justify-between w-full">
+          <div class="flex flex-col">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Slots Capacity
+            </p>
+            <span class="font-707 text-[11px] text-neutral-400">
+              Badge on option tiles
+            </span>
+          </div>
+          <!-- 707 Switch Toggle -->
+          <button 
+            type="button"
+            @click="toggleSlotsCapacity"
+            :class="showSlotsCapacity ? 'bg-black' : 'bg-neutral-200'"
+            class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+          >
+            <span 
+              :class="showSlotsCapacity ? 'translate-x-[18px]' : 'translate-x-0'"
+              class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+            />
+          </button>
+        </div>
+
+        <!-- Global Slots Input -->
+        <div v-if="showSlotsCapacity" class="flex flex-col gap-[6px] w-full animate-in fade-in slide-in-from-top-1 duration-150">
+          <div class="flex items-center justify-between">
+            <span class="font-707 text-[12px] font-medium text-neutral-700">Slots per Option</span>
+            <span class="font-707 text-[11px] text-neutral-400">Applies to all options</span>
+          </div>
+          <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-3 h-[34px] flex items-center w-full bg-white transition-colors">
+            <input 
+              v-model="globalSlotsCapacity"
+              placeholder="e.g. 25"
+              class="w-full font-707 text-[12px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
+            />
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Section 5: Options Manager -->
@@ -476,6 +517,28 @@ const required = computed({
     }
   }
 });
+
+const showSlotsCapacity = computed({
+  get: () => currentWidget.value?.props.showSlotsCapacity ?? true,
+  set: (val: boolean) => {
+    if (currentWidget.value) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { showSlotsCapacity: val });
+    }
+  }
+});
+
+const globalSlotsCapacity = computed({
+  get: () => currentWidget.value?.props.globalSlotsCapacity ?? 25,
+  set: (val: string | number) => {
+    if (currentWidget.value) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { globalSlotsCapacity: val });
+    }
+  }
+});
+
+function toggleSlotsCapacity() {
+  showSlotsCapacity.value = !showSlotsCapacity.value;
+}
 
 const options = computed<ChoiceOption[]>({
   get: () => currentWidget.value?.props.options || [],

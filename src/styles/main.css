@@ -708,6 +708,33 @@ button[data-cta],
   will-change: transform;
 }
 
+/* ==========================================================================
+   LUXURY CHOICE OPTION TILE ANIMATED SELECTION BORDER
+   (Matches FieldInput Center-origin Expanding Luxury Outline Animation)
+   ========================================================================== */
+.luxury-choice-tile {
+  position: relative;
+  transition: border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s ease;
+}
+
+.luxury-choice-tile::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 1px solid #000000;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.97);
+  transform-origin: center center;
+  transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1), transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 2;
+}
+
+.luxury-choice-tile.is-selected::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
 /* Tactile Apple Press Feedback - Rock solid layout with zero hover twitching / jumping */
 .apple-press {
   transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease, color 0.15s ease;
