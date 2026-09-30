@@ -833,9 +833,7 @@
                   @click.stop="toggleChoiceOption(widget, opt.id)"
                   class="luxury-choice-tile border border-solid border-[#d4d4d4] flex gap-[24px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
                   :class="[
-                    isChoiceSelected(widget, opt.id)
-                      ? 'is-selected'
-                      : 'hover:border-black/60',
+                    isChoiceSelected(widget, opt.id) ? 'is-selected' : '',
                     opt.description && opt.description.trim()
                       ? 'items-start p-[16px]'
                       : 'items-center min-h-[48px] h-[48px] px-[16px] py-[12px]'
@@ -913,9 +911,7 @@
                   @click.stop="toggleChoiceOption(widget, opt.id)"
                   class="luxury-choice-tile border border-solid border-[#d4d4d4] flex gap-[24px] px-[16px] w-full cursor-pointer select-none transition-all duration-150 bg-transparent rounded-none"
                   :class="[
-                    isChoiceSelected(widget, opt.id)
-                      ? 'is-selected'
-                      : 'hover:border-black/60',
+                    isChoiceSelected(widget, opt.id) ? 'is-selected' : '',
                     getOptionSlotsBadge(widget)
                       ? 'items-start py-[12px]'
                       : 'items-center min-h-[48px] h-[48px] py-[12px]'
@@ -970,9 +966,7 @@
                   @click.stop="toggleChoiceOption(widget, opt.id)"
                   class="luxury-choice-tile min-w-[128px] max-w-[200px] min-h-[48px] h-[48px] px-[16px] py-[12px] flex items-center justify-start shrink-0 border border-solid border-[#d4d4d4] cursor-pointer select-none transition-all duration-150 bg-transparent font-707 rounded-none"
                   :class="[
-                    isChoiceSelected(widget, opt.id)
-                      ? 'is-selected'
-                      : 'hover:border-black/60'
+                    isChoiceSelected(widget, opt.id) ? 'is-selected' : ''
                   ]"
                 >
                   <span class="font-707 truncate" :class="getChoiceOptionTypographyClass(widget, opt)">{{ opt.label }}</span>
@@ -1007,9 +1001,7 @@
                   @drop.prevent="handleChoiceImageDrop($event, widget, opt.id)"
                   class="luxury-choice-tile aspect-[3/4] bg-[#ededed] relative overflow-hidden cursor-pointer select-none transition-all duration-150 rounded-none border border-solid border-transparent group/imagecard"
                   :class="[
-                    isChoiceSelected(widget, opt.id)
-                      ? 'is-selected'
-                      : 'hover:border-black/30',
+                    isChoiceSelected(widget, opt.id) ? 'is-selected' : '',
                     dragOverChoiceOptionId === `${widget.id}_${opt.id}` ? 'ring-2 ring-black ring-offset-1' : ''
                   ]"
                 >
@@ -1017,10 +1009,24 @@
                     v-if="opt.imageUrl" 
                     :src="opt.imageUrl" 
                     :alt="opt.label"
-                    class="size-full object-cover pointer-events-none" 
+                    class="size-full object-cover pointer-events-none transition-transform duration-300" 
                   />
                   <div v-else class="size-full flex flex-col items-center justify-center font-707 font-medium text-[11px] leading-[14px] text-black p-1 text-center bg-[#ededed]">
                     <span>{{ opt.label }}</span>
+                  </div>
+
+                  <!-- 30% Darker Overlay on Selection -->
+                  <div 
+                    class="absolute inset-0 bg-black/30 pointer-events-none transition-opacity duration-200 z-[1]"
+                    :class="isChoiceSelected(widget, opt.id) ? 'opacity-100' : 'opacity-0'"
+                  />
+
+                  <!-- Centered Simple Minimal White Check Icon -->
+                  <div 
+                    class="absolute inset-0 flex items-center justify-center pointer-events-none z-[2] transition-all duration-200 transform"
+                    :class="isChoiceSelected(widget, opt.id) ? 'scale-100 opacity-100' : 'scale-75 opacity-0'"
+                  >
+                    <Check class="size-6 text-white stroke-[2.5] drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]" />
                   </div>
 
                   <!-- Drop Highlight Overlay -->
