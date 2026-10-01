@@ -1249,7 +1249,7 @@ more</span>
             <!-- 10. GuestEPass Widget (Figma Node 222:4188) -->
             <div 
               v-else-if="widget.type === 'GuestEPass'" 
-              class="relative w-full px-[16px] py-[16px] select-none group/epass text-black bg-white flex flex-col gap-[20px]"
+              class="relative w-full px-[16px] py-[16px] select-none group/epass text-black bg-transparent flex flex-col gap-[20px]"
               @click.stop="handleWidgetClick(widget)"
               data-node-id="222:4188"
               data-name="Guest E-Pass Container"
@@ -1343,20 +1343,20 @@ more</span>
                 <div class="flex-1 flex flex-col justify-between min-w-0 py-0.5">
                   <!-- Guest Name -->
                   <div class="flex flex-col">
-                    <span class="font-707 text-[12px] font-light leading-[16px] text-neutral-500 uppercase tracking-tight">
+                    <span class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-500 uppercase tracking-tight">
                       GUEST NAME
                     </span>
-                    <span class="font-707 font-medium text-[14px] leading-[20px] text-black uppercase tracking-tight truncate">
+                    <span class="font-707 font-medium text-bodytext text-[12px] leading-[18px] text-black uppercase tracking-tight truncate">
                       {{ getGuestName(widget) }}
                     </span>
                   </div>
 
                   <!-- Venue -->
                   <div class="flex flex-col mt-2">
-                    <span class="font-707 text-[12px] font-light leading-[16px] text-neutral-500 uppercase tracking-tight">
+                    <span class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-500 uppercase tracking-tight">
                       VENUE
                     </span>
-                    <span class="font-707 font-medium text-[14px] leading-[20px] text-black uppercase tracking-tight">
+                    <span class="font-707 font-medium text-bodytext text-[12px] leading-[18px] text-black uppercase tracking-tight">
                       {{ getVenue(widget) }}
                     </span>
                   </div>
@@ -1365,37 +1365,37 @@ more</span>
 
               <!-- Middle Section: VALID FOR (Figma 222:4188) -->
               <div class="flex flex-col gap-[8px] w-full">
-                <span class="font-707 text-[12px] font-light leading-[16px] text-neutral-500 uppercase tracking-tight">
+                <span class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-500 uppercase tracking-tight">
                   VALID FOR
                 </span>
 
-                <!-- Session Cards List -->
+                <!-- Session Cards List (100% Following Detail Choice Style) -->
                 <div class="flex flex-col gap-[8px] w-full">
                   <div 
                     v-for="(slot, sIdx) in getValidForSessions(widget)" 
                     :key="slot.id || sIdx"
-                    class="border-[0.5px] border-[#d4d4d4] bg-white p-[16px] flex flex-col gap-[6px] rounded-none shadow-none"
+                    class="border-[0.5px] border-solid border-[#d4d4d4] bg-transparent p-[16px] flex flex-col gap-[8px] rounded-none shadow-none w-full select-none"
                   >
-                    <!-- Header Row: Day X (Left) and Date (Right) -->
-                    <div class="flex items-center justify-between w-full font-707">
-                      <span class="font-707 font-medium text-[14px] leading-[20px] text-black">
+                    <!-- Header Row: Option Label (Left) and Date Sublabel (Right) -->
+                    <div class="flex items-baseline justify-between w-full font-707 gap-3">
+                      <span class="font-707 font-medium text-[14px] leading-[20px] text-black truncate">
                         {{ slot.label }}
                       </span>
-                      <span class="font-707 font-medium text-[14px] leading-[20px] text-black">
+                      <span v-if="slot.sublabel" class="shrink-0 font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-500">
                         {{ slot.sublabel }}
                       </span>
                     </div>
-                    <!-- Body Row: Description -->
-                    <p class="font-707 font-normal text-[12px] leading-[16px] text-neutral-600 whitespace-pre-line">
+                    <!-- Body Row: Description (Following Detail Choice Style 100%) -->
+                    <div class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-600 whitespace-pre-line">
                       {{ slot.description || 'Your Event Descriptions Detail' }}
-                    </p>
+                    </div>
                   </div>
                 </div>
               </div>
 
               <!-- Bottom Section: TERMS & CONDITIONS (Figma 222:4188) -->
               <div class="flex flex-col gap-[8px] w-full pt-[4px]">
-                <span class="font-707 font-normal text-[12px] leading-[16px] text-black uppercase tracking-tight">
+                <span class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-black uppercase tracking-tight">
                   TERMS & CONDITIONS:
                 </span>
 
@@ -1405,8 +1405,8 @@ more</span>
                     :key="tIdx"
                     class="flex items-start gap-[8px] w-full"
                   >
-                    <div class="size-[4px] rounded-full bg-black mt-[6px] shrink-0" />
-                    <p class="font-707 font-light text-[11px] leading-[16px] text-neutral-700 flex-1">
+                    <div class="size-[4px] rounded-full bg-black mt-[7px] shrink-0" />
+                    <p class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-700 flex-1">
                       {{ term }}
                     </p>
                   </div>
