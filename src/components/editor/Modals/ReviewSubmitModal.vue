@@ -96,10 +96,19 @@ const brandStore = useBrandStore();
 
 const copied = ref(false);
 
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 const campaignUrl = computed(() => {
   const brandSlug = brandStore.activeBrand?.slug || 'atmos';
-  const pageSlug = editorStore.currentPage?.slug || 'asics-gel-kayano-pandan';
-  return `events.707.co.id/${brandSlug}/${pageSlug}`;
+  const projectSlug = slugify(editorStore.projectTitle) || editorStore.currentPage?.slug || 'campaign-activation';
+  return `events.707.co.id/${brandSlug}/${projectSlug}`;
 });
 
 async function copyUrl() {

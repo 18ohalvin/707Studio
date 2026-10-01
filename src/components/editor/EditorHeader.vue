@@ -53,13 +53,13 @@
         </span>
       </button>
 
-      <!-- Ask for Review Button -->
+      <!-- Submit for Review Button -->
       <button 
         @click="editorStore.isReviewModalOpen = true"
         class="apple-glass-btn-dark content-stretch flex items-center justify-center overflow-clip px-[14px] h-[32px] rounded-[8px] apple-press cursor-pointer"
       >
         <span class="font-707 font-medium text-white text-[13px] whitespace-nowrap">
-          Ask for Review
+          Submit for Review
         </span>
       </button>
 
