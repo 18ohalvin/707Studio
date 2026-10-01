@@ -170,6 +170,13 @@
       @close="editorStore.isChoiceSidebarOpen = false"
     />
 
+    <!-- Registration Form Setup Sidebar Drawer -->
+    <FormSetupSidebar 
+      @click.stop
+      :is-open="editorStore.isFormSidebarOpen"
+      @close="editorStore.isFormSidebarOpen = false"
+    />
+
     <!-- Pop Up Modal Setup Sidebar Drawer (Figma Node 276:4722) -->
     <ModalSetupSidebar 
       @click.stop
@@ -221,6 +228,7 @@ import MediaGallerySidebar from './MediaGallerySidebar.vue';
 import TextSetupSidebar from './TextSetupSidebar.vue';
 import ButtonSetupSidebar from './ButtonSetupSidebar.vue';
 import ChoiceSetupSidebar from './ChoiceSetupSidebar.vue';
+import FormSetupSidebar from './FormSetupSidebar.vue';
 import ModalSetupSidebar from './ModalSetupSidebar.vue';
 import EPassSetupSidebar from './EPassSetupSidebar.vue';
 import LayersSidebar from './LayersSidebar.vue';

@@ -161,6 +161,8 @@ function getWidgetDisplayName(widget: WidgetItem): string {
       return 'Action Button';
     case 'MultipleChoice':
       return 'Choice Options';
+    case 'RegistrationForm':
+      return 'Registration Form';
     case 'ModalOverlay':
       return 'Pop Up Modal';
     case 'FieldInput':
@@ -194,6 +196,8 @@ function getWidgetSummary(widget: WidgetItem): string {
       return widget.props.label || 'BUTTON CTA';
     case 'MultipleChoice':
       return widget.props.title || widget.props.subtitle || 'MULTIPLE CHOICE OPTIONS';
+    case 'RegistrationForm':
+      return widget.props.title || widget.props.subtitle || 'REGISTRATION FORM';
     case 'ModalOverlay':
       return widget.props.title || 'POP UP MODAL OVERLAY';
     case 'FieldInput':
@@ -224,6 +228,8 @@ function handleSelectLayer(widget: WidgetItem) {
     editorStore.openButtonSidebar();
   } else if (widget.type === 'MultipleChoice') {
     editorStore.openChoiceSidebar();
+  } else if (widget.type === 'RegistrationForm') {
+    editorStore.openFormSidebar();
   } else if (widget.type === 'ModalOverlay') {
     editorStore.openModalSidebar();
   } else if (widget.type === 'GuestEPass') {
@@ -241,6 +247,8 @@ function handleAdjustLayer(widget: WidgetItem) {
     editorStore.openButtonSidebar();
   } else if (widget.type === 'MultipleChoice') {
     editorStore.openChoiceSidebar();
+  } else if (widget.type === 'RegistrationForm') {
+    editorStore.openFormSidebar();
   } else if (widget.type === 'ModalOverlay') {
     editorStore.openModalSidebar();
   } else if (widget.type === 'GuestEPass') {

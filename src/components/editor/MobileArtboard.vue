@@ -158,7 +158,7 @@
             @dragover.prevent.stop="handleDragOver($event, index)"
             @drop.prevent.stop="handleDrop($event, index)"
             :class="[
-              (widget.type === 'TextBanner' || widget.type === 'MultipleChoice' || widget.type === 'FieldInput' || widget.type === 'ActionButton') ? 'overflow-visible' : 'overflow-hidden',
+              (widget.type === 'TextBanner' || widget.type === 'MultipleChoice' || widget.type === 'FieldInput' || widget.type === 'RegistrationForm' || widget.type === 'ActionButton') ? 'overflow-visible' : 'overflow-hidden',
               getWidgetMarginTopClass(index),
               (isHeroWithButtonOnly && widget.type === 'HeroDrop') ? 'h-full min-h-0 flex-1' : '',
               (isHeroWithButtonOnly && (widget.type === 'ActionButton' || widget.type === 'TextBanner')) ? 'shrink-0' : '',
@@ -719,6 +719,164 @@
               </div>
             </div>
 
+            <!-- 7b. RegistrationForm Widget (Unified Form Section with Title, Subtitle, & Configurable Fields Stack) -->
+            <div 
+              v-else-if="widget.type === 'RegistrationForm'"
+              class="relative w-full px-[16px] py-[4px] select-text overflow-visible cursor-pointer"
+              @click.stop="handleRegistrationFormContainerClick(widget)"
+              data-name="Registration Form Section"
+            >
+              <!-- Floating Action Toolbar for RegistrationForm -->
+              <div 
+                v-if="!isMiniPreview && !isPreviewModal && (hoveredWidgetId === widget.id || editorStore.selectedWidgetId === widget.id)"
+                class="absolute top-[4px] right-[12px] z-30 apple-glass-modal flex gap-[4px] items-center p-[4px] rounded-[8px] shadow-[0px_4px_16px_rgba(0,0,0,0.18)] border border-black/10 transition-all animate-in fade-in duration-150 select-none"
+                data-name="Buttons Container"
+              >
+                <!-- Icon 1: Form Setup Sidebar -->
+                <button 
+                  v-if="!isWidgetSetupModalOpen(widget)"
+                  @click.stop="handleAdjustWidget(widget)"
+                  class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer hover:bg-black/10"
+                  title="Form Setup"
+                >
+                  <SlidersHorizontal class="w-3.5 h-3.5" />
+                </button>
+
+                <!-- Icon 2: Duplicate -->
+                <button 
+                  @click.stop="editorStore.duplicateWidget(widget.id)"
+                  class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer hover:bg-black/10"
+                  title="Duplicate"
+                >
+                  <Copy class="w-3.5 h-3.5" />
+                </button>
+
+                <!-- Icon 3: Remove -->
+                <button 
+                  @click.stop="editorStore.removeWidget(widget.id)"
+                  class="apple-glass-icon-btn size-[24px] hover:text-red-600 flex items-center justify-center rounded-[6px] text-black cursor-pointer hover:bg-red-50"
+                  title="Remove"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <!-- Form Header Stack: Title + Subtitle -->
+              <div class="flex flex-col items-start w-full">
+                <h3 
+                  v-if="widget.props.title" 
+                  :class="getTitleTypographyClass(widget.props.titleTypographyStyle || widget.props.typographyStyle || 'heading-3')"
+                  class="font-707 font-medium text-black uppercase tracking-tight"
+                >
+                  {{ widget.props.title }}
+                </h3>
+
+                <p 
+                  v-if="widget.props.subtitle" 
+                  class="font-707 font-normal text-[12px] leading-[18px] text-[#737373] mt-[8px]"
+                >
+                  {{ widget.props.subtitle }}
+                </p>
+              </div>
+
+              <!-- Fields List Stack -->
+              <div class="w-full flex flex-col gap-[12px] mt-[12px]">
+                <div 
+                  v-for="(field, fIdx) in (widget.props.fields || [])"
+                  :key="field.id || fIdx"
+                  class="w-full flex flex-col items-start relative pt-[16px] cursor-text"
+                  @click.stop="focusRegistrationFormField(widget.id, field.id)"
+                >
+                  <!-- Floating Label -->
+                  <label 
+                    class="luxury-floating-label font-707 left-0"
+                    :class="[
+                      isFormItemFloating(widget.id, field)
+                        ? 'top-[0px] text-[11px] leading-[14px] text-black font-normal'
+                        : 'top-[26px] text-[16px] leading-[22px] text-[#737373] font-normal'
+                    ]"
+                  >
+                    {{ isFormItemFloating(widget.id, field) ? (field.name || 'Field') : (field.placeholder || `Enter your ${(field.name || 'details').toLowerCase()}*`) }}<span v-if="isFormItemFloating(widget.id, field) && (field.required !== false)">*</span>
+                  </label>
+
+                  <!-- Input Row with Underline Stack -->
+                  <div 
+                    class="w-full flex items-center gap-[8px] pt-[8px] pb-[10px] relative"
+                    :class="[
+                      shakingFieldIds.has(`${widget.id}_${field.id}`) ? 'animate-luxury-jitter' : ''
+                    ]"
+                  >
+                    <!-- WhatsApp / Phone Country Calling Code Selector -->
+                    <div 
+                      v-if="isPhoneItem(field) && isFormItemFloating(widget.id, field)"
+                      class="flex items-center gap-[4px] shrink-0 select-none cursor-pointer pr-[2px] group/code relative z-10 animate-in fade-in duration-200"
+                      @click.stop="toggleFormItemCountryCode(widget, field)"
+                      title="Click to switch Country Calling Code"
+                    >
+                      <span class="font-707 text-[16px] leading-[22px] text-black font-normal tracking-tight">
+                        {{ field.countryCode || '+62' }}
+                      </span>
+                      <ChevronDown class="w-[12px] h-[12px] text-neutral-400 group-hover/code:text-black transition-colors stroke-[2]" />
+                    </div>
+
+                    <input 
+                      :ref="el => registerInputField(`${widget.id}_${field.id}`, el)"
+                      :value="field.value || ''"
+                      :type="field.type || 'text'"
+                      :inputmode="isPhoneItem(field) ? 'numeric' : (field.type === 'email' || (field.name && field.name.toLowerCase().includes('email')) ? 'email' : 'text')"
+                      @input="handleRegistrationFormItemInput($event, widget, field)"
+                      @focus="handleRegistrationFormFieldFocus(widget.id, field.id)"
+                      @blur="handleRegistrationFormFieldBlur(widget.id, field.id)"
+                      :readonly="isMiniPreview"
+                      class="font-707 font-normal text-[16px] leading-[22px] w-full bg-transparent outline-none border-none p-0 m-0 transition-colors duration-300 relative z-10"
+                      :class="[
+                        field.errorMessage ? 'text-[#9b0707]' : 'text-black'
+                      ]"
+                    />
+
+                    <!-- Error Alert Icon -->
+                    <div 
+                      class="size-[16px] shrink-0 flex items-center justify-center text-[#9b0707] transition-all duration-300 transform relative z-10"
+                      :class="[
+                        field.errorMessage
+                          ? 'opacity-100 scale-100 pointer-events-auto'
+                          : 'opacity-0 scale-75 pointer-events-none'
+                      ]"
+                    >
+                      <AlertCircle class="size-[16px] stroke-[1.75]" />
+                    </div>
+
+                    <!-- 1. Luxury Underline - Resting Base Line -->
+                    <div class="luxury-input-line-base" />
+
+                    <!-- 2. Luxury Underline - Animated Active Line -->
+                    <div 
+                      class="luxury-input-line-active"
+                      :class="[
+                        isFormItemUnderlineActive(widget.id, field)
+                          ? (field.errorMessage ? 'scale-x-100 bg-[#9b0707]' : 'scale-x-100 bg-black')
+                          : 'scale-x-0 bg-black'
+                      ]"
+                    />
+                  </div>
+
+                  <!-- Error Message Alert Helper Text -->
+                  <div 
+                    class="w-full overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                    :class="[
+                      field.errorMessage
+                        ? 'max-h-[36px] opacity-100 pt-[6px] translate-y-0'
+                        : 'max-h-0 opacity-0 pt-0 -translate-y-1'
+                    ]"
+                  >
+                    <p class="font-707 font-normal text-[11px] leading-[14px] text-[#9b0707]">
+                      {{ field.errorMessage }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- 8. ActionButton Widget (707 Standard Action Button - Figma Node 244:11560) -->
             <div 
               v-else-if="widget.type === 'ActionButton' && widget.props.positionMode !== 'sticky-bottom'" 
@@ -788,7 +946,7 @@
             <!-- 9. MultipleChoice Widget (Figma Node 276:4224 - Exact Dimensions, Typography, Checkbox Inset & Add-Filled Icon) -->
             <div 
               v-else-if="widget.type === 'MultipleChoice'" 
-              class="relative w-full px-[16px] py-[12px] select-none group/choice text-black"
+              class="relative w-full px-[16px] py-0 select-none group/choice text-black"
               @click.stop="handleMultipleChoiceContainerClick(widget)"
               data-node-id="276:4224"
               data-name="Multiple Choice Container"
@@ -1856,15 +2014,20 @@ function getTextTypographyClass(widget: any) {
   }
 }
 
-function getChoiceTitleTypographyClass(widget: any) {
-  const style = widget.props.titleTypographyStyle || widget.props.typographyStyle || 'heading-3';
+function getTitleTypographyClass(styleInput: any) {
+  const style = typeof styleInput === 'string' ? styleInput : (styleInput?.props?.titleTypographyStyle || styleInput?.props?.typographyStyle || 'heading-3');
   switch (style) {
+    case 'display-h1':
     case 'headline-1':
       return 'text-[28px] md:text-[32px] font-medium leading-[34px] text-black tracking-normal';
+    case 'heading-1':
+      return 'text-[24px] font-medium leading-[30px] text-black tracking-normal';
     case 'heading-2':
       return 'text-[22px] font-medium leading-[28px] text-black tracking-normal';
     case 'heading-3':
       return 'text-[18px] font-medium leading-[24px] text-black tracking-normal';
+    case 'heading-4':
+      return 'text-[14px] font-medium leading-[20px] text-black tracking-normal';
     case 'subtext-lead':
       return 'text-[16px] font-medium leading-[22px] text-black tracking-normal';
     case 'body-text-medium':
@@ -1879,6 +2042,10 @@ function getChoiceTitleTypographyClass(widget: any) {
     default:
       return 'text-[18px] font-medium leading-[24px] text-black tracking-normal';
   }
+}
+
+function getChoiceTitleTypographyClass(widget: any) {
+  return getTitleTypographyClass(widget);
 }
 
 function getChoiceOptionTypographyClass(widget: any, opt?: any) {
@@ -1994,6 +2161,9 @@ function isWidgetSetupModalOpen(widget: any): boolean {
   if (widget.type === 'MultipleChoice') {
     return editorStore.isChoiceSidebarOpen;
   }
+  if (widget.type === 'RegistrationForm') {
+    return editorStore.isFormSidebarOpen;
+  }
   if (widget.type === 'ModalOverlay') {
     return editorStore.isModalSidebarOpen;
   }
@@ -2014,6 +2184,8 @@ function handleAdjustWidget(widget: any) {
     editorStore.openButtonSidebar();
   } else if (widget.type === 'MultipleChoice') {
     editorStore.openChoiceSidebar();
+  } else if (widget.type === 'RegistrationForm') {
+    editorStore.openFormSidebar();
   } else if (widget.type === 'ModalOverlay') {
     editorStore.openModalSidebar();
   } else if (widget.type === 'GuestEPass') {
@@ -2071,6 +2243,15 @@ function handleButtonClick(widget: any) {
           firstInvalidWidget = w;
           allValid = false;
         }
+      } else if (w.type === 'RegistrationForm') {
+        const fields = (w.props?.fields || []) as any[];
+        fields.forEach((f: any) => {
+          if (f.required !== false && (!f.value || !f.value.trim())) {
+            f.errorMessage = `Please enter your ${(f.name || 'details').toLowerCase()}.`;
+            allValid = false;
+            if (!firstInvalidWidget) firstInvalidWidget = w;
+          }
+        });
       } else if (w.type === 'MultipleChoice' && w.props?.required) {
         const selected = (w.props?.selectedValues || []) as string[];
         if (selected.length === 0 && !firstInvalidWidget) {
@@ -2192,8 +2373,8 @@ function getWidgetMarginTopClass(index: number) {
   const currentWidget = tree[index];
 
   if (index === 0) {
-    // If text widget is the first top widget, apply exclusive 24px top margin for clean breathing room from header
-    if (currentWidget?.type === 'TextBanner') {
+    // If text widget, MultipleChoice, FieldInput, RegistrationForm, or GuestEPass is the first top widget, apply exclusive 24px top margin for clean breathing room from header
+    if (currentWidget?.type === 'TextBanner' || currentWidget?.type === 'MultipleChoice' || currentWidget?.type === 'FieldInput' || currentWidget?.type === 'RegistrationForm' || currentWidget?.type === 'GuestEPass') {
       return 'mt-[24px]';
     }
     // If action button is the first top widget, top padding follows applied bottom padding (48px or 16px)
@@ -2227,16 +2408,22 @@ function getWidgetMarginTopClass(index: number) {
       if (isHeroWithButtonOnly.value) return 'mt-[16px]';
       if (isLastWidgetButton.value) return 'mt-[48px]';
     }
+    if (currentWidget?.type === 'FieldInput') {
+      return 'mt-[12px]';
+    }
     return 'mt-[24px]';
   }
 
-  // 4. If text widget meets another text widget (Text meets Text), exclusive 4px spacing between them
+  // 4. If text widget meets another text widget (Text meets Text), 8px spacing matching widget headers
   if (currentWidget?.type === 'TextBanner' && prevWidget?.type === 'TextBanner') {
-    return 'mt-[4px]';
+    return 'mt-[8px]';
   }
 
-  // 5. If text widget is followed by FieldInput, MultipleChoice, or Banner anywhere in stack: 24px spacing
-  if (prevWidget?.type === 'TextBanner' && (currentWidget?.type === 'FieldInput' || currentWidget?.type === 'MultipleChoice' || currentWidget?.type === 'HeroDrop')) {
+  // 5. If text widget is followed by FieldInput, RegistrationForm, MultipleChoice, or Banner anywhere in stack: 24px spacing (or 12px for FieldInput with floating label)
+  if (prevWidget?.type === 'TextBanner' && (currentWidget?.type === 'FieldInput' || currentWidget?.type === 'RegistrationForm' || currentWidget?.type === 'MultipleChoice' || currentWidget?.type === 'HeroDrop')) {
+    if (currentWidget?.type === 'FieldInput') {
+      return 'mt-[12px]';
+    }
     return 'mt-[24px]';
   }
 
@@ -2252,8 +2439,9 @@ function getWidgetMarginTopClass(index: number) {
     return 'mt-[12px]';
   }
 
-  // 6b. If MultipleChoice meets FieldInput or MultipleChoice, 12px spacing
-  if (currentWidget?.type === 'MultipleChoice' && (prevWidget?.type === 'FieldInput' || prevWidget?.type === 'MultipleChoice')) {
+  // 6b. If MultipleChoice or RegistrationForm meets FieldInput, MultipleChoice, or RegistrationForm: 12px spacing
+  if ((currentWidget?.type === 'MultipleChoice' || currentWidget?.type === 'RegistrationForm') && 
+      (prevWidget?.type === 'FieldInput' || prevWidget?.type === 'MultipleChoice' || prevWidget?.type === 'RegistrationForm')) {
     return 'mt-[12px]';
   }
 
@@ -2613,6 +2801,95 @@ function handleFieldInputChange(e: Event, widget: any) {
   }
 }
 
+// --- RegistrationForm Section Field Helpers ---
+const focusedFormItemKey = ref<string | null>(null);
+
+function handleRegistrationFormContainerClick(widget: any) {
+  handleSelectThisPage();
+  editorStore.selectWidget(widget.id);
+  handleAdjustWidget(widget);
+}
+
+function focusRegistrationFormField(widgetId: string, fieldId: string) {
+  if (props.isMiniPreview) return;
+  const inputEl = inputFieldRefs.get(`${widgetId}_${fieldId}`);
+  if (inputEl && inputEl !== document.activeElement) {
+    inputEl.focus();
+  }
+}
+
+function isFormItemFloating(widgetId: string, field: any): boolean {
+  if (focusedFormItemKey.value === `${widgetId}_${field.id}`) return true;
+  if (field.value && String(field.value).trim().length > 0) return true;
+  return false;
+}
+
+function isFormItemUnderlineActive(widgetId: string, field: any): boolean {
+  if (shakingFieldIds.value.has(`${widgetId}_${field.id}`)) return true;
+  if (focusedFormItemKey.value === `${widgetId}_${field.id}`) return true;
+  return false;
+}
+
+function isPhoneItem(field: any): boolean {
+  if (!field) return false;
+  const name = (field.name || '').toLowerCase();
+  return field.type === 'tel' || name.includes('whatsapp') || name.includes('wa') || name.includes('phone') || !!field.countryCode;
+}
+
+function toggleFormItemCountryCode(widget: any, field: any) {
+  const current = field.countryCode || '+62';
+  const idx = countryCodes.indexOf(current);
+  field.countryCode = countryCodes[(idx + 1) % countryCodes.length];
+  editorStore.updateWidgetProps(widget.id, { fields: [...widget.props.fields] });
+}
+
+function handleRegistrationFormFieldFocus(widgetId: string, fieldId: string) {
+  focusedFormItemKey.value = `${widgetId}_${fieldId}`;
+}
+
+function handleRegistrationFormFieldBlur(widgetId: string, fieldId: string) {
+  if (focusedFormItemKey.value === `${widgetId}_${fieldId}`) {
+    focusedFormItemKey.value = null;
+  }
+}
+
+function handleRegistrationFormItemInput(e: Event, widget: any, field: any) {
+  const target = e.target as HTMLInputElement;
+  let val = target.value;
+  const isWa = isPhoneItem(field);
+  if (isWa) {
+    val = val.replace(/\D/g, '').replace(/^0+/, '');
+    target.value = val;
+  }
+  field.value = val;
+
+  // Validate on the fly
+  const name = (field.name || '').toLowerCase();
+  const isEmail = field.type === 'email' || name.includes('email');
+  const trimmed = val.trim();
+
+  if (field.required !== false && !trimmed) {
+    field.errorMessage = `${field.name || 'This field'} is required.`;
+  } else if (isEmail && trimmed) {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(trimmed)) {
+      field.errorMessage = 'Please enter a valid email address with @domain (e.g. name@domain.com).';
+    } else {
+      field.errorMessage = '';
+    }
+  } else if (isWa && trimmed) {
+    const digits = trimmed.replace(/\D/g, '');
+    if (digits.length < 8 || digits.length > 15) {
+      field.errorMessage = 'Please enter a valid WhatsApp number (min 8 digits).';
+    } else {
+      field.errorMessage = '';
+    }
+  } else {
+    field.errorMessage = '';
+  }
+
+  editorStore.updateWidgetProps(widget.id, { fields: [...widget.props.fields] });
+}
 
 const inFlowWidgets = computed(() => {
   return activePage.value.widget_tree.filter(w => w.type !== 'ModalOverlay' && !(w.type === 'ActionButton' && w.props?.positionMode === 'sticky-bottom'));
@@ -3154,7 +3431,22 @@ async function handleChoiceImageDrop(e: DragEvent, widget: any, optId: string) {
 }
 
 function getGuestName(widget: any) {
-  // Check if any FieldInput with 'name' has a filled value
+  // 1. Check if any RegistrationForm has a filled name field
+  const regWidgets = editorStore.pages.flatMap(p => p.widget_tree).filter(w => w.type === 'RegistrationForm');
+  for (const rw of regWidgets) {
+    const fields = (rw.props?.fields || []) as any[];
+    const fn = fields.find((f: any) => f.name?.toLowerCase().includes('first') || f.name?.toLowerCase().includes('given'))?.value?.trim();
+    const ln = fields.find((f: any) => f.name?.toLowerCase().includes('last') || f.name?.toLowerCase().includes('family') || f.name?.toLowerCase().includes('sur'))?.value?.trim();
+    if (fn || ln) {
+      return [fn, ln].filter(Boolean).join(' ').toUpperCase();
+    }
+    const fullNameField = fields.find((f: any) => f.name?.toLowerCase().includes('name') && f.value?.trim());
+    if (fullNameField) {
+      return fullNameField.value.trim().toUpperCase();
+    }
+  }
+
+  // 2. Check if any FieldInput with 'name' has a filled value
   const nameWidget = editorStore.pages.flatMap(p => p.widget_tree).find(w => 
     w.type === 'FieldInput' && 
     (w.props?.label?.toLowerCase().includes('name') || w.props?.placeholder?.toLowerCase().includes('name')) &&

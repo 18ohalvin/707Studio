@@ -414,4 +414,35 @@ describe('707 Activation Builder Stores', () => {
     expect(editorStore.pages[2].id).toBe(initialPage2Id);
     expect(editorStore.activePageIndex).toBe(0);
   });
+
+  it('supports RegistrationForm unified widget, fields stack, and satisfies GuestEPass prerequisites', () => {
+    const editorStore = useEditorStore();
+    expect(editorStore.isFormSidebarOpen).toBe(false);
+
+    // 1. Adding RegistrationForm in 1 click
+    const regForm = editorStore.addWidget('RegistrationForm');
+    expect(regForm.type).toBe('RegistrationForm');
+    expect(regForm.props.title).toBe('REGISTRATION FORM');
+    expect(regForm.props.fields.length).toBe(5);
+    expect(regForm.props.fields[0].name).toBe('First Name');
+    expect(regForm.props.fields[3].name).toBe('WhatsApp Number');
+    expect(regForm.props.fields[3].countryCode).toBe('+62');
+    expect(editorStore.isFormSidebarOpen).toBe(true);
+
+    // 2. Toggle form sidebar
+    editorStore.toggleFormSidebar();
+    expect(editorStore.isFormSidebarOpen).toBe(false);
+    editorStore.openFormSidebar();
+    expect(editorStore.isFormSidebarOpen).toBe(true);
+
+    // 3. Verify RegistrationForm satisfies GuestEPass requirement for form inputs
+    const checkBeforeDate = editorStore.canAddWidget('GuestEPass');
+    expect(checkBeforeDate.allowed).toBe(false);
+    expect(checkBeforeDate.reason).toContain('Date / Session Selection widget');
+
+    // Add Date choice widget
+    editorStore.addWidget('MultipleChoice');
+    const checkAfterBoth = editorStore.canAddWidget('GuestEPass');
+    expect(checkAfterBoth.allowed).toBe(true);
+  });
 });

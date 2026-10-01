@@ -10,6 +10,7 @@ export type WidgetType =
   | 'StickyCtaDrawer'
   | 'VideoPlayer'
   | 'FieldInput'
+  | 'RegistrationForm'
   | 'ActionButton'
   | 'TextBanner'
   | 'MultipleChoice'
@@ -19,6 +20,17 @@ export type WidgetType =
      PassCTA widget currently displays nothing — needs a display built before
      it is used on a live page. */
   | 'PassCTA';
+
+export interface FormFieldItem {
+  id: string;
+  name: string;
+  placeholder?: string;
+  type?: string;
+  countryCode?: string;
+  required?: boolean;
+  value?: string;
+  errorMessage?: string;
+}
 
 export type ChoiceVariant = 'detailed-card' | 'simple-row' | 'horizontal-block' | 'image-grid';
 

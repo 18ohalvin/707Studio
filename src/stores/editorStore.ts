@@ -78,6 +78,7 @@ export const useEditorStore = defineStore('editor', () => {
   const isTextSidebarOpen = ref<boolean>(false);
   const isButtonSidebarOpen = ref<boolean>(false);
   const isChoiceSidebarOpen = ref<boolean>(false);
+  const isFormSidebarOpen = ref<boolean>(false);
   const isModalSidebarOpen = ref<boolean>(false);
   const isEPassSidebarOpen = ref<boolean>(false);
   const isLayersOpen = ref<boolean>(false);
@@ -149,7 +150,7 @@ export const useEditorStore = defineStore('editor', () => {
 
     if (type === 'GuestEPass') {
       const allWidgets = pages.value.flatMap(p => p.widget_tree);
-      const hasFormInput = allWidgets.some(w => w.type === 'FieldInput');
+      const hasFormInput = allWidgets.some(w => w.type === 'FieldInput' || w.type === 'RegistrationForm');
       const hasDateChoice = allWidgets.some(w => w.type === 'MultipleChoice');
 
       if (!hasFormInput && !hasDateChoice) {
@@ -463,6 +464,21 @@ export const useEditorStore = defineStore('editor', () => {
           ]
         };
         break;
+      case 'RegistrationForm':
+        defaultProps = {
+          title: 'REGISTRATION FORM',
+          subtitle: 'Fill in your details below to register.',
+          titleTypographyStyle: 'heading-3',
+          typographyStyle: 'heading-3',
+          fields: [
+            { id: 'f_fn', name: 'First Name', placeholder: 'Enter your first name*', type: 'text', required: true, value: '' },
+            { id: 'f_ln', name: 'Last Name', placeholder: 'Enter your last name*', type: 'text', required: true, value: '' },
+            { id: 'f_em', name: 'Email Address', placeholder: 'Enter your email address*', type: 'email', required: true, value: '' },
+            { id: 'f_wa', name: 'WhatsApp Number', placeholder: 'Enter your whatsapp number*', type: 'tel', countryCode: '+62', required: true, value: '' },
+            { id: 'f_ig', name: 'Instagram Handle', placeholder: 'Enter your instagram handle*', type: 'text', required: true, value: '' }
+          ]
+        };
+        break;
       case 'GuestEPass':
         defaultProps = {
           venue: '',
@@ -512,6 +528,8 @@ export const useEditorStore = defineStore('editor', () => {
       openButtonSidebar();
     } else if (type === 'MultipleChoice') {
       openChoiceSidebar();
+    } else if (type === 'RegistrationForm') {
+      openFormSidebar();
     } else if (type === 'ModalOverlay') {
       openModalSidebar();
     } else if (type === 'GuestEPass') {
@@ -554,6 +572,7 @@ export const useEditorStore = defineStore('editor', () => {
       isTextSidebarOpen.value = false;
       isButtonSidebarOpen.value = false;
       isChoiceSidebarOpen.value = false;
+      isFormSidebarOpen.value = false;
       isModalSidebarOpen.value = false;
       isEPassSidebarOpen.value = false;
       isMediaGalleryOpen.value = false;
@@ -734,6 +753,33 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
+  function openFormSidebar() {
+    isAddMenuOpen.value = false;
+    isWidgetSidebarOpen.value = false;
+    isMediaSidebarOpen.value = false;
+    isMediaGalleryOpen.value = false;
+    isTextSidebarOpen.value = false;
+    isButtonSidebarOpen.value = false;
+    isChoiceSidebarOpen.value = false;
+    isModalSidebarOpen.value = false;
+    isEPassSidebarOpen.value = false;
+    isLayersOpen.value = false;
+    isPagesOpen.value = false;
+    isFormSidebarOpen.value = true;
+  }
+
+  function closeFormSidebar() {
+    isFormSidebarOpen.value = false;
+  }
+
+  function toggleFormSidebar() {
+    if (isFormSidebarOpen.value) {
+      closeFormSidebar();
+    } else {
+      openFormSidebar();
+    }
+  }
+
   function openModalSidebar() {
     isAddMenuOpen.value = false;
     isWidgetSidebarOpen.value = false;
@@ -742,6 +788,7 @@ export const useEditorStore = defineStore('editor', () => {
     isTextSidebarOpen.value = false;
     isButtonSidebarOpen.value = false;
     isChoiceSidebarOpen.value = false;
+    isFormSidebarOpen.value = false;
     isEPassSidebarOpen.value = false;
     isLayersOpen.value = false;
     isPagesOpen.value = false;
@@ -768,6 +815,7 @@ export const useEditorStore = defineStore('editor', () => {
     isTextSidebarOpen.value = false;
     isButtonSidebarOpen.value = false;
     isChoiceSidebarOpen.value = false;
+    isFormSidebarOpen.value = false;
     isModalSidebarOpen.value = false;
     isLayersOpen.value = false;
     isPagesOpen.value = false;
@@ -794,6 +842,7 @@ export const useEditorStore = defineStore('editor', () => {
     isTextSidebarOpen.value = false;
     isButtonSidebarOpen.value = false;
     isChoiceSidebarOpen.value = false;
+    isFormSidebarOpen.value = false;
     isModalSidebarOpen.value = false;
     isPagesOpen.value = false;
     isLayersOpen.value = true;
@@ -819,6 +868,7 @@ export const useEditorStore = defineStore('editor', () => {
     isTextSidebarOpen.value = false;
     isButtonSidebarOpen.value = false;
     isChoiceSidebarOpen.value = false;
+    isFormSidebarOpen.value = false;
     isModalSidebarOpen.value = false;
     isLayersOpen.value = false;
     isPagesOpen.value = true;
@@ -872,6 +922,7 @@ export const useEditorStore = defineStore('editor', () => {
     isTextSidebarOpen.value = false;
     isButtonSidebarOpen.value = false;
     isChoiceSidebarOpen.value = false;
+    isFormSidebarOpen.value = false;
     isModalSidebarOpen.value = false;
     isEPassSidebarOpen.value = false;
     isLayersOpen.value = false;
@@ -1172,6 +1223,7 @@ export const useEditorStore = defineStore('editor', () => {
     isTextSidebarOpen,
     isButtonSidebarOpen,
     isChoiceSidebarOpen,
+    isFormSidebarOpen,
     isModalSidebarOpen,
     isEPassSidebarOpen,
     isLayersOpen,
@@ -1204,6 +1256,9 @@ export const useEditorStore = defineStore('editor', () => {
     openChoiceSidebar,
     closeChoiceSidebar,
     toggleChoiceSidebar,
+    openFormSidebar,
+    closeFormSidebar,
+    toggleFormSidebar,
     openModalSidebar,
     closeModalSidebar,
     toggleModalSidebar,
