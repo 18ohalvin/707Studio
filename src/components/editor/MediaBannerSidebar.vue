@@ -824,7 +824,7 @@ const ctaStickyScope = ref<'current' | 'all' | 'custom'>('current');
 const ctaStickyPageIds = ref<string[]>([]);
 const isLinkToDropdownOpen = ref(false);
 
-const linkToOptions = [
+const allLinkToOptions = [
   { label: 'Download E-Pass', value: 'download-pass' },
   { label: 'Next Page', value: 'next_page' },
   { label: 'Submit Form', value: 'submit' },
@@ -833,11 +833,22 @@ const linkToOptions = [
   { label: 'Scroll to Section', value: 'scroll' }
 ] as const;
 
+const isCtaModalDisallowed = computed(() => {
+  return ctaPositionMode.value === 'sticky-bottom' && ctaStickyScope.value === 'all';
+});
+
+const linkToOptions = computed(() => {
+  if (isCtaModalDisallowed.value) {
+    return allLinkToOptions.filter(opt => opt.value !== 'modal');
+  }
+  return allLinkToOptions;
+});
+
 const ctaActionType = ref('next_page');
 const ctaUrl = ref('');
 
 const selectedActionLabel = computed(() => {
-  const opt = linkToOptions.find(o => o.value === ctaActionType.value);
+  const opt = allLinkToOptions.find(o => o.value === ctaActionType.value);
   return opt ? opt.label : 'Next Page';
 });
 
@@ -897,6 +908,9 @@ function setCtaPositionMode(mode: 'in-flow' | 'sticky-bottom') {
 
 function setCtaStickyScope(scope: 'current' | 'all' | 'custom') {
   ctaStickyScope.value = scope;
+  if (scope === 'all' && ctaActionType.value === 'modal') {
+    ctaActionType.value = 'next_page';
+  }
   const defaultPageIds = scope === 'all' 
     ? editorStore.pages.map(p => p.id) 
     : [editorStore.currentPage.id];
@@ -904,6 +918,8 @@ function setCtaStickyScope(scope: 'current' | 'all' | 'custom') {
   updateHeroProps({ 
     stickyScope: scope,
     ctaStickyScope: scope,
+    actionType: ctaActionType.value,
+    ctaActionType: ctaActionType.value,
     stickyPageIds: defaultPageIds,
     ctaStickyPageIds: defaultPageIds
   });

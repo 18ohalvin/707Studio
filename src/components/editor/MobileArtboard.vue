@@ -3545,6 +3545,19 @@ function getGuestName(widget: any) {
   if (nameWidget && nameWidget.props?.value?.trim()) {
     return nameWidget.props.value.trim().toUpperCase();
   }
+
+  // 3. Check if any Pop Up Modal collected a name value
+  if (modalInputValue.value && (modalDisplayProps.value.fieldType === 'text' || modalDisplayProps.value.fieldPlaceholder?.toLowerCase().includes('name'))) {
+    return modalInputValue.value.trim().toUpperCase();
+  }
+  const allWidgets = editorStore.pages.flatMap(p => p.widget_tree);
+  for (const w of allWidgets) {
+    const mProps = w.props?.modalProps || (w.type === 'ModalOverlay' ? w.props : null);
+    if (mProps?.fieldValue && (mProps.fieldType === 'text' || mProps.fieldPlaceholder?.toLowerCase().includes('name'))) {
+      return mProps.fieldValue.trim().toUpperCase();
+    }
+  }
+
   return widget.props?.guestNameFallback || '[GUEST NAME]';
 }
 
@@ -3572,11 +3585,42 @@ function getValidForSessions(widget: any) {
     }
   }
 
+  // 1b. Check if user selected any options in Pop Up Modals across pages
+  const allWidgets = editorStore.pages.flatMap(p => p.widget_tree);
+  for (const w of allWidgets) {
+    const mProps = w.props?.modalProps || (w.type === 'ModalOverlay' ? w.props : null);
+    if (mProps && (mProps.variant === 'choice-detailed' || mProps.variant === 'choice-simple' || mProps.variant === 'image-matrix' || mProps.options?.length > 0)) {
+      const selectedModalOpts = (mProps.options || []).filter((opt: any) => opt.selected);
+      if (selectedModalOpts.length > 0) {
+        return selectedModalOpts.map((opt: any, idx: number) => ({
+          id: opt.id || `m_opt_${idx}`,
+          label: opt.label || `Pass Option ${idx + 1}`,
+          sublabel: opt.sublabel || '',
+          description: opt.description || ''
+        }));
+      }
+    }
+  }
+
   // 2. If no selection active yet, check if a MultipleChoice exists in the project and use its options
   for (const cw of choiceWidgets) {
     if (cw.props?.options && cw.props.options.length > 0) {
       return cw.props.options.slice(0, 2).map((opt: any, idx: number) => ({
         id: opt.id,
+        label: opt.label || `Pass Option ${idx + 1}`,
+        sublabel: opt.sublabel || '',
+        description: opt.description || ''
+      }));
+    }
+  }
+
+  // 2b. Check if any Pop Up Modal with choice options exists in the project and use its options
+  for (const w of allWidgets) {
+    const mProps = w.props?.modalProps || (w.type === 'ModalOverlay' ? w.props : null);
+    if (mProps && mProps.options && mProps.options.length > 0 && 
+        (mProps.variant === 'choice-detailed' || mProps.variant === 'choice-simple' || mProps.variant === 'image-matrix' || mProps.options?.length > 0)) {
+      return mProps.options.slice(0, 2).map((opt: any, idx: number) => ({
+        id: opt.id || `m_opt_${idx}`,
         label: opt.label || `Pass Option ${idx + 1}`,
         sublabel: opt.sublabel || '',
         description: opt.description || ''
@@ -3643,6 +3687,19 @@ function getEmail(widget: any) {
   if (emailWidget && emailWidget.props?.value?.trim()) {
     return emailWidget.props.value.trim().toLowerCase();
   }
+
+  // Check if Pop Up Modal collected an email
+  if (modalInputValue.value && (modalDisplayProps.value.fieldType === 'email' || modalInputValue.value.includes('@'))) {
+    return modalInputValue.value.trim().toLowerCase();
+  }
+  const allWidgets = editorStore.pages.flatMap(p => p.widget_tree);
+  for (const w of allWidgets) {
+    const mProps = w.props?.modalProps || (w.type === 'ModalOverlay' ? w.props : null);
+    if (mProps?.fieldValue && (mProps.fieldType === 'email' || mProps.fieldValue.includes('@'))) {
+      return mProps.fieldValue.trim().toLowerCase();
+    }
+  }
+
   return widget.props?.emailFallback || widget.props?.email || 'alvin@sosco.id';
 }
 

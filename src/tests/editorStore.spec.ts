@@ -455,4 +455,30 @@ describe('707 Activation Builder Stores', () => {
     const checkAfterBoth = editorStore.canAddWidget('GuestEPass');
     expect(checkAfterBoth.allowed).toBe(true);
   });
+
+  it('allows GuestEPass if user collects choice/form data via Pop Up Modal without full page form', () => {
+    const editorStore = useEditorStore();
+    editorStore.currentPage.widget_tree = [];
+
+    // Check before modal
+    const checkEmpty = editorStore.canAddWidget('GuestEPass');
+    expect(checkEmpty.allowed).toBe(false);
+
+    // Add an ActionButton with modalProps containing message-field and choice-detailed
+    editorStore.addWidget('ActionButton', undefined, {
+      label: 'RSVP NOW',
+      actionType: 'modal',
+      modalProps: {
+        variant: 'choice-detailed',
+        options: [
+          { id: 'm1', label: 'Pass Option VIP', sublabel: '10 Oct 2026', selected: true }
+        ],
+        fieldType: 'email',
+        fieldValue: 'guest@example.com'
+      }
+    });
+
+    const checkWithModal = editorStore.canAddWidget('GuestEPass');
+    expect(checkWithModal.allowed).toBe(true);
+  });
 });

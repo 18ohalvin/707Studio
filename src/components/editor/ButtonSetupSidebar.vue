@@ -451,7 +451,7 @@ const currentStickyScope = computed(() => {
 
 const isLinkToDropdownOpen = ref(false);
 
-const linkToOptions = [
+const allLinkToOptions = [
   { label: 'Download E-Pass', value: 'download-pass' },
   { label: 'Next Page', value: 'next_page' },
   { label: 'Submit Form', value: 'submit' },
@@ -460,8 +460,25 @@ const linkToOptions = [
   { label: 'Scroll to Section', value: 'scroll' }
 ] as const;
 
+const isModalDisallowed = computed(() => {
+  return currentPositionMode.value === 'sticky-bottom' && currentStickyScope.value === 'all';
+});
+
+const linkToOptions = computed(() => {
+  if (isModalDisallowed.value) {
+    return allLinkToOptions.filter(opt => opt.value !== 'modal');
+  }
+  return allLinkToOptions;
+});
+
 const actionType = computed({
-  get: () => targetWidget.value?.props?.actionType || 'submit',
+  get: () => {
+    const current = targetWidget.value?.props?.actionType || 'submit';
+    if (isModalDisallowed.value && current === 'modal') {
+      return 'next_page';
+    }
+    return current;
+  },
   set: (val: string) => {
     if (targetWidget.value) {
       editorStore.updateWidgetProps(targetWidget.value.id, { actionType: val });
@@ -470,7 +487,7 @@ const actionType = computed({
 });
 
 const selectedActionLabel = computed(() => {
-  const opt = linkToOptions.find(o => o.value === actionType.value);
+  const opt = allLinkToOptions.find(o => o.value === actionType.value);
   return opt ? opt.label : 'Next Page';
 });
 
@@ -520,10 +537,15 @@ function setVariant(variant: 'black' | 'white') {
 
 function setPositionMode(mode: 'in-flow' | 'sticky-bottom') {
   if (targetWidget.value) {
-    editorStore.updateWidgetProps(targetWidget.value.id, { 
+    const isStickyAll = mode === 'sticky-bottom' && currentStickyScope.value === 'all';
+    const updates: Record<string, any> = { 
       positionMode: mode,
       stickyPageIds: targetWidget.value.props.stickyPageIds || [editorStore.currentPage.id]
-    });
+    };
+    if (isStickyAll && targetWidget.value.props.actionType === 'modal') {
+      updates.actionType = 'next_page';
+    }
+    editorStore.updateWidgetProps(targetWidget.value.id, updates);
   }
 }
 
@@ -532,10 +554,14 @@ function setStickyScope(scope: 'current' | 'all' | 'custom') {
     const defaultPageIds = scope === 'all' 
       ? editorStore.pages.map(p => p.id) 
       : [editorStore.currentPage.id];
-    editorStore.updateWidgetProps(targetWidget.value.id, { 
+    const updates: Record<string, any> = { 
       stickyScope: scope,
       stickyPageIds: targetWidget.value.props.stickyPageIds || defaultPageIds
-    });
+    };
+    if (scope === 'all' && currentPositionMode.value === 'sticky-bottom' && targetWidget.value.props.actionType === 'modal') {
+      updates.actionType = 'next_page';
+    }
+    editorStore.updateWidgetProps(targetWidget.value.id, updates);
   }
 }
 

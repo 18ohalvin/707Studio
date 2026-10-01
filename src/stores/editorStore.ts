@@ -150,8 +150,17 @@ export const useEditorStore = defineStore('editor', () => {
 
     if (type === 'GuestEPass') {
       const allWidgets = pages.value.flatMap(p => p.widget_tree);
-      const hasFormInput = allWidgets.some(w => w.type === 'FieldInput' || w.type === 'RegistrationForm');
-      const hasDateChoice = allWidgets.some(w => w.type === 'MultipleChoice');
+      const hasFormInput = allWidgets.some(w => 
+        w.type === 'FieldInput' || 
+        w.type === 'RegistrationForm' ||
+        (w.props?.modalProps && (w.props.modalProps.variant === 'message-field' || w.props.modalProps.fieldType)) ||
+        (w.type === 'ModalOverlay' && (w.props?.variant === 'message-field' || w.props?.fieldType))
+      );
+      const hasDateChoice = allWidgets.some(w => 
+        w.type === 'MultipleChoice' ||
+        (w.props?.modalProps && (w.props.modalProps.variant === 'choice-detailed' || w.props.modalProps.variant === 'choice-simple' || w.props.modalProps.variant === 'image-matrix' || (w.props.modalProps.options && w.props.modalProps.options.length > 0))) ||
+        (w.type === 'ModalOverlay' && (w.props?.variant === 'choice-detailed' || w.props?.variant === 'choice-simple' || w.props?.variant === 'image-matrix' || (w.props?.options && w.props.options.length > 0)))
+      );
 
       if (!hasFormInput && !hasDateChoice) {
         return {
