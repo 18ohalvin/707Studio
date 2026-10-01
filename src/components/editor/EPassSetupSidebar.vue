@@ -95,61 +95,8 @@
       </div>
     </div>
 
-    <!-- Section 3: Valid For / Sessions Cards -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
-      <div class="flex items-center justify-between w-full">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Valid For (Event Sessions)
-        </p>
-        <button 
-          type="button"
-          @click="addSessionSlot"
-          class="apple-glass-btn text-[11px] font-707 px-2.5 py-1 rounded-[6px] flex items-center gap-1 cursor-pointer"
-        >
-          <Plus class="size-3" />
-          <span>Add Session</span>
-        </button>
-      </div>
-
-      <!-- Slots List -->
-      <div class="flex flex-col gap-2 w-full">
-        <div 
-          v-for="(slot, sIdx) in validForSlots" 
-          :key="slot.id || sIdx"
-          class="border-[0.5px] border-neutral-200 rounded-[8px] p-3 bg-white flex flex-col gap-2 shadow-xs"
-        >
-          <div class="flex items-center justify-between gap-2">
-            <input 
-              v-model="slot.label"
-              placeholder="Session / Day (e.g. Day 2)"
-              class="font-707 font-medium text-[13px] text-black focus:outline-none flex-1 border-b border-transparent focus:border-black py-0.5"
-            />
-            <input 
-              v-model="slot.sublabel"
-              placeholder="Date (e.g. 3 September 2026)"
-              class="font-707 text-[12px] text-neutral-500 focus:outline-none text-right flex-1 border-b border-transparent focus:border-black py-0.5"
-            />
-            <button 
-              type="button"
-              v-if="validForSlots.length > 1"
-              @click="removeSessionSlot(sIdx)"
-              class="size-6 rounded flex items-center justify-center text-neutral-400 hover:text-red-600 cursor-pointer"
-              title="Remove Slot"
-            >
-              <Trash2 class="size-3.5" />
-            </button>
-          </div>
-          <input 
-            v-model="slot.description"
-            placeholder="Event Descriptions Detail"
-            class="font-707 text-[11px] text-neutral-600 focus:outline-none w-full border-b border-transparent focus:border-black py-0.5"
-          />
-        </div>
-      </div>
-    </div>
-
-    <!-- Section 4: Terms & Conditions -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
+    <!-- Section 3: Terms & Conditions -->
+    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
       <div class="flex items-center justify-between w-full">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
           Terms & Conditions
@@ -233,36 +180,6 @@ const guestNameFallback = computed({
     }
   }
 });
-
-const validForSlots = computed({
-  get: () => currentWidget.value?.props?.validForFallback || [
-    { id: 'opt_1', label: '[SESSION / DAY 1]', sublabel: '[EVENT DATE]', description: '[EVENT DESCRIPTION DETAIL]' },
-    { id: 'opt_2', label: '[SESSION / DAY 2]', sublabel: '[EVENT DATE]', description: '[EVENT DESCRIPTION DETAIL]' }
-  ],
-  set: (val: any[]) => {
-    if (currentWidget.value) {
-      editorStore.updateWidgetProps(currentWidget.value.id, { validForFallback: val });
-    }
-  }
-});
-
-function addSessionSlot() {
-  const current = [...validForSlots.value];
-  const nextNum = current.length + 1;
-  current.push({
-    id: `opt_${Date.now()}`,
-    label: `[SESSION / DAY ${nextNum}]`,
-    sublabel: '[EVENT DATE]',
-    description: '[EVENT DESCRIPTION DETAIL]'
-  });
-  validForSlots.value = current;
-}
-
-function removeSessionSlot(index: number) {
-  const current = [...validForSlots.value];
-  current.splice(index, 1);
-  validForSlots.value = current;
-}
 
 const termsList = computed({
   get: () => currentWidget.value?.props?.terms || [

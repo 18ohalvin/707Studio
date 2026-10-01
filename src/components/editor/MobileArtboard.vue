@@ -1343,7 +1343,7 @@ more</span>
                 <div class="flex-1 flex flex-col justify-between min-w-0 py-0.5">
                   <!-- Guest Name -->
                   <div class="flex flex-col">
-                    <span class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-500 uppercase tracking-tight">
+                    <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
                       GUEST NAME
                     </span>
                     <span class="font-707 font-medium text-bodytext text-[12px] leading-[18px] text-black uppercase tracking-tight truncate">
@@ -1353,7 +1353,7 @@ more</span>
 
                   <!-- Venue -->
                   <div class="flex flex-col mt-2">
-                    <span class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-500 uppercase tracking-tight">
+                    <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
                       VENUE
                     </span>
                     <span class="font-707 font-medium text-bodytext text-[12px] leading-[18px] text-black uppercase tracking-tight">
@@ -1365,7 +1365,7 @@ more</span>
 
               <!-- Middle Section: VALID FOR (Figma 222:4188) -->
               <div class="flex flex-col gap-[8px] w-full">
-                <span class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-500 uppercase tracking-tight">
+                <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
                   VALID FOR
                 </span>
 
