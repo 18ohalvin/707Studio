@@ -444,6 +444,36 @@ export const useEditorStore = defineStore('editor', () => {
       return null as any;
     }
 
+    // Integrated Button Behavior: If adding ActionButton on a page with Hero banner and no standalone button
+    if (type === 'ActionButton' && typeof index !== 'number') {
+      const heroWidget = currentPage.value.widget_tree.find(w => w.type === 'HeroDrop');
+      const hasStandaloneBtn = currentPage.value.widget_tree.some(w => w.type === 'ActionButton');
+
+      if (heroWidget && !hasStandaloneBtn) {
+        const btnLabel = customProps?.label || customProps?.buttonText || heroWidget.props?.buttonText || heroWidget.props?.ctaLabel || 'BUTTON CTA';
+        const btnVariant = customProps?.variant || customProps?.buttonVariant || heroWidget.props?.variant || heroWidget.props?.buttonVariant || 'black';
+        const positionMode = customProps?.positionMode || heroWidget.props?.positionMode || 'unified';
+
+        updateWidgetProps(heroWidget.id, {
+          isCtaEnabled: true,
+          showButton: true,
+          buttonText: btnLabel,
+          ctaLabel: btnLabel,
+          variant: btnVariant,
+          buttonVariant: btnVariant,
+          positionMode: positionMode,
+          ctaPositionMode: positionMode,
+          ...(customProps || {})
+        });
+
+        selectedWidgetId.value = heroWidget.id;
+        openButtonSidebar();
+        showToast('Hero Banner CTA enabled & linked to Button Setup');
+        pushHistory();
+        return heroWidget;
+      }
+    }
+
     const newWidget: WidgetItem = {
       id: newId,
       type,

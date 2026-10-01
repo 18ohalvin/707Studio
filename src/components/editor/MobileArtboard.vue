@@ -722,7 +722,7 @@
             <!-- 8. ActionButton Widget (707 Standard Action Button - Figma Node 244:11560) -->
             <div 
               v-else-if="widget.type === 'ActionButton' && widget.props.positionMode !== 'sticky-bottom'" 
-              class="relative w-full px-[16px] py-[4px] select-none group/btn"
+              class="relative w-full px-[16px] py-[8px] select-none group/btn"
               @click.stop="handleActionButtonClick(widget)"
               data-node-id="244:11560"
               data-name="Action Button Container"
@@ -1999,12 +1999,12 @@ function getWidgetMarginTopClass(index: number) {
     return 'mt-0';
   }
 
-  // 2. If hero banner meets ActionButton or ActionButton meets HeroDrop: 0px spacing
+  // 2. If hero banner meets ActionButton or ActionButton meets HeroDrop: symmetrical 16px spacing
   if (currentWidget?.type === 'ActionButton' && prevWidget?.type === 'HeroDrop') {
-    return 'mt-0';
+    return 'mt-[16px]';
   }
   if (currentWidget?.type === 'HeroDrop' && prevWidget?.type === 'ActionButton') {
-    return 'mt-0';
+    return 'mt-[16px]';
   }
 
   // 3. If text widget is the top widget (index 0) and followed by form input, banner, or any other widget: exclusive 24px bottom spacing

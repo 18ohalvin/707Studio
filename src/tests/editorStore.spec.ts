@@ -316,15 +316,17 @@ describe('707 Activation Builder Stores', () => {
     expect(editorStore.currentPage.widget_tree.length).toBe(2);
     expect(editorStore.activeToastMessage).toContain('Dynamic Fit preset allows only 1 Text Block');
 
-    // 4. Add 1 Action Button (Allowed)
+    // 4. Add 1 Action Button (Integrated with Hero banner)
     const btn = editorStore.addWidget('ActionButton', undefined, { label: 'EXPLORE NOW' });
     expect(btn).toBeTruthy();
-    expect(editorStore.currentPage.widget_tree.length).toBe(3);
+    expect(hero.props.isCtaEnabled).toBe(true);
+    expect(hero.props.buttonText).toBe('EXPLORE NOW');
+    expect(editorStore.isButtonSidebarOpen).toBe(true);
 
-    // 5. Try adding another ActionButton or MultipleChoice (Blocked)
+    // 5. Try adding an extra MultipleChoice (Blocked by Dynamic Fit limit)
     const extraChoice = editorStore.addWidget('MultipleChoice');
     expect(extraChoice).toBeNull();
-    expect(editorStore.currentPage.widget_tree.length).toBe(3);
+    expect(editorStore.currentPage.widget_tree.length).toBe(2);
     expect(editorStore.activeToastMessage).toContain('Dynamic Fit preset is optimized for 1 Banner + 1 Text + 1 Action Button');
   });
 });
