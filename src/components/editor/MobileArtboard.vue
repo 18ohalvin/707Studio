@@ -1101,10 +1101,10 @@ more</span>
             class="h-[32px] w-full shrink-0 pointer-events-none" 
             aria-hidden="true" 
           />
-          <!-- Exclusive 48px bottom padding spacer when the latest order of widgets is a standard (not sticky) button widget (disabled when isHeroWithButtonOnly so page fits 100% in 1 screen) -->
+          <!-- Exclusive 64px bottom padding spacer when the latest order of widgets is a standard (not sticky) button widget (disabled when isHeroWithButtonOnly so page fits 100% in 1 screen) -->
           <div 
             v-else-if="isLastWidgetButton && !isHeroWithButtonOnly" 
-            class="h-[48px] w-full shrink-0 pointer-events-none" 
+            class="h-[64px] w-full shrink-0 pointer-events-none" 
             aria-hidden="true" 
           />
         </div>
@@ -2635,7 +2635,7 @@ const containerBottomPaddingClass = computed(() => {
   if (tree.length === 0) return 'pb-0';
   if (isLastWidgetHero.value) return 'pb-0';
   if (stickyButtonForThisPage.value) return 'pb-[72px]';
-  if (isHeroWithButtonOnly.value) return 'pb-[16px]';
+  if (isHeroWithButtonOnly.value) return 'pb-[64px]';
   if (isLastWidgetButton.value) return 'pb-0';
   if (isLastWidgetText.value) return 'pb-0';
   return 'pb-[16px]';
