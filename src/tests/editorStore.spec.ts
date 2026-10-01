@@ -362,7 +362,7 @@ describe('707 Activation Builder Stores', () => {
     expect(defaultEPass.props.guestType).toBe('VIP');
     expect(defaultEPass.props.accessIdFallback).toBe('020305-1008-1245');
     expect(defaultEPass.props.actionType).toBe('download-pass');
-    expect(defaultEPass.props.validForFallback[0].label).toBe('[PASS OPTION 1]');
+    expect(defaultEPass.props.validForFallback[0].label).toBe('Pass Option 1');
     expect(defaultEPass.props.footerNoticeLinkWords).toBe('contact support');
     expect(editorStore.isEPassSidebarOpen).toBe(true);
 

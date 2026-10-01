@@ -1247,12 +1247,10 @@ more</span>
             </div>
 
             <!-- 10. GuestEPass Widget (Figma Node 222:4188) -->
+            <!-- 10. GuestEPass Widget (Figma Node 222:4188) -->
             <div 
               v-else-if="widget.type === 'GuestEPass'" 
-              class="relative w-full px-[16px] pb-[16px] select-none group/epass text-black bg-transparent flex flex-col gap-[20px]"
-              :class="[
-                index === 0 ? (getBrandLogo(widget) ? 'pt-0' : 'pt-[16px]') : 'pt-[16px]'
-              ]"
+              class="relative w-full px-[16px] pb-[16px] pt-0 select-none group/epass text-black bg-transparent flex flex-col gap-[20px]"
               @click.stop="handleWidgetClick(widget)"
               data-node-id="222:4188"
               data-name="Guest E-Pass Container"
@@ -1292,10 +1290,10 @@ more</span>
                 </button>
               </div>
 
-              <!-- Top Brand Logo (Inherited from Hero Banner setup - Exactly matching 48px height and alignment) -->
+              <!-- Top Brand Logo (Inherited from Hero Banner setup - Exactly 48px height, 0 top padding) -->
               <div 
                 v-if="getBrandLogo(widget)" 
-                class="w-full flex items-center"
+                class="w-full flex items-center pt-0"
                 :class="[
                   getBrandLogoAlign(widget) === 'center' ? 'justify-center' :
                   getBrandLogoAlign(widget) === 'right' ? 'justify-end' :
@@ -1413,7 +1411,7 @@ more</span>
                 </div>
               </div>
 
-              <!-- 4. ACCESS VALID FOR Section (Strictly follows choice form format: [Pass Option 1 Medium Font] [Date Format], excluding checkbox only) -->
+              <!-- 4. ACCESS VALID FOR Section (Strictly matching choice form font size [12px], font weight [medium], line height [18px], and natural casing) -->
               <div class="flex flex-col gap-[8px] w-full pt-[4px]">
                 <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-black uppercase tracking-tight">
                   ACCESS VALID FOR:
@@ -1433,10 +1431,10 @@ more</span>
                     <!-- Layout A: With Description -->
                     <template v-if="slot.description && slot.description.trim()">
                       <div class="flex items-baseline justify-between w-full font-707 gap-3">
-                        <span class="font-707 font-medium text-[13px] leading-[18px] text-black uppercase truncate">
+                        <span class="font-707 font-medium text-[12px] leading-[18px] text-black truncate">
                           {{ slot.label }}
                         </span>
-                        <span v-if="slot.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[18px] text-neutral-500 uppercase">
+                        <span v-if="slot.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[18px] text-neutral-500">
                           {{ slot.sublabel }}
                         </span>
                       </div>
@@ -1448,10 +1446,10 @@ more</span>
                     <!-- Layout B: Without Description -->
                     <template v-else>
                       <div class="flex items-center justify-between w-full font-707 gap-3">
-                        <span class="font-707 font-medium text-[13px] leading-[18px] text-black uppercase truncate">
+                        <span class="font-707 font-medium text-[12px] leading-[18px] text-black truncate">
                           {{ slot.label }}
                         </span>
-                        <span v-if="slot.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[16px] text-neutral-500 uppercase">
+                        <span v-if="slot.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[16px] text-neutral-500">
                           {{ slot.sublabel }}
                         </span>
                       </div>
@@ -1460,7 +1458,7 @@ more</span>
                 </div>
               </div>
 
-              <!-- 5. Footer Troubleshoot / Disclaimer Notice with Hyperlink Support -->
+              <!-- 5. Footer Troubleshoot / Disclaimer Notice with Hyperlink and Modal Pop Up Support -->
               <div v-if="widget.props?.showFooterNotice ?? true" class="flex items-start gap-[10px] w-full pt-[6px]">
                 <div class="size-[18px] rounded-full bg-black text-white flex items-center justify-center shrink-0 mt-[1px]">
                   <span class="font-bold text-[11px] leading-none font-serif italic">i</span>
@@ -1475,7 +1473,7 @@ more</span>
                       <a 
                         v-else-if="token.type === 'link'"
                         :href="token.url || '#'"
-                        @click.stop="handleNoticeLinkClick(token.url)"
+                        @click.stop.prevent="handleNoticeLinkClick(token, widget)"
                         class="underline underline-offset-2 cursor-pointer font-medium hover:text-neutral-600 transition-colors inline"
                       >
                         {{ token.text }}
@@ -3566,7 +3564,7 @@ function getValidForSessions(widget: any) {
       if (selectedOptions.length > 0) {
         return selectedOptions.map((opt: any, idx: number) => ({
           id: opt.id,
-          label: opt.label || `PASS OPTION ${idx + 1}`,
+          label: opt.label || `Pass Option ${idx + 1}`,
           sublabel: opt.sublabel || '',
           description: opt.description || ''
         }));
@@ -3579,7 +3577,7 @@ function getValidForSessions(widget: any) {
     if (cw.props?.options && cw.props.options.length > 0) {
       return cw.props.options.slice(0, 2).map((opt: any, idx: number) => ({
         id: opt.id,
-        label: opt.label || `PASS OPTION ${idx + 1}`,
+        label: opt.label || `Pass Option ${idx + 1}`,
         sublabel: opt.sublabel || '',
         description: opt.description || ''
       }));
@@ -3590,15 +3588,15 @@ function getValidForSessions(widget: any) {
   return widget.props?.validForFallback || [
     { 
       id: 'opt_1', 
-      label: '[PASS OPTION 1]', 
-      sublabel: '[DATE FORMAT]', 
-      description: '[EVENT DESCRIPTION OR SESSION DETAILS]' 
+      label: 'Pass Option 1', 
+      sublabel: '2 September 2026', 
+      description: 'Access to main floor & VIP lounge' 
     },
     { 
       id: 'opt_2', 
-      label: '[PASS OPTION 2]', 
-      sublabel: '[DATE FORMAT]', 
-      description: '[EVENT DESCRIPTION OR SESSION DETAILS]' 
+      label: 'Pass Option 2', 
+      sublabel: '3 September 2026', 
+      description: 'Access to main floor & VIP lounge' 
     }
   ];
 }
@@ -3716,9 +3714,20 @@ function parseNoticeTokens(widget: any): NoticeToken[] {
   return [{ type: 'text', text: rawText }];
 }
 
-function handleNoticeLinkClick(url?: string) {
-  if (url && url !== '#') {
-    window.open(url, '_blank', 'noopener,noreferrer');
+function handleNoticeLinkClick(token: any, widget?: any) {
+  const actionType = widget?.props?.footerNoticeActionType || (token?.url === 'modal' ? 'modal' : 'link');
+  if (actionType === 'modal' || token?.url === 'modal') {
+    activeTriggeredModal.value = widget?.props?.noticeModalProps || widget?.props?.modalProps || {
+      variant: 'message-alert',
+      title: "Didn't Receive Your Pass?",
+      subtitle: 'Please check your spam or junk folder. If you still have not received it, our team is ready to assist you.',
+      buttonText: 'Done',
+      buttonVariant: 'black'
+    };
+    return;
+  }
+  if (token?.url && token.url !== '#' && token.url !== 'modal') {
+    window.open(token.url, '_blank', 'noopener,noreferrer');
   } else {
     editorStore.showToast('Connecting to support...');
   }

@@ -422,32 +422,69 @@
           </div>
 
           <!-- Hyperlink on Selected Word -->
-          <div class="flex flex-col gap-2 w-full pt-1 border-t border-[#f0f0f0]">
+          <div class="flex flex-col gap-[10px] w-full pt-1 border-t border-[#f0f0f0]">
             <div class="flex items-center justify-between">
-              <span class="font-707 text-[11px] font-medium text-neutral-600">Hyperlink on Selected Word</span>
+              <span class="font-707 text-[11px] font-medium text-neutral-600">Hyperlink Function</span>
               <span class="font-707 text-[10px] text-neutral-400">or use [word](url) in message</span>
             </div>
-            <div class="grid grid-cols-2 gap-2 w-full">
-              <div class="flex flex-col gap-1">
-                <span class="font-707 text-[10px] text-neutral-500">Selected Word(s)</span>
-                <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[32px] items-center px-[10px] rounded-[6px] w-full bg-white transition-colors">
-                  <input 
-                    v-model="footerNoticeLinkWords"
-                    placeholder="contact support"
-                    class="w-full text-[11px] font-707 text-black focus:outline-none placeholder:text-neutral-400"
-                  />
-                </div>
+
+            <!-- Action Type Segmented Control -->
+            <div class="flex gap-[8px] items-center w-full">
+              <button 
+                type="button"
+                @click="setFooterNoticeActionType('link')"
+                :class="footerNoticeActionType === 'link' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                class="flex-1 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center px-[12px] py-[4px] rounded-[6px] text-[11px] font-707 cursor-pointer"
+              >
+                Open URL
+              </button>
+              <button 
+                type="button"
+                @click="setFooterNoticeActionType('modal')"
+                :class="footerNoticeActionType === 'modal' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                class="flex-1 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center px-[12px] py-[4px] rounded-[6px] text-[11px] font-707 cursor-pointer"
+              >
+                Open Pop Up Modal
+              </button>
+            </div>
+
+            <!-- Word(s) to Hyperlink -->
+            <div class="flex flex-col gap-1 w-full">
+              <span class="font-707 text-[10px] text-neutral-500">Selected Word(s) to Hyperlink</span>
+              <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[32px] items-center px-[10px] rounded-[6px] w-full bg-white transition-colors">
+                <input 
+                  v-model="footerNoticeLinkWords"
+                  placeholder="contact support"
+                  class="w-full text-[11px] font-707 text-black focus:outline-none placeholder:text-neutral-400"
+                />
               </div>
-              <div class="flex flex-col gap-1">
-                <span class="font-707 text-[10px] text-neutral-500">Link Destination URL</span>
-                <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[32px] items-center px-[10px] rounded-[6px] w-full bg-white transition-colors">
-                  <input 
-                    v-model="footerNoticeLinkUrl"
-                    placeholder="https://... or mailto:..."
-                    class="w-full text-[11px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
-                  />
-                </div>
+            </div>
+
+            <!-- Conditional URL input if 'link' -->
+            <div v-if="footerNoticeActionType === 'link'" class="flex flex-col gap-1 w-full animate-in fade-in duration-150">
+              <span class="font-707 text-[10px] text-neutral-500">Link Destination URL</span>
+              <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[32px] items-center px-[10px] rounded-[6px] w-full bg-white transition-colors">
+                <input 
+                  v-model="footerNoticeLinkUrl"
+                  placeholder="https://... or mailto:..."
+                  class="w-full text-[11px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
+                />
               </div>
+            </div>
+
+            <!-- Conditional Configure Modal Button if 'modal' -->
+            <div v-if="footerNoticeActionType === 'modal'" class="w-full pt-1 animate-in fade-in duration-150">
+              <button 
+                type="button"
+                @click="openNoticeModalSetup"
+                class="apple-glass-btn-dark w-full h-[34px] rounded-[6px] flex items-center justify-between px-3 font-707 font-medium text-[11px] cursor-pointer transition-all shadow-sm"
+              >
+                <span class="flex items-center gap-1.5">
+                  <SlidersHorizontal class="size-3" />
+                  <span>Configure Pop Up Modal</span>
+                </span>
+                <ArrowRight class="size-3 opacity-80" />
+              </button>
             </div>
           </div>
         </div>
@@ -700,6 +737,39 @@ const footerNoticeText = computed({
     }
   }
 });
+
+const footerNoticeActionType = computed({
+  get: () => currentWidget.value?.props?.footerNoticeActionType || 'link',
+  set: (val: 'link' | 'modal') => {
+    if (currentWidget.value) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { footerNoticeActionType: val });
+    }
+  }
+});
+
+function setFooterNoticeActionType(type: 'link' | 'modal') {
+  footerNoticeActionType.value = type;
+  if (type === 'modal') {
+    openNoticeModalSetup();
+  }
+}
+
+function openNoticeModalSetup() {
+  if (currentWidget.value) {
+    if (!currentWidget.value.props.noticeModalProps && !currentWidget.value.props.modalProps) {
+      editorStore.updateWidgetProps(currentWidget.value.id, {
+        noticeModalProps: {
+          variant: 'message-alert',
+          title: "Didn't Receive Your Pass?",
+          subtitle: 'Please check your spam or junk folder. If you still have not received it, our team is ready to assist you.',
+          buttonText: 'Done',
+          buttonVariant: 'black'
+        }
+      });
+    }
+    editorStore.openModalSidebar();
+  }
+}
 
 const footerNoticeLinkWords = computed({
   get: () => currentWidget.value?.props?.footerNoticeLinkWords ?? "contact support",

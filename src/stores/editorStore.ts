@@ -507,8 +507,8 @@ export const useEditorStore = defineStore('editor', () => {
           iconName: 'ticket',
           accessId: '020305-1008-1245',
           validForFallback: [
-            { id: 'opt_1', label: '[PASS OPTION 1]', sublabel: '[DATE FORMAT]', description: '[EVENT DESCRIPTION OR SESSION DETAILS]' },
-            { id: 'opt_2', label: '[PASS OPTION 2]', sublabel: '[DATE FORMAT]', description: '[EVENT DESCRIPTION OR SESSION DETAILS]' }
+            { id: 'opt_1', label: 'Pass Option 1', sublabel: '2 September 2026', description: 'Access to main floor & VIP lounge' },
+            { id: 'opt_2', label: 'Pass Option 2', sublabel: '3 September 2026', description: 'Access to main floor & VIP lounge' }
           ]
         };
         break;

@@ -537,7 +537,7 @@ const sidebarRef = ref<HTMLElement | null>(null);
 
 const currentWidget = computed(() => {
   const selected = editorStore.currentPage.widget_tree.find(w => w.id === editorStore.selectedWidgetId);
-  if (selected && (selected.type === 'ActionButton' || selected.type === 'HeroDrop' || selected.type === 'ModalOverlay')) {
+  if (selected && (selected.type === 'ActionButton' || selected.type === 'HeroDrop' || selected.type === 'ModalOverlay' || selected.type === 'GuestEPass')) {
     return selected;
   }
   return editorStore.currentPage.widget_tree.find(w => w.type === 'ActionButton' && w.props?.actionType === 'modal') || selected || null;
@@ -545,6 +545,9 @@ const currentWidget = computed(() => {
 
 const targetModalData = computed(() => {
   if (!currentWidget.value) return {};
+  if (currentWidget.value.props.noticeModalProps) {
+    return currentWidget.value.props.noticeModalProps;
+  }
   if (currentWidget.value.props.modalProps) {
     return currentWidget.value.props.modalProps;
   }
@@ -558,6 +561,18 @@ function updateModalData(propsToUpdate: Record<string, any>) {
     editorStore.updateWidgetProps(currentWidget.value.id, {
       modalProps: { ...existing, ...propsToUpdate }
     });
+  } else if (currentWidget.value.type === 'GuestEPass') {
+    if (currentWidget.value.props.noticeModalProps) {
+      const existing = currentWidget.value.props.noticeModalProps || {};
+      editorStore.updateWidgetProps(currentWidget.value.id, {
+        noticeModalProps: { ...existing, ...propsToUpdate }
+      });
+    } else {
+      const existing = currentWidget.value.props.modalProps || {};
+      editorStore.updateWidgetProps(currentWidget.value.id, {
+        modalProps: { ...existing, ...propsToUpdate }
+      });
+    }
   } else {
     editorStore.updateWidgetProps(currentWidget.value.id, propsToUpdate);
   }
