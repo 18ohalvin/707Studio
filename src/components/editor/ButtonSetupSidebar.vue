@@ -38,8 +38,11 @@
       </div>
     </div>
 
-    <!-- Section 2: Style Presets -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
+    <!-- Section 2: Style Presets (Removed on other pages if button is configured for several or all pages) -->
+    <div 
+      v-if="shouldShowStylePresets"
+      class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]"
+    >
       <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
         Button Style Preset
       </p>
@@ -408,7 +411,48 @@ const targetWidget = computed(() => {
   if (editorStore.selectedWidget && (editorStore.selectedWidget.type === 'ActionButton' || editorStore.selectedWidget.type === 'HeroDrop')) {
     return editorStore.selectedWidget;
   }
-  return editorStore.currentPage.widget_tree.find(w => w.type === 'ActionButton') || null;
+  const local = editorStore.currentPage.widget_tree.find(w => w.type === 'ActionButton') || null;
+  if (local) return local;
+
+  // If on secondary page, resolve the inherited sticky button from origin page
+  for (const p of editorStore.pages) {
+    const btn = p.widget_tree.find(w => w.type === 'ActionButton' && w.props?.positionMode === 'sticky-bottom');
+    if (btn) {
+      const scope = btn.props?.stickyScope || 'current';
+      if (scope === 'all' || (scope === 'custom' && (btn.props?.stickyPageIds || []).includes(editorStore.currentPage.id))) {
+        return btn;
+      }
+    }
+  }
+  return null;
+});
+
+const originPageIndex = computed(() => {
+  if (!targetWidget.value) return -1;
+  return editorStore.pages.findIndex(p => p.widget_tree.some(w => w.id === targetWidget.value?.id));
+});
+
+const isMultiPageButton = computed(() => {
+  if (currentPositionMode.value !== 'sticky-bottom') return false;
+  if (currentStickyScope.value === 'all') return true;
+  if (currentStickyScope.value === 'custom') {
+    const ids = targetWidget.value?.props?.stickyPageIds || [];
+    return ids.length > 1;
+  }
+  return false;
+});
+
+const isOtherPage = computed(() => {
+  if (originPageIndex.value === -1) return false;
+  return editorStore.activePageIndex !== originPageIndex.value;
+});
+
+const shouldShowStylePresets = computed(() => {
+  // If user selected button for several pages or all pages, hide preset section on other pages
+  if (isMultiPageButton.value && isOtherPage.value) {
+    return false;
+  }
+  return true;
 });
 
 const buttonLabel = computed({
