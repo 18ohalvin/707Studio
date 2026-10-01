@@ -372,4 +372,46 @@ describe('707 Activation Builder Stores', () => {
     editorStore.removeWidget(defaultEPass.id);
     expect(editorStore.isEPassSidebarOpen).toBe(false);
   });
+
+  it('supports hero banner CTA button color preset and drag-to-reorder pages', () => {
+    const editorStore = useEditorStore();
+
+    // 1. Hero banner CTA button preset
+    const hero = editorStore.addWidget('HeroDrop', undefined, {
+      buttonText: 'ENTER RAFFLE',
+      isCtaEnabled: true,
+      buttonVariant: 'black',
+      variant: 'black'
+    });
+    expect(hero.props.buttonVariant).toBe('black');
+
+    editorStore.updateWidgetProps(hero.id, {
+      buttonVariant: 'white',
+      variant: 'white'
+    });
+    expect(editorStore.selectedWidget?.props.buttonVariant).toBe('white');
+    expect(editorStore.selectedWidget?.props.variant).toBe('white');
+
+    // 2. Multi-page creation and drag-to-order page swapping
+    editorStore.addPage();
+    editorStore.addPage();
+    expect(editorStore.pages.length).toBe(3);
+    const initialPage0Id = editorStore.pages[0].id;
+    const initialPage1Id = editorStore.pages[1].id;
+    const initialPage2Id = editorStore.pages[2].id;
+
+    // Move page 0 to index 2
+    editorStore.movePage(0, 2);
+    expect(editorStore.pages[0].id).toBe(initialPage1Id);
+    expect(editorStore.pages[1].id).toBe(initialPage2Id);
+    expect(editorStore.pages[2].id).toBe(initialPage0Id);
+    expect(editorStore.activePageIndex).toBe(2);
+
+    // Move page 2 back to index 0
+    editorStore.movePage(2, 0);
+    expect(editorStore.pages[0].id).toBe(initialPage0Id);
+    expect(editorStore.pages[1].id).toBe(initialPage1Id);
+    expect(editorStore.pages[2].id).toBe(initialPage2Id);
+    expect(editorStore.activePageIndex).toBe(0);
+  });
 });

@@ -61,6 +61,8 @@ export const useEditorStore = defineStore('editor', () => {
   // Drag and Drop State
   const draggedWidget = ref<{ type: WidgetType; customProps?: Record<string, any>; label?: string } | null>(null);
   const isDraggingOverCanvas = ref<boolean>(false);
+  const draggedPageIndex = ref<number | null>(null);
+  const dragOverPageIndex = ref<number | null>(null);
 
   // Sidebar Overlay States
   const isAddMenuOpen = ref<boolean>(false);
@@ -1154,6 +1156,8 @@ export const useEditorStore = defineStore('editor', () => {
     activeTab,
     draggedWidget,
     isDraggingOverCanvas,
+    draggedPageIndex,
+    dragOverPageIndex,
     isAddMenuOpen,
     isWidgetSidebarOpen,
     isMediaSidebarOpen,

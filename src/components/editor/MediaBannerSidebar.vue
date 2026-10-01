@@ -523,6 +523,31 @@
             />
           </div>
 
+          <!-- Button Style Preset (Primary Black vs Primary White) -->
+          <div class="content-stretch flex flex-col gap-[10px] items-start w-full pt-1">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Button Style Preset
+            </p>
+            <div class="flex gap-[8px] items-center w-full">
+              <button 
+                type="button"
+                @click="setButtonVariant('black')"
+                :class="buttonVariant === 'black' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[16px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+              >
+                Primary Black
+              </button>
+              <button 
+                type="button"
+                @click="setButtonVariant('white')"
+                :class="buttonVariant === 'white' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[16px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+              >
+                Primary White
+              </button>
+            </div>
+          </div>
+
           <!-- Position Selector (Standard vs Sticky Bottom) -->
           <div class="flex items-center justify-between w-full pt-1">
             <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
@@ -739,9 +764,20 @@ const badge = ref('');
 const headline = ref('');
 const subheadline = ref('');
 const buttonText = ref('');
+const buttonVariant = ref<'black' | 'white'>('black');
 const textAlign = ref<'left' | 'center' | 'right'>('left');
 const textPosition = ref<'bottom' | 'center' | 'top'>('bottom');
 const isBannerTextEnabled = ref(false);
+
+function setButtonVariant(variant: 'black' | 'white') {
+  buttonVariant.value = variant;
+  if (editorStore.selectedWidgetId) {
+    editorStore.updateWidgetProps(editorStore.selectedWidgetId, {
+      buttonVariant: variant,
+      variant: variant
+    });
+  }
+}
 
 const isOverlayEnabled = ref(false);
 const overlayOpacity = ref(50);
@@ -975,7 +1011,9 @@ function toggleCta() {
     editorStore.updateWidgetProps(editorStore.selectedWidgetId, {
       isCtaEnabled: isCtaEnabled.value,
       showButton: isCtaEnabled.value,
-      buttonText: isCtaEnabled.value ? (buttonText.value || 'Action') : ''
+      buttonText: isCtaEnabled.value ? (buttonText.value || 'Action') : '',
+      buttonVariant: buttonVariant.value || 'black',
+      variant: buttonVariant.value || 'black'
     });
     if (isCtaEnabled.value && !buttonText.value) {
       buttonText.value = 'Action';
@@ -1104,6 +1142,7 @@ watch(() => editorStore.selectedWidget, (widget) => {
     headline.value = widget.props.headline || widget.props.title || '';
     subheadline.value = widget.props.subheadline || widget.props.subtitle || '';
     buttonText.value = widget.props.buttonText || widget.props.ctaLabel || '';
+    buttonVariant.value = widget.props.buttonVariant || widget.props.variant || 'black';
     textAlign.value = widget.props.textAlign || 'left';
     textPosition.value = widget.props.textPosition || 'bottom';
     currentImageUrl.value = widget.props.imageUrl || '';
@@ -1237,6 +1276,15 @@ watch(buttonText, (newBtn) => {
       buttonText: newBtn, 
       showButton: !!newBtn, 
       ctaLabel: newBtn 
+    });
+  }
+});
+
+watch(buttonVariant, (newVariant) => {
+  if (editorStore.selectedWidgetId) {
+    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { 
+      buttonVariant: newVariant,
+      variant: newVariant
     });
   }
 });
