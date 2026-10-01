@@ -336,8 +336,8 @@ function handleWheel(e: WheelEvent) {
   const isZoom = e.ctrlKey || e.metaKey;
   const target = e.target as HTMLElement | null;
 
-  // 1. Isolate scroll if cursor is inside floating sidebars, modals, or open text editors
-  if (target && target.closest('aside, [role="dialog"], input, textarea:focus, select')) {
+  // 1. Isolate scroll if cursor is inside floating sidebars, modals, bottom sheets, or open text editors
+  if (target && target.closest('aside, [role="dialog"], input, textarea:focus, select, .apple-bottom-sheet-card')) {
     return;
   }
 

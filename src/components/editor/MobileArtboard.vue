@@ -92,10 +92,13 @@
         ref="scrollContainerRef"
         @click.self="handleArtboardClick"
         @scroll="handleScroll"
-        class="artboard-scroll-container flex-1 flex flex-col no-scrollbar px-0 pt-0 pb-0 relative cursor-default overscroll-contain will-change-scroll"
+        @wheel.stop="handleArtboardWheel"
+        @mousedown="handleArtboardMouseDown"
+        class="artboard-scroll-container flex-1 flex flex-col no-scrollbar px-0 pt-0 pb-0 relative overscroll-contain will-change-scroll select-none"
         :class="[
           isPreviewModal ? 'bg-white' : 'bg-[#f5f5f5]',
           isDragOver ? 'bg-neutral-200/60' : '',
+          isSingleFullScreenHero ? 'overflow-hidden cursor-default' : (isArtboardDragging ? 'cursor-grabbing' : (isContentScrollable ? 'cursor-grab' : 'cursor-default')),
           isSingleFullScreenHero ? 'overflow-hidden' : 'overflow-y-auto'
         ]"
         style="scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch;"
@@ -1573,7 +1576,14 @@ more</span>
             </div>
 
             <!-- Scrollable Middle Contents Area (Scrolls behind sticky bottom button) -->
-            <div class="flex-1 overflow-y-auto no-scrollbar px-[24px] py-[8px] flex flex-col gap-[16px] w-full overscroll-contain">
+            <div 
+              ref="modalScrollRef"
+              @wheel.stop="handleModalWheel"
+              @mousedown="handleModalMouseDown"
+              class="flex-1 overflow-y-auto no-scrollbar px-[24px] py-[8px] flex flex-col gap-[16px] w-full overscroll-contain select-none"
+              :class="isModalDragging ? 'cursor-grabbing' : 'cursor-grab'"
+              style="scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch;"
+            >
               <!-- Variant 1: Message / Alert (Clean notice, title + subtitle only) -->
 
               <!-- Variant 2: Message + Field placeholder -->
@@ -1872,6 +1882,7 @@ function handleDoubleClickThisPage(e?: MouseEvent) {
 }
 
 function startEditingPageName() {
+  if (wasDraggingRecently.value) return;
   pageNameInput.value = currentPageName.value;
   isEditingPageName.value = true;
   nextTick(() => {
@@ -1900,11 +1911,106 @@ const dropTargetIndex = ref<number | null>(null);
 const hoveredWidgetId = ref<string | null>(null);
 
 const scrollContainerRef = ref<HTMLElement | null>(null);
+const modalScrollRef = ref<HTMLElement | null>(null);
 const isScrolling = ref(false);
 const isContentScrollable = ref(false);
 const scrollIndicatorTop = ref(0);
 const scrollIndicatorHeight = ref(30);
 let scrollTimeout: any = null;
+
+// Drag-to-scroll (Click + Hold to scroll) State & Handlers
+const isArtboardDragging = ref(false);
+const isModalDragging = ref(false);
+const wasDraggingRecently = ref(false);
+let dragSuppressTimer: any = null;
+
+function markDragged() {
+  wasDraggingRecently.value = true;
+  if (dragSuppressTimer) clearTimeout(dragSuppressTimer);
+  dragSuppressTimer = setTimeout(() => {
+    wasDraggingRecently.value = false;
+  }, 120);
+}
+
+function isInputElement(target: EventTarget | null): boolean {
+  if (!target || !(target instanceof HTMLElement)) return false;
+  const tagName = target.tagName.toLowerCase();
+  return tagName === 'input' || tagName === 'textarea' || tagName === 'select' || target.isContentEditable;
+}
+
+function handleArtboardMouseDown(e: MouseEvent) {
+  if (e.button !== 0 || props.isMiniPreview) return;
+  if (isInputElement(e.target)) return;
+  const targetContainer = scrollContainerRef.value;
+  if (!targetContainer || isSingleFullScreenHero.value) return;
+
+  const startY = e.clientY;
+  const startScrollTop = targetContainer.scrollTop;
+  let hasMoved = false;
+
+  function onMouseMove(moveEvent: MouseEvent) {
+    const deltaY = moveEvent.clientY - startY;
+    if (!hasMoved && Math.abs(deltaY) > 3) {
+      hasMoved = true;
+      isArtboardDragging.value = true;
+    }
+    if (hasMoved && targetContainer) {
+      targetContainer.scrollTop = startScrollTop - deltaY;
+      moveEvent.preventDefault();
+    }
+  }
+
+  function onMouseUp() {
+    window.removeEventListener('mousemove', onMouseMove);
+    window.removeEventListener('mouseup', onMouseUp);
+    if (hasMoved) {
+      markDragged();
+    }
+    setTimeout(() => {
+      isArtboardDragging.value = false;
+    }, 10);
+  }
+
+  window.addEventListener('mousemove', onMouseMove);
+  window.addEventListener('mouseup', onMouseUp);
+}
+
+function handleModalMouseDown(e: MouseEvent) {
+  if (e.button !== 0) return;
+  if (isInputElement(e.target)) return;
+  const targetContainer = modalScrollRef.value;
+  if (!targetContainer) return;
+
+  const startY = e.clientY;
+  const startScrollTop = targetContainer.scrollTop;
+  let hasMoved = false;
+
+  function onMouseMove(moveEvent: MouseEvent) {
+    const deltaY = moveEvent.clientY - startY;
+    if (!hasMoved && Math.abs(deltaY) > 3) {
+      hasMoved = true;
+      isModalDragging.value = true;
+    }
+    if (hasMoved && targetContainer) {
+      targetContainer.scrollTop = startScrollTop - deltaY;
+      moveEvent.preventDefault();
+    }
+  }
+
+  function onMouseUp() {
+    window.removeEventListener('mousemove', onMouseMove);
+    window.removeEventListener('mouseup', onMouseUp);
+    if (hasMoved) {
+      markDragged();
+    }
+    setTimeout(() => {
+      isModalDragging.value = false;
+    }, 10);
+  }
+
+  window.addEventListener('mousemove', onMouseMove);
+  window.addEventListener('mouseup', onMouseUp);
+}
 
 function handleScroll(e: Event) {
   const container = e.target as HTMLElement;
@@ -1940,8 +2046,26 @@ function updateScrollMetrics() {
 
 function handleArtboardWheel(e: WheelEvent) {
   if (e.ctrlKey || e.metaKey || props.isMiniPreview) return;
-  // Stop event from bubbling up to parent canvas so canvas workspace doesn't pan or zoom
   e.stopPropagation();
+
+  // If modal bottom sheet is currently open, scroll the modal content container
+  if (isModalOverlayVisible.value && modalScrollRef.value) {
+    modalScrollRef.value.scrollTop += e.deltaY;
+    return;
+  }
+
+  // Otherwise scroll artboard widget container
+  if (scrollContainerRef.value && !isSingleFullScreenHero.value) {
+    scrollContainerRef.value.scrollTop += e.deltaY;
+  }
+}
+
+function handleModalWheel(e: WheelEvent) {
+  if (e.ctrlKey || e.metaKey) return;
+  e.stopPropagation();
+  if (modalScrollRef.value) {
+    modalScrollRef.value.scrollTop += e.deltaY;
+  }
 }
 
 function scrollToWidget(id: string) {
@@ -2001,6 +2125,7 @@ onMounted(() => {
 });
 
 function handleArtboardClick() {
+  if (wasDraggingRecently.value) return;
   handleSelectThisPage();
   editorStore.selectWidget(null);
   editorStore.closeAllSidebars();
@@ -2183,6 +2308,7 @@ watch(() => editorStore.selectedWidgetId, async (newId) => {
 });
 
 function handleWidgetClick(widget: any) {
+  if (wasDraggingRecently.value) return;
   if (props.isPreviewModal || props.isMiniPreview) return;
   handleSelectThisPage();
   editorStore.selectWidget(widget.id);
@@ -2238,6 +2364,7 @@ function handleAdjustWidget(widget: any) {
 }
 
 function handleActionButtonClick(widget: any) {
+  if (wasDraggingRecently.value) return;
   if (props.isPreviewModal) {
     handleButtonClick(widget);
     return;
@@ -2249,6 +2376,7 @@ function handleActionButtonClick(widget: any) {
 }
 
 function handleHeroCtaClick(widget: any) {
+  if (wasDraggingRecently.value) return;
   if (props.isPreviewModal) {
     handleButtonClick(widget);
     return;
@@ -2668,6 +2796,7 @@ function toggleCountryCode(widget: any) {
 
 const modalCountryCode = ref('+62');
 function toggleModalCountryCode() {
+  if (wasDraggingRecently.value) return;
   const idx = countryCodes.indexOf(modalCountryCode.value);
   modalCountryCode.value = countryCodes[(idx + 1) % countryCodes.length];
 }
@@ -2999,6 +3128,7 @@ function getModalOptionSlotsBadge(opt: any): string | null {
 }
 
 function handleModalAddOption() {
+  if (wasDraggingRecently.value) return;
   const mProps = modalDisplayProps.value;
   if (!mProps.options) mProps.options = [];
   const current = mProps.options;
@@ -3026,6 +3156,7 @@ function handleModalAddOption() {
 }
 
 function toggleModalOption(optIdOrIdx: any) {
+  if (wasDraggingRecently.value) return;
   const mProps = modalDisplayProps.value;
   if (!mProps.options) return;
   const isMulti = mProps.allowMultiple ?? (mProps.variant === 'choice-detailed');
@@ -3048,6 +3179,7 @@ function toggleModalOption(optIdOrIdx: any) {
 }
 
 function toggleModalSlot(slotIdOrIdx: any) {
+  if (wasDraggingRecently.value) return;
   const mProps = modalDisplayProps.value;
   if (!mProps.imageSlots) return;
   mProps.imageSlots.forEach((s: any, idx: number) => {
@@ -3107,6 +3239,7 @@ function isButtonInactive(widget: any): boolean {
 }
 
 function handleModalDoneClick() {
+  if (wasDraggingRecently.value) return;
   const mProps = modalDisplayProps.value;
 
   // 1. Persist modal input value if filled
