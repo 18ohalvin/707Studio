@@ -1550,18 +1550,19 @@ more</span>
           <!-- Bottom Sheet Card (White background with premium Apple blur transparent effect) -->
           <div 
             @click.stop
-            class="apple-bottom-sheet-card relative z-10 w-full backdrop-blur-2xl bg-white/90 border-t border-white/60 text-black p-[24px] rounded-t-[20px] shadow-[0px_-10px_40px_rgba(0,0,0,0.16),0_-1px_3px_rgba(0,0,0,0.05)] max-h-[85%] overflow-y-auto no-scrollbar"
+            class="apple-bottom-sheet-card relative z-10 w-full backdrop-blur-2xl bg-white/90 border-t border-white/60 text-black rounded-t-[20px] shadow-[0px_-10px_40px_rgba(0,0,0,0.16),0_-1px_3px_rgba(0,0,0,0.05)] max-h-[85%] flex flex-col overflow-hidden"
             data-node-id="276:4722"
             data-name="Bottom Modal Popup"
           >
-            <!-- Sheet Top Handle Pill -->
-            <div class="w-full flex items-center justify-center pb-3">
-              <div class="w-10 h-1 rounded-full bg-neutral-300" />
-            </div>
+            <!-- Sheet Top Fixed Header (Handle Pill + Title + Subtitle) -->
+            <div class="px-[24px] pt-[16px] pb-[12px] shrink-0 flex flex-col items-start w-full">
+              <!-- Sheet Top Handle Pill -->
+              <div class="w-full flex items-center justify-center pb-2.5">
+                <div class="w-10 h-1 rounded-full bg-neutral-300" />
+              </div>
 
-            <div class="flex flex-col gap-[20px] items-start w-full">
               <!-- Header: Title + Subtitle -->
-              <div class="flex flex-col gap-[8px] items-start w-full">
+              <div class="flex flex-col gap-[6px] items-start w-full">
                 <h3 class="font-707 font-medium text-heading-h3 text-black tracking-tight whitespace-pre-line">
                   {{ modalDisplayProps.title || 'Select Arrival Date' }}
                 </h3>
@@ -1569,7 +1570,10 @@ more</span>
                   {{ modalDisplayProps.subtitle || 'Please provide a valid email address. We will resend your E-Pass immediately.' }}
                 </p>
               </div>
+            </div>
 
+            <!-- Scrollable Middle Contents Area (Scrolls behind sticky bottom button) -->
+            <div class="flex-1 overflow-y-auto no-scrollbar px-[24px] py-[8px] flex flex-col gap-[16px] w-full overscroll-contain">
               <!-- Variant 1: Message / Alert (Clean notice, title + subtitle only) -->
 
               <!-- Variant 2: Message + Field placeholder -->
@@ -1772,17 +1776,17 @@ more</span>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <!-- CTA Action Button -->
-              <div class="w-full pt-1">
-                <button 
-                  type="button"
-                  @click.stop="handleModalDoneClick"
-                  class="apple-cta-btn apple-cta-btn-dark bg-black text-white hover:bg-neutral-900 active:bg-neutral-800 w-full h-[48px] px-[16px] py-[12px] rounded-none flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none transition-all"
-                >
-                  <span class="whitespace-nowrap uppercase">{{ modalDisplayProps.buttonText || 'DONE' }}</span>
-                </button>
-              </div>
+            <!-- Fixed / Sticky Bottom Action CTA Button -->
+            <div class="px-[24px] pt-[12px] pb-[20px] shrink-0 w-full bg-white/70 backdrop-blur-md border-t border-black/5 z-20">
+              <button 
+                type="button"
+                @click.stop="handleModalDoneClick"
+                class="apple-cta-btn apple-cta-btn-dark bg-black text-white hover:bg-neutral-900 active:bg-neutral-800 w-full h-[48px] px-[16px] py-[12px] rounded-none flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none transition-all"
+              >
+                <span class="whitespace-nowrap uppercase">{{ modalDisplayProps.buttonText || 'DONE' }}</span>
+              </button>
             </div>
           </div>
         </div>
