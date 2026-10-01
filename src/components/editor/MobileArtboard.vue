@@ -1517,7 +1517,15 @@ more</span>
           >
             <Trash2 class="w-3.5 h-3.5" />
           </button>
-        </div>        <button 
+        </div>
+
+        <!-- Frosted Blur Transition Scrim above Sticky Bottom Button -->
+        <div 
+          class="pointer-events-none absolute -top-[32px] inset-x-0 h-[32px] bg-gradient-to-t from-[#f5f5f5]/90 via-[#f5f5f5]/45 to-transparent backdrop-blur-[2.5px]"
+          :class="isPreviewModal ? 'from-white/90 via-white/45' : 'from-[#f5f5f5]/90 via-[#f5f5f5]/45'"
+        />
+
+        <button 
           type="button"
           @click.stop="handleActionButtonClick(stickyButtonForThisPage)"
           :disabled="isButtonInactive(stickyButtonForThisPage)"
@@ -1788,12 +1796,17 @@ more</span>
               </div>
             </div>
 
-            <!-- Fixed / Sticky Bottom Action CTA Button -->
-            <div class="px-[24px] pt-[8px] pb-[20px] shrink-0 w-full bg-transparent z-20">
+            <!-- Fixed / Sticky Bottom Action CTA Button with Blur Transition Scrim -->
+            <div class="px-[24px] pt-[8px] pb-[20px] shrink-0 w-full bg-transparent z-20 relative">
+              <!-- Frosted Blur Transition Scrim above CTA Button -->
+              <div 
+                class="pointer-events-none absolute -top-[32px] inset-x-0 h-[32px] bg-gradient-to-t from-white/90 via-white/45 to-transparent backdrop-blur-[2.5px]" 
+              />
+
               <button 
                 type="button"
                 @click.stop="handleModalDoneClick"
-                class="apple-cta-btn apple-cta-btn-dark bg-black text-white hover:bg-neutral-900 active:bg-neutral-800 w-full h-[48px] px-[16px] py-[12px] rounded-none flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none transition-all"
+                class="apple-cta-btn apple-cta-btn-dark bg-black text-white hover:bg-neutral-900 active:bg-neutral-800 w-full h-[48px] px-[16px] py-[12px] rounded-none flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none transition-all relative z-10"
               >
                 <span class="whitespace-nowrap uppercase">{{ modalDisplayProps.buttonText || 'DONE' }}</span>
               </button>
