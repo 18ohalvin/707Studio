@@ -720,6 +720,7 @@ button[data-cta],
   transform: translateZ(0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
+  border-width: 0.5px !important;
 }
 
 .luxury-choice-tile:active:not(.pointer-events-none) {
@@ -729,8 +730,8 @@ button[data-cta],
 .luxury-choice-tile::after {
   content: '';
   position: absolute;
-  inset: -1px;
-  border: 1px solid #000000;
+  inset: -0.5px;
+  border: 0.5px solid #000000;
   pointer-events: none;
   clip-path: inset(0 100% 100% 0);
   transition: clip-path 0.38s cubic-bezier(0.22, 1, 0.36, 1);

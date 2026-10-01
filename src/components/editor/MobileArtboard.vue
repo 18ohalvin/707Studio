@@ -844,7 +844,7 @@
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="luxury-choice-tile border border-solid border-[#d4d4d4] flex gap-[24px] w-full select-none transition-all duration-150 rounded-none"
+                  class="luxury-choice-tile border-[0.5px] border-solid border-[#d4d4d4] flex gap-[24px] w-full select-none transition-all duration-150 rounded-none"
                   :class="[
                     isChoiceSelected(widget, opt.id) ? 'is-selected' : '',
                     isChoiceOptionDisabled(widget, opt)
@@ -857,11 +857,11 @@
                 >
                   <!-- Checkbox Container (18px outer square with 12px inner square when active) -->
                   <div 
-                    class="relative shrink-0 size-[18px] border border-black border-solid flex items-center justify-center bg-transparent"
+                    class="relative shrink-0 size-[18px] border-[0.5px] border-black border-solid flex items-center justify-center bg-transparent"
                     :class="opt.description && opt.description.trim() ? 'mt-[1px]' : ''"
                   >
                     <div 
-                      class="luxury-choice-checkbox-inner size-[12px] bg-black border border-black border-solid transform"
+                      class="luxury-choice-checkbox-inner size-[12px] bg-black border-[0.5px] border-black border-solid transform"
                       :class="isChoiceSelected(widget, opt.id) ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
                     />
                   </div>
@@ -883,7 +883,7 @@
                       <!-- Badge Label "XX Slots Available" Under Event Description -->
                       <div v-if="getOptionSlotsBadge(widget, opt)" class="inline-flex items-center pt-[2px]">
                         <span 
-                          class="inline-flex items-center px-[8px] py-[2px] border rounded-[4px] font-707 text-[10px] font-medium leading-[14px]"
+                          class="inline-flex items-center px-[8px] py-[2px] border-[0.5px] rounded-[4px] font-707 text-[10px] font-medium leading-[14px]"
                           :class="isChoiceOptionDisabled(widget, opt) ? 'bg-neutral-200 text-neutral-500 border-neutral-300' : 'bg-neutral-100 border-[#e0e0e0] text-neutral-700'"
                         >
                           {{ getOptionSlotsBadge(widget, opt) }}
@@ -899,7 +899,7 @@
                           <span v-if="opt.sublabel" class="font-707 font-normal text-[12px] leading-[16px] text-neutral-500">{{ opt.sublabel }}</span>
                           <span 
                             v-if="getOptionSlotsBadge(widget, opt)" 
-                            class="inline-flex items-center px-[6px] py-[1.5px] border rounded-[4px] font-707 text-[10px] font-medium leading-[13px]"
+                            class="inline-flex items-center px-[6px] py-[1.5px] border-[0.5px] rounded-[4px] font-707 text-[10px] font-medium leading-[13px]"
                             :class="isChoiceOptionDisabled(widget, opt) ? 'bg-neutral-200 text-neutral-500 border-neutral-300' : 'bg-neutral-100 border-[#e0e0e0] text-neutral-700'"
                           >
                             {{ getOptionSlotsBadge(widget, opt) }}
@@ -915,7 +915,7 @@
                   v-if="!isPreviewModal"
                   type="button"
                   @click.stop="handleChoiceAddMore(widget)"
-                  class="border border-[#d4d4d4] hover:border-black border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
+                  class="border-[0.5px] border-[#d4d4d4] hover:border-black border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
                 >
                   <div class="relative shrink-0 size-[18px] flex items-center justify-center">
                     <img :src="FIGMA_ASSETS.addFilled" class="size-[18px] shrink-0 pointer-events-none object-contain" alt="Add" />
@@ -932,7 +932,7 @@
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="luxury-choice-tile border border-solid border-[#d4d4d4] flex gap-[24px] px-[16px] w-full select-none rounded-none"
+                  class="luxury-choice-tile border-[0.5px] border-solid border-[#d4d4d4] flex gap-[24px] px-[16px] w-full select-none rounded-none"
                   :class="[
                     isChoiceSelected(widget, opt.id) ? 'is-selected' : '',
                     isChoiceOptionDisabled(widget, opt)
@@ -945,11 +945,11 @@
                 >
                   <!-- Checkbox Container (18px outer square with 12px inner square when active) -->
                   <div 
-                    class="relative shrink-0 size-[18px] border border-black border-solid flex items-center justify-center bg-transparent"
+                    class="relative shrink-0 size-[18px] border-[0.5px] border-black border-solid flex items-center justify-center bg-transparent"
                     :class="getOptionSlotsBadge(widget, opt) ? 'mt-[1px]' : ''"
                   >
                     <div 
-                      class="luxury-choice-checkbox-inner size-[12px] bg-black border border-black border-solid transform"
+                      class="luxury-choice-checkbox-inner size-[12px] bg-black border-[0.5px] border-black border-solid transform"
                       :class="isChoiceSelected(widget, opt.id) ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
                     />
                   </div>
@@ -960,7 +960,7 @@
                       {{ opt.label }}
                     </span>
                     <span 
-                      class="inline-flex items-center px-[6px] py-[1.5px] border rounded-[4px] font-707 text-[10px] font-medium leading-[13px]"
+                      class="inline-flex items-center px-[6px] py-[1.5px] border-[0.5px] rounded-[4px] font-707 text-[10px] font-medium leading-[13px]"
                       :class="isChoiceOptionDisabled(widget, opt) ? 'bg-neutral-200 text-neutral-500 border-neutral-300' : 'bg-neutral-100 border-[#e0e0e0] text-neutral-700'"
                     >
                       {{ getOptionSlotsBadge(widget, opt) }}
@@ -976,7 +976,7 @@
                   v-if="!isPreviewModal"
                   type="button"
                   @click.stop="handleChoiceAddMore(widget)"
-                  class="border border-[#d4d4d4] hover:border-black border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
+                  class="border-[0.5px] border-[#d4d4d4] hover:border-black border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
                 >
                   <div class="relative shrink-0 size-[18px] flex items-center justify-center">
                     <img :src="FIGMA_ASSETS.addFilled" class="size-[18px] shrink-0 pointer-events-none object-contain" alt="Add" />
@@ -993,7 +993,7 @@
                   v-for="opt in (widget.props.options || [])" 
                   :key="opt.id"
                   @click.stop="toggleChoiceOption(widget, opt.id)"
-                  class="luxury-choice-tile min-w-[128px] max-w-[200px] min-h-[48px] h-[48px] px-[16px] py-[12px] flex items-center justify-start shrink-0 border border-solid border-[#d4d4d4] select-none font-707 rounded-none"
+                  class="luxury-choice-tile min-w-[128px] max-w-[200px] min-h-[48px] h-[48px] px-[16px] py-[12px] flex items-center justify-start shrink-0 border-[0.5px] border-solid border-[#d4d4d4] select-none font-707 rounded-none"
                   :class="[
                     isChoiceSelected(widget, opt.id) ? 'is-selected' : '',
                     isChoiceOptionDisabled(widget, opt)
@@ -1009,7 +1009,7 @@
                   v-if="!isPreviewModal"
                   type="button"
                   @click.stop="handleChoiceAddMore(widget)"
-                  class="min-h-[48px] h-[48px] px-[16px] py-[12px] border border-[#d4d4d4] hover:border-black border-solid flex gap-[16px] items-center shrink-0 cursor-pointer transition-colors bg-transparent select-none rounded-none"
+                  class="min-h-[48px] h-[48px] px-[16px] py-[12px] border-[0.5px] border-[#d4d4d4] hover:border-black border-solid flex gap-[16px] items-center shrink-0 cursor-pointer transition-colors bg-transparent select-none rounded-none"
                 >
                   <img :src="FIGMA_ASSETS.addFilled" class="size-[24px] shrink-0 pointer-events-none" alt="Add" />
                   <span class="font-707 whitespace-nowrap" :class="getChoiceOptionTypographyClass(widget)">
@@ -1209,7 +1209,7 @@ more</span>
 
             <!-- Variant 2: Message + Field placeholder -->
             <div v-if="modalDisplayProps.variant === 'message-field'" class="w-full">
-              <div class="border-b border-black py-[8px] w-full flex items-center">
+              <div class="border-b-[0.5px] border-black py-[8px] w-full flex items-center">
                 <input 
                   v-model="modalInputValue"
                   :placeholder="modalDisplayProps.fieldPlaceholder || 'Enter your email*'"
@@ -1225,7 +1225,7 @@ more</span>
                 v-for="(opt, oIdx) in (modalDisplayProps.options || [])"
                 :key="opt.id || oIdx"
                 @click="toggleModalOption(opt.id || oIdx)"
-                class="luxury-choice-tile border border-solid border-[#d4d4d4] flex gap-[24px] w-full select-none transition-all duration-150 rounded-none cursor-pointer"
+                class="luxury-choice-tile border-[0.5px] border-solid border-[#d4d4d4] flex gap-[24px] w-full select-none transition-all duration-150 rounded-none cursor-pointer"
                 :class="[
                   isModalOptionSelected(opt) ? 'is-selected border-black bg-white shadow-xs ring-[0.5px] ring-black' : 'border-[#d4d4d4] bg-white hover:border-black/50',
                   opt.description && opt.description.trim()
@@ -1235,11 +1235,11 @@ more</span>
               >
                 <!-- Checkbox Container (18px outer square with 12px inner square when active) -->
                 <div 
-                  class="relative shrink-0 size-[18px] border border-black border-solid flex items-center justify-center bg-transparent"
+                  class="relative shrink-0 size-[18px] border-[0.5px] border-black border-solid flex items-center justify-center bg-transparent"
                   :class="opt.description && opt.description.trim() ? 'mt-[1px]' : ''"
                 >
                   <div 
-                    class="luxury-choice-checkbox-inner size-[12px] bg-black border border-black border-solid transform transition-all duration-150"
+                    class="luxury-choice-checkbox-inner size-[12px] bg-black border-[0.5px] border-black border-solid transform transition-all duration-150"
                     :class="isModalOptionSelected(opt) ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
                   />
                 </div>
@@ -1261,7 +1261,7 @@ more</span>
                     <!-- Badge Label "XX Slots Available" Under Event Description -->
                     <div v-if="getModalOptionSlotsBadge(opt)" class="inline-flex items-center pt-[2px]">
                       <span 
-                        class="inline-flex items-center px-[8px] py-[2px] border rounded-[4px] font-707 text-[10px] font-medium leading-[14px] bg-neutral-100 border-[#e0e0e0] text-neutral-700"
+                        class="inline-flex items-center px-[8px] py-[2px] border-[0.5px] rounded-[4px] font-707 text-[10px] font-medium leading-[14px] bg-neutral-100 border-[#e0e0e0] text-neutral-700"
                       >
                         {{ getModalOptionSlotsBadge(opt) }}
                       </span>
@@ -1276,7 +1276,7 @@ more</span>
                         <span v-if="opt.sublabel" class="font-707 font-normal text-[12px] leading-[16px] text-neutral-500">{{ opt.sublabel }}</span>
                         <span 
                           v-if="getModalOptionSlotsBadge(opt)" 
-                          class="inline-flex items-center px-[6px] py-[1.5px] border rounded-[4px] font-707 text-[10px] font-medium leading-[13px] bg-neutral-100 border-[#e0e0e0] text-neutral-700"
+                          class="inline-flex items-center px-[6px] py-[1.5px] border-[0.5px] rounded-[4px] font-707 text-[10px] font-medium leading-[13px] bg-neutral-100 border-[#e0e0e0] text-neutral-700"
                         >
                           {{ getModalOptionSlotsBadge(opt) }}
                         </span>
@@ -1291,7 +1291,7 @@ more</span>
                 v-if="!isPreviewModal"
                 type="button"
                 @click.stop="handleModalAddOption"
-                class="border border-[#d4d4d4] hover:border-black border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
+                class="border-[0.5px] border-[#d4d4d4] hover:border-black border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
               >
                 <div class="relative shrink-0 size-[18px] flex items-center justify-center">
                   <img :src="FIGMA_ASSETS.addFilled" class="size-[18px] shrink-0 pointer-events-none object-contain" alt="Add" />
@@ -1308,7 +1308,7 @@ more</span>
                 v-for="(opt, oIdx) in (modalDisplayProps.options || [])"
                 :key="opt.id || oIdx"
                 @click="toggleModalOption(opt.id || oIdx)"
-                class="luxury-choice-tile border border-solid border-[#d4d4d4] flex gap-[24px] px-[16px] w-full select-none rounded-none"
+                class="luxury-choice-tile border-[0.5px] border-solid border-[#d4d4d4] flex gap-[24px] px-[16px] w-full select-none rounded-none"
                 :class="[
                   isModalOptionSelected(opt) ? 'is-selected border-black bg-white shadow-xs ring-[0.5px] ring-black' : 'border-[#d4d4d4] bg-white hover:border-black/50',
                   getModalOptionSlotsBadge(opt)
@@ -1318,11 +1318,11 @@ more</span>
               >
                 <!-- Checkbox Container (18px outer square with 12px inner square when active) -->
                 <div 
-                  class="relative shrink-0 size-[18px] border border-black border-solid flex items-center justify-center bg-transparent"
+                  class="relative shrink-0 size-[18px] border-[0.5px] border-black border-solid flex items-center justify-center bg-transparent"
                   :class="getModalOptionSlotsBadge(opt) ? 'mt-[1px]' : ''"
                 >
                   <div 
-                    class="luxury-choice-checkbox-inner size-[12px] bg-black border border-black border-solid transform transition-all duration-150"
+                    class="luxury-choice-checkbox-inner size-[12px] bg-black border-[0.5px] border-black border-solid transform transition-all duration-150"
                     :class="isModalOptionSelected(opt) ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
                   />
                 </div>
@@ -1334,7 +1334,7 @@ more</span>
                     <span v-if="opt.sublabel" class="font-707 font-normal text-[12px] leading-[18px] text-neutral-500 shrink-0">{{ opt.sublabel }}</span>
                   </div>
                   <span 
-                    class="inline-flex items-center px-[6px] py-[1.5px] border rounded-[4px] font-707 text-[10px] font-medium leading-[13px] bg-neutral-100 border-[#e0e0e0] text-neutral-700"
+                    class="inline-flex items-center px-[6px] py-[1.5px] border-[0.5px] rounded-[4px] font-707 text-[10px] font-medium leading-[13px] bg-neutral-100 border-[#e0e0e0] text-neutral-700"
                   >
                     {{ getModalOptionSlotsBadge(opt) }}
                   </span>
@@ -1350,7 +1350,7 @@ more</span>
                 v-if="!isPreviewModal"
                 type="button"
                 @click.stop="handleModalAddOption"
-                class="border border-[#d4d4d4] hover:border-black border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
+                class="border-[0.5px] border-[#d4d4d4] hover:border-black border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
               >
                 <div class="relative shrink-0 size-[18px] flex items-center justify-center">
                   <img :src="FIGMA_ASSETS.addFilled" class="size-[18px] shrink-0 pointer-events-none object-contain" alt="Add" />
@@ -1367,8 +1367,8 @@ more</span>
                 v-for="(slot, sIdx) in (modalDisplayProps.imageSlots || [])"
                 :key="slot.id || sIdx"
                 @click="toggleModalSlot(slot.id || sIdx)"
-                class="aspect-[3/4] bg-[#ededed] relative overflow-hidden transition-all border border-solid cursor-pointer select-none"
-                :class="isModalSlotSelected(slot) ? 'border-black ring-1 ring-black' : 'border-neutral-200 hover:border-black/40'"
+                class="aspect-[3/4] bg-[#ededed] relative overflow-hidden transition-all border-[0.5px] border-solid cursor-pointer select-none"
+                :class="isModalSlotSelected(slot) ? 'border-black ring-[0.5px] ring-black' : 'border-neutral-200 hover:border-black/40'"
               >
                 <img v-if="slot.url" :src="slot.url" class="w-full h-full object-cover" />
                 <div v-if="isModalSlotSelected(slot)" class="absolute inset-0 bg-black/30 flex items-center justify-center">

@@ -74,7 +74,7 @@
         <p class="font-707 text-[12px] text-neutral-600">
           Modal Title
         </p>
-        <div class="border border-[#aaa] focus-within:border-black border-solid flex min-h-[38px] h-auto items-center px-[14px] py-[8px] rounded-[8px] w-full bg-white transition-all">
+        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex min-h-[38px] h-auto items-center px-[14px] py-[8px] rounded-[8px] w-full bg-white transition-all">
           <textarea 
             v-model="modalTitle"
             rows="1"
@@ -90,7 +90,7 @@
         <p class="font-707 text-[12px] text-neutral-600">
           Modal Description
         </p>
-        <div class="border border-[#aaa] focus-within:border-black border-solid flex min-h-[38px] h-auto items-center px-[14px] py-[8px] rounded-[8px] w-full bg-white transition-all">
+        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex min-h-[38px] h-auto items-center px-[14px] py-[8px] rounded-[8px] w-full bg-white transition-all">
           <textarea 
             v-model="modalSubtitle"
             rows="2"
@@ -116,7 +116,7 @@
         <p class="font-707 text-[12px] text-neutral-600">
           Input Placeholder
         </p>
-        <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
           <input 
             v-model="fieldPlaceholder"
             placeholder="e.g. Enter your email*"
@@ -208,7 +208,7 @@
           <span class="font-707 text-[12px] font-medium text-neutral-700">Slots per Option</span>
           <span class="font-707 text-[11px] text-neutral-400">Applies to all options</span>
         </div>
-        <div class="border border-[#aaa] focus-within:border-black rounded-[8px] px-3.5 h-[38px] flex items-center w-full bg-white transition-colors">
+        <div class="border-[0.5px] border-[#aaa] focus-within:border-black rounded-[8px] px-3.5 h-[38px] flex items-center w-full bg-white transition-colors">
           <input 
             v-model="globalSlotsCapacity"
             placeholder="e.g. 25"
@@ -237,7 +237,7 @@
         <div 
           v-for="(opt, idx) in options" 
           :key="opt.id"
-          class="p-3 bg-white border border-[#d9d9d9] rounded-[8px] flex flex-col gap-2.5 shadow-sm relative group"
+          class="p-3 bg-white border-[0.5px] border-[#d9d9d9] rounded-[8px] flex flex-col gap-2.5 shadow-sm relative group"
         >
           <!-- Top Row: Index, Option Title, Pre-selected Checkbox, Delete -->
           <div class="flex items-center gap-2 w-full">
@@ -245,7 +245,7 @@
               {{ idx + 1 }}
             </span>
 
-            <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2.5 h-[32px] flex items-center flex-1 bg-white transition-colors">
+            <div class="border-[0.5px] border-[#ccc] focus-within:border-black rounded-[6px] px-2.5 h-[32px] flex items-center flex-1 bg-white transition-colors">
               <input 
                 v-model="opt.label" 
                 @input="handleOptionsUpdate"
@@ -259,7 +259,7 @@
               type="button"
               @click="toggleOptionSelected(idx)"
               :class="opt.selected ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-400 hover:text-black'"
-              class="size-[32px] rounded-[6px] flex items-center justify-center cursor-pointer transition-colors border border-black/10 shrink-0"
+              class="size-[32px] rounded-[6px] flex items-center justify-center cursor-pointer transition-colors border-[0.5px] border-black/10 shrink-0"
               title="Toggle Pre-selected state"
             >
               <Check class="w-3.5 h-3.5 stroke-[2.5]" />
@@ -297,7 +297,7 @@
                 <select 
                   :value="parseDateComponents(opt.sublabel).day"
                   @change="updateOptionDate(idx, 'day', ($event.target as HTMLSelectElement).value)"
-                  class="w-full h-[30px] px-2 appearance-none bg-white border border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
+                  class="w-full h-[30px] px-2 appearance-none bg-white border-[0.5px] border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
                 >
                   <option v-for="d in DAYS" :key="d" :value="d">{{ d }}</option>
                 </select>
@@ -309,7 +309,7 @@
                 <select 
                   :value="parseDateComponents(opt.sublabel).month"
                   @change="updateOptionDate(idx, 'month', ($event.target as HTMLSelectElement).value)"
-                  class="w-full h-[30px] px-2 appearance-none bg-white border border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
+                  class="w-full h-[30px] px-2 appearance-none bg-white border-[0.5px] border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
                 >
                   <option v-for="m in MONTHS" :key="m" :value="m">{{ m }}</option>
                 </select>
@@ -321,7 +321,7 @@
                 <select 
                   :value="parseDateComponents(opt.sublabel).year"
                   @change="updateOptionDate(idx, 'year', ($event.target as HTMLSelectElement).value)"
-                  class="w-full h-[30px] px-2 appearance-none bg-white border border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
+                  class="w-full h-[30px] px-2 appearance-none bg-white border-[0.5px] border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
                 >
                   <option v-for="y in YEARS" :key="y" :value="y">{{ y }}</option>
                 </select>
@@ -337,7 +337,7 @@
               rows="2"
               @input="handleOptionsUpdate"
               placeholder="Event Description Detail..."
-              class="w-full font-707 text-[11px] text-neutral-700 focus:outline-none border border-[#ccc] focus:border-black rounded-[6px] p-1.5 resize-none leading-relaxed bg-white"
+              class="w-full font-707 text-[11px] text-neutral-700 focus:outline-none border-[0.5px] border-[#ccc] focus:border-black rounded-[6px] p-1.5 resize-none leading-relaxed bg-white"
             />
           </div>
 
@@ -346,7 +346,7 @@
             <div class="flex items-center justify-between mb-1">
               <span class="text-[11px] font-707 text-neutral-500">Right Sublabel (Optional)</span>
             </div>
-            <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2.5 h-[30px] flex items-center bg-white">
+            <div class="border-[0.5px] border-[#ccc] focus-within:border-black rounded-[6px] px-2.5 h-[30px] flex items-center bg-white">
               <input 
                 v-model="opt.sublabel" 
                 @input="handleOptionsUpdate"
@@ -362,7 +362,7 @@
       <button 
         type="button"
         @click="addOption"
-        class="w-full h-[36px] rounded-[8px] border border-dashed border-[#aaa] hover:border-black text-neutral-600 hover:text-black font-707 text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer bg-white/50 mt-1"
+        class="w-full h-[36px] rounded-[8px] border-[0.5px] border-dashed border-[#aaa] hover:border-black text-neutral-600 hover:text-black font-707 text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer bg-white/50 mt-1"
       >
         <Plus class="w-3.5 h-3.5" />
         <span>Add Option</span>
@@ -385,9 +385,9 @@
         <div 
           v-for="(slot, sIdx) in imageSlots" 
           :key="slot.id"
-          class="flex flex-col gap-1.5 p-2 bg-white border border-neutral-200 rounded-[8px]"
+          class="flex flex-col gap-1.5 p-2 bg-white border-[0.5px] border-neutral-200 rounded-[8px]"
         >
-          <div class="aspect-[3/4] bg-[#ededed] rounded-[6px] overflow-hidden relative group flex items-center justify-center border border-black/5">
+          <div class="aspect-[3/4] bg-[#ededed] rounded-[6px] overflow-hidden relative group flex items-center justify-center border-[0.5px] border-black/5">
             <img 
               v-if="slot.url" 
               :src="slot.url" 
@@ -437,7 +437,7 @@
         <p class="font-707 text-[12px] text-neutral-600">
           Button Label
         </p>
-        <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
           <input 
             v-model="buttonText"
             placeholder="e.g. Done"
