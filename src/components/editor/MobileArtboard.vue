@@ -1317,12 +1317,12 @@ more</span>
                 {{ widget.props?.heading || 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.' }}
               </h2>
 
-              <!-- 2. QR Code Section (Positioned directly under Headline and ABOVE Pass Information fields) -->
+              <!-- 2. QR Code Section (Positioned directly under Headline and ABOVE Pass Information fields, Left Aligned with transparent canvas bg) -->
               <div 
                 v-if="widget.props?.showQrCode !== false" 
-                class="w-full flex flex-col items-center justify-center pt-[4px]"
+                class="w-full flex items-start justify-start pt-[4px]"
               >
-                <div class="size-[132px] border-[0.5px] border-black bg-[#f2f2f2] rounded-[6px] p-[10px] flex items-center justify-center relative overflow-hidden shadow-xs">
+                <div class="size-[132px] border-[0.5px] border-black bg-transparent rounded-[6px] p-[10px] flex items-center justify-center relative overflow-hidden shadow-xs">
                   <!-- Sharp SVG Vector QR Code -->
                   <svg class="size-full text-black" viewBox="0 0 100 100" fill="currentColor">
                     <!-- Top-Left Position Marker -->
@@ -1413,7 +1413,7 @@ more</span>
                 </div>
               </div>
 
-              <!-- 4. ACCESS VALID FOR Section (Strictly follows choice form format: border-[0.5px] border-[#d4d4d4], excluding checkbox only) -->
+              <!-- 4. ACCESS VALID FOR Section (Strictly follows choice form format: [Pass Option 1 Medium Font] [Date Format], excluding checkbox only) -->
               <div class="flex flex-col gap-[8px] w-full pt-[4px]">
                 <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-black uppercase tracking-tight">
                   ACCESS VALID FOR:
@@ -1433,11 +1433,11 @@ more</span>
                     <!-- Layout A: With Description -->
                     <template v-if="slot.description && slot.description.trim()">
                       <div class="flex items-baseline justify-between w-full font-707 gap-3">
-                        <span class="font-707 font-medium text-[13px] leading-[18px] text-black uppercase">
-                          {{ getNonQrSessionDate(slot) }}
+                        <span class="font-707 font-medium text-[13px] leading-[18px] text-black uppercase truncate">
+                          {{ slot.label }}
                         </span>
-                        <span class="shrink-0 font-707 font-normal text-[12px] leading-[18px] text-neutral-500 uppercase">
-                          {{ getNonQrSessionDay(slot) }}
+                        <span v-if="slot.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[18px] text-neutral-500 uppercase">
+                          {{ slot.sublabel }}
                         </span>
                       </div>
                       <div class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-600 whitespace-pre-line">
@@ -1448,11 +1448,11 @@ more</span>
                     <!-- Layout B: Without Description -->
                     <template v-else>
                       <div class="flex items-center justify-between w-full font-707 gap-3">
-                        <span class="font-707 font-medium text-[13px] leading-[18px] text-black uppercase">
-                          {{ getNonQrSessionDate(slot) }}
+                        <span class="font-707 font-medium text-[13px] leading-[18px] text-black uppercase truncate">
+                          {{ slot.label }}
                         </span>
-                        <span class="shrink-0 font-707 font-normal text-[12px] leading-[16px] text-neutral-500 uppercase">
-                          {{ getNonQrSessionDay(slot) }}
+                        <span v-if="slot.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[16px] text-neutral-500 uppercase">
+                          {{ slot.sublabel }}
                         </span>
                       </div>
                     </template>
@@ -1460,7 +1460,7 @@ more</span>
                 </div>
               </div>
 
-              <!-- 5. Footer Troubleshoot / Disclaimer Notice (Didn't receive email?) -->
+              <!-- 5. Footer Troubleshoot / Disclaimer Notice with Hyperlink Support -->
               <div v-if="widget.props?.showFooterNotice ?? true" class="flex items-start gap-[10px] w-full pt-[6px]">
                 <div class="size-[18px] rounded-full bg-black text-white flex items-center justify-center shrink-0 mt-[1px]">
                   <span class="font-bold text-[11px] leading-none font-serif italic">i</span>
@@ -1470,30 +1470,18 @@ more</span>
                     {{ widget.props?.footerNoticeTitle || "DIDN'T RECEIVE THE EMAIL?" }}
                   </span>
                   <p class="font-707 font-normal text-[11px] leading-[15px] text-black mt-[1px]">
-                    {{ getNoticePrefix(widget.props?.footerNoticeText) }}
-                    <span class="underline underline-offset-2 cursor-pointer font-medium" @click.stop="handleSupportClick">
-                      {{ getNoticeLink(widget.props?.footerNoticeText) }}
-                    </span>
+                    <template v-for="(token, tkIdx) in parseNoticeTokens(widget)" :key="tkIdx">
+                      <span v-if="token.type === 'text'">{{ token.text }}</span>
+                      <a 
+                        v-else-if="token.type === 'link'"
+                        :href="token.url || '#'"
+                        @click.stop="handleNoticeLinkClick(token.url)"
+                        class="underline underline-offset-2 cursor-pointer font-medium hover:text-neutral-600 transition-colors inline"
+                      >
+                        {{ token.text }}
+                      </a>
+                    </template>
                   </p>
-                </div>
-              </div>
-
-              <!-- 6. Terms & Conditions / Rules (Configurable inside E-Pass Setup, no independent layers) -->
-              <div v-if="widget.props?.showTerms && getTerms(widget).length > 0" class="flex flex-col gap-[8px] w-full pt-[4px]">
-                <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
-                  {{ widget.props?.termsTitle || 'TERMS & CONDITIONS:' }}
-                </span>
-                <div class="flex flex-col gap-[6px] w-full">
-                  <div 
-                    v-for="(term, tIdx) in getTerms(widget)" 
-                    :key="tIdx"
-                    class="flex items-start gap-[8px] w-full"
-                  >
-                    <div class="size-[4px] rounded-full bg-black mt-[7px] shrink-0" />
-                    <p class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-700 flex-1">
-                      {{ term }}
-                    </p>
-                  </div>
                 </div>
               </div>
             </div>
@@ -3578,7 +3566,7 @@ function getValidForSessions(widget: any) {
       if (selectedOptions.length > 0) {
         return selectedOptions.map((opt: any, idx: number) => ({
           id: opt.id,
-          label: opt.label || `Pass Option ${idx + 1}`,
+          label: opt.label || `PASS OPTION ${idx + 1}`,
           sublabel: opt.sublabel || '',
           description: opt.description || ''
         }));
@@ -3591,25 +3579,27 @@ function getValidForSessions(widget: any) {
     if (cw.props?.options && cw.props.options.length > 0) {
       return cw.props.options.slice(0, 2).map((opt: any, idx: number) => ({
         id: opt.id,
-        label: opt.label || `Pass Option ${idx + 1}`,
+        label: opt.label || `PASS OPTION ${idx + 1}`,
         sublabel: opt.sublabel || '',
         description: opt.description || ''
       }));
     }
   }
 
-  // 3. Fallback
+  // 3. Fallback to clean dummy data UI placeholder strictly matching choice form format
   return widget.props?.validForFallback || [
-    { id: 'opt_1', label: 'Pass Option 1', sublabel: '24 Oct 2026', description: 'Access to activation area and special event lounge' },
-    { id: 'opt_2', label: 'Pass Option 2', sublabel: '25 Oct 2026', description: 'Access to activation area and special event lounge' }
-  ];
-}
-
-function getTerms(widget: any) {
-  return widget.props?.terms || [
-    '[ENTRY CONDITION OR LEGAL RULE 1]',
-    '[ENTRY CONDITION OR LEGAL RULE 2]',
-    '[ENTRY CONDITION OR LEGAL RULE 3]'
+    { 
+      id: 'opt_1', 
+      label: '[PASS OPTION 1]', 
+      sublabel: '[DATE FORMAT]', 
+      description: '[EVENT DESCRIPTION OR SESSION DETAILS]' 
+    },
+    { 
+      id: 'opt_2', 
+      label: '[PASS OPTION 2]', 
+      sublabel: '[DATE FORMAT]', 
+      description: '[EVENT DESCRIPTION OR SESSION DETAILS]' 
+    }
   ];
 }
 
@@ -3666,43 +3656,71 @@ function getGuestType(widget: any) {
   return widget.props?.guestType || 'VIP';
 }
 
-function getNonQrSessionDate(slot: any) {
-  if (slot.sublabel && (slot.sublabel.includes('202') || slot.sublabel.includes('Sept') || slot.sublabel.includes('Oct') || slot.sublabel.includes('Jan') || slot.sublabel.includes('Feb') || slot.sublabel.includes('Mar') || slot.sublabel.includes('Apr') || slot.sublabel.includes('May') || slot.sublabel.includes('Jun') || slot.sublabel.includes('Jul') || slot.sublabel.includes('Aug') || slot.sublabel.includes('Nov') || slot.sublabel.includes('Dec'))) {
-    return slot.sublabel;
-  }
-  if (slot.label && (slot.label.includes('202') || slot.label.includes('Sept') || slot.label.includes('Oct') || slot.label.includes('Jan') || slot.label.includes('Feb') || slot.label.includes('Mar') || slot.label.includes('Apr') || slot.label.includes('May') || slot.label.includes('Jun') || slot.label.includes('Jul') || slot.label.includes('Aug') || slot.label.includes('Nov') || slot.label.includes('Dec'))) {
-    return slot.label;
-  }
-  return slot.sublabel || slot.label || '2 September 2026';
+interface NoticeToken {
+  type: 'text' | 'link';
+  text: string;
+  url?: string;
 }
 
-function getNonQrSessionDay(slot: any) {
-  if (slot.sublabel && (slot.sublabel.includes('202') || slot.sublabel.includes('Sept') || slot.sublabel.includes('Oct') || slot.sublabel.includes('Jan') || slot.sublabel.includes('Feb') || slot.sublabel.includes('Mar') || slot.sublabel.includes('Apr') || slot.sublabel.includes('May') || slot.sublabel.includes('Jun') || slot.sublabel.includes('Jul') || slot.sublabel.includes('Aug') || slot.sublabel.includes('Nov') || slot.sublabel.includes('Dec'))) {
-    return slot.label || '';
+function parseNoticeTokens(widget: any): NoticeToken[] {
+  const rawText = widget?.props?.footerNoticeText || 'Check your spam folder or contact support';
+  const customLinkWords = widget?.props?.footerNoticeLinkWords?.trim();
+  const customLinkUrl = widget?.props?.footerNoticeLinkUrl?.trim() || '';
+
+  // 1. Check for markdown-style link [word](url)
+  const mdRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  if (mdRegex.test(rawText)) {
+    mdRegex.lastIndex = 0;
+    const tokens: NoticeToken[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = mdRegex.exec(rawText)) !== null) {
+      if (match.index > lastIndex) {
+        tokens.push({ type: 'text', text: rawText.substring(lastIndex, match.index) });
+      }
+      tokens.push({ type: 'link', text: match[1], url: match[2] });
+      lastIndex = mdRegex.lastIndex;
+    }
+    if (lastIndex < rawText.length) {
+      tokens.push({ type: 'text', text: rawText.substring(lastIndex) });
+    }
+    return tokens;
   }
-  if (slot.label && (slot.label.includes('202') || slot.label.includes('Sept') || slot.label.includes('Oct') || slot.label.includes('Jan') || slot.label.includes('Feb') || slot.label.includes('Mar') || slot.label.includes('Apr') || slot.label.includes('May') || slot.label.includes('Jun') || slot.label.includes('Jul') || slot.label.includes('Aug') || slot.label.includes('Nov') || slot.label.includes('Dec'))) {
-    return slot.sublabel || '';
+
+  // 2. Check if customLinkWords is specified and matches rawText
+  if (customLinkWords && rawText.toLowerCase().includes(customLinkWords.toLowerCase())) {
+    const idx = rawText.toLowerCase().indexOf(customLinkWords.toLowerCase());
+    const before = rawText.substring(0, idx);
+    const linkText = rawText.substring(idx, idx + customLinkWords.length);
+    const after = rawText.substring(idx + customLinkWords.length);
+    const tokens: NoticeToken[] = [];
+    if (before) tokens.push({ type: 'text', text: before });
+    tokens.push({ type: 'link', text: linkText, url: customLinkUrl });
+    if (after) tokens.push({ type: 'text', text: after });
+    return tokens;
   }
-  return slot.label || '';
+
+  // 3. Fallback: check if 'contact support' appears
+  if (rawText.toLowerCase().includes('contact support')) {
+    const idx = rawText.toLowerCase().indexOf('contact support');
+    const before = rawText.substring(0, idx);
+    const linkText = rawText.substring(idx, idx + 'contact support'.length);
+    const after = rawText.substring(idx + 'contact support'.length);
+    const tokens: NoticeToken[] = [];
+    if (before) tokens.push({ type: 'text', text: before });
+    tokens.push({ type: 'link', text: linkText, url: customLinkUrl });
+    if (after) tokens.push({ type: 'text', text: after });
+    return tokens;
+  }
+
+  return [{ type: 'text', text: rawText }];
 }
 
-function getNoticePrefix(text?: string) {
-  const defaultText = text || 'Check your spam folder or contact support';
-  if (defaultText.toLowerCase().includes('contact support')) {
-    return defaultText.substring(0, defaultText.toLowerCase().indexOf('contact support'));
+function handleNoticeLinkClick(url?: string) {
+  if (url && url !== '#') {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  } else {
+    editorStore.showToast('Connecting to support...');
   }
-  return defaultText;
-}
-
-function getNoticeLink(text?: string) {
-  const defaultText = text || 'Check your spam folder or contact support';
-  if (defaultText.toLowerCase().includes('contact support')) {
-    return 'contact support';
-  }
-  return '';
-}
-
-function handleSupportClick() {
-  editorStore.showToast('Connecting to support...');
 }
 </script>

@@ -491,6 +491,8 @@ export const useEditorStore = defineStore('editor', () => {
           showFooterNotice: true,
           footerNoticeTitle: "DIDN'T RECEIVE THE EMAIL?",
           footerNoticeText: 'Check your spam folder or contact support',
+          footerNoticeLinkWords: 'contact support',
+          footerNoticeLinkUrl: '',
           isCtaEnabled: false,
           showButton: false,
           showStickyButton: false,
@@ -503,18 +505,10 @@ export const useEditorStore = defineStore('editor', () => {
           ctaPositionMode: 'sticky-bottom',
           showIcon: false,
           iconName: 'ticket',
-          showTerms: false,
-          termsTitle: 'TERMS & CONDITIONS:',
           accessId: '020305-1008-1245',
           validForFallback: [
-            { id: 'opt_1', label: 'Day 1', sublabel: '2 September 2026', description: 'Access to main floor & VIP lounge' },
-            { id: 'opt_2', label: 'Day 2', sublabel: '3 September 2026', description: 'Access to main floor & VIP lounge' },
-            { id: 'opt_3', label: 'Day 4', sublabel: '5 September 2026', description: 'Access to main floor & VIP lounge' }
-          ],
-          terms: [
-            '[ENTRY CONDITION OR LEGAL RULE 1]',
-            '[ENTRY CONDITION OR LEGAL RULE 2]',
-            '[ENTRY CONDITION OR LEGAL RULE 3]'
+            { id: 'opt_1', label: '[PASS OPTION 1]', sublabel: '[DATE FORMAT]', description: '[EVENT DESCRIPTION OR SESSION DETAILS]' },
+            { id: 'opt_2', label: '[PASS OPTION 2]', sublabel: '[DATE FORMAT]', description: '[EVENT DESCRIPTION OR SESSION DETAILS]' }
           ]
         };
         break;

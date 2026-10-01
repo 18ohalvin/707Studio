@@ -361,7 +361,7 @@
     </div>
 
     <!-- Section 4: Troubleshoot / Disclaimer Notice Section -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
       <div class="flex items-center justify-between w-full">
         <div class="flex flex-col">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
@@ -399,7 +399,7 @@
         leave-from-class="transform opacity-100 translate-y-0"
         leave-to-class="transform opacity-0 -translate-y-2"
       >
-        <div v-if="showFooterNotice" class="flex flex-col gap-[10px] w-full pt-1">
+        <div v-if="showFooterNotice" class="flex flex-col gap-[12px] w-full pt-1">
           <div class="flex flex-col gap-1 w-full">
             <span class="font-707 text-[11px] font-medium text-neutral-600">Notice Title</span>
             <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[34px] items-center px-[12px] rounded-[6px] w-full bg-white transition-colors">
@@ -411,7 +411,7 @@
             </div>
           </div>
           <div class="flex flex-col gap-1 w-full">
-            <span class="font-707 text-[11px] font-medium text-neutral-600">Notice Message & Link</span>
+            <span class="font-707 text-[11px] font-medium text-neutral-600">Notice Message</span>
             <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[34px] items-center px-[12px] rounded-[6px] w-full bg-white transition-colors">
               <input 
                 v-model="footerNoticeText"
@@ -420,96 +420,34 @@
               />
             </div>
           </div>
-        </div>
-      </Transition>
-    </div>
 
-    <!-- Section 5: Terms & Conditions / Legal Rules -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
-      <div class="flex items-center justify-between w-full">
-        <div class="flex flex-col">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Terms & Conditions / Rules
-          </p>
-          <p class="font-707 text-[11px] text-neutral-500">
-            {{ showTerms ? 'Enabled on ticket summary' : 'Disabled by default' }}
-          </p>
-        </div>
-
-        <!-- Modern Elegant Apple Style Toggle Switch -->
-        <button
-          type="button"
-          role="switch"
-          :aria-checked="showTerms"
-          @click="toggleTerms"
-          class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
-          :class="showTerms ? 'bg-black' : 'bg-[#e5e5ea]'"
-          title="Toggle Terms & Conditions"
-        >
-          <span
-            aria-hidden="true"
-            class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
-            :class="showTerms ? 'translate-x-[18px]' : 'translate-x-0'"
-          />
-        </button>
-      </div>
-
-      <!-- Terms List (Visible only when toggle is on) -->
-      <Transition
-        enter-active-class="transition duration-200 ease-out"
-        enter-from-class="transform opacity-0 -translate-y-2"
-        enter-to-class="transform opacity-100 translate-y-0"
-        leave-active-class="transition duration-150 ease-in"
-        leave-from-class="transform opacity-100 translate-y-0"
-        leave-to-class="transform opacity-0 -translate-y-2"
-      >
-        <div v-if="showTerms" class="flex flex-col gap-[12px] w-full pt-1">
-          <div class="flex flex-col gap-1 w-full">
-            <span class="font-707 text-[11px] font-medium text-neutral-600">Section Title</span>
-            <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[34px] items-center px-[12px] rounded-[6px] w-full bg-white transition-colors">
-              <input 
-                v-model="termsTitle"
-                placeholder="TERMS & CONDITIONS:"
-                class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
-              />
+          <!-- Hyperlink on Selected Word -->
+          <div class="flex flex-col gap-2 w-full pt-1 border-t border-[#f0f0f0]">
+            <div class="flex items-center justify-between">
+              <span class="font-707 text-[11px] font-medium text-neutral-600">Hyperlink on Selected Word</span>
+              <span class="font-707 text-[10px] text-neutral-400">or use [word](url) in message</span>
             </div>
-          </div>
-
-          <div class="flex items-center justify-between w-full pt-1">
-            <span class="font-707 text-[12px] font-medium text-neutral-700">Rules List</span>
-            <button 
-              type="button"
-              @click="addTermRule"
-              class="apple-glass-btn text-[11px] font-707 px-2.5 py-1 rounded-[6px] flex items-center gap-1 cursor-pointer"
-            >
-              <Plus class="size-3" />
-              <span>Add Rule</span>
-            </button>
-          </div>
-
-          <div class="flex flex-col gap-2 w-full">
-            <div 
-              v-for="(term, tIdx) in termsList" 
-              :key="tIdx"
-              class="flex items-center gap-2 w-full"
-            >
-              <div class="size-1.5 rounded-full bg-black shrink-0" />
-              <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[34px] items-center px-[10px] rounded-[6px] w-full bg-white transition-colors">
-                <input 
-                  v-model="termsList[tIdx]"
-                  placeholder="Enter rule text"
-                  class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400"
-                />
+            <div class="grid grid-cols-2 gap-2 w-full">
+              <div class="flex flex-col gap-1">
+                <span class="font-707 text-[10px] text-neutral-500">Selected Word(s)</span>
+                <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[32px] items-center px-[10px] rounded-[6px] w-full bg-white transition-colors">
+                  <input 
+                    v-model="footerNoticeLinkWords"
+                    placeholder="contact support"
+                    class="w-full text-[11px] font-707 text-black focus:outline-none placeholder:text-neutral-400"
+                  />
+                </div>
               </div>
-              <button 
-                type="button"
-                v-if="termsList.length > 1"
-                @click="removeTermRule(tIdx)"
-                class="size-6 rounded flex items-center justify-center text-neutral-400 hover:text-red-600 cursor-pointer shrink-0"
-                title="Remove Rule"
-              >
-                <Trash2 class="size-3.5" />
-              </button>
+              <div class="flex flex-col gap-1">
+                <span class="font-707 text-[10px] text-neutral-500">Link Destination URL</span>
+                <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[32px] items-center px-[10px] rounded-[6px] w-full bg-white transition-colors">
+                  <input 
+                    v-model="footerNoticeLinkUrl"
+                    placeholder="https://... or mailto:..."
+                    class="w-full text-[11px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -763,54 +701,23 @@ const footerNoticeText = computed({
   }
 });
 
-// 5. Terms & Conditions / Legal Rules Toggle & List
-const showTerms = computed({
-  get: () => currentWidget.value?.props?.showTerms ?? false,
-  set: (val: boolean) => {
-    if (currentWidget.value) {
-      editorStore.updateWidgetProps(currentWidget.value.id, { showTerms: val });
-    }
-  }
-});
-
-function toggleTerms() {
-  showTerms.value = !showTerms.value;
-}
-
-const termsTitle = computed({
-  get: () => currentWidget.value?.props?.termsTitle || 'TERMS & CONDITIONS:',
+const footerNoticeLinkWords = computed({
+  get: () => currentWidget.value?.props?.footerNoticeLinkWords ?? "contact support",
   set: (val: string) => {
     if (currentWidget.value) {
-      editorStore.updateWidgetProps(currentWidget.value.id, { termsTitle: val });
+      editorStore.updateWidgetProps(currentWidget.value.id, { footerNoticeLinkWords: val });
     }
   }
 });
 
-const termsList = computed({
-  get: () => currentWidget.value?.props?.terms || [
-    '[ENTRY CONDITION OR LEGAL RULE 1]',
-    '[ENTRY CONDITION OR LEGAL RULE 2]',
-    '[ENTRY CONDITION OR LEGAL RULE 3]'
-  ],
-  set: (val: string[]) => {
+const footerNoticeLinkUrl = computed({
+  get: () => currentWidget.value?.props?.footerNoticeLinkUrl ?? "",
+  set: (val: string) => {
     if (currentWidget.value) {
-      editorStore.updateWidgetProps(currentWidget.value.id, { terms: val });
+      editorStore.updateWidgetProps(currentWidget.value.id, { footerNoticeLinkUrl: val });
     }
   }
 });
-
-function addTermRule() {
-  const current = [...termsList.value];
-  const nextNum = current.length + 1;
-  current.push(`[ENTRY CONDITION OR LEGAL RULE ${nextNum}]`);
-  termsList.value = current;
-}
-
-function removeTermRule(index: number) {
-  const current = [...termsList.value];
-  current.splice(index, 1);
-  termsList.value = current;
-}
 
 const projectBrandLogoUrl = computed(() => {
   for (const page of editorStore.pages) {

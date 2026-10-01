@@ -967,13 +967,8 @@ function getEPassDefaultProps() {
     venue: '',
     guestNameFallback: '',
     validForFallback: [
-      { id: 'opt_1', label: '[SESSION / DAY 1]', sublabel: '[EVENT DATE]', description: '[EVENT DESCRIPTION DETAIL]' },
-      { id: 'opt_2', label: '[SESSION / DAY 2]', sublabel: '[EVENT DATE]', description: '[EVENT DESCRIPTION DETAIL]' }
-    ],
-    terms: [
-      '[ENTRY CONDITION OR LEGAL RULE 1]',
-      '[ENTRY CONDITION OR LEGAL RULE 2]',
-      '[ENTRY CONDITION OR LEGAL RULE 3]'
+      { id: 'opt_1', label: '[PASS OPTION 1]', sublabel: '[DATE FORMAT]', description: '[EVENT DESCRIPTION OR SESSION DETAILS]' },
+      { id: 'opt_2', label: '[PASS OPTION 2]', sublabel: '[DATE FORMAT]', description: '[EVENT DESCRIPTION OR SESSION DETAILS]' }
     ]
   };
 }
