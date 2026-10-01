@@ -880,6 +880,38 @@ button:active,
   transform: scale(0.97) translateY(2px);
 }
 
+/* Premium Apple Bottom Sheet Pop-Up Modal Transition System */
+.apple-bottom-sheet-enter-active,
+.apple-bottom-sheet-leave-active {
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.apple-bottom-sheet-enter-active .apple-bottom-sheet-card {
+  transition: transform 0.36s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.apple-bottom-sheet-leave-active .apple-bottom-sheet-card {
+  transition: transform 0.22s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.18s ease-in;
+}
+
+.apple-bottom-sheet-enter-from {
+  opacity: 0;
+}
+
+.apple-bottom-sheet-enter-from .apple-bottom-sheet-card {
+  opacity: 0;
+  transform: translateY(100%);
+}
+
+.apple-bottom-sheet-leave-to {
+  opacity: 0;
+}
+
+.apple-bottom-sheet-leave-to .apple-bottom-sheet-card {
+  opacity: 0;
+  transform: translateY(100%);
+}
+
 /* Apple Popover Transition System (Anchored directly on trigger icon/button) */
 .apple-popover-fade-enter-active,
 .apple-popover-fade-leave-active {

@@ -112,19 +112,7 @@
         Field Configuration
       </p>
 
-      <div class="flex flex-col gap-[6px] w-full">
-        <p class="font-707 text-[12px] text-neutral-600">
-          Input Placeholder
-        </p>
-        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
-          <input 
-            v-model="fieldPlaceholder"
-            placeholder="e.g. Enter your email*"
-            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400"
-          />
-        </div>
-      </div>
-
+      <!-- 1. Field Input Type (Placed Above Placeholder) -->
       <div class="flex flex-col gap-[6px] w-full">
         <p class="font-707 text-[12px] text-neutral-600">
           Field Input Type
@@ -132,14 +120,28 @@
         <div class="flex gap-2">
           <button 
             type="button"
-            v-for="fType in ['email', 'tel', 'text'] as const"
+            v-for="fType in (['email', 'tel', 'text'] as const)"
             :key="fType"
-            @click="fieldType = fType"
-            :class="fieldType === fType ? 'apple-glass-btn-dark font-medium' : 'apple-glass-btn'"
+            @click="setFieldType(fType)"
+            :class="(fieldType === fType || (fType === 'tel' && (fieldType === 'whatsapp' || fieldType === 'phone'))) ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
             class="flex-1 h-[34px] rounded-[8px] text-[12px] font-707 uppercase cursor-pointer"
           >
             {{ fType === 'tel' ? 'WhatsApp' : fType }}
           </button>
+        </div>
+      </div>
+
+      <!-- 2. Input Placeholder -->
+      <div class="flex flex-col gap-[6px] w-full">
+        <p class="font-707 text-[12px] text-neutral-600">
+          Input Placeholder
+        </p>
+        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+          <input 
+            v-model="fieldPlaceholder"
+            :placeholder="fieldType === 'tel' || fieldType === 'whatsapp' ? '81234567890' : (fieldType === 'text' ? 'Enter your text*' : 'Enter your email*')"
+            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400"
+          />
         </div>
       </div>
     </div>
@@ -631,6 +633,28 @@ const fieldType = computed({
     updateModalData({ fieldType: val });
   }
 });
+
+function setFieldType(val: 'email' | 'tel' | 'text') {
+  fieldType.value = val;
+  const currentPlaceholder = (fieldPlaceholder.value || '').trim();
+  if (
+    !currentPlaceholder || 
+    currentPlaceholder.toLowerCase().includes('email') || 
+    currentPlaceholder.toLowerCase().includes('whatsapp') || 
+    currentPlaceholder.toLowerCase().includes('text') || 
+    currentPlaceholder === '81234567890' ||
+    currentPlaceholder === 'Enter your email*' ||
+    currentPlaceholder === 'Enter your text*'
+  ) {
+    if (val === 'tel') {
+      fieldPlaceholder.value = '81234567890';
+    } else if (val === 'text') {
+      fieldPlaceholder.value = 'Enter your text*';
+    } else {
+      fieldPlaceholder.value = 'Enter your email*';
+    }
+  }
+}
 
 const buttonText = computed({
   get: () => targetModalData.value.buttonText || 'DONE',

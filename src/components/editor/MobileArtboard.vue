@@ -1174,53 +1174,85 @@ more</span>
       </div>
 
       <!-- Interactive Pop Up Modal Bottom Sheet (Figma Node 276:4722) -->
-      <div 
-        v-if="isModalOverlayVisible"
-        class="absolute inset-0 z-50 flex flex-col justify-end overflow-hidden"
-        @click.stop="handleBackdropClick"
-      >
-        <!-- Frosted Dark Backdrop -->
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 animate-in fade-in" />
-
-        <!-- Bottom Sheet Card (White rounded-t-[16px], 24px padding, shadow) -->
+      <Transition name="apple-bottom-sheet">
         <div 
-          @click.stop
-          class="relative z-10 w-full bg-white text-black p-[24px] rounded-t-[16px] shadow-[0px_-8px_30px_rgba(0,0,0,0.18)] transition-all transform animate-in slide-in-from-bottom duration-300 max-h-[85%] overflow-y-auto no-scrollbar"
-          data-node-id="276:4722"
-          data-name="Bottom Modal Popup"
+          v-if="isModalOverlayVisible"
+          class="absolute inset-0 z-50 flex flex-col justify-end overflow-hidden"
+          @click.stop="handleBackdropClick"
         >
-          <!-- Sheet Top Handle Pill -->
-          <div class="w-full flex items-center justify-center pb-3">
-            <div class="w-10 h-1 rounded-full bg-neutral-300" />
-          </div>
+          <!-- Frosted Dark Backdrop -->
+          <div class="absolute inset-0 bg-black/50 backdrop-blur-[3px] transition-opacity" />
 
-          <div class="flex flex-col gap-[20px] items-start w-full">
-            <!-- Header: Title + Subtitle -->
-            <div class="flex flex-col gap-[8px] items-start w-full">
-              <h3 class="font-707 font-medium text-heading-h3 text-black tracking-tight whitespace-pre-line">
-                {{ modalDisplayProps.title || 'Select Arrival Date' }}
-              </h3>
-              <p class="font-707 font-normal text-bodytext text-neutral-700 whitespace-pre-line">
-                {{ modalDisplayProps.subtitle || 'Please provide a valid email address. We will resend your E-Pass immediately.' }}
-              </p>
+          <!-- Bottom Sheet Card (White rounded-t-[16px], 24px padding, shadow) -->
+          <div 
+            @click.stop
+            class="apple-bottom-sheet-card relative z-10 w-full bg-white text-black p-[24px] rounded-t-[16px] shadow-[0px_-10px_40px_rgba(0,0,0,0.22),0_-1px_3px_rgba(0,0,0,0.06)] max-h-[85%] overflow-y-auto no-scrollbar"
+            data-node-id="276:4722"
+            data-name="Bottom Modal Popup"
+          >
+            <!-- Sheet Top Handle Pill -->
+            <div class="w-full flex items-center justify-center pb-3">
+              <div class="w-10 h-1 rounded-full bg-neutral-300" />
             </div>
 
-            <!-- Variant 1: Message / Alert (Clean notice, title + subtitle only) -->
-
-            <!-- Variant 2: Message + Field placeholder -->
-            <div v-if="modalDisplayProps.variant === 'message-field'" class="w-full">
-              <div class="border-b-[0.5px] border-black py-[8px] w-full flex items-center">
-                <input 
-                  v-model="modalInputValue"
-                  :placeholder="modalDisplayProps.fieldPlaceholder || 'Enter your email*'"
-                  :type="modalDisplayProps.fieldType || 'email'"
-                  class="w-full font-707 text-subtext-lead text-black placeholder:text-neutral-400 bg-transparent border-none outline-none p-0 m-0"
-                />
+            <div class="flex flex-col gap-[20px] items-start w-full">
+              <!-- Header: Title + Subtitle -->
+              <div class="flex flex-col gap-[8px] items-start w-full">
+                <h3 class="font-707 font-medium text-heading-h3 text-black tracking-tight whitespace-pre-line">
+                  {{ modalDisplayProps.title || 'Select Arrival Date' }}
+                </h3>
+                <p class="font-707 font-normal text-bodytext text-neutral-700 whitespace-pre-line">
+                  {{ modalDisplayProps.subtitle || 'Please provide a valid email address. We will resend your E-Pass immediately.' }}
+                </p>
               </div>
-            </div>
 
-            <!-- Variant 3: Multiple Choice (Detailed) (Strictly following MultipleChoice widget styling & functions) -->
-            <div v-else-if="modalDisplayProps.variant === 'choice-detailed'" class="w-full flex flex-col gap-[8px]">
+              <!-- Variant 1: Message / Alert (Clean notice, title + subtitle only) -->
+
+              <!-- Variant 2: Message + Field placeholder -->
+              <div v-if="modalDisplayProps.variant === 'message-field'" class="w-full">
+                <!-- WhatsApp / Phone Mode -->
+                <div 
+                  v-if="modalDisplayProps.fieldType === 'tel' || modalDisplayProps.fieldType === 'whatsapp'"
+                  class="border-b-[0.5px] border-black py-[8px] w-full flex items-center gap-[8px] relative"
+                >
+                  <!-- WhatsApp Country Calling Code Selector with Chevron -->
+                  <div 
+                    class="flex items-center gap-[4px] shrink-0 select-none cursor-pointer pr-[4px] group/code relative z-10"
+                    @click.stop="toggleModalCountryCode"
+                    title="Click to switch Country Calling Code"
+                  >
+                    <span class="font-707 text-[16px] leading-[22px] text-black font-normal tracking-tight">
+                      {{ modalCountryCode }}
+                    </span>
+                    <ChevronDown class="w-[12px] h-[12px] text-neutral-400 group-hover/code:text-black transition-colors stroke-[2]" />
+                  </div>
+
+                  <input 
+                    v-model="modalInputValue"
+                    :placeholder="modalDisplayProps.fieldPlaceholder || '81234567890'"
+                    type="tel"
+                    inputmode="numeric"
+                    class="w-full font-707 text-subtext-lead text-black placeholder:text-neutral-400 bg-transparent border-none outline-none p-0 m-0 relative z-10"
+                  />
+                </div>
+
+                <!-- Standard Text / Email Mode -->
+                <div 
+                  v-else
+                  class="border-b-[0.5px] border-black py-[8px] w-full flex items-center"
+                >
+                  <input 
+                    v-model="modalInputValue"
+                    :placeholder="modalDisplayProps.fieldPlaceholder || (modalDisplayProps.fieldType === 'text' ? 'Enter your text*' : 'Enter your email*')"
+                    :type="modalDisplayProps.fieldType === 'text' ? 'text' : 'email'"
+                    :inputmode="modalDisplayProps.fieldType === 'text' ? 'text' : 'email'"
+                    class="w-full font-707 text-subtext-lead text-black placeholder:text-neutral-400 bg-transparent border-none outline-none p-0 m-0"
+                  />
+                </div>
+              </div>
+
+              <!-- Variant 3: Multiple Choice (Detailed) (Strictly following MultipleChoice widget styling & functions) -->
+              <div v-else-if="modalDisplayProps.variant === 'choice-detailed'" class="w-full flex flex-col gap-[8px]">
               <div 
                 v-for="(opt, oIdx) in (modalDisplayProps.options || [])"
                 :key="opt.id || oIdx"
@@ -1390,8 +1422,9 @@ more</span>
           </div>
         </div>
       </div>
-    </div>
+    </Transition>
   </div>
+</div>
 </template>
 
 <script setup lang="ts">
@@ -2222,6 +2255,12 @@ function toggleCountryCode(widget: any) {
   const current = widget.props.countryCode || '+62';
   const idx = countryCodes.indexOf(current);
   widget.props.countryCode = countryCodes[(idx + 1) % countryCodes.length];
+}
+
+const modalCountryCode = ref('+62');
+function toggleModalCountryCode() {
+  const idx = countryCodes.indexOf(modalCountryCode.value);
+  modalCountryCode.value = countryCodes[(idx + 1) % countryCodes.length];
 }
 
 function validateField(widget: any, triggerShake = true): boolean {
