@@ -75,6 +75,25 @@
               :is-selected="editorStore.activePageIndex === pIdx"
               @select-page="editorStore.selectPage(pIdx)"
             />
+
+            <!-- Add Page Card directly on Canvas (Matching Overview Page function) -->
+            <div 
+              @click="handleAddNewPageFromCanvas"
+              class="w-[393px] h-[852px] rounded-[52px] border-2 border-dashed border-black/20 hover:border-black/60 bg-white/40 hover:bg-white/80 backdrop-blur-xl flex flex-col items-center justify-center gap-4 cursor-pointer transition-all duration-200 shadow-[0px_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0px_16px_40px_rgba(0,0,0,0.1)] group select-none shrink-0"
+              title="Add New Page"
+            >
+              <div class="size-14 rounded-full bg-white group-hover:bg-black text-black group-hover:text-white border border-black/10 group-hover:border-black flex items-center justify-center shadow-md transition-all duration-200 group-hover:scale-110">
+                <Plus class="w-6 h-6 stroke-[2.5]" />
+              </div>
+              <div class="flex flex-col items-center gap-1">
+                <span class="font-707 text-[16px] font-medium text-black tracking-tight">
+                  Add Page
+                </span>
+                <span class="font-707 text-[12px] text-neutral-500 font-normal">
+                  Create Page {{ editorStore.pages.length + 1 }}
+                </span>
+              </div>
+            </div>
           </div>
         </Transition>
       </div>
@@ -387,6 +406,12 @@ function handleSelectNewPage() {
 
 function handleAddNewPageFromOverview() {
   editorStore.addPage();
+}
+
+function handleAddNewPageFromCanvas() {
+  editorStore.addPage();
+  editorStore.selectPage(editorStore.pages.length - 1);
+  editorStore.showToast(`Page ${editorStore.pages.length} created.`);
 }
 
 function handleSelectRequestWidget() {

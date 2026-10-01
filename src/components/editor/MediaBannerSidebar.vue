@@ -829,8 +829,7 @@ const allLinkToOptions = [
   { label: 'Next Page', value: 'next_page' },
   { label: 'Submit Form', value: 'submit' },
   { label: 'External URL', value: 'link' },
-  { label: 'Popup Modal', value: 'modal' },
-  { label: 'Scroll to Section', value: 'scroll' }
+  { label: 'Popup Modal', value: 'modal' }
 ] as const;
 
 const isCtaModalDisallowed = computed(() => {
@@ -854,18 +853,12 @@ const hasEPassInProject = computed(() => {
   return editorStore.pages.flatMap(p => p.widget_tree).some(w => w.type === 'GuestEPass');
 });
 
-const hasMultipleWidgets = computed(() => {
-  const inFlow = (editorStore.currentPage.widget_tree || []).filter(w => w.type !== 'ModalOverlay');
-  return inFlow.length >= 2;
-});
-
 const linkToOptions = computed(() => {
   const filtered = allLinkToOptions.filter(opt => {
     if (opt.value === 'download-pass') return hasEPassInProject.value;
     if (opt.value === 'next_page') return true; // Next Page is included by default
     if (opt.value === 'submit') return hasFormFields.value;
     if (opt.value === 'modal') return !isCtaModalDisallowed.value;
-    if (opt.value === 'scroll') return hasMultipleWidgets.value;
     if (opt.value === 'link') return true;
     return true;
   });

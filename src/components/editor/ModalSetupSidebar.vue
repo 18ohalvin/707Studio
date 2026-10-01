@@ -435,6 +435,7 @@
         Action CTA Button
       </p>
 
+      <!-- 1. Button Label -->
       <div class="flex flex-col gap-[6px] w-full">
         <p class="font-707 text-[12px] text-neutral-600">
           Button Label
@@ -446,6 +447,51 @@
             class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 tracking-tight"
           />
         </div>
+      </div>
+
+      <!-- 2. Button Action / Function -->
+      <div class="flex flex-col gap-[6px] w-full">
+        <p class="font-707 text-[12px] text-neutral-600">
+          Button Action
+        </p>
+        <div class="grid grid-cols-3 gap-1.5 w-full">
+          <button 
+            type="button"
+            v-for="act in ([
+              { label: 'Submit & Close', value: 'submit-close' },
+              { label: 'Next Page', value: 'next_page' },
+              { label: 'External URL', value: 'link' }
+            ] as const)"
+            :key="act.value"
+            @click="buttonAction = act.value"
+            :class="buttonAction === act.value ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+            class="h-[34px] rounded-[8px] text-[11px] font-707 flex items-center justify-center text-center px-1 cursor-pointer transition-all"
+          >
+            {{ act.label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- 3. External URL input if Link is active -->
+      <div v-if="buttonAction === 'link'" class="flex flex-col gap-[6px] w-full animate-in fade-in duration-150">
+        <p class="font-707 text-[12px] text-neutral-600">
+          Target URL
+        </p>
+        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+          <input 
+            v-model="buttonUrl"
+            placeholder="https://..."
+            class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
+          />
+        </div>
+        <label class="flex items-center gap-2 text-[11px] font-707 text-neutral-600 cursor-pointer pt-1">
+          <input 
+            type="checkbox" 
+            v-model="buttonOpenInNewTab" 
+            class="rounded accent-black scale-95"
+          />
+          <span>Open link in new tab</span>
+        </label>
       </div>
     </div>
 
@@ -675,6 +721,27 @@ const buttonText = computed({
   get: () => targetModalData.value.buttonText || 'DONE',
   set: (val: string) => {
     updateModalData({ buttonText: val });
+  }
+});
+
+const buttonAction = computed<'submit-close' | 'next_page' | 'link'>({
+  get: () => targetModalData.value.buttonAction || 'submit-close',
+  set: (val) => {
+    updateModalData({ buttonAction: val });
+  }
+});
+
+const buttonUrl = computed({
+  get: () => targetModalData.value.buttonUrl || '',
+  set: (val: string) => {
+    updateModalData({ buttonUrl: val });
+  }
+});
+
+const buttonOpenInNewTab = computed({
+  get: () => targetModalData.value.buttonOpenInNewTab ?? true,
+  set: (val: boolean) => {
+    updateModalData({ buttonOpenInNewTab: val });
   }
 });
 

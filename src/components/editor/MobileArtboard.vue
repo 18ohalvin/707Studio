@@ -178,41 +178,7 @@
               class="absolute top-0 left-0 right-0 h-1 bg-black z-30 shadow-md animate-pulse"
             />
 
-            <!-- Floating Widget Action Bar for generic widgets (TextBanner, ActionButton, MultipleChoice have dedicated toolbars) (Figma Node 142:4935) -->
-            <div 
-              v-if="!isMiniPreview && !isPreviewModal && widget.type !== 'TextBanner' && widget.type !== 'ActionButton' && widget.type !== 'MultipleChoice' && (hoveredWidgetId === widget.id || editorStore.selectedWidgetId === widget.id)"
-              class="absolute top-[12px] right-[12px] z-30 apple-glass-modal flex gap-[5px] items-center p-[4px] rounded-[10px] shadow-[0px_8px_24px_rgba(0,0,0,0.12)] border border-black/10 transition-all animate-in fade-in duration-150"
-              data-node-id="142:4935"
-              data-name="Buttons Container"
-            >
-              <!-- Icon 1: Adjust -> Open Media/Banner Setup (Hidden when setup modal is open) -->
-              <button 
-                v-if="!isWidgetSetupModalOpen(widget)"
-                @click.stop="handleAdjustWidget(widget)"
-                class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer hover:bg-black/10"
-                title="Adjust / Setup"
-              >
-                <SlidersHorizontal class="w-3.5 h-3.5" />
-              </button>
 
-              <!-- Icon 2: Duplicate -->
-              <button 
-                @click.stop="editorStore.duplicateWidget(widget.id)"
-                class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer hover:bg-black/10"
-                title="Duplicate"
-              >
-                <Copy class="w-3.5 h-3.5" />
-              </button>
-
-              <!-- Icon 3: Remove -->
-              <button 
-                @click.stop="editorStore.removeWidget(widget.id)"
-                class="apple-glass-icon-btn size-[24px] hover:text-red-600 flex items-center justify-center rounded-[6px] text-black cursor-pointer hover:bg-red-50"
-                title="Remove"
-              >
-                <Trash2 class="w-3.5 h-3.5" />
-              </button>
-            </div>
 
             <!-- 1. HeroDrop / Media Banner Widget (Solid space preview blocking #EDEDED or populated media) -->
             <div 
@@ -344,6 +310,7 @@
                   <button 
                     type="button"
                     @click.stop="handleHeroCtaClick(widget)"
+                    :disabled="isButtonInactive(widget)"
                     :class="[
                       (widget.props.variant === 'white' || widget.props.buttonVariant === 'white')
                         ? 'bg-white text-black shadow-none apple-cta-btn-white'
@@ -352,7 +319,8 @@
                           : (widget.props.isSolidSpace 
                               ? 'bg-black text-white apple-cta-btn-dark' 
                               : 'bg-white text-black shadow-none apple-cta-btn-white'),
-                      'apple-cta-btn font-707 font-medium text-btn h-[48px] px-[16px] py-[12px] cursor-pointer whitespace-nowrap flex items-center justify-center uppercase border-0 border-none outline-none'
+                      isButtonInactive(widget) ? 'opacity-40 cursor-not-allowed pointer-events-none' : 'apple-cta-btn',
+                      'font-707 font-medium text-btn h-[48px] px-[16px] py-[12px] cursor-pointer whitespace-nowrap flex items-center justify-center uppercase border-0 border-none outline-none transition-opacity'
                     ]"
                   >
                     {{ widget.props.buttonText || widget.props.ctaLabel || 'Action' }}
@@ -927,14 +895,15 @@
                 <button 
                   type="button"
                   @click.stop="handleActionButtonClick(widget)"
+                  :disabled="isButtonInactive(widget)"
                   :class="[
                     (widget.props.variant === 'white' || widget.props.buttonVariant === 'white')
                       ? 'bg-white text-black apple-cta-btn-white'
                       : 'bg-black text-white apple-cta-btn-dark',
-                    widget.props.disabled ? 'opacity-50 cursor-not-allowed' : 'apple-cta-btn'
+                    isButtonInactive(widget) ? 'opacity-40 cursor-not-allowed pointer-events-none' : 'apple-cta-btn'
                   ]"
                   :style="{ height: `${widget.props.height || 48}px` }"
-                  class="w-full px-[16px] py-[12px] rounded-[0px] flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none"
+                  class="w-full px-[16px] py-[12px] rounded-[0px] flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none transition-opacity"
                 >
                   <!-- Action Icon -->
                   <component :is="getButtonIcon(widget)" v-if="widget.props.showIcon" class="size-[16px] shrink-0" />
@@ -1545,11 +1514,10 @@ more</span>
           >
             <Trash2 class="w-3.5 h-3.5" />
           </button>
-        </div>
-
-        <button 
+        </div>        <button 
           type="button"
           @click.stop="handleActionButtonClick(stickyButtonForThisPage)"
+          :disabled="isButtonInactive(stickyButtonForThisPage)"
           :class="[
             (stickyButtonForThisPage.props?.variant === 'white' || stickyButtonForThisPage.props?.buttonVariant === 'white')
               ? 'bg-white text-black apple-cta-btn-white'
@@ -1558,10 +1526,10 @@ more</span>
                 : (isStickyButtonOnDarkBackground
                     ? 'bg-white text-black apple-cta-btn-white'
                     : 'bg-black text-white apple-cta-btn-dark'),
-            stickyButtonForThisPage.props?.disabled ? 'opacity-50 cursor-not-allowed' : 'apple-cta-btn'
+            isButtonInactive(stickyButtonForThisPage) ? 'opacity-40 cursor-not-allowed pointer-events-none' : 'apple-cta-btn'
           ]"
           :style="{ height: `${stickyButtonForThisPage.props?.height || 48}px` }"
-          class="w-full px-[16px] py-[12px] rounded-none flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none"
+          class="w-full px-[16px] py-[12px] rounded-none flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none transition-opacity"
         >
           <!-- Action Icon -->
           <component :is="getButtonIcon(stickyButtonForThisPage)" v-if="stickyButtonForThisPage.props?.showIcon" class="size-[16px] shrink-0" />
@@ -1582,7 +1550,7 @@ more</span>
           <!-- Bottom Sheet Card (White background with premium Apple blur transparent effect) -->
           <div 
             @click.stop
-            class="apple-bottom-sheet-card relative z-10 w-full backdrop-blur-2xl bg-white/90 border-t border-white/60 text-black p-[24px] rounded-t-[16px] shadow-[0px_-10px_40px_rgba(0,0,0,0.16),0_-1px_3px_rgba(0,0,0,0.05)] max-h-[85%] overflow-y-auto no-scrollbar"
+            class="apple-bottom-sheet-card relative z-10 w-full backdrop-blur-2xl bg-white/90 border-t border-white/60 text-black p-[24px] rounded-t-[20px] shadow-[0px_-10px_40px_rgba(0,0,0,0.16),0_-1px_3px_rgba(0,0,0,0.05)] max-h-[85%] overflow-y-auto no-scrollbar"
             data-node-id="276:4722"
             data-name="Bottom Modal Popup"
           >
@@ -1609,7 +1577,7 @@ more</span>
                 <!-- WhatsApp / Phone Mode -->
                 <div 
                   v-if="modalDisplayProps.fieldType === 'tel' || modalDisplayProps.fieldType === 'whatsapp'"
-                  class="border-b-[0.5px] border-black py-[8px] w-full flex items-center gap-[8px] relative"
+                  class="backdrop-blur-md bg-white/70 border border-black/15 focus-within:border-black rounded-[8px] h-[46px] px-[14px] w-full flex items-center gap-[8px] relative transition-all shadow-xs"
                 >
                   <!-- WhatsApp Country Calling Code Selector with Chevron -->
                   <div 
@@ -1617,7 +1585,7 @@ more</span>
                     @click.stop="toggleModalCountryCode"
                     title="Click to switch Country Calling Code"
                   >
-                    <span class="font-707 text-[14px] leading-[20px] text-black font-normal tracking-tight">
+                    <span class="font-707 text-[13px] leading-[20px] text-black font-normal tracking-tight">
                       {{ modalCountryCode }}
                     </span>
                     <ChevronDown class="w-[12px] h-[12px] text-neutral-400 group-hover/code:text-black transition-colors stroke-[2]" />
@@ -1628,199 +1596,199 @@ more</span>
                     :placeholder="modalDisplayProps.fieldPlaceholder || '81234567890'"
                     type="tel"
                     inputmode="numeric"
-                    class="w-full font-707 text-[14px] leading-[20px] text-black placeholder:text-neutral-400 bg-transparent border-none outline-none p-0 m-0 relative z-10"
+                    class="w-full font-707 text-[13px] leading-[20px] text-black placeholder:text-neutral-400 bg-transparent border-none outline-none p-0 m-0 relative z-10"
                   />
                 </div>
 
                 <!-- Standard Text / Email Mode -->
                 <div 
                   v-else
-                  class="border-b-[0.5px] border-black py-[8px] w-full flex items-center"
+                  class="backdrop-blur-md bg-white/70 border border-black/15 focus-within:border-black rounded-[8px] h-[46px] px-[14px] w-full flex items-center transition-all shadow-xs"
                 >
                   <input 
                     v-model="modalInputValue"
                     :placeholder="modalDisplayProps.fieldPlaceholder || (modalDisplayProps.fieldType === 'text' ? 'Text*' : 'Email*')"
                     :type="modalDisplayProps.fieldType === 'text' ? 'text' : 'email'"
                     :inputmode="modalDisplayProps.fieldType === 'text' ? 'text' : 'email'"
-                    class="w-full font-707 text-[14px] leading-[20px] text-black placeholder:text-neutral-400 bg-transparent border-none outline-none p-0 m-0"
+                    class="w-full font-707 text-[13px] leading-[20px] text-black placeholder:text-neutral-400 bg-transparent border-none outline-none p-0 m-0"
                   />
                 </div>
               </div>
 
               <!-- Variant 3: Multiple Choice (Detailed) (Strictly following MultipleChoice widget styling & functions) -->
               <div v-else-if="modalDisplayProps.variant === 'choice-detailed'" class="w-full flex flex-col gap-[8px]">
-              <div 
-                v-for="(opt, oIdx) in (modalDisplayProps.options || [])"
-                :key="opt.id || oIdx"
-                @click="toggleModalOption(opt.id || oIdx)"
-                class="luxury-choice-tile border-[0.5px] border-solid border-[#d4d4d4] flex gap-[24px] w-full select-none transition-all duration-150 rounded-none cursor-pointer"
-                :class="[
-                  isModalOptionSelected(opt) ? 'is-selected border-black bg-white shadow-xs ring-[0.5px] ring-black' : 'border-[#d4d4d4] bg-white hover:border-black/50',
-                  opt.description && opt.description.trim()
-                    ? 'items-start p-[16px]'
-                    : 'items-center min-h-[48px] h-[48px] px-[16px] py-[12px]'
-                ]"
-              >
-                <!-- Checkbox Container (18px outer square with 12px inner square when active) -->
                 <div 
-                  class="relative shrink-0 size-[18px] border-[0.5px] border-black border-solid flex items-center justify-center bg-transparent"
-                  :class="opt.description && opt.description.trim() ? 'mt-[1px]' : ''"
+                  v-for="(opt, oIdx) in (modalDisplayProps.options || [])"
+                  :key="opt.id || oIdx"
+                  @click="toggleModalOption(opt.id || oIdx)"
+                  class="luxury-choice-tile backdrop-blur-md bg-white/75 border border-black/10 flex gap-[18px] w-full select-none transition-all duration-150 rounded-[8px] cursor-pointer hover:bg-white/95 hover:border-black/30 shadow-xs"
+                  :class="[
+                    isModalOptionSelected(opt) ? 'is-selected border-black bg-white ring-1 ring-black/80 shadow-sm' : '',
+                    opt.description && opt.description.trim()
+                      ? 'items-start p-[16px]'
+                      : 'items-center min-h-[48px] h-[48px] px-[16px] py-[12px]'
+                  ]"
                 >
+                  <!-- Checkbox Container (18px outer square with 12px inner square when active) -->
                   <div 
-                    class="luxury-choice-checkbox-inner size-[12px] bg-black border-[0.5px] border-black border-solid transform transition-all duration-150"
-                    :class="isModalOptionSelected(opt) ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
-                  />
-                </div>
+                    class="relative shrink-0 size-[18px] border-[0.5px] border-black border-solid flex items-center justify-center bg-transparent rounded-[3px]"
+                    :class="opt.description && opt.description.trim() ? 'mt-[1px]' : ''"
+                  >
+                    <div 
+                      class="luxury-choice-checkbox-inner size-[12px] bg-black border-[0.5px] border-black border-solid rounded-[2px] transform transition-all duration-150"
+                      :class="isModalOptionSelected(opt) ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
+                    />
+                  </div>
 
-                <!-- Option Content (Zero text bleeding, crisp line-height, vertically centered when no description) -->
-                <div 
-                  class="flex-1 flex min-w-0"
-                  :class="opt.description && opt.description.trim() ? 'flex-col gap-[8px] items-start' : 'items-center'"
-                >
-                  <!-- Layout A: With Event Description -->
-                  <template v-if="opt.description && opt.description.trim()">
-                    <div class="flex items-baseline justify-between w-full font-707 gap-3">
-                      <span class="font-707 font-medium text-bodytext-medium text-black truncate">{{ opt.label }}</span>
-                      <span v-if="opt.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[18px] text-neutral-500">{{ opt.sublabel }}</span>
-                    </div>
-                    <div class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-600 whitespace-pre-line">
-                      {{ opt.description }}
-                    </div>
-                    <!-- Badge Label "XX Slots Available" Under Event Description -->
-                    <div v-if="getModalOptionSlotsBadge(opt)" class="inline-flex items-center pt-[2px]">
-                      <span 
-                        class="inline-flex items-center px-[8px] py-[2px] border-[0.5px] rounded-[4px] font-707 text-[10px] font-medium leading-[14px] bg-neutral-100 border-[#e0e0e0] text-neutral-700"
-                      >
-                        {{ getModalOptionSlotsBadge(opt) }}
-                      </span>
-                    </div>
-                  </template>
-
-                  <!-- Layout B: Without Event Description (Badge Label Under the Date) -->
-                  <template v-else>
-                    <div class="flex items-center justify-between w-full font-707 gap-3">
-                      <span class="font-707 font-medium text-bodytext-medium text-black truncate">{{ opt.label }}</span>
-                      <div class="flex flex-col items-end shrink-0 gap-[3px]">
-                        <span v-if="opt.sublabel" class="font-707 font-normal text-[12px] leading-[16px] text-neutral-500">{{ opt.sublabel }}</span>
+                  <!-- Option Content -->
+                  <div 
+                    class="flex-1 flex min-w-0"
+                    :class="opt.description && opt.description.trim() ? 'flex-col gap-[6px] items-start' : 'items-center'"
+                  >
+                    <!-- Layout A: With Event Description -->
+                    <template v-if="opt.description && opt.description.trim()">
+                      <div class="flex items-baseline justify-between w-full font-707 gap-3">
+                        <span class="font-707 font-medium text-bodytext-medium text-black truncate">{{ opt.label }}</span>
+                        <span v-if="opt.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[18px] text-neutral-500">{{ opt.sublabel }}</span>
+                      </div>
+                      <div class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-600 whitespace-pre-line">
+                        {{ opt.description }}
+                      </div>
+                      <!-- Badge Label "XX Slots Available" Under Event Description -->
+                      <div v-if="getModalOptionSlotsBadge(opt)" class="inline-flex items-center pt-[2px]">
                         <span 
-                          v-if="getModalOptionSlotsBadge(opt)" 
-                          class="inline-flex items-center px-[6px] py-[1.5px] border-[0.5px] rounded-[4px] font-707 text-[10px] font-medium leading-[13px] bg-neutral-100 border-[#e0e0e0] text-neutral-700"
+                          class="inline-flex items-center px-[8px] py-[2px] border-[0.5px] rounded-[4px] font-707 text-[10px] font-medium leading-[14px] bg-neutral-100/80 border-[#e0e0e0] text-neutral-700 backdrop-blur-xs"
                         >
                           {{ getModalOptionSlotsBadge(opt) }}
                         </span>
                       </div>
-                    </div>
-                  </template>
+                    </template>
+
+                    <!-- Layout B: Without Event Description (Badge Label Under the Date) -->
+                    <template v-else>
+                      <div class="flex items-center justify-between w-full font-707 gap-3">
+                        <span class="font-707 font-medium text-bodytext-medium text-black truncate">{{ opt.label }}</span>
+                        <div class="flex flex-col items-end shrink-0 gap-[3px]">
+                          <span v-if="opt.sublabel" class="font-707 font-normal text-[12px] leading-[16px] text-neutral-500">{{ opt.sublabel }}</span>
+                          <span 
+                            v-if="getModalOptionSlotsBadge(opt)" 
+                            class="inline-flex items-center px-[6px] py-[1.5px] border-[0.5px] rounded-[4px] font-707 text-[10px] font-medium leading-[13px] bg-neutral-100/80 border-[#e0e0e0] text-neutral-700 backdrop-blur-xs"
+                          >
+                            {{ getModalOptionSlotsBadge(opt) }}
+                          </span>
+                        </div>
+                      </div>
+                    </template>
+                  </div>
                 </div>
+
+                <!-- Add More Slot -->
+                <button 
+                  v-if="!isPreviewModal"
+                  type="button"
+                  @click.stop="handleModalAddOption"
+                  class="backdrop-blur-sm bg-white/50 border border-dashed border-black/20 hover:border-black rounded-[8px] min-h-[48px] h-[48px] flex gap-[18px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors select-none text-left"
+                >
+                  <div class="relative shrink-0 size-[18px] flex items-center justify-center">
+                    <img :src="FIGMA_ASSETS.addFilled" class="size-[18px] shrink-0 pointer-events-none object-contain" alt="Add" />
+                  </div>
+                  <span class="font-707 font-medium text-bodytext-medium text-black truncate">
+                    Add more
+                  </span>
+                </button>
               </div>
 
-              <!-- Add More Slot -->
-              <button 
-                v-if="!isPreviewModal"
-                type="button"
-                @click.stop="handleModalAddOption"
-                class="border-[0.5px] border-[#d4d4d4] hover:border-black border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
-              >
-                <div class="relative shrink-0 size-[18px] flex items-center justify-center">
-                  <img :src="FIGMA_ASSETS.addFilled" class="size-[18px] shrink-0 pointer-events-none object-contain" alt="Add" />
-                </div>
-                <span class="font-707 font-medium text-bodytext-medium text-black truncate">
-                  Add more
-                </span>
-              </button>
-            </div>
-
-            <!-- Variant 4: Simple Multiple Choice (Strictly following MultipleChoice simple-row widget) -->
-            <div v-else-if="modalDisplayProps.variant === 'choice-simple'" class="w-full flex flex-col gap-[8px]">
-              <div 
-                v-for="(opt, oIdx) in (modalDisplayProps.options || [])"
-                :key="opt.id || oIdx"
-                @click="toggleModalOption(opt.id || oIdx)"
-                class="luxury-choice-tile border-[0.5px] border-solid border-[#d4d4d4] flex gap-[24px] px-[16px] w-full select-none rounded-none"
-                :class="[
-                  isModalOptionSelected(opt) ? 'is-selected border-black bg-white shadow-xs ring-[0.5px] ring-black' : 'border-[#d4d4d4] bg-white hover:border-black/50',
-                  getModalOptionSlotsBadge(opt)
-                    ? 'items-start py-[12px]'
-                    : 'items-center min-h-[48px] h-[48px] py-[12px]'
-                ]"
-              >
-                <!-- Checkbox Container (18px outer square with 12px inner square when active) -->
+              <!-- Variant 4: Simple Multiple Choice (Strictly following MultipleChoice simple-row widget) -->
+              <div v-else-if="modalDisplayProps.variant === 'choice-simple'" class="w-full flex flex-col gap-[8px]">
                 <div 
-                  class="relative shrink-0 size-[18px] border-[0.5px] border-black border-solid flex items-center justify-center bg-transparent"
-                  :class="getModalOptionSlotsBadge(opt) ? 'mt-[1px]' : ''"
+                  v-for="(opt, oIdx) in (modalDisplayProps.options || [])"
+                  :key="opt.id || oIdx"
+                  @click="toggleModalOption(opt.id || oIdx)"
+                  class="luxury-choice-tile backdrop-blur-md bg-white/75 border border-black/10 flex gap-[18px] px-[16px] w-full select-none rounded-[8px] hover:bg-white/95 hover:border-black/30 transition-all shadow-xs"
+                  :class="[
+                    isModalOptionSelected(opt) ? 'is-selected border-black bg-white ring-1 ring-black/80 shadow-sm' : '',
+                    getModalOptionSlotsBadge(opt)
+                      ? 'items-start py-[12px]'
+                      : 'items-center min-h-[48px] h-[48px] py-[12px]'
+                  ]"
                 >
+                  <!-- Checkbox Container (18px outer square with 12px inner square when active) -->
                   <div 
-                    class="luxury-choice-checkbox-inner size-[12px] bg-black border-[0.5px] border-black border-solid transform transition-all duration-150"
-                    :class="isModalOptionSelected(opt) ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
-                  />
-                </div>
+                    class="relative shrink-0 size-[18px] border-[0.5px] border-black border-solid flex items-center justify-center bg-transparent rounded-[3px]"
+                    :class="getModalOptionSlotsBadge(opt) ? 'mt-[1px]' : ''"
+                  >
+                    <div 
+                      class="luxury-choice-checkbox-inner size-[12px] bg-black border-[0.5px] border-black border-solid rounded-[2px] transform transition-all duration-150"
+                      :class="isModalOptionSelected(opt) ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
+                    />
+                  </div>
 
-                <!-- Label & Slot Capacity under option title, or right sublabel -->
-                <div v-if="getModalOptionSlotsBadge(opt)" class="flex-1 flex flex-col items-start gap-[4px] min-w-0">
-                  <div class="flex items-center justify-between w-full font-707 gap-2">
+                  <!-- Label & Slot Capacity under option title, or right sublabel -->
+                  <div v-if="getModalOptionSlotsBadge(opt)" class="flex-1 flex flex-col items-start gap-[4px] min-w-0">
+                    <div class="flex items-center justify-between w-full font-707 gap-2">
+                      <span class="font-707 font-medium text-bodytext-medium text-black truncate">{{ opt.label }}</span>
+                      <span v-if="opt.sublabel" class="font-707 font-normal text-[12px] leading-[18px] text-neutral-500 shrink-0">{{ opt.sublabel }}</span>
+                    </div>
+                    <span 
+                      class="inline-flex items-center px-[6px] py-[1.5px] border-[0.5px] rounded-[4px] font-707 text-[10px] font-medium leading-[13px] bg-neutral-100/80 border-[#e0e0e0] text-neutral-700 backdrop-blur-xs"
+                    >
+                      {{ getModalOptionSlotsBadge(opt) }}
+                    </span>
+                  </div>
+                  <div v-else class="flex-1 flex items-center justify-between font-707 gap-2">
                     <span class="font-707 font-medium text-bodytext-medium text-black truncate">{{ opt.label }}</span>
                     <span v-if="opt.sublabel" class="font-707 font-normal text-[12px] leading-[18px] text-neutral-500 shrink-0">{{ opt.sublabel }}</span>
                   </div>
-                  <span 
-                    class="inline-flex items-center px-[6px] py-[1.5px] border-[0.5px] rounded-[4px] font-707 text-[10px] font-medium leading-[13px] bg-neutral-100 border-[#e0e0e0] text-neutral-700"
-                  >
-                    {{ getModalOptionSlotsBadge(opt) }}
+                </div>
+
+                <!-- Add More Slot -->
+                <button 
+                  v-if="!isPreviewModal"
+                  type="button"
+                  @click.stop="handleModalAddOption"
+                  class="backdrop-blur-sm bg-white/50 border border-dashed border-black/20 hover:border-black rounded-[8px] min-h-[48px] h-[48px] flex gap-[18px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors select-none text-left"
+                >
+                  <div class="relative shrink-0 size-[18px] flex items-center justify-center">
+                    <img :src="FIGMA_ASSETS.addFilled" class="size-[18px] shrink-0 pointer-events-none object-contain" alt="Add" />
+                  </div>
+                  <span class="font-707 font-medium text-bodytext-medium text-black truncate">
+                    Add more
                   </span>
-                </div>
-                <div v-else class="flex-1 flex items-center justify-between font-707 gap-2">
-                  <span class="font-707 font-medium text-bodytext-medium text-black truncate">{{ opt.label }}</span>
-                  <span v-if="opt.sublabel" class="font-707 font-normal text-[12px] leading-[18px] text-neutral-500 shrink-0">{{ opt.sublabel }}</span>
+                </button>
+              </div>
+
+              <!-- Variant 5: Matrix Image Pop Up (3:4 ratio) -->
+              <div v-else-if="modalDisplayProps.variant === 'image-matrix'" class="w-full grid grid-cols-4 gap-[8px]">
+                <div 
+                  v-for="(slot, sIdx) in (modalDisplayProps.imageSlots || [])"
+                  :key="slot.id || sIdx"
+                  @click="toggleModalSlot(slot.id || sIdx)"
+                  class="aspect-[3/4] bg-white/70 backdrop-blur-md border border-black/15 rounded-[8px] relative overflow-hidden transition-all cursor-pointer select-none"
+                  :class="isModalSlotSelected(slot) ? 'border-black ring-1 ring-black' : 'hover:border-black/40'"
+                >
+                  <img v-if="slot.url" :src="slot.url" class="w-full h-full object-cover" />
+                  <div v-if="isModalSlotSelected(slot)" class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                    <Check class="size-4 text-white stroke-[2.5]" />
+                  </div>
                 </div>
               </div>
 
-              <!-- Add More Slot -->
-              <button 
-                v-if="!isPreviewModal"
-                type="button"
-                @click.stop="handleModalAddOption"
-                class="border-[0.5px] border-[#d4d4d4] hover:border-black border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
-              >
-                <div class="relative shrink-0 size-[18px] flex items-center justify-center">
-                  <img :src="FIGMA_ASSETS.addFilled" class="size-[18px] shrink-0 pointer-events-none object-contain" alt="Add" />
-                </div>
-                <span class="font-707 font-medium text-bodytext-medium text-black truncate">
-                  Add more
-                </span>
-              </button>
-            </div>
-
-            <!-- Variant 5: Matrix Image Pop Up (3:4 ratio) -->
-            <div v-else-if="modalDisplayProps.variant === 'image-matrix'" class="w-full grid grid-cols-4 gap-[8px]">
-              <div 
-                v-for="(slot, sIdx) in (modalDisplayProps.imageSlots || [])"
-                :key="slot.id || sIdx"
-                @click="toggleModalSlot(slot.id || sIdx)"
-                class="aspect-[3/4] bg-[#ededed] relative overflow-hidden transition-all border-[0.5px] border-solid cursor-pointer select-none"
-                :class="isModalSlotSelected(slot) ? 'border-black ring-[0.5px] ring-black' : 'border-neutral-200'"
-              >
-                <img v-if="slot.url" :src="slot.url" class="w-full h-full object-cover" />
-                <div v-if="isModalSlotSelected(slot)" class="absolute inset-0 bg-black/30 flex items-center justify-center">
-                  <Check class="size-4 text-white stroke-[2.5]" />
-                </div>
+              <!-- CTA Action Button -->
+              <div class="w-full pt-1">
+                <button 
+                  type="button"
+                  @click.stop="handleModalDoneClick"
+                  class="apple-cta-btn apple-cta-btn-dark bg-black text-white hover:bg-neutral-900 active:bg-neutral-800 w-full h-[48px] px-[16px] py-[12px] rounded-[8px] flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-sm transition-all"
+                >
+                  <span class="whitespace-nowrap uppercase">{{ modalDisplayProps.buttonText || 'DONE' }}</span>
+                </button>
               </div>
-            </div>
-
-            <!-- CTA Action Button -->
-            <div class="w-full pt-1">
-              <button 
-                type="button"
-                @click.stop="handleModalDoneClick"
-                class="apple-cta-btn apple-cta-btn-dark bg-black text-white w-full h-[48px] px-[16px] py-[12px] rounded-[0px] flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none"
-              >
-                <span class="whitespace-nowrap uppercase">{{ modalDisplayProps.buttonText || 'DONE' }}</span>
-              </button>
             </div>
           </div>
         </div>
-      </div>
-    </Transition>
+      </Transition>
+    </div>
   </div>
-</div>
 </template>
 
 <script setup lang="ts">
@@ -3097,11 +3065,104 @@ function handleBackdropClick() {
   }
 }
 
+const isPageRequiredFieldsComplete = computed(() => {
+  for (const w of activePage.value.widget_tree) {
+    if (w.type === 'FieldInput') {
+      const isReq = w.props?.required ?? w.props?.isRequired ?? false;
+      if (isReq) {
+        const val = (w.props?.value || '').trim();
+        if (!val) return false;
+      }
+    } else if (w.type === 'RegistrationForm') {
+      const fields = (w.props?.fields || []) as any[];
+      for (const f of fields) {
+        if (f.required !== false) {
+          const val = (f.value || '').trim();
+          if (!val) return false;
+        }
+      }
+    } else if (w.type === 'MultipleChoice') {
+      if (w.props?.required) {
+        const hasSelected = (w.props?.options || []).some((o: any) => o.selected) || 
+                            ((w.props?.selectedValues || []).length > 0);
+        if (!hasSelected) return false;
+      }
+    }
+  }
+  return true;
+});
+
+function isButtonInactive(widget: any): boolean {
+  if (!widget) return false;
+  if (widget.props?.disabled) return true;
+  const act = widget.props?.actionType || widget.props?.ctaActionType || 'submit';
+  if (act === 'submit' && !isPageRequiredFieldsComplete.value) {
+    return true;
+  }
+  return false;
+}
+
 function handleModalDoneClick() {
+  const mProps = modalDisplayProps.value;
+
+  // 1. Persist modal input value if filled
+  if (modalInputValue.value) {
+    const val = modalInputValue.value.trim();
+    if (val) {
+      const selected = editorStore.selectedWidget;
+      if (selected && selected.props?.modalProps) {
+        editorStore.updateWidgetProps(selected.id, {
+          modalProps: { ...selected.props.modalProps, fieldValue: val }
+        });
+      }
+    }
+  }
+
+  // 2. Persist choice selections if applicable
+  if (mProps.options && mProps.options.length > 0) {
+    const selected = editorStore.selectedWidget;
+    if (selected && selected.props?.modalProps) {
+      editorStore.updateWidgetProps(selected.id, {
+        modalProps: { ...selected.props.modalProps, options: [...mProps.options] }
+      });
+    }
+  }
+
+  // 3. Persist image matrix slots if applicable
+  if (mProps.imageSlots && mProps.imageSlots.length > 0) {
+    const selected = editorStore.selectedWidget;
+    if (selected && selected.props?.modalProps) {
+      editorStore.updateWidgetProps(selected.id, {
+        modalProps: { ...selected.props.modalProps, imageSlots: [...mProps.imageSlots] }
+      });
+    }
+  }
+
+  const btnAction = mProps.buttonAction || 'submit-close';
+  const btnUrl = mProps.buttonUrl;
+  const openInNewTab = mProps.buttonOpenInNewTab ?? true;
+
+  // Close the modal bottom sheet
   if (activeTriggeredModal.value) {
     activeTriggeredModal.value = null;
   } else if (editorStore.isModalSidebarOpen) {
     editorStore.closeModalSidebar();
+  }
+
+  // 4. Handle navigation or external URL
+  if (btnAction === 'next_page') {
+    const currentIdx = typeof props.pageIndex === 'number' ? props.pageIndex : editorStore.activePageIndex;
+    if (currentIdx < editorStore.pages.length - 1) {
+      editorStore.selectPage(currentIdx + 1);
+    } else {
+      editorStore.isTestFormModalOpen = true;
+    }
+  } else if (btnAction === 'link' && btnUrl) {
+    if (openInNewTab) {
+      window.open(btnUrl, '_blank');
+    } else {
+      window.location.href = btnUrl;
+    }
   }
 }
 
