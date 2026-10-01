@@ -363,14 +363,16 @@ describe('707 Activation Builder Stores', () => {
     expect(defaultEPass.props.accessIdFallback).toBe('020305-1008-1245');
     expect(defaultEPass.props.actionType).toBe('download-pass');
     expect(defaultEPass.props.validForFallback[0].label).toBe('Day 1');
+    expect(defaultEPass.props.showTerms).toBe(false);
     expect(defaultEPass.props.terms[0]).toBe('[ENTRY CONDITION OR LEGAL RULE 1]');
     expect(editorStore.isEPassSidebarOpen).toBe(true);
 
     // Toggle QR code off and test props update
-    editorStore.updateWidgetProps(defaultEPass.id, { showQrCode: false, isCtaEnabled: true, buttonText: 'DOWNLOAD E-PASS' });
+    editorStore.updateWidgetProps(defaultEPass.id, { showQrCode: false, isCtaEnabled: true, buttonText: 'DOWNLOAD E-PASS', showTerms: true });
     const updatedEPass = editorStore.currentPage.widget_tree.find(w => w.id === defaultEPass.id);
     expect(updatedEPass?.props.showQrCode).toBe(false);
     expect(updatedEPass?.props.isCtaEnabled).toBe(true);
+    expect(updatedEPass?.props.showTerms).toBe(true);
 
     // Toggle EPass sidebar
     editorStore.toggleEPassSidebar();

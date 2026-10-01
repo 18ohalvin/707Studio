@@ -503,6 +503,8 @@ export const useEditorStore = defineStore('editor', () => {
           ctaPositionMode: 'sticky-bottom',
           showIcon: false,
           iconName: 'ticket',
+          showTerms: false,
+          accessId: '020305-1008-1245',
           validForFallback: [
             { id: 'opt_1', label: 'Day 1', sublabel: '2 September 2026', description: 'Access to main floor & VIP lounge' },
             { id: 'opt_2', label: 'Day 2', sublabel: '3 September 2026', description: 'Access to main floor & VIP lounge' },

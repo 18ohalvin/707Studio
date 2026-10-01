@@ -27,7 +27,7 @@
         </button>
       </div>
       <p class="font-707 text-[12px] text-neutral-500 mt-1">
-        Configure QR code visibility, field layout metadata, action button, and entry terms.
+        Configure QR mode, headline, venue location, action button, and entry terms.
       </p>
     </div>
 
@@ -60,7 +60,7 @@
             QR Code Function
           </p>
           <p class="font-707 text-[11px] text-neutral-500">
-            {{ showQrCode ? 'Enabled: Displaying QR summary ticket' : 'Disabled: Displaying clean field info layout' }}
+            {{ showQrCode ? 'Enabled: Displaying QR box under pass information' : 'Disabled: Clean non-QR ticket summary' }}
           </p>
         </div>
 
@@ -83,21 +83,21 @@
       </div>
     </div>
 
-    <!-- Section 2: Non-QR Field Layout Info Setup (Visible when QR is OFF or configurable) -->
-    <div v-if="!showQrCode" class="content-stretch flex flex-col gap-[16px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0] animate-in fade-in duration-200">
+    <!-- Section 2: Pass Information Fields Configuration (Headline & Venue) -->
+    <div class="content-stretch flex flex-col gap-[16px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="flex items-center justify-between w-full">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
           Pass Information Fields
         </p>
         <span class="font-707 text-[10px] text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-[4px] border border-neutral-200 uppercase">
-          Non-QR Mode
+          {{ showQrCode ? 'QR Mode' : 'Non-QR Mode' }}
         </span>
       </div>
 
       <!-- Headline -->
       <div class="flex flex-col gap-[6px] w-full">
         <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
-          Headline Text
+          Headline Text (H2)
         </p>
         <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex min-h-[54px] p-[10px] rounded-[8px] w-full bg-white transition-colors">
           <textarea 
@@ -123,112 +123,16 @@
         </div>
       </div>
 
-      <!-- 2-Column Inputs: Access ID & Guest Type -->
-      <div class="grid grid-cols-2 gap-3 w-full">
-        <!-- Access ID -->
-        <div class="flex flex-col gap-[6px]">
-          <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
-            Access ID Code
-          </p>
-          <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[12px] rounded-[8px] w-full bg-white transition-colors">
-            <input 
-              v-model="accessIdFallback"
-              placeholder="020305-1008-1245"
-              class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
-            />
-          </div>
-        </div>
-
-        <!-- Guest Type -->
-        <div class="flex flex-col gap-[6px]">
-          <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
-            Guest Type
-          </p>
-          <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[12px] rounded-[8px] w-full bg-white transition-colors">
-            <input 
-              v-model="guestType"
-              placeholder="VIP"
-              class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- Guest Name Fallback -->
-      <div class="flex flex-col gap-[6px] w-full">
-        <div class="flex items-center justify-between">
-          <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
-            Guest Name Fallback
-          </p>
-          <span class="text-[10px] font-707 text-neutral-400">Dynamic if form filled</span>
-        </div>
-        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
-          <input 
-            v-model="guestNameFallback"
-            placeholder="MR. ALVIN DECOROUS"
-            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
-          />
-        </div>
-      </div>
-
-      <!-- Email Fallback -->
-      <div class="flex flex-col gap-[6px] w-full">
-        <div class="flex items-center justify-between">
-          <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
-            Email Fallback
-          </p>
-          <span class="text-[10px] font-707 text-neutral-400">Dynamic if form filled</span>
-        </div>
-        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
-          <input 
-            v-model="emailFallback"
-            placeholder="alvin@sosco.id"
-            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 lowercase font-mono"
-          />
-        </div>
-      </div>
-
-      <!-- Footer Notice Setup -->
-      <div class="flex flex-col gap-[10px] w-full pt-1">
-        <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
-          Email Help Notice (Footer)
+      <!-- Dynamic Info Notice -->
+      <div class="bg-neutral-50 border border-neutral-200 p-3 rounded-[8px] w-full flex items-start gap-2">
+        <div class="size-1.5 rounded-full bg-neutral-400 mt-1.5 shrink-0" />
+        <p class="font-707 text-[11px] leading-[16px] text-neutral-600">
+          Guest Name, Email, and Guest Type are dynamically populated from your form registration data. Access ID is generated automatically by the system.
         </p>
-        <div class="flex flex-col gap-2 w-full">
-          <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[34px] items-center px-[12px] rounded-[6px] w-full bg-white transition-colors">
-            <input 
-              v-model="footerNoticeTitle"
-              placeholder="DIDN'T RECEIVE THE EMAIL?"
-              class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
-            />
-          </div>
-          <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[34px] items-center px-[12px] rounded-[6px] w-full bg-white transition-colors">
-            <input 
-              v-model="footerNoticeText"
-              placeholder="Check your spam folder or contact support"
-              class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400"
-            />
-          </div>
-        </div>
       </div>
     </div>
 
-    <!-- Section 2b: Standard QR Venue Location (Visible when QR is ON) -->
-    <div v-else class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
-      <div class="flex flex-col gap-[6px] w-full">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Event Venue Location
-        </p>
-        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
-          <input 
-            v-model="venue"
-            placeholder="e.g. [EVENT VENUE LOCATION]"
-            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase tracking-tight"
-          />
-        </div>
-      </div>
-    </div>
-
-    <!-- Section 3: Action Button Function (Sticky Bottom Only - As in Hero Banner) -->
+    <!-- Section 3: Action Button Function (Sticky Bottom Only) -->
     <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
       <!-- Title row with Apple Style Toggle Switch -->
       <div class="flex items-center justify-between w-full">
@@ -456,47 +360,85 @@
       </Transition>
     </div>
 
-    <!-- Section 4: Terms & Conditions -->
+    <!-- Section 4: Terms & Conditions with Apple-Style Toggle Switch (Default Off) -->
     <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
       <div class="flex items-center justify-between w-full">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Terms & Conditions
-        </p>
-        <button 
+        <div class="flex flex-col">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Terms & Conditions
+          </p>
+          <p class="font-707 text-[11px] text-neutral-500">
+            {{ showTerms ? 'Enabled on ticket summary' : 'Disabled by default' }}
+          </p>
+        </div>
+
+        <!-- Modern Elegant Apple Style Toggle Switch -->
+        <button
           type="button"
-          @click="addTermRule"
-          class="apple-glass-btn text-[11px] font-707 px-2.5 py-1 rounded-[6px] flex items-center gap-1 cursor-pointer"
+          role="switch"
+          :aria-checked="showTerms"
+          @click="toggleTerms"
+          class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+          :class="showTerms ? 'bg-black' : 'bg-[#e5e5ea]'"
+          title="Toggle Terms & Conditions"
         >
-          <Plus class="size-3" />
-          <span>Add Rule</span>
+          <span
+            aria-hidden="true"
+            class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+            :class="showTerms ? 'translate-x-[18px]' : 'translate-x-0'"
+          />
         </button>
       </div>
 
-      <div class="flex flex-col gap-2 w-full">
-        <div 
-          v-for="(term, tIdx) in termsList" 
-          :key="tIdx"
-          class="flex items-center gap-2 w-full"
-        >
-          <div class="size-1.5 rounded-full bg-black shrink-0" />
-          <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[34px] items-center px-[10px] rounded-[6px] w-full bg-white transition-colors">
-            <input 
-              v-model="termsList[tIdx]"
-              placeholder="Enter rule text"
-              class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400"
-            />
+      <!-- Terms List (Visible only when toggle is on) -->
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="transform opacity-0 -translate-y-2"
+        enter-to-class="transform opacity-100 translate-y-0"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="transform opacity-100 translate-y-0"
+        leave-to-class="transform opacity-0 -translate-y-2"
+      >
+        <div v-if="showTerms" class="flex flex-col gap-[12px] w-full pt-1">
+          <div class="flex items-center justify-between w-full">
+            <span class="font-707 text-[12px] font-medium text-neutral-700">Rules List</span>
+            <button 
+              type="button"
+              @click="addTermRule"
+              class="apple-glass-btn text-[11px] font-707 px-2.5 py-1 rounded-[6px] flex items-center gap-1 cursor-pointer"
+            >
+              <Plus class="size-3" />
+              <span>Add Rule</span>
+            </button>
           </div>
-          <button 
-            type="button"
-            v-if="termsList.length > 1"
-            @click="removeTermRule(tIdx)"
-            class="size-6 rounded flex items-center justify-center text-neutral-400 hover:text-red-600 cursor-pointer shrink-0"
-            title="Remove Rule"
-          >
-            <Trash2 class="size-3.5" />
-          </button>
+
+          <div class="flex flex-col gap-2 w-full">
+            <div 
+              v-for="(term, tIdx) in termsList" 
+              :key="tIdx"
+              class="flex items-center gap-2 w-full"
+            >
+              <div class="size-1.5 rounded-full bg-black shrink-0" />
+              <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[34px] items-center px-[10px] rounded-[6px] w-full bg-white transition-colors">
+                <input 
+                  v-model="termsList[tIdx]"
+                  placeholder="Enter rule text"
+                  class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400"
+                />
+              </div>
+              <button 
+                type="button"
+                v-if="termsList.length > 1"
+                @click="removeTermRule(tIdx)"
+                class="size-6 rounded flex items-center justify-center text-neutral-400 hover:text-red-600 cursor-pointer shrink-0"
+                title="Remove Rule"
+              >
+                <Trash2 class="size-3.5" />
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      </Transition>
     </div>
   </aside>
 </template>
@@ -549,7 +491,7 @@ function toggleQrCode() {
   showQrCode.value = !showQrCode.value;
 }
 
-// 2. Headline & Non-QR Field Metadata
+// 2. Headline & Venue Metadata
 const heading = computed({
   get: () => currentWidget.value?.props?.heading ?? 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.',
   set: (val: string) => {
@@ -564,60 +506,6 @@ const venue = computed({
   set: (val: string) => {
     if (currentWidget.value) {
       editorStore.updateWidgetProps(currentWidget.value.id, { venue: val });
-    }
-  }
-});
-
-const accessIdFallback = computed({
-  get: () => currentWidget.value?.props?.accessIdFallback || currentWidget.value?.props?.accessId || '020305-1008-1245',
-  set: (val: string) => {
-    if (currentWidget.value) {
-      editorStore.updateWidgetProps(currentWidget.value.id, { accessIdFallback: val, accessId: val });
-    }
-  }
-});
-
-const guestType = computed({
-  get: () => currentWidget.value?.props?.guestType || 'VIP',
-  set: (val: string) => {
-    if (currentWidget.value) {
-      editorStore.updateWidgetProps(currentWidget.value.id, { guestType: val });
-    }
-  }
-});
-
-const guestNameFallback = computed({
-  get: () => currentWidget.value?.props?.guestNameFallback || 'MR. ALVIN DECOROUS',
-  set: (val: string) => {
-    if (currentWidget.value) {
-      editorStore.updateWidgetProps(currentWidget.value.id, { guestNameFallback: val });
-    }
-  }
-});
-
-const emailFallback = computed({
-  get: () => currentWidget.value?.props?.emailFallback || currentWidget.value?.props?.email || 'alvin@sosco.id',
-  set: (val: string) => {
-    if (currentWidget.value) {
-      editorStore.updateWidgetProps(currentWidget.value.id, { emailFallback: val, email: val });
-    }
-  }
-});
-
-const footerNoticeTitle = computed({
-  get: () => currentWidget.value?.props?.footerNoticeTitle ?? "DIDN'T RECEIVE THE EMAIL?",
-  set: (val: string) => {
-    if (currentWidget.value) {
-      editorStore.updateWidgetProps(currentWidget.value.id, { footerNoticeTitle: val });
-    }
-  }
-});
-
-const footerNoticeText = computed({
-  get: () => currentWidget.value?.props?.footerNoticeText ?? "Check your spam folder or contact support",
-  set: (val: string) => {
-    if (currentWidget.value) {
-      editorStore.updateWidgetProps(currentWidget.value.id, { footerNoticeText: val });
     }
   }
 });
@@ -768,7 +656,20 @@ function setIconName(name: string) {
   iconName.value = name;
 }
 
-// 4. Terms & Conditions
+// 4. Terms & Conditions Toggle & List
+const showTerms = computed({
+  get: () => currentWidget.value?.props?.showTerms ?? false,
+  set: (val: boolean) => {
+    if (currentWidget.value) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { showTerms: val });
+    }
+  }
+});
+
+function toggleTerms() {
+  showTerms.value = !showTerms.value;
+}
+
 const termsList = computed({
   get: () => currentWidget.value?.props?.terms || [
     '[ENTRY CONDITION OR LEGAL RULE 1]',
