@@ -91,7 +91,7 @@
           :class="selectedRatio === ratio ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
           class="shrink-0 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[13px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
         >
-          {{ ratio }}
+          {{ formatRatioLabel(ratio) }}
         </button>
       </div>
     </div>
@@ -689,6 +689,12 @@ const isCurrentSolidSpace = ref(true);
 
 const ratios = ['Full screen landing page', 'Dynamic Fit', '3:4', '4:5', '4:3', '16:9', '9:16', '1:1'];
 const selectedRatio = ref(editorStore.selectedMediaRatio || 'Full screen landing page');
+
+function formatRatioLabel(ratio: string): string {
+  if (ratio === 'Full screen landing page') return 'Full Screen (Scrollable)';
+  if (ratio === 'Dynamic Fit') return 'Dynamic Fit (1-Screen)';
+  return ratio;
+}
 
 const mediaFitOptions = ['Fill the screen', 'Fit to screen', 'Center'] as const;
 const selectedMediaFit = ref<'Fill the screen' | 'Fit to screen' | 'Center'>('Fill the screen');

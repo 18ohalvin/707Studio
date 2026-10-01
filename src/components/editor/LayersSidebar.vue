@@ -31,7 +31,7 @@
           v-if="editorStore.isCurrentPageDynamicFit"
           class="font-707 text-[10px] font-medium px-2 py-0.5 rounded bg-black/5 text-neutral-600 tracking-wide uppercase whitespace-nowrap"
         >
-          Dynamic Fit: {{ editorStore.currentPage.widget_tree.length }}/3
+          Dynamic Fit (1-Screen): {{ editorStore.currentPage.widget_tree.length }}/3
         </span>
       </div>
     </div>

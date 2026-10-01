@@ -34,29 +34,29 @@
         </p>
       </div>
       <div class="content-stretch flex gap-[14px] items-start overflow-x-auto -mx-[24px] px-[24px] w-[calc(100%+48px)] pb-2 no-scrollbar">
-        <!-- Full screen landing cover -->
+        <!-- Full screen landing cover (Scrollable) -->
         <div 
           draggable="true"
-          @dragstart="handleDragStart($event, { type: 'HeroDrop', label: 'Full screen landing cover', customProps: { ratio: 'Full screen landing page', isSolidSpace: true, subtitle: 'FULL SCREEN COVER' } })"
+          @dragstart="handleDragStart($event, { type: 'HeroDrop', label: 'Full Screen (Scrollable)', customProps: { ratio: 'Full screen landing page', isSolidSpace: true, subtitle: 'FULL SCREEN (SCROLLABLE)' } })"
           @dragend="handleDragEnd"
           @click="addMediaWidget('Full screen landing page')"
           class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[96px] cursor-grab active:cursor-grabbing group"
-          title="Drag to canvas or click to add"
+          title="Drag to canvas or click to add (100vh hero for multi-section scrollable page)"
         >
           <div class="bg-[#dcdcdc] group-hover:bg-[#cecece] h-[130px] rounded-[8px] shrink-0 w-[72px] transition-colors border border-black/10 group-hover:border-black shadow-sm overflow-hidden" />
           <p class="font-707 font-normal text-[11px] text-black text-center leading-tight">
-            Full screen cover
+            Full Screen (Scrollable)
           </p>
         </div>
 
         <!-- Dynamic Fit (Responsive 1-Screen) -->
         <div 
           draggable="true"
-          @dragstart="handleDragStart($event, { type: 'HeroDrop', label: 'Dynamic Fit', customProps: { ratio: 'Dynamic Fit', isSolidSpace: true, subtitle: 'DYNAMIC FIT COVER' } })"
+          @dragstart="handleDragStart($event, { type: 'HeroDrop', label: 'Dynamic Fit (1-Screen)', customProps: { ratio: 'Dynamic Fit', isSolidSpace: true, subtitle: 'DYNAMIC FIT (1-SCREEN)' } })"
           @dragend="handleDragEnd"
           @click="addMediaWidget('Dynamic Fit')"
           class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[96px] cursor-grab active:cursor-grabbing group"
-          title="Drag to canvas or click to add (Dynamic 1-screen adaptive fit)"
+          title="Drag to canvas or click to add (Adaptive 1-screen fit without scrolling)"
         >
           <div class="bg-[#dcdcdc] group-hover:bg-[#cecece] h-[130px] rounded-[8px] shrink-0 w-[72px] transition-colors border border-black/10 group-hover:border-black shadow-sm overflow-hidden flex flex-col justify-between p-2">
             <div class="w-full h-2 bg-black/20 rounded-full" />
@@ -66,7 +66,7 @@
             </div>
           </div>
           <p class="font-707 font-normal text-[11px] text-black text-center leading-tight">
-            Dynamic Fit
+            Dynamic Fit (1-Screen)
           </p>
         </div>
 
