@@ -64,7 +64,7 @@
               : 'border-[0.5px] w-[340px] h-[680px]'),
         !isMiniPreview && !isPreviewModal && isSelected 
           ? 'border-black shadow-[0px_16px_48px_rgba(0,0,0,0.12)]' 
-          : (!isMiniPreview && !isPreviewModal ? 'border-neutral-300 hover:border-neutral-400 opacity-80 hover:opacity-100 shadow-[0px_0px_30px_rgba(0,0,0,0.04)] cursor-pointer' : '')
+          : (!isMiniPreview && !isPreviewModal ? 'border-neutral-300 opacity-80 shadow-[0px_0px_30px_rgba(0,0,0,0.04)] cursor-pointer' : '')
       ]"
     >
       <!-- Persistent Thin 0.5px Black Selected Page Outline Overlay (Only on selected artboard) -->
@@ -278,7 +278,7 @@
                   @click.stop="handleOpenLogoPicker(widget.id)"
                   class="h-[48px] px-3 border border-dashed rounded-[8px] flex items-center gap-1.5 text-[11px] font-707 cursor-pointer transition-colors"
                   :class="[
-                    widget.props.isSolidSpace ? 'bg-black/5 border-black/30 text-black/70 hover:bg-black/10' : 'bg-white/20 border-white/40 text-white hover:bg-white/30 backdrop-blur-sm',
+                    widget.props.isSolidSpace ? 'bg-black/5 border-black/30 text-black/70' : 'bg-white/20 border-white/40 text-white backdrop-blur-sm',
                     isDragOverLogoSlot === widget.id ? 'border-black ring-2 ring-black' : ''
                   ]"
                   title="Click or drop brand logo (Height 48px)"
@@ -346,12 +346,12 @@
                     @click.stop="handleHeroCtaClick(widget)"
                     :class="[
                       (widget.props.variant === 'white' || widget.props.buttonVariant === 'white')
-                        ? 'bg-white hover:bg-[#f0f0f0] text-black shadow-none apple-cta-btn-white'
+                        ? 'bg-white text-black shadow-none apple-cta-btn-white'
                         : (widget.props.variant === 'black' || widget.props.buttonVariant === 'black')
-                          ? 'bg-black hover:bg-[#262626] text-white apple-cta-btn-dark'
+                          ? 'bg-black text-white apple-cta-btn-dark'
                           : (widget.props.isSolidSpace 
-                              ? 'bg-black hover:bg-[#262626] text-white apple-cta-btn-dark' 
-                              : 'bg-white hover:bg-[#f0f0f0] text-black shadow-none apple-cta-btn-white'),
+                              ? 'bg-black text-white apple-cta-btn-dark' 
+                              : 'bg-white text-black shadow-none apple-cta-btn-white'),
                       'apple-cta-btn font-707 font-medium text-btn h-[48px] px-[16px] py-[12px] cursor-pointer whitespace-nowrap flex items-center justify-center uppercase border-0 border-none outline-none'
                     ]"
                   >
@@ -436,7 +436,7 @@
                 </div>
               </div>
 
-              <button class="w-full h-[48px] bg-black text-white font-707 font-medium text-[14px] leading-[18px] tracking-normal uppercase rounded-none hover:bg-[#262626] apple-cta-btn apple-cta-btn-dark border-0 border-none outline-none cursor-pointer">
+              <button class="w-full h-[48px] bg-black text-white font-707 font-medium text-[14px] leading-[18px] tracking-normal uppercase rounded-none apple-cta-btn apple-cta-btn-dark border-0 border-none outline-none cursor-pointer">
                 {{ widget.props.ctaLabel || 'SUBMIT ENTRY' }}
               </button>
             </div>
@@ -482,7 +482,7 @@
                 </div>
               </div>
 
-              <button class="w-full h-[48px] bg-black text-white font-707 font-medium text-[14px] leading-[18px] tracking-normal uppercase rounded-none hover:bg-[#262626] apple-cta-btn apple-cta-btn-dark border-0 border-none outline-none cursor-pointer">
+              <button class="w-full h-[48px] bg-black text-white font-707 font-medium text-[14px] leading-[18px] tracking-normal uppercase rounded-none apple-cta-btn apple-cta-btn-dark border-0 border-none outline-none cursor-pointer">
                 {{ widget.props.ctaLabel || 'CLAIM PASS' }}
               </button>
             </div>
@@ -771,8 +771,8 @@
                   @click.stop="handleActionButtonClick(widget)"
                   :class="[
                     (widget.props.variant === 'white' || widget.props.buttonVariant === 'white')
-                      ? 'bg-white text-black hover:bg-[#f5f5f7] apple-cta-btn-white'
-                      : 'bg-black text-white hover:bg-[#262626] apple-cta-btn-dark',
+                      ? 'bg-white text-black apple-cta-btn-white'
+                      : 'bg-black text-white apple-cta-btn-dark',
                     widget.props.disabled ? 'opacity-50 cursor-not-allowed' : 'apple-cta-btn'
                   ]"
                   :style="{ height: `${widget.props.height || 48}px` }"
@@ -1078,7 +1078,7 @@
                   v-if="!isPreviewModal"
                   type="button"
                   @click.stop="handleChoiceAddMore(widget)"
-                  class="aspect-[3/4] bg-transparent hover:bg-black/5 border border-dashed border-[#ccc] hover:border-black flex flex-col gap-[6px] items-center justify-center cursor-pointer transition-all select-none rounded-none p-1.5"
+                  class="aspect-[3/4] bg-transparent border border-dashed border-[#ccc] flex flex-col gap-[6px] items-center justify-center cursor-pointer transition-all select-none rounded-none p-1.5"
                   title="Add more models"
                 >
                   <img :src="FIGMA_ASSETS.addFilled" class="size-[20px] shrink-0 pointer-events-none" alt="Add" />
@@ -1156,12 +1156,12 @@ more</span>
           @click.stop="handleActionButtonClick(stickyButtonForThisPage)"
           :class="[
             (stickyButtonForThisPage.props?.variant === 'white' || stickyButtonForThisPage.props?.buttonVariant === 'white')
-              ? 'bg-white text-black hover:bg-[#f5f5f7] apple-cta-btn-white'
+              ? 'bg-white text-black apple-cta-btn-white'
               : (stickyButtonForThisPage.props?.variant === 'black' || stickyButtonForThisPage.props?.buttonVariant === 'black')
-                ? 'bg-black text-white hover:bg-[#262626] apple-cta-btn-dark'
+                ? 'bg-black text-white apple-cta-btn-dark'
                 : (isStickyButtonOnDarkBackground
-                    ? 'bg-white text-black hover:bg-[#f5f5f7] apple-cta-btn-white'
-                    : 'bg-black text-white hover:bg-[#262626] apple-cta-btn-dark'),
+                    ? 'bg-white text-black apple-cta-btn-white'
+                    : 'bg-black text-white apple-cta-btn-dark'),
             stickyButtonForThisPage.props?.disabled ? 'opacity-50 cursor-not-allowed' : 'apple-cta-btn'
           ]"
           :style="{ height: `${stickyButtonForThisPage.props?.height || 48}px` }"
@@ -1368,7 +1368,7 @@ more</span>
                 :key="slot.id || sIdx"
                 @click="toggleModalSlot(slot.id || sIdx)"
                 class="aspect-[3/4] bg-[#ededed] relative overflow-hidden transition-all border-[0.5px] border-solid cursor-pointer select-none"
-                :class="isModalSlotSelected(slot) ? 'border-black ring-[0.5px] ring-black' : 'border-neutral-200 hover:border-black/40'"
+                :class="isModalSlotSelected(slot) ? 'border-black ring-[0.5px] ring-black' : 'border-neutral-200'"
               >
                 <img v-if="slot.url" :src="slot.url" class="w-full h-full object-cover" />
                 <div v-if="isModalSlotSelected(slot)" class="absolute inset-0 bg-black/30 flex items-center justify-center">
@@ -1382,7 +1382,7 @@ more</span>
               <button 
                 type="button"
                 @click.stop="handleModalDoneClick"
-                class="apple-cta-btn apple-cta-btn-dark bg-black text-white hover:bg-[#262626] w-full h-[48px] px-[16px] py-[12px] rounded-[0px] flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none"
+                class="apple-cta-btn apple-cta-btn-dark bg-black text-white w-full h-[48px] px-[16px] py-[12px] rounded-[0px] flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none"
               >
                 <span class="whitespace-nowrap uppercase">{{ modalDisplayProps.buttonText || 'DONE' }}</span>
               </button>

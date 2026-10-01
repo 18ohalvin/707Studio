@@ -238,10 +238,6 @@ textarea, input, .select-text, .select-text * {
               box-shadow 0.15s ease;
 }
 
-.btn-707:hover {
-  background: #262626;
-}
-
 .btn-707:active {
   background-color: #2c2c2e;
   opacity: 0.88;
