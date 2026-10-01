@@ -1,38 +1,40 @@
 <template>
-  <!-- Registration Form Setup Sidebar Drawer (Matching 707 Global UI Style & Apple Glass Standards) -->
+  <!-- Form Setup Sidebar Menu (Matching 707 Global Editor UI & Apple Glass Standards) -->
   <aside 
     v-if="isOpen && currentWidget"
     ref="sidebarRef"
     @click.stop
     @wheel.stop
-    class="absolute right-[24px] top-1/2 -translate-y-1/2 w-[464px] h-auto max-h-[calc(100vh-140px)] backdrop-blur-2xl bg-[rgba(255,255,255,0.92)] border border-black/8 content-stretch flex flex-col items-start overflow-y-auto pb-[24px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] z-40 select-none transition-all animate-apple-slide-right-center no-scrollbar"
-    data-name="Registration Form Setup Sidebar"
+    class="absolute right-[24px] top-1/2 -translate-y-1/2 w-[464px] h-auto max-h-[calc(100vh-140px)] backdrop-blur-2xl bg-[rgba(255,255,255,0.92)] border border-black/8 content-stretch flex flex-col items-start overflow-y-auto pb-[32px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] z-40 select-none transition-all animate-apple-slide-right-center no-scrollbar"
+    data-name="Form Setup Sidebar"
   >
-    <!-- Widget Container & Header -->
+    <!-- Header -->
     <div class="content-stretch flex flex-col items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
         <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
-          Form Section Setup
+          Form Setup
         </p>
         <button 
           @click="$emit('close')"
           class="apple-glass-icon-btn size-7 flex items-center justify-center rounded-full cursor-pointer hover:bg-neutral-200/60 transition-colors"
+          title="Close"
         >
           <img :src="FIGMA_ASSETS.closeIcon" class="w-3.5 h-3.5" alt="Close" />
         </button>
       </div>
       <p class="font-707 font-normal text-[12px] leading-[16px] text-neutral-500 mt-1">
-        Configure the registration form header and input fields stack.
+        Configure header typography, field labels, and validation rules.
       </p>
     </div>
 
     <!-- Section 1: Title & Subtitle Input -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
+    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+      <!-- Widget Title -->
       <div class="flex flex-col gap-[6px] w-full">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
           Widget Title
         </p>
-        <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
           <input 
             v-model="title"
             placeholder="e.g. REGISTRATION FORM"
@@ -41,7 +43,7 @@
         </div>
       </div>
 
-      <!-- Title Typography Preset Dropdown -->
+      <!-- Title Typography Style Dropdown -->
       <div class="flex flex-col gap-[6px] w-full">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
           Title Font Style
@@ -83,7 +85,7 @@
         </div>
       </div>
 
-      <!-- Subtitle -->
+      <!-- Subtitle Text -->
       <div class="flex flex-col gap-[6px] w-full">
         <div class="flex items-center justify-between">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
@@ -93,7 +95,7 @@
             Body Text (12px)
           </span>
         </div>
-        <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
           <input 
             v-model="subtitle"
             placeholder="e.g. Fill in your details below to register."
@@ -104,87 +106,81 @@
     </div>
 
     <!-- Section 2: Form Fields Manager -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
+    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="flex items-center justify-between w-full">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Form Fields Stack ({{ fields.length }})
+          Fields ({{ fields.length }})
         </p>
         <span class="font-707 text-[11px] text-neutral-400">
-          Reorder & toggle required
+          Reorder & configure
         </span>
       </div>
 
-      <!-- Fields List -->
+      <!-- Minimalist Fields List -->
       <div class="flex flex-col gap-[8px] w-full">
         <div 
           v-for="(field, index) in fields"
           :key="field.id"
-          class="flex items-center gap-2 p-2.5 rounded-[8px] bg-white border border-black/8 hover:border-black/20 transition-all shadow-sm"
+          class="flex items-center justify-between p-3 rounded-[8px] bg-white border border-[#e5e5e5] hover:border-black/30 transition-all shadow-xs gap-3"
         >
-          <!-- Drag Handle Grip -->
+          <!-- Grip -->
           <div class="text-neutral-400 hover:text-black shrink-0 cursor-grab">
             <GripVertical class="size-4" />
           </div>
 
-          <!-- Field Name / Label & Type Indicator -->
-          <div class="flex-1 min-w-0 flex flex-col gap-0.5">
+          <!-- Field Name Input & Type Badge -->
+          <div class="flex-1 min-w-0 flex items-center gap-2">
             <input 
               v-model="field.name"
               @input="updateFieldLabel(index, field.name)"
-              class="font-707 font-medium text-[13px] text-black bg-transparent outline-none border-b border-transparent focus:border-black/30 transition-colors w-full"
+              class="font-707 font-medium text-[13px] text-black bg-transparent outline-none border-b border-transparent focus:border-black py-0.5 w-full min-w-0"
               placeholder="Field Label"
             />
-            <div class="flex items-center gap-2 text-[10px] text-neutral-400 font-mono">
-              <span class="uppercase tracking-wider">{{ field.type || 'text' }}</span>
-              <span v-if="field.type === 'tel'" class="text-neutral-500 font-sans">({{ field.countryCode || '+62' }})</span>
-            </div>
+            <span class="font-707 text-[10px] text-neutral-500 uppercase px-1.5 py-0.5 rounded bg-neutral-100 shrink-0 font-medium">
+              {{ field.type === 'tel' ? (field.countryCode || '+62') : (field.type || 'text') }}
+            </span>
           </div>
 
-          <!-- Required Toggle (Apple Switch) -->
-          <div class="flex items-center gap-1.5 shrink-0 px-1">
-            <span class="font-707 text-[10px] text-neutral-500 uppercase tracking-tight">Req</span>
-            <button 
-              type="button"
-              @click="toggleFieldRequired(index)"
-              class="w-7 h-4 rounded-full transition-colors relative cursor-pointer"
-              :class="field.required !== false ? 'bg-black' : 'bg-neutral-300'"
-            >
-              <div 
-                class="size-3 rounded-full bg-white absolute top-0.5 transition-transform"
-                :class="field.required !== false ? 'right-0.5' : 'left-0.5'"
-              />
-            </button>
-          </div>
+          <!-- Required Pill Toggle -->
+          <button 
+            type="button"
+            @click="toggleFieldRequired(index)"
+            :class="field.required !== false ? 'apple-glass-btn-dark font-medium shadow-xs' : 'apple-glass-btn'"
+            class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer shrink-0 transition-colors"
+          >
+            {{ field.required !== false ? 'Required' : 'Optional' }}
+          </button>
 
           <!-- Delete Field Button -->
           <button 
             type="button"
             @click="removeField(index)"
             :disabled="fields.length <= 1"
-            class="size-7 rounded-[6px] text-neutral-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
+            class="size-7 rounded-[6px] text-neutral-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed shrink-0"
             title="Remove Field"
           >
             <Trash2 class="size-3.5" />
           </button>
         </div>
       </div>
+    </div>
 
-      <!-- Add Preset Field Buttons -->
-      <div class="flex flex-col gap-[8px] w-full pt-2">
-        <p class="font-707 text-[11px] text-neutral-500 font-medium uppercase tracking-wider">
-          + Add Preset Field
-        </p>
-        <div class="flex flex-wrap gap-1.5 w-full">
-          <button 
-            v-for="preset in availablePresets"
-            :key="preset.name"
-            @click="addFieldPreset(preset)"
-            type="button"
-            class="apple-glass-btn text-[11px] px-2.5 py-1 rounded-[6px] font-707 font-medium hover:border-black cursor-pointer transition-colors"
-          >
-            + {{ preset.name }}
-          </button>
-        </div>
+    <!-- Section 3: Add Preset Fields -->
+    <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] shrink-0 w-full">
+      <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+        Add Preset Fields
+      </p>
+      <div class="flex flex-wrap gap-2 w-full">
+        <button 
+          v-for="preset in availablePresets"
+          :key="preset.name"
+          @click="addFieldPreset(preset)"
+          type="button"
+          class="apple-glass-btn text-[12px] px-3 py-1.5 rounded-[8px] font-707 font-medium hover:border-black cursor-pointer transition-all flex items-center gap-1.5"
+        >
+          <Plus class="size-3 text-neutral-500" />
+          <span>{{ preset.name }}</span>
+        </button>
       </div>
     </div>
   </aside>
@@ -195,7 +191,7 @@ import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import type { FormFieldItem } from '../../types/editor.ts';
-import { ChevronDown, GripVertical, Trash2 } from 'lucide-vue-next';
+import { ChevronDown, GripVertical, Trash2, Plus } from 'lucide-vue-next';
 
 defineProps<{
   isOpen: boolean;
@@ -302,7 +298,7 @@ const availablePresets = [
   { name: 'WhatsApp Number', placeholder: 'Enter your whatsapp number*', type: 'tel', countryCode: '+62' },
   { name: 'Instagram Handle', placeholder: 'Enter your instagram handle*', type: 'text' },
   { name: 'Date of Birth', placeholder: 'DD / MM / YYYY', type: 'text' },
-  { name: 'KTP / ID Number', placeholder: 'Enter 16-digit KTP number', type: 'text' },
+  { name: 'National ID / KTP', placeholder: 'Enter 16-digit KTP number', type: 'text' },
   { name: 'Custom Field', placeholder: 'Enter details*', type: 'text' }
 ];
 

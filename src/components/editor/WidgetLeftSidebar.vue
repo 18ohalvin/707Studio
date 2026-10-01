@@ -256,54 +256,49 @@
         </p>
       </div>
 
-      <!-- 1-Click Complete Form Section Card -->
+      <!-- Form Cards & Field Presets Stack -->
       <div class="content-stretch flex gap-[14px] items-start overflow-x-auto -mx-[24px] px-[24px] w-[calc(100%+48px)] no-scrollbar pb-[4px]">
+        <!-- 1. Form Section Card (Standard 707 Card Style) -->
         <div 
           draggable="true"
-          @dragstart="handleDragStart($event, { type: 'RegistrationForm', label: 'Registration Form', customProps: { title: 'REGISTRATION FORM', subtitle: 'Fill in your details below to register.' } })"
+          @dragstart="handleDragStart($event, { type: 'RegistrationForm', label: 'Form Section', customProps: { title: 'REGISTRATION FORM', subtitle: 'Fill in your details below to register.' } })"
           @dragend="handleDragEnd"
           @click="addRegistrationFormWidget"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group"
-          title="Drag to canvas or click to add (Complete Registration Form Section in 1-Click)"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group w-[84px]"
+          title="Drag to canvas or click to add (Complete Form Section)"
         >
-          <div class="border border-[#c9c9c9] flex flex-col justify-between p-2 h-[88px] rounded-[8px] shrink-0 w-[140px] bg-white group-hover:border-black transition-colors shadow-sm overflow-hidden">
-            <!-- Mini header mockup -->
-            <div class="flex flex-col gap-1 w-full">
-              <div class="w-3/5 h-2 bg-black/80 rounded-[2px]" />
-              <div class="w-4/5 h-1 bg-black/30 rounded-[1px]" />
+          <div class="border border-[#c9c9c9] flex flex-col justify-between p-2 h-[130px] rounded-[8px] shrink-0 w-[72px] bg-white group-hover:border-black transition-colors shadow-sm overflow-hidden">
+            <!-- Header lines -->
+            <div class="flex flex-col gap-1 w-full pt-0.5">
+              <div class="w-4/5 h-1.5 bg-black/80 rounded-[1px]" />
+              <div class="w-full h-1 bg-black/30 rounded-[1px]" />
             </div>
-            <!-- Mini floating inputs mockup -->
-            <div class="flex flex-col gap-1.5 w-full pt-1">
+            <!-- Stack of luxury input lines -->
+            <div class="flex flex-col gap-2 w-full py-1">
               <div class="w-full flex flex-col gap-0.5">
-                <div class="w-2/5 h-1 bg-neutral-400 rounded-full" />
+                <div class="w-2/5 h-0.5 bg-neutral-400 rounded-full" />
                 <div class="w-full h-0.5 bg-neutral-300" />
               </div>
               <div class="w-full flex flex-col gap-0.5">
-                <div class="w-1/3 h-1 bg-neutral-400 rounded-full" />
+                <div class="w-1/3 h-0.5 bg-neutral-400 rounded-full" />
+                <div class="w-full h-0.5 bg-neutral-300" />
+              </div>
+              <div class="w-full flex flex-col gap-0.5">
+                <div class="w-1/2 h-0.5 bg-neutral-400 rounded-full" />
                 <div class="w-full h-0.5 bg-neutral-300" />
               </div>
             </div>
+            <!-- Mini bottom accent -->
+            <div class="w-full h-1 bg-neutral-100 rounded-full" />
           </div>
-          <div class="flex items-center gap-1.5">
-            <span class="font-707 font-medium text-[11px] text-black text-center whitespace-nowrap">
-              Registration Form
-            </span>
-            <span class="font-707 text-[9px] uppercase tracking-wider px-1 py-0.2 rounded bg-black/5 text-neutral-600 font-semibold">
-              1-Click
-            </span>
-          </div>
+          <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
+            Form Section
+          </p>
         </div>
       </div>
 
-      <!-- Granular Manual Form Inputs Header & Filter Pills -->
-      <div class="flex items-center justify-between w-full pt-1">
-        <p class="font-707 text-[11px] text-neutral-500 font-medium uppercase tracking-wider">
-          Individual Form Fields
-        </p>
-      </div>
-
-      <!-- Filter Buttons (Category Pills) -->
-      <div class="content-stretch flex gap-[6px] items-start overflow-x-auto -mx-[24px] px-[24px] w-[calc(100%+48px)] no-scrollbar pb-[4px]">
+      <!-- Filter Buttons (Category Tabs) -->
+      <div class="content-stretch flex gap-[6px] items-start overflow-x-auto -mx-[24px] px-[24px] w-[calc(100%+48px)] no-scrollbar pt-1 pb-[4px]">
         <button 
           v-for="tab in formTabs" 
           :key="tab"
@@ -315,8 +310,8 @@
         </button>
       </div>
 
-      <!-- Form Field Options Grid -->
-      <div class="content-stretch flex gap-[12px] items-start overflow-x-auto -mx-[24px] px-[24px] w-[calc(100%+48px)] pt-[4px] pb-[4px] no-scrollbar">
+      <!-- Individual Form Field Icons Grid -->
+      <div class="content-stretch flex gap-[12px] items-start overflow-x-auto -mx-[24px] px-[24px] w-[calc(100%+48px)] pt-[2px] pb-[4px] no-scrollbar">
         <div 
           v-for="field in currentTabFields" 
           :key="field.name"
