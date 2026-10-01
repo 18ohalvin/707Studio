@@ -353,22 +353,13 @@ describe('707 Activation Builder Stores', () => {
     });
     expect(choice).toBeTruthy();
 
-    // Now adding GuestEPass succeeds!
-    const epass = editorStore.addWidget('GuestEPass', undefined, {
-      venue: 'LA MODA PLAZA INDONESIA',
-      guestNameFallback: 'MR. ALVIN DECOROUS',
-      validForFallback: [
-        { id: 'opt_1', label: 'Day 2', sublabel: '3 September 2026', description: 'Your Event Descriptions Detail' }
-      ],
-      terms: [
-        'Valid for one (1) person only — non-transferable.'
-      ]
-    });
-
-    expect(epass).toBeTruthy();
-    expect(epass.type).toBe('GuestEPass');
-    expect(epass.props.venue).toBe('LA MODA PLAZA INDONESIA');
-    expect(epass.props.guestNameFallback).toBe('MR. ALVIN DECOROUS');
+    // Now adding GuestEPass with default props uses system placeholders!
+    const defaultEPass = editorStore.addWidget('GuestEPass');
+    expect(defaultEPass).toBeTruthy();
+    expect(defaultEPass.type).toBe('GuestEPass');
+    expect(defaultEPass.props.validForFallback[0].label).toBe('[SESSION / DAY 1]');
+    expect(defaultEPass.props.validForFallback[0].sublabel).toBe('[EVENT DATE]');
+    expect(defaultEPass.props.terms[0]).toBe('[ENTRY CONDITION OR LEGAL RULE 1]');
     expect(editorStore.isEPassSidebarOpen).toBe(true);
 
     // Toggle EPass sidebar
@@ -378,7 +369,7 @@ describe('707 Activation Builder Stores', () => {
     expect(editorStore.isEPassSidebarOpen).toBe(true);
 
     // Remove widget closes EPass sidebar
-    editorStore.removeWidget(epass.id);
+    editorStore.removeWidget(defaultEPass.id);
     expect(editorStore.isEPassSidebarOpen).toBe(false);
   });
 });

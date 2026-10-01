@@ -1131,12 +1131,13 @@ more</span>
                 </button>
               </div>
 
-              <!-- Top Brand Logo (Inherited from Hero Banner setup - Rule 3) -->
+              <!-- Top Brand Logo (Inherited from Hero Banner setup - Rule 3, converted to black PNG on light ticket) -->
               <div v-if="getBrandLogo(widget)" class="w-full flex items-center justify-start pb-[2px]">
                 <img 
                   :src="getBrandLogo(widget)" 
                   alt="Brand Logo" 
-                  class="max-h-[32px] h-[24px] w-auto object-contain" 
+                  class="max-h-[32px] h-[24px] w-auto object-contain brightness-0" 
+                  style="filter: brightness(0);"
                 />
               </div>
 
@@ -3162,11 +3163,11 @@ function getGuestName(widget: any) {
   if (nameWidget && nameWidget.props?.value?.trim()) {
     return nameWidget.props.value.trim().toUpperCase();
   }
-  return widget.props?.guestNameFallback || 'MR. ALVIN DECOROUS';
+  return widget.props?.guestNameFallback || '[GUEST NAME]';
 }
 
 function getVenue(widget: any) {
-  return widget.props?.venue || 'LA MODA PLAZA INDONESIA';
+  return widget.props?.venue || '[EVENT VENUE LOCATION]';
 }
 
 function getValidForSessions(widget: any) {
@@ -3179,26 +3180,25 @@ function getValidForSessions(widget: any) {
       choiceWidget.props.selectedValues.includes(opt.id)
     );
     if (selectedOptions.length > 0) {
-      return selectedOptions.map((opt: any) => ({
+      return selectedOptions.map((opt: any, idx: number) => ({
         id: opt.id,
-        label: opt.label || 'Day 1',
-        sublabel: opt.sublabel || '3 September 2026',
-        description: opt.description || 'Your Event Descriptions Detail'
+        label: opt.label || `[SESSION / DAY ${idx + 1}]`,
+        sublabel: opt.sublabel || '[EVENT DATE]',
+        description: opt.description || '[EVENT DESCRIPTION DETAIL]'
       }));
     }
   }
   return widget.props?.validForFallback || [
-    { id: 'opt_1', label: 'Day 2', sublabel: '3 September 2026', description: 'Your Event Descriptions Detail' },
-    { id: 'opt_2', label: 'Day 3', sublabel: '3 September 2026', description: 'Your Event Descriptions Detail' }
+    { id: 'opt_1', label: '[SESSION / DAY 1]', sublabel: '[EVENT DATE]', description: '[EVENT DESCRIPTION DETAIL]' },
+    { id: 'opt_2', label: '[SESSION / DAY 2]', sublabel: '[EVENT DATE]', description: '[EVENT DESCRIPTION DETAIL]' }
   ];
 }
 
 function getTerms(widget: any) {
   return widget.props?.terms || [
-    'Valid for one (1) person only — non-transferable.',
-    'Present this ticket at the entrance for scanning.',
-    'No re-entry once you have exited the venue.',
-    'Management is not liable for loss of personal belongings.'
+    '[ENTRY CONDITION OR LEGAL RULE 1]',
+    '[ENTRY CONDITION OR LEGAL RULE 2]',
+    '[ENTRY CONDITION OR LEGAL RULE 3]'
   ];
 }
 

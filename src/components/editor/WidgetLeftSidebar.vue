@@ -636,17 +636,16 @@ function handleFieldDragStart(event: DragEvent, fieldName: string) {
 
 function getEPassDefaultProps() {
   return {
-    venue: 'LA MODA PLAZA INDONESIA',
-    guestNameFallback: 'MR. ALVIN DECOROUS',
+    venue: '',
+    guestNameFallback: '',
     validForFallback: [
-      { id: 'opt_1', label: 'Day 2', sublabel: '3 September 2026', description: 'Your Event Descriptions Detail' },
-      { id: 'opt_2', label: 'Day 3', sublabel: '3 September 2026', description: 'Your Event Descriptions Detail' }
+      { id: 'opt_1', label: '[SESSION / DAY 1]', sublabel: '[EVENT DATE]', description: '[EVENT DESCRIPTION DETAIL]' },
+      { id: 'opt_2', label: '[SESSION / DAY 2]', sublabel: '[EVENT DATE]', description: '[EVENT DESCRIPTION DETAIL]' }
     ],
     terms: [
-      'Valid for one (1) person only — non-transferable.',
-      'Present this ticket at the entrance for scanning.',
-      'No re-entry once you have exited the venue.',
-      'Management is not liable for loss of personal belongings.'
+      '[ENTRY CONDITION OR LEGAL RULE 1]',
+      '[ENTRY CONDITION OR LEGAL RULE 2]',
+      '[ENTRY CONDITION OR LEGAL RULE 3]'
     ]
   };
 }

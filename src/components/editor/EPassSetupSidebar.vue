@@ -61,7 +61,7 @@
         <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
           <input 
             v-model="venue"
-            placeholder="e.g. LA MODA PLAZA INDONESIA"
+            placeholder="e.g. [EVENT VENUE LOCATION]"
             class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase tracking-tight"
           />
         </div>
@@ -85,7 +85,7 @@
         <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
           <input 
             v-model="guestNameFallback"
-            placeholder="e.g. MR. ALVIN DECOROUS"
+            placeholder="e.g. [GUEST NAME]"
             class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
           />
         </div>
@@ -217,7 +217,7 @@ const currentWidget = computed(() => {
 });
 
 const venue = computed({
-  get: () => currentWidget.value?.props?.venue || 'LA MODA PLAZA INDONESIA',
+  get: () => currentWidget.value?.props?.venue || '',
   set: (val: string) => {
     if (currentWidget.value) {
       editorStore.updateWidgetProps(currentWidget.value.id, { venue: val });
@@ -226,7 +226,7 @@ const venue = computed({
 });
 
 const guestNameFallback = computed({
-  get: () => currentWidget.value?.props?.guestNameFallback || 'MR. ALVIN DECOROUS',
+  get: () => currentWidget.value?.props?.guestNameFallback || '',
   set: (val: string) => {
     if (currentWidget.value) {
       editorStore.updateWidgetProps(currentWidget.value.id, { guestNameFallback: val });
@@ -236,8 +236,8 @@ const guestNameFallback = computed({
 
 const validForSlots = computed({
   get: () => currentWidget.value?.props?.validForFallback || [
-    { id: 'opt_1', label: 'Day 2', sublabel: '3 September 2026', description: 'Your Event Descriptions Detail' },
-    { id: 'opt_2', label: 'Day 3', sublabel: '3 September 2026', description: 'Your Event Descriptions Detail' }
+    { id: 'opt_1', label: '[SESSION / DAY 1]', sublabel: '[EVENT DATE]', description: '[EVENT DESCRIPTION DETAIL]' },
+    { id: 'opt_2', label: '[SESSION / DAY 2]', sublabel: '[EVENT DATE]', description: '[EVENT DESCRIPTION DETAIL]' }
   ],
   set: (val: any[]) => {
     if (currentWidget.value) {
@@ -251,9 +251,9 @@ function addSessionSlot() {
   const nextNum = current.length + 1;
   current.push({
     id: `opt_${Date.now()}`,
-    label: `Day ${nextNum}`,
-    sublabel: '3 September 2026',
-    description: 'Your Event Descriptions Detail'
+    label: `[SESSION / DAY ${nextNum}]`,
+    sublabel: '[EVENT DATE]',
+    description: '[EVENT DESCRIPTION DETAIL]'
   });
   validForSlots.value = current;
 }
@@ -266,10 +266,9 @@ function removeSessionSlot(index: number) {
 
 const termsList = computed({
   get: () => currentWidget.value?.props?.terms || [
-    'Valid for one (1) person only — non-transferable.',
-    'Present this ticket at the entrance for scanning.',
-    'No re-entry once you have exited the venue.',
-    'Management is not liable for loss of personal belongings.'
+    '[ENTRY CONDITION OR LEGAL RULE 1]',
+    '[ENTRY CONDITION OR LEGAL RULE 2]',
+    '[ENTRY CONDITION OR LEGAL RULE 3]'
   ],
   set: (val: string[]) => {
     if (currentWidget.value) {
@@ -280,7 +279,8 @@ const termsList = computed({
 
 function addTermRule() {
   const current = [...termsList.value];
-  current.push('New entry condition or legal rule.');
+  const nextNum = current.length + 1;
+  current.push(`[ENTRY CONDITION OR LEGAL RULE ${nextNum}]`);
   termsList.value = current;
 }
 
