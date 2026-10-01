@@ -1789,7 +1789,7 @@ more</span>
             </div>
 
             <!-- Fixed / Sticky Bottom Action CTA Button -->
-            <div class="px-[24px] pt-[12px] pb-[20px] shrink-0 w-full bg-white/70 backdrop-blur-md border-t border-black/5 z-20">
+            <div class="px-[24px] pt-[8px] pb-[20px] shrink-0 w-full bg-transparent z-20">
               <button 
                 type="button"
                 @click.stop="handleModalDoneClick"
