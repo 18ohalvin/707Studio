@@ -1312,119 +1312,242 @@ more</span>
                 </div>
               </div>
 
-              <!-- Top Section: QR Code Box + Guest Identity (Figma 222:4188) -->
-              <div class="flex items-stretch gap-[16px] w-full">
-                <!-- QR Box: 104px x 104px, border-[0.5px] border-black bg-[#f2f2f2] rounded-[5px] -->
-                <div class="size-[104px] shrink-0 border-[0.5px] border-black bg-[#f2f2f2] rounded-[5px] p-[10px] flex items-center justify-center relative overflow-hidden shadow-xs">
-                  <!-- Sharp SVG Vector QR Code -->
-                  <svg class="size-full text-black" viewBox="0 0 100 100" fill="currentColor">
-                    <!-- Top-Left Position Marker -->
-                    <rect x="6" y="6" width="28" height="28" fill="none" stroke="currentColor" stroke-width="5" />
-                    <rect x="15" y="15" width="10" height="10" />
-                    <!-- Top-Right Position Marker -->
-                    <rect x="66" y="6" width="28" height="28" fill="none" stroke="currentColor" stroke-width="5" />
-                    <rect x="75" y="15" width="10" height="10" />
-                    <!-- Bottom-Left Position Marker -->
-                    <rect x="6" y="66" width="28" height="28" fill="none" stroke="currentColor" stroke-width="5" />
-                    <rect x="15" y="75" width="10" height="10" />
-                    <!-- QR Data Pattern Matrix -->
-                    <rect x="42" y="8" width="6" height="6" />
-                    <rect x="52" y="8" width="6" height="6" />
-                    <rect x="42" y="20" width="6" height="12" />
-                    <rect x="52" y="26" width="6" height="6" />
-                    <rect x="8" y="42" width="6" height="6" />
-                    <rect x="20" y="42" width="12" height="6" />
-                    <rect x="38" y="40" width="8" height="8" />
-                    <rect x="52" y="42" width="6" height="6" />
-                    <rect x="66" y="42" width="12" height="6" />
-                    <rect x="84" y="42" width="8" height="8" />
-                    <rect x="8" y="54" width="18" height="6" />
-                    <rect x="32" y="52" width="6" height="12" />
-                    <rect x="44" y="54" width="14" height="6" />
-                    <rect x="64" y="54" width="8" height="14" />
-                    <rect x="78" y="54" width="14" height="6" />
-                    <rect x="42" y="66" width="6" height="8" />
-                    <rect x="52" y="68" width="6" height="6" />
-                    <rect x="78" y="66" width="6" height="14" />
-                    <rect x="42" y="80" width="16" height="6" />
-                    <rect x="64" y="80" width="8" height="12" />
-                    <rect x="86" y="84" width="6" height="8" />
-                  </svg>
-                </div>
+              <!-- Variant A: Non-QR Clean Summary Ticket Layout (Matching User Screenshot) -->
+              <template v-if="widget.props?.showQrCode === false">
+                <!-- 1. Big Headline Display -->
+                <h1 class="font-707 font-bold text-[28px] leading-[32px] tracking-tight uppercase text-black whitespace-pre-line mt-[2px]">
+                  {{ widget.props?.heading || 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.' }}
+                </h1>
 
-                <!-- Identity Details (Right column) -->
-                <div class="flex-1 flex flex-col justify-between min-w-0 py-0.5">
+                <!-- 2. 2-Column Info Grid -->
+                <div class="grid grid-cols-2 gap-x-[20px] gap-y-[18px] w-full pt-[4px]">
                   <!-- Guest Name -->
                   <div class="flex flex-col">
                     <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
                       GUEST NAME
                     </span>
-                    <span class="font-707 font-medium text-bodytext text-[12px] leading-[18px] text-black uppercase tracking-tight truncate">
+                    <span class="font-707 font-bold text-[13px] leading-[18px] text-black uppercase tracking-tight break-words mt-[2px]">
                       {{ getGuestName(widget) }}
                     </span>
                   </div>
 
                   <!-- Venue -->
-                  <div class="flex flex-col mt-2">
+                  <div class="flex flex-col">
                     <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
                       VENUE
                     </span>
-                    <span class="font-707 font-medium text-bodytext text-[12px] leading-[18px] text-black uppercase tracking-tight">
+                    <span class="font-707 font-bold text-[13px] leading-[18px] text-black uppercase tracking-tight break-words mt-[2px]">
                       {{ getVenue(widget) }}
                     </span>
                   </div>
+
+                  <!-- Access ID -->
+                  <div class="flex flex-col">
+                    <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
+                      ACCESS ID
+                    </span>
+                    <span class="font-707 font-bold text-[13px] leading-[18px] text-black uppercase tracking-tight break-words mt-[2px] font-mono">
+                      {{ getAccessId(widget) }}
+                    </span>
+                  </div>
+
+                  <!-- Guest Type -->
+                  <div class="flex flex-col">
+                    <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
+                      GUEST TYPE
+                    </span>
+                    <span class="font-707 font-bold text-[13px] leading-[18px] text-black uppercase tracking-tight break-words mt-[2px]">
+                      {{ getGuestType(widget) }}
+                    </span>
+                  </div>
+
+                  <!-- Email -->
+                  <div class="flex flex-col col-span-2">
+                    <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
+                      EMAIL
+                    </span>
+                    <span class="font-707 font-bold text-[13px] leading-[18px] text-black lowercase tracking-tight break-words mt-[2px]">
+                      {{ getEmail(widget) }}
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              <!-- Middle Section: VALID FOR (Figma 222:4188) -->
-              <div class="flex flex-col gap-[8px] w-full">
-                <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
-                  VALID FOR
-                </span>
+                <!-- 3. Sessions List (Solid light grey rows) -->
+                <div class="flex flex-col gap-[8px] w-full pt-[4px]">
+                  <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-black uppercase tracking-tight">
+                    ACCESS VALID FOR:
+                  </span>
 
-                <!-- Session Cards List (100% Following Detail Choice Style) -->
-                <div class="flex flex-col gap-[8px] w-full">
-                  <div 
-                    v-for="(slot, sIdx) in getValidForSessions(widget)" 
-                    :key="slot.id || sIdx"
-                    class="border-[0.5px] border-solid border-[#d4d4d4] bg-transparent p-[16px] flex flex-col gap-[8px] rounded-none shadow-none w-full select-none"
-                  >
-                    <!-- Header Row: Option Label (Left) and Date Sublabel (Right) -->
-                    <div class="flex items-baseline justify-between w-full font-707 gap-3">
-                      <span class="font-707 font-medium text-[12px] leading-[18px] text-black truncate">
-                        {{ slot.label }}
+                  <div class="flex flex-col gap-[8px] w-full">
+                    <div 
+                      v-for="(slot, sIdx) in getValidForSessions(widget)" 
+                      :key="slot.id || sIdx"
+                      class="bg-[#f0f0f0] px-[16px] py-[14px] flex items-center justify-between w-full font-707 select-none"
+                    >
+                      <span class="font-707 font-medium text-[13px] leading-[18px] text-black">
+                        {{ getNonQrSessionDate(slot) }}
                       </span>
-                      <span v-if="slot.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[18px] text-neutral-500">
-                        {{ slot.sublabel }}
+                      <span class="font-707 font-normal text-[13px] leading-[18px] text-black">
+                        {{ getNonQrSessionDay(slot) }}
                       </span>
-                    </div>
-                    <!-- Body Row: Description (Following Detail Choice Style 100%) -->
-                    <div v-if="slot.description" class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-600 whitespace-pre-line">
-                      {{ slot.description }}
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <!-- Bottom Section: TERMS & CONDITIONS (Figma 222:4188) -->
-              <div class="flex flex-col gap-[8px] w-full pt-[4px]">
-                <span class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-black uppercase tracking-tight">
-                  TERMS & CONDITIONS:
-                </span>
-
-                <div class="flex flex-col gap-[6px] w-full">
-                  <div 
-                    v-for="(term, tIdx) in getTerms(widget)" 
-                    :key="tIdx"
-                    class="flex items-start gap-[8px] w-full"
-                  >
-                    <div class="size-[4px] rounded-full bg-black mt-[7px] shrink-0" />
-                    <p class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-700 flex-1">
-                      {{ term }}
+                <!-- 4. Footer Notice (Didn't receive email?) -->
+                <div v-if="widget.props?.showFooterNotice ?? true" class="flex items-start gap-[10px] w-full pt-[6px]">
+                  <div class="size-[18px] rounded-full bg-black text-white flex items-center justify-center shrink-0 mt-[1px]">
+                    <span class="font-bold text-[11px] leading-none font-serif italic">i</span>
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="font-707 font-bold text-[11px] leading-[15px] text-black uppercase tracking-tight">
+                      {{ widget.props?.footerNoticeTitle || "DIDN'T RECEIVE THE EMAIL?" }}
+                    </span>
+                    <p class="font-707 font-normal text-[11px] leading-[15px] text-black mt-[1px]">
+                      {{ getNoticePrefix(widget.props?.footerNoticeText) }}
+                      <span class="underline underline-offset-2 cursor-pointer font-medium" @click.stop="handleSupportClick">
+                        {{ getNoticeLink(widget.props?.footerNoticeText) }}
+                      </span>
                     </p>
                   </div>
                 </div>
-              </div>
+
+                <!-- 5. Terms & Conditions (Optional) -->
+                <div v-if="getTerms(widget).length > 0" class="flex flex-col gap-[8px] w-full pt-[8px]">
+                  <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
+                    TERMS & CONDITIONS:
+                  </span>
+                  <div class="flex flex-col gap-[6px] w-full">
+                    <div 
+                      v-for="(term, tIdx) in getTerms(widget)" 
+                      :key="tIdx"
+                      class="flex items-start gap-[8px] w-full"
+                    >
+                      <div class="size-[4px] rounded-full bg-black mt-[7px] shrink-0" />
+                      <p class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-700 flex-1">
+                        {{ term }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </template>
+
+              <!-- Variant B: Standard QR Code Summary Ticket Layout -->
+              <template v-else>
+                <!-- Top Section: QR Code Box + Guest Identity (Figma 222:4188) -->
+                <div class="flex items-stretch gap-[16px] w-full">
+                  <!-- QR Box: 104px x 104px, border-[0.5px] border-black bg-[#f2f2f2] rounded-[5px] -->
+                  <div class="size-[104px] shrink-0 border-[0.5px] border-black bg-[#f2f2f2] rounded-[5px] p-[10px] flex items-center justify-center relative overflow-hidden shadow-xs">
+                    <!-- Sharp SVG Vector QR Code -->
+                    <svg class="size-full text-black" viewBox="0 0 100 100" fill="currentColor">
+                      <!-- Top-Left Position Marker -->
+                      <rect x="6" y="6" width="28" height="28" fill="none" stroke="currentColor" stroke-width="5" />
+                      <rect x="15" y="15" width="10" height="10" />
+                      <!-- Top-Right Position Marker -->
+                      <rect x="66" y="6" width="28" height="28" fill="none" stroke="currentColor" stroke-width="5" />
+                      <rect x="75" y="15" width="10" height="10" />
+                      <!-- Bottom-Left Position Marker -->
+                      <rect x="6" y="66" width="28" height="28" fill="none" stroke="currentColor" stroke-width="5" />
+                      <rect x="15" y="75" width="10" height="10" />
+                      <!-- QR Data Pattern Matrix -->
+                      <rect x="42" y="8" width="6" height="6" />
+                      <rect x="52" y="8" width="6" height="6" />
+                      <rect x="42" y="20" width="6" height="12" />
+                      <rect x="52" y="26" width="6" height="6" />
+                      <rect x="8" y="42" width="6" height="6" />
+                      <rect x="20" y="42" width="12" height="6" />
+                      <rect x="38" y="40" width="8" height="8" />
+                      <rect x="52" y="42" width="6" height="6" />
+                      <rect x="66" y="42" width="12" height="6" />
+                      <rect x="84" y="42" width="8" height="8" />
+                      <rect x="8" y="54" width="18" height="6" />
+                      <rect x="32" y="52" width="6" height="12" />
+                      <rect x="44" y="54" width="14" height="6" />
+                      <rect x="64" y="54" width="8" height="14" />
+                      <rect x="78" y="54" width="14" height="6" />
+                      <rect x="42" y="66" width="6" height="8" />
+                      <rect x="52" y="68" width="6" height="6" />
+                      <rect x="78" y="66" width="6" height="14" />
+                      <rect x="42" y="80" width="16" height="6" />
+                      <rect x="64" y="80" width="8" height="12" />
+                      <rect x="86" y="84" width="6" height="8" />
+                    </svg>
+                  </div>
+
+                  <!-- Identity Details (Right column) -->
+                  <div class="flex-1 flex flex-col justify-between min-w-0 py-0.5">
+                    <!-- Guest Name -->
+                    <div class="flex flex-col">
+                      <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
+                        GUEST NAME
+                      </span>
+                      <span class="font-707 font-medium text-bodytext text-[12px] leading-[18px] text-black uppercase tracking-tight truncate">
+                        {{ getGuestName(widget) }}
+                      </span>
+                    </div>
+
+                    <!-- Venue -->
+                    <div class="flex flex-col mt-2">
+                      <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
+                        VENUE
+                      </span>
+                      <span class="font-707 font-medium text-bodytext text-[12px] leading-[18px] text-black uppercase tracking-tight">
+                        {{ getVenue(widget) }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Middle Section: VALID FOR (Figma 222:4188) -->
+                <div class="flex flex-col gap-[8px] w-full">
+                  <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
+                    VALID FOR
+                  </span>
+
+                  <!-- Session Cards List (100% Following Detail Choice Style) -->
+                  <div class="flex flex-col gap-[8px] w-full">
+                    <div 
+                      v-for="(slot, sIdx) in getValidForSessions(widget)" 
+                      :key="slot.id || sIdx"
+                      class="border-[0.5px] border-solid border-[#d4d4d4] bg-transparent p-[16px] flex flex-col gap-[8px] rounded-none shadow-none w-full select-none"
+                    >
+                      <!-- Header Row: Option Label (Left) and Date Sublabel (Right) -->
+                      <div class="flex items-baseline justify-between w-full font-707 gap-3">
+                        <span class="font-707 font-medium text-[12px] leading-[18px] text-black truncate">
+                          {{ slot.label }}
+                        </span>
+                        <span v-if="slot.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[18px] text-neutral-500">
+                          {{ slot.sublabel }}
+                        </span>
+                      </div>
+                      <!-- Body Row: Description (Following Detail Choice Style 100%) -->
+                      <div v-if="slot.description" class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-600 whitespace-pre-line">
+                        {{ slot.description }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Bottom Section: TERMS & CONDITIONS (Figma 222:4188) -->
+                <div class="flex flex-col gap-[8px] w-full pt-[4px]">
+                  <span class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-black uppercase tracking-tight">
+                    TERMS & CONDITIONS:
+                  </span>
+
+                  <div class="flex flex-col gap-[6px] w-full">
+                    <div 
+                      v-for="(term, tIdx) in getTerms(widget)" 
+                      :key="tIdx"
+                      class="flex items-start gap-[8px] w-full"
+                    >
+                      <div class="size-[4px] rounded-full bg-black mt-[7px] shrink-0" />
+                      <p class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-700 flex-1">
+                        {{ term }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </template>
             </div>
           </div>
 
@@ -2304,6 +2427,8 @@ function handleButtonClick(widget: any) {
       buttonText: 'Done',
       buttonVariant: 'black'
     };
+  } else if (actionType === 'download-pass') {
+    editorStore.showToast('Downloading E-Pass...');
   }
 }
 
@@ -3110,6 +3235,12 @@ function handleRemoveStickyButton(widget: any) {
       positionMode: 'in-flow',
       ctaPositionMode: 'in-flow'
     });
+  } else if (widget.type === 'GuestEPass') {
+    editorStore.updateWidgetProps(widget.id, {
+      isCtaEnabled: false,
+      showButton: false,
+      showStickyButton: false
+    });
   } else {
     editorStore.removeWidget(widget.id);
   }
@@ -3124,6 +3255,14 @@ const stickyButtonForThisPage = computed(() => {
     (w.props?.ctaPositionMode === 'sticky-bottom' || w.props?.positionMode === 'sticky-bottom')
   );
   if (heroWithStickyCta) return heroWithStickyCta;
+
+  // 1b. Check if active page has a GuestEPass with sticky CTA (part of E-Pass setup)
+  const epassWithStickyCta = activePage.value.widget_tree.find(w => 
+    w.type === 'GuestEPass' && 
+    (w.props?.isCtaEnabled ?? (!!w.props?.buttonText || !!w.props?.ctaLabel || !!w.props?.showButton || !!w.props?.showStickyButton)) && 
+    (w.props?.buttonText || w.props?.ctaLabel || w.props?.showButton || w.props?.showStickyButton)
+  );
+  if (epassWithStickyCta) return epassWithStickyCta;
 
   // 2. Check if active page has an independent ActionButton with sticky-bottom
   const localBtn = activePage.value.widget_tree.find(w => w.type === 'ActionButton' && w.props?.positionMode === 'sticky-bottom');
@@ -3549,5 +3688,73 @@ function getBrandLogoAlign(widget: any) {
     }
   }
   return 'left';
+}
+
+function getEmail(widget: any) {
+  const regWidgets = editorStore.pages.flatMap(p => p.widget_tree).filter(w => w.type === 'RegistrationForm');
+  for (const rw of regWidgets) {
+    const fields = (rw.props?.fields || []) as any[];
+    const emailField = fields.find((f: any) => (f.name?.toLowerCase().includes('email') || f.type === 'email') && f.value?.trim());
+    if (emailField) {
+      return emailField.value.trim().toLowerCase();
+    }
+  }
+  const emailWidget = editorStore.pages.flatMap(p => p.widget_tree).find(w => 
+    w.type === 'FieldInput' && 
+    (w.props?.inputType === 'email' || w.props?.label?.toLowerCase().includes('email') || w.props?.placeholder?.toLowerCase().includes('email')) &&
+    w.props?.value && w.props.value.trim()
+  );
+  if (emailWidget && emailWidget.props?.value?.trim()) {
+    return emailWidget.props.value.trim().toLowerCase();
+  }
+  return widget.props?.emailFallback || widget.props?.email || 'alvin@sosco.id';
+}
+
+function getAccessId(widget: any) {
+  return widget.props?.accessIdFallback || widget.props?.accessId || '020305-1008-1245';
+}
+
+function getGuestType(widget: any) {
+  return widget.props?.guestType || 'VIP';
+}
+
+function getNonQrSessionDate(slot: any) {
+  if (slot.sublabel && (slot.sublabel.includes('202') || slot.sublabel.includes('Sept') || slot.sublabel.includes('Oct') || slot.sublabel.includes('Jan') || slot.sublabel.includes('Feb') || slot.sublabel.includes('Mar') || slot.sublabel.includes('Apr') || slot.sublabel.includes('May') || slot.sublabel.includes('Jun') || slot.sublabel.includes('Jul') || slot.sublabel.includes('Aug') || slot.sublabel.includes('Nov') || slot.sublabel.includes('Dec'))) {
+    return slot.sublabel;
+  }
+  if (slot.label && (slot.label.includes('202') || slot.label.includes('Sept') || slot.label.includes('Oct') || slot.label.includes('Jan') || slot.label.includes('Feb') || slot.label.includes('Mar') || slot.label.includes('Apr') || slot.label.includes('May') || slot.label.includes('Jun') || slot.label.includes('Jul') || slot.label.includes('Aug') || slot.label.includes('Nov') || slot.label.includes('Dec'))) {
+    return slot.label;
+  }
+  return slot.sublabel || slot.label || '2 September 2026';
+}
+
+function getNonQrSessionDay(slot: any) {
+  if (slot.sublabel && (slot.sublabel.includes('202') || slot.sublabel.includes('Sept') || slot.sublabel.includes('Oct') || slot.sublabel.includes('Jan') || slot.sublabel.includes('Feb') || slot.sublabel.includes('Mar') || slot.sublabel.includes('Apr') || slot.sublabel.includes('May') || slot.sublabel.includes('Jun') || slot.sublabel.includes('Jul') || slot.sublabel.includes('Aug') || slot.sublabel.includes('Nov') || slot.sublabel.includes('Dec'))) {
+    return slot.label || '';
+  }
+  if (slot.label && (slot.label.includes('202') || slot.label.includes('Sept') || slot.label.includes('Oct') || slot.label.includes('Jan') || slot.label.includes('Feb') || slot.label.includes('Mar') || slot.label.includes('Apr') || slot.label.includes('May') || slot.label.includes('Jun') || slot.label.includes('Jul') || slot.label.includes('Aug') || slot.label.includes('Nov') || slot.label.includes('Dec'))) {
+    return slot.sublabel || '';
+  }
+  return slot.label || '';
+}
+
+function getNoticePrefix(text?: string) {
+  const defaultText = text || 'Check your spam folder or contact support';
+  if (defaultText.toLowerCase().includes('contact support')) {
+    return defaultText.substring(0, defaultText.toLowerCase().indexOf('contact support'));
+  }
+  return defaultText;
+}
+
+function getNoticeLink(text?: string) {
+  const defaultText = text || 'Check your spam folder or contact support';
+  if (defaultText.toLowerCase().includes('contact support')) {
+    return 'contact support';
+  }
+  return '';
+}
+
+function handleSupportClick() {
+  editorStore.showToast('Connecting to support...');
 }
 </script>

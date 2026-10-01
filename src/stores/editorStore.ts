@@ -481,11 +481,32 @@ export const useEditorStore = defineStore('editor', () => {
         break;
       case 'GuestEPass':
         defaultProps = {
-          venue: '',
-          guestNameFallback: '',
+          showQrCode: true,
+          heading: 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.',
+          venue: 'PLAZA SENAYAN 4th FLOOR',
+          accessIdFallback: '020305-1008-1245',
+          guestType: 'VIP',
+          guestNameFallback: 'MR. ALVIN DECOROUS',
+          emailFallback: 'alvin@sosco.id',
+          showFooterNotice: true,
+          footerNoticeTitle: "DIDN'T RECEIVE THE EMAIL?",
+          footerNoticeText: 'Check your spam folder or contact support',
+          isCtaEnabled: false,
+          showButton: false,
+          showStickyButton: false,
+          buttonText: 'DOWNLOAD E-PASS',
+          ctaLabel: 'DOWNLOAD E-PASS',
+          buttonVariant: 'black',
+          variant: 'black',
+          actionType: 'download-pass',
+          positionMode: 'sticky-bottom',
+          ctaPositionMode: 'sticky-bottom',
+          showIcon: false,
+          iconName: 'ticket',
           validForFallback: [
-            { id: 'opt_1', label: '[SESSION / DAY 1]', sublabel: '[EVENT DATE]', description: '[EVENT DESCRIPTION DETAIL]' },
-            { id: 'opt_2', label: '[SESSION / DAY 2]', sublabel: '[EVENT DATE]', description: '[EVENT DESCRIPTION DETAIL]' }
+            { id: 'opt_1', label: 'Day 1', sublabel: '2 September 2026', description: 'Access to main floor & VIP lounge' },
+            { id: 'opt_2', label: 'Day 2', sublabel: '3 September 2026', description: 'Access to main floor & VIP lounge' },
+            { id: 'opt_3', label: 'Day 4', sublabel: '5 September 2026', description: 'Access to main floor & VIP lounge' }
           ],
           terms: [
             '[ENTRY CONDITION OR LEGAL RULE 1]',

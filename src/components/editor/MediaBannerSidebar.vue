@@ -825,6 +825,7 @@ const ctaStickyPageIds = ref<string[]>([]);
 const isLinkToDropdownOpen = ref(false);
 
 const linkToOptions = [
+  { label: 'Download E-Pass', value: 'download-pass' },
   { label: 'Next Page', value: 'next_page' },
   { label: 'Submit Form', value: 'submit' },
   { label: 'External URL', value: 'link' },

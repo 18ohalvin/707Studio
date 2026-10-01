@@ -353,14 +353,24 @@ describe('707 Activation Builder Stores', () => {
     });
     expect(choice).toBeTruthy();
 
-    // Now adding GuestEPass with default props uses system placeholders!
+    // Now adding GuestEPass with default props
     const defaultEPass = editorStore.addWidget('GuestEPass');
     expect(defaultEPass).toBeTruthy();
     expect(defaultEPass.type).toBe('GuestEPass');
-    expect(defaultEPass.props.validForFallback[0].label).toBe('[SESSION / DAY 1]');
-    expect(defaultEPass.props.validForFallback[0].sublabel).toBe('[EVENT DATE]');
+    expect(defaultEPass.props.showQrCode).toBe(true);
+    expect(defaultEPass.props.heading).toContain('SUCCESS.');
+    expect(defaultEPass.props.guestType).toBe('VIP');
+    expect(defaultEPass.props.accessIdFallback).toBe('020305-1008-1245');
+    expect(defaultEPass.props.actionType).toBe('download-pass');
+    expect(defaultEPass.props.validForFallback[0].label).toBe('Day 1');
     expect(defaultEPass.props.terms[0]).toBe('[ENTRY CONDITION OR LEGAL RULE 1]');
     expect(editorStore.isEPassSidebarOpen).toBe(true);
+
+    // Toggle QR code off and test props update
+    editorStore.updateWidgetProps(defaultEPass.id, { showQrCode: false, isCtaEnabled: true, buttonText: 'DOWNLOAD E-PASS' });
+    const updatedEPass = editorStore.currentPage.widget_tree.find(w => w.id === defaultEPass.id);
+    expect(updatedEPass?.props.showQrCode).toBe(false);
+    expect(updatedEPass?.props.isCtaEnabled).toBe(true);
 
     // Toggle EPass sidebar
     editorStore.toggleEPassSidebar();
