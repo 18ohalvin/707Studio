@@ -1517,15 +1517,7 @@ more</span>
           >
             <Trash2 class="w-3.5 h-3.5" />
           </button>
-        </div>
-
-        <!-- Frosted Blur Transition Scrim above Sticky Bottom Button -->
-        <div 
-          class="pointer-events-none absolute -top-[32px] inset-x-0 h-[32px] bg-gradient-to-t from-[#f5f5f5]/90 via-[#f5f5f5]/45 to-transparent backdrop-blur-[2.5px]"
-          :class="isPreviewModal ? 'from-white/90 via-white/45' : 'from-[#f5f5f5]/90 via-[#f5f5f5]/45'"
-        />
-
-        <button 
+        </div>        <button 
           type="button"
           @click.stop="handleActionButtonClick(stickyButtonForThisPage)"
           :disabled="isButtonInactive(stickyButtonForThisPage)"
@@ -1796,17 +1788,16 @@ more</span>
               </div>
             </div>
 
-            <!-- Fixed / Sticky Bottom Action CTA Button with Blur Transition Scrim -->
-            <div class="px-[24px] pt-[8px] pb-[20px] shrink-0 w-full bg-transparent z-20 relative">
-              <!-- Frosted Blur Transition Scrim above CTA Button -->
-              <div 
-                class="pointer-events-none absolute -top-[32px] inset-x-0 h-[32px] bg-gradient-to-t from-white/90 via-white/45 to-transparent backdrop-blur-[2.5px]" 
-              />
-
+            <!-- Fixed / Sticky Bottom Action CTA Button -->
+            <div class="px-[24px] pt-[8px] pb-[20px] shrink-0 w-full bg-transparent z-20">
               <button 
                 type="button"
                 @click.stop="handleModalDoneClick"
-                class="apple-cta-btn apple-cta-btn-dark bg-black text-white hover:bg-neutral-900 active:bg-neutral-800 w-full h-[48px] px-[16px] py-[12px] rounded-none flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none transition-all relative z-10"
+                :disabled="isModalButtonInactive"
+                :class="[
+                  isModalButtonInactive ? 'opacity-40 cursor-not-allowed pointer-events-none' : 'apple-cta-btn',
+                  'apple-cta-btn-dark bg-black text-white hover:bg-neutral-900 active:bg-neutral-800 w-full h-[48px] px-[16px] py-[12px] rounded-none flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none transition-all'
+                ]"
               >
                 <span class="whitespace-nowrap uppercase">{{ modalDisplayProps.buttonText || 'DONE' }}</span>
               </button>
@@ -2663,6 +2654,7 @@ function isChoiceSelected(widget: any, optId: string): boolean {
 }
 
 function toggleChoiceOption(widget: any, optId: string) {
+  if (wasDraggingRecently.value) return;
   if (props.isMiniPreview) return;
   handleSelectThisPage();
   editorStore.selectWidget(widget.id);
@@ -3214,6 +3206,40 @@ function handleBackdropClick() {
   }
 }
 
+const isModalButtonInactive = computed(() => {
+  const mProps = modalDisplayProps.value;
+  if (!mProps) return false;
+
+  // 1. If variant is message-field (Email / WhatsApp / Text)
+  if (mProps.variant === 'message-field') {
+    const val = (modalInputValue.value || '').trim();
+    if (!val) return true;
+    if (mProps.fieldType === 'email') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(val)) return true;
+    }
+    return false;
+  }
+
+  // 2. If variant is choice-detailed or choice-simple
+  if (mProps.variant === 'choice-detailed' || mProps.variant === 'choice-simple') {
+    const opts = (mProps.options || []) as any[];
+    const hasSelected = opts.some((o: any) => o.selected);
+    if (!hasSelected) return true;
+    return false;
+  }
+
+  // 3. If variant is image-matrix
+  if (mProps.variant === 'image-matrix') {
+    const slots = (mProps.imageSlots || []) as any[];
+    const hasSelected = slots.some((s: any) => s.selected);
+    if (!hasSelected) return true;
+    return false;
+  }
+
+  return false;
+});
+
 const isPageRequiredFieldsComplete = computed(() => {
   for (const w of activePage.value.widget_tree) {
     if (w.type === 'FieldInput') {
@@ -3221,6 +3247,10 @@ const isPageRequiredFieldsComplete = computed(() => {
       if (isReq) {
         const val = (w.props?.value || '').trim();
         if (!val) return false;
+        if (w.props?.inputType === 'email' || (w.props?.label || '').toLowerCase().includes('email')) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(val)) return false;
+        }
       }
     } else if (w.type === 'RegistrationForm') {
       const fields = (w.props?.fields || []) as any[];
@@ -3228,12 +3258,18 @@ const isPageRequiredFieldsComplete = computed(() => {
         if (f.required !== false) {
           const val = (f.value || '').trim();
           if (!val) return false;
+          if (f.type === 'email' || (f.name || '').toLowerCase().includes('email')) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(val)) return false;
+          }
         }
       }
     } else if (w.type === 'MultipleChoice') {
-      if (w.props?.required) {
-        const hasSelected = (w.props?.options || []).some((o: any) => o.selected) || 
-                            ((w.props?.selectedValues || []).length > 0);
+      const isReq = w.props?.required !== false;
+      if (isReq) {
+        const selectedValues = (w.props?.selectedValues || []) as string[];
+        const options = (w.props?.options || []) as any[];
+        const hasSelected = selectedValues.length > 0 || options.some((o: any) => o.selected);
         if (!hasSelected) return false;
       }
     }
@@ -3244,15 +3280,14 @@ const isPageRequiredFieldsComplete = computed(() => {
 function isButtonInactive(widget: any): boolean {
   if (!widget) return false;
   if (widget.props?.disabled) return true;
-  const act = widget.props?.actionType || widget.props?.ctaActionType || 'submit';
-  if (act === 'submit' && !isPageRequiredFieldsComplete.value) {
+  if (!isPageRequiredFieldsComplete.value) {
     return true;
   }
   return false;
 }
 
 function handleModalDoneClick() {
-  if (wasDraggingRecently.value) return;
+  if (wasDraggingRecently.value || isModalButtonInactive.value) return;
   const mProps = modalDisplayProps.value;
 
   // 1. Persist modal input value if filled
