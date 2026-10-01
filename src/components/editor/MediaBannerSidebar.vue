@@ -615,10 +615,13 @@
             <button 
               type="button"
               @click="openModalSetup"
-              class="apple-glass-btn-dark w-full h-[36px] rounded-[8px] flex items-center justify-center gap-1.5 font-707 text-[12px] cursor-pointer"
+              class="apple-glass-btn-dark w-full h-[38px] rounded-[8px] flex items-center justify-between px-3.5 font-707 font-medium text-[12px] cursor-pointer transition-all shadow-sm"
             >
-              <span>Configure Pop Up Modal</span>
-              <span class="text-xs">➔</span>
+              <span class="flex items-center gap-2">
+                <SlidersHorizontal class="size-3.5" />
+                <span>Configure Pop Up Modal</span>
+              </span>
+              <ArrowRight class="size-3.5 opacity-80" />
             </button>
           </div>
         </div>
@@ -631,7 +634,7 @@
 import { ref, computed, watch, nextTick } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
-import { AlignLeft, AlignCenter, AlignRight, ChevronDown, Check, Trash2, Plus } from 'lucide-vue-next';
+import { AlignLeft, AlignCenter, AlignRight, ChevronDown, Check, Trash2, Plus, SlidersHorizontal, ArrowRight } from 'lucide-vue-next';
 import { uploadMediaDirectly } from '../../services/mediaService.ts';
 
 defineProps<{

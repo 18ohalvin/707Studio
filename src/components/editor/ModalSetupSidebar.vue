@@ -459,13 +459,16 @@
       </div>
       <button 
         type="button"
+        role="switch"
+        :aria-checked="dismissible"
         @click="dismissible = !dismissible"
-        class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+        class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
         :class="dismissible ? 'bg-black' : 'bg-neutral-200'"
+        title="Toggle Dismiss on Backdrop Click"
       >
         <span 
-          class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
-          :class="dismissible ? 'translate-x-5' : 'translate-x-0'"
+          class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+          :class="dismissible ? 'translate-x-[18px]' : 'translate-x-0'"
         />
       </button>
     </div>

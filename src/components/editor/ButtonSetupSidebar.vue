@@ -207,10 +207,13 @@
         <button 
           type="button"
           @click="openModalSetup"
-          class="apple-glass-btn-dark w-full h-[36px] rounded-[8px] flex items-center justify-center gap-1.5 font-707 text-[12px] cursor-pointer"
+          class="apple-glass-btn-dark w-full h-[38px] rounded-[8px] flex items-center justify-between px-3.5 font-707 font-medium text-[12px] cursor-pointer transition-all shadow-sm"
         >
-          <span>Configure Pop Up Modal</span>
-          <span class="text-xs">➔</span>
+          <span class="flex items-center gap-2">
+            <SlidersHorizontal class="size-3.5" />
+            <span>Configure Pop Up Modal</span>
+          </span>
+          <ArrowRight class="size-3.5 opacity-80" />
         </button>
       </div>
     </div>
@@ -305,6 +308,7 @@ import {
   ChevronDown, 
   Check, 
   ArrowRight, 
+  SlidersHorizontal,
   LayoutGrid, 
   Ticket, 
   Phone,

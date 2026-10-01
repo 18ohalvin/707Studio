@@ -58,7 +58,7 @@
           <button 
             type="button"
             @click="isDropdownOpen = !isDropdownOpen"
-            class="apple-glass-btn flex h-[40px] items-center justify-between px-[16px] py-[8px] rounded-[8px] w-full cursor-pointer"
+            class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-full cursor-pointer bg-white"
             data-node-id="181:6028"
           >
             <span class="font-707 font-normal text-[13px] leading-[18px] text-black whitespace-nowrap truncate" data-node-id="181:6029">
