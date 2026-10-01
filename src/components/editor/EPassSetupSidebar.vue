@@ -624,10 +624,7 @@ const hasNextPage = computed(() => {
 });
 
 const linkToOptions = computed(() => {
-  return allLinkToOptions.filter(opt => {
-    if (opt.value === 'next_page') return hasNextPage.value;
-    return true;
-  });
+  return allLinkToOptions;
 });
 
 const ctaActionType = computed({
