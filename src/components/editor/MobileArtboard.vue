@@ -1087,6 +1087,164 @@ more</span>
                 </button>
               </div>
             </div>
+
+            <!-- 10. GuestEPass Widget (Figma Node 222:4188) -->
+            <div 
+              v-else-if="widget.type === 'GuestEPass'" 
+              class="relative w-full px-[16px] py-[16px] select-none group/epass text-black bg-white flex flex-col gap-[20px]"
+              @click.stop="handleWidgetClick(widget)"
+              data-node-id="222:4188"
+              data-name="Guest E-Pass Container"
+            >
+              <!-- Floating Action Toolbar on Canvas -->
+              <div 
+                v-if="!isMiniPreview && !isPreviewModal && (hoveredWidgetId === widget.id || editorStore.selectedWidgetId === widget.id)"
+                class="absolute z-40 apple-glass-modal flex gap-[4px] items-center p-[4px] rounded-[8px] shadow-[0px_4px_16px_rgba(0,0,0,0.18)] transition-all animate-in fade-in duration-150 select-none top-[12px] right-[12px]"
+                data-name="Buttons Container"
+              >
+                <!-- Button 1: Adjust / Setup -->
+                <button 
+                  v-if="!isWidgetSetupModalOpen(widget)"
+                  @click.stop="handleAdjustWidget(widget)"
+                  class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black hover:bg-black/10 cursor-pointer"
+                  title="E-Pass Setup"
+                >
+                  <SlidersHorizontal class="w-3.5 h-3.5" />
+                </button>
+
+                <!-- Button 2: Duplicate -->
+                <button 
+                  @click.stop="editorStore.duplicateWidget(widget.id)"
+                  class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black hover:bg-black/10 cursor-pointer"
+                  title="Duplicate"
+                >
+                  <Copy class="w-3.5 h-3.5" />
+                </button>
+
+                <!-- Button 3: Remove -->
+                <button 
+                  @click.stop="editorStore.removeWidget(widget.id)"
+                  class="apple-glass-icon-btn size-[24px] hover:text-red-600 flex items-center justify-center rounded-[6px] text-black hover:bg-red-50 cursor-pointer"
+                  title="Remove"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <!-- Top Section: QR Code Box + Guest Identity (Figma 222:4188) -->
+              <div class="flex items-stretch gap-[16px] w-full">
+                <!-- QR Box: 104px x 104px, border-[0.5px] border-black bg-[#f2f2f2] rounded-[5px] -->
+                <div class="size-[104px] shrink-0 border-[0.5px] border-black bg-[#f2f2f2] rounded-[5px] p-[10px] flex items-center justify-center relative overflow-hidden shadow-xs">
+                  <!-- Sharp SVG Vector QR Code -->
+                  <svg class="size-full text-black" viewBox="0 0 100 100" fill="currentColor">
+                    <!-- Top-Left Position Marker -->
+                    <rect x="6" y="6" width="28" height="28" fill="none" stroke="currentColor" stroke-width="5" />
+                    <rect x="15" y="15" width="10" height="10" />
+                    <!-- Top-Right Position Marker -->
+                    <rect x="66" y="6" width="28" height="28" fill="none" stroke="currentColor" stroke-width="5" />
+                    <rect x="75" y="15" width="10" height="10" />
+                    <!-- Bottom-Left Position Marker -->
+                    <rect x="6" y="66" width="28" height="28" fill="none" stroke="currentColor" stroke-width="5" />
+                    <rect x="15" y="75" width="10" height="10" />
+                    <!-- QR Data Pattern Matrix -->
+                    <rect x="42" y="8" width="6" height="6" />
+                    <rect x="52" y="8" width="6" height="6" />
+                    <rect x="42" y="20" width="6" height="12" />
+                    <rect x="52" y="26" width="6" height="6" />
+                    <rect x="8" y="42" width="6" height="6" />
+                    <rect x="20" y="42" width="12" height="6" />
+                    <rect x="38" y="40" width="8" height="8" />
+                    <rect x="52" y="42" width="6" height="6" />
+                    <rect x="66" y="42" width="12" height="6" />
+                    <rect x="84" y="42" width="8" height="8" />
+                    <rect x="8" y="54" width="18" height="6" />
+                    <rect x="32" y="52" width="6" height="12" />
+                    <rect x="44" y="54" width="14" height="6" />
+                    <rect x="64" y="54" width="8" height="14" />
+                    <rect x="78" y="54" width="14" height="6" />
+                    <rect x="42" y="66" width="6" height="8" />
+                    <rect x="52" y="68" width="6" height="6" />
+                    <rect x="78" y="66" width="6" height="14" />
+                    <rect x="42" y="80" width="16" height="6" />
+                    <rect x="64" y="80" width="8" height="12" />
+                    <rect x="86" y="84" width="6" height="8" />
+                  </svg>
+                </div>
+
+                <!-- Identity Details (Right column) -->
+                <div class="flex-1 flex flex-col justify-between min-w-0 py-0.5">
+                  <!-- Guest Name -->
+                  <div class="flex flex-col">
+                    <span class="font-707 text-[12px] font-light leading-[16px] text-neutral-500 uppercase tracking-tight">
+                      GUEST NAME
+                    </span>
+                    <span class="font-707 font-medium text-[14px] leading-[20px] text-black uppercase tracking-tight truncate">
+                      {{ getGuestName(widget) }}
+                    </span>
+                  </div>
+
+                  <!-- Venue -->
+                  <div class="flex flex-col mt-2">
+                    <span class="font-707 text-[12px] font-light leading-[16px] text-neutral-500 uppercase tracking-tight">
+                      VENUE
+                    </span>
+                    <span class="font-707 font-medium text-[14px] leading-[20px] text-black uppercase tracking-tight">
+                      {{ getVenue(widget) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Middle Section: VALID FOR (Figma 222:4188) -->
+              <div class="flex flex-col gap-[8px] w-full">
+                <span class="font-707 text-[12px] font-light leading-[16px] text-neutral-500 uppercase tracking-tight">
+                  VALID FOR
+                </span>
+
+                <!-- Session Cards List -->
+                <div class="flex flex-col gap-[8px] w-full">
+                  <div 
+                    v-for="(slot, sIdx) in getValidForSessions(widget)" 
+                    :key="slot.id || sIdx"
+                    class="border-[0.5px] border-[#d4d4d4] bg-white p-[16px] flex flex-col gap-[6px] rounded-none shadow-none"
+                  >
+                    <!-- Header Row: Day X (Left) and Date (Right) -->
+                    <div class="flex items-center justify-between w-full font-707">
+                      <span class="font-707 font-medium text-[14px] leading-[20px] text-black">
+                        {{ slot.label }}
+                      </span>
+                      <span class="font-707 font-medium text-[14px] leading-[20px] text-black">
+                        {{ slot.sublabel }}
+                      </span>
+                    </div>
+                    <!-- Body Row: Description -->
+                    <p class="font-707 font-normal text-[12px] leading-[16px] text-neutral-600 whitespace-pre-line">
+                      {{ slot.description || 'Your Event Descriptions Detail' }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bottom Section: TERMS & CONDITIONS (Figma 222:4188) -->
+              <div class="flex flex-col gap-[8px] w-full pt-[4px]">
+                <span class="font-707 font-normal text-[12px] leading-[16px] text-black uppercase tracking-tight">
+                  TERMS & CONDITIONS:
+                </span>
+
+                <div class="flex flex-col gap-[6px] w-full">
+                  <div 
+                    v-for="(term, tIdx) in getTerms(widget)" 
+                    :key="tIdx"
+                    class="flex items-start gap-[8px] w-full"
+                  >
+                    <div class="size-[4px] rounded-full bg-black mt-[6px] shrink-0" />
+                    <p class="font-707 font-light text-[11px] leading-[16px] text-neutral-700 flex-1">
+                      {{ term }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Physical Bottom Clearance Spacer for Sticky Bottom Button (Disabled when last widget is a Hero banner so banner sits flush against the sticky button) -->
@@ -1829,6 +1987,9 @@ function isWidgetSetupModalOpen(widget: any): boolean {
   if (widget.type === 'ModalOverlay') {
     return editorStore.isModalSidebarOpen;
   }
+  if (widget.type === 'GuestEPass') {
+    return editorStore.isEPassSidebarOpen;
+  }
   return editorStore.isWidgetSidebarOpen;
 }
 
@@ -1845,6 +2006,8 @@ function handleAdjustWidget(widget: any) {
     editorStore.openChoiceSidebar();
   } else if (widget.type === 'ModalOverlay') {
     editorStore.openModalSidebar();
+  } else if (widget.type === 'GuestEPass') {
+    editorStore.openEPassSidebar();
   } else {
     editorStore.openWidgetSidebar();
   }
@@ -2978,5 +3141,55 @@ async function handleChoiceImageDrop(e: DragEvent, widget: any, optId: string) {
     };
     reader.readAsDataURL(file);
   }
+}
+
+function getGuestName(widget: any) {
+  // Check if any FieldInput with 'name' has a filled value
+  const nameWidget = editorStore.pages.flatMap(p => p.widget_tree).find(w => 
+    w.type === 'FieldInput' && 
+    (w.props?.label?.toLowerCase().includes('name') || w.props?.placeholder?.toLowerCase().includes('name')) &&
+    w.props?.value && w.props.value.trim()
+  );
+  if (nameWidget && nameWidget.props?.value?.trim()) {
+    return nameWidget.props.value.trim().toUpperCase();
+  }
+  return widget.props?.guestNameFallback || 'MR. ALVIN DECOROUS';
+}
+
+function getVenue(widget: any) {
+  return widget.props?.venue || 'LA MODA PLAZA INDONESIA';
+}
+
+function getValidForSessions(widget: any) {
+  // Check if user selected any options in MultipleChoice widgets
+  const choiceWidget = editorStore.pages.flatMap(p => p.widget_tree).find(w => 
+    w.type === 'MultipleChoice' && w.props?.selectedValues && w.props.selectedValues.length > 0
+  );
+  if (choiceWidget && choiceWidget.props?.selectedValues?.length > 0) {
+    const selectedOptions = (choiceWidget.props.options || []).filter((opt: any) => 
+      choiceWidget.props.selectedValues.includes(opt.id)
+    );
+    if (selectedOptions.length > 0) {
+      return selectedOptions.map((opt: any) => ({
+        id: opt.id,
+        label: opt.label || 'Day 1',
+        sublabel: opt.sublabel || '3 September 2026',
+        description: opt.description || 'Your Event Descriptions Detail'
+      }));
+    }
+  }
+  return widget.props?.validForFallback || [
+    { id: 'opt_1', label: 'Day 2', sublabel: '3 September 2026', description: 'Your Event Descriptions Detail' },
+    { id: 'opt_2', label: 'Day 3', sublabel: '3 September 2026', description: 'Your Event Descriptions Detail' }
+  ];
+}
+
+function getTerms(widget: any) {
+  return widget.props?.terms || [
+    'Valid for one (1) person only — non-transferable.',
+    'Present this ticket at the entrance for scanning.',
+    'No re-entry once you have exited the venue.',
+    'Management is not liable for loss of personal belongings.'
+  ];
 }
 </script>

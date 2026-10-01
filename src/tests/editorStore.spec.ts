@@ -327,4 +327,37 @@ describe('707 Activation Builder Stores', () => {
     expect(editorStore.currentPage.widget_tree.length).toBe(3);
     expect(editorStore.activeToastMessage).toContain('Dynamic Fit preset is optimized for 1 Banner + 1 Text + 1 Action Button');
   });
+
+  it('supports GuestEPass widget creation and dedicated setup sidebar (Figma 222:4188)', () => {
+    const editorStore = useEditorStore();
+    expect(editorStore.isEPassSidebarOpen).toBe(false);
+
+    // Adding GuestEPass widget
+    const epass = editorStore.addWidget('GuestEPass', undefined, {
+      venue: 'LA MODA PLAZA INDONESIA',
+      guestNameFallback: 'MR. ALVIN DECOROUS',
+      validForFallback: [
+        { id: 'opt_1', label: 'Day 2', sublabel: '3 September 2026', description: 'Your Event Descriptions Detail' }
+      ],
+      terms: [
+        'Valid for one (1) person only — non-transferable.'
+      ]
+    });
+
+    expect(epass.type).toBe('GuestEPass');
+    expect(epass.props.venue).toBe('LA MODA PLAZA INDONESIA');
+    expect(epass.props.guestNameFallback).toBe('MR. ALVIN DECOROUS');
+    expect(editorStore.isEPassSidebarOpen).toBe(true);
+
+    // Toggle EPass sidebar
+    editorStore.toggleEPassSidebar();
+    expect(editorStore.isEPassSidebarOpen).toBe(false);
+    editorStore.openEPassSidebar();
+    expect(editorStore.isEPassSidebarOpen).toBe(true);
+
+    // Remove widget closes EPass sidebar
+    editorStore.removeWidget(epass.id);
+    expect(editorStore.currentPage.widget_tree.length).toBe(0);
+    expect(editorStore.isEPassSidebarOpen).toBe(false);
+  });
 });

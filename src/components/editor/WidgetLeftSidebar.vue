@@ -347,7 +347,54 @@
         </p>
       </div>
       <div class="content-stretch flex gap-[14px] items-start overflow-x-auto -mx-[24px] px-[24px] w-[calc(100%+48px)] no-scrollbar">
-        <!-- Interactive Card 1: Tennis Court / Sneaker Sizing Grid -->
+        <!-- Interactive Card 1: Guest E-Pass Ticketing (Figma Node 222:4188) -->
+        <div 
+          draggable="true"
+          @dragstart="handleDragStart($event, { type: 'GuestEPass', label: 'Guest E-Pass', customProps: { venue: 'LA MODA PLAZA INDONESIA', guestNameFallback: 'MR. ALVIN DECOROUS' } })"
+          @dragend="handleDragEnd"
+          @click="addEPassWidget"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group"
+          title="Drag to canvas or click to add (Dynamic Guest E-Pass ticket summary)"
+        >
+          <div class="border border-[#c9c9c9] flex flex-col gap-[6px] h-[130px] items-center justify-between p-2 rounded-[8px] shrink-0 w-[84px] bg-white group-hover:border-black transition-colors relative overflow-hidden shadow-sm">
+            <!-- Mini QR + Info Header -->
+            <div class="w-full flex items-center gap-1.5 pt-0.5">
+              <!-- Mini QR Box -->
+              <div class="size-[26px] bg-[#f2f2f2] border-[0.5px] border-black rounded-[2px] flex items-center justify-center shrink-0 p-0.5">
+                <div class="grid grid-cols-2 gap-0.5 size-full">
+                  <div class="bg-black rounded-[0.5px]"></div>
+                  <div class="bg-black rounded-[0.5px]"></div>
+                  <div class="bg-black rounded-[0.5px]"></div>
+                  <div class="bg-transparent"></div>
+                </div>
+              </div>
+              <!-- Mini Text lines -->
+              <div class="flex-1 flex flex-col gap-0.5 min-w-0">
+                <div class="w-2/3 h-1 bg-black/30 rounded-full" />
+                <div class="w-full h-1 bg-black/60 rounded-full" />
+              </div>
+            </div>
+            <!-- Mini Valid For Card -->
+            <div class="w-full border-[0.5px] border-[#d4d4d4] rounded-[2px] p-1 flex flex-col gap-0.5 bg-neutral-50/50">
+              <div class="flex justify-between items-center w-full">
+                <div class="w-1/3 h-1 bg-black/40 rounded-full" />
+                <div class="w-1/3 h-1 bg-black/30 rounded-full" />
+              </div>
+              <div class="w-4/5 h-0.5 bg-black/20 rounded-full" />
+            </div>
+            <!-- Mini T&C lines -->
+            <div class="w-full flex flex-col gap-0.5 pb-0.5">
+              <div class="w-1/2 h-1 bg-black/40 rounded-full" />
+              <div class="w-full h-0.5 bg-black/20 rounded-full" />
+              <div class="w-4/5 h-0.5 bg-black/20 rounded-full" />
+            </div>
+          </div>
+          <p class="font-707 font-normal text-[11px] text-black text-center leading-tight">
+            Guest E-Pass
+          </p>
+        </div>
+
+        <!-- Interactive Card 2: Tennis Court / Sneaker Sizing Grid -->
         <div 
           draggable="true"
           @dragstart="handleDragStart($event, { type: 'RsvpForm', label: 'Sneaker Sizing & Court Selector', customProps: { heading: 'TENNIS COURT RSVP & SIZING' } })"
@@ -566,7 +613,13 @@ function getChoiceDefaultProps(choiceName: string) {
 }
 
 function handleFieldDragStart(event: DragEvent, fieldName: string) {
-  if (selectedFormTab.value === 'Choices') {
+  if (fieldName === 'RSVP Pass') {
+    handleDragStart(event, {
+      type: 'GuestEPass',
+      label: 'Guest E-Pass',
+      customProps: getEPassDefaultProps()
+    });
+  } else if (selectedFormTab.value === 'Choices') {
     handleDragStart(event, {
       type: 'MultipleChoice',
       label: fieldName,
@@ -579,6 +632,23 @@ function handleFieldDragStart(event: DragEvent, fieldName: string) {
       customProps: getFieldDefaultProps(fieldName)
     });
   }
+}
+
+function getEPassDefaultProps() {
+  return {
+    venue: 'LA MODA PLAZA INDONESIA',
+    guestNameFallback: 'MR. ALVIN DECOROUS',
+    validForFallback: [
+      { id: 'opt_1', label: 'Day 2', sublabel: '3 September 2026', description: 'Your Event Descriptions Detail' },
+      { id: 'opt_2', label: 'Day 3', sublabel: '3 September 2026', description: 'Your Event Descriptions Detail' }
+    ],
+    terms: [
+      'Valid for one (1) person only — non-transferable.',
+      'Present this ticket at the entrance for scanning.',
+      'No re-entry once you have exited the venue.',
+      'Management is not liable for loss of personal belongings.'
+    ]
+  };
 }
 
 function getFieldDefaultProps(fieldName: string) {
@@ -602,7 +672,9 @@ function getFieldDefaultProps(fieldName: string) {
 }
 
 function addFormField(fieldName: string) {
-  if (selectedFormTab.value === 'Choices') {
+  if (fieldName === 'RSVP Pass') {
+    addEPassWidget();
+  } else if (selectedFormTab.value === 'Choices') {
     editorStore.addWidget('MultipleChoice', undefined, getChoiceDefaultProps(fieldName));
   } else {
     editorStore.addWidget('FieldInput', undefined, getFieldDefaultProps(fieldName));
@@ -617,6 +689,11 @@ function addActionButton(variant: 'black' | 'white' = 'black') {
     url: '',
     height: 48
   });
+}
+
+function addEPassWidget() {
+  editorStore.addWidget('GuestEPass', undefined, getEPassDefaultProps());
+  editorStore.openEPassSidebar();
 }
 
 function addInteractiveWidget(name: string) {

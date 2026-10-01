@@ -77,6 +77,7 @@ export const useEditorStore = defineStore('editor', () => {
   const isButtonSidebarOpen = ref<boolean>(false);
   const isChoiceSidebarOpen = ref<boolean>(false);
   const isModalSidebarOpen = ref<boolean>(false);
+  const isEPassSidebarOpen = ref<boolean>(false);
   const isLayersOpen = ref<boolean>(false);
   const isPagesOpen = ref<boolean>(false);
   const selectedMediaRatio = ref<string>('Full screen landing page');
@@ -434,6 +435,22 @@ export const useEditorStore = defineStore('editor', () => {
           ]
         };
         break;
+      case 'GuestEPass':
+        defaultProps = {
+          venue: 'LA MODA PLAZA INDONESIA',
+          guestNameFallback: 'MR. ALVIN DECOROUS',
+          validForFallback: [
+            { id: 'opt_1', label: 'Day 2', sublabel: '3 September 2026', description: 'Your Event Descriptions Detail' },
+            { id: 'opt_2', label: 'Day 3', sublabel: '3 September 2026', description: 'Your Event Descriptions Detail' }
+          ],
+          terms: [
+            'Valid for one (1) person only — non-transferable.',
+            'Present this ticket at the entrance for scanning.',
+            'No re-entry once you have exited the venue.',
+            'Management is not liable for loss of personal belongings.'
+          ]
+        };
+        break;
       default:
         defaultProps = { text: 'Custom block content' };
     }
@@ -470,6 +487,8 @@ export const useEditorStore = defineStore('editor', () => {
       openChoiceSidebar();
     } else if (type === 'ModalOverlay') {
       openModalSidebar();
+    } else if (type === 'GuestEPass') {
+      openEPassSidebar();
     } else {
       openWidgetSidebar();
     }
@@ -509,6 +528,7 @@ export const useEditorStore = defineStore('editor', () => {
       isButtonSidebarOpen.value = false;
       isChoiceSidebarOpen.value = false;
       isModalSidebarOpen.value = false;
+      isEPassSidebarOpen.value = false;
       isMediaGalleryOpen.value = false;
     }
     if (currentPage.value.widget_tree.length === 0) {
@@ -691,6 +711,7 @@ export const useEditorStore = defineStore('editor', () => {
     isTextSidebarOpen.value = false;
     isButtonSidebarOpen.value = false;
     isChoiceSidebarOpen.value = false;
+    isEPassSidebarOpen.value = false;
     isLayersOpen.value = false;
     isPagesOpen.value = false;
     isModalSidebarOpen.value = true;
@@ -705,6 +726,32 @@ export const useEditorStore = defineStore('editor', () => {
       closeModalSidebar();
     } else {
       openModalSidebar();
+    }
+  }
+
+  function openEPassSidebar() {
+    isAddMenuOpen.value = false;
+    isWidgetSidebarOpen.value = false;
+    isMediaSidebarOpen.value = false;
+    isMediaGalleryOpen.value = false;
+    isTextSidebarOpen.value = false;
+    isButtonSidebarOpen.value = false;
+    isChoiceSidebarOpen.value = false;
+    isModalSidebarOpen.value = false;
+    isLayersOpen.value = false;
+    isPagesOpen.value = false;
+    isEPassSidebarOpen.value = true;
+  }
+
+  function closeEPassSidebar() {
+    isEPassSidebarOpen.value = false;
+  }
+
+  function toggleEPassSidebar() {
+    if (isEPassSidebarOpen.value) {
+      closeEPassSidebar();
+    } else {
+      openEPassSidebar();
     }
   }
 
@@ -795,6 +842,7 @@ export const useEditorStore = defineStore('editor', () => {
     isButtonSidebarOpen.value = false;
     isChoiceSidebarOpen.value = false;
     isModalSidebarOpen.value = false;
+    isEPassSidebarOpen.value = false;
     isLayersOpen.value = false;
   }
 
@@ -1092,6 +1140,7 @@ export const useEditorStore = defineStore('editor', () => {
     isButtonSidebarOpen,
     isChoiceSidebarOpen,
     isModalSidebarOpen,
+    isEPassSidebarOpen,
     isLayersOpen,
     isPagesOpen,
     selectedMediaRatio,
@@ -1125,6 +1174,9 @@ export const useEditorStore = defineStore('editor', () => {
     openModalSidebar,
     closeModalSidebar,
     toggleModalSidebar,
+    openEPassSidebar,
+    closeEPassSidebar,
+    toggleEPassSidebar,
     openLayers,
     closeLayers,
     toggleLayers,

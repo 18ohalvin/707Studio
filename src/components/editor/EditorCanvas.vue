@@ -177,6 +177,13 @@
       @close="editorStore.isModalSidebarOpen = false"
     />
 
+    <!-- Guest E-Pass Setup Sidebar Drawer (Figma Node 222:4188) -->
+    <EPassSetupSidebar 
+      @click.stop
+      :is-open="editorStore.isEPassSidebarOpen"
+      @close="editorStore.isEPassSidebarOpen = false"
+    />
+
     <!-- Global Apple-Glass Floating Toast Notification -->
     <Transition name="apple-dock-fade">
       <div 
@@ -215,6 +222,7 @@ import TextSetupSidebar from './TextSetupSidebar.vue';
 import ButtonSetupSidebar from './ButtonSetupSidebar.vue';
 import ChoiceSetupSidebar from './ChoiceSetupSidebar.vue';
 import ModalSetupSidebar from './ModalSetupSidebar.vue';
+import EPassSetupSidebar from './EPassSetupSidebar.vue';
 import LayersSidebar from './LayersSidebar.vue';
 
 const editorStore = useEditorStore();

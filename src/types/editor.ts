@@ -14,6 +14,7 @@ export type WidgetType =
   | 'TextBanner'
   | 'MultipleChoice'
   | 'ModalOverlay'
+  | 'GuestEPass'
   /* Used by the ticket landing page. No renderer case exists for it yet, so a
      PassCTA widget currently displays nothing — needs a display built before
      it is used on a live page. */
