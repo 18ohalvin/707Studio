@@ -253,7 +253,7 @@
         leave-from-class="transform opacity-100 translate-y-0"
         leave-to-class="transform opacity-0 -translate-y-2"
       >
-        <div v-if="showIcon" class="flex flex-nowrap overflow-x-auto gap-[8px] items-center w-full pt-1 no-scrollbar">
+        <div v-if="showIcon" class="flex flex-nowrap overflow-x-auto gap-[8px] items-center -mx-[24px] px-[24px] w-[calc(100%+48px)] pt-1 no-scrollbar">
           <button 
             type="button"
             @click="setIconName('arrow-right')"

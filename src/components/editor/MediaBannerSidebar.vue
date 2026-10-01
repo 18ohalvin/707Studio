@@ -83,7 +83,7 @@
       <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
         Ratio Presets
       </p>
-      <div class="flex flex-nowrap overflow-x-auto gap-[8px] items-center w-full pb-1 no-scrollbar">
+      <div class="flex flex-nowrap overflow-x-auto gap-[8px] items-center -mx-[24px] px-[24px] w-[calc(100%+48px)] pb-1 no-scrollbar">
         <button 
           v-for="ratio in ratios" 
           :key="ratio"

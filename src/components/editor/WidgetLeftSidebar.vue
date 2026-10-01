@@ -33,7 +33,7 @@
           Media/Banners
         </p>
       </div>
-      <div class="content-stretch flex gap-[14px] items-start overflow-x-auto w-full pb-2 no-scrollbar">
+      <div class="content-stretch flex gap-[14px] items-start overflow-x-auto -mx-[24px] px-[24px] w-[calc(100%+48px)] pb-2 no-scrollbar">
         <!-- Full screen landing cover -->
         <div 
           draggable="true"
@@ -181,7 +181,7 @@
       </div>
 
       <!-- Filter Buttons (Category Pills) -->
-      <div class="content-stretch flex gap-[6px] items-start overflow-x-auto w-full no-scrollbar pb-[8px]">
+      <div class="content-stretch flex gap-[6px] items-start overflow-x-auto -mx-[24px] px-[24px] w-[calc(100%+48px)] no-scrollbar pb-[8px]">
         <button 
           v-for="tab in formTabs" 
           :key="tab"
@@ -194,7 +194,7 @@
       </div>
 
       <!-- Form Field Options Grid -->
-      <div class="content-stretch flex gap-[12px] items-start overflow-x-auto w-full pt-[6px] pb-[8px] no-scrollbar">
+      <div class="content-stretch flex gap-[12px] items-start overflow-x-auto -mx-[24px] px-[24px] w-[calc(100%+48px)] pt-[6px] pb-[8px] no-scrollbar">
         <div 
           v-for="field in currentTabFields" 
           :key="field.name"
@@ -222,7 +222,7 @@
           Action Button
         </p>
       </div>
-      <div class="content-stretch flex gap-[14px] items-start overflow-x-auto w-full no-scrollbar pb-[4px]">
+      <div class="content-stretch flex gap-[14px] items-start overflow-x-auto -mx-[24px] px-[24px] w-[calc(100%+48px)] no-scrollbar pb-[4px]">
         <!-- Action Button 1: Standard Black Button (Figma Node 176:5763) -->
         <div 
           draggable="true"
@@ -270,7 +270,7 @@
           Interactive & Activations
         </p>
       </div>
-      <div class="content-stretch flex gap-[14px] items-start overflow-x-auto w-full no-scrollbar">
+      <div class="content-stretch flex gap-[14px] items-start overflow-x-auto -mx-[24px] px-[24px] w-[calc(100%+48px)] no-scrollbar">
         <!-- Interactive Card 1: Tennis Court / Sneaker Sizing Grid -->
         <div 
           draggable="true"
