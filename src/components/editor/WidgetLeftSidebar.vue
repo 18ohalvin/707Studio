@@ -248,24 +248,24 @@
       </div>
     </div>
 
-    <!-- Section 2: Add Form Inputs -->
+    <!-- Section 2: Add Form Inputs & Choices -->
     <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
         <p class="flex-[1_0_0] font-707 font-medium text-[13px] leading-[18px] text-black">
-          Add Form Inputs
+          Add Form Inputs & Choices
         </p>
       </div>
 
-      <!-- Form Cards & Field Presets Stack -->
+      <!-- Pre-built Form Templates & Choice Styles Cards Carousel -->
       <div class="content-stretch flex gap-[14px] items-start overflow-x-auto -mx-[24px] px-[24px] w-[calc(100%+48px)] no-scrollbar pb-[4px]">
-        <!-- 1. Form Section Card (Standard 707 Card Style) -->
+        <!-- 1. Registration Form (Full 5-field preset) -->
         <div 
           draggable="true"
-          @dragstart="handleDragStart($event, { type: 'RegistrationForm', label: 'Form Section', customProps: { title: 'REGISTRATION FORM', subtitle: 'Fill in your details below to register.' } })"
+          @dragstart="handleDragStart($event, { type: 'RegistrationForm', label: 'Registration Form', customProps: { title: 'REGISTRATION FORM', subtitle: 'Fill in your details below to register.' } })"
           @dragend="handleDragEnd"
-          @click="addRegistrationFormWidget"
+          @click="addRegistrationFormWidget('registration')"
           class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group w-[84px]"
-          title="Drag to canvas or click to add (Complete Form Section)"
+          title="Drag to canvas or click to add (Complete Registration Form: Name, Email, WhatsApp, Instagram)"
         >
           <div class="border border-[#c9c9c9] flex flex-col justify-between p-2 h-[130px] rounded-[8px] shrink-0 w-[72px] bg-white group-hover:border-black transition-colors shadow-sm overflow-hidden">
             <!-- Header lines -->
@@ -274,7 +274,7 @@
               <div class="w-full h-1 bg-black/30 rounded-[1px]" />
             </div>
             <!-- Stack of luxury input lines -->
-            <div class="flex flex-col gap-2 w-full py-1">
+            <div class="flex flex-col gap-1.5 w-full py-0.5">
               <div class="w-full flex flex-col gap-0.5">
                 <div class="w-2/5 h-0.5 bg-neutral-400 rounded-full" />
                 <div class="w-full h-0.5 bg-neutral-300" />
@@ -287,17 +287,264 @@
                 <div class="w-1/2 h-0.5 bg-neutral-400 rounded-full" />
                 <div class="w-full h-0.5 bg-neutral-300" />
               </div>
+              <div class="w-full flex flex-col gap-0.5">
+                <div class="w-2/5 h-0.5 bg-neutral-400 rounded-full" />
+                <div class="w-full h-0.5 bg-neutral-300" />
+              </div>
             </div>
             <!-- Mini bottom accent -->
             <div class="w-full h-1 bg-neutral-100 rounded-full" />
           </div>
           <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
-            Form Section
+            Registration Form
+          </p>
+        </div>
+
+        <!-- 2. Contact / RSVP Form (3-field preset: Name, Email, WhatsApp) -->
+        <div 
+          draggable="true"
+          @dragstart="handleDragStart($event, { type: 'RegistrationForm', label: 'Contact / RSVP', customProps: { title: 'RSVP & CONTACT', subtitle: 'Please confirm your contact details.' } })"
+          @dragend="handleDragEnd"
+          @click="addRegistrationFormWidget('contact')"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group w-[84px]"
+          title="Drag to canvas or click to add (RSVP Contact Form: Name, Email, WhatsApp)"
+        >
+          <div class="border border-[#c9c9c9] flex flex-col justify-between p-2 h-[130px] rounded-[8px] shrink-0 w-[72px] bg-white group-hover:border-black transition-colors shadow-sm overflow-hidden">
+            <!-- Header lines -->
+            <div class="flex flex-col gap-1 w-full pt-0.5">
+              <div class="w-3/4 h-1.5 bg-black/80 rounded-[1px]" />
+              <div class="w-full h-1 bg-black/30 rounded-[1px]" />
+            </div>
+            <!-- Stack of luxury input lines -->
+            <div class="flex flex-col gap-2 w-full py-0.5">
+              <div class="w-full flex flex-col gap-0.5">
+                <div class="w-2/5 h-0.5 bg-neutral-400 rounded-full" />
+                <div class="w-full h-0.5 bg-neutral-300" />
+              </div>
+              <div class="w-full flex flex-col gap-0.5">
+                <div class="w-1/2 h-0.5 bg-neutral-400 rounded-full" />
+                <div class="w-full h-0.5 bg-neutral-300" />
+              </div>
+              <div class="w-full flex flex-col gap-0.5">
+                <div class="w-1/3 h-0.5 bg-neutral-400 rounded-full" />
+                <div class="w-full h-0.5 bg-neutral-300" />
+              </div>
+            </div>
+            <!-- Mini button wire -->
+            <div class="w-full h-2.5 bg-black/80 rounded-[2px] flex items-center justify-center">
+              <div class="w-1/2 h-0.5 bg-white/70 rounded-full" />
+            </div>
+          </div>
+          <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
+            Contact / RSVP
+          </p>
+        </div>
+
+        <!-- 3. Quick Waitlist Form (Lead preset: Name, Email) -->
+        <div 
+          draggable="true"
+          @dragstart="handleDragStart($event, { type: 'RegistrationForm', label: 'Quick Waitlist', customProps: { title: 'JOIN THE WAITLIST', subtitle: 'Be the first to know when tickets go live.' } })"
+          @dragend="handleDragEnd"
+          @click="addRegistrationFormWidget('waitlist')"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group w-[84px]"
+          title="Drag to canvas or click to add (Quick Waitlist: First Name, Email, WhatsApp)"
+        >
+          <div class="border border-[#c9c9c9] flex flex-col justify-between p-2 h-[130px] rounded-[8px] shrink-0 w-[72px] bg-white group-hover:border-black transition-colors shadow-sm overflow-hidden">
+            <!-- Header lines -->
+            <div class="flex flex-col gap-1 w-full pt-0.5">
+              <div class="w-4/5 h-1.5 bg-black/80 rounded-[1px]" />
+              <div class="w-3/4 h-1 bg-black/30 rounded-[1px]" />
+            </div>
+            <!-- Stack of luxury input lines -->
+            <div class="flex flex-col gap-2.5 w-full py-0.5">
+              <div class="w-full flex flex-col gap-0.5">
+                <div class="w-2/5 h-0.5 bg-neutral-400 rounded-full" />
+                <div class="w-full h-0.5 bg-neutral-300" />
+              </div>
+              <div class="w-full flex flex-col gap-0.5">
+                <div class="w-1/2 h-0.5 bg-neutral-400 rounded-full" />
+                <div class="w-full h-0.5 bg-neutral-300" />
+              </div>
+            </div>
+            <!-- Mini button wire -->
+            <div class="w-full h-3 bg-black/85 rounded-[2px] flex items-center justify-center">
+              <div class="w-2/5 h-0.5 bg-white/70 rounded-full" />
+            </div>
+          </div>
+          <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
+            Quick Waitlist
+          </p>
+        </div>
+
+        <!-- 4. Choice Style: Detailed Cards -->
+        <div 
+          draggable="true"
+          @dragstart="handleDragStart($event, { type: 'MultipleChoice', label: 'Detailed Cards', customProps: getChoiceDefaultProps('Detailed Cards') })"
+          @dragend="handleDragEnd"
+          @click="addChoiceWidget('Detailed Cards')"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group w-[84px]"
+          title="Drag to canvas or click to add (Stacked detailed choice cards with dates & descriptions)"
+        >
+          <div class="border border-[#c9c9c9] flex flex-col justify-between p-2 h-[130px] rounded-[8px] shrink-0 w-[72px] bg-white group-hover:border-black transition-colors shadow-sm overflow-hidden">
+            <!-- Header line -->
+            <div class="flex flex-col gap-1 w-full pt-0.5">
+              <div class="w-3/4 h-1.5 bg-black/80 rounded-[1px]" />
+              <div class="w-full h-1 bg-black/30 rounded-[1px]" />
+            </div>
+            <!-- Two stacked detailed cards -->
+            <div class="flex flex-col gap-1.5 w-full">
+              <!-- Card 1 (Selected) -->
+              <div class="w-full border border-black rounded-[3px] p-1 flex items-center justify-between bg-neutral-50">
+                <div class="flex flex-col gap-0.5 flex-1 min-w-0 pr-1">
+                  <div class="w-3/4 h-1 bg-black rounded-full" />
+                  <div class="w-1/2 h-0.5 bg-neutral-400 rounded-full" />
+                </div>
+                <div class="size-2 rounded-full border border-black bg-black flex items-center justify-center shrink-0">
+                  <div class="size-0.5 bg-white rounded-full" />
+                </div>
+              </div>
+              <!-- Card 2 (Unselected) -->
+              <div class="w-full border border-neutral-200 rounded-[3px] p-1 flex items-center justify-between">
+                <div class="flex flex-col gap-0.5 flex-1 min-w-0 pr-1">
+                  <div class="w-3/4 h-1 bg-neutral-600 rounded-full" />
+                  <div class="w-1/2 h-0.5 bg-neutral-300 rounded-full" />
+                </div>
+                <div class="size-2 rounded-full border border-neutral-300 shrink-0" />
+              </div>
+            </div>
+            <div class="w-full h-1 bg-neutral-100 rounded-full" />
+          </div>
+          <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
+            Detailed Cards
+          </p>
+        </div>
+
+        <!-- 5. Choice Style: Simple Rows -->
+        <div 
+          draggable="true"
+          @dragstart="handleDragStart($event, { type: 'MultipleChoice', label: 'Simple Rows', customProps: getChoiceDefaultProps('Simple Rows') })"
+          @dragend="handleDragEnd"
+          @click="addChoiceWidget('Simple Rows')"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group w-[84px]"
+          title="Drag to canvas or click to add (Clean single-line options with radio indicators)"
+        >
+          <div class="border border-[#c9c9c9] flex flex-col justify-between p-2 h-[130px] rounded-[8px] shrink-0 w-[72px] bg-white group-hover:border-black transition-colors shadow-sm overflow-hidden">
+            <!-- Header line -->
+            <div class="flex flex-col gap-1 w-full pt-0.5">
+              <div class="w-3/4 h-1.5 bg-black/80 rounded-[1px]" />
+              <div class="w-full h-1 bg-black/30 rounded-[1px]" />
+            </div>
+            <!-- 3 clean rows -->
+            <div class="flex flex-col gap-1.5 w-full py-0.5">
+              <div class="w-full flex items-center justify-between py-0.5 border-b border-neutral-100">
+                <div class="flex items-center gap-1">
+                  <div class="size-1.5 rounded-full bg-black shrink-0" />
+                  <div class="w-7 h-1 bg-black rounded-full" />
+                </div>
+                <div class="w-3 h-0.5 bg-neutral-300 rounded-full" />
+              </div>
+              <div class="w-full flex items-center justify-between py-0.5 border-b border-neutral-100">
+                <div class="flex items-center gap-1">
+                  <div class="size-1.5 rounded-full border border-neutral-300 shrink-0" />
+                  <div class="w-6 h-1 bg-neutral-600 rounded-full" />
+                </div>
+                <div class="w-3 h-0.5 bg-neutral-300 rounded-full" />
+              </div>
+              <div class="w-full flex items-center justify-between py-0.5">
+                <div class="flex items-center gap-1">
+                  <div class="size-1.5 rounded-full border border-neutral-300 shrink-0" />
+                  <div class="w-8 h-1 bg-neutral-600 rounded-full" />
+                </div>
+                <div class="w-3 h-0.5 bg-neutral-300 rounded-full" />
+              </div>
+            </div>
+            <div class="w-full h-1 bg-neutral-100 rounded-full" />
+          </div>
+          <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
+            Simple Rows
+          </p>
+        </div>
+
+        <!-- 6. Choice Style: Horizontal Grid -->
+        <div 
+          draggable="true"
+          @dragstart="handleDragStart($event, { type: 'MultipleChoice', label: 'Horizontal Grid', customProps: getChoiceDefaultProps('Horizontal Blocks') })"
+          @dragend="handleDragEnd"
+          @click="addChoiceWidget('Horizontal Blocks')"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group w-[84px]"
+          title="Drag to canvas or click to add (Compact multi-column pill chips)"
+        >
+          <div class="border border-[#c9c9c9] flex flex-col justify-between p-2 h-[130px] rounded-[8px] shrink-0 w-[72px] bg-white group-hover:border-black transition-colors shadow-sm overflow-hidden">
+            <!-- Header line -->
+            <div class="flex flex-col gap-1 w-full pt-0.5">
+              <div class="w-3/4 h-1.5 bg-black/80 rounded-[1px]" />
+              <div class="w-full h-1 bg-black/30 rounded-[1px]" />
+            </div>
+            <!-- 2x2 grid of chips -->
+            <div class="grid grid-cols-2 gap-1 w-full py-0.5">
+              <div class="h-5 rounded-[3px] bg-black flex items-center justify-center p-0.5">
+                <div class="w-3/4 h-1 bg-white rounded-full" />
+              </div>
+              <div class="h-5 rounded-[3px] border border-neutral-200 bg-neutral-50 flex items-center justify-center p-0.5">
+                <div class="w-3/4 h-1 bg-neutral-600 rounded-full" />
+              </div>
+              <div class="h-5 rounded-[3px] border border-neutral-200 bg-neutral-50 flex items-center justify-center p-0.5">
+                <div class="w-3/4 h-1 bg-neutral-600 rounded-full" />
+              </div>
+              <div class="h-5 rounded-[3px] border border-neutral-200 bg-neutral-50 flex items-center justify-center p-0.5">
+                <div class="w-3/4 h-1 bg-neutral-600 rounded-full" />
+              </div>
+            </div>
+            <div class="w-full h-1 bg-neutral-100 rounded-full" />
+          </div>
+          <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
+            Horizontal Grid
+          </p>
+        </div>
+
+        <!-- 7. Choice Style: Image Matrix -->
+        <div 
+          draggable="true"
+          @dragstart="handleDragStart($event, { type: 'MultipleChoice', label: 'Image Matrix', customProps: getChoiceDefaultProps('Image Matrix') })"
+          @dragend="handleDragEnd"
+          @click="addChoiceWidget('Image Matrix')"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group w-[84px]"
+          title="Drag to canvas or click to add (Visual media cards with image tiles & labels)"
+        >
+          <div class="border border-[#c9c9c9] flex flex-col justify-between p-2 h-[130px] rounded-[8px] shrink-0 w-[72px] bg-white group-hover:border-black transition-colors shadow-sm overflow-hidden">
+            <!-- Header line -->
+            <div class="flex flex-col gap-1 w-full pt-0.5">
+              <div class="w-3/4 h-1.5 bg-black/80 rounded-[1px]" />
+              <div class="w-full h-1 bg-black/30 rounded-[1px]" />
+            </div>
+            <!-- 2x2 Image Grid -->
+            <div class="grid grid-cols-2 gap-1 w-full py-0.5">
+              <div class="flex flex-col gap-0.5 items-center">
+                <div class="w-full h-5 bg-[#dcdcdc] rounded-[2px] border border-black" />
+                <div class="w-3/4 h-0.5 bg-black rounded-full" />
+              </div>
+              <div class="flex flex-col gap-0.5 items-center">
+                <div class="w-full h-5 bg-neutral-100 rounded-[2px] border border-neutral-200" />
+                <div class="w-3/4 h-0.5 bg-neutral-400 rounded-full" />
+              </div>
+              <div class="flex flex-col gap-0.5 items-center">
+                <div class="w-full h-5 bg-neutral-100 rounded-[2px] border border-neutral-200" />
+                <div class="w-3/4 h-0.5 bg-neutral-400 rounded-full" />
+              </div>
+              <div class="flex flex-col gap-0.5 items-center">
+                <div class="w-full h-5 bg-neutral-100 rounded-[2px] border border-neutral-200" />
+                <div class="w-3/4 h-0.5 bg-neutral-400 rounded-full" />
+              </div>
+            </div>
+            <div class="w-full h-1 bg-neutral-100 rounded-full" />
+          </div>
+          <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
+            Image Matrix
           </p>
         </div>
       </div>
 
-      <!-- Filter Buttons (Category Tabs) -->
+      <!-- Filter Buttons (Individual Field Category Tabs) -->
       <div class="content-stretch flex gap-[6px] items-start overflow-x-auto -mx-[24px] px-[24px] w-[calc(100%+48px)] no-scrollbar pt-1 pb-[4px]">
         <button 
           v-for="tab in formTabs" 
@@ -503,7 +750,7 @@ const emit = defineEmits<{
 
 const editorStore = useEditorStore();
 
-const formTabs = ['Contacts', 'General', 'Choices', 'Dates', 'Scheduling'];
+const formTabs = ['Contacts', 'General', 'Dates', 'Scheduling'];
 const selectedFormTab = ref('Contacts');
 
 const currentTabFields = computed(() => {
@@ -515,13 +762,6 @@ const currentTabFields = computed(() => {
         { name: 'Long Text', icon: AlignLeft },
         { name: 'Address', icon: MapPin },
         { name: 'Dropdown', icon: ChevronDown }
-      ];
-    case 'Choices':
-      return [
-        { name: 'Detailed Cards', icon: Ticket },
-        { name: 'Simple Rows', icon: ListChecks },
-        { name: 'Horizontal Blocks', icon: LayoutGrid },
-        { name: 'Image Matrix', icon: ImageIcon }
       ];
     case 'Dates':
       return [
@@ -570,20 +810,51 @@ function addTextWidget() {
   editorStore.addWidget('TextBanner', undefined, { text: '', placeholder: 'WRITE YOUR TEXT HERE' });
 }
 
-function addRegistrationFormWidget() {
-  editorStore.addWidget('RegistrationForm', undefined, {
-    title: 'REGISTRATION FORM',
-    subtitle: 'Fill in your details below to register.',
-    titleTypographyStyle: 'heading-3',
-    typographyStyle: 'heading-3',
-    fields: [
-      { id: 'f_fn', name: 'First Name', placeholder: 'First Name*', type: 'text', required: true, value: '' },
-      { id: 'f_ln', name: 'Last Name', placeholder: 'Last Name*', type: 'text', required: true, value: '' },
-      { id: 'f_em', name: 'Email Address', placeholder: 'Email Address*', type: 'email', required: true, value: '' },
-      { id: 'f_wa', name: 'WhatsApp Number', placeholder: 'WhatsApp Number*', type: 'tel', countryCode: '+62', required: true, value: '' },
-      { id: 'f_ig', name: 'Instagram Handle', placeholder: 'Instagram Handle*', type: 'text', required: true, value: '' }
-    ]
-  });
+function addRegistrationFormWidget(templateType: 'registration' | 'contact' | 'waitlist' = 'registration') {
+  if (templateType === 'contact') {
+    editorStore.addWidget('RegistrationForm', undefined, {
+      title: 'RSVP & CONTACT',
+      subtitle: 'Please confirm your contact details.',
+      titleTypographyStyle: 'heading-3',
+      typographyStyle: 'heading-3',
+      fields: [
+        { id: 'f_fn', name: 'First Name', placeholder: 'First Name*', type: 'text', required: true, value: '' },
+        { id: 'f_ln', name: 'Last Name', placeholder: 'Last Name*', type: 'text', required: true, value: '' },
+        { id: 'f_em', name: 'Email Address', placeholder: 'Email Address*', type: 'email', required: true, value: '' },
+        { id: 'f_wa', name: 'WhatsApp Number', placeholder: 'WhatsApp Number*', type: 'tel', countryCode: '+62', required: true, value: '' }
+      ]
+    });
+  } else if (templateType === 'waitlist') {
+    editorStore.addWidget('RegistrationForm', undefined, {
+      title: 'JOIN THE WAITLIST',
+      subtitle: 'Be the first to know when tickets go live.',
+      titleTypographyStyle: 'heading-3',
+      typographyStyle: 'heading-3',
+      fields: [
+        { id: 'f_fn', name: 'First Name', placeholder: 'First Name*', type: 'text', required: true, value: '' },
+        { id: 'f_em', name: 'Email Address', placeholder: 'Email Address*', type: 'email', required: true, value: '' },
+        { id: 'f_wa', name: 'WhatsApp Number', placeholder: 'WhatsApp Number*', type: 'tel', countryCode: '+62', required: true, value: '' }
+      ]
+    });
+  } else {
+    editorStore.addWidget('RegistrationForm', undefined, {
+      title: 'REGISTRATION FORM',
+      subtitle: 'Fill in your details below to register.',
+      titleTypographyStyle: 'heading-3',
+      typographyStyle: 'heading-3',
+      fields: [
+        { id: 'f_fn', name: 'First Name', placeholder: 'First Name*', type: 'text', required: true, value: '' },
+        { id: 'f_ln', name: 'Last Name', placeholder: 'Last Name*', type: 'text', required: true, value: '' },
+        { id: 'f_em', name: 'Email Address', placeholder: 'Email Address*', type: 'email', required: true, value: '' },
+        { id: 'f_wa', name: 'WhatsApp Number', placeholder: 'WhatsApp Number*', type: 'tel', countryCode: '+62', required: true, value: '' },
+        { id: 'f_ig', name: 'Instagram Handle', placeholder: 'Instagram Handle*', type: 'text', required: true, value: '' }
+      ]
+    });
+  }
+}
+
+function addChoiceWidget(choiceName: string) {
+  editorStore.addWidget('MultipleChoice', undefined, getChoiceDefaultProps(choiceName));
 }
 
 function getChoiceDefaultProps(choiceName: string) {
