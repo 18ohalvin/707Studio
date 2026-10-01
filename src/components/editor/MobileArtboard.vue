@@ -722,7 +722,7 @@
             <!-- 8. ActionButton Widget (707 Standard Action Button - Figma Node 244:11560) -->
             <div 
               v-else-if="widget.type === 'ActionButton' && widget.props.positionMode !== 'sticky-bottom'" 
-              class="relative w-full px-[16px] py-[8px] select-none group/btn"
+              class="relative w-full px-[16px] py-[4px] select-none group/btn"
               @click.stop="handleActionButtonClick(widget)"
               data-node-id="244:11560"
               data-name="Action Button Container"
@@ -1101,10 +1101,10 @@ more</span>
             class="h-[32px] w-full shrink-0 pointer-events-none" 
             aria-hidden="true" 
           />
-          <!-- Exclusive 64px bottom padding spacer when the latest order of widgets is a standard (not sticky) button widget (disabled when isHeroWithButtonOnly so page fits 100% in 1 screen) -->
+          <!-- Exclusive 48px bottom padding spacer when the latest order of widgets is a standard (not sticky) button widget (disabled when isHeroWithButtonOnly so page fits 100% in 1 screen) -->
           <div 
             v-else-if="isLastWidgetButton && !isHeroWithButtonOnly" 
-            class="h-[64px] w-full shrink-0 pointer-events-none" 
+            class="h-[48px] w-full shrink-0 pointer-events-none" 
             aria-hidden="true" 
           />
         </div>
@@ -1999,12 +1999,12 @@ function getWidgetMarginTopClass(index: number) {
     return 'mt-0';
   }
 
-  // 2. If hero banner meets ActionButton or ActionButton meets HeroDrop: symmetrical 16px spacing
+  // 2. If hero banner meets ActionButton or ActionButton meets HeroDrop: 0px spacing
   if (currentWidget?.type === 'ActionButton' && prevWidget?.type === 'HeroDrop') {
-    return 'mt-[16px]';
+    return 'mt-0';
   }
   if (currentWidget?.type === 'HeroDrop' && prevWidget?.type === 'ActionButton') {
-    return 'mt-[16px]';
+    return 'mt-0';
   }
 
   // 3. If text widget is the top widget (index 0) and followed by form input, banner, or any other widget: exclusive 24px bottom spacing
@@ -2635,7 +2635,7 @@ const containerBottomPaddingClass = computed(() => {
   if (tree.length === 0) return 'pb-0';
   if (isLastWidgetHero.value) return 'pb-0';
   if (stickyButtonForThisPage.value) return 'pb-[72px]';
-  if (isHeroWithButtonOnly.value) return 'pb-[64px]';
+  if (isHeroWithButtonOnly.value) return 'pb-[16px]';
   if (isLastWidgetButton.value) return 'pb-0';
   if (isLastWidgetText.value) return 'pb-0';
   return 'pb-[16px]';

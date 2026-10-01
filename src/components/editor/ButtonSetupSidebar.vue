@@ -424,19 +424,20 @@ const currentVariant = computed(() => {
   return targetWidget.value?.props?.variant || targetWidget.value?.props?.buttonVariant || 'black';
 });
 
-const positionModes = [
-  { label: 'In Banner', value: 'unified' },
-  { label: 'Standard', value: 'in-flow' },
-  { label: 'Sticky Bottom', value: 'sticky-bottom' }
-] as const;
+const positionModes = computed(() => {
+  if (targetWidget.value?.type === 'HeroDrop') {
+    return [
+      { label: 'In Banner', value: 'in-flow' },
+      { label: 'Sticky Bottom', value: 'sticky-bottom' }
+    ] as const;
+  }
+  return [
+    { label: 'Standard', value: 'in-flow' },
+    { label: 'Sticky Bottom', value: 'sticky-bottom' }
+  ] as const;
+});
 
 const currentPositionMode = computed(() => {
-  if (targetWidget.value?.type === 'HeroDrop') {
-    if (targetWidget.value.props?.positionMode === 'sticky-bottom' || targetWidget.value.props?.ctaPositionMode === 'sticky-bottom') {
-      return 'sticky-bottom';
-    }
-    return 'unified';
-  }
   return targetWidget.value?.props?.positionMode || 'in-flow';
 });
 
@@ -512,90 +513,12 @@ function setVariant(variant: 'black' | 'white') {
   }
 }
 
-function setPositionMode(mode: 'unified' | 'in-flow' | 'sticky-bottom') {
-  if (!targetWidget.value) return;
-
-  const currentHero = editorStore.currentPage.widget_tree.find(w => w.type === 'HeroDrop');
-
-  if (mode === 'unified') {
-    if (targetWidget.value.type === 'HeroDrop') {
-      editorStore.updateWidgetProps(targetWidget.value.id, {
-        isCtaEnabled: true,
-        showButton: true,
-        positionMode: 'unified',
-        ctaPositionMode: 'unified'
-      });
-    } else {
-      if (currentHero) {
-        const btnProps = {
-          buttonText: targetWidget.value.props?.label || targetWidget.value.props?.buttonText || 'BUTTON CTA',
-          ctaLabel: targetWidget.value.props?.label || targetWidget.value.props?.buttonText || 'BUTTON CTA',
-          variant: targetWidget.value.props?.variant || 'black',
-          buttonVariant: targetWidget.value.props?.variant || 'black',
-          actionType: targetWidget.value.props?.actionType || 'submit',
-          url: targetWidget.value.props?.url || '',
-          modalProps: targetWidget.value.props?.modalProps,
-          showIcon: targetWidget.value.props?.showIcon ?? false,
-          iconName: targetWidget.value.props?.iconName || 'arrow-right',
-          isCtaEnabled: true,
-          showButton: true,
-          positionMode: 'unified',
-          ctaPositionMode: 'unified'
-        };
-        const actionButtonId = targetWidget.value.id;
-        editorStore.updateWidgetProps(currentHero.id, btnProps);
-        editorStore.removeWidget(actionButtonId);
-        editorStore.selectWidget(currentHero.id);
-      } else {
-        editorStore.showToast('Add a Hero Banner to use the In Banner position.');
-      }
-    }
-  } else if (mode === 'in-flow') {
-    if (targetWidget.value.type === 'HeroDrop') {
-      const btnProps = {
-        label: targetWidget.value.props?.buttonText || targetWidget.value.props?.ctaLabel || targetWidget.value.props?.label || 'BUTTON CTA',
-        variant: targetWidget.value.props?.variant || targetWidget.value.props?.buttonVariant || 'black',
-        actionType: targetWidget.value.props?.actionType || 'submit',
-        url: targetWidget.value.props?.url || '',
-        modalProps: targetWidget.value.props?.modalProps,
-        showIcon: targetWidget.value.props?.showIcon ?? false,
-        iconName: targetWidget.value.props?.iconName || 'arrow-right',
-        positionMode: 'in-flow',
-        height: 48
-      };
-      editorStore.updateWidgetProps(targetWidget.value.id, {
-        isCtaEnabled: false,
-        showButton: false,
-        positionMode: 'in-flow',
-        ctaPositionMode: 'in-flow'
-      });
-      const heroIndex = editorStore.currentPage.widget_tree.findIndex(w => w.id === targetWidget.value!.id);
-      const insertIdx = heroIndex !== -1 ? heroIndex + 1 : undefined;
-      const newBtn = editorStore.addWidget('ActionButton', insertIdx, btnProps);
-      if (newBtn) {
-        editorStore.selectWidget(newBtn.id);
-        editorStore.openButtonSidebar();
-      }
-    } else {
-      editorStore.updateWidgetProps(targetWidget.value.id, {
-        positionMode: 'in-flow'
-      });
-    }
-  } else if (mode === 'sticky-bottom') {
-    if (targetWidget.value.type === 'HeroDrop') {
-      editorStore.updateWidgetProps(targetWidget.value.id, {
-        positionMode: 'sticky-bottom',
-        ctaPositionMode: 'sticky-bottom',
-        isCtaEnabled: true,
-        showButton: true,
-        stickyPageIds: targetWidget.value.props.stickyPageIds || [editorStore.currentPage.id]
-      });
-    } else {
-      editorStore.updateWidgetProps(targetWidget.value.id, {
-        positionMode: 'sticky-bottom',
-        stickyPageIds: targetWidget.value.props.stickyPageIds || [editorStore.currentPage.id]
-      });
-    }
+function setPositionMode(mode: 'in-flow' | 'sticky-bottom') {
+  if (targetWidget.value) {
+    editorStore.updateWidgetProps(targetWidget.value.id, { 
+      positionMode: mode,
+      stickyPageIds: targetWidget.value.props.stickyPageIds || [editorStore.currentPage.id]
+    });
   }
 }
 
