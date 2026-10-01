@@ -636,7 +636,7 @@
                   :class="[
                     isFieldLabelFloating(widget)
                       ? 'top-[0px] text-[11px] leading-[14px] text-black font-normal'
-                      : 'top-[26px] text-[16px] leading-[22px] text-[#737373] font-normal'
+                      : 'top-[26px] text-[14px] leading-[20px] text-[#737373] font-normal'
                   ]"
                 >
                   {{ isFieldLabelFloating(widget) ? (widget.props.label || 'Email') : (widget.props.placeholder || `Enter your ${(widget.props.label || 'email').toLowerCase()}*`) }}<span v-if="isFieldLabelFloating(widget) && (widget.props.required ?? true)">*</span>
@@ -656,7 +656,7 @@
                     @click.stop="toggleCountryCode(widget)"
                     title="Click to switch Country Calling Code"
                   >
-                    <span class="font-707 text-[16px] leading-[22px] text-black font-normal tracking-tight">
+                    <span class="font-707 text-[14px] leading-[20px] text-black font-normal tracking-tight">
                       {{ widget.props.countryCode || '+62' }}
                     </span>
                     <ChevronDown class="w-[12px] h-[12px] text-neutral-400 group-hover/code:text-black transition-colors stroke-[2]" />
@@ -671,7 +671,7 @@
                     @focus="handleFieldFocus(widget)"
                     @blur="handleFieldBlur(widget)"
                     :readonly="isMiniPreview"
-                    class="font-707 font-normal text-[16px] leading-[22px] w-full bg-transparent outline-none border-none p-0 m-0 transition-colors duration-300 relative z-10"
+                    class="font-707 font-normal text-[14px] leading-[20px] w-full bg-transparent outline-none border-none p-0 m-0 transition-colors duration-300 relative z-10"
                     :class="[
                       widget.props.stateVariant === 'Wrong alert' ? 'text-[#9b0707]' : 'text-black'
                     ]"
@@ -793,7 +793,7 @@
                     :class="[
                       isFormItemFloating(widget.id, field)
                         ? 'top-[0px] text-[11px] leading-[14px] text-black font-normal'
-                        : 'top-[26px] text-[16px] leading-[22px] text-[#737373] font-normal'
+                        : 'top-[26px] text-[14px] leading-[20px] text-[#737373] font-normal'
                     ]"
                   >
                     {{ isFormItemFloating(widget.id, field) ? (field.name || 'Field') : (field.placeholder || `Enter your ${(field.name || 'details').toLowerCase()}*`) }}<span v-if="isFormItemFloating(widget.id, field) && (field.required !== false)">*</span>
@@ -813,7 +813,7 @@
                       @click.stop="toggleFormItemCountryCode(widget, field)"
                       title="Click to switch Country Calling Code"
                     >
-                      <span class="font-707 text-[16px] leading-[22px] text-black font-normal tracking-tight">
+                      <span class="font-707 text-[14px] leading-[20px] text-black font-normal tracking-tight">
                         {{ field.countryCode || '+62' }}
                       </span>
                       <ChevronDown class="w-[12px] h-[12px] text-neutral-400 group-hover/code:text-black transition-colors stroke-[2]" />
@@ -828,7 +828,7 @@
                       @focus="handleRegistrationFormFieldFocus(widget.id, field.id)"
                       @blur="handleRegistrationFormFieldBlur(widget.id, field.id)"
                       :readonly="isMiniPreview"
-                      class="font-707 font-normal text-[16px] leading-[22px] w-full bg-transparent outline-none border-none p-0 m-0 transition-colors duration-300 relative z-10"
+                      class="font-707 font-normal text-[14px] leading-[20px] w-full bg-transparent outline-none border-none p-0 m-0 transition-colors duration-300 relative z-10"
                       :class="[
                         field.errorMessage ? 'text-[#9b0707]' : 'text-black'
                       ]"
@@ -1547,7 +1547,7 @@ more</span>
                     @click.stop="toggleModalCountryCode"
                     title="Click to switch Country Calling Code"
                   >
-                    <span class="font-707 text-[16px] leading-[22px] text-black font-normal tracking-tight">
+                    <span class="font-707 text-[14px] leading-[20px] text-black font-normal tracking-tight">
                       {{ modalCountryCode }}
                     </span>
                     <ChevronDown class="w-[12px] h-[12px] text-neutral-400 group-hover/code:text-black transition-colors stroke-[2]" />
@@ -1558,7 +1558,7 @@ more</span>
                     :placeholder="modalDisplayProps.fieldPlaceholder || '81234567890'"
                     type="tel"
                     inputmode="numeric"
-                    class="w-full font-707 text-subtext-lead text-black placeholder:text-neutral-400 bg-transparent border-none outline-none p-0 m-0 relative z-10"
+                    class="w-full font-707 text-[14px] leading-[20px] text-black placeholder:text-neutral-400 bg-transparent border-none outline-none p-0 m-0 relative z-10"
                   />
                 </div>
 
@@ -1572,7 +1572,7 @@ more</span>
                     :placeholder="modalDisplayProps.fieldPlaceholder || (modalDisplayProps.fieldType === 'text' ? 'Enter your text*' : 'Enter your email*')"
                     :type="modalDisplayProps.fieldType === 'text' ? 'text' : 'email'"
                     :inputmode="modalDisplayProps.fieldType === 'text' ? 'text' : 'email'"
-                    class="w-full font-707 text-subtext-lead text-black placeholder:text-neutral-400 bg-transparent border-none outline-none p-0 m-0"
+                    class="w-full font-707 text-[14px] leading-[20px] text-black placeholder:text-neutral-400 bg-transparent border-none outline-none p-0 m-0"
                   />
                 </div>
               </div>
