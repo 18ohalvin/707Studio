@@ -356,7 +356,7 @@ function setModalVariant(v: ModalVariant) {
   } else if (v === 'message-field') {
     updated.title = updated.title || 'Update Your Email';
     updated.subtitle = updated.subtitle || 'Please provide a valid email address. We will resend your E-Pass immediately.';
-    updated.fieldPlaceholder = updated.fieldPlaceholder || 'Enter your email*';
+    updated.fieldPlaceholder = updated.fieldPlaceholder || 'Email*';
     updated.fieldType = updated.fieldType || 'email';
     updated.buttonText = updated.buttonText || 'Done';
     updated.buttonVariant = updated.buttonVariant || 'black';

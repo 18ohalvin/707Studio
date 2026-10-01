@@ -272,7 +272,7 @@ function updateFieldLabel(index: number, newName: string) {
   updated[index] = {
     ...updated[index],
     name: newName,
-    placeholder: `Enter your ${newName.toLowerCase()}*`
+    placeholder: `${newName}*`
   };
   editorStore.updateWidgetProps(currentWidget.value.id, { fields: updated });
 }
@@ -292,14 +292,14 @@ function removeField(index: number) {
 }
 
 const availablePresets = [
-  { name: 'First Name', placeholder: 'Enter your first name*', type: 'text' },
-  { name: 'Last Name', placeholder: 'Enter your last name*', type: 'text' },
-  { name: 'Email Address', placeholder: 'Enter your email address*', type: 'email' },
-  { name: 'WhatsApp Number', placeholder: 'Enter your whatsapp number*', type: 'tel', countryCode: '+62' },
-  { name: 'Instagram Handle', placeholder: 'Enter your instagram handle*', type: 'text' },
+  { name: 'First Name', placeholder: 'First Name*', type: 'text' },
+  { name: 'Last Name', placeholder: 'Last Name*', type: 'text' },
+  { name: 'Email Address', placeholder: 'Email Address*', type: 'email' },
+  { name: 'WhatsApp Number', placeholder: 'WhatsApp Number*', type: 'tel', countryCode: '+62' },
+  { name: 'Instagram Handle', placeholder: 'Instagram Handle*', type: 'text' },
   { name: 'Date of Birth', placeholder: 'DD / MM / YYYY', type: 'text' },
   { name: 'National ID / KTP', placeholder: 'Enter 16-digit KTP number', type: 'text' },
-  { name: 'Custom Field', placeholder: 'Enter details*', type: 'text' }
+  { name: 'Custom Field', placeholder: 'Field Details*', type: 'text' }
 ];
 
 function addFieldPreset(preset: typeof availablePresets[0]) {

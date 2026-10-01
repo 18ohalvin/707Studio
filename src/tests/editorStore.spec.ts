@@ -114,7 +114,7 @@ describe('707 Activation Builder Stores', () => {
     const editorStore = useEditorStore();
     const fieldWidget = editorStore.addWidget('FieldInput', undefined, {
       label: 'Email',
-      placeholder: 'Enter your email*',
+      placeholder: 'Email*',
       value: '',
       required: true,
       inputType: 'email',

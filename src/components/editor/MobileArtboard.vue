@@ -639,7 +639,7 @@
                       : 'top-[26px] text-[14px] leading-[20px] text-[#737373] font-normal'
                   ]"
                 >
-                  {{ isFieldLabelFloating(widget) ? (widget.props.label || 'Email') : (widget.props.placeholder || `Enter your ${(widget.props.label || 'email').toLowerCase()}*`) }}<span v-if="isFieldLabelFloating(widget) && (widget.props.required ?? true)">*</span>
+                  {{ isFieldLabelFloating(widget) ? (widget.props.label || 'Email') : (widget.props.placeholder || `${widget.props.label || 'Email'}*`) }}<span v-if="isFieldLabelFloating(widget) && (widget.props.required ?? true)">*</span>
                 </label>
 
                 <!-- Input Row with Underline Stack & Jitter Shake on Error -->
@@ -796,7 +796,7 @@
                         : 'top-[26px] text-[14px] leading-[20px] text-[#737373] font-normal'
                     ]"
                   >
-                    {{ isFormItemFloating(widget.id, field) ? (field.name || 'Field') : (field.placeholder || `Enter your ${(field.name || 'details').toLowerCase()}*`) }}<span v-if="isFormItemFloating(widget.id, field) && (field.required !== false)">*</span>
+                    {{ isFormItemFloating(widget.id, field) ? (field.name || 'Field') : (field.placeholder || `${field.name || 'Field'}*`) }}<span v-if="isFormItemFloating(widget.id, field) && (field.required !== false)">*</span>
                   </label>
 
                   <!-- Input Row with Underline Stack -->
@@ -1569,7 +1569,7 @@ more</span>
                 >
                   <input 
                     v-model="modalInputValue"
-                    :placeholder="modalDisplayProps.fieldPlaceholder || (modalDisplayProps.fieldType === 'text' ? 'Enter your text*' : 'Enter your email*')"
+                    :placeholder="modalDisplayProps.fieldPlaceholder || (modalDisplayProps.fieldType === 'text' ? 'Text*' : 'Email*')"
                     :type="modalDisplayProps.fieldType === 'text' ? 'text' : 'email'"
                     :inputmode="modalDisplayProps.fieldType === 'text' ? 'text' : 'email'"
                     class="w-full font-707 text-[14px] leading-[20px] text-black placeholder:text-neutral-400 bg-transparent border-none outline-none p-0 m-0"

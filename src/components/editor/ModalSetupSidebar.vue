@@ -139,7 +139,7 @@
         <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
           <input 
             v-model="fieldPlaceholder"
-            :placeholder="fieldType === 'tel' || fieldType === 'whatsapp' ? '81234567890' : (fieldType === 'text' ? 'Enter your text*' : 'Enter your email*')"
+            :placeholder="fieldType === 'tel' || fieldType === 'whatsapp' ? '81234567890' : (fieldType === 'text' ? 'Text*' : 'Email*')"
             class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400"
           />
         </div>
@@ -621,7 +621,7 @@ const globalSlotsCapacity = computed({
 });
 
 const fieldPlaceholder = computed({
-  get: () => targetModalData.value.fieldPlaceholder || 'Enter your email*',
+  get: () => targetModalData.value.fieldPlaceholder || 'Email*',
   set: (val: string) => {
     updateModalData({ fieldPlaceholder: val });
   }
@@ -643,15 +643,15 @@ function setFieldType(val: 'email' | 'tel' | 'text') {
     currentPlaceholder.toLowerCase().includes('whatsapp') || 
     currentPlaceholder.toLowerCase().includes('text') || 
     currentPlaceholder === '81234567890' ||
-    currentPlaceholder === 'Enter your email*' ||
-    currentPlaceholder === 'Enter your text*'
+    currentPlaceholder === 'Email*' ||
+    currentPlaceholder === 'Text*'
   ) {
     if (val === 'tel') {
       fieldPlaceholder.value = '81234567890';
     } else if (val === 'text') {
-      fieldPlaceholder.value = 'Enter your text*';
+      fieldPlaceholder.value = 'Text*';
     } else {
-      fieldPlaceholder.value = 'Enter your email*';
+      fieldPlaceholder.value = 'Email*';
     }
   }
 }
@@ -707,7 +707,7 @@ function selectVariant(v: ModalVariant) {
   } else if (v === 'message-field') {
     defaultProps.title = 'Update Your Email';
     defaultProps.subtitle = 'Please provide a valid email address. We will resend your E-Pass immediately.';
-    defaultProps.fieldPlaceholder = 'Enter your email*';
+    defaultProps.fieldPlaceholder = 'Email*';
     defaultProps.fieldType = 'email';
     defaultProps.buttonText = 'Done';
     defaultProps.buttonVariant = 'black';

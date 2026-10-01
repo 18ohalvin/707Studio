@@ -577,11 +577,11 @@ function addRegistrationFormWidget() {
     titleTypographyStyle: 'heading-3',
     typographyStyle: 'heading-3',
     fields: [
-      { id: 'f_fn', name: 'First Name', placeholder: 'Enter your first name*', type: 'text', required: true, value: '' },
-      { id: 'f_ln', name: 'Last Name', placeholder: 'Enter your last name*', type: 'text', required: true, value: '' },
-      { id: 'f_em', name: 'Email Address', placeholder: 'Enter your email address*', type: 'email', required: true, value: '' },
-      { id: 'f_wa', name: 'WhatsApp Number', placeholder: 'Enter your whatsapp number*', type: 'tel', countryCode: '+62', required: true, value: '' },
-      { id: 'f_ig', name: 'Instagram Handle', placeholder: 'Enter your instagram handle*', type: 'text', required: true, value: '' }
+      { id: 'f_fn', name: 'First Name', placeholder: 'First Name*', type: 'text', required: true, value: '' },
+      { id: 'f_ln', name: 'Last Name', placeholder: 'Last Name*', type: 'text', required: true, value: '' },
+      { id: 'f_em', name: 'Email Address', placeholder: 'Email Address*', type: 'email', required: true, value: '' },
+      { id: 'f_wa', name: 'WhatsApp Number', placeholder: 'WhatsApp Number*', type: 'tel', countryCode: '+62', required: true, value: '' },
+      { id: 'f_ig', name: 'Instagram Handle', placeholder: 'Instagram Handle*', type: 'text', required: true, value: '' }
     ]
   });
 }
