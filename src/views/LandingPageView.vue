@@ -239,18 +239,18 @@
     <Transition name="apple-dock-fade">
       <div 
         v-if="showContactModal" 
-        class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade"
+        class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showContactModal = false"
       >
-        <div class="bg-white rounded-[16px] border border-black/10 p-6 w-full max-w-[420px] shadow-2xl flex flex-col gap-4 animate-apple-pop">
+        <div class="backdrop-blur-2xl bg-white/90 rounded-[16px] border border-white/60 p-6 w-full max-w-[420px] shadow-[0px_20px_50px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] flex flex-col gap-4 animate-apple-pop">
           <div class="flex items-center justify-between">
             <h3 class="font-707 font-medium text-[16px] text-black">Contact UI/UX Team</h3>
-            <button @click="showContactModal = false" class="text-neutral-400 hover:text-black text-xl font-bold">×</button>
+            <button @click="showContactModal = false" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
           </div>
           <p class="font-707 text-[13px] text-neutral-600 leading-relaxed">
             Need custom widgets, tailored brand activations, or design review? Reach out directly to the 707 Design Systems team.
           </p>
-          <div class="bg-[#f5f5f5] p-3 rounded-lg border border-black/5 text-[12px] font-707 text-neutral-700">
+          <div class="bg-black/[0.03] p-3 rounded-lg border border-black/5 text-[12px] font-707 text-neutral-700">
             <strong>Lead Designer:</strong> uiux@707designstudio.internal<br />
             <strong>Slack:</strong> #707-design-studio-help
           </div>
@@ -268,11 +268,11 @@
     <Transition name="apple-dock-fade">
       <div 
         v-if="showNotificationToast" 
-        class="fixed top-[64px] right-[24px] z-50 bg-white border border-black/10 rounded-xl p-4 shadow-xl flex items-center gap-3 animate-apple-slide-up"
+        class="fixed top-[64px] right-[24px] z-50 backdrop-blur-2xl bg-white/90 border border-white/60 rounded-2xl p-4 shadow-[0px_12px_40px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-3 animate-apple-slide-up select-none"
       >
         <div class="size-2 rounded-full bg-emerald-500 animate-ping" />
-        <p class="font-707 text-[12px] text-black">All design systems and cloud sync are up to date.</p>
-        <button @click="showNotificationToast = false" class="text-neutral-400 hover:text-black ml-2 font-bold">×</button>
+        <p class="font-707 text-[12px] text-black font-medium">{{ toastMessage }}</p>
+        <button @click="showNotificationToast = false" class="text-neutral-400 hover:text-black ml-2 font-bold cursor-pointer">×</button>
       </div>
     </Transition>
 
@@ -315,18 +315,29 @@ const showSignInModal = ref(false);
 const showContactModal = ref(false);
 const showSettingsModal = ref(false);
 const showNotificationToast = ref(false);
+const toastMessage = ref('All design systems and cloud sync are up to date.');
+let toastTimer: any = null;
 const projectsSectionRef = ref<HTMLElement | null>(null);
+
+function triggerToast(msg: string) {
+  if (toastTimer) clearTimeout(toastTimer);
+  toastMessage.value = msg;
+  showNotificationToast.value = true;
+  toastTimer = setTimeout(() => {
+    showNotificationToast.value = false;
+  }, 3500);
+}
 
 onMounted(() => {
   editorStore.loadProjects();
 });
 
 function handleSignedIn(brandName: string) {
-  showNotificationToast.value = true;
+  triggerToast(`Signed in to ${brandName} Brand Account.`);
 }
 
 function handleAnalytics() {
-  alert('707 Analytics: Campaign conversions, RSVP rate, and traffic analytics dashboard is up to date.');
+  triggerToast('707 Analytics: Campaign conversions, RSVP rate, and traffic analytics dashboard is up to date.');
 }
 
 function handleSignOut() {

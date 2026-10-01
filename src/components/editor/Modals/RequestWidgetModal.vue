@@ -78,7 +78,7 @@ const widgetName = ref('');
 const requirements = ref('');
 
 function submitWidgetRequest() {
-  alert(`Widget request "${widgetName.value}" sent to the 707 UI/UX engineering team.`);
+  editorStore.showToast(`Widget request "${widgetName.value}" sent to the 707 UI/UX team.`);
   editorStore.isRequestWidgetModalOpen = false;
   widgetName.value = '';
   requirements.value = '';

@@ -197,8 +197,8 @@
         v-if="editorStore.activeToastMessage" 
         class="fixed top-[76px] left-1/2 -translate-x-1/2 z-[80] select-none pointer-events-none"
       >
-        <div class="backdrop-blur-2xl bg-black/85 text-white border border-white/20 px-4 py-2 rounded-full text-[12px] font-707 font-medium shadow-[0px_10px_30px_rgba(0,0,0,0.25)] flex items-center gap-2 tracking-tight animate-apple-pop">
-          <AlertCircle class="w-4 h-4 text-amber-400 shrink-0" />
+        <div class="backdrop-blur-2xl bg-white/90 text-black border border-white/60 px-4 py-2.5 rounded-full text-[12px] font-707 font-medium shadow-[0px_12px_36px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-2.5 tracking-tight animate-apple-pop">
+          <AlertCircle class="w-4 h-4 text-amber-500 shrink-0" />
           <span>{{ editorStore.activeToastMessage }}</span>
         </div>
       </div>

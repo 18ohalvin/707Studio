@@ -7,7 +7,7 @@
     >
       <!-- Modal Box (Figma Node 212:7461) -->
       <div 
-        class="backdrop-blur-[5px] bg-[rgba(255,255,255,0.95)] border border-[#ededed] flex flex-col items-start p-[24px] rounded-[8px] shadow-[0px_0px_40.5px_0px_rgba(0,0,0,0.1)] w-full max-w-[408px] apple-modal-box"
+        class="backdrop-blur-2xl bg-white/90 border border-white/60 flex flex-col items-start p-[24px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] w-full max-w-[408px] apple-modal-box"
         data-node-id="212:7461"
         data-name="Access your Brand Account Modal"
       >
@@ -95,6 +95,7 @@
 import { ref, watch, nextTick } from 'vue';
 import { X } from 'lucide-vue-next';
 import { useBrandStore } from '../../stores/brandStore.ts';
+import { useEditorStore } from '../../stores/editorStore.ts';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -106,6 +107,7 @@ const emit = defineEmits<{
 }>();
 
 const brandStore = useBrandStore();
+const editorStore = useEditorStore();
 
 const brandId = ref('');
 const brandPin = ref('');
@@ -122,7 +124,7 @@ watch(() => props.isOpen, async (open) => {
 });
 
 function handleForgotPin() {
-  alert('Please contact your 707 Brand Account Administrator or UI/UX Team on Slack (#707-design-studio-help) to reset your brand PIN.');
+  editorStore.showToast('Please contact your 707 Brand Admin or Slack (#707-design-studio-help) to reset PIN.');
 }
 
 function handleSignIn() {

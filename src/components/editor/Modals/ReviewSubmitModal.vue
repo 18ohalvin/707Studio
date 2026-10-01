@@ -7,7 +7,7 @@
     >
       <!-- Modal Box (Figma Node 212:8954) -->
       <div 
-        class="backdrop-blur-[5px] bg-[rgba(255,255,255,0.95)] border border-[#ededed] flex flex-col items-start p-[24px] pb-[32px] rounded-[8px] shadow-[0px_0px_40.5px_0px_rgba(0,0,0,0.1)] w-full max-w-[432px] apple-modal-box"
+        class="backdrop-blur-2xl bg-white/90 border border-white/60 flex flex-col items-start p-[24px] pb-[32px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] w-full max-w-[432px] apple-modal-box"
         data-node-id="212:8954"
         data-name="Leave Edit / Submit for Review Modal"
       >
@@ -117,7 +117,7 @@ async function copyUrl() {
 function handleSubmit() {
   editorStore.setPageStatus('pending_review', 'Brand Team', 'Submitted for UI/UX Division final approval');
   editorStore.isReviewModalOpen = false;
-  alert('Design successfully submitted to the UI/UX Division for final approval!');
+  editorStore.showToast('Design successfully submitted to the UI/UX Division for final approval!');
 }
 </script>
 

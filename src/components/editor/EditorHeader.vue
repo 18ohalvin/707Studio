@@ -128,7 +128,7 @@ function handleAvatarError() {
 }
 
 function handleAnalytics() {
-  alert('707 Analytics: Campaign conversions, RSVP rate, and traffic analytics dashboard is up to date.');
+  editorStore.showToast('707 Analytics: Campaign conversions, RSVP rate, and traffic analytics dashboard is up to date.');
 }
 
 function handleSettings() {

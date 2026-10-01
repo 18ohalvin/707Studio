@@ -1577,12 +1577,12 @@ more</span>
           @click.stop="handleBackdropClick"
         >
           <!-- Frosted Dark Backdrop -->
-          <div class="absolute inset-0 bg-black/50 backdrop-blur-[3px] transition-opacity" />
+          <div class="absolute inset-0 bg-black/40 backdrop-blur-md transition-opacity" />
 
-          <!-- Bottom Sheet Card (White rounded-t-[16px], 24px padding, shadow) -->
+          <!-- Bottom Sheet Card (White background with premium Apple blur transparent effect) -->
           <div 
             @click.stop
-            class="apple-bottom-sheet-card relative z-10 w-full bg-white text-black p-[24px] rounded-t-[16px] shadow-[0px_-10px_40px_rgba(0,0,0,0.22),0_-1px_3px_rgba(0,0,0,0.06)] max-h-[85%] overflow-y-auto no-scrollbar"
+            class="apple-bottom-sheet-card relative z-10 w-full backdrop-blur-2xl bg-white/90 border-t border-white/60 text-black p-[24px] rounded-t-[16px] shadow-[0px_-10px_40px_rgba(0,0,0,0.16),0_-1px_3px_rgba(0,0,0,0.05)] max-h-[85%] overflow-y-auto no-scrollbar"
             data-node-id="276:4722"
             data-name="Bottom Modal Popup"
           >
