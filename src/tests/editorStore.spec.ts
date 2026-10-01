@@ -481,4 +481,41 @@ describe('707 Activation Builder Stores', () => {
     const checkWithModal = editorStore.canAddWidget('GuestEPass');
     expect(checkWithModal.allowed).toBe(true);
   });
+
+  it('supports ProjectSettings configuration and System Access ID generation for door scanners', () => {
+    const editorStore = useEditorStore();
+    expect(editorStore.isProjectSettingsOpen).toBe(false);
+
+    // Open project settings modal
+    editorStore.isProjectSettingsOpen = true;
+    expect(editorStore.isProjectSettingsOpen).toBe(true);
+
+    // Verify default project settings structure
+    expect(editorStore.projectSettings.systemAccessId).toBeTruthy();
+    expect(editorStore.projectSettings.globalSlotsCapacity).toBe(25);
+    expect(editorStore.projectSettings.autoSoldOutBehavior).toBe('badge');
+
+    // Update settings
+    editorStore.updateProjectSettings({
+      projectName: 'atmos x Salomon Speedcross Launch',
+      customSlug: 'salomon-speedcross-launch',
+      globalSlotsCapacity: 50,
+      autoSoldOutBehavior: 'waitlist',
+      allowMultipleEntries: true,
+      defaultCountryCode: '+65'
+    });
+
+    expect(editorStore.projectTitle).toBe('atmos x Salomon Speedcross Launch');
+    expect(editorStore.projectSettings.projectName).toBe('atmos x Salomon Speedcross Launch');
+    expect(editorStore.projectSettings.customSlug).toBe('salomon-speedcross-launch');
+    expect(editorStore.projectSettings.globalSlotsCapacity).toBe(50);
+    expect(editorStore.projectSettings.autoSoldOutBehavior).toBe('waitlist');
+
+    // Generate new System Access ID
+    const newKey = editorStore.generateSystemAccessId('707-DOOR-ATMOS-2026');
+    expect(newKey).toContain('707-DOOR-ATMOS-2026-');
+
+    editorStore.updateProjectSettings({ systemAccessId: newKey });
+    expect(editorStore.projectSettings.systemAccessId).toBe(newKey);
+  });
 });

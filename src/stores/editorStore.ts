@@ -1,7 +1,7 @@
 import { apiFetch } from '../services/apiClient.ts';
 import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
-import type { WidgetItem, WidgetType, ActivationPage, ViewportMode, PageStatus, ProjectItem } from '../types/editor.ts';
+import type { WidgetItem, WidgetType, ActivationPage, ViewportMode, PageStatus, ProjectItem, ProjectSettings } from '../types/editor.ts';
 
 export type MediaGalleryTarget = 'bannerImage' | 'brandLogo' | 'replaceBannerImage' | 'addNewMedia' | 'choiceOptionImage';
 
@@ -102,6 +102,55 @@ export const useEditorStore = defineStore('editor', () => {
   const isReviewModalOpen = ref<boolean>(false);
   const isTestFormModalOpen = ref<boolean>(false);
   const isRequestWidgetModalOpen = ref<boolean>(false);
+  const isProjectSettingsOpen = ref<boolean>(false);
+
+  // Project Settings State
+  const defaultProjectSettings: ProjectSettings = {
+    projectName: 'atmos x ASICS Gel Kayano Pandan RSVP Form',
+    customSlug: 'gel-kayano-pandan-rsvp',
+    startDate: '2026-10-01',
+    endDate: '2026-10-31',
+    seoTitle: 'atmos x ASICS Gel Kayano Pandan RSVP | 707 Activation',
+    seoDescription: 'RSVP now for exclusive access and guest passes to the official atmos x ASICS Gel Kayano Pandan activation.',
+    socialThumbnailUrl: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=1200&q=80',
+    globalSlotsCapacity: 25,
+    autoSoldOutBehavior: 'badge',
+    allowMultipleEntries: false,
+    defaultCountryCode: '+62',
+    systemAccessId: '707-DOOR-AUTH-2026-X89',
+    qrPayloadType: 'secure_hash',
+    resendChannel: 'both',
+    checkInNotice: 'Please present this digital E-Pass QR code at the entrance scanner desk. Non-transferable.',
+    termsUrl: 'https://707.co.id/terms-and-conditions',
+    slackWebhookUrl: 'https://hooks.slack.com/services/T0707/B0707/activation-alerts',
+    slackChannel: '#campaign-reviews-707',
+    accessStatus: 'draft',
+    reviewerEmail: 'uiux-leads@707.co.id'
+  };
+
+  const projectSettings = ref<ProjectSettings>({ ...defaultProjectSettings });
+
+  function generateSystemAccessId(prefix = '707-DOOR-AUTH-2026'): string {
+    const randomHex = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `${prefix}-${randomHex}`;
+  }
+
+  function updateProjectSettings(newSettings: Partial<ProjectSettings>) {
+    projectSettings.value = {
+      ...projectSettings.value,
+      ...newSettings
+    };
+    if (newSettings.projectName && newSettings.projectName !== projectTitle.value) {
+      projectTitle.value = newSettings.projectName;
+    }
+  }
+
+  // Keep projectTitle in sync with projectSettings.projectName
+  watch(projectTitle, (newVal) => {
+    if (newVal && projectSettings.value.projectName !== newVal) {
+      projectSettings.value.projectName = newVal;
+    }
+  });
 
   // Floating Toast Notification
   const activeToastMessage = ref<string | null>(null);
@@ -1259,6 +1308,10 @@ export const useEditorStore = defineStore('editor', () => {
     isReviewModalOpen,
     isTestFormModalOpen,
     isRequestWidgetModalOpen,
+    isProjectSettingsOpen,
+    projectSettings,
+    generateSystemAccessId,
+    updateProjectSettings,
     isProjectLoading,
     triggerProjectLoading,
     canUndo,

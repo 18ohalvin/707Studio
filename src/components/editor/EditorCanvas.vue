@@ -150,7 +150,7 @@
       <ViewportControls 
         v-if="!editorStore.isPagesOpen && !editorStore.isPreviewMode"
         @click.stop
-        @open-settings="editorStore.isReviewModalOpen = true"
+        @open-settings="editorStore.isProjectSettingsOpen = true"
       />
     </Transition>
 
