@@ -1378,16 +1378,16 @@ more</span>
                   >
                     <!-- Header Row: Option Label (Left) and Date Sublabel (Right) -->
                     <div class="flex items-baseline justify-between w-full font-707 gap-3">
-                      <span class="font-707 font-medium text-[14px] leading-[20px] text-black truncate">
+                      <span class="font-707 font-medium text-[12px] leading-[18px] text-black truncate">
                         {{ slot.label }}
                       </span>
-                      <span v-if="slot.sublabel" class="shrink-0 font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-500">
+                      <span v-if="slot.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[18px] text-neutral-500">
                         {{ slot.sublabel }}
                       </span>
                     </div>
                     <!-- Body Row: Description (Following Detail Choice Style 100%) -->
-                    <div class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-600 whitespace-pre-line">
-                      {{ slot.description || 'Your Event Descriptions Detail' }}
+                    <div v-if="slot.description" class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-600 whitespace-pre-line">
+                      {{ slot.description }}
                     </div>
                   </div>
                 </div>
@@ -3463,26 +3463,41 @@ function getVenue(widget: any) {
 }
 
 function getValidForSessions(widget: any) {
-  // Check if user selected any options in MultipleChoice widgets
-  const choiceWidget = editorStore.pages.flatMap(p => p.widget_tree).find(w => 
-    w.type === 'MultipleChoice' && w.props?.selectedValues && w.props.selectedValues.length > 0
-  );
-  if (choiceWidget && choiceWidget.props?.selectedValues?.length > 0) {
-    const selectedOptions = (choiceWidget.props.options || []).filter((opt: any) => 
-      choiceWidget.props.selectedValues.includes(opt.id)
-    );
-    if (selectedOptions.length > 0) {
-      return selectedOptions.map((opt: any, idx: number) => ({
+  // 1. Check if user selected any options in MultipleChoice widgets across pages
+  const choiceWidgets = editorStore.pages.flatMap(p => p.widget_tree).filter(w => w.type === 'MultipleChoice');
+  
+  for (const cw of choiceWidgets) {
+    if (cw.props?.selectedValues && cw.props.selectedValues.length > 0) {
+      const selectedOptions = (cw.props.options || []).filter((opt: any) => 
+        cw.props.selectedValues.includes(opt.id)
+      );
+      if (selectedOptions.length > 0) {
+        return selectedOptions.map((opt: any, idx: number) => ({
+          id: opt.id,
+          label: opt.label || `Pass Option ${idx + 1}`,
+          sublabel: opt.sublabel || '',
+          description: opt.description || ''
+        }));
+      }
+    }
+  }
+
+  // 2. If no selection active yet, check if a MultipleChoice exists in the project and use its options
+  for (const cw of choiceWidgets) {
+    if (cw.props?.options && cw.props.options.length > 0) {
+      return cw.props.options.slice(0, 2).map((opt: any, idx: number) => ({
         id: opt.id,
-        label: opt.label || `[SESSION / DAY ${idx + 1}]`,
-        sublabel: opt.sublabel || '[EVENT DATE]',
-        description: opt.description || '[EVENT DESCRIPTION DETAIL]'
+        label: opt.label || `Pass Option ${idx + 1}`,
+        sublabel: opt.sublabel || '',
+        description: opt.description || ''
       }));
     }
   }
+
+  // 3. Fallback
   return widget.props?.validForFallback || [
-    { id: 'opt_1', label: '[SESSION / DAY 1]', sublabel: '[EVENT DATE]', description: '[EVENT DESCRIPTION DETAIL]' },
-    { id: 'opt_2', label: '[SESSION / DAY 2]', sublabel: '[EVENT DATE]', description: '[EVENT DESCRIPTION DETAIL]' }
+    { id: 'opt_1', label: 'Pass Option 1', sublabel: '24 Oct 2026', description: 'Access to activation area and special event lounge' },
+    { id: 'opt_2', label: 'Pass Option 2', sublabel: '25 Oct 2026', description: 'Access to activation area and special event lounge' }
   ];
 }
 

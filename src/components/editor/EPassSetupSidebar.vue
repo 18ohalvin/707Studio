@@ -68,34 +68,7 @@
       </div>
     </div>
 
-    <!-- Section 2: Guest Identity & Data Binding -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
-      <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-        Guest Name Binding
-      </p>
-
-      <!-- Auto Binding Mode -->
-      <div class="flex flex-col gap-[6px] w-full">
-        <div class="flex items-center justify-between">
-          <span class="font-707 text-[12px] text-neutral-600">Name Source</span>
-          <span class="font-707 text-[11px] text-neutral-400">
-            {{ availableNameFields.length > 0 ? 'Linked to Form' : 'Auto-detected' }}
-          </span>
-        </div>
-        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
-          <input 
-            v-model="guestNameFallback"
-            placeholder="e.g. [GUEST NAME]"
-            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
-          />
-        </div>
-        <p class="font-707 text-[11px] text-neutral-400 leading-normal">
-          In live mode, this automatically populates from the visitor's submitted Name input.
-        </p>
-      </div>
-    </div>
-
-    <!-- Section 3: Terms & Conditions -->
+    <!-- Section 2: Terms & Conditions -->
     <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
       <div class="flex items-center justify-between w-full">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
@@ -172,15 +145,6 @@ const venue = computed({
   }
 });
 
-const guestNameFallback = computed({
-  get: () => currentWidget.value?.props?.guestNameFallback || '',
-  set: (val: string) => {
-    if (currentWidget.value) {
-      editorStore.updateWidgetProps(currentWidget.value.id, { guestNameFallback: val });
-    }
-  }
-});
-
 const termsList = computed({
   get: () => currentWidget.value?.props?.terms || [
     '[ENTRY CONDITION OR LEGAL RULE 1]',
@@ -206,12 +170,6 @@ function removeTermRule(index: number) {
   current.splice(index, 1);
   termsList.value = current;
 }
-
-const availableNameFields = computed(() => {
-  return editorStore.pages.flatMap(p => 
-    p.widget_tree.filter(w => w.type === 'FieldInput')
-  );
-});
 
 const projectBrandLogoUrl = computed(() => {
   for (const page of editorStore.pages) {
