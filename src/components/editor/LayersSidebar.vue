@@ -183,6 +183,8 @@ function getWidgetDisplayName(widget: WidgetItem): string {
       return 'Rules Accordion';
     case 'LocationCard':
       return 'Location Card';
+    case 'GuestEPass':
+      return 'Guest E-Pass';
     default:
       return widget.type;
   }
@@ -190,6 +192,8 @@ function getWidgetDisplayName(widget: WidgetItem): string {
 
 function getWidgetSummary(widget: WidgetItem): string {
   switch (widget.type) {
+    case 'GuestEPass':
+      return widget.props.heading ? widget.props.heading.replace(/\n/g, ' ') : 'GUEST E-PASS SUMMARY';
     case 'TextBanner':
       return widget.props.text || widget.props.placeholder || 'STANLEY FAVORITE BEST OF THE BEST';
     case 'ActionButton':

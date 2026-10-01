@@ -504,6 +504,7 @@ export const useEditorStore = defineStore('editor', () => {
           showIcon: false,
           iconName: 'ticket',
           showTerms: false,
+          termsTitle: 'TERMS & CONDITIONS:',
           accessId: '020305-1008-1245',
           validForFallback: [
             { id: 'opt_1', label: 'Day 1', sublabel: '2 September 2026', description: 'Access to main floor & VIP lounge' },

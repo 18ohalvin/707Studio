@@ -27,7 +27,7 @@
         </button>
       </div>
       <p class="font-707 text-[12px] text-neutral-500 mt-1">
-        Configure QR mode, headline, venue location, action button, and entry terms.
+        Configure QR code visibility, headline, venue location, action button, troubleshoot notice, and entry rules.
       </p>
     </div>
 
@@ -60,7 +60,7 @@
             QR Code Function
           </p>
           <p class="font-707 text-[11px] text-neutral-500">
-            {{ showQrCode ? 'Enabled: Displaying QR box under pass information' : 'Disabled: Clean non-QR ticket summary' }}
+            {{ showQrCode ? 'Enabled: Positioned above pass information fields' : 'Disabled: Clean non-QR ticket summary' }}
           </p>
         </div>
 
@@ -83,28 +83,28 @@
       </div>
     </div>
 
-    <!-- Section 2: Pass Information Fields Configuration (Headline & Venue) -->
+    <!-- Section 2: Pass Headline & Event Venue Setup -->
     <div class="content-stretch flex flex-col gap-[16px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="flex items-center justify-between w-full">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Pass Information Fields
+          Pass Information & Headline
         </p>
-        <span class="font-707 text-[10px] text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-[4px] border border-neutral-200 uppercase">
-          {{ showQrCode ? 'QR Mode' : 'Non-QR Mode' }}
-        </span>
       </div>
 
-      <!-- Headline -->
+      <!-- Headline (Responsive Multiline) -->
       <div class="flex flex-col gap-[6px] w-full">
-        <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
-          Headline Text (H2)
-        </p>
-        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex min-h-[54px] p-[10px] rounded-[8px] w-full bg-white transition-colors">
+        <div class="flex items-center justify-between">
+          <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
+            Headline Text (H2)
+          </p>
+          <span class="text-[10px] font-707 text-neutral-400">Multiline auto-wrap</span>
+        </div>
+        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex min-h-[68px] p-[10px] rounded-[8px] w-full bg-white transition-colors">
           <textarea 
             v-model="heading"
-            rows="2"
-            placeholder="SUCCESS.&#10;YOUR PASS HAS BEEN SENT."
-            class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase tracking-tight resize-none"
+            rows="3"
+            placeholder="SUCCESS.&#10;YOUR PASS HAS&#10;BEEN SENT."
+            class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase tracking-tight resize-y leading-[18px]"
           />
         </div>
       </div>
@@ -360,12 +360,76 @@
       </Transition>
     </div>
 
-    <!-- Section 4: Terms & Conditions with Apple-Style Toggle Switch (Default Off) -->
+    <!-- Section 4: Troubleshoot / Disclaimer Notice Section -->
+    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+      <div class="flex items-center justify-between w-full">
+        <div class="flex flex-col">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Troubleshoot & Help Notice
+          </p>
+          <p class="font-707 text-[11px] text-neutral-500">
+            {{ showFooterNotice ? 'Visible under valid sessions list' : 'Hidden from ticket' }}
+          </p>
+        </div>
+
+        <!-- Modern Elegant Apple Style Toggle Switch -->
+        <button
+          type="button"
+          role="switch"
+          :aria-checked="showFooterNotice"
+          @click="toggleFooterNotice"
+          class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+          :class="showFooterNotice ? 'bg-black' : 'bg-[#e5e5ea]'"
+          title="Toggle Help Notice"
+        >
+          <span
+            aria-hidden="true"
+            class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+            :class="showFooterNotice ? 'translate-x-[18px]' : 'translate-x-0'"
+          />
+        </button>
+      </div>
+
+      <!-- Troubleshoot Notice Inputs (Visible only when toggle is on) -->
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="transform opacity-0 -translate-y-2"
+        enter-to-class="transform opacity-100 translate-y-0"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="transform opacity-100 translate-y-0"
+        leave-to-class="transform opacity-0 -translate-y-2"
+      >
+        <div v-if="showFooterNotice" class="flex flex-col gap-[10px] w-full pt-1">
+          <div class="flex flex-col gap-1 w-full">
+            <span class="font-707 text-[11px] font-medium text-neutral-600">Notice Title</span>
+            <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[34px] items-center px-[12px] rounded-[6px] w-full bg-white transition-colors">
+              <input 
+                v-model="footerNoticeTitle"
+                placeholder="DIDN'T RECEIVE THE EMAIL?"
+                class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
+              />
+            </div>
+          </div>
+          <div class="flex flex-col gap-1 w-full">
+            <span class="font-707 text-[11px] font-medium text-neutral-600">Notice Message & Link</span>
+            <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[34px] items-center px-[12px] rounded-[6px] w-full bg-white transition-colors">
+              <input 
+                v-model="footerNoticeText"
+                placeholder="Check your spam folder or contact support"
+                class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400"
+              />
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </div>
+
+    <!-- Section 5: Terms & Conditions / Legal Rules -->
     <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
       <div class="flex items-center justify-between w-full">
         <div class="flex flex-col">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Terms & Conditions
+            Terms & Conditions / Rules
           </p>
           <p class="font-707 text-[11px] text-neutral-500">
             {{ showTerms ? 'Enabled on ticket summary' : 'Disabled by default' }}
@@ -400,7 +464,18 @@
         leave-to-class="transform opacity-0 -translate-y-2"
       >
         <div v-if="showTerms" class="flex flex-col gap-[12px] w-full pt-1">
-          <div class="flex items-center justify-between w-full">
+          <div class="flex flex-col gap-1 w-full">
+            <span class="font-707 text-[11px] font-medium text-neutral-600">Section Title</span>
+            <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[34px] items-center px-[12px] rounded-[6px] w-full bg-white transition-colors">
+              <input 
+                v-model="termsTitle"
+                placeholder="TERMS & CONDITIONS:"
+                class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
+              />
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between w-full pt-1">
             <span class="font-707 text-[12px] font-medium text-neutral-700">Rules List</span>
             <button 
               type="button"
@@ -656,7 +731,39 @@ function setIconName(name: string) {
   iconName.value = name;
 }
 
-// 4. Terms & Conditions Toggle & List
+// 4. Troubleshoot & Help Notice Toggle
+const showFooterNotice = computed({
+  get: () => currentWidget.value?.props?.showFooterNotice ?? true,
+  set: (val: boolean) => {
+    if (currentWidget.value) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { showFooterNotice: val });
+    }
+  }
+});
+
+function toggleFooterNotice() {
+  showFooterNotice.value = !showFooterNotice.value;
+}
+
+const footerNoticeTitle = computed({
+  get: () => currentWidget.value?.props?.footerNoticeTitle ?? "DIDN'T RECEIVE THE EMAIL?",
+  set: (val: string) => {
+    if (currentWidget.value) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { footerNoticeTitle: val });
+    }
+  }
+});
+
+const footerNoticeText = computed({
+  get: () => currentWidget.value?.props?.footerNoticeText ?? "Check your spam folder or contact support",
+  set: (val: string) => {
+    if (currentWidget.value) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { footerNoticeText: val });
+    }
+  }
+});
+
+// 5. Terms & Conditions / Legal Rules Toggle & List
 const showTerms = computed({
   get: () => currentWidget.value?.props?.showTerms ?? false,
   set: (val: boolean) => {
@@ -669,6 +776,15 @@ const showTerms = computed({
 function toggleTerms() {
   showTerms.value = !showTerms.value;
 }
+
+const termsTitle = computed({
+  get: () => currentWidget.value?.props?.termsTitle || 'TERMS & CONDITIONS:',
+  set: (val: string) => {
+    if (currentWidget.value) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { termsTitle: val });
+    }
+  }
+});
 
 const termsList = computed({
   get: () => currentWidget.value?.props?.terms || [

@@ -1312,12 +1312,55 @@ more</span>
                 </div>
               </div>
 
-              <!-- 1. Big Headline Display (H2 per Feedback #2) -->
-              <h2 class="font-707 font-medium text-heading-h2 text-[22px] leading-[28px] tracking-tight uppercase text-black whitespace-pre-line mt-[2px]">
+              <!-- 1. Big Headline Display (H2 - responsive multiline without double line restriction) -->
+              <h2 class="font-707 font-medium text-heading-h2 text-[22px] leading-[28px] tracking-tight uppercase text-black whitespace-pre-line break-words mt-[2px]">
                 {{ widget.props?.heading || 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.' }}
               </h2>
 
-              <!-- 2. Pass Information Field (Available in both QR and Non-QR modes, medium font weight for data) -->
+              <!-- 2. QR Code Section (Positioned directly under Headline and ABOVE Pass Information fields) -->
+              <div 
+                v-if="widget.props?.showQrCode !== false" 
+                class="w-full flex flex-col items-center justify-center pt-[4px]"
+              >
+                <div class="size-[132px] border-[0.5px] border-black bg-[#f2f2f2] rounded-[6px] p-[10px] flex items-center justify-center relative overflow-hidden shadow-xs">
+                  <!-- Sharp SVG Vector QR Code -->
+                  <svg class="size-full text-black" viewBox="0 0 100 100" fill="currentColor">
+                    <!-- Top-Left Position Marker -->
+                    <rect x="6" y="6" width="28" height="28" fill="none" stroke="currentColor" stroke-width="5" />
+                    <rect x="15" y="15" width="10" height="10" />
+                    <!-- Top-Right Position Marker -->
+                    <rect x="66" y="6" width="28" height="28" fill="none" stroke="currentColor" stroke-width="5" />
+                    <rect x="75" y="15" width="10" height="10" />
+                    <!-- Bottom-Left Position Marker -->
+                    <rect x="6" y="66" width="28" height="28" fill="none" stroke="currentColor" stroke-width="5" />
+                    <rect x="15" y="75" width="10" height="10" />
+                    <!-- QR Data Pattern Matrix -->
+                    <rect x="42" y="8" width="6" height="6" />
+                    <rect x="52" y="8" width="6" height="6" />
+                    <rect x="42" y="20" width="6" height="12" />
+                    <rect x="52" y="26" width="6" height="6" />
+                    <rect x="8" y="42" width="6" height="6" />
+                    <rect x="20" y="42" width="12" height="6" />
+                    <rect x="38" y="40" width="8" height="8" />
+                    <rect x="52" y="42" width="6" height="6" />
+                    <rect x="66" y="42" width="12" height="6" />
+                    <rect x="84" y="42" width="8" height="8" />
+                    <rect x="8" y="54" width="18" height="6" />
+                    <rect x="32" y="52" width="6" height="12" />
+                    <rect x="44" y="54" width="14" height="6" />
+                    <rect x="64" y="54" width="8" height="14" />
+                    <rect x="78" y="54" width="14" height="6" />
+                    <rect x="42" y="66" width="6" height="8" />
+                    <rect x="52" y="68" width="6" height="6" />
+                    <rect x="78" y="66" width="6" height="14" />
+                    <rect x="42" y="80" width="16" height="6" />
+                    <rect x="64" y="80" width="8" height="12" />
+                    <rect x="86" y="84" width="6" height="8" />
+                  </svg>
+                </div>
+              </div>
+
+              <!-- 3. Pass Information Fields Grid (Positioned below QR Code, medium font weight for data values only, no bold) -->
               <div class="grid grid-cols-2 gap-x-[20px] gap-y-[16px] w-full pt-[2px]">
                 <!-- Guest Name -->
                 <div class="flex flex-col">
@@ -1370,50 +1413,7 @@ more</span>
                 </div>
               </div>
 
-              <!-- 3. QR Code Section (Only rendered when QR is ON, placed above ACCESS VALID FOR) -->
-              <div 
-                v-if="widget.props?.showQrCode !== false" 
-                class="w-full flex flex-col items-center justify-center pt-[4px]"
-              >
-                <div class="size-[132px] border-[0.5px] border-black bg-[#f2f2f2] rounded-[6px] p-[10px] flex items-center justify-center relative overflow-hidden shadow-xs">
-                  <!-- Sharp SVG Vector QR Code -->
-                  <svg class="size-full text-black" viewBox="0 0 100 100" fill="currentColor">
-                    <!-- Top-Left Position Marker -->
-                    <rect x="6" y="6" width="28" height="28" fill="none" stroke="currentColor" stroke-width="5" />
-                    <rect x="15" y="15" width="10" height="10" />
-                    <!-- Top-Right Position Marker -->
-                    <rect x="66" y="6" width="28" height="28" fill="none" stroke="currentColor" stroke-width="5" />
-                    <rect x="75" y="15" width="10" height="10" />
-                    <!-- Bottom-Left Position Marker -->
-                    <rect x="6" y="66" width="28" height="28" fill="none" stroke="currentColor" stroke-width="5" />
-                    <rect x="15" y="75" width="10" height="10" />
-                    <!-- QR Data Pattern Matrix -->
-                    <rect x="42" y="8" width="6" height="6" />
-                    <rect x="52" y="8" width="6" height="6" />
-                    <rect x="42" y="20" width="6" height="12" />
-                    <rect x="52" y="26" width="6" height="6" />
-                    <rect x="8" y="42" width="6" height="6" />
-                    <rect x="20" y="42" width="12" height="6" />
-                    <rect x="38" y="40" width="8" height="8" />
-                    <rect x="52" y="42" width="6" height="6" />
-                    <rect x="66" y="42" width="12" height="6" />
-                    <rect x="84" y="42" width="8" height="8" />
-                    <rect x="8" y="54" width="18" height="6" />
-                    <rect x="32" y="52" width="6" height="12" />
-                    <rect x="44" y="54" width="14" height="6" />
-                    <rect x="64" y="54" width="8" height="14" />
-                    <rect x="78" y="54" width="14" height="6" />
-                    <rect x="42" y="66" width="6" height="8" />
-                    <rect x="52" y="68" width="6" height="6" />
-                    <rect x="78" y="66" width="6" height="14" />
-                    <rect x="42" y="80" width="16" height="6" />
-                    <rect x="64" y="80" width="8" height="12" />
-                    <rect x="86" y="84" width="6" height="8" />
-                  </svg>
-                </div>
-              </div>
-
-              <!-- 4. ACCESS VALID FOR Section (Always replacing VALID FOR in both modes, styled based on registered choice data) -->
+              <!-- 4. ACCESS VALID FOR Section (Strictly follows choice form format: border-[0.5px] border-[#d4d4d4], excluding checkbox only) -->
               <div class="flex flex-col gap-[8px] w-full pt-[4px]">
                 <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-black uppercase tracking-tight">
                   ACCESS VALID FOR:
@@ -1423,26 +1423,44 @@ more</span>
                   <div 
                     v-for="(slot, sIdx) in getValidForSessions(widget)" 
                     :key="slot.id || sIdx"
-                    class="bg-[#f0f0f0] p-[14px] flex flex-col gap-[6px] rounded-none shadow-none w-full select-none"
+                    class="border-[0.5px] border-solid border-[#d4d4d4] bg-transparent w-full select-none rounded-none"
+                    :class="[
+                      slot.description && slot.description.trim()
+                        ? 'p-[16px] flex flex-col gap-[8px] items-start'
+                        : 'min-h-[48px] h-[48px] px-[16px] py-[12px] flex items-center justify-between'
+                    ]"
                   >
-                    <!-- Header Row: Date (Left) and Day / Session Name (Right) -->
-                    <div class="flex items-baseline justify-between w-full font-707 gap-3">
-                      <span class="font-707 font-medium text-[13px] leading-[18px] text-black">
-                        {{ getNonQrSessionDate(slot) }}
-                      </span>
-                      <span class="font-707 font-normal text-[13px] leading-[18px] text-black">
-                        {{ getNonQrSessionDay(slot) }}
-                      </span>
-                    </div>
-                    <!-- Body Row: Description if present -->
-                    <div v-if="slot.description" class="font-707 font-normal text-[12px] leading-[16px] text-neutral-600 whitespace-pre-line">
-                      {{ slot.description }}
-                    </div>
+                    <!-- Layout A: With Description -->
+                    <template v-if="slot.description && slot.description.trim()">
+                      <div class="flex items-baseline justify-between w-full font-707 gap-3">
+                        <span class="font-707 font-medium text-[13px] leading-[18px] text-black uppercase">
+                          {{ getNonQrSessionDate(slot) }}
+                        </span>
+                        <span class="shrink-0 font-707 font-normal text-[12px] leading-[18px] text-neutral-500 uppercase">
+                          {{ getNonQrSessionDay(slot) }}
+                        </span>
+                      </div>
+                      <div class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-600 whitespace-pre-line">
+                        {{ slot.description }}
+                      </div>
+                    </template>
+
+                    <!-- Layout B: Without Description -->
+                    <template v-else>
+                      <div class="flex items-center justify-between w-full font-707 gap-3">
+                        <span class="font-707 font-medium text-[13px] leading-[18px] text-black uppercase">
+                          {{ getNonQrSessionDate(slot) }}
+                        </span>
+                        <span class="shrink-0 font-707 font-normal text-[12px] leading-[16px] text-neutral-500 uppercase">
+                          {{ getNonQrSessionDay(slot) }}
+                        </span>
+                      </div>
+                    </template>
                   </div>
                 </div>
               </div>
 
-              <!-- 5. Footer Notice (Didn't receive email?) -->
+              <!-- 5. Footer Troubleshoot / Disclaimer Notice (Didn't receive email?) -->
               <div v-if="widget.props?.showFooterNotice ?? true" class="flex items-start gap-[10px] w-full pt-[6px]">
                 <div class="size-[18px] rounded-full bg-black text-white flex items-center justify-center shrink-0 mt-[1px]">
                   <span class="font-bold text-[11px] leading-none font-serif italic">i</span>
@@ -1460,10 +1478,10 @@ more</span>
                 </div>
               </div>
 
-              <!-- 6. Terms & Conditions (Only rendered if toggled ON by user) -->
+              <!-- 6. Terms & Conditions / Rules (Configurable inside E-Pass Setup, no independent layers) -->
               <div v-if="widget.props?.showTerms && getTerms(widget).length > 0" class="flex flex-col gap-[8px] w-full pt-[4px]">
                 <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
-                  TERMS & CONDITIONS:
+                  {{ widget.props?.termsTitle || 'TERMS & CONDITIONS:' }}
                 </span>
                 <div class="flex flex-col gap-[6px] w-full">
                   <div 
