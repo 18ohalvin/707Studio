@@ -1249,7 +1249,10 @@ more</span>
             <!-- 10. GuestEPass Widget (Figma Node 222:4188) -->
             <div 
               v-else-if="widget.type === 'GuestEPass'" 
-              class="relative w-full px-[16px] py-[16px] select-none group/epass text-black bg-transparent flex flex-col gap-[20px]"
+              class="relative w-full px-[16px] pb-[16px] select-none group/epass text-black bg-transparent flex flex-col gap-[20px]"
+              :class="[
+                index === 0 ? (getBrandLogo(widget) ? 'pt-0' : 'pt-[16px]') : 'pt-[16px]'
+              ]"
               @click.stop="handleWidgetClick(widget)"
               data-node-id="222:4188"
               data-name="Guest E-Pass Container"
@@ -1289,14 +1292,24 @@ more</span>
                 </button>
               </div>
 
-              <!-- Top Brand Logo (Inherited from Hero Banner setup - Rule 3, converted to black PNG on light ticket) -->
-              <div v-if="getBrandLogo(widget)" class="w-full flex items-center justify-start pb-[2px]">
-                <img 
-                  :src="getBrandLogo(widget)" 
-                  alt="Brand Logo" 
-                  class="max-h-[32px] h-[24px] w-auto object-contain brightness-0" 
-                  style="filter: brightness(0);"
-                />
+              <!-- Top Brand Logo (Inherited from Hero Banner setup - Exactly matching 48px height and alignment) -->
+              <div 
+                v-if="getBrandLogo(widget)" 
+                class="w-full flex items-center"
+                :class="[
+                  getBrandLogoAlign(widget) === 'center' ? 'justify-center' :
+                  getBrandLogoAlign(widget) === 'right' ? 'justify-end' :
+                  'justify-start'
+                ]"
+              >
+                <div class="max-h-[48px] h-[48px] flex items-center shrink-0">
+                  <img 
+                    :src="getBrandLogo(widget)" 
+                    alt="Brand Logo" 
+                    class="max-h-[48px] h-[48px] w-auto object-contain brightness-0 transition-transform" 
+                    style="filter: brightness(0);"
+                  />
+                </div>
               </div>
 
               <!-- Top Section: QR Code Box + Guest Identity (Figma 222:4188) -->
@@ -2373,8 +2386,12 @@ function getWidgetMarginTopClass(index: number) {
   const currentWidget = tree[index];
 
   if (index === 0) {
-    // If text widget, MultipleChoice, FieldInput, RegistrationForm, or GuestEPass is the first top widget, apply exclusive 24px top margin for clean breathing room from header
-    if (currentWidget?.type === 'TextBanner' || currentWidget?.type === 'MultipleChoice' || currentWidget?.type === 'FieldInput' || currentWidget?.type === 'RegistrationForm' || currentWidget?.type === 'GuestEPass') {
+    // If GuestEPass is the first top widget, place it exactly 8px under the header
+    if (currentWidget?.type === 'GuestEPass') {
+      return 'mt-[8px]';
+    }
+    // If text widget, MultipleChoice, FieldInput, or RegistrationForm is the first top widget, apply exclusive 24px top margin for clean breathing room from header
+    if (currentWidget?.type === 'TextBanner' || currentWidget?.type === 'MultipleChoice' || currentWidget?.type === 'FieldInput' || currentWidget?.type === 'RegistrationForm') {
       return 'mt-[24px]';
     }
     // If action button is the first top widget, top padding follows applied bottom padding (48px or 16px)
@@ -3520,5 +3537,17 @@ function getBrandLogo(widget: any) {
     }
   }
   return '';
+}
+
+function getBrandLogoAlign(widget: any) {
+  if (widget?.props?.brandLogoAlign) return widget.props.brandLogoAlign;
+  for (const page of editorStore.pages) {
+    for (const w of page.widget_tree) {
+      if (w.type === 'HeroDrop' && w.props?.brandLogoAlign) {
+        return w.props.brandLogoAlign;
+      }
+    }
+  }
+  return 'left';
 }
 </script>
