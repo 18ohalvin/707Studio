@@ -76,17 +76,17 @@
               @select-page="editorStore.selectPage(pIdx)"
             />
 
-            <!-- Add Page Card directly on Canvas (Matching Overview Page function) -->
+            <!-- Add Page Card directly on Canvas (Exact match to 340x680 Artboard Canvas Size) -->
             <div 
               @click="handleAddNewPageFromCanvas"
-              class="w-[393px] h-[852px] rounded-[52px] border-2 border-dashed border-black/20 hover:border-black/60 bg-white/40 hover:bg-white/80 backdrop-blur-xl flex flex-col items-center justify-center gap-4 cursor-pointer transition-all duration-200 shadow-[0px_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0px_16px_40px_rgba(0,0,0,0.1)] group select-none shrink-0"
+              class="w-[340px] h-[680px] bg-[#f5f5f5]/50 hover:bg-[#f5f5f5] border-[0.5px] border-dashed border-black/30 hover:border-black relative flex flex-col items-center justify-center gap-3.5 cursor-pointer shrink-0 rounded-none transition-all duration-200 group select-none shadow-[0px_0px_30px_rgba(0,0,0,0.02)] hover:shadow-[0px_8px_30px_rgba(0,0,0,0.06)]"
               title="Add New Page"
             >
-              <div class="size-14 rounded-full bg-white group-hover:bg-black text-black group-hover:text-white border border-black/10 group-hover:border-black flex items-center justify-center shadow-md transition-all duration-200 group-hover:scale-110">
-                <Plus class="w-6 h-6 stroke-[2.5]" />
+              <div class="size-12 rounded-full bg-white group-hover:bg-black text-black group-hover:text-white border border-black/10 group-hover:border-black flex items-center justify-center shadow-sm transition-all duration-200 group-hover:scale-105">
+                <Plus class="w-5 h-5 stroke-[2]" />
               </div>
               <div class="flex flex-col items-center gap-1">
-                <span class="font-707 text-[16px] font-medium text-black tracking-tight">
+                <span class="font-707 text-[14px] font-medium text-black tracking-tight">
                   Add Page
                 </span>
                 <span class="font-707 text-[12px] text-neutral-500 font-normal">

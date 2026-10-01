@@ -1577,7 +1577,7 @@ more</span>
                 <!-- WhatsApp / Phone Mode -->
                 <div 
                   v-if="modalDisplayProps.fieldType === 'tel' || modalDisplayProps.fieldType === 'whatsapp'"
-                  class="backdrop-blur-md bg-white/70 border border-black/15 focus-within:border-black rounded-[8px] h-[46px] px-[14px] w-full flex items-center gap-[8px] relative transition-all shadow-xs"
+                  class="border-b-[0.5px] border-black py-[8px] bg-transparent w-full flex items-center gap-[8px] relative"
                 >
                   <!-- WhatsApp Country Calling Code Selector with Chevron -->
                   <div 
@@ -1585,7 +1585,7 @@ more</span>
                     @click.stop="toggleModalCountryCode"
                     title="Click to switch Country Calling Code"
                   >
-                    <span class="font-707 text-[13px] leading-[20px] text-black font-normal tracking-tight">
+                    <span class="font-707 text-[14px] leading-[20px] text-black font-normal tracking-tight">
                       {{ modalCountryCode }}
                     </span>
                     <ChevronDown class="w-[12px] h-[12px] text-neutral-400 group-hover/code:text-black transition-colors stroke-[2]" />
@@ -1596,21 +1596,21 @@ more</span>
                     :placeholder="modalDisplayProps.fieldPlaceholder || '81234567890'"
                     type="tel"
                     inputmode="numeric"
-                    class="w-full font-707 text-[13px] leading-[20px] text-black placeholder:text-neutral-400 bg-transparent border-none outline-none p-0 m-0 relative z-10"
+                    class="w-full font-707 text-[14px] leading-[20px] text-black placeholder:text-neutral-400 bg-transparent border-none outline-none p-0 m-0 relative z-10"
                   />
                 </div>
 
                 <!-- Standard Text / Email Mode -->
                 <div 
                   v-else
-                  class="backdrop-blur-md bg-white/70 border border-black/15 focus-within:border-black rounded-[8px] h-[46px] px-[14px] w-full flex items-center transition-all shadow-xs"
+                  class="border-b-[0.5px] border-black py-[8px] bg-transparent w-full flex items-center"
                 >
                   <input 
                     v-model="modalInputValue"
                     :placeholder="modalDisplayProps.fieldPlaceholder || (modalDisplayProps.fieldType === 'text' ? 'Text*' : 'Email*')"
                     :type="modalDisplayProps.fieldType === 'text' ? 'text' : 'email'"
                     :inputmode="modalDisplayProps.fieldType === 'text' ? 'text' : 'email'"
-                    class="w-full font-707 text-[13px] leading-[20px] text-black placeholder:text-neutral-400 bg-transparent border-none outline-none p-0 m-0"
+                    class="w-full font-707 text-[14px] leading-[20px] text-black placeholder:text-neutral-400 bg-transparent border-none outline-none p-0 m-0"
                   />
                 </div>
               </div>
@@ -1621,9 +1621,9 @@ more</span>
                   v-for="(opt, oIdx) in (modalDisplayProps.options || [])"
                   :key="opt.id || oIdx"
                   @click="toggleModalOption(opt.id || oIdx)"
-                  class="luxury-choice-tile backdrop-blur-md bg-white/75 border border-black/10 flex gap-[18px] w-full select-none transition-all duration-150 rounded-[8px] cursor-pointer hover:bg-white/95 hover:border-black/30 shadow-xs"
+                  class="luxury-choice-tile border-[0.5px] border-solid border-[#d4d4d4] bg-transparent flex gap-[24px] w-full select-none transition-all duration-150 rounded-none cursor-pointer hover:border-black/50"
                   :class="[
-                    isModalOptionSelected(opt) ? 'is-selected border-black bg-white ring-1 ring-black/80 shadow-sm' : '',
+                    isModalOptionSelected(opt) ? 'is-selected border-black bg-transparent ring-[0.5px] ring-black shadow-none' : '',
                     opt.description && opt.description.trim()
                       ? 'items-start p-[16px]'
                       : 'items-center min-h-[48px] h-[48px] px-[16px] py-[12px]'
@@ -1631,11 +1631,11 @@ more</span>
                 >
                   <!-- Checkbox Container (18px outer square with 12px inner square when active) -->
                   <div 
-                    class="relative shrink-0 size-[18px] border-[0.5px] border-black border-solid flex items-center justify-center bg-transparent rounded-[3px]"
+                    class="relative shrink-0 size-[18px] border-[0.5px] border-black border-solid flex items-center justify-center bg-transparent rounded-none"
                     :class="opt.description && opt.description.trim() ? 'mt-[1px]' : ''"
                   >
                     <div 
-                      class="luxury-choice-checkbox-inner size-[12px] bg-black border-[0.5px] border-black border-solid rounded-[2px] transform transition-all duration-150"
+                      class="luxury-choice-checkbox-inner size-[12px] bg-black border-[0.5px] border-black border-solid rounded-none transform transition-all duration-150"
                       :class="isModalOptionSelected(opt) ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
                     />
                   </div>
@@ -1657,7 +1657,7 @@ more</span>
                       <!-- Badge Label "XX Slots Available" Under Event Description -->
                       <div v-if="getModalOptionSlotsBadge(opt)" class="inline-flex items-center pt-[2px]">
                         <span 
-                          class="inline-flex items-center px-[8px] py-[2px] border-[0.5px] rounded-[4px] font-707 text-[10px] font-medium leading-[14px] bg-neutral-100/80 border-[#e0e0e0] text-neutral-700 backdrop-blur-xs"
+                          class="inline-flex items-center px-[6px] py-[1.5px] border-[0.5px] rounded-[4px] font-707 text-[10px] font-medium leading-[13px] bg-transparent border-[#e0e0e0] text-neutral-700"
                         >
                           {{ getModalOptionSlotsBadge(opt) }}
                         </span>
@@ -1672,7 +1672,7 @@ more</span>
                           <span v-if="opt.sublabel" class="font-707 font-normal text-[12px] leading-[16px] text-neutral-500">{{ opt.sublabel }}</span>
                           <span 
                             v-if="getModalOptionSlotsBadge(opt)" 
-                            class="inline-flex items-center px-[6px] py-[1.5px] border-[0.5px] rounded-[4px] font-707 text-[10px] font-medium leading-[13px] bg-neutral-100/80 border-[#e0e0e0] text-neutral-700 backdrop-blur-xs"
+                            class="inline-flex items-center px-[6px] py-[1.5px] border-[0.5px] rounded-[4px] font-707 text-[10px] font-medium leading-[13px] bg-transparent border-[#e0e0e0] text-neutral-700"
                           >
                             {{ getModalOptionSlotsBadge(opt) }}
                           </span>
@@ -1687,7 +1687,7 @@ more</span>
                   v-if="!isPreviewModal"
                   type="button"
                   @click.stop="handleModalAddOption"
-                  class="backdrop-blur-sm bg-white/50 border border-dashed border-black/20 hover:border-black rounded-[8px] min-h-[48px] h-[48px] flex gap-[18px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors select-none text-left"
+                  class="border-[0.5px] border-[#d4d4d4] hover:border-black border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
                 >
                   <div class="relative shrink-0 size-[18px] flex items-center justify-center">
                     <img :src="FIGMA_ASSETS.addFilled" class="size-[18px] shrink-0 pointer-events-none object-contain" alt="Add" />
@@ -1704,9 +1704,9 @@ more</span>
                   v-for="(opt, oIdx) in (modalDisplayProps.options || [])"
                   :key="opt.id || oIdx"
                   @click="toggleModalOption(opt.id || oIdx)"
-                  class="luxury-choice-tile backdrop-blur-md bg-white/75 border border-black/10 flex gap-[18px] px-[16px] w-full select-none rounded-[8px] hover:bg-white/95 hover:border-black/30 transition-all shadow-xs"
+                  class="luxury-choice-tile border-[0.5px] border-solid border-[#d4d4d4] bg-transparent flex gap-[24px] px-[16px] w-full select-none rounded-none cursor-pointer hover:border-black/50"
                   :class="[
-                    isModalOptionSelected(opt) ? 'is-selected border-black bg-white ring-1 ring-black/80 shadow-sm' : '',
+                    isModalOptionSelected(opt) ? 'is-selected border-black bg-transparent ring-[0.5px] ring-black shadow-none' : '',
                     getModalOptionSlotsBadge(opt)
                       ? 'items-start py-[12px]'
                       : 'items-center min-h-[48px] h-[48px] py-[12px]'
@@ -1714,11 +1714,11 @@ more</span>
                 >
                   <!-- Checkbox Container (18px outer square with 12px inner square when active) -->
                   <div 
-                    class="relative shrink-0 size-[18px] border-[0.5px] border-black border-solid flex items-center justify-center bg-transparent rounded-[3px]"
+                    class="relative shrink-0 size-[18px] border-[0.5px] border-black border-solid flex items-center justify-center bg-transparent rounded-none"
                     :class="getModalOptionSlotsBadge(opt) ? 'mt-[1px]' : ''"
                   >
                     <div 
-                      class="luxury-choice-checkbox-inner size-[12px] bg-black border-[0.5px] border-black border-solid rounded-[2px] transform transition-all duration-150"
+                      class="luxury-choice-checkbox-inner size-[12px] bg-black border-[0.5px] border-black border-solid rounded-none transform transition-all duration-150"
                       :class="isModalOptionSelected(opt) ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"
                     />
                   </div>
@@ -1730,7 +1730,7 @@ more</span>
                       <span v-if="opt.sublabel" class="font-707 font-normal text-[12px] leading-[18px] text-neutral-500 shrink-0">{{ opt.sublabel }}</span>
                     </div>
                     <span 
-                      class="inline-flex items-center px-[6px] py-[1.5px] border-[0.5px] rounded-[4px] font-707 text-[10px] font-medium leading-[13px] bg-neutral-100/80 border-[#e0e0e0] text-neutral-700 backdrop-blur-xs"
+                      class="inline-flex items-center px-[6px] py-[1.5px] border-[0.5px] rounded-[4px] font-707 text-[10px] font-medium leading-[13px] bg-transparent border-[#e0e0e0] text-neutral-700"
                     >
                       {{ getModalOptionSlotsBadge(opt) }}
                     </span>
@@ -1746,7 +1746,7 @@ more</span>
                   v-if="!isPreviewModal"
                   type="button"
                   @click.stop="handleModalAddOption"
-                  class="backdrop-blur-sm bg-white/50 border border-dashed border-black/20 hover:border-black rounded-[8px] min-h-[48px] h-[48px] flex gap-[18px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors select-none text-left"
+                  class="border-[0.5px] border-[#d4d4d4] hover:border-black border-solid min-h-[48px] h-[48px] flex gap-[24px] items-center px-[16px] py-[12px] w-full cursor-pointer transition-colors bg-transparent select-none text-left rounded-none"
                 >
                   <div class="relative shrink-0 size-[18px] flex items-center justify-center">
                     <img :src="FIGMA_ASSETS.addFilled" class="size-[18px] shrink-0 pointer-events-none object-contain" alt="Add" />
@@ -1763,8 +1763,8 @@ more</span>
                   v-for="(slot, sIdx) in (modalDisplayProps.imageSlots || [])"
                   :key="slot.id || sIdx"
                   @click="toggleModalSlot(slot.id || sIdx)"
-                  class="aspect-[3/4] bg-white/70 backdrop-blur-md border border-black/15 rounded-[8px] relative overflow-hidden transition-all cursor-pointer select-none"
-                  :class="isModalSlotSelected(slot) ? 'border-black ring-1 ring-black' : 'hover:border-black/40'"
+                  class="aspect-[3/4] bg-transparent border-[0.5px] border-solid border-neutral-300 relative overflow-hidden transition-all cursor-pointer select-none rounded-none"
+                  :class="isModalSlotSelected(slot) ? 'border-black ring-[0.5px] ring-black' : 'hover:border-black/50'"
                 >
                   <img v-if="slot.url" :src="slot.url" class="w-full h-full object-cover" />
                   <div v-if="isModalSlotSelected(slot)" class="absolute inset-0 bg-black/30 flex items-center justify-center">
@@ -1778,7 +1778,7 @@ more</span>
                 <button 
                   type="button"
                   @click.stop="handleModalDoneClick"
-                  class="apple-cta-btn apple-cta-btn-dark bg-black text-white hover:bg-neutral-900 active:bg-neutral-800 w-full h-[48px] px-[16px] py-[12px] rounded-[8px] flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-sm transition-all"
+                  class="apple-cta-btn apple-cta-btn-dark bg-black text-white hover:bg-neutral-900 active:bg-neutral-800 w-full h-[48px] px-[16px] py-[12px] rounded-none flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none transition-all"
                 >
                   <span class="whitespace-nowrap uppercase">{{ modalDisplayProps.buttonText || 'DONE' }}</span>
                 </button>
