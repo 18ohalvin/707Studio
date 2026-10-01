@@ -464,20 +464,49 @@ const isModalDisallowed = computed(() => {
   return currentPositionMode.value === 'sticky-bottom' && currentStickyScope.value === 'all';
 });
 
+const hasNextPage = computed(() => {
+  return editorStore.activePageIndex < editorStore.pages.length - 1;
+});
+
+const hasFormFields = computed(() => {
+  return editorStore.pages.flatMap(p => p.widget_tree).some(w => 
+    w.type === 'RegistrationForm' || 
+    w.type === 'FieldInput' ||
+    (w.props?.modalProps && (w.props.modalProps.variant === 'message-field' || w.props.modalProps.fieldType)) ||
+    (w.type === 'ModalOverlay' && (w.props?.variant === 'message-field' || w.props?.fieldType))
+  );
+});
+
+const hasEPassInProject = computed(() => {
+  return editorStore.pages.flatMap(p => p.widget_tree).some(w => w.type === 'GuestEPass');
+});
+
+const hasMultipleWidgets = computed(() => {
+  const inFlow = (editorStore.currentPage.widget_tree || []).filter(w => w.type !== 'ModalOverlay');
+  return inFlow.length >= 2;
+});
+
 const linkToOptions = computed(() => {
-  if (isModalDisallowed.value) {
-    return allLinkToOptions.filter(opt => opt.value !== 'modal');
-  }
-  return allLinkToOptions;
+  const filtered = allLinkToOptions.filter(opt => {
+    if (opt.value === 'download-pass') return hasEPassInProject.value;
+    if (opt.value === 'next_page') return hasNextPage.value;
+    if (opt.value === 'submit') return hasFormFields.value;
+    if (opt.value === 'modal') return !isModalDisallowed.value;
+    if (opt.value === 'scroll') return hasMultipleWidgets.value;
+    if (opt.value === 'link') return true;
+    return true;
+  });
+  return filtered.length > 0 ? filtered : [allLinkToOptions.find(o => o.value === 'link')!];
 });
 
 const actionType = computed({
   get: () => {
-    const current = targetWidget.value?.props?.actionType || 'submit';
-    if (isModalDisallowed.value && current === 'modal') {
-      return 'next_page';
+    const current = targetWidget.value?.props?.actionType;
+    const availableValues = linkToOptions.value.map(o => o.value);
+    if (current && availableValues.includes(current as any)) {
+      return current;
     }
-    return current;
+    return availableValues[0] || 'link';
   },
   set: (val: string) => {
     if (targetWidget.value) {
@@ -488,7 +517,7 @@ const actionType = computed({
 
 const selectedActionLabel = computed(() => {
   const opt = allLinkToOptions.find(o => o.value === actionType.value);
-  return opt ? opt.label : 'Next Page';
+  return opt ? opt.label : (linkToOptions.value[0]?.label || 'External URL');
 });
 
 function selectLinkTo(val: string) {

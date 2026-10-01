@@ -612,17 +612,33 @@ function setButtonVariant(variant: 'black' | 'white') {
 
 const isLinkToDropdownOpen = ref(false);
 
-const linkToOptions = [
+const allLinkToOptions = [
   { label: 'Download E-Pass', value: 'download-pass' },
   { label: 'Next Page', value: 'next_page' },
-  { label: 'Submit Form', value: 'submit' },
   { label: 'External URL', value: 'link' },
-  { label: 'Popup Modal', value: 'modal' },
-  { label: 'Scroll to Section', value: 'scroll' }
+  { label: 'Popup Modal', value: 'modal' }
 ] as const;
 
+const hasNextPage = computed(() => {
+  return editorStore.activePageIndex < editorStore.pages.length - 1;
+});
+
+const linkToOptions = computed(() => {
+  return allLinkToOptions.filter(opt => {
+    if (opt.value === 'next_page') return hasNextPage.value;
+    return true;
+  });
+});
+
 const ctaActionType = computed({
-  get: () => currentWidget.value?.props?.actionType || 'download-pass',
+  get: () => {
+    const current = currentWidget.value?.props?.actionType || 'download-pass';
+    const availableValues = linkToOptions.value.map(o => o.value);
+    if (availableValues.includes(current as any)) {
+      return current;
+    }
+    return availableValues[0] || 'download-pass';
+  },
   set: (val: string) => {
     if (currentWidget.value) {
       editorStore.updateWidgetProps(currentWidget.value.id, { actionType: val });
@@ -631,7 +647,7 @@ const ctaActionType = computed({
 });
 
 const selectedActionLabel = computed(() => {
-  const opt = linkToOptions.find(o => o.value === ctaActionType.value);
+  const opt = allLinkToOptions.find(o => o.value === ctaActionType.value);
   return opt ? opt.label : 'Download E-Pass';
 });
 
