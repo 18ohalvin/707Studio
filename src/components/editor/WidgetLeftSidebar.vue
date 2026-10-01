@@ -692,8 +692,15 @@ function addActionButton(variant: 'black' | 'white' = 'black') {
 }
 
 function addEPassWidget() {
-  editorStore.addWidget('GuestEPass', undefined, getEPassDefaultProps());
-  editorStore.openEPassSidebar();
+  const check = editorStore.canAddWidget('GuestEPass');
+  if (!check.allowed) {
+    if (check.reason) editorStore.showToast(check.reason);
+    return;
+  }
+  const widget = editorStore.addWidget('GuestEPass', undefined, getEPassDefaultProps());
+  if (widget) {
+    editorStore.openEPassSidebar();
+  }
 }
 
 function addInteractiveWidget(name: string) {

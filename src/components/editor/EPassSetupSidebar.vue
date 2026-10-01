@@ -31,6 +31,27 @@
       </p>
     </div>
 
+    <!-- Section 0: Brand Logo (Inherited from Hero Banner - Rule 3) -->
+    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+      <div class="flex flex-col gap-[6px] w-full">
+        <div class="flex items-center justify-between">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Brand Logo
+          </p>
+          <span class="font-707 text-[11px] text-neutral-400">
+            {{ projectBrandLogoUrl ? 'Active from Hero Banner' : 'Not configured' }}
+          </span>
+        </div>
+        <div v-if="projectBrandLogoUrl" class="border-[0.5px] border-neutral-200 p-3 rounded-[8px] bg-neutral-50 flex items-center justify-between">
+          <img :src="projectBrandLogoUrl" alt="Brand Logo" class="max-h-[32px] h-[24px] w-auto object-contain" />
+          <span class="font-707 text-[11px] text-emerald-600 font-medium">● Visible on Summary</span>
+        </div>
+        <p v-else class="font-707 text-[11px] text-neutral-400 leading-normal">
+          Upload a brand logo in your Hero Banner setup to automatically display it at the top of this summary ticket.
+        </p>
+      </div>
+    </div>
+
     <!-- Section 1: Venue Configuration -->
     <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="flex flex-col gap-[6px] w-full">
@@ -273,5 +294,16 @@ const availableNameFields = computed(() => {
   return editorStore.pages.flatMap(p => 
     p.widget_tree.filter(w => w.type === 'FieldInput')
   );
+});
+
+const projectBrandLogoUrl = computed(() => {
+  for (const page of editorStore.pages) {
+    for (const w of page.widget_tree) {
+      if (w.type === 'HeroDrop' && w.props?.brandLogoUrl) {
+        return w.props.brandLogoUrl;
+      }
+    }
+  }
+  return '';
 });
 </script>

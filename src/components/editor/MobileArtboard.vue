@@ -1131,6 +1131,15 @@ more</span>
                 </button>
               </div>
 
+              <!-- Top Brand Logo (Inherited from Hero Banner setup - Rule 3) -->
+              <div v-if="getBrandLogo(widget)" class="w-full flex items-center justify-start pb-[2px]">
+                <img 
+                  :src="getBrandLogo(widget)" 
+                  alt="Brand Logo" 
+                  class="max-h-[32px] h-[24px] w-auto object-contain" 
+                />
+              </div>
+
               <!-- Top Section: QR Code Box + Guest Identity (Figma 222:4188) -->
               <div class="flex items-stretch gap-[16px] w-full">
                 <!-- QR Box: 104px x 104px, border-[0.5px] border-black bg-[#f2f2f2] rounded-[5px] -->
@@ -3191,5 +3200,18 @@ function getTerms(widget: any) {
     'No re-entry once you have exited the venue.',
     'Management is not liable for loss of personal belongings.'
   ];
+}
+
+function getBrandLogo(widget: any) {
+  if (widget?.props?.brandLogoUrl) return widget.props.brandLogoUrl;
+  // Inherit brand logo from any HeroDrop banner in the project
+  for (const page of editorStore.pages) {
+    for (const w of page.widget_tree) {
+      if (w.type === 'HeroDrop' && w.props?.brandLogoUrl) {
+        return w.props.brandLogoUrl;
+      }
+    }
+  }
+  return '';
 }
 </script>

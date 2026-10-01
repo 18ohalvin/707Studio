@@ -144,6 +144,32 @@ export const useEditorStore = defineStore('editor', () => {
         reason: 'Dynamic Fit preset is optimized for 1 Banner + 1 Text + 1 Action Button. Switch preset to add more widget types.' 
       };
     }
+
+    if (type === 'GuestEPass') {
+      const allWidgets = pages.value.flatMap(p => p.widget_tree);
+      const hasFormInput = allWidgets.some(w => w.type === 'FieldInput');
+      const hasDateChoice = allWidgets.some(w => w.type === 'MultipleChoice');
+
+      if (!hasFormInput && !hasDateChoice) {
+        return {
+          allowed: false,
+          reason: 'Please create form inputs (e.g. Name) and a Date/Session Selection widget on Page 1 or 2 first.'
+        };
+      }
+      if (!hasFormInput) {
+        return {
+          allowed: false,
+          reason: 'Please create a Form Input widget (e.g. Name) on your page before adding the Summary Ticket.'
+        };
+      }
+      if (!hasDateChoice) {
+        return {
+          allowed: false,
+          reason: 'Please add a Date / Session Selection widget on your page before adding the Summary Ticket.'
+        };
+      }
+    }
+
     return { allowed: true };
   }
 

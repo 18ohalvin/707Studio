@@ -332,7 +332,28 @@ describe('707 Activation Builder Stores', () => {
     const editorStore = useEditorStore();
     expect(editorStore.isEPassSidebarOpen).toBe(false);
 
-    // Adding GuestEPass widget
+    // Rule 1 & Rule 2: Cannot add GuestEPass if no Form Input or Date Choice exists
+    const blockedWithoutPrereqs = editorStore.addWidget('GuestEPass');
+    expect(blockedWithoutPrereqs).toBeNull();
+    expect(editorStore.activeToastMessage).toContain('Please create form inputs');
+
+    // Add Form Input (FieldInput)
+    const field = editorStore.addWidget('FieldInput', undefined, { label: 'First Name', placeholder: 'Your Name*' });
+    expect(field).toBeTruthy();
+
+    // Still blocked without Date Choice
+    const blockedWithoutChoice = editorStore.addWidget('GuestEPass');
+    expect(blockedWithoutChoice).toBeNull();
+    expect(editorStore.activeToastMessage).toContain('Please add a Date / Session Selection widget');
+
+    // Add Date Choice (MultipleChoice)
+    const choice = editorStore.addWidget('MultipleChoice', undefined, {
+      variant: 'detailed-card',
+      options: [{ id: 'd1', label: 'Day 1', sublabel: '2 Sept 2026' }]
+    });
+    expect(choice).toBeTruthy();
+
+    // Now adding GuestEPass succeeds!
     const epass = editorStore.addWidget('GuestEPass', undefined, {
       venue: 'LA MODA PLAZA INDONESIA',
       guestNameFallback: 'MR. ALVIN DECOROUS',
@@ -344,6 +365,7 @@ describe('707 Activation Builder Stores', () => {
       ]
     });
 
+    expect(epass).toBeTruthy();
     expect(epass.type).toBe('GuestEPass');
     expect(epass.props.venue).toBe('LA MODA PLAZA INDONESIA');
     expect(epass.props.guestNameFallback).toBe('MR. ALVIN DECOROUS');
@@ -357,7 +379,6 @@ describe('707 Activation Builder Stores', () => {
 
     // Remove widget closes EPass sidebar
     editorStore.removeWidget(epass.id);
-    expect(editorStore.currentPage.widget_tree.length).toBe(0);
     expect(editorStore.isEPassSidebarOpen).toBe(false);
   });
 });
