@@ -523,7 +523,32 @@
             />
           </div>
 
-          <!-- Position Selector (Standard vs Sticky Bottom) -->
+          <!-- Button Style Preset (Black / White) -->
+          <div class="flex items-center justify-between w-full pt-1">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Style Preset
+            </p>
+            <div class="flex gap-[6px] items-center">
+              <button 
+                type="button"
+                @click="setCtaVariant('black')"
+                :class="ctaVariant === 'black' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
+              >
+                Black
+              </button>
+              <button 
+                type="button"
+                @click="setCtaVariant('white')"
+                :class="ctaVariant === 'white' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
+              >
+                White
+              </button>
+            </div>
+          </div>
+
+          <!-- Position Selector (In Banner vs Standard vs Sticky Bottom) -->
           <div class="flex items-center justify-between w-full pt-1">
             <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
               Position
@@ -535,7 +560,7 @@
                 type="button"
                 @click="setCtaPositionMode(pos.value)"
                 :class="ctaPositionMode === pos.value ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                class="px-3.5 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
+                class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
               >
                 {{ pos.label }}
               </button>
@@ -738,12 +763,25 @@ const isOverlayEnabled = ref(false);
 const overlayOpacity = ref(50);
 const isCtaEnabled = ref(false);
 
+const ctaVariant = ref<'black' | 'white'>('black');
+
+function setCtaVariant(v: 'black' | 'white') {
+  ctaVariant.value = v;
+  if (editorStore.selectedWidgetId) {
+    editorStore.updateWidgetProps(editorStore.selectedWidgetId, {
+      variant: v,
+      buttonVariant: v
+    });
+  }
+}
+
 const ctaPositionModes = [
+  { label: 'In Banner', value: 'unified' },
   { label: 'Standard', value: 'in-flow' },
   { label: 'Sticky Bottom', value: 'sticky-bottom' }
 ] as const;
 
-const ctaPositionMode = ref<'in-flow' | 'sticky-bottom'>('in-flow');
+const ctaPositionMode = ref<'unified' | 'in-flow' | 'sticky-bottom'>('unified');
 const ctaStickyScope = ref<'current' | 'all' | 'custom'>('current');
 const ctaStickyPageIds = ref<string[]>([]);
 const isLinkToDropdownOpen = ref(false);
@@ -805,19 +843,67 @@ function openModalSetup() {
   }
 }
 
-function setCtaPositionMode(mode: 'in-flow' | 'sticky-bottom') {
+function setCtaPositionMode(mode: 'unified' | 'in-flow' | 'sticky-bottom') {
   ctaPositionMode.value = mode;
-  ctaStickyScope.value = 'current';
-  ctaStickyPageIds.value = [editorStore.currentPage.id];
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { 
-      positionMode: mode,
-      ctaPositionMode: mode,
-      stickyScope: 'current',
-      ctaStickyScope: 'current',
-      stickyPageIds: [editorStore.currentPage.id],
-      ctaStickyPageIds: [editorStore.currentPage.id]
-    });
+
+  if (mode === 'unified') {
+    if (editorStore.selectedWidgetId) {
+      editorStore.updateWidgetProps(editorStore.selectedWidgetId, { 
+        positionMode: 'unified',
+        ctaPositionMode: 'unified',
+        isCtaEnabled: true,
+        showButton: true
+      });
+    }
+  } else if (mode === 'sticky-bottom') {
+    ctaStickyScope.value = 'current';
+    ctaStickyPageIds.value = [editorStore.currentPage.id];
+    if (editorStore.selectedWidgetId) {
+      editorStore.updateWidgetProps(editorStore.selectedWidgetId, { 
+        positionMode: 'sticky-bottom',
+        ctaPositionMode: 'sticky-bottom',
+        isCtaEnabled: true,
+        showButton: true,
+        stickyScope: 'current',
+        ctaStickyScope: 'current',
+        stickyPageIds: [editorStore.currentPage.id],
+        ctaStickyPageIds: [editorStore.currentPage.id]
+      });
+    }
+  } else if (mode === 'in-flow') {
+    if (editorStore.selectedWidgetId) {
+      const currentHero = editorStore.selectedWidget;
+      const btnProps = {
+        label: buttonText.value || currentHero?.props?.buttonText || currentHero?.props?.ctaLabel || 'BUTTON CTA',
+        variant: ctaVariant.value || currentHero?.props?.variant || currentHero?.props?.buttonVariant || 'black',
+        buttonVariant: ctaVariant.value || currentHero?.props?.variant || currentHero?.props?.buttonVariant || 'black',
+        actionType: ctaActionType.value || currentHero?.props?.actionType || 'next_page',
+        url: ctaUrl.value || currentHero?.props?.url || '',
+        modalProps: currentHero?.props?.modalProps,
+        showIcon: currentHero?.props?.showIcon ?? false,
+        iconName: currentHero?.props?.iconName || 'arrow-right',
+        positionMode: 'in-flow',
+        height: 48
+      };
+
+      // Disable in-banner CTA on hero
+      isCtaEnabled.value = false;
+      editorStore.updateWidgetProps(editorStore.selectedWidgetId, {
+        isCtaEnabled: false,
+        showButton: false,
+        positionMode: 'in-flow',
+        ctaPositionMode: 'in-flow'
+      });
+
+      // Insert standalone ActionButton widget right after Hero
+      const heroIndex = editorStore.currentPage.widget_tree.findIndex(w => w.id === editorStore.selectedWidgetId);
+      const insertIdx = heroIndex !== -1 ? heroIndex + 1 : undefined;
+      const newBtn = editorStore.addWidget('ActionButton', insertIdx, btnProps);
+      if (newBtn) {
+        editorStore.selectWidget(newBtn.id);
+        editorStore.openButtonSidebar();
+      }
+    }
   }
 }
 
@@ -1114,7 +1200,13 @@ watch(() => editorStore.selectedWidget, (widget) => {
       isCtaEnabled.value = !!(widget.props.buttonText || widget.props.ctaLabel || widget.props.showButton);
     }
 
-    ctaPositionMode.value = widget.props.ctaPositionMode || widget.props.positionMode || 'in-flow';
+    ctaVariant.value = (widget.props.variant || widget.props.buttonVariant || (widget.props.isSolidSpace ? 'black' : 'white')) as 'black' | 'white';
+
+    if (widget.props.ctaPositionMode === 'sticky-bottom' || widget.props.positionMode === 'sticky-bottom') {
+      ctaPositionMode.value = 'sticky-bottom';
+    } else {
+      ctaPositionMode.value = 'unified';
+    }
     ctaStickyScope.value = widget.props.ctaStickyScope || widget.props.stickyScope || 'current';
     ctaStickyPageIds.value = widget.props.ctaStickyPageIds || widget.props.stickyPageIds || [editorStore.currentPage.id];
     ctaActionType.value = widget.props.ctaActionType || widget.props.actionType || 'next_page';
