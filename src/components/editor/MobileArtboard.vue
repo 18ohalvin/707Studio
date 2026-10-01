@@ -1990,6 +1990,12 @@ function getWidgetMarginTopClass(index: number) {
     if (currentWidget?.type === 'TextBanner') {
       return 'mt-[24px]';
     }
+    // If action button is the first top widget, top padding follows applied bottom padding (48px or 16px)
+    if (currentWidget?.type === 'ActionButton') {
+      if (isHeroWithButtonOnly.value) return 'mt-[16px]';
+      if (isLastWidgetButton.value) return 'mt-[48px]';
+      return 'mt-[16px]';
+    }
     return 'mt-0';
   }
   const prevWidget = tree[index - 1];
@@ -1999,9 +2005,11 @@ function getWidgetMarginTopClass(index: number) {
     return 'mt-0';
   }
 
-  // 2. If hero banner meets ActionButton or ActionButton meets HeroDrop: 0px spacing
+  // 2. If ActionButton meets HeroDrop: top padding exactly follows applied bottom padding (48px when last, 16px in dynamic fit)
   if (currentWidget?.type === 'ActionButton' && prevWidget?.type === 'HeroDrop') {
-    return 'mt-0';
+    if (isHeroWithButtonOnly.value) return 'mt-[16px]';
+    if (isLastWidgetButton.value) return 'mt-[48px]';
+    return 'mt-[16px]';
   }
   if (currentWidget?.type === 'HeroDrop' && prevWidget?.type === 'ActionButton') {
     return 'mt-0';
@@ -2009,6 +2017,10 @@ function getWidgetMarginTopClass(index: number) {
 
   // 3. If text widget is the top widget (index 0) and followed by form input, banner, or any other widget: exclusive 24px bottom spacing
   if (index === 1 && prevWidget?.type === 'TextBanner' && currentWidget?.type !== 'TextBanner') {
+    if (currentWidget?.type === 'ActionButton') {
+      if (isHeroWithButtonOnly.value) return 'mt-[16px]';
+      if (isLastWidgetButton.value) return 'mt-[48px]';
+    }
     return 'mt-[24px]';
   }
 
@@ -2019,6 +2031,13 @@ function getWidgetMarginTopClass(index: number) {
 
   // 5. If text widget is followed by FieldInput, MultipleChoice, or Banner anywhere in stack: 24px spacing
   if (prevWidget?.type === 'TextBanner' && (currentWidget?.type === 'FieldInput' || currentWidget?.type === 'MultipleChoice' || currentWidget?.type === 'HeroDrop')) {
+    return 'mt-[24px]';
+  }
+
+  // If ActionButton follows TextBanner
+  if (currentWidget?.type === 'ActionButton' && prevWidget?.type === 'TextBanner') {
+    if (isHeroWithButtonOnly.value) return 'mt-[16px]';
+    if (isLastWidgetButton.value) return 'mt-[48px]';
     return 'mt-[24px]';
   }
 
@@ -2037,7 +2056,14 @@ function getWidgetMarginTopClass(index: number) {
     return 'mt-[8px]';
   }
 
-  // 8. Default spacing between different widget types
+  // 8. If ActionButton follows any other widget (FieldInput, MultipleChoice, etc.), top padding follows applied bottom padding
+  if (currentWidget?.type === 'ActionButton') {
+    if (isHeroWithButtonOnly.value) return 'mt-[16px]';
+    if (isLastWidgetButton.value) return 'mt-[48px]';
+    return 'mt-[16px]';
+  }
+
+  // 9. Default spacing between different widget types
   return 'mt-[16px]';
 }
 
