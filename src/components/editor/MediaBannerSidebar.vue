@@ -661,8 +661,9 @@ import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { AlignLeft, AlignCenter, AlignRight, ChevronDown, Check, Trash2, Plus, SlidersHorizontal, ArrowRight } from 'lucide-vue-next';
 import { uploadMediaDirectly } from '../../services/mediaService.ts';
+import type { WidgetItem } from '../../types/editor.ts';
 
-defineProps<{
+const props = defineProps<{
   isOpen: boolean;
 }>();
 
@@ -679,6 +680,40 @@ const subheadlineRef = ref<HTMLTextAreaElement | null>(null);
 const badgeInputRef = ref<HTMLInputElement | null>(null);
 const isBadgeOptionOpen = ref(false);
 
+const targetWidget = computed<WidgetItem | null>(() => {
+  if (editorStore.selectedWidget && editorStore.selectedWidget.type === 'HeroDrop') {
+    return editorStore.selectedWidget;
+  }
+  return editorStore.currentPage?.widget_tree.find(w => w.type === 'HeroDrop') || null;
+});
+
+function getTargetWidgetId(): string | null {
+  if (targetWidget.value) {
+    if (editorStore.selectedWidgetId !== targetWidget.value.id) {
+      editorStore.selectWidget(targetWidget.value.id);
+    }
+    return targetWidget.value.id;
+  }
+  return null;
+}
+
+function updateHeroProps(propsToUpdate: Record<string, any>) {
+  const widgetId = getTargetWidgetId();
+  if (widgetId) {
+    editorStore.updateWidgetProps(widgetId, propsToUpdate);
+  }
+}
+
+// Auto select target widget whenever sidebar opens
+watch(() => props.isOpen, (open) => {
+  if (open) {
+    const target = targetWidget.value;
+    if (target && editorStore.selectedWidgetId !== target.id) {
+      editorStore.selectWidget(target.id);
+    }
+  }
+}, { immediate: true });
+
 function showBadgeInput() {
   isBadgeOptionOpen.value = true;
   nextTick(() => {
@@ -689,9 +724,7 @@ function showBadgeInput() {
 function removeBadge() {
   badge.value = '';
   isBadgeOptionOpen.value = false;
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { badge: '' });
-  }
+  updateHeroProps({ badge: '' });
 }
 
 function autoResize(el: HTMLTextAreaElement | null) {
@@ -728,16 +761,16 @@ const isMediaFitDropdownOpen = ref(false);
 function selectMediaFit(fit: 'Fill the screen' | 'Fit to screen' | 'Center') {
   selectedMediaFit.value = fit;
   isMediaFitDropdownOpen.value = false;
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { mediaFit: fit });
-  }
+  updateHeroProps({ mediaFit: fit });
 }
 
 function openMediaGallery() {
+  getTargetWidgetId();
   editorStore.openMediaGallery('bannerImage');
 }
 
 function openMediaGalleryForLogo() {
+  getTargetWidgetId();
   editorStore.openMediaGallery('brandLogo');
 }
 
@@ -749,10 +782,10 @@ const textPositions = [
 
 // Brand Logo state (Only active when banner is at the top of the canvas, index 0)
 const isTopPosition = computed(() => {
-  const tree = editorStore.currentPage.widget_tree;
-  const selectedId = editorStore.selectedWidgetId;
-  if (!selectedId || tree.length === 0) return false;
-  return tree[0]?.id === selectedId;
+  const tree = editorStore.currentPage?.widget_tree || [];
+  const target = targetWidget.value;
+  if (!target || tree.length === 0) return false;
+  return tree[0]?.id === target.id;
 });
 
 const isBrandLogoEnabled = ref(false);
@@ -771,12 +804,10 @@ const isBannerTextEnabled = ref(false);
 
 function setButtonVariant(variant: 'black' | 'white') {
   buttonVariant.value = variant;
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, {
-      buttonVariant: variant,
-      variant: variant
-    });
-  }
+  updateHeroProps({
+    buttonVariant: variant,
+    variant: variant
+  });
 }
 
 const isOverlayEnabled = ref(false);
@@ -812,31 +843,30 @@ const selectedActionLabel = computed(() => {
 function selectLinkTo(val: string) {
   ctaActionType.value = val;
   isLinkToDropdownOpen.value = false;
-  if (editorStore.selectedWidgetId) {
-    const currentProps = editorStore.selectedWidget?.props || {};
-    const defaultModalProps = currentProps.modalProps || {
-      variant: 'message-alert',
-      title: 'Your Pass Has Been Sent',
-      subtitle: 'Please provide a valid email address. We will resend your E-Pass immediately.',
-      buttonText: 'Done',
-      buttonVariant: 'black'
-    };
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { 
-      actionType: val,
-      ctaActionType: val,
-      modalProps: defaultModalProps
-    });
-    if (val === 'modal') {
-      editorStore.openModalSidebar();
-    }
+  const currentProps = targetWidget.value?.props || {};
+  const defaultModalProps = currentProps.modalProps || {
+    variant: 'message-alert',
+    title: 'Your Pass Has Been Sent',
+    subtitle: 'Please provide a valid email address. We will resend your E-Pass immediately.',
+    buttonText: 'Done',
+    buttonVariant: 'black'
+  };
+  updateHeroProps({ 
+    actionType: val,
+    ctaActionType: val,
+    modalProps: defaultModalProps
+  });
+  if (val === 'modal') {
+    editorStore.openModalSidebar();
   }
 }
 
 function openModalSetup() {
-  if (editorStore.selectedWidgetId) {
-    const currentProps = editorStore.selectedWidget?.props || {};
+  const targetId = getTargetWidgetId();
+  if (targetId) {
+    const currentProps = targetWidget.value?.props || {};
     if (!currentProps.modalProps) {
-      editorStore.updateWidgetProps(editorStore.selectedWidgetId, {
+      updateHeroProps({
         modalProps: {
           variant: 'message-alert',
           title: 'Your Pass Has Been Sent',
@@ -854,16 +884,14 @@ function setCtaPositionMode(mode: 'in-flow' | 'sticky-bottom') {
   ctaPositionMode.value = mode;
   ctaStickyScope.value = 'current';
   ctaStickyPageIds.value = [editorStore.currentPage.id];
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { 
-      positionMode: mode,
-      ctaPositionMode: mode,
-      stickyScope: 'current',
-      ctaStickyScope: 'current',
-      stickyPageIds: [editorStore.currentPage.id],
-      ctaStickyPageIds: [editorStore.currentPage.id]
-    });
-  }
+  updateHeroProps({ 
+    positionMode: mode,
+    ctaPositionMode: mode,
+    stickyScope: 'current',
+    ctaStickyScope: 'current',
+    stickyPageIds: [editorStore.currentPage.id],
+    ctaStickyPageIds: [editorStore.currentPage.id]
+  });
 }
 
 function setCtaStickyScope(scope: 'current' | 'all' | 'custom') {
@@ -872,14 +900,12 @@ function setCtaStickyScope(scope: 'current' | 'all' | 'custom') {
     ? editorStore.pages.map(p => p.id) 
     : [editorStore.currentPage.id];
   ctaStickyPageIds.value = defaultPageIds;
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { 
-      stickyScope: scope,
-      ctaStickyScope: scope,
-      stickyPageIds: defaultPageIds,
-      ctaStickyPageIds: defaultPageIds
-    });
-  }
+  updateHeroProps({ 
+    stickyScope: scope,
+    ctaStickyScope: scope,
+    stickyPageIds: defaultPageIds,
+    ctaStickyPageIds: defaultPageIds
+  });
 }
 
 function isPageStickySelected(pageId: string): boolean {
@@ -895,22 +921,18 @@ function togglePageSticky(pageId: string) {
     currentList.push(pageId);
   }
   ctaStickyPageIds.value = currentList;
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { 
-      stickyPageIds: currentList,
-      ctaStickyPageIds: currentList
-    });
-  }
+  updateHeroProps({ 
+    stickyPageIds: currentList,
+    ctaStickyPageIds: currentList
+  });
 }
 
 function toggleBrandLogo() {
   if (!isTopPosition.value) return;
   isBrandLogoEnabled.value = !isBrandLogoEnabled.value;
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, {
-      isBrandLogoEnabled: isBrandLogoEnabled.value
-    });
-  }
+  updateHeroProps({
+    isBrandLogoEnabled: isBrandLogoEnabled.value
+  });
 }
 
 function triggerLogoUpload() {
@@ -934,12 +956,10 @@ function handleLogoDrop(event: DragEvent) {
       if (data?.customProps?.imageUrl) {
         brandLogoUrl.value = data.customProps.imageUrl;
         isBrandLogoEnabled.value = true;
-        if (editorStore.selectedWidgetId) {
-          editorStore.updateWidgetProps(editorStore.selectedWidgetId, {
-            brandLogoUrl: data.customProps.imageUrl,
-            isBrandLogoEnabled: true
-          });
-        }
+        updateHeroProps({
+          brandLogoUrl: data.customProps.imageUrl,
+          isBrandLogoEnabled: true
+        });
         return;
       }
     } catch (_) {}
@@ -954,9 +974,13 @@ function processLogoFile(file: File) {
   const reader = new FileReader();
   reader.onload = async (e) => {
     const result = e.target?.result as string;
-    if (result && editorStore.selectedWidgetId) {
+    if (result) {
       brandLogoUrl.value = result;
       isBrandLogoEnabled.value = true;
+      updateHeroProps({
+        brandLogoUrl: result,
+        isBrandLogoEnabled: true
+      });
       
       // Upload to server directly
       const savedMedia = await uploadMediaDirectly({
@@ -966,11 +990,13 @@ function processLogoFile(file: File) {
         filename: file.name
       });
 
-      brandLogoUrl.value = savedMedia.url;
-      editorStore.updateWidgetProps(editorStore.selectedWidgetId, {
-        brandLogoUrl: savedMedia.url,
-        isBrandLogoEnabled: true
-      });
+      if (savedMedia?.url) {
+        brandLogoUrl.value = savedMedia.url;
+        updateHeroProps({
+          brandLogoUrl: savedMedia.url,
+          isBrandLogoEnabled: true
+        });
+      }
     }
   };
   reader.readAsDataURL(file);
@@ -978,47 +1004,40 @@ function processLogoFile(file: File) {
 
 function removeBrandLogo() {
   brandLogoUrl.value = '';
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, {
-      brandLogoUrl: ''
-    });
-  }
+  updateHeroProps({
+    brandLogoUrl: ''
+  });
 }
 
 function toggleBannerText() {
   isBannerTextEnabled.value = !isBannerTextEnabled.value;
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, {
-      showBannerText: isBannerTextEnabled.value
-    });
-  }
+  updateHeroProps({
+    showBannerText: isBannerTextEnabled.value
+  });
 }
 
 function toggleOverlay() {
   if (textPosition.value === 'center') return;
   isOverlayEnabled.value = !isOverlayEnabled.value;
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, {
-      isOverlayEnabled: isOverlayEnabled.value,
-      overlayOpacity: overlayOpacity.value
-    });
-  }
+  updateHeroProps({
+    isOverlayEnabled: isOverlayEnabled.value,
+    overlayOpacity: overlayOpacity.value
+  });
 }
 
 function toggleCta() {
   isCtaEnabled.value = !isCtaEnabled.value;
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, {
-      isCtaEnabled: isCtaEnabled.value,
-      showButton: isCtaEnabled.value,
-      buttonText: isCtaEnabled.value ? (buttonText.value || 'Action') : '',
-      buttonVariant: buttonVariant.value || 'black',
-      variant: buttonVariant.value || 'black'
-    });
-    if (isCtaEnabled.value && !buttonText.value) {
-      buttonText.value = 'Action';
-    }
+  const updatedButtonText = isCtaEnabled.value ? (buttonText.value || 'Action') : '';
+  if (isCtaEnabled.value && !buttonText.value) {
+    buttonText.value = 'Action';
   }
+  updateHeroProps({
+    isCtaEnabled: isCtaEnabled.value,
+    showButton: isCtaEnabled.value,
+    buttonText: updatedButtonText,
+    buttonVariant: buttonVariant.value || 'black',
+    variant: buttonVariant.value || 'black'
+  });
 }
 
 function triggerUpload() {
@@ -1047,25 +1066,17 @@ function processFile(file: File) {
   reader.onload = async (e) => {
     const result = e.target?.result as string;
     if (result) {
-      // Find target HeroDrop widget (either currently selected, or first in tree, or create)
-      let targetWidgetId = editorStore.selectedWidgetId;
-      if (!targetWidgetId || editorStore.selectedWidget?.type !== 'HeroDrop') {
-        const existingHero = editorStore.currentPage.widget_tree.find(w => w.type === 'HeroDrop');
-        if (existingHero) {
-          targetWidgetId = existingHero.id;
-          editorStore.selectWidget(existingHero.id);
-        } else {
-          const newWidget = editorStore.addWidget('HeroDrop', 0, {
-            imageUrl: result,
-            isSolidSpace: false,
-            ratio: selectedRatio.value || 'Full screen landing page'
-          });
-          targetWidgetId = newWidget.id;
-          editorStore.selectWidget(newWidget.id);
-        }
+      let targetWidgetId = getTargetWidgetId();
+      if (!targetWidgetId) {
+        const newWidget = editorStore.addWidget('HeroDrop', 0, {
+          imageUrl: result,
+          isSolidSpace: false,
+          ratio: selectedRatio.value || 'Full screen landing page'
+        });
+        targetWidgetId = newWidget.id;
+        editorStore.selectWidget(newWidget.id);
       }
 
-      // Update immediate local preview on both sidebar and canvas artboard
       currentImageUrl.value = result;
       isCurrentSolidSpace.value = false;
       if (targetWidgetId) {
@@ -1075,7 +1086,6 @@ function processFile(file: File) {
         });
       }
 
-      // Upload to server directly in background and replace with persistent URL
       try {
         const savedMedia = await uploadMediaDirectly({
           dataUrl: result,
@@ -1104,28 +1114,24 @@ function processFile(file: File) {
 function handleUploadThumbError() {
   currentImageUrl.value = '';
   isCurrentSolidSpace.value = true;
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, {
-      imageUrl: '',
-      isSolidSpace: true
-    });
-  }
+  updateHeroProps({
+    imageUrl: '',
+    isSolidSpace: true
+  });
 }
 
 function removeUploadedMedia() {
-  if (editorStore.selectedWidgetId) {
-    currentImageUrl.value = '';
-    isCurrentSolidSpace.value = true;
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, {
-      imageUrl: '',
-      isSolidSpace: true
-    });
-  }
+  currentImageUrl.value = '';
+  isCurrentSolidSpace.value = true;
+  updateHeroProps({
+    imageUrl: '',
+    isSolidSpace: true
+  });
 }
 
-// Sync from selected widget
-watch(() => editorStore.selectedWidget, (widget) => {
-  if (widget && widget.type === 'HeroDrop') {
+// Sync from target widget
+watch(targetWidget, (widget) => {
+  if (widget) {
     selectedRatio.value = widget.props.ratio || 'Full screen landing page';
     
     // Brand Logo Sync
@@ -1182,60 +1188,46 @@ watch(() => editorStore.selectedWidget, (widget) => {
 }, { immediate: true });
 
 watch(isBrandLogoEnabled, (newVal) => {
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { isBrandLogoEnabled: newVal });
-  }
+  updateHeroProps({ isBrandLogoEnabled: newVal });
 });
 
 watch(brandLogoUrl, (newUrl) => {
-  if (editorStore.selectedWidgetId && editorStore.selectedWidget?.props?.brandLogoUrl !== newUrl) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { brandLogoUrl: newUrl });
+  if (targetWidget.value?.props?.brandLogoUrl !== newUrl) {
+    updateHeroProps({ brandLogoUrl: newUrl });
   }
 });
 
-watch(() => editorStore.selectedWidget?.props?.brandLogoUrl, (storeUrl) => {
+watch(() => targetWidget.value?.props?.brandLogoUrl, (storeUrl) => {
   if (storeUrl !== undefined && storeUrl !== brandLogoUrl.value) {
     brandLogoUrl.value = storeUrl || '';
   }
 });
 
 watch(brandLogoAlign, (newAlign) => {
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { brandLogoAlign: newAlign });
-  }
+  updateHeroProps({ brandLogoAlign: newAlign });
 });
 
 watch(isBannerTextEnabled, (newVal) => {
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { showBannerText: newVal });
-  }
+  updateHeroProps({ showBannerText: newVal });
 });
 
 watch(isOverlayEnabled, (newVal) => {
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { isOverlayEnabled: newVal });
-  }
+  updateHeroProps({ isOverlayEnabled: newVal });
 });
 
 watch(overlayOpacity, (newVal) => {
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { overlayOpacity: newVal });
-  }
+  updateHeroProps({ overlayOpacity: newVal });
 });
 
 watch(isCtaEnabled, (newVal) => {
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { isCtaEnabled: newVal, showButton: newVal });
-  }
+  updateHeroProps({ isCtaEnabled: newVal, showButton: newVal });
 });
 
 watch(ctaUrl, (newUrl) => {
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { 
-      url: newUrl, 
-      ctaUrl: newUrl 
-    });
-  }
+  updateHeroProps({ 
+    url: newUrl, 
+    ctaUrl: newUrl 
+  });
 });
 
 watch(() => editorStore.selectedMediaRatio, (newRatio) => {
@@ -1245,65 +1237,49 @@ watch(() => editorStore.selectedMediaRatio, (newRatio) => {
 });
 
 watch(selectedRatio, (newRatio) => {
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { ratio: newRatio });
-  }
+  updateHeroProps({ ratio: newRatio });
 });
 
 watch(badge, (newBadge) => {
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { badge: newBadge });
-  }
+  updateHeroProps({ badge: newBadge });
 });
 
 watch(headline, (newHeadline) => {
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { headline: newHeadline, title: newHeadline });
-  }
+  updateHeroProps({ headline: newHeadline, title: newHeadline });
   nextTick(() => autoResize(headlineRef.value));
 });
 
 watch(subheadline, (newSub) => {
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { subheadline: newSub, subtitle: newSub });
-  }
+  updateHeroProps({ subheadline: newSub, subtitle: newSub });
   nextTick(() => autoResize(subheadlineRef.value));
 });
 
 watch(buttonText, (newBtn) => {
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { 
-      buttonText: newBtn, 
-      showButton: !!newBtn, 
-      ctaLabel: newBtn 
-    });
-  }
+  updateHeroProps({ 
+    buttonText: newBtn, 
+    showButton: !!newBtn, 
+    ctaLabel: newBtn 
+  });
 });
 
 watch(buttonVariant, (newVariant) => {
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { 
-      buttonVariant: newVariant,
-      variant: newVariant
-    });
-  }
+  updateHeroProps({ 
+    buttonVariant: newVariant,
+    variant: newVariant
+  });
 });
 
 watch(textAlign, (newAlign) => {
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { textAlign: newAlign });
-  }
+  updateHeroProps({ textAlign: newAlign });
 });
 
 watch(textPosition, (newPos) => {
   if (newPos === 'center') {
     isOverlayEnabled.value = false;
   }
-  if (editorStore.selectedWidgetId) {
-    editorStore.updateWidgetProps(editorStore.selectedWidgetId, { 
-      textPosition: newPos,
-      ...(newPos === 'center' ? { isOverlayEnabled: false } : {})
-    });
-  }
+  updateHeroProps({ 
+    textPosition: newPos,
+    ...(newPos === 'center' ? { isOverlayEnabled: false } : {})
+  });
 });
 </script>

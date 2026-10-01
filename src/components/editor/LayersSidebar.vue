@@ -226,6 +226,8 @@ function handleSelectLayer(widget: WidgetItem) {
     editorStore.openChoiceSidebar();
   } else if (widget.type === 'ModalOverlay') {
     editorStore.openModalSidebar();
+  } else if (widget.type === 'GuestEPass') {
+    editorStore.openEPassSidebar();
   }
 }
 
@@ -241,6 +243,8 @@ function handleAdjustLayer(widget: WidgetItem) {
     editorStore.openChoiceSidebar();
   } else if (widget.type === 'ModalOverlay') {
     editorStore.openModalSidebar();
+  } else if (widget.type === 'GuestEPass') {
+    editorStore.openEPassSidebar();
   }
 }
 

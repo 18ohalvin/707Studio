@@ -614,6 +614,10 @@ export const useEditorStore = defineStore('editor', () => {
     if (ratio) {
       selectedMediaRatio.value = ratio;
     }
+    const existingHero = currentPage.value?.widget_tree.find(w => w.type === 'HeroDrop');
+    if (existingHero && selectedWidgetId.value !== existingHero.id) {
+      selectWidget(existingHero.id);
+    }
     isAddMenuOpen.value = false;
     isWidgetSidebarOpen.value = false;
     isMediaGalleryOpen.value = false;

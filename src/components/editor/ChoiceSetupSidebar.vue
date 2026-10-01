@@ -630,10 +630,10 @@ const variants: { id: ChoiceVariant; label: string; icon: any }[] = [
 ];
 
 const currentWidget = computed(() => {
-  if (!editorStore.selectedWidgetId) return null;
-  const w = editorStore.selectedWidget;
-  if (!w || w.type !== 'MultipleChoice') return null;
-  return w;
+  if (editorStore.selectedWidget && editorStore.selectedWidget.type === 'MultipleChoice') {
+    return editorStore.selectedWidget;
+  }
+  return editorStore.currentPage.widget_tree.find(w => w.type === 'MultipleChoice') || null;
 });
 
 const title = computed({
