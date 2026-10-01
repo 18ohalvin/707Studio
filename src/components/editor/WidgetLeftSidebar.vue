@@ -34,35 +34,56 @@
         </p>
       </div>
       <div class="content-stretch flex gap-[14px] items-start overflow-x-auto -mx-[24px] px-[24px] w-[calc(100%+48px)] pb-2 no-scrollbar">
-        <!-- Full screen landing cover (Scrollable) -->
+        <!-- 1. Full screen landing cover (Scrollable) -->
         <div 
           draggable="true"
           @dragstart="handleDragStart($event, { type: 'HeroDrop', label: 'Full Screen (Scrollable)', customProps: { ratio: 'Full screen landing page', isSolidSpace: true, subtitle: 'FULL SCREEN (SCROLLABLE)' } })"
           @dragend="handleDragEnd"
           @click="addMediaWidget('Full screen landing page')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[96px] cursor-grab active:cursor-grabbing group"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[84px] cursor-grab active:cursor-grabbing group"
           title="Drag to canvas or click to add (100vh hero for multi-section scrollable page)"
         >
-          <div class="bg-[#dcdcdc] group-hover:bg-[#cecece] h-[130px] rounded-[8px] shrink-0 w-[72px] transition-colors border border-black/10 group-hover:border-black shadow-sm overflow-hidden" />
+          <div class="bg-white group-hover:bg-neutral-50 h-[130px] rounded-[8px] shrink-0 w-[72px] transition-all border border-black/10 group-hover:border-black shadow-sm overflow-hidden flex flex-col justify-between p-1.5">
+            <!-- Full Height Hero Cover Area -->
+            <div class="w-full flex-1 bg-[#dcdcdc] group-hover:bg-[#cecece] rounded-[4px] transition-colors flex flex-col justify-between p-1.5 relative overflow-hidden">
+              <div class="w-2/5 h-1 bg-black/20 rounded-full" />
+              <div class="w-full flex flex-col gap-1">
+                <div class="w-4/5 h-1.5 bg-black/25 rounded-full" />
+                <div class="w-3/5 h-1 bg-black/15 rounded-full" />
+              </div>
+            </div>
+            <!-- Bottom Peek Indicating Scrollable Multi-Layer Page Below -->
+            <div class="w-full h-3.5 bg-neutral-100 border border-neutral-200 rounded-[3px] flex items-center justify-center gap-1 mt-1 shrink-0">
+              <div class="w-4 h-0.5 bg-neutral-400 rounded-full" />
+            </div>
+          </div>
           <p class="font-707 font-normal text-[11px] text-black text-center leading-tight">
             Full Screen (Scrollable)
           </p>
         </div>
 
-        <!-- Dynamic Fit (Responsive 1-Screen) -->
+        <!-- 2. Dynamic Fit (Responsive 1-Screen) -->
         <div 
           draggable="true"
           @dragstart="handleDragStart($event, { type: 'HeroDrop', label: 'Dynamic Fit (1-Screen)', customProps: { ratio: 'Dynamic Fit', isSolidSpace: true, subtitle: 'DYNAMIC FIT (1-SCREEN)' } })"
           @dragend="handleDragEnd"
           @click="addMediaWidget('Dynamic Fit')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[96px] cursor-grab active:cursor-grabbing group"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[84px] cursor-grab active:cursor-grabbing group"
           title="Drag to canvas or click to add (Adaptive 1-screen fit without scrolling)"
         >
-          <div class="bg-[#dcdcdc] group-hover:bg-[#cecece] h-[130px] rounded-[8px] shrink-0 w-[72px] transition-colors border border-black/10 group-hover:border-black shadow-sm overflow-hidden flex flex-col justify-between p-2">
-            <div class="w-full h-2 bg-black/20 rounded-full" />
-            <div class="w-full flex flex-col gap-1">
-              <div class="w-3/4 h-1.5 bg-black/20 rounded-full" />
-              <div class="w-full h-3 bg-black/30 rounded-xs" />
+          <div class="bg-white group-hover:bg-neutral-50 h-[130px] rounded-[8px] shrink-0 w-[72px] transition-all border border-black/10 group-hover:border-black shadow-sm overflow-hidden flex flex-col justify-between p-1.5">
+            <!-- Adaptive Hero Image -->
+            <div class="w-full h-[54px] bg-[#dcdcdc] group-hover:bg-[#cecece] rounded-[4px] transition-colors flex flex-col justify-start p-1.5">
+              <div class="w-2/5 h-1 bg-black/20 rounded-full" />
+            </div>
+            <!-- Middle Text Line -->
+            <div class="w-full flex flex-col gap-1 py-1">
+              <div class="w-4/5 h-1.5 bg-black/25 rounded-full" />
+              <div class="w-3/5 h-1 bg-black/15 rounded-full" />
+            </div>
+            <!-- Bottom Action CTA Button -->
+            <div class="w-full h-4 bg-black/85 rounded-[3px] flex items-center justify-center shrink-0">
+              <div class="w-1/2 h-1 bg-white/70 rounded-full" />
             </div>
           </div>
           <p class="font-707 font-normal text-[11px] text-black text-center leading-tight">
@@ -70,100 +91,155 @@
           </p>
         </div>
 
-        <!-- 3:4 -->
+        <!-- 3. 3:4 Portrait -->
         <div 
           draggable="true"
           @dragstart="handleDragStart($event, { type: 'HeroDrop', label: '3:4', customProps: { ratio: '3:4', isSolidSpace: true, subtitle: '3:4 RATIO COVER' } })"
           @dragend="handleDragEnd"
           @click="addMediaWidget('3:4')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[96px] cursor-grab active:cursor-grabbing group"
-          title="Drag to canvas or click to add"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[84px] cursor-grab active:cursor-grabbing group"
+          title="Drag to canvas or click to add (Standard 3:4 portrait cover with content below)"
         >
-          <div class="bg-[#dcdcdc] group-hover:bg-[#cecece] h-[130px] rounded-[8px] shrink-0 w-[96px] transition-colors border border-black/10 group-hover:border-black shadow-sm overflow-hidden" />
+          <div class="bg-white group-hover:bg-neutral-50 h-[130px] rounded-[8px] shrink-0 w-[72px] transition-all border border-black/10 group-hover:border-black shadow-sm overflow-hidden flex flex-col justify-between p-1.5">
+            <!-- 3:4 Hero Block -->
+            <div class="w-full h-[64px] bg-[#dcdcdc] group-hover:bg-[#cecece] rounded-[4px] transition-colors flex flex-col justify-start p-1.5">
+              <div class="w-2/5 h-1 bg-black/20 rounded-full" />
+            </div>
+            <!-- Form Blocks Below -->
+            <div class="w-full flex-1 flex flex-col gap-1 pt-1.5 justify-start">
+              <div class="w-3/4 h-1.5 bg-black/20 rounded-full" />
+              <div class="w-full h-2.5 bg-neutral-100 border border-neutral-200 rounded-[2px]" />
+              <div class="w-full h-3 bg-black/80 rounded-[2px] mt-auto" />
+            </div>
+          </div>
           <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
             3:4
           </p>
         </div>
 
-        <!-- 4:5 -->
+        <!-- 4. 4:5 Medium Portrait -->
         <div 
           draggable="true"
           @dragstart="handleDragStart($event, { type: 'HeroDrop', label: '4:5', customProps: { ratio: '4:5', isSolidSpace: true, subtitle: '4:5 RATIO COVER' } })"
           @dragend="handleDragEnd"
           @click="addMediaWidget('4:5')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[100px] cursor-grab active:cursor-grabbing group"
-          title="Drag to canvas or click to add"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[84px] cursor-grab active:cursor-grabbing group"
+          title="Drag to canvas or click to add (4:5 feed portrait cover)"
         >
-          <div class="content-stretch flex flex-col h-[130px] items-center justify-center shrink-0 w-full">
-            <div class="aspect-[4/5] h-[130px] bg-[#dcdcdc] group-hover:bg-[#cecece] rounded-[8px] transition-colors border border-black/10 group-hover:border-black shadow-sm overflow-hidden" />
+          <div class="bg-white group-hover:bg-neutral-50 h-[130px] rounded-[8px] shrink-0 w-[72px] transition-all border border-black/10 group-hover:border-black shadow-sm overflow-hidden flex flex-col justify-between p-1.5">
+            <!-- 4:5 Hero Block -->
+            <div class="w-full h-[58px] bg-[#dcdcdc] group-hover:bg-[#cecece] rounded-[4px] transition-colors flex flex-col justify-start p-1.5">
+              <div class="w-2/5 h-1 bg-black/20 rounded-full" />
+            </div>
+            <!-- Form Content Below -->
+            <div class="w-full flex-1 flex flex-col gap-1 pt-1.5 justify-start">
+              <div class="w-4/5 h-1.5 bg-black/20 rounded-full" />
+              <div class="w-full h-2.5 bg-neutral-100 border border-neutral-200 rounded-[2px]" />
+              <div class="w-full h-2.5 bg-neutral-100 border border-neutral-200 rounded-[2px]" />
+            </div>
           </div>
           <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
             4:5
           </p>
         </div>
 
-        <!-- 4:3 -->
+        <!-- 5. 4:3 Classic Landscape -->
         <div 
           draggable="true"
           @dragstart="handleDragStart($event, { type: 'HeroDrop', label: '4:3', customProps: { ratio: '4:3', isSolidSpace: true, subtitle: '4:3 RATIO COVER' } })"
           @dragend="handleDragEnd"
           @click="addMediaWidget('4:3')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[100px] cursor-grab active:cursor-grabbing group"
-          title="Drag to canvas or click to add"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[84px] cursor-grab active:cursor-grabbing group"
+          title="Drag to canvas or click to add (4:3 landscape cover)"
         >
-          <div class="content-stretch flex flex-col h-[130px] items-start justify-center shrink-0 w-full">
-            <div class="aspect-[40/30] bg-[#dcdcdc] group-hover:bg-[#cecece] rounded-[8px] shrink-0 w-full transition-colors border border-black/10 group-hover:border-black shadow-sm overflow-hidden" />
+          <div class="bg-white group-hover:bg-neutral-50 h-[130px] rounded-[8px] shrink-0 w-[72px] transition-all border border-black/10 group-hover:border-black shadow-sm overflow-hidden flex flex-col justify-between p-1.5">
+            <!-- 4:3 Hero Block -->
+            <div class="w-full h-[46px] bg-[#dcdcdc] group-hover:bg-[#cecece] rounded-[4px] transition-colors flex flex-col justify-start p-1.5">
+              <div class="w-2/5 h-1 bg-black/20 rounded-full" />
+            </div>
+            <!-- Form Content Below -->
+            <div class="w-full flex-1 flex flex-col gap-1.5 pt-1.5 justify-start">
+              <div class="w-3/4 h-1.5 bg-black/25 rounded-full" />
+              <div class="w-full h-2.5 bg-neutral-100 border border-neutral-200 rounded-[2px]" />
+              <div class="w-full h-2.5 bg-neutral-100 border border-neutral-200 rounded-[2px]" />
+              <div class="w-full h-3 bg-black/80 rounded-[2px] mt-auto" />
+            </div>
           </div>
           <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
             4:3
           </p>
         </div>
 
-        <!-- 16:9 -->
+        <!-- 6. 16:9 Cinematic Widescreen -->
         <div 
           draggable="true"
           @dragstart="handleDragStart($event, { type: 'HeroDrop', label: '16:9', customProps: { ratio: '16:9', isSolidSpace: true, subtitle: '16:9 RATIO BANNER' } })"
           @dragend="handleDragEnd"
           @click="addMediaWidget('16:9')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[100px] cursor-grab active:cursor-grabbing group"
-          title="Drag to canvas or click to add"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[84px] cursor-grab active:cursor-grabbing group"
+          title="Drag to canvas or click to add (16:9 cinematic widescreen header)"
         >
-          <div class="content-stretch flex flex-col h-[130px] items-start justify-center shrink-0 w-full">
-            <div class="aspect-video bg-[#dcdcdc] group-hover:bg-[#cecece] rounded-[8px] shrink-0 w-full transition-colors border border-black/10 group-hover:border-black shadow-sm overflow-hidden" />
+          <div class="bg-white group-hover:bg-neutral-50 h-[130px] rounded-[8px] shrink-0 w-[72px] transition-all border border-black/10 group-hover:border-black shadow-sm overflow-hidden flex flex-col justify-between p-1.5">
+            <!-- 16:9 Hero Block -->
+            <div class="w-full h-[36px] bg-[#dcdcdc] group-hover:bg-[#cecece] rounded-[4px] transition-colors flex flex-col justify-start p-1.5">
+              <div class="w-2/5 h-1 bg-black/20 rounded-full" />
+            </div>
+            <!-- Form Content Below -->
+            <div class="w-full flex-1 flex flex-col gap-1.5 pt-1.5 justify-start">
+              <div class="w-2/3 h-1.5 bg-black/25 rounded-full" />
+              <div class="w-full h-2.5 bg-neutral-100 border border-neutral-200 rounded-[2px]" />
+              <div class="w-full h-2.5 bg-neutral-100 border border-neutral-200 rounded-[2px]" />
+              <div class="w-full h-3 bg-black/80 rounded-[2px] mt-auto" />
+            </div>
           </div>
           <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
             16:9
           </p>
         </div>
 
-        <!-- 9:16 -->
+        <!-- 7. 9:16 Vertical Story Cover -->
         <div 
           draggable="true"
           @dragstart="handleDragStart($event, { type: 'HeroDrop', label: '9:16', customProps: { ratio: '9:16', isSolidSpace: true, subtitle: '9:16 STORY BANNER' } })"
           @dragend="handleDragEnd"
           @click="addMediaWidget('9:16')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[100px] cursor-grab active:cursor-grabbing group"
-          title="Drag to canvas or click to add"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[84px] cursor-grab active:cursor-grabbing group"
+          title="Drag to canvas or click to add (9:16 vertical full story cover)"
         >
-          <div class="content-stretch flex flex-col h-[130px] items-center justify-center shrink-0 w-full">
-            <div class="w-[72px] h-[130px] bg-[#dcdcdc] group-hover:bg-[#cecece] rounded-[8px] transition-colors border border-black/10 group-hover:border-black shadow-sm overflow-hidden" />
+          <div class="bg-white group-hover:bg-neutral-50 h-[130px] rounded-[8px] shrink-0 w-[72px] transition-all border border-black/10 group-hover:border-black shadow-sm overflow-hidden flex flex-col p-1.5">
+            <div class="w-full h-full bg-[#dcdcdc] group-hover:bg-[#cecece] rounded-[4px] transition-colors flex flex-col justify-between p-1.5">
+              <div class="w-1/3 h-1 bg-black/20 rounded-full" />
+              <div class="w-full flex flex-col gap-1">
+                <div class="w-4/5 h-1.5 bg-black/30 rounded-full" />
+                <div class="w-full h-3 bg-black/70 rounded-[2px]" />
+              </div>
+            </div>
           </div>
           <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
             9:16
           </p>
         </div>
 
-        <!-- 1:1 -->
+        <!-- 8. 1:1 Square -->
         <div 
           draggable="true"
           @dragstart="handleDragStart($event, { type: 'HeroDrop', label: '1:1', customProps: { ratio: '1:1', isSolidSpace: true, subtitle: '1:1 SQUARE BANNER' } })"
           @dragend="handleDragEnd"
           @click="addMediaWidget('1:1')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[100px] cursor-grab active:cursor-grabbing group"
-          title="Drag to canvas or click to add"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[84px] cursor-grab active:cursor-grabbing group"
+          title="Drag to canvas or click to add (1:1 square hero with body space below)"
         >
-          <div class="content-stretch flex flex-col h-[130px] items-start justify-center shrink-0 w-full">
-            <div class="bg-[#dcdcdc] group-hover:bg-[#cecece] rounded-[8px] shrink-0 size-[100px] transition-colors border border-black/10 group-hover:border-black shadow-sm overflow-hidden" />
+          <div class="bg-white group-hover:bg-neutral-50 h-[130px] rounded-[8px] shrink-0 w-[72px] transition-all border border-black/10 group-hover:border-black shadow-sm overflow-hidden flex flex-col justify-between p-1.5">
+            <!-- 1:1 Square Hero Block -->
+            <div class="w-full h-[58px] bg-[#dcdcdc] group-hover:bg-[#cecece] rounded-[4px] transition-colors flex flex-col justify-start p-1.5">
+              <div class="w-2/5 h-1 bg-black/20 rounded-full" />
+            </div>
+            <!-- Form Content Below -->
+            <div class="w-full flex-1 flex flex-col gap-1.5 pt-1.5 justify-start">
+              <div class="w-3/4 h-1.5 bg-black/20 rounded-full" />
+              <div class="w-full h-2.5 bg-neutral-100 border border-neutral-200 rounded-[2px]" />
+              <div class="w-full h-3 bg-black/80 rounded-[2px] mt-auto" />
+            </div>
           </div>
           <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
             1:1
