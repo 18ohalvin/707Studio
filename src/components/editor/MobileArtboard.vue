@@ -345,9 +345,13 @@
                     type="button"
                     @click.stop="handleHeroCtaClick(widget)"
                     :class="[
-                      widget.props.isSolidSpace 
-                        ? 'bg-black hover:bg-[#262626] text-white apple-cta-btn-dark' 
-                        : 'bg-white hover:bg-[#f0f0f0] text-black shadow-none apple-cta-btn-white',
+                      (widget.props.variant === 'white' || widget.props.buttonVariant === 'white')
+                        ? 'bg-white hover:bg-[#f0f0f0] text-black shadow-none apple-cta-btn-white'
+                        : (widget.props.variant === 'black' || widget.props.buttonVariant === 'black')
+                          ? 'bg-black hover:bg-[#262626] text-white apple-cta-btn-dark'
+                          : (widget.props.isSolidSpace 
+                              ? 'bg-black hover:bg-[#262626] text-white apple-cta-btn-dark' 
+                              : 'bg-white hover:bg-[#f0f0f0] text-black shadow-none apple-cta-btn-white'),
                       'apple-cta-btn font-707 font-medium text-btn h-[48px] px-[16px] py-[12px] cursor-pointer whitespace-nowrap flex items-center justify-center uppercase border-0 border-none outline-none'
                     ]"
                   >
@@ -766,9 +770,9 @@
                   type="button"
                   @click.stop="handleActionButtonClick(widget)"
                   :class="[
-                    widget.props.variant === 'white'
+                    (widget.props.variant === 'white' || widget.props.buttonVariant === 'white')
                       ? 'bg-white text-black hover:bg-[#f5f5f7] apple-cta-btn-white'
-                      : (widget.props.variant === 'grey' ? 'bg-[#e4e4e4] text-black hover:bg-[#d9d9d9] apple-cta-btn-grey' : 'bg-black text-white hover:bg-[#262626] apple-cta-btn-dark'),
+                      : 'bg-black text-white hover:bg-[#262626] apple-cta-btn-dark',
                     widget.props.disabled ? 'opacity-50 cursor-not-allowed' : 'apple-cta-btn'
                   ]"
                   :style="{ height: `${widget.props.height || 48}px` }"
@@ -1151,9 +1155,13 @@ more</span>
           type="button"
           @click.stop="handleActionButtonClick(stickyButtonForThisPage)"
           :class="[
-            isStickyButtonOnDarkBackground
+            (stickyButtonForThisPage.props?.variant === 'white' || stickyButtonForThisPage.props?.buttonVariant === 'white')
               ? 'bg-white text-black hover:bg-[#f5f5f7] apple-cta-btn-white'
-              : 'bg-black text-white hover:bg-[#262626] apple-cta-btn-dark',
+              : (stickyButtonForThisPage.props?.variant === 'black' || stickyButtonForThisPage.props?.buttonVariant === 'black')
+                ? 'bg-black text-white hover:bg-[#262626] apple-cta-btn-dark'
+                : (isStickyButtonOnDarkBackground
+                    ? 'bg-white text-black hover:bg-[#f5f5f7] apple-cta-btn-white'
+                    : 'bg-black text-white hover:bg-[#262626] apple-cta-btn-dark'),
             stickyButtonForThisPage.props?.disabled ? 'opacity-50 cursor-not-allowed' : 'apple-cta-btn'
           ]"
           :style="{ height: `${stickyButtonForThisPage.props?.height || 48}px` }"

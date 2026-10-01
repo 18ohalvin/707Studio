@@ -421,7 +421,7 @@ const buttonLabel = computed({
 });
 
 const currentVariant = computed(() => {
-  return targetWidget.value?.props?.variant || 'black';
+  return targetWidget.value?.props?.variant || targetWidget.value?.props?.buttonVariant || 'black';
 });
 
 const positionModes = [
@@ -501,7 +501,7 @@ const iconName = computed(() => {
 
 function setVariant(variant: 'black' | 'white') {
   if (targetWidget.value) {
-    editorStore.updateWidgetProps(targetWidget.value.id, { variant });
+    editorStore.updateWidgetProps(targetWidget.value.id, { variant, buttonVariant: variant });
   }
 }
 
