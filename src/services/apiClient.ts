@@ -33,25 +33,7 @@ export function clearToken(): void {
   }
 }
 
-export function isLocalOrLanHostname(hostname: string): boolean {
-  if (!hostname) return true;
-  if (
-    hostname === 'localhost' ||
-    hostname === '127.0.0.1' ||
-    hostname.endsWith('.local') ||
-    /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(hostname) ||
-    /^192\.168\.\d{1,3}\.\d{1,3}$/.test(hostname) ||
-    /^172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}$/.test(hostname)
-  ) {
-    return true;
-  }
-  return false;
-}
-
 export function isAuthenticated(): boolean {
-  if (typeof window !== 'undefined' && isLocalOrLanHostname(window.location.hostname)) {
-    return true;
-  }
   return getToken().length > 0;
 }
 
@@ -71,7 +53,7 @@ function redirectToLogin(): void {
 }
 
 export async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
-  const token = getToken() || 'dev_session_token';
+  const token = getToken();
 
   const res = await fetch(path, {
     ...options,
@@ -81,7 +63,7 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
     }
   });
 
-  if (res.status === 401 && typeof window !== 'undefined' && !isLocalOrLanHostname(window.location.hostname)) {
+  if (res.status === 401) {
     redirectToLogin();
     throw new ApiError('Session expired, please sign in again.', 401);
   }
@@ -104,18 +86,12 @@ export async function apiJson<T = any>(path: string, options: RequestInit = {}):
 export async function login(password: string): Promise<{ success: boolean; error?: string }> {
   const trimmed = (password || '').trim();
 
-  // 1. Direct acceptance for local development or default studio passwords
-  if (
-    trimmed === '707studio' || 
-    trimmed === 'admin' || 
-    trimmed === '707' || 
-    (typeof window !== 'undefined' && isLocalOrLanHostname(window.location.hostname))
-  ) {
-    setToken('dev_session_token_' + Date.now());
-    return { success: true };
-  }
-
-  // 2. Production verification against backend API
+  // The server is the only thing that decides whether a password is valid.
+  // Accepting known passwords here, or minting a token when the backend cannot
+  // be reached, hands out a session this server never issued — every API call
+  // then fails with 401 anyway, so it only looks like a successful sign-in.
+  // Running locally still works without any setup: the server itself falls back
+  // to a development password outside production.
   try {
     const res = await fetch('/api/auth/login', {
       method: 'POST',
@@ -132,9 +108,7 @@ export async function login(password: string): Promise<{ success: boolean; error
 
     return { success: false, error: data?.error || 'Incorrect studio password.' };
   } catch {
-    // If backend is unreachable, fallback to granting dev access
-    setToken('dev_session_token_' + Date.now());
-    return { success: true };
+    return { success: false, error: 'Cannot reach the server. Check your connection and try again.' };
   }
 }
 

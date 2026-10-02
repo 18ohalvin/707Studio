@@ -14,11 +14,34 @@ import { Router, Request, Response, NextFunction } from 'express';
  * valid if this server signed it.
  */
 
-const STUDIO_PASSWORD = process.env.STUDIO_PASSWORD || '707studio';
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
+// Convenience for running the studio locally without setting anything up. It
+// applies outside production only — in production a missing password must stop
+// the server, not silently fall back to one that is public in this repository.
+const DEV_FALLBACK_PASSWORD = '707studio';
+
+const STUDIO_PASSWORD =
+  process.env.STUDIO_PASSWORD || (IS_PRODUCTION ? '' : DEV_FALLBACK_PASSWORD);
+
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
 
-if (!STUDIO_PASSWORD || STUDIO_PASSWORD.length < 8) {
-  console.warn('[AUTH] Warning: STUDIO_PASSWORD is weak or not set, defaulting to 707studio for local environment.');
+if (IS_PRODUCTION) {
+  if (!STUDIO_PASSWORD) {
+    console.error(
+      '[FATAL] STUDIO_PASSWORD is not set — refusing to start rather than exposing the studio and its submissions publicly.'
+    );
+    process.exit(1);
+  }
+
+  if (STUDIO_PASSWORD.length < 8) {
+    console.error('[FATAL] STUDIO_PASSWORD must be at least 8 characters in production.');
+    process.exit(1);
+  }
+} else if (!process.env.STUDIO_PASSWORD) {
+  console.warn(
+    `[AUTH] STUDIO_PASSWORD not set — using the development password "${DEV_FALLBACK_PASSWORD}". Production will refuse to start without a real one.`
+  );
 }
 
 // Derived from the password so tokens stay valid across restarts, and are
