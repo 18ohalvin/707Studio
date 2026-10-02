@@ -197,11 +197,16 @@ export const useBrandStore = defineStore('brand', () => {
     }
   }
 
+  function removeBrand(idOrSlug: string) {
+    brands.value = brands.value.filter(b => b.id !== idOrSlug && b.slug !== idOrSlug);
+  }
+
   return {
     brands,
     activeBrand,
     templates,
     setActiveBrand,
+    removeBrand,
     addTemplate,
     updateTemplate,
     removeTemplate,

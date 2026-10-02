@@ -189,13 +189,22 @@
               </div>
             </div>
 
-            <!-- Col 5: Action Button (Edit Details) -->
-            <button 
-              @click="openBrandDetailsModal(brand)"
-              class="font-707 font-medium text-[12px] leading-[18px] text-black hover:opacity-75 cursor-pointer bg-transparent border-none p-0 transition-opacity whitespace-nowrap"
-            >
-              Edit Details
-            </button>
+            <!-- Col 5: Action Button (Edit Details) & Remove Brand Icon Button -->
+            <div class="flex items-center gap-2.5 shrink-0">
+              <button 
+                @click="openBrandDetailsModal(brand)"
+                class="font-707 font-medium text-[12px] leading-[18px] text-black hover:opacity-75 cursor-pointer bg-transparent border-none p-0 transition-opacity whitespace-nowrap"
+              >
+                Edit Details
+              </button>
+              <button 
+                @click="handleRemoveBrand(brand)"
+                class="text-neutral-400 hover:text-red-600 transition-colors p-1 cursor-pointer bg-transparent border-none flex items-center justify-center rounded-[4px] hover:bg-red-50"
+                :title="`Remove ${brand.name} account`"
+              >
+                <Trash2 class="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1005,6 +1014,7 @@ import {
   Eye, 
   EyeOff,
   Plus,
+  Trash2,
   ExternalLink,
   Layers
 } from 'lucide-vue-next';
@@ -1129,6 +1139,13 @@ function handleSaveBrandDetails() {
     targetBrand.value.description = editBrandDesc.value;
     editorStore.showToast(`Updated details for ${editBrandName.value}.`);
     showBrandDetailsModal.value = false;
+  }
+}
+
+function handleRemoveBrand(brand: Brand) {
+  if (confirm(`Are you sure you want to remove the "${brand.name}" brand account from the directory?`)) {
+    brandStore.removeBrand(brand.id);
+    editorStore.showToast(`Brand "${brand.name}" removed from ecosystem.`);
   }
 }
 
