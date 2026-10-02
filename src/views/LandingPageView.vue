@@ -6,18 +6,18 @@
       data-node-id="198:6791"
       data-name="Header"
     >
-      <!-- Left: 707 Logo & Sub-Brand Studio Identifier (Figma Node 198:6792) -->
-      <div class="flex items-center gap-[16px]" data-node-id="198:6792" data-name="Logo">
-        <router-link to="/" class="h-[16px] w-[51px] relative shrink-0 flex items-center cursor-pointer" title="707 Home" data-node-id="198:6793" data-name="Logo 707">
+      <!-- Left: 707 Logo & Sub-Brand Studio Identifier (Figma Node 198:6792 - Bottom Aligned) -->
+      <div class="flex items-end gap-[16px] h-[16px]" data-node-id="198:6792" data-name="Logo">
+        <router-link to="/" class="h-[16px] w-[51px] relative shrink-0 flex items-end cursor-pointer" title="707 Home" data-node-id="198:6793" data-name="Logo 707">
           <img 
             :src="FIGMA_ASSETS.logo707" 
             alt="707 Logo" 
             class="inset-0 object-contain pointer-events-none size-full"
             @error="handleLogoError"
           />
-          <span v-if="logoFailed" class="font-black text-black text-xs tracking-tighter">707</span>
+          <span v-if="logoFailed" class="font-black text-black text-xs tracking-tighter leading-none">707</span>
         </router-link>
-        <p class="font-707 text-[14px] text-black font-normal uppercase whitespace-nowrap leading-[18px] flex items-center" data-node-id="212:7031">
+        <p class="font-707 text-[14px] text-black font-normal uppercase whitespace-nowrap leading-none flex items-baseline" data-node-id="212:7031">
           <span class="tracking-[0.24em] mr-2">DESIGN STUDIO</span>
           <span class="tracking-normal font-normal">1.0</span>
         </p>
