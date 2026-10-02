@@ -116,14 +116,25 @@
             Brands List [{{ brandStore.brands.length }}]
           </p>
 
-          <button 
-            @click="showAddBrandModal = true"
-            class="border-[0.5px] border-black border-solid flex items-center justify-center px-[16px] py-[6px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[12px] leading-[16px] font-medium text-black gap-1.5"
-            data-node-id="295:4080"
-          >
-            <Plus class="w-3.5 h-3.5" />
-            <span>Add Brand</span>
-          </button>
+          <div class="flex items-center gap-2.5">
+            <button 
+              @click="handleResetBrandDatabase"
+              class="border-[0.5px] border-black/20 flex items-center justify-center px-[12px] py-[6px] rounded-[8px] bg-white hover:bg-neutral-100 transition-all cursor-pointer font-707 text-[12px] leading-[16px] font-medium text-neutral-700 gap-1.5"
+              title="Reset brands directory to default 20 brand accounts"
+            >
+              <RotateCcw class="w-3.5 h-3.5" />
+              <span>Reset Brand DB</span>
+            </button>
+
+            <button 
+              @click="showAddBrandModal = true"
+              class="border-[0.5px] border-black border-solid flex items-center justify-center px-[16px] py-[6px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[12px] leading-[16px] font-medium text-black gap-1.5"
+              data-node-id="295:4080"
+            >
+              <Plus class="w-3.5 h-3.5" />
+              <span>Add Brand</span>
+            </button>
+          </div>
         </div>
 
         <!-- Brands Stacked List (Figma Node 295:4082) -->
@@ -1158,6 +1169,13 @@ function handleRemoveBrand(brand: Brand) {
   if (confirm(`Are you sure you want to remove the "${brand.name}" brand account from the directory?`)) {
     brandStore.removeBrand(brand.id);
     editorStore.showToast(`Brand "${brand.name}" removed from ecosystem.`);
+  }
+}
+
+function handleResetBrandDatabase() {
+  if (confirm('Are you sure you want to reset the brands database to the official 20 brand accounts?')) {
+    brandStore.resetBrands();
+    editorStore.showToast('Brand directory reset to official 20 brand accounts.');
   }
 }
 

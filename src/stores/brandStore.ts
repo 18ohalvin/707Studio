@@ -199,6 +199,44 @@ export const useBrandStore = defineStore('brand', () => {
 
   function removeBrand(idOrSlug: string) {
     brands.value = brands.value.filter(b => b.id !== idOrSlug && b.slug !== idOrSlug);
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem('707_brands_data', JSON.stringify(brands.value));
+      }
+    } catch {}
+  }
+
+  function resetBrands(): boolean {
+    const DEFAULT_BRANDS: Brand[] = [
+      { id: '1', name: 'atmos Indonesia', slug: 'atmos', description: 'atmos streetwear & sneaker destination', primary_color: '#000000' },
+      { id: '2', name: 'Fred Perry', slug: 'fred-perry', description: 'Iconic British laurel wreath sportswear', primary_color: '#1a1a1a' },
+      { id: '3', name: 'Vans Store Indonesia', slug: 'vans', description: 'Action sports footwear and apparel', primary_color: '#c8102e' },
+      { id: '4', name: 'Converse Flagship', slug: 'converse', description: 'Classic Chuck Taylor and collaborative drops', primary_color: '#000000' },
+      { id: '5', name: 'ASICS SportStyle', slug: 'asics', description: 'Performance and lifestyle sneaker collaborations', primary_color: '#001e62' },
+      { id: '6', name: 'New Balance Heritage', slug: 'new-balance', description: 'Craftsmanship and running silhouette drops', primary_color: '#cc0000' },
+      { id: '7', name: 'Salomon Sportstyle', slug: 'salomon', description: 'Trail running and technical outdoor footwear', primary_color: '#111111' },
+      { id: '8', name: 'Carhartt WIP', slug: 'carhartt-wip', description: 'Workwear in progress and streetwear essentials', primary_color: '#d49b42' },
+      { id: '9', name: 'Stüssy Chapter', slug: 'stussy', description: 'Tribe culture and seasonal hype collections', primary_color: '#000000' },
+      { id: '10', name: 'Pleasures', slug: 'pleasures', description: 'Punk, grunge, and modern graphic apparel', primary_color: '#000000' },
+      { id: '11', name: 'Neighborhood Japan', slug: 'neighborhood', description: 'Craft with pride Tokyo streetwear', primary_color: '#1f1f1f' },
+      { id: '12', name: 'Beams Plus', slug: 'beams-plus', description: 'Japanese timeless menswear aesthetics', primary_color: '#e65c00' },
+      { id: '13', name: 'Puma Select', slug: 'puma', description: 'Heritage motorsport and street collaborations', primary_color: '#000000' },
+      { id: '14', name: 'Mizuno Sportstyle', slug: 'mizuno', description: 'Japanese performance running and Kazoku drops', primary_color: '#0d1b2a' },
+      { id: '15', name: 'Hoka One One', slug: 'hoka', description: 'Maximalist cushioning footwear releases', primary_color: '#0072ce' },
+      { id: '16', name: 'On Running', slug: 'on-running', description: 'CloudTec footwear and apparel launches', primary_color: '#000000' },
+      { id: '17', name: 'Dickies 1922', slug: 'dickies', description: 'Authentic rugged workwear collections', primary_color: '#b32025' },
+      { id: '18', name: 'Gramicci', slug: 'gramicci', description: 'Yosemite climbing and lifestyle apparel', primary_color: '#9e2a2b' },
+      { id: '19', name: 'Dr. Martens', slug: 'dr-martens', description: 'Iconic yellow-stitched boots and shoes', primary_color: '#ffcc00' },
+      { id: '20', name: '707 Vault / Exclusive', slug: '707-vault', description: 'The 707 Company private archive and VIP drop hub', primary_color: '#000000' }
+    ];
+    brands.value = DEFAULT_BRANDS;
+    activeBrand.value = DEFAULT_BRANDS[0];
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem('707_brands_data', JSON.stringify(DEFAULT_BRANDS));
+      }
+    } catch {}
+    return true;
   }
 
   return {
@@ -207,6 +245,7 @@ export const useBrandStore = defineStore('brand', () => {
     templates,
     setActiveBrand,
     removeBrand,
+    resetBrands,
     addTemplate,
     updateTemplate,
     removeTemplate,
