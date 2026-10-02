@@ -55,13 +55,13 @@
       </div>
 
       <!-- 2. Text-Based Navigation Container (Figma Node 295:4072) -->
-      <div class="flex gap-[48px] items-center leading-[24px] px-[48px] text-[18px] text-black w-full whitespace-nowrap border-b border-black/10 pb-[16px]" data-node-id="295:4072" data-name="Navigation Container">
+      <div class="flex gap-[40px] md:gap-[48px] items-center leading-[24px] px-[48px] text-[16px] text-black w-full whitespace-nowrap" data-node-id="295:4072" data-name="Navigation Container">
         <button 
           @click="activeTab = 'brands'"
-          class="bg-transparent border-none p-0 cursor-pointer font-707 text-[18px] transition-colors"
+          class="bg-transparent border-none p-0 cursor-pointer font-707 text-[16px] transition-colors"
           :class="[
             activeTab === 'brands' 
-              ? 'font-medium underline decoration-solid underline-offset-[16px] text-black' 
+              ? 'font-medium underline decoration-solid underline-offset-[8px] text-black' 
               : 'font-normal text-neutral-500 hover:text-black'
           ]"
         >
@@ -70,10 +70,10 @@
 
         <button 
           @click="activeTab = 'users'"
-          class="bg-transparent border-none p-0 cursor-pointer font-707 text-[18px] transition-colors"
+          class="bg-transparent border-none p-0 cursor-pointer font-707 text-[16px] transition-colors"
           :class="[
             activeTab === 'users' 
-              ? 'font-medium underline decoration-solid underline-offset-[16px] text-black' 
+              ? 'font-medium underline decoration-solid underline-offset-[8px] text-black' 
               : 'font-normal text-neutral-500 hover:text-black'
           ]"
         >
@@ -82,10 +82,10 @@
 
         <button 
           @click="activeTab = 'submissions'"
-          class="bg-transparent border-none p-0 cursor-pointer font-707 text-[18px] transition-colors flex items-center gap-2"
+          class="bg-transparent border-none p-0 cursor-pointer font-707 text-[16px] transition-colors flex items-center gap-2"
           :class="[
             activeTab === 'submissions' 
-              ? 'font-medium underline decoration-solid underline-offset-[16px] text-black' 
+              ? 'font-medium underline decoration-solid underline-offset-[8px] text-black' 
               : 'font-normal text-neutral-500 hover:text-black'
           ]"
         >
@@ -97,10 +97,10 @@
 
         <button 
           @click="activeTab = 'templates'"
-          class="bg-transparent border-none p-0 cursor-pointer font-707 text-[18px] transition-colors"
+          class="bg-transparent border-none p-0 cursor-pointer font-707 text-[16px] transition-colors"
           :class="[
             activeTab === 'templates' 
-              ? 'font-medium underline decoration-solid underline-offset-[16px] text-black' 
+              ? 'font-medium underline decoration-solid underline-offset-[8px] text-black' 
               : 'font-normal text-neutral-500 hover:text-black'
           ]"
         >
@@ -109,16 +109,16 @@
       </div>
 
       <!-- TAB 1: BRANDS AND PIC'S (Figma Node 295:4077) -->
-      <div v-if="activeTab === 'brands'" class="flex flex-col gap-[24px] items-start px-[48px] w-full" data-node-id="295:4077" data-name="Brands List Container">
+      <div v-if="activeTab === 'brands'" class="flex flex-col gap-[20px] items-start px-[48px] w-full" data-node-id="295:4077" data-name="Brands List Container">
         <!-- Brands Header (Figma Node 295:4078) -->
         <div class="flex items-center justify-between w-full" data-node-id="295:4078" data-name="Brands Header">
-          <p class="font-707 text-[18px] leading-[24px] text-black font-normal" data-node-id="295:4079">
+          <p class="font-707 text-[16px] leading-[22px] text-black font-normal" data-node-id="295:4079">
             Brands List [{{ brandStore.brands.length }}]
           </p>
 
           <button 
             @click="showAddBrandModal = true"
-            class="border-[0.5px] border-black border-solid flex items-center justify-center px-[24px] py-[8px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[16px] md:text-[18px] leading-[24px] text-black"
+            class="border-[0.5px] border-black border-solid flex items-center justify-center px-[16px] py-[6px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[12px] leading-[16px] font-medium text-black"
             data-node-id="295:4080"
           >
             Add Brand
@@ -200,16 +200,16 @@
       </div>
 
       <!-- TAB 2: TEAM ACCOUNTS & PASSWORD MANAGEMENT -->
-      <div v-if="activeTab === 'users'" class="flex flex-col gap-[24px] items-start px-[48px] w-full">
+      <div v-if="activeTab === 'users'" class="flex flex-col gap-[20px] items-start px-[48px] w-full">
         <!-- Team Header -->
         <div class="flex items-center justify-between w-full">
-          <p class="font-707 text-[18px] leading-[24px] text-black font-normal">
+          <p class="font-707 text-[16px] leading-[22px] text-black font-normal">
             Team Accounts [{{ authStore.users.length }}]
           </p>
 
           <button 
             @click="showAddUserModal = true"
-            class="border-[0.5px] border-black border-solid flex items-center justify-center px-[24px] py-[8px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[16px] md:text-[18px] leading-[24px] text-black"
+            class="border-[0.5px] border-black border-solid flex items-center justify-center px-[16px] py-[6px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[12px] leading-[16px] font-medium text-black"
           >
             Add Member
           </button>
@@ -290,16 +290,16 @@
       </div>
 
       <!-- TAB 3: PROJECT LISTS / SUBMISSIONS QUEUE -->
-      <div v-if="activeTab === 'submissions'" class="flex flex-col gap-[24px] items-start px-[48px] w-full">
+      <div v-if="activeTab === 'submissions'" class="flex flex-col gap-[20px] items-start px-[48px] w-full">
         <!-- Projects Header -->
         <div class="flex items-center justify-between w-full">
-          <p class="font-707 text-[18px] leading-[24px] text-black font-normal">
+          <p class="font-707 text-[16px] leading-[22px] text-black font-normal">
             Project Submissions [{{ editorStore.projects.length }}]
           </p>
 
           <button 
             @click="editorStore.loadProjects()" 
-            class="border-[0.5px] border-black border-solid flex items-center justify-center px-[20px] py-[8px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[14px] text-black gap-2"
+            class="border-[0.5px] border-black border-solid flex items-center justify-center px-[16px] py-[6px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[12px] leading-[16px] font-medium text-black gap-1.5"
           >
             <RefreshCw class="w-3.5 h-3.5" />
             <span>Refresh Queue</span>
@@ -375,9 +375,9 @@
       </div>
 
       <!-- TAB 4: TEMPLATES BUILD -->
-      <div v-if="activeTab === 'templates'" class="flex flex-col gap-[24px] items-start px-[48px] w-full">
+      <div v-if="activeTab === 'templates'" class="flex flex-col gap-[20px] items-start px-[48px] w-full">
         <div class="flex items-center justify-between w-full">
-          <p class="font-707 text-[18px] leading-[24px] text-black font-normal">
+          <p class="font-707 text-[16px] leading-[22px] text-black font-normal">
             Activation Template Presets [{{ brandStore.templates.length }}]
           </p>
         </div>
