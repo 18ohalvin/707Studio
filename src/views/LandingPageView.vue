@@ -36,21 +36,21 @@
 
         <!-- User Info Container (Avatar + Brand ID Pill) with anchored UserProfileModal pop up -->
         <div class="relative">
-          <div 
+          <button 
             @click="showUserProfileModal = !showUserProfileModal"
-            class="flex items-center gap-[8px] cursor-pointer hover:opacity-80 transition-opacity apple-press" 
+            class="flex items-center gap-[8px] cursor-pointer hover:opacity-80 transition-opacity apple-press bg-transparent border-none p-0 outline-none" 
             data-name="User Info Container"
             title="User Profile"
           >
-            <div class="size-[27px] rounded-full overflow-hidden shrink-0 border-[0.5px] border-black/10">
-              <img :src="FIGMA_ASSETS.landingAvatar" alt="User Avatar" class="size-full object-cover" />
+            <div class="size-[27px] rounded-full overflow-hidden shrink-0 border-[0.5px] border-black/10 bg-neutral-100 flex items-center justify-center">
+              <User class="w-3.5 h-3.5 text-black" />
             </div>
             <div class="border-[#d9d9d9] border-[0.5px] border-solid flex h-[26px] items-center justify-center px-[8px] rounded-[10px] shrink-0 bg-white/40">
               <p class="font-707 text-[12px] text-black font-medium whitespace-nowrap">
                 {{ authStore.isSuperAdmin ? 'Superadmin ID' : (brandStore.activeBrand?.slug ? brandStore.activeBrand.slug + ' ID' : '707 ID') }}
               </p>
             </div>
-          </div>
+          </button>
 
           <!-- User Profile Pop Up Modal (Figma Node 212:8894) anchored directly to profile button -->
           <UserProfileModal
@@ -295,6 +295,7 @@ import { useEditorStore } from '../stores/editorStore.ts';
 import { useBrandStore } from '../stores/brandStore.ts';
 import { useAuthStore } from '../stores/authStore.ts';
 import { FIGMA_ASSETS } from '../constants/figmaAssets.ts';
+import { User } from 'lucide-vue-next';
 import SetupProjectModal from '../components/modals/SetupProjectModal.vue';
 import BrandSignInModal from '../components/modals/BrandSignInModal.vue';
 import UserProfileModal from '../components/modals/UserProfileModal.vue';

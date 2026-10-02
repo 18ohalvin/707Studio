@@ -66,19 +66,13 @@
 
       <!-- Profile Avatar Container with Anchored UserProfileModal -->
       <div class="relative">
-        <div 
+        <button 
           @click="showUserProfileModal = !showUserProfileModal"
-          class="w-[30px] h-[30px] rounded-full overflow-hidden border border-black/10 hover:border-black/30 shrink-0 bg-white/20 backdrop-blur-[4px] flex items-center justify-center ml-0.5 transition-colors duration-200 cursor-pointer shadow-sm hover:opacity-90"
+          class="size-[30px] rounded-full border border-black/10 hover:border-black/30 shrink-0 bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors duration-200 cursor-pointer shadow-xs apple-press"
           title="User Profile"
         >
-          <img 
-            :src="FIGMA_ASSETS.avatar" 
-            alt="Avatar" 
-            class="size-full object-cover"
-            @error="handleAvatarError"
-          />
-          <span v-if="avatarFailed" class="text-[10px] font-bold text-neutral-600">707</span>
-        </div>
+          <User class="w-3.5 h-3.5 text-black" />
+        </button>
 
         <!-- User Profile Modal (Figma Node 212:8894) anchored directly to avatar -->
         <UserProfileModal
@@ -99,7 +93,7 @@ import { useRouter } from 'vue-router';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { useAuthStore } from '../../stores/authStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
-import { Eye, Edit3 } from 'lucide-vue-next';
+import { Eye, Edit3, User } from 'lucide-vue-next';
 import UserProfileModal from '../modals/UserProfileModal.vue';
 import { logout } from '../../services/apiClient.ts';
 
@@ -107,7 +101,6 @@ const router = useRouter();
 const editorStore = useEditorStore();
 const authStore = useAuthStore();
 const logoFailed = ref(false);
-const avatarFailed = ref(false);
 const showUserProfileModal = ref(false);
 const nowTicker = ref(Date.now());
 
@@ -149,10 +142,6 @@ onUnmounted(() => {
 
 function handleLogoError() {
   logoFailed.value = true;
-}
-
-function handleAvatarError() {
-  avatarFailed.value = true;
 }
 
 function handleAnalytics() {

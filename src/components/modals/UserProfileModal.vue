@@ -17,9 +17,8 @@
         <div class="flex items-center justify-between p-[24px] pb-[16px] w-full" data-node-id="212:8896" data-name="Widget Container">
           <div class="flex items-center gap-[12px]" data-node-id="212:8935">
             <!-- User Avatar (Figma Node 212:8933) -->
-            <div class="size-[40px] rounded-full overflow-hidden shrink-0 border border-black/10 bg-black text-white flex items-center justify-center font-bold text-[14px]">
-              <span v-if="authStore.isSuperAdmin">AD</span>
-              <img v-else :src="FIGMA_ASSETS.landingAvatar" alt="User Avatar" class="size-full object-cover" />
+            <div class="size-[40px] rounded-full overflow-hidden shrink-0 border border-black/10 bg-neutral-100 text-black flex items-center justify-center">
+              <User class="w-5 h-5 text-black" />
             </div>
             <!-- Brand ID / Superadmin ID -->
             <div class="flex flex-col">
@@ -88,7 +87,7 @@
 </template>
 
 <script setup lang="ts">
-import { X } from 'lucide-vue-next';
+import { X, User } from 'lucide-vue-next';
 import { useBrandStore } from '../../stores/brandStore.ts';
 import { useAuthStore } from '../../stores/authStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
