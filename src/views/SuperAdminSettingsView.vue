@@ -126,7 +126,7 @@
         </div>
 
         <!-- Brands Stacked List (Figma Node 295:4082) -->
-        <div class="flex flex-col items-start w-full border-[#aaa] border-[0.5px] border-solid rounded-[8px] overflow-hidden divide-y divide-[#aaa]" data-node-id="295:4082">
+        <div class="flex flex-col items-start w-full border-[#d9d9d9] border-[0.5px] border-solid rounded-[8px] overflow-hidden divide-y divide-[#d9d9d9]" data-node-id="295:4082">
           <div 
             v-for="(brand, bIdx) in brandStore.brands" 
             :key="brand.id"
@@ -137,50 +137,50 @@
             <div class="flex gap-[20px] md:gap-[24px] items-center shrink-0" data-name="Brand Info Container">
               <!-- Avatar Circle -->
               <div 
-                class="size-[44px] rounded-full text-white flex items-center justify-center font-bold text-[16px] shrink-0 border border-black/10 shadow-xs"
+                class="size-[38px] rounded-full text-white flex items-center justify-center font-bold text-[14px] shrink-0 border border-black/10 shadow-xs"
                 :style="{ backgroundColor: brand.primary_color || '#000000' }"
               >
                 {{ brand.name.charAt(0) }}
               </div>
 
               <!-- Brand Name & Link -->
-              <div class="flex flex-col gap-[4px] items-start w-[180px] shrink-0">
+              <div class="flex flex-col gap-[2px] items-start w-[180px] shrink-0">
                 <div class="flex gap-[8px] items-center w-full">
-                  <p class="font-707 font-medium text-[14px] leading-[20px] text-black whitespace-nowrap">
+                  <p class="font-707 font-medium text-[12px] leading-[18px] text-black whitespace-nowrap">
                     {{ brand.name }}
                   </p>
-                  <div class="border border-black border-solid flex items-center justify-center px-[8px] rounded-[100px] shrink-0 h-[18px]">
-                    <span class="font-707 text-[11px] leading-[14px] text-black text-center whitespace-nowrap">
+                  <div class="border border-black border-solid flex items-center justify-center px-[6px] rounded-[100px] shrink-0 h-[16px]">
+                    <span class="font-707 text-[10px] leading-[12px] text-black text-center whitespace-nowrap">
                       active
                     </span>
                   </div>
                 </div>
-                <p class="font-707 text-[12px] leading-[16px] text-neutral-500 font-mono">
+                <p class="font-707 text-[11px] leading-[15px] text-neutral-500 font-mono">
                   events.707.co.id/{{ brand.slug }}
                 </p>
               </div>
             </div>
 
             <!-- Col 2: On-going Projects -->
-            <p class="font-707 text-[14px] leading-[20px] text-black whitespace-nowrap">
+            <p class="font-707 text-[12px] leading-[18px] text-black whitespace-nowrap">
               {{ getBrandDropsCount(brand.slug) }} Projects On-going
             </p>
 
             <!-- Col 3: Last Activity -->
-            <p class="font-707 text-[14px] leading-[20px] text-neutral-600 whitespace-nowrap">
+            <p class="font-707 text-[12px] leading-[18px] text-neutral-600 whitespace-nowrap">
               {{ getBrandLastActivity(brand.slug) }}
             </p>
 
             <!-- Col 4: PIC Accounts Count & Avatars -->
             <div class="flex items-center gap-2 whitespace-nowrap">
-              <span class="font-707 text-[14px] leading-[20px] text-black">
+              <span class="font-707 text-[12px] leading-[18px] text-black">
                 {{ getBrandPics(brand.slug).length }} PIC Account{{ getBrandPics(brand.slug).length === 1 ? '' : 's' }}
               </span>
               <div class="flex -space-x-1.5 overflow-hidden">
                 <div 
                   v-for="pic in getBrandPics(brand.slug).slice(0, 3)" 
                   :key="pic.id" 
-                  class="inline-block size-5 rounded-full ring-1 ring-white bg-neutral-200 text-[10px] font-bold text-center leading-5 text-black"
+                  class="inline-block size-4.5 rounded-full ring-1 ring-white bg-neutral-200 text-[9px] font-bold text-center leading-4.5 text-black"
                   :title="pic.name"
                 >
                   {{ pic.name.charAt(0) }}
@@ -191,7 +191,7 @@
             <!-- Col 5: Action Button (Edit Details) -->
             <button 
               @click="openBrandDetailsModal(brand)"
-              class="font-707 font-bold text-[14px] leading-[20px] text-black hover:opacity-75 cursor-pointer bg-transparent border-none p-0 transition-opacity whitespace-nowrap"
+              class="font-707 font-medium text-[12px] leading-[18px] text-black hover:opacity-75 cursor-pointer bg-transparent border-none p-0 transition-opacity whitespace-nowrap"
             >
               Edit Details
             </button>
@@ -216,27 +216,27 @@
         </div>
 
         <!-- Users Table -->
-        <div class="flex flex-col items-start w-full border-[#aaa] border-[0.5px] border-solid rounded-[8px] overflow-hidden divide-y divide-[#aaa]">
+        <div class="flex flex-col items-start w-full border-[#d9d9d9] border-[0.5px] border-solid rounded-[8px] overflow-hidden divide-y divide-[#d9d9d9]">
           <div 
             v-for="user in authStore.users" 
             :key="user.id"
             class="flex items-center justify-between px-[36px] md:px-[43px] py-[16px] w-full bg-white hover:bg-neutral-50/75 transition-colors"
           >
             <!-- Member Info -->
-            <div class="flex gap-[20px] items-center shrink-0 w-[240px]">
-              <div class="size-[40px] rounded-full bg-black text-white flex items-center justify-center font-bold text-[14px] shrink-0 shadow-xs">
+            <div class="flex gap-[16px] items-center shrink-0 w-[240px]">
+              <div class="size-[36px] rounded-full bg-black text-white flex items-center justify-center font-bold text-[13px] shrink-0 shadow-xs">
                 {{ user.name.charAt(0) }}
               </div>
-              <div class="flex flex-col">
-                <span class="font-707 font-medium text-[14px] text-black">{{ user.name }}</span>
-                <span class="font-707 text-[12px] text-neutral-500 font-mono">{{ user.email }}</span>
+              <div class="flex flex-col gap-[2px]">
+                <span class="font-707 font-medium text-[12px] text-black">{{ user.name }}</span>
+                <span class="font-707 text-[11px] text-neutral-500 font-mono">{{ user.email }}</span>
               </div>
             </div>
 
             <!-- Role Badge -->
             <div class="w-[140px]">
-              <div class="border border-black border-solid inline-flex items-center justify-center px-[10px] py-[2px] rounded-[100px]">
-                <span class="font-707 text-[11px] text-black capitalize">
+              <div class="border border-black border-solid inline-flex items-center justify-center px-[8px] py-[1px] rounded-[100px]">
+                <span class="font-707 text-[10px] text-black capitalize">
                   {{ user.role === 'superadmin' ? 'Superadmin' : user.role === 'editor' ? 'Brand Designer' : 'Viewer' }}
                 </span>
               </div>
@@ -244,7 +244,7 @@
 
             <!-- Sign-in Password Management -->
             <div class="flex items-center gap-2 w-[220px]">
-              <code class="px-2 py-1 rounded bg-black/5 text-[12px] font-mono text-black">
+              <code class="px-2 py-0.5 rounded bg-black/5 text-[11px] font-mono text-black">
                 {{ visiblePasswords[user.id] ? (user.password || '707studio') : '••••••••••••' }}
               </code>
               <button 
@@ -257,7 +257,7 @@
               </button>
               <button 
                 @click="openPasswordModal(user)"
-                class="font-707 text-[12px] text-black underline font-medium hover:opacity-75 cursor-pointer bg-transparent border-none ml-1"
+                class="font-707 text-[11px] text-black underline font-medium hover:opacity-75 cursor-pointer bg-transparent border-none ml-1"
               >
                 Reset
               </button>
@@ -268,7 +268,7 @@
               <span 
                 v-for="b in user.assignedBrands" 
                 :key="b"
-                class="px-2 py-0.5 rounded bg-black/5 text-[11px] text-neutral-700 capitalize font-mono"
+                class="px-2 py-0.5 rounded bg-black/5 text-[10px] text-neutral-700 capitalize font-mono"
               >
                 {{ b }}
               </span>
@@ -279,11 +279,11 @@
               <button 
                 v-if="user.role !== 'superadmin'"
                 @click="authStore.removeUser(user.id)"
-                class="font-707 text-[13px] text-red-600 hover:underline cursor-pointer bg-transparent border-none"
+                class="font-707 text-[12px] text-red-600 hover:underline cursor-pointer bg-transparent border-none"
               >
                 Remove
               </button>
-              <span v-else class="font-707 text-[12px] text-neutral-400 italic">Primary Admin</span>
+              <span v-else class="font-707 text-[11px] text-neutral-400 italic">Primary Admin</span>
             </div>
           </div>
         </div>
@@ -307,27 +307,27 @@
         </div>
 
         <!-- Project Entries -->
-        <div class="flex flex-col items-start w-full border-[#aaa] border-[0.5px] border-solid rounded-[8px] overflow-hidden divide-y divide-[#aaa]">
+        <div class="flex flex-col items-start w-full border-[#d9d9d9] border-[0.5px] border-solid rounded-[8px] overflow-hidden divide-y divide-[#d9d9d9]">
           <div 
             v-for="project in editorStore.projects" 
             :key="project.id"
             class="flex items-center justify-between px-[36px] md:px-[43px] py-[16px] w-full bg-white hover:bg-neutral-50/75 transition-colors"
           >
             <!-- Project Title & Brand -->
-            <div class="flex flex-col w-[260px]">
-              <span class="font-707 font-medium text-[14px] text-black truncate">{{ project.title }}</span>
-              <span class="font-707 text-[12px] text-neutral-500 font-mono">/{{ project.brand_slug || 'atmos' }}/{{ project.slug }}</span>
+            <div class="flex flex-col w-[260px] gap-[2px]">
+              <span class="font-707 font-medium text-[12px] text-black truncate">{{ project.title }}</span>
+              <span class="font-707 text-[11px] text-neutral-500 font-mono">/{{ project.brand_slug || 'atmos' }}/{{ project.slug }}</span>
             </div>
 
             <!-- Layout Info -->
-            <span class="font-707 text-[14px] text-neutral-700">
+            <span class="font-707 text-[12px] text-neutral-700">
               {{ project.pages?.length || 1 }} Pages · {{ project.widget_tree?.length || 0 }} Widgets
             </span>
 
             <!-- Status Badge -->
             <div>
               <span 
-                class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-[100px] text-[11px] font-medium border"
+                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[100px] text-[10px] font-medium border"
                 :class="getStatusBadgeClass(project.status)"
               >
                 <span class="size-1.5 rounded-full" :class="getStatusDotClass(project.status)" />
@@ -336,7 +336,7 @@
             </div>
 
             <!-- Last Updated -->
-            <span class="font-707 text-[13px] text-neutral-500">
+            <span class="font-707 text-[12px] text-neutral-500">
               {{ editorStore.formatRelativeTime(project.updated_at) }}
             </span>
 
@@ -344,7 +344,7 @@
             <div class="flex items-center gap-2">
               <button 
                 @click="handlePreviewProject(project.id)"
-                class="border-[0.5px] border-black px-3 py-1 rounded-[6px] text-[12px] font-707 font-medium text-black hover:bg-black hover:text-white transition-all cursor-pointer"
+                class="border-[0.5px] border-black px-2.5 py-1 rounded-[6px] text-[11px] font-707 font-medium text-black hover:bg-black hover:text-white transition-all cursor-pointer"
               >
                 Inspect
               </button>
@@ -352,7 +352,7 @@
               <button 
                 v-if="project.status === 'pending_review' || project.status === 'draft'"
                 @click="handleApproveProject(project.id)"
-                class="bg-black text-white px-3.5 py-1 rounded-[6px] text-[12px] font-707 font-medium hover:bg-neutral-800 transition-all cursor-pointer flex items-center gap-1"
+                class="bg-black text-white px-3 py-1 rounded-[6px] text-[11px] font-707 font-medium hover:bg-neutral-800 transition-all cursor-pointer flex items-center gap-1"
               >
                 <CheckCircle class="w-3 h-3" />
                 <span>Approve</span>
@@ -361,14 +361,14 @@
               <button 
                 v-if="project.status === 'pending_review'"
                 @click="handleRejectProject(project.id)"
-                class="bg-neutral-100 hover:bg-neutral-200 text-black px-2.5 py-1 rounded-[6px] text-[12px] font-707 cursor-pointer"
+                class="bg-neutral-100 hover:bg-neutral-200 text-black px-2.5 py-1 rounded-[6px] text-[11px] font-707 cursor-pointer"
               >
                 Revisions
               </button>
             </div>
           </div>
 
-          <div v-if="!editorStore.projects.length" class="p-8 text-center text-neutral-400 font-707 text-[14px] w-full">
+          <div v-if="!editorStore.projects.length" class="p-8 text-center text-neutral-400 font-707 text-[12px] w-full">
             No project submissions found.
           </div>
         </div>
@@ -386,23 +386,23 @@
           <div 
             v-for="tpl in brandStore.templates" 
             :key="tpl.id"
-            class="border-[#aaa] border-[0.5px] border-solid rounded-[8px] p-5 flex flex-col justify-between gap-3 bg-white"
+            class="border-[#d9d9d9] border-[0.5px] border-solid rounded-[8px] p-5 flex flex-col justify-between gap-3 bg-white hover:border-black/30 transition-colors"
           >
             <div class="flex items-start justify-between">
               <div>
-                <h3 class="font-707 font-medium text-[16px] text-black">{{ tpl.name }}</h3>
+                <h3 class="font-707 font-medium text-[14px] text-black">{{ tpl.name }}</h3>
                 <p class="font-707 text-[12px] text-neutral-500 mt-1">{{ tpl.description }}</p>
               </div>
-              <span class="px-2 py-0.5 rounded-[100px] border border-black text-[11px] font-707 uppercase">
+              <span class="px-2 py-0.5 rounded-[100px] border border-black text-[10px] font-707 uppercase">
                 Preset
               </span>
             </div>
 
-            <div class="border-t border-black/10 pt-3 flex items-center justify-between text-[12px] font-707 text-neutral-600">
+            <div class="border-t border-black/10 pt-3 flex items-center justify-between text-[11px] font-707 text-neutral-600">
               <span>{{ tpl.widget_tree.length }} Widgets configured</span>
               <button 
                 @click="handleUseTemplate(tpl)"
-                class="font-707 font-bold text-[13px] text-black underline hover:opacity-75 cursor-pointer bg-transparent border-none"
+                class="font-707 font-medium text-[12px] text-black underline hover:opacity-75 cursor-pointer bg-transparent border-none"
               >
                 Launch with Template →
               </button>
