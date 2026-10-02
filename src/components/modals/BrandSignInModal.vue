@@ -96,6 +96,7 @@ import { ref, watch, nextTick } from 'vue';
 import { X } from 'lucide-vue-next';
 import { useBrandStore } from '../../stores/brandStore.ts';
 import { useEditorStore } from '../../stores/editorStore.ts';
+import { useAuthStore } from '../../stores/authStore.ts';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -108,6 +109,7 @@ const emit = defineEmits<{
 
 const brandStore = useBrandStore();
 const editorStore = useEditorStore();
+const authStore = useAuthStore();
 
 const brandId = ref('');
 const brandPin = ref('');
@@ -128,16 +130,21 @@ function handleForgotPin() {
 }
 
 function handleSignIn() {
-  const brandName = brandId.value.trim() || 'atmos';
+  const inputId = brandId.value.trim() || 'atmos';
+  const res = authStore.signIn(inputId, brandPin.value);
+  if (!res.success && res.error) {
+    editorStore.showToast(res.error);
+    return;
+  }
   // Match or activate brand
   const found = brandStore.brands.find(b => 
-    b.slug.toLowerCase() === brandName.toLowerCase() || 
-    b.name.toLowerCase().includes(brandName.toLowerCase())
+    b.slug.toLowerCase() === inputId.toLowerCase() || 
+    b.name.toLowerCase().includes(inputId.toLowerCase())
   );
   if (found) {
     brandStore.setActiveBrand(found);
   }
-  emit('signed-in', found ? found.name : brandName);
+  emit('signed-in', authStore.currentUser?.name || found?.name || inputId);
   emit('close');
 }
 </script>

@@ -155,7 +155,9 @@ function handleSettings() {
 
 async function handleSignOut() {
   await logout();
-  router.push('/login');
+  authStore.signOut();
+  showUserProfileModal.value = false;
+  router.push('/');
 }
 
 const saveStatusText = computed(() => {

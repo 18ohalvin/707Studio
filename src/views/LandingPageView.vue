@@ -31,8 +31,8 @@
           @click="handleNotificationClick"
         />
 
-        <!-- User Info Container (Avatar + Brand ID Pill) (Figma Node 210:6972) -->
-        <div class="relative flex items-center">
+        <!-- State 1: When Authenticated -> User Info Container (Avatar + Brand ID Pill) (Figma Node 210:6972) -->
+        <div v-if="authStore.isAuthenticated" class="relative flex items-center">
           <button 
             @click="showUserProfileModal = !showUserProfileModal"
             class="flex items-center gap-[8px] cursor-pointer hover:opacity-80 transition-opacity apple-press bg-transparent border-none p-0 outline-none" 
@@ -47,7 +47,7 @@
             <!-- Brand Badge (Figma Node 210:6969) -->
             <div class="border-[#d9d9d9] border-[0.5px] border-solid flex h-[26px] items-center justify-center px-[8px] rounded-[10px] shrink-0 bg-transparent" data-node-id="210:6969" data-name="Save Info Container">
               <p class="font-707 text-[12px] text-black font-light leading-[16px] whitespace-nowrap" data-node-id="210:6970">
-                {{ authStore.isSuperAdmin ? 'Superadmin ID' : (brandStore.activeBrand?.slug ? brandStore.activeBrand.slug + ' ID' : 'atmos ID') }}
+                {{ authStore.isSuperAdmin ? 'Superadmin ID' : (brandStore.activeBrand?.slug ? brandStore.activeBrand.slug + ' ID' : (authStore.currentUser?.name ? authStore.currentUser.name + ' ID' : 'atmos ID')) }}
               </p>
             </div>
           </button>
@@ -62,7 +62,18 @@
           />
         </div>
 
-        <!-- Contact UI/UX Team Button (Figma Node 198:6800 - hidden for Superadmin) -->
+        <!-- State 2: When Logged Out -> Sign In Button substituting the user button on the right -->
+        <button 
+          v-else
+          @click="showSignInModal = true"
+          class="border-[#d9d9d9] hover:border-black border-[0.5px] border-solid flex h-[28px] items-center justify-center px-[12px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[12px] font-medium text-black gap-1.5 whitespace-nowrap shadow-xs apple-press"
+          title="Sign in to Brand or Superadmin Account"
+        >
+          <User class="w-3.5 h-3.5" />
+          <span>Sign In</span>
+        </button>
+
+        <!-- Contact UI/UX Team Button (Figma Node 198:6800 - appears by default if Superadmin is not logged in) -->
         <button 
           v-if="!authStore.isSuperAdmin"
           @click="showContactModal = true"
@@ -366,7 +377,10 @@ function handleAnalytics() {
 }
 
 function handleSignOut() {
-  showSignInModal.value = true;
+  showUserProfileModal.value = false;
+  authStore.signOut();
+  brandStore.setActiveBrand(null);
+  triggerToast('Signed out of all accounts.');
 }
 
 function handleLogoError() {
