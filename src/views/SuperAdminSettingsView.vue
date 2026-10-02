@@ -475,23 +475,29 @@
             </div>
 
             <!-- Bottom: Action Bar -->
-            <div class="border-t border-black/10 pt-3 flex items-center justify-between gap-2">
-              <div class="flex items-center gap-3">
+            <div class="border-t border-[#d9d9d9] pt-3.5 flex items-center justify-between gap-3 w-full">
+              <div class="flex items-center gap-3.5 flex-wrap">
                 <button 
                   @click="openEditTemplateModal(tpl)"
-                  class="font-707 font-medium text-[12px] text-black hover:opacity-75 cursor-pointer bg-transparent border-none p-0 transition-opacity"
+                  class="font-707 font-medium text-[12px] leading-[18px] text-black hover:opacity-75 cursor-pointer bg-transparent border-none p-0 transition-opacity whitespace-nowrap flex items-center"
                 >
                   Edit Details
                 </button>
+
+                <span class="text-neutral-300 text-[11px] select-none leading-none">|</span>
+
                 <button 
                   @click="brandStore.toggleTemplateStatus(tpl.id)"
-                  class="font-707 text-[11px] text-neutral-500 hover:text-black cursor-pointer bg-transparent border-none p-0"
+                  class="font-707 text-[12px] leading-[18px] text-neutral-600 hover:text-black cursor-pointer bg-transparent border-none p-0 transition-colors whitespace-nowrap flex items-center"
                 >
                   {{ tpl.status === 'published' ? 'Set to Draft' : 'Publish' }}
                 </button>
+
+                <span class="text-neutral-300 text-[11px] select-none leading-none">|</span>
+
                 <button 
                   @click="handleRemoveTemplate(tpl)"
-                  class="font-707 text-[11px] text-red-500 hover:underline cursor-pointer bg-transparent border-none p-0"
+                  class="font-707 text-[12px] leading-[18px] text-red-600 hover:text-red-700 hover:underline cursor-pointer bg-transparent border-none p-0 transition-colors whitespace-nowrap flex items-center"
                 >
                   Remove
                 </button>
@@ -499,10 +505,10 @@
 
               <button 
                 @click="handleEditInStudio(tpl)"
-                class="border-[0.5px] border-black px-3 py-1 rounded-[6px] text-[11px] font-707 font-medium text-black hover:bg-black hover:text-white transition-all cursor-pointer flex items-center gap-1 shrink-0"
+                class="border-[0.5px] border-black px-3.5 h-[28px] rounded-[6px] text-[12px] font-707 font-medium text-black hover:bg-black hover:text-white transition-all cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
               >
                 <span>Edit in Builder</span>
-                <ExternalLink class="w-3 h-3" />
+                <ExternalLink class="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
