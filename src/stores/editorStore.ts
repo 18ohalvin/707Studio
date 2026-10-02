@@ -2,12 +2,33 @@ import { apiFetch } from '../services/apiClient.ts';
 import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
 import type { WidgetItem, WidgetType, ActivationPage, ViewportMode, PageStatus, ProjectItem } from '../types/editor.ts';
+import { useAuthStore } from './authStore.ts';
+import { useBrandStore } from './brandStore.ts';
 
 export type MediaGalleryTarget = 'bannerImage' | 'brandLogo' | 'replaceBannerImage' | 'addNewMedia' | 'choiceOptionImage';
 
 export const useEditorStore = defineStore('editor', () => {
   // Realtime Projects List (Synced with API & Local Storage)
   const projects = ref<ProjectItem[]>([]);
+
+  // Filtered Projects for Current User's Brand Permissions
+  const userProjects = computed<ProjectItem[]>(() => {
+    const authStore = useAuthStore();
+    if (authStore.isSuperAdmin) {
+      return projects.value;
+    }
+    if (!authStore.currentUser) {
+      return [];
+    }
+    const userBrands = (authStore.currentUser.assignedBrands || []).map(b => b.toLowerCase());
+    if (userBrands.includes('all')) {
+      return projects.value;
+    }
+    return projects.value.filter(p => {
+      const slug = (p.brand_slug || '').toLowerCase();
+      return userBrands.includes(slug);
+    });
+  });
 
   const currentProjectId = ref<string>('');
 
@@ -1117,18 +1138,22 @@ export const useEditorStore = defineStore('editor', () => {
       });
   }
 
-  function createNewProject(title: string, slug?: string, widgets?: WidgetItem[]): ProjectItem {
+  function createNewProject(title: string, slug?: string, widgets?: WidgetItem[], brandSlug?: string): ProjectItem {
     const id = `proj-${Date.now()}`;
     const now = new Date().toISOString();
     const cleanTitle = title.trim() || 'Untitled Activation Drop';
     const cleanSlug = slug || cleanTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+    const brandStore = useBrandStore();
+    const authStore = useAuthStore();
+    const targetBrandSlug = brandSlug || brandStore.activeBrand?.slug || authStore.currentUser?.assignedBrands[0] || 'atmos';
 
     const initialWidgets = widgets ? JSON.parse(JSON.stringify(widgets)) : [];
 
     const newProject: ProjectItem = {
       id,
       title: cleanTitle,
-      brand_slug: 'atmos',
+      brand_slug: targetBrandSlug,
       slug: cleanSlug,
       status: 'draft',
       current_version: 1,
@@ -1145,7 +1170,7 @@ export const useEditorStore = defineStore('editor', () => {
       {
         id: `page_${Date.now()}`,
         brand_id: '1',
-        brand_slug: 'atmos',
+        brand_slug: targetBrandSlug,
         title: 'Landing Page',
         page_name: 'Landing Page',
         slug: cleanSlug,
@@ -1232,6 +1257,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   return {
     projects,
+    userProjects,
     currentProjectId,
     projectTitle,
     pages,

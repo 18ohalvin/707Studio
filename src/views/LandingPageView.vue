@@ -203,7 +203,7 @@
           <!-- Fixed Scrollable Container for 2 Projects limit with Luxury Mask -->
           <div class="w-full h-[96px] overflow-y-auto pr-1 flex flex-col gap-[8px] luxury-scroll-mask overscroll-contain">
             <div 
-              v-for="project in editorStore.projects"
+              v-for="project in editorStore.userProjects"
               :key="project.id"
               class="flex items-center justify-between w-full py-1.5 hover:bg-black/[0.03] px-3 rounded-[10px] transition-all group cursor-pointer border border-transparent hover:border-black/5"
               data-name="Project Details Container"
@@ -228,9 +228,9 @@
               </div>
             </div>
 
-            <!-- Empty state fallback if no projects -->
-            <div v-if="!editorStore.projects.length" class="h-full flex items-center justify-center text-neutral-400 font-707 text-[13px]">
-              No projects yet. Click "Create a new project" to begin.
+            <!-- Empty state fallback if no projects or signed out -->
+            <div v-if="!editorStore.userProjects.length" class="h-full flex items-center justify-center text-neutral-400 font-707 text-[13px]">
+              {{ authStore.isAuthenticated ? 'No brand projects found yet. Click "Create a new project" to begin.' : 'Sign in to access your brand activations and projects.' }}
             </div>
           </div>
         </section>
@@ -383,136 +383,156 @@ function handleSignOut() {
   triggerToast('Signed out of all accounts.');
 }
 
+function requireAuth(action: () => void) {
+  if (!authStore.isAuthenticated) {
+    showSignInModal.value = true;
+    return;
+  }
+  action();
+}
+
 function handleLogoError() {
   logoFailed.value = true;
 }
 
 function handleCreateNewProject() {
-  showSetupModal.value = true;
+  requireAuth(() => {
+    showSetupModal.value = true;
+  });
 }
 
 function handleBrowseTemplates() {
-  // Navigate to editor with standard multi-block template
-  editorStore.createNewProject('Featured Brand Activation', 'featured-brand-activation', [
-    {
-      id: 'hero_template_1',
-      type: 'HeroDrop',
-      props: {
-        ratio: '4:5',
-        title: '707 EXCLUSIVE DROP',
-        headline: 'SUMMER RUN 2026',
-        subtitle: 'LIMITED ALLOCATION'
+  requireAuth(() => {
+    // Navigate to editor with standard multi-block template
+    editorStore.createNewProject('Featured Brand Activation', 'featured-brand-activation', [
+      {
+        id: 'hero_template_1',
+        type: 'HeroDrop',
+        props: {
+          ratio: '4:5',
+          title: '707 EXCLUSIVE DROP',
+          headline: 'SUMMER RUN 2026',
+          subtitle: 'LIMITED ALLOCATION'
+        }
+      },
+      {
+        id: 'text_template_1',
+        type: 'TextBanner',
+        props: {
+          text: 'SECURE YOUR EXCLUSIVE PAIR',
+          placeholder: 'WRITE YOUR TEXT HERE',
+          typographyStyle: 'headline-1'
+        }
+      },
+      {
+        id: 'raffle_template_1',
+        type: 'RaffleForm',
+        props: {
+          heading: 'ENTER RAFFLE DETAILS'
+        }
       }
-    },
-    {
-      id: 'text_template_1',
-      type: 'TextBanner',
-      props: {
-        text: 'SECURE YOUR EXCLUSIVE PAIR',
-        placeholder: 'WRITE YOUR TEXT HERE',
-        typographyStyle: 'headline-1'
-      }
-    },
-    {
-      id: 'raffle_template_1',
-      type: 'RaffleForm',
-      props: {
-        heading: 'ENTER RAFFLE DETAILS'
-      }
-    }
-  ]);
-  editorStore.triggerProjectLoading(3000);
-  router.push('/editor');
+    ]);
+    editorStore.triggerProjectLoading(3000);
+    router.push('/editor');
+  });
 }
 
 function handleCreateEventRegistration() {
-  // Start with Event RSVP form template
-  editorStore.createNewProject('VIP Event RSVP Registration', 'vip-event-rsvp', [
-    {
-      id: 'hero_event_1',
-      type: 'HeroDrop',
-      props: {
-        ratio: '16:9',
-        title: '707 VIP GALA',
-        headline: 'ACTIVATION LAUNCH',
-        subtitle: 'INVITATION ONLY'
+  requireAuth(() => {
+    // Start with Event RSVP form template
+    editorStore.createNewProject('VIP Event RSVP Registration', 'vip-event-rsvp', [
+      {
+        id: 'hero_event_1',
+        type: 'HeroDrop',
+        props: {
+          ratio: '16:9',
+          title: '707 VIP GALA',
+          headline: 'ACTIVATION LAUNCH',
+          subtitle: 'INVITATION ONLY'
+        }
+      },
+      {
+        id: 'text_event_1',
+        type: 'TextBanner',
+        props: {
+          text: 'RESERVE YOUR SEAT',
+          placeholder: 'WRITE YOUR TEXT HERE',
+          typographyStyle: 'headline-1'
+        }
+      },
+      {
+        id: 'raffle_event_1',
+        type: 'RaffleForm',
+        props: {
+          heading: 'GUEST REGISTRATION'
+        }
+      },
+      {
+        id: 'loc_event_1',
+        type: 'LocationCard',
+        props: {
+          venueName: '707 Space Jakarta',
+          address: 'Jl. Kemang Raya No. 707, Jakarta Selatan'
+        }
       }
-    },
-    {
-      id: 'text_event_1',
-      type: 'TextBanner',
-      props: {
-        text: 'RESERVE YOUR SEAT',
-        placeholder: 'WRITE YOUR TEXT HERE',
-        typographyStyle: 'headline-1'
-      }
-    },
-    {
-      id: 'raffle_event_1',
-      type: 'RaffleForm',
-      props: {
-        heading: 'GUEST REGISTRATION'
-      }
-    },
-    {
-      id: 'loc_event_1',
-      type: 'LocationCard',
-      props: {
-        venueName: '707 Space Jakarta',
-        address: 'Jl. Kemang Raya No. 707, Jakarta Selatan'
-      }
-    }
-  ]);
-  editorStore.triggerProjectLoading(3000);
-  router.push('/editor');
+    ]);
+    editorStore.triggerProjectLoading(3000);
+    router.push('/editor');
+  });
 }
 
 function handleCreateTicketing() {
-  // Start with e-Pass QR Ticketing template
-  editorStore.createNewProject('e-Pass QR Access Pass', 'epass-qr-ticketing', [
-    {
-      id: 'hero_ticket_1',
-      type: 'HeroDrop',
-      props: {
-        ratio: '3:4',
-        title: 'ACCESS PASS',
-        headline: 'GATE 01 ENTRY',
-        subtitle: 'SCAN AT VENUE'
+  requireAuth(() => {
+    // Start with e-Pass QR Ticketing template
+    editorStore.createNewProject('e-Pass QR Access Pass', 'epass-qr-ticketing', [
+      {
+        id: 'hero_ticket_1',
+        type: 'HeroDrop',
+        props: {
+          ratio: '3:4',
+          title: 'ACCESS PASS',
+          headline: 'GATE 01 ENTRY',
+          subtitle: 'SCAN AT VENUE'
+        }
+      },
+      {
+        id: 'ticket_action_1',
+        type: 'PassCTA',
+        props: {
+          ctaLabel: 'CLAIM DIGITAL PASS',
+          quotaRemaining: 150
+        }
+      },
+      {
+        id: 'rules_ticket_1',
+        type: 'RulesAccordion',
+        props: {
+          title: 'ENTRY CONDITIONS',
+          items: [
+            { title: 'VALID ID REQUIRED', content: 'Present matching government-issued identification at gate.' },
+            { title: 'NON-TRANSFERABLE', content: 'Pass is strictly tied to verified RSVP account.' }
+          ]
+        }
       }
-    },
-    {
-      id: 'ticket_action_1',
-      type: 'PassCTA',
-      props: {
-        ctaLabel: 'CLAIM DIGITAL PASS',
-        quotaRemaining: 150
-      }
-    },
-    {
-      id: 'rules_ticket_1',
-      type: 'RulesAccordion',
-      props: {
-        title: 'ENTRY CONDITIONS',
-        items: [
-          { title: 'VALID ID REQUIRED', content: 'Present matching government-issued identification at gate.' },
-          { title: 'NON-TRANSFERABLE', content: 'Pass is strictly tied to verified RSVP account.' }
-        ]
-      }
-    }
-  ]);
-  editorStore.triggerProjectLoading(3000);
-  router.push('/editor');
+    ]);
+    editorStore.triggerProjectLoading(3000);
+    router.push('/editor');
+  });
 }
 
 function handleViewAllProjects() {
-  if (projectsSectionRef.value) {
-    projectsSectionRef.value.scrollIntoView({ behavior: 'smooth' });
-  }
+  requireAuth(() => {
+    if (projectsSectionRef.value) {
+      projectsSectionRef.value.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
 }
 
 function openProject(projectId: string) {
-  editorStore.openProjectById(projectId);
-  editorStore.triggerProjectLoading(3000);
-  router.push('/editor');
+  requireAuth(() => {
+    editorStore.openProjectById(projectId);
+    editorStore.triggerProjectLoading(3000);
+    router.push('/editor');
+  });
 }
 </script>

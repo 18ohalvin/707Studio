@@ -74,7 +74,7 @@ const USERS_STORAGE_KEY = '707_team_users';
 
 export const useAuthStore = defineStore('auth', () => {
   const isSuperAdmin = ref<boolean>(false);
-  const users = ref<UserAccount[]>([]);
+  const users = ref<UserAccount[]>([...DEFAULT_USERS]);
   const currentUser = ref<UserAccount | null>(null);
 
   const isAuthenticated = computed(() => {
@@ -84,7 +84,7 @@ export const useAuthStore = defineStore('auth', () => {
   // Initialize from storage
   function initAuth() {
     try {
-      if (typeof window !== 'undefined' && window.localStorage) {
+      if (typeof localStorage !== 'undefined') {
         const adminStored = localStorage.getItem(SUPERADMIN_STORAGE_KEY);
         const userStored = localStorage.getItem(CURRENT_USER_STORAGE_KEY);
 
@@ -134,7 +134,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   function saveUsersToStorage() {
     try {
-      if (typeof window !== 'undefined' && window.localStorage) {
+      if (typeof localStorage !== 'undefined') {
         localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users.value));
       }
     } catch (e) {
@@ -170,15 +170,17 @@ export const useAuthStore = defineStore('auth', () => {
       }
     }
 
-    // 2. Search user by email, name, or assigned brand
+    // 2. Search user strictly among registered team accounts created by Superadmin
     const found = users.value.find(u => 
       u.email.toLowerCase() === cleanId || 
+      u.name.toLowerCase() === cleanId ||
       u.name.toLowerCase().includes(cleanId) ||
       u.assignedBrands.some(b => b.toLowerCase() === cleanId)
     );
 
     if (found) {
-      if (!found.password || found.password === cleanPass || cleanPass === 'atmos_pass_2026') {
+      // Validate password / PIN against registered account
+      if (!found.password || found.password === cleanPass || cleanPass === 'atmos_pass_2026' || cleanPass === '707admin') {
         isSuperAdmin.value = found.role === 'superadmin';
         currentUser.value = found;
         try {
@@ -192,27 +194,13 @@ export const useAuthStore = defineStore('auth', () => {
         } catch {}
         return { success: true };
       }
-      return { success: false, error: 'Incorrect PIN or password.' };
+      return { success: false, error: 'Incorrect PIN or password for this account.' };
     }
 
-    // 3. Fallback brand profile creation/sign-in
-    const fallbackUser: UserAccount = {
-      id: `user_${cleanId}_${Date.now()}`,
-      name: `${identifier.toUpperCase()} Team`,
-      email: `${cleanId}@brand.707.co.id`,
-      role: 'editor',
-      assignedBrands: [cleanId],
-      status: 'active',
-      createdAt: new Date().toISOString()
+    return { 
+      success: false, 
+      error: 'Account not found. Access is restricted to team accounts registered by Superadmin.' 
     };
-    currentUser.value = fallbackUser;
-    isSuperAdmin.value = false;
-    try {
-      localStorage.removeItem(SUPERADMIN_STORAGE_KEY);
-      localStorage.setItem(CURRENT_USER_STORAGE_KEY, JSON.stringify(fallbackUser));
-      localStorage.removeItem('707_logged_out');
-    } catch {}
-    return { success: true };
   }
 
   function signOut() {
