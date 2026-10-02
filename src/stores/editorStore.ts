@@ -641,6 +641,29 @@ export const useEditorStore = defineStore('editor', () => {
     currentPage.value.updated_at = new Date().toISOString();
   }
 
+  function updateProjectStatus(projectId: string, status: PageStatus, reviewedBy = 'Alvin Decorous (Superadmin)') {
+    const proj = projects.value.find(p => p.id === projectId);
+    if (proj) {
+      proj.status = status;
+      proj.updated_at = new Date().toISOString();
+      if (proj.pages) {
+        proj.pages.forEach(pg => {
+          pg.status = status;
+          pg.reviewed_by = reviewedBy;
+          pg.updated_at = new Date().toISOString();
+        });
+      }
+      if (currentProjectId.value === projectId) {
+        pages.value.forEach(pg => {
+          pg.status = status;
+          pg.reviewed_by = reviewedBy;
+          pg.updated_at = new Date().toISOString();
+        });
+      }
+      saveProjectsToStorage();
+    }
+  }
+
   function openAddMenu() {
     closeAllSidebars();
     isAddMenuOpen.value = true;
@@ -1314,6 +1337,7 @@ export const useEditorStore = defineStore('editor', () => {
     showToast,
     loadTemplate,
     setPageStatus,
+    updateProjectStatus,
     setDraggedWidget,
     cleanupEmptyTextWidgets
   };

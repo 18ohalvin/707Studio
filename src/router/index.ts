@@ -4,6 +4,8 @@ import EditorView from '../views/EditorView.vue';
 import LoginView from '../views/LoginView.vue';
 import { isAuthenticated } from '../services/apiClient.ts';
 
+import SuperAdminSettingsView from '../views/SuperAdminSettingsView.vue';
+
 const routes = [
   {
     path: '/login',
@@ -20,6 +22,15 @@ const routes = [
     path: '/editor',
     name: 'Editor',
     component: EditorView
+  },
+  {
+    path: '/settings',
+    name: 'SuperAdminSettings',
+    component: SuperAdminSettingsView
+  },
+  {
+    path: '/admin',
+    redirect: '/settings'
   }
 ];
 

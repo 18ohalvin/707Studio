@@ -36,9 +36,9 @@
 
         <!-- Settings Gear Icon -->
         <button 
-          @click="showSettingsModal = true"
+          @click="handleOpenSettings"
           class="relative size-[24px] flex items-center justify-center apple-press cursor-pointer hover:opacity-75 transition-opacity border-0 border-none outline-none bg-transparent shadow-none p-0"
-          title="Settings"
+          title="Superadmin Settings"
           data-node-id="210:6965"
         >
           <img :src="FIGMA_ASSETS.landingSettings" alt="Settings" class="size-full object-contain pointer-events-none" />
@@ -67,7 +67,7 @@
             :is-open="showUserProfileModal"
             @close="showUserProfileModal = false"
             @open-analytics="handleAnalytics"
-            @open-settings="showSettingsModal = true"
+            @open-settings="handleOpenSettings"
             @sign-out="handleSignOut"
           />
         </div>
@@ -288,6 +288,13 @@
       @close="showSignInModal = false"
       @signed-in="handleSignedIn"
     />
+
+    <!-- Superadmin Auth Gate Modal -->
+    <SuperAdminAuthModal 
+      :is-open="showSuperAdminModal"
+      @close="showSuperAdminModal = false"
+      @verified="handleSuperAdminVerified"
+    />
   </div>
 </template>
 
@@ -296,14 +303,17 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useEditorStore } from '../stores/editorStore.ts';
 import { useBrandStore } from '../stores/brandStore.ts';
+import { useAuthStore } from '../stores/authStore.ts';
 import { FIGMA_ASSETS } from '../constants/figmaAssets.ts';
 import SetupProjectModal from '../components/modals/SetupProjectModal.vue';
 import BrandSignInModal from '../components/modals/BrandSignInModal.vue';
 import UserProfileModal from '../components/modals/UserProfileModal.vue';
+import SuperAdminAuthModal from '../components/modals/SuperAdminAuthModal.vue';
 
 const router = useRouter();
 const editorStore = useEditorStore();
 const brandStore = useBrandStore();
+const authStore = useAuthStore();
 
 // App Version constant (easily bumped for future releases)
 const APP_VERSION = '1.0';
@@ -314,10 +324,23 @@ const showUserProfileModal = ref(false);
 const showSignInModal = ref(false);
 const showContactModal = ref(false);
 const showSettingsModal = ref(false);
+const showSuperAdminModal = ref(false);
 const showNotificationToast = ref(false);
 const toastMessage = ref('All design systems and cloud sync are up to date.');
 let toastTimer: any = null;
 const projectsSectionRef = ref<HTMLElement | null>(null);
+
+function handleOpenSettings() {
+  if (authStore.isSuperAdmin) {
+    router.push('/settings');
+  } else {
+    showSuperAdminModal.value = true;
+  }
+}
+
+function handleSuperAdminVerified() {
+  router.push('/settings');
+}
 
 function triggerToast(msg: string) {
   if (toastTimer) clearTimeout(toastTimer);
