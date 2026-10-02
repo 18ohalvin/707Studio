@@ -43,9 +43,11 @@
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { login } from '../services/apiClient.ts';
+import { useAuthStore } from '../stores/authStore.ts';
 
 const router = useRouter();
 const route = useRoute();
+const authStore = useAuthStore();
 
 const password = ref('');
 const isLoading = ref(false);
@@ -71,6 +73,13 @@ async function handleSubmit() {
     password.value = '';
     return;
   }
+
+  // Set default workspace access as Superadmin
+  authStore.isSuperAdmin = true;
+  authStore.currentUser = authStore.users[0] || null;
+  try {
+    localStorage.setItem('707_superadmin_auth', 'true');
+  } catch {}
 
   const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/';
   router.replace(redirect);

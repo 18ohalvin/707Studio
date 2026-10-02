@@ -56,8 +56,8 @@
               <img :src="FIGMA_ASSETS.landingAvatar" alt="User Avatar" class="size-full object-cover" />
             </div>
             <div class="border-[#d9d9d9] border-[0.5px] border-solid flex h-[26px] items-center justify-center px-[8px] rounded-[10px] shrink-0 bg-white/40">
-              <p class="font-707 text-[12px] text-black font-light whitespace-nowrap">
-                {{ brandStore.activeBrand?.slug ? brandStore.activeBrand.slug + ' ID' : 'atmos ID' }}
+              <p class="font-707 text-[12px] text-black font-medium whitespace-nowrap">
+                {{ authStore.isSuperAdmin ? 'Superadmin ID' : (brandStore.activeBrand?.slug ? brandStore.activeBrand.slug + ' ID' : '707 ID') }}
               </p>
             </div>
           </div>

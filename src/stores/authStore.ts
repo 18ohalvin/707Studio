@@ -62,7 +62,7 @@ const SUPERADMIN_STORAGE_KEY = '707_superadmin_auth';
 const USERS_STORAGE_KEY = '707_team_users';
 
 export const useAuthStore = defineStore('auth', () => {
-  const isSuperAdmin = ref<boolean>(false);
+  const isSuperAdmin = ref<boolean>(true);
   const users = ref<UserAccount[]>([]);
   const currentUser = ref<UserAccount | null>(null);
 
@@ -71,8 +71,11 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
         const adminStored = localStorage.getItem(SUPERADMIN_STORAGE_KEY);
-        if (adminStored === 'true') {
+        // Default to true if not explicitly set to false
+        if (adminStored !== 'false') {
           isSuperAdmin.value = true;
+        } else {
+          isSuperAdmin.value = false;
         }
 
         const usersStored = localStorage.getItem(USERS_STORAGE_KEY);
@@ -88,7 +91,7 @@ export const useAuthStore = defineStore('auth', () => {
           saveUsersToStorage();
         }
 
-        // Set default active user
+        // Set default active user to Superadmin
         if (isSuperAdmin.value) {
           currentUser.value = users.value[0] || DEFAULT_USERS[0];
         } else {
@@ -97,6 +100,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
     } catch {
       users.value = [...DEFAULT_USERS];
+      currentUser.value = DEFAULT_USERS[0];
     }
   }
 

@@ -17,13 +17,19 @@
         <div class="flex items-center justify-between p-[24px] pb-[16px] w-full" data-node-id="212:8896" data-name="Widget Container">
           <div class="flex items-center gap-[12px]" data-node-id="212:8935">
             <!-- User Avatar (Figma Node 212:8933) -->
-            <div class="size-[40px] rounded-full overflow-hidden shrink-0 border border-black/10 bg-neutral-200 flex items-center justify-center">
-              <img :src="FIGMA_ASSETS.landingAvatar" alt="User Avatar" class="size-full object-cover" />
+            <div class="size-[40px] rounded-full overflow-hidden shrink-0 border border-black/10 bg-black text-white flex items-center justify-center font-bold text-[14px]">
+              <span v-if="authStore.isSuperAdmin">AD</span>
+              <img v-else :src="FIGMA_ASSETS.landingAvatar" alt="User Avatar" class="size-full object-cover" />
             </div>
-            <!-- Brand ID (Reduced to 16px font size as requested) -->
-            <h2 class="font-707 text-[16px] font-normal leading-[22px] text-black whitespace-nowrap" data-node-id="212:8898">
-              {{ brandStore.activeBrand?.slug ? brandStore.activeBrand.slug + ' ID' : 'atmos ID' }}
-            </h2>
+            <!-- Brand ID / Superadmin ID -->
+            <div class="flex flex-col">
+              <h2 class="font-707 text-[15px] font-medium leading-[20px] text-black whitespace-nowrap" data-node-id="212:8898">
+                {{ authStore.isSuperAdmin ? 'Superadmin ID' : (brandStore.activeBrand?.slug ? brandStore.activeBrand.slug + ' ID' : '707 ID') }}
+              </h2>
+              <span v-if="authStore.isSuperAdmin" class="text-[11px] text-neutral-500 font-707">
+                Alvin Decorous (Master)
+              </span>
+            </div>
           </div>
 
           <!-- Close Button (Figma Node 212:8899) -->
@@ -84,6 +90,7 @@
 <script setup lang="ts">
 import { X } from 'lucide-vue-next';
 import { useBrandStore } from '../../stores/brandStore.ts';
+import { useAuthStore } from '../../stores/authStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 
 const props = defineProps<{
@@ -98,6 +105,7 @@ const emit = defineEmits<{
 }>();
 
 const brandStore = useBrandStore();
+const authStore = useAuthStore();
 
 function handleAnalytics() {
   emit('close');
