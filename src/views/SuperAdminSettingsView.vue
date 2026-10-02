@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen w-screen bg-white text-black font-707 flex flex-col select-none">
+  <div class="h-full w-full bg-white text-black font-707 flex flex-col select-none overflow-y-auto overflow-x-hidden">
     <!-- Top Header (Retaining Existing 48px Header Style as requested) -->
     <header class="w-full h-[48px] px-[20px] flex items-center justify-between border-b border-black/10 bg-white/90 backdrop-blur-md shrink-0 sticky top-0 z-30">
       <!-- Left: 707 Logo & Superadmin Identifier -->
