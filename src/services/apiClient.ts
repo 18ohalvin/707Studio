@@ -45,11 +45,8 @@ export class ApiError extends Error {
   }
 }
 
-function redirectToLogin(): void {
+function handleUnauthorized(): void {
   clearToken();
-  if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-    window.location.href = '/login';
-  }
 }
 
 export async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
@@ -64,8 +61,8 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
   });
 
   if (res.status === 401) {
-    redirectToLogin();
-    throw new ApiError('Session expired, please sign in again.', 401);
+    handleUnauthorized();
+    throw new ApiError('Unauthorized or session expired.', 401);
   }
 
   return res;

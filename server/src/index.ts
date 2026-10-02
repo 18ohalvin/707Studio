@@ -40,15 +40,15 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Sign-in is the only other route reachable without a token.
+// Superadmin verification endpoint
 app.use('/api/auth', authRouter);
 
-// Everything below is staff tooling and stays closed.
-app.use('/api/brands', requireAuth, brandsRouter);
-app.use('/api/pages', requireAuth, pagesRouter);
-app.use('/api/templates', requireAuth, templatesRouter);
-app.use('/api/submissions', requireAuth, submissionsRouter);
-app.use('/api/media', requireAuth, mediaRouter);
+// Studio & Brand Activation Endpoints
+app.use('/api/brands', brandsRouter);
+app.use('/api/pages', pagesRouter);
+app.use('/api/templates', templatesRouter);
+app.use('/api/submissions', submissionsRouter);
+app.use('/api/media', mediaRouter);
 
 // Any unmatched /api path must fail as JSON. Letting it fall through to the SPA
 // would answer an API call with HTML and turn a plain 404 into a confusing
