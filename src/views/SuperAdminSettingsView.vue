@@ -219,15 +219,6 @@
 
           <div class="flex items-center gap-2.5">
             <button 
-              @click="handleResetUserDatabase"
-              class="border-[0.5px] border-black/20 flex items-center justify-center px-[12px] py-[6px] rounded-[8px] bg-white hover:bg-neutral-100 transition-all cursor-pointer font-707 text-[12px] leading-[16px] font-medium text-neutral-700 gap-1.5"
-              title="Reset user database to clean seed state"
-            >
-              <RotateCcw class="w-3.5 h-3.5" />
-              <span>Reset User DB</span>
-            </button>
-
-            <button 
               @click="showAddUserModal = true"
               class="border-[0.5px] border-black border-solid flex items-center justify-center px-[16px] py-[6px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[12px] leading-[16px] font-medium text-black gap-1.5"
             >
@@ -1114,8 +1105,7 @@ import {
   Plus,
   Trash2,
   ExternalLink,
-  Layers,
-  RotateCcw
+  Layers
 } from 'lucide-vue-next';
 import { useAuthStore, type UserAccount, type UserRole } from '../stores/authStore.ts';
 import { useEditorStore } from '../stores/editorStore.ts';
@@ -1286,12 +1276,6 @@ function handlePasswordUpdateSubmit() {
   }
 }
 
-function handleResetUserDatabase() {
-  if (confirm('Are you sure you want to reset the entire user accounts database to clean default seed state?')) {
-    authStore.resetUsers();
-    editorStore.showToast('User accounts database reset to default seed state.');
-  }
-}
 
 function openAssignPicModal(brandSlug: string, brandName: string) {
   targetBrandSlug.value = brandSlug;
