@@ -118,10 +118,11 @@
 
           <button 
             @click="showAddBrandModal = true"
-            class="border-[0.5px] border-black border-solid flex items-center justify-center px-[16px] py-[6px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[12px] leading-[16px] font-medium text-black"
+            class="border-[0.5px] border-black border-solid flex items-center justify-center px-[16px] py-[6px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[12px] leading-[16px] font-medium text-black gap-1.5"
             data-node-id="295:4080"
           >
-            Add Brand
+            <Plus class="w-3.5 h-3.5" />
+            <span>Add Brand</span>
           </button>
         </div>
 
@@ -209,9 +210,10 @@
 
           <button 
             @click="showAddUserModal = true"
-            class="border-[0.5px] border-black border-solid flex items-center justify-center px-[16px] py-[6px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[12px] leading-[16px] font-medium text-black"
+            class="border-[0.5px] border-black border-solid flex items-center justify-center px-[16px] py-[6px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[12px] leading-[16px] font-medium text-black gap-1.5"
           >
-            Add Member
+            <Plus class="w-3.5 h-3.5" />
+            <span>Add Member</span>
           </button>
         </div>
 
