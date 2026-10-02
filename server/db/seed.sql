@@ -1,28 +1,7 @@
 -- 707 Activation Builder Seed Data
--- 20 Brand Accounts & Initial Global Presets
+-- Clean Cloud Database Schema & Templates Presets
 
-INSERT INTO brands (name, slug, description, primary_color) VALUES
-('atmos Indonesia', 'atmos', 'atmos streetwear and exclusive sneaker destination', '#000000'),
-('Fred Perry', 'fred-perry', 'Iconic British laurel wreath sportswear and apparel', '#1a1a1a'),
-('Vans Store Indonesia', 'vans', 'Action sports footwear and apparel', '#c8102e'),
-('Converse Flagship', 'converse', 'Classic Chuck Taylor and collaborative drops', '#000000'),
-('ASICS SportStyle', 'asics', 'Performance and lifestyle sneaker collaborations', '#001e62'),
-('New Balance Heritage', 'new-balance', 'Craftsmanship and running silhouette drops', '#cc0000'),
-('Salomon Sportstyle', 'salomon', 'Trail running and technical outdoor footwear', '#111111'),
-('Carhartt WIP', 'carhartt-wip', 'Workwear in progress and streetwear essentials', '#d49b42'),
-('Stüssy Chapter', 'stussy', 'Tribe culture and seasonal hype collections', '#000000'),
-('Pleasures', 'pleasures', 'Punk, grunge, and modern graphic apparel', '#000000'),
-('Neighborhood Japan', 'neighborhood', 'Craft with pride Tokyo streetwear', '#1f1f1f'),
-('Beams Plus', 'beams-plus', 'Japanese timeless menswear aesthetics', '#e65c00'),
-('Puma Select', 'puma', 'Heritage motorsport and street collaborations', '#000000'),
-('Mizuno Sportstyle', 'mizuno', 'Japanese performance running and Kazoku drops', '#0d1b2a'),
-('Hoka One One', 'hoka', 'Maximalist cushioning footwear releases', '#0072ce'),
-('On Running', 'on-running', 'CloudTec footwear and apparel launches', '#000000'),
-('Dickies 1922', 'dickies', 'Authentic rugged workwear collections', '#b32025'),
-('Gramicci', 'gramicci', 'Yosemite climbing and lifestyle apparel', '#9e2a2b'),
-('Dr. Martens', 'dr-martens', 'Iconic yellow-stitched boots and shoes', '#ffcc00'),
-('707 Vault / Exclusive', '707-vault', 'The 707 Company private archive and VIP drop hub', '#000000')
-ON CONFLICT (slug) DO NOTHING;
+-- Brand Accounts are managed live via Superadmin Governance (/api/brands)
 
 -- Initial Global Templates (Created and curated by Head of UI/UX)
 INSERT INTO templates (name, slug, description, category, widget_tree) VALUES

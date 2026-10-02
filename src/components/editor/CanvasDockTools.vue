@@ -19,7 +19,9 @@ const editorStore = useEditorStore();
 const brandStore = useBrandStore();
 
 function openLivePreview() {
-  const url = `https://events.707.co.id/${brandStore.activeBrand.slug}/${editorStore.currentPage.slug}`;
+  const brandSlug = brandStore.activeBrand?.slug || 'events';
+  const pageSlug = editorStore.currentPage?.slug || '';
+  const url = `https://events.707.co.id/${brandSlug}/${pageSlug}`;
   window.open(url, '_blank');
 }
 </script>

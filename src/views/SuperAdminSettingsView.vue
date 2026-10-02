@@ -116,25 +116,14 @@
             Brands List [{{ brandStore.brands.length }}]
           </p>
 
-          <div class="flex items-center gap-2.5">
-            <button 
-              @click="handleResetBrandDatabase"
-              class="border-[0.5px] border-black/20 flex items-center justify-center px-[12px] py-[6px] rounded-[8px] bg-white hover:bg-neutral-100 transition-all cursor-pointer font-707 text-[12px] leading-[16px] font-medium text-neutral-700 gap-1.5"
-              title="Reset brands directory to default 20 brand accounts"
-            >
-              <RotateCcw class="w-3.5 h-3.5" />
-              <span>Reset Brand DB</span>
-            </button>
-
-            <button 
-              @click="showAddBrandModal = true"
-              class="border-[0.5px] border-black border-solid flex items-center justify-center px-[16px] py-[6px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[12px] leading-[16px] font-medium text-black gap-1.5"
-              data-node-id="295:4080"
-            >
-              <Plus class="w-3.5 h-3.5" />
-              <span>Add Brand</span>
-            </button>
-          </div>
+          <button 
+            @click="showAddBrandModal = true"
+            class="border-[0.5px] border-black border-solid flex items-center justify-center px-[16px] py-[6px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[12px] leading-[16px] font-medium text-black gap-1.5"
+            data-node-id="295:4080"
+          >
+            <Plus class="w-3.5 h-3.5" />
+            <span>Add Brand</span>
+          </button>
         </div>
 
         <!-- Brands Stacked List (Figma Node 295:4082) -->
@@ -533,6 +522,93 @@
         </div>
       </div>
     </main>
+
+    <!-- Modal 0: Add Brand Modal (Superadmin) -->
+    <Transition name="apple-dock-fade">
+      <div 
+        v-if="showAddBrandModal" 
+        class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
+        @click.self="showAddBrandModal = false"
+      >
+        <div class="backdrop-blur-2xl bg-white/95 rounded-[16px] border border-white/60 p-6 w-full max-w-[460px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707">
+          <div class="flex items-center justify-between">
+            <h3 class="font-707 font-medium text-[16px] text-black">Add Brand Account</h3>
+            <button @click="showAddBrandModal = false" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
+          </div>
+
+          <p class="font-707 text-[12px] text-neutral-600">
+            Create an official brand account in the 707 cloud ecosystem.
+          </p>
+
+          <form @submit.prevent="handleAddBrandSubmit" class="flex flex-col gap-3.5">
+            <div class="flex flex-col gap-1">
+              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Brand Name</label>
+              <input 
+                v-model="newBrandName" 
+                type="text" 
+                required 
+                placeholder="e.g. atmos Indonesia" 
+                class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+              />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div class="flex flex-col gap-1">
+                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Brand URL Slug</label>
+                <input 
+                  v-model="newBrandSlug" 
+                  type="text" 
+                  placeholder="e.g. atmos" 
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black font-mono"
+                />
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Primary Color</label>
+                <div class="flex items-center gap-2">
+                  <input 
+                    v-model="newBrandColor" 
+                    type="color" 
+                    class="size-[38px] rounded-[6px] border border-black/15 cursor-pointer bg-transparent"
+                  />
+                  <input 
+                    v-model="newBrandColor" 
+                    type="text" 
+                    class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black font-mono"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Description</label>
+              <textarea 
+                v-model="newBrandDesc" 
+                rows="2"
+                placeholder="Brand specialty, footwear collaboration hub..." 
+                class="w-full p-2.5 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black resize-none"
+              />
+            </div>
+
+            <div class="flex items-center justify-end gap-2.5 mt-2">
+              <button 
+                type="button" 
+                @click="showAddBrandModal = false" 
+                class="px-4 h-[36px] rounded-[8px] border border-black/15 text-neutral-600 font-707 text-[12px] font-medium"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                class="apple-glass-btn-dark bg-black text-white px-5 h-[36px] rounded-[8px] font-707 text-[12px] font-medium"
+              >
+                Create Brand
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </Transition>
 
     <!-- Modal 1: Edit Brand Details & PICs Modal -->
     <Transition name="apple-dock-fade">
@@ -1069,6 +1145,11 @@ const targetBrand = ref<Brand | null>(null);
 const editBrandName = ref('');
 const editBrandDesc = ref('');
 
+const newBrandName = ref('');
+const newBrandSlug = ref('');
+const newBrandColor = ref('#000000');
+const newBrandDesc = ref('');
+
 const newUserName = ref('');
 const newUserEmail = ref('');
 const newUserPhone = ref('');
@@ -1149,6 +1230,23 @@ function generateRandomPassword() {
   newUserPassword.value = '707_' + Math.random().toString(36).substring(2, 9);
 }
 
+async function handleAddBrandSubmit() {
+  if (!newBrandName.value.trim()) return;
+  const slug = newBrandSlug.value.trim() || newBrandName.value.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  await brandStore.addBrand({
+    name: newBrandName.value.trim(),
+    slug,
+    primary_color: newBrandColor.value || '#000000',
+    description: newBrandDesc.value.trim()
+  });
+  editorStore.showToast(`Brand "${newBrandName.value}" added successfully.`);
+  newBrandName.value = '';
+  newBrandSlug.value = '';
+  newBrandColor.value = '#000000';
+  newBrandDesc.value = '';
+  showAddBrandModal.value = false;
+}
+
 function openBrandDetailsModal(brand: Brand) {
   targetBrand.value = brand;
   editBrandName.value = brand.name;
@@ -1156,26 +1254,21 @@ function openBrandDetailsModal(brand: Brand) {
   showBrandDetailsModal.value = true;
 }
 
-function handleSaveBrandDetails() {
+async function handleSaveBrandDetails() {
   if (targetBrand.value) {
-    targetBrand.value.name = editBrandName.value;
-    targetBrand.value.description = editBrandDesc.value;
+    await brandStore.updateBrand(targetBrand.value.id, {
+      name: editBrandName.value,
+      description: editBrandDesc.value
+    });
     editorStore.showToast(`Updated details for ${editBrandName.value}.`);
     showBrandDetailsModal.value = false;
   }
 }
 
-function handleRemoveBrand(brand: Brand) {
+async function handleRemoveBrand(brand: Brand) {
   if (confirm(`Are you sure you want to remove the "${brand.name}" brand account from the directory?`)) {
-    brandStore.removeBrand(brand.id);
+    await brandStore.removeBrand(brand.id);
     editorStore.showToast(`Brand "${brand.name}" removed from ecosystem.`);
-  }
-}
-
-function handleResetBrandDatabase() {
-  if (confirm('Are you sure you want to reset the brands database to the official 20 brand accounts?')) {
-    brandStore.resetBrands();
-    editorStore.showToast('Brand directory reset to official 20 brand accounts.');
   }
 }
 

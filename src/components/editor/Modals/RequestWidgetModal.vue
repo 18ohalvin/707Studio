@@ -38,7 +38,7 @@
         <div>
           <label class="block font-707 font-medium text-black mb-1.5 text-[12px]">Target Brand & Event</label>
           <input 
-            :value="brandStore.activeBrand.name" 
+            :value="brandStore.activeBrand?.name || '707 Network'" 
             disabled 
             class="w-full bg-neutral-100 border border-[#e5e5e5] rounded-xl p-3 text-neutral-600 text-[13px] font-707 cursor-not-allowed"
           />
