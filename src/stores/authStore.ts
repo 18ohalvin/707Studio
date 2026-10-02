@@ -208,6 +208,17 @@ export const useAuthStore = defineStore('auth', () => {
     return false;
   }
 
+  function resetUsers(): boolean {
+    users.value = JSON.parse(JSON.stringify(DEFAULT_USERS));
+    saveUsersToStorage();
+    if (isSuperAdmin.value) {
+      currentUser.value = users.value[0];
+    } else {
+      currentUser.value = users.value[1];
+    }
+    return true;
+  }
+
   function getBrandPics(brandSlug: string): UserAccount[] {
     return users.value.filter(u => u.assignedBrands.includes('all') || u.assignedBrands.includes(brandSlug));
   }
@@ -226,6 +237,7 @@ export const useAuthStore = defineStore('auth', () => {
     updateUserPassword,
     assignBrandPic,
     unassignBrandPic,
-    getBrandPics
+    getBrandPics,
+    resetUsers
   };
 });
