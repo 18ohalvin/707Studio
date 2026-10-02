@@ -66,8 +66,9 @@
           />
         </div>
 
-        <!-- Contact UI/UX Team Button (Figma Node 198:6800) -->
+        <!-- Contact UI/UX Team Button (Figma Node 198:6800 - hidden for Superadmin) -->
         <button 
+          v-if="!authStore.isSuperAdmin"
           @click="showContactModal = true"
           class="bg-black border border-black border-solid flex h-[32px] items-center justify-center px-[14px] py-[8px] rounded-[4px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] shrink-0 apple-press cursor-pointer hover:bg-neutral-800 transition-colors whitespace-nowrap"
           data-node-id="198:6800"
