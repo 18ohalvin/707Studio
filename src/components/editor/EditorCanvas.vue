@@ -150,9 +150,15 @@
       <ViewportControls 
         v-if="!editorStore.isPagesOpen && !editorStore.isPreviewMode"
         @click.stop
-        @open-settings="editorStore.isReviewModalOpen = true"
+        @open-settings="showProjectSettingsModal = true"
       />
     </Transition>
+
+    <!-- In-Editor Project Info Settings Modal (Title & Slug) -->
+    <ProjectInfoSettingsModal
+      :is-open="showProjectSettingsModal"
+      @close="showProjectSettingsModal = false"
+    />
 
     <!-- Media Gallery Side Drawer (Figma Node 171:5023) -->
     <MediaGallerySidebar 
@@ -251,9 +257,11 @@ import FormSetupSidebar from './FormSetupSidebar.vue';
 import ModalSetupSidebar from './ModalSetupSidebar.vue';
 import EPassSetupSidebar from './EPassSetupSidebar.vue';
 import LayersSidebar from './LayersSidebar.vue';
+import ProjectInfoSettingsModal from './Modals/ProjectInfoSettingsModal.vue';
 
 const editorStore = useEditorStore();
 const canvasRef = ref<HTMLElement | null>(null);
+const showProjectSettingsModal = ref(false);
 
 // Overview / Canvas Mode Zoom Transition State
 const isModeTransitioning = ref(false);
