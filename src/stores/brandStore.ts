@@ -127,7 +127,10 @@ export const useBrandStore = defineStore('brand', () => {
             googleMapsUrl: 'https://maps.google.com'
           }
         }
-      ]
+      ],
+      status: 'published',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     }
   ]);
 
@@ -137,6 +140,61 @@ export const useBrandStore = defineStore('brand', () => {
 
   function addTemplate(template: GlobalTemplate) {
     templates.value.unshift(template);
+    // Optionally sync with backend
+    try {
+      fetch('/api/templates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(template)
+      }).catch(() => {});
+    } catch {}
+  }
+
+  function updateTemplate(id: string, updates: Partial<GlobalTemplate>) {
+    const idx = templates.value.findIndex(t => t.id === id);
+    if (idx !== -1) {
+      templates.value[idx] = { 
+        ...templates.value[idx], 
+        ...updates,
+        updated_at: new Date().toISOString()
+      };
+      try {
+        fetch(`/api/templates/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updates)
+        }).catch(() => {});
+      } catch {}
+    }
+  }
+
+  function removeTemplate(id: string) {
+    templates.value = templates.value.filter(t => t.id !== id);
+    try {
+      fetch(`/api/templates/${id}`, { method: 'DELETE' }).catch(() => {});
+    } catch {}
+  }
+
+  function toggleTemplateStatus(id: string) {
+    const tpl = templates.value.find(t => t.id === id);
+    if (tpl) {
+      const nextStatus = (tpl.status === 'published' ? 'draft' : 'published') as 'published' | 'draft';
+      updateTemplate(id, { status: nextStatus });
+    }
+  }
+
+  async function loadTemplates() {
+    try {
+      const res = await fetch('/api/templates');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          templates.value = json.data;
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to load templates from server, keeping local default:', err);
+    }
   }
 
   return {
@@ -144,6 +202,10 @@ export const useBrandStore = defineStore('brand', () => {
     activeBrand,
     templates,
     setActiveBrand,
-    addTemplate
+    addTemplate,
+    updateTemplate,
+    removeTemplate,
+    toggleTemplateStatus,
+    loadTemplates
   };
 });

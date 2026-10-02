@@ -374,40 +374,129 @@
         </div>
       </div>
 
-      <!-- TAB 4: TEMPLATES BUILD -->
+      <!-- TAB 4: TEMPLATES BUILD (Superadmin Template Governance) -->
       <div v-if="activeTab === 'templates'" class="flex flex-col gap-[20px] items-start px-[48px] w-full">
-        <div class="flex items-center justify-between w-full">
-          <p class="font-707 text-[16px] leading-[22px] text-black font-normal">
-            Activation Template Presets [{{ brandStore.templates.length }}]
-          </p>
-        </div>
+        <!-- Templates Header with Filter & Build Action -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
+          <div class="flex items-center gap-4">
+            <p class="font-707 text-[16px] leading-[22px] text-black font-normal">
+              Activation Template Presets [{{ filteredTemplates.length }}]
+            </p>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-          <div 
-            v-for="tpl in brandStore.templates" 
-            :key="tpl.id"
-            class="border-[#d9d9d9] border-[0.5px] border-solid rounded-[8px] p-5 flex flex-col justify-between gap-3 bg-white hover:border-black/30 transition-colors"
-          >
-            <div class="flex items-start justify-between">
-              <div>
-                <h3 class="font-707 font-medium text-[14px] text-black">{{ tpl.name }}</h3>
-                <p class="font-707 text-[12px] text-neutral-500 mt-1">{{ tpl.description }}</p>
-              </div>
-              <span class="px-2 py-0.5 rounded-[100px] border border-black text-[10px] font-707 uppercase">
-                Preset
-              </span>
-            </div>
-
-            <div class="border-t border-black/10 pt-3 flex items-center justify-between text-[11px] font-707 text-neutral-600">
-              <span>{{ tpl.widget_tree.length }} Widgets configured</span>
+            <!-- Status Filter Tabs -->
+            <div class="flex items-center gap-1.5 p-0.5 rounded-[6px] bg-black/[0.04] border border-black/5 text-[11px] font-707">
               <button 
-                @click="handleUseTemplate(tpl)"
-                class="font-707 font-medium text-[12px] text-black underline hover:opacity-75 cursor-pointer bg-transparent border-none"
+                @click="templateFilter = 'all'"
+                class="px-2.5 py-1 rounded-[4px] transition-colors cursor-pointer"
+                :class="templateFilter === 'all' ? 'bg-white text-black font-medium shadow-xs' : 'text-neutral-500 hover:text-black'"
               >
-                Launch with Template →
+                All ({{ brandStore.templates.length }})
+              </button>
+              <button 
+                @click="templateFilter = 'published'"
+                class="px-2.5 py-1 rounded-[4px] transition-colors cursor-pointer"
+                :class="templateFilter === 'published' ? 'bg-white text-black font-medium shadow-xs' : 'text-neutral-500 hover:text-black'"
+              >
+                Published ({{ publishedTemplatesCount }})
+              </button>
+              <button 
+                @click="templateFilter = 'draft'"
+                class="px-2.5 py-1 rounded-[4px] transition-colors cursor-pointer"
+                :class="templateFilter === 'draft' ? 'bg-white text-black font-medium shadow-xs' : 'text-neutral-500 hover:text-black'"
+              >
+                Drafts ({{ draftTemplatesCount }})
               </button>
             </div>
           </div>
+
+          <button 
+            @click="openBuildTemplateModal" 
+            class="border-[0.5px] border-black border-solid flex items-center justify-center px-[16px] py-[6px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[12px] leading-[16px] font-medium text-black gap-1.5 shrink-0"
+          >
+            <Plus class="w-3.5 h-3.5" />
+            <span>Build New Template</span>
+          </button>
+        </div>
+
+        <!-- Template Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+          <div 
+            v-for="tpl in filteredTemplates" 
+            :key="tpl.id"
+            class="border-[#d9d9d9] border-[0.5px] border-solid rounded-[8px] p-5 flex flex-col justify-between gap-4 bg-white hover:border-black/30 transition-colors group"
+          >
+            <!-- Top: Header Info & Badges -->
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center gap-2">
+                  <h3 class="font-707 font-medium text-[14px] text-black">{{ tpl.name }}</h3>
+                  <!-- Category Pill -->
+                  <span class="px-2 py-0.5 rounded-[100px] border border-black/20 text-[10px] font-707 uppercase text-neutral-700 bg-neutral-50">
+                    {{ tpl.category || 'custom' }}
+                  </span>
+                </div>
+                <p class="font-707 text-[12px] text-neutral-500 leading-relaxed line-clamp-2">{{ tpl.description }}</p>
+              </div>
+
+              <!-- Draft / Published Status Badge -->
+              <button 
+                @click="brandStore.toggleTemplateStatus(tpl.id)"
+                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[100px] text-[10px] font-707 font-medium border shrink-0 transition-colors cursor-pointer"
+                :class="tpl.status === 'published' 
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100' 
+                  : 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100'"
+                :title="tpl.status === 'published' ? 'Click to unpublish to draft' : 'Click to publish for designers'"
+              >
+                <span class="size-1.5 rounded-full" :class="tpl.status === 'published' ? 'bg-emerald-500' : 'bg-amber-500'" />
+                <span>{{ tpl.status === 'published' ? 'Published' : 'Draft' }}</span>
+              </button>
+            </div>
+
+            <!-- Middle Summary -->
+            <div class="flex items-center justify-between text-[11px] font-707 text-neutral-500">
+              <span class="flex items-center gap-1">
+                <Layers class="w-3.5 h-3.5 text-neutral-400" />
+                <span>{{ tpl.widget_tree.length }} Widgets configured</span>
+              </span>
+              <span>By {{ tpl.created_by || 'Superadmin' }}</span>
+            </div>
+
+            <!-- Bottom: Action Bar -->
+            <div class="border-t border-black/10 pt-3 flex items-center justify-between gap-2">
+              <div class="flex items-center gap-3">
+                <button 
+                  @click="openEditTemplateModal(tpl)"
+                  class="font-707 font-medium text-[12px] text-black hover:opacity-75 cursor-pointer bg-transparent border-none p-0 transition-opacity"
+                >
+                  Edit Details
+                </button>
+                <button 
+                  @click="brandStore.toggleTemplateStatus(tpl.id)"
+                  class="font-707 text-[11px] text-neutral-500 hover:text-black cursor-pointer bg-transparent border-none p-0"
+                >
+                  {{ tpl.status === 'published' ? 'Set to Draft' : 'Publish' }}
+                </button>
+                <button 
+                  @click="handleRemoveTemplate(tpl)"
+                  class="font-707 text-[11px] text-red-500 hover:underline cursor-pointer bg-transparent border-none p-0"
+                >
+                  Remove
+                </button>
+              </div>
+
+              <button 
+                @click="handleEditInStudio(tpl)"
+                class="border-[0.5px] border-black px-3 py-1 rounded-[6px] text-[11px] font-707 font-medium text-black hover:bg-black hover:text-white transition-all cursor-pointer flex items-center gap-1 shrink-0"
+              >
+                <span>Edit in Builder</span>
+                <ExternalLink class="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="!filteredTemplates.length" class="p-8 text-center text-neutral-400 font-707 text-[12px] w-full border border-dashed border-neutral-300 rounded-[8px]">
+          No templates found in this view. Click "Build New Template" to create one.
         </div>
       </div>
     </main>
@@ -683,40 +772,208 @@
       </div>
     </Transition>
 
-    <!-- Modal 4: Assign PIC Modal -->
+    <!-- Modal 5: Build New Template Modal (Superadmin) -->
     <Transition name="apple-dock-fade">
       <div 
-        v-if="showAssignPicModal" 
+        v-if="showBuildTemplateModal" 
         class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
-        @click.self="showAssignPicModal = false"
+        @click.self="showBuildTemplateModal = false"
       >
-        <div class="backdrop-blur-2xl bg-white/95 rounded-[16px] border border-white/60 p-6 w-full max-w-[420px] shadow-xl flex flex-col gap-4 animate-apple-pop font-707">
+        <div class="backdrop-blur-2xl bg-white/95 rounded-[16px] border border-white/60 p-6 w-full max-w-[500px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707 max-h-[90vh] overflow-y-auto">
           <div class="flex items-center justify-between">
-            <h3 class="font-707 font-medium text-[16px] text-black">Assign PIC to {{ targetBrandName }}</h3>
-            <button @click="showAssignPicModal = false" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
+            <h3 class="font-707 font-medium text-[16px] text-black">Build Master Activation Template</h3>
+            <button @click="showBuildTemplateModal = false" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
           </div>
 
           <p class="font-707 text-[12px] text-neutral-600">
-            Select an authorized team designer to grant editing access to <strong>{{ targetBrandName }}</strong>.
+            Configure a reusable layout preset for Brand Designers. You can launch it directly in the editor canvas to customize widgets.
           </p>
 
-          <form @submit.prevent="handleAssignPicSubmit" class="flex flex-col gap-3">
+          <form @submit.prevent="handleBuildTemplateSubmit(false)" class="flex flex-col gap-3.5">
             <div class="flex flex-col gap-1">
-              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Select Team Member</label>
-              <select 
-                v-model="selectedPicUserId" 
+              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Template Name</label>
+              <input 
+                v-model="newTemplateName" 
+                type="text" 
+                required 
+                placeholder="e.g. VIP Secret Drop & Guest E-Pass" 
                 class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
-              >
-                <option v-for="user in authStore.users" :key="user.id" :value="user.id">
-                  {{ user.name }} ({{ user.email }})
-                </option>
-              </select>
+              />
             </div>
 
-            <div class="flex items-center justify-end gap-2 mt-2">
+            <div class="grid grid-cols-2 gap-3">
+              <div class="flex flex-col gap-1">
+                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Category</label>
+                <select 
+                  v-model="newTemplateCategory" 
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                >
+                  <option value="raffle">Raffle Drop</option>
+                  <option value="rsvp">VIP RSVP Pass</option>
+                  <option value="hype_drop">Hype Drop Activation</option>
+                  <option value="lookbook">Lookbook Showcase</option>
+                  <option value="pass">Guest E-Pass</option>
+                  <option value="custom">Custom Framework</option>
+                </select>
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Initial Status</label>
+                <select 
+                  v-model="newTemplateStatus" 
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                >
+                  <option value="draft">Draft (Private Superadmin)</option>
+                  <option value="published">Published (Available for Brands)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Description</label>
+              <textarea 
+                v-model="newTemplateDesc" 
+                rows="2"
+                placeholder="Provide guidelines or activation instructions..." 
+                class="w-full p-2.5 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black resize-none"
+              />
+            </div>
+
+            <!-- Starter Widget Architecture Base -->
+            <div class="flex flex-col gap-1.5">
+              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Starting Architecture</label>
+              <div class="grid grid-cols-2 gap-2 text-[12px] font-707">
+                <label 
+                  class="p-2.5 rounded-[8px] border cursor-pointer flex flex-col gap-1 transition-colors"
+                  :class="starterPresetBase === 'blank' ? 'border-black bg-black/[0.03] font-medium' : 'border-black/10 hover:border-black/30'"
+                >
+                  <input type="radio" v-model="starterPresetBase" value="blank" class="hidden" />
+                  <span>Blank Canvas</span>
+                  <span class="text-[10px] text-neutral-400 font-normal">Clean slate mobile screen</span>
+                </label>
+
+                <label 
+                  class="p-2.5 rounded-[8px] border cursor-pointer flex flex-col gap-1 transition-colors"
+                  :class="starterPresetBase === 'raffle' ? 'border-black bg-black/[0.03] font-medium' : 'border-black/10 hover:border-black/30'"
+                >
+                  <input type="radio" v-model="starterPresetBase" value="raffle" class="hidden" />
+                  <span>Raffle Drop</span>
+                  <span class="text-[10px] text-neutral-400 font-normal">Hero + Timer + Sizing + Terms</span>
+                </label>
+
+                <label 
+                  class="p-2.5 rounded-[8px] border cursor-pointer flex flex-col gap-1 transition-colors"
+                  :class="starterPresetBase === 'rsvp' ? 'border-black bg-black/[0.03] font-medium' : 'border-black/10 hover:border-black/30'"
+                >
+                  <input type="radio" v-model="starterPresetBase" value="rsvp" class="hidden" />
+                  <span>RSVP Pass</span>
+                  <span class="text-[10px] text-neutral-400 font-normal">Hero + Pass Form + Venue Map</span>
+                </label>
+
+                <label 
+                  class="p-2.5 rounded-[8px] border cursor-pointer flex flex-col gap-1 transition-colors"
+                  :class="starterPresetBase === 'pass' ? 'border-black bg-black/[0.03] font-medium' : 'border-black/10 hover:border-black/30'"
+                >
+                  <input type="radio" v-model="starterPresetBase" value="pass" class="hidden" />
+                  <span>Guest E-Pass</span>
+                  <span class="text-[10px] text-neutral-400 font-normal">Registration + Dynamic Pass</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2.5 mt-2">
               <button 
                 type="button" 
-                @click="showAssignPicModal = false" 
+                @click="showBuildTemplateModal = false" 
+                class="px-4 h-[36px] rounded-[8px] border border-black/15 text-neutral-600 font-707 text-[12px] font-medium"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                class="px-4 h-[36px] rounded-[8px] border border-black text-black font-707 text-[12px] font-medium hover:bg-neutral-100"
+              >
+                Save Preset
+              </button>
+              <button 
+                type="button" 
+                @click="handleBuildTemplateSubmit(true)"
+                class="apple-glass-btn-dark bg-black text-white px-4 h-[36px] rounded-[8px] font-707 text-[12px] font-medium flex items-center gap-1.5"
+              >
+                <span>Save & Open Builder</span>
+                <ExternalLink class="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- Modal 6: Edit Template Details Modal -->
+    <Transition name="apple-dock-fade">
+      <div 
+        v-if="showEditTemplateModal" 
+        class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
+        @click.self="showEditTemplateModal = false"
+      >
+        <div class="backdrop-blur-2xl bg-white/95 rounded-[16px] border border-white/60 p-6 w-full max-w-[460px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707">
+          <div class="flex items-center justify-between">
+            <h3 class="font-707 font-medium text-[16px] text-black">Edit Template Details</h3>
+            <button @click="showEditTemplateModal = false" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
+          </div>
+
+          <form @submit.prevent="handleEditTemplateSubmit" class="flex flex-col gap-3.5">
+            <div class="flex flex-col gap-1">
+              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Template Name</label>
+              <input 
+                v-model="editTemplateName" 
+                type="text" 
+                required 
+                class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+              />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div class="flex flex-col gap-1">
+                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Category</label>
+                <select 
+                  v-model="editTemplateCategory" 
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                >
+                  <option value="raffle">Raffle Drop</option>
+                  <option value="rsvp">VIP RSVP Pass</option>
+                  <option value="hype_drop">Hype Drop Activation</option>
+                  <option value="lookbook">Lookbook Showcase</option>
+                  <option value="pass">Guest E-Pass</option>
+                  <option value="custom">Custom Framework</option>
+                </select>
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Status</label>
+                <select 
+                  v-model="editTemplateStatus" 
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                >
+                  <option value="draft">Draft (Work in Progress)</option>
+                  <option value="published">Published (Live for Brands)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Description</label>
+              <textarea 
+                v-model="editTemplateDesc" 
+                rows="3"
+                class="w-full p-2.5 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black resize-none"
+              />
+            </div>
+
+            <div class="flex items-center justify-end gap-2.5 mt-2">
+              <button 
+                type="button" 
+                @click="showEditTemplateModal = false" 
                 class="px-4 h-[36px] rounded-[8px] border border-black/15 text-neutral-600 font-707 text-[12px] font-medium"
               >
                 Cancel
@@ -725,7 +982,7 @@
                 type="submit" 
                 class="apple-glass-btn-dark bg-black text-white px-5 h-[36px] rounded-[8px] font-707 text-[12px] font-medium"
               >
-                Assign PIC
+                Save Changes
               </button>
             </div>
           </form>
@@ -744,13 +1001,16 @@ import {
   RefreshCw, 
   CheckCircle, 
   Eye, 
-  EyeOff 
+  EyeOff,
+  Plus,
+  ExternalLink,
+  Layers
 } from 'lucide-vue-next';
 import { useAuthStore, type UserAccount, type UserRole } from '../stores/authStore.ts';
 import { useEditorStore } from '../stores/editorStore.ts';
 import { useBrandStore } from '../stores/brandStore.ts';
 import { FIGMA_ASSETS } from '../constants/figmaAssets.ts';
-import type { Brand, GlobalTemplate } from '../types/editor.ts';
+import type { Brand, GlobalTemplate, WidgetItem } from '../types/editor.ts';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -758,6 +1018,7 @@ const editorStore = useEditorStore();
 const brandStore = useBrandStore();
 
 const activeTab = ref<'brands' | 'users' | 'submissions' | 'templates'>('brands');
+const templateFilter = ref<'all' | 'published' | 'draft'>('all');
 
 // Modal States
 const showAddBrandModal = ref(false);
@@ -765,6 +1026,8 @@ const showBrandDetailsModal = ref(false);
 const showAddUserModal = ref(false);
 const showPasswordModal = ref(false);
 const showAssignPicModal = ref(false);
+const showBuildTemplateModal = ref(false);
+const showEditTemplateModal = ref(false);
 
 // Form States
 const targetBrand = ref<Brand | null>(null);
@@ -785,6 +1048,19 @@ const targetBrandSlug = ref('');
 const targetBrandName = ref('');
 const selectedPicUserId = ref('');
 
+// Template Form States
+const newTemplateName = ref('');
+const newTemplateCategory = ref<'raffle' | 'rsvp' | 'hype_drop' | 'lookbook' | 'pass' | 'custom'>('raffle');
+const newTemplateStatus = ref<'published' | 'draft'>('draft');
+const newTemplateDesc = ref('');
+const starterPresetBase = ref<'blank' | 'raffle' | 'rsvp' | 'pass'>('raffle');
+
+const targetTemplateForEdit = ref<GlobalTemplate | null>(null);
+const editTemplateName = ref('');
+const editTemplateCategory = ref<'raffle' | 'rsvp' | 'hype_drop' | 'lookbook' | 'pass' | 'custom'>('raffle');
+const editTemplateStatus = ref<'published' | 'draft'>('published');
+const editTemplateDesc = ref('');
+
 const visiblePasswords = reactive<Record<string, boolean>>({});
 
 const pendingSubmissionsCount = computed(() => {
@@ -794,6 +1070,24 @@ const pendingSubmissionsCount = computed(() => {
 const currentBrandPics = computed(() => {
   if (!targetBrand.value) return [];
   return authStore.getBrandPics(targetBrand.value.slug);
+});
+
+const publishedTemplatesCount = computed(() => {
+  return brandStore.templates.filter(t => t.status === 'published').length;
+});
+
+const draftTemplatesCount = computed(() => {
+  return brandStore.templates.filter(t => t.status === 'draft').length;
+});
+
+const filteredTemplates = computed(() => {
+  if (templateFilter.value === 'published') {
+    return brandStore.templates.filter(t => t.status === 'published');
+  }
+  if (templateFilter.value === 'draft') {
+    return brandStore.templates.filter(t => t.status === 'draft');
+  }
+  return brandStore.templates;
 });
 
 function getBrandPics(brandSlug: string): UserAccount[] {
@@ -914,6 +1208,119 @@ function handleRejectProject(projectId: string) {
 
 function handleUseTemplate(template: GlobalTemplate) {
   editorStore.createNewProject(`Drop - ${template.name}`, undefined, template.widget_tree);
+  router.push('/editor');
+}
+
+function openBuildTemplateModal() {
+  newTemplateName.value = '';
+  newTemplateCategory.value = 'raffle';
+  newTemplateStatus.value = 'draft';
+  newTemplateDesc.value = '';
+  starterPresetBase.value = 'raffle';
+  showBuildTemplateModal.value = true;
+}
+
+function getStarterWidgets(base: string): WidgetItem[] {
+  if (base === 'blank') {
+    return [];
+  }
+  if (base === 'rsvp') {
+    const existing = brandStore.templates.find(t => t.slug === 'vip-brand-event-rsvp');
+    return existing ? JSON.parse(JSON.stringify(existing.widget_tree)) : [];
+  }
+  if (base === 'pass') {
+    return [
+      {
+        id: `hero_${Date.now()}`,
+        type: 'HeroDrop',
+        props: {
+          title: 'EXCLUSIVE VIP PASS',
+          subtitle: 'LIMITED INVITATION ONLY',
+          badge: 'DIGITAL PASS',
+          imageUrl: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=1000&q=80'
+        }
+      },
+      {
+        id: `form_${Date.now()}`,
+        type: 'RegistrationForm',
+        props: {
+          title: 'GUEST REGISTRATION',
+          buttonText: 'GET MY ACCESS PASS'
+        }
+      },
+      {
+        id: `pass_${Date.now()}`,
+        type: 'GuestEPass',
+        props: {
+          eventName: '707 VIP ACTIVATION',
+          badgeLabel: 'PRIORITY VIP'
+        }
+      }
+    ];
+  }
+  const defaultRaffle = brandStore.templates.find(t => t.slug === 'hype-sneaker-raffle-std');
+  return defaultRaffle ? JSON.parse(JSON.stringify(defaultRaffle.widget_tree)) : [];
+}
+
+function handleBuildTemplateSubmit(openInStudio = false) {
+  if (!newTemplateName.value) return;
+
+  const generatedWidgets = getStarterWidgets(starterPresetBase.value);
+  const newTpl: GlobalTemplate = {
+    id: `tpl-${Date.now()}`,
+    name: newTemplateName.value,
+    slug: newTemplateName.value.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+    category: newTemplateCategory.value,
+    status: newTemplateStatus.value,
+    description: newTemplateDesc.value || 'Master preset configured by Superadmin.',
+    widget_tree: generatedWidgets,
+    is_global_preset: true,
+    created_by: 'Superadmin',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+
+  brandStore.addTemplate(newTpl);
+  showBuildTemplateModal.value = false;
+  editorStore.showToast(`Template "${newTpl.name}" created (${newTpl.status}).`);
+
+  if (openInStudio) {
+    handleEditInStudio(newTpl);
+  }
+}
+
+function openEditTemplateModal(tpl: GlobalTemplate) {
+  targetTemplateForEdit.value = tpl;
+  editTemplateName.value = tpl.name;
+  editTemplateCategory.value = tpl.category;
+  editTemplateStatus.value = tpl.status || 'published';
+  editTemplateDesc.value = tpl.description || '';
+  showEditTemplateModal.value = true;
+}
+
+function handleEditTemplateSubmit() {
+  if (targetTemplateForEdit.value) {
+    brandStore.updateTemplate(targetTemplateForEdit.value.id, {
+      name: editTemplateName.value,
+      category: editTemplateCategory.value,
+      status: editTemplateStatus.value,
+      description: editTemplateDesc.value
+    });
+    editorStore.showToast(`Updated "${editTemplateName.value}".`);
+    showEditTemplateModal.value = false;
+  }
+}
+
+function handleRemoveTemplate(tpl: GlobalTemplate) {
+  if (confirm(`Remove template "${tpl.name}" from presets?`)) {
+    brandStore.removeTemplate(tpl.id);
+    editorStore.showToast(`Template "${tpl.name}" removed.`);
+  }
+}
+
+function handleEditInStudio(tpl: GlobalTemplate) {
+  editorStore.createNewProject(`Template: ${tpl.name}`, undefined, tpl.widget_tree);
+  editorStore.showToast(`Loaded "${tpl.name}" in Builder mode.`);
   router.push('/editor');
 }
 

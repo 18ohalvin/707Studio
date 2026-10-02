@@ -116,11 +116,14 @@ export interface GlobalTemplate {
   name: string;
   slug: string;
   description: string;
-  category: 'raffle' | 'rsvp' | 'hype_drop' | 'lookbook' | 'custom';
+  category: 'raffle' | 'rsvp' | 'hype_drop' | 'lookbook' | 'pass' | 'custom';
+  status?: 'published' | 'draft';
   thumbnail_url?: string;
   widget_tree: WidgetItem[];
   is_global_preset: boolean;
   created_by: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface ProjectItem {

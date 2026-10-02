@@ -58,6 +58,7 @@ const DEFAULT_TEMPLATES = [
       }
     ],
     is_global_preset: true,
+    status: 'published',
     created_by: 'Head of UI/UX'
   },
   {
@@ -103,6 +104,7 @@ const DEFAULT_TEMPLATES = [
       }
     ],
     is_global_preset: true,
+    status: 'published',
     created_by: 'Head of UI/UX'
   }
 ];
@@ -123,9 +125,9 @@ templatesRouter.get('/', async (req: Request, res: Response) => {
   return res.json({ success: true, data: inMemoryTemplates });
 });
 
-// POST /api/templates - Save page as global preset (Head of UI/UX)
+// POST /api/templates - Build new template (Superadmin)
 templatesRouter.post('/', async (req: Request, res: Response) => {
-  const { name, slug, description, category, widget_tree, created_by } = req.body;
+  const { name, slug, description, category, widget_tree, status, created_by } = req.body;
   const newTemplate = {
     id: `tpl-${Date.now()}`,
     name,
@@ -133,16 +135,17 @@ templatesRouter.post('/', async (req: Request, res: Response) => {
     description: description || '',
     category: category || 'custom',
     widget_tree: widget_tree || [],
+    status: status || 'draft',
     is_global_preset: true,
-    created_by: created_by || 'Head of UI/UX'
+    created_by: created_by || 'Superadmin'
   };
 
   if (getDbStatus().isConnected) {
     try {
       const result = await pool.query(
-        `INSERT INTO templates (name, slug, description, category, widget_tree, created_by)
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-        [newTemplate.name, newTemplate.slug, newTemplate.description, newTemplate.category, JSON.stringify(newTemplate.widget_tree), newTemplate.created_by]
+        `INSERT INTO templates (name, slug, description, category, widget_tree, status, created_by)
+         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+        [newTemplate.name, newTemplate.slug, newTemplate.description, newTemplate.category, JSON.stringify(newTemplate.widget_tree), newTemplate.status, newTemplate.created_by]
       );
       return res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err: any) {
@@ -152,4 +155,54 @@ templatesRouter.post('/', async (req: Request, res: Response) => {
 
   inMemoryTemplates.unshift(newTemplate);
   return res.status(201).json({ success: true, data: newTemplate });
+});
+
+// PUT /api/templates/:id - Update existing template / toggle publish status
+templatesRouter.put('/:id', async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const updates = req.body;
+
+  const idx = inMemoryTemplates.findIndex(t => t.id === id);
+  if (idx !== -1) {
+    inMemoryTemplates[idx] = { ...inMemoryTemplates[idx], ...updates };
+  }
+
+  if (getDbStatus().isConnected) {
+    try {
+      const fields = Object.keys(updates);
+      if (fields.length > 0) {
+        const setClause = fields.map((f, i) => `${f} = $${i + 1}`).join(', ');
+        const values = fields.map(f => typeof updates[f] === 'object' ? JSON.stringify(updates[f]) : updates[f]);
+        values.push(id);
+        const result = await pool.query(
+          `UPDATE templates SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = $${values.length} RETURNING *`,
+          values
+        );
+        if (result.rows.length > 0) {
+          return res.json({ success: true, data: result.rows[0] });
+        }
+      }
+    } catch (err: any) {
+      console.error('Error updating template in DB:', err.message);
+    }
+  }
+
+  const updated = inMemoryTemplates.find(t => t.id === id);
+  return res.json({ success: true, data: updated || updates });
+});
+
+// DELETE /api/templates/:id - Remove template
+templatesRouter.delete('/:id', async (req: Request, res: Response) => {
+  const { id } = req.params;
+  inMemoryTemplates = inMemoryTemplates.filter(t => t.id !== id);
+
+  if (getDbStatus().isConnected) {
+    try {
+      await pool.query('DELETE FROM templates WHERE id = $1', [id]);
+    } catch (err: any) {
+      console.error('Error deleting template from DB:', err.message);
+    }
+  }
+
+  return res.json({ success: true, message: 'Template removed successfully' });
 });
