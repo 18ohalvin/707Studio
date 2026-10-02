@@ -17,7 +17,7 @@
           />
           <span v-if="logoFailed" class="font-black text-black text-xs tracking-tighter leading-none">707</span>
         </router-link>
-        <p class="font-707 text-[14px] text-black font-normal uppercase whitespace-nowrap leading-none flex items-baseline translate-y-[4px]" data-node-id="212:7031">
+        <p class="font-707 text-[14px] text-black font-normal uppercase whitespace-nowrap leading-none flex items-baseline translate-y-[2px]" data-node-id="212:7031">
           <span class="tracking-[0.24em] mr-2">DESIGN STUDIO</span>
           <span class="tracking-normal font-normal">1.0</span>
         </p>
