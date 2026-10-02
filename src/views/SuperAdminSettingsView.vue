@@ -2,23 +2,19 @@
   <div class="h-full w-full bg-white text-black font-707 flex flex-col select-none overflow-y-auto overflow-x-hidden">
     <!-- Top Header (Retaining Existing 48px Header Style as requested) -->
     <header class="w-full h-[48px] px-[20px] flex items-center justify-between border-b border-black/10 bg-white/90 backdrop-blur-md shrink-0 sticky top-0 z-30">
-      <!-- Left: 707 Logo & Superadmin Identifier -->
-      <div class="flex items-center gap-[16px]">
-        <router-link to="/" class="h-[15px] w-[48px] relative shrink-0 flex items-center cursor-pointer hover:opacity-80 transition-opacity" title="Back to 707 Home">
+      <!-- Left: 707 Logo & Sub-Brand Studio Identifier (Consistent App Brand Logo) -->
+      <div class="flex items-end gap-[16px] h-[16px]">
+        <router-link to="/" class="h-[16px] w-[51px] relative shrink-0 flex items-end cursor-pointer hover:opacity-80 transition-opacity" title="Back to 707 Home">
           <img 
             :src="FIGMA_ASSETS.logo707" 
             alt="707 Logo" 
             class="inset-0 object-contain pointer-events-none size-full"
           />
         </router-link>
-        <div class="flex items-center gap-2">
-          <span class="font-707 text-[13px] md:text-[14px] text-black tracking-[4.03px] font-normal uppercase">
-            SUPERADMIN SETTINGS
-          </span>
-          <span class="px-2 py-0.5 rounded-[4px] bg-black text-white font-707 text-[10px] font-semibold tracking-wider uppercase">
-            MASTER
-          </span>
-        </div>
+        <p class="font-707 text-[14px] text-black font-normal uppercase whitespace-nowrap leading-none flex items-baseline translate-y-[2px]">
+          <span class="tracking-[0.24em] mr-2">DESIGN STUDIO</span>
+          <span class="tracking-normal font-normal">1.0</span>
+        </p>
       </div>
 
       <!-- Right: Back to Studio & Exit Superadmin -->
