@@ -1,14 +1,14 @@
 <template>
   <div class="h-screen w-screen overflow-hidden flex flex-col justify-between bg-[#f5f5f5] text-black font-sans relative select-none">
-    <!-- 1. Main Header (Consistent 48px Header Height with Editor) -->
+    <!-- 1. Main Header strictly adapted from Figma Node 198:6791 -->
     <header 
-      class="absolute top-0 left-0 right-0 w-full h-[48px] px-[20px] flex items-center justify-between z-40 bg-transparent shrink-0"
+      class="absolute top-0 left-0 right-0 w-full h-[48px] px-[24px] py-[8px] flex items-center justify-between z-40 bg-transparent shrink-0"
       data-node-id="198:6791"
       data-name="Header"
     >
       <!-- Left: 707 Logo & Sub-Brand Studio Identifier (Figma Node 198:6792) -->
       <div class="flex items-center gap-[16px]" data-node-id="198:6792" data-name="Logo">
-        <router-link to="/" class="h-[15px] w-[48px] relative shrink-0 flex items-center cursor-pointer" title="707 Home">
+        <router-link to="/" class="h-[16px] w-[51px] relative shrink-0 flex items-center cursor-pointer" title="707 Home" data-node-id="198:6793" data-name="Logo 707">
           <img 
             :src="FIGMA_ASSETS.logo707" 
             alt="707 Logo" 
@@ -17,42 +17,46 @@
           />
           <span v-if="logoFailed" class="font-black text-black text-xs tracking-tighter">707</span>
         </router-link>
-        <p class="font-707 text-[13px] md:text-[14px] text-black tracking-[4.03px] font-normal uppercase whitespace-nowrap leading-[18px]">
-          DESIGN STUDIO {{ APP_VERSION }}
+        <p class="font-707 text-[14px] text-black tracking-[3.36px] font-normal uppercase whitespace-nowrap leading-[18px]" data-node-id="212:7031">
+          DESIGN STUDIO 1.0
         </p>
       </div>
 
-      <!-- Right: Notification, Settings, User ID, Contact Button (Figma Node 198:6798) -->
-      <div class="flex items-center gap-[24px] md:gap-[28px]" data-node-id="198:6798" data-name="Icons Container">
-        <!-- Notification Icon -->
+      <!-- Right: Notification, User Info Container, Contact Button (Figma Node 198:6798) -->
+      <div class="flex items-center gap-[32px]" data-node-id="198:6798" data-name="Icons Container">
+        <!-- Notification Icon (Figma Node 210:6959) -->
         <button 
           @click="showNotificationToast = true"
-          class="relative size-[24px] flex items-center justify-center apple-press cursor-pointer hover:opacity-75 transition-opacity border-0 border-none outline-none bg-transparent shadow-none p-0"
+          class="relative size-[24px] flex items-center justify-center apple-press cursor-pointer hover:opacity-75 transition-opacity border-0 border-none outline-none bg-transparent shadow-none p-0 shrink-0"
           title="Notifications"
           data-node-id="210:6959"
+          data-name="clarity:notification-outline-badged"
         >
           <img :src="FIGMA_ASSETS.landingNotification" alt="Notifications" class="size-full object-contain pointer-events-none" />
         </button>
 
-        <!-- User Info Container (Avatar + Brand ID Pill) with anchored UserProfileModal pop up -->
-        <div class="relative">
+        <!-- User Info Container (Avatar + Brand ID Pill) (Figma Node 210:6972) -->
+        <div class="relative flex items-center">
           <button 
             @click="showUserProfileModal = !showUserProfileModal"
             class="flex items-center gap-[8px] cursor-pointer hover:opacity-80 transition-opacity apple-press bg-transparent border-none p-0 outline-none" 
             data-name="User Info Container"
+            data-node-id="210:6972"
             title="User Profile"
           >
-            <div class="size-[27px] rounded-full overflow-hidden shrink-0 border-[0.5px] border-black/10 bg-neutral-100 flex items-center justify-center">
+            <!-- Avatar (Figma Node 198:6801) -->
+            <div class="size-[27px] rounded-full overflow-hidden shrink-0 bg-[#d9d9d9] flex items-center justify-center" data-node-id="198:6801">
               <User class="w-3.5 h-3.5 text-black" />
             </div>
-            <div class="border-[#d9d9d9] border-[0.5px] border-solid flex h-[26px] items-center justify-center px-[8px] rounded-[10px] shrink-0 bg-white/40">
-              <p class="font-707 text-[12px] text-black font-medium whitespace-nowrap">
-                {{ authStore.isSuperAdmin ? 'Superadmin ID' : (brandStore.activeBrand?.slug ? brandStore.activeBrand.slug + ' ID' : '707 ID') }}
+            <!-- Brand Badge (Figma Node 210:6969) -->
+            <div class="border-[#d9d9d9] border-[0.5px] border-solid flex h-[26px] items-center justify-center px-[8px] rounded-[10px] shrink-0 bg-transparent" data-node-id="210:6969" data-name="Save Info Container">
+              <p class="font-707 text-[12px] text-black font-light leading-[16px] whitespace-nowrap" data-node-id="210:6970">
+                {{ authStore.isSuperAdmin ? 'Superadmin ID' : (brandStore.activeBrand?.slug ? brandStore.activeBrand.slug + ' ID' : 'atmos ID') }}
               </p>
             </div>
           </button>
 
-          <!-- User Profile Pop Up Modal (Figma Node 212:8894) anchored directly to profile button -->
+          <!-- User Profile Pop Up Modal anchored directly to profile button -->
           <UserProfileModal
             :is-open="showUserProfileModal"
             @close="showUserProfileModal = false"
@@ -65,10 +69,13 @@
         <!-- Contact UI/UX Team Button (Figma Node 198:6800) -->
         <button 
           @click="showContactModal = true"
-          class="apple-glass-btn-dark bg-black text-white px-[14px] h-[32px] rounded-[4px] text-[14px] font-medium border-[0.5px] border-black apple-press cursor-pointer hover:bg-neutral-800 transition-colors shadow-sm flex items-center justify-center whitespace-nowrap"
+          class="bg-black border border-black border-solid flex h-[32px] items-center justify-center px-[14px] py-[8px] rounded-[4px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] shrink-0 apple-press cursor-pointer hover:bg-neutral-800 transition-colors whitespace-nowrap"
           data-node-id="198:6800"
+          data-name="Buttons/Button"
         >
-          Contact UI/UX Team
+          <span class="font-707 font-medium text-[14px] leading-[18px] text-white whitespace-nowrap">
+            Contact UI/UX Team
+          </span>
         </button>
       </div>
     </header>
