@@ -304,43 +304,80 @@
 
       <!-- TAB 3: PROJECT LISTS / SUBMISSIONS QUEUE -->
       <div v-if="activeTab === 'submissions'" class="flex flex-col gap-[20px] items-start px-[48px] w-full">
-        <!-- Projects Header -->
-        <div class="flex items-center justify-between w-full">
-          <p class="font-707 text-[16px] leading-[22px] text-black font-normal">
-            Project Submissions [{{ editorStore.projects.length }}]
-          </p>
+        <!-- Projects Header with Filter & Refresh Action -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
+          <div class="flex items-center gap-4">
+            <p class="font-707 text-[16px] leading-[22px] text-black font-normal">
+              Project Submissions [{{ filteredProjects.length }}]
+            </p>
 
+            <!-- Project Status Filter Tabs -->
+            <div class="flex items-center gap-1.5 p-0.5 rounded-[6px] bg-black/[0.04] border border-black/5 text-[11px] font-707">
+              <button 
+                @click="projectFilter = 'all'"
+                class="px-2.5 py-1 rounded-[4px] transition-colors cursor-pointer"
+                :class="projectFilter === 'all' ? 'bg-white text-black font-medium shadow-xs' : 'text-neutral-500 hover:text-black'"
+              >
+                All ({{ editorStore.projects.length }})
+              </button>
+              <button 
+                @click="projectFilter = 'pending_review'"
+                class="px-2.5 py-1 rounded-[4px] transition-colors cursor-pointer"
+                :class="projectFilter === 'pending_review' ? 'bg-white text-black font-medium shadow-xs' : 'text-neutral-500 hover:text-black'"
+              >
+                Pending ({{ pendingSubmissionsCount }})
+              </button>
+              <button 
+                @click="projectFilter = 'approved'"
+                class="px-2.5 py-1 rounded-[4px] transition-colors cursor-pointer"
+                :class="projectFilter === 'approved' ? 'bg-white text-black font-medium shadow-xs' : 'text-neutral-500 hover:text-black'"
+              >
+                Approved ({{ approvedProjectsCount }})
+              </button>
+              <button 
+                @click="projectFilter = 'draft'"
+                class="px-2.5 py-1 rounded-[4px] transition-colors cursor-pointer"
+                :class="projectFilter === 'draft' ? 'bg-white text-black font-medium shadow-xs' : 'text-neutral-500 hover:text-black'"
+              >
+                Drafts ({{ draftProjectsCount }})
+              </button>
+            </div>
+          </div>
+
+          <!-- Refresh Queue Action -->
           <button 
             @click="editorStore.loadProjects()" 
-            class="border-[0.5px] border-black border-solid flex items-center justify-center px-[16px] py-[6px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[12px] leading-[16px] font-medium text-black gap-1.5"
+            class="border-[0.5px] border-black border-solid flex items-center justify-center px-[16px] py-[6px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[12px] leading-[16px] font-medium text-black gap-1.5 shrink-0"
           >
             <RefreshCw class="w-3.5 h-3.5" />
             <span>Refresh Queue</span>
           </button>
         </div>
 
-        <!-- Project Entries -->
+        <!-- Project Entries Table -->
         <div class="flex flex-col items-start w-full border-[#d9d9d9] border-[0.5px] border-solid rounded-[8px] overflow-hidden divide-y divide-[#d9d9d9]">
           <div 
-            v-for="project in editorStore.projects" 
+            v-for="project in filteredProjects" 
             :key="project.id"
             class="flex items-center justify-between px-[36px] md:px-[43px] py-[16px] w-full bg-white hover:bg-neutral-50/75 transition-colors"
           >
-            <!-- Project Title & Brand -->
-            <div class="flex flex-col w-[260px] gap-[2px]">
+            <!-- Col 1: Project Title & Brand (240px) -->
+            <div class="flex flex-col w-[240px] md:w-[260px] gap-[2px] shrink-0">
               <span class="font-707 font-medium text-[12px] text-black truncate">{{ project.title }}</span>
-              <span class="font-707 text-[11px] text-neutral-500 font-mono">/{{ project.brand_slug || 'atmos' }}/{{ project.slug }}</span>
+              <span class="font-707 text-[11px] text-neutral-500 font-mono truncate">/{{ project.brand_slug || 'atmos' }}/{{ project.slug }}</span>
             </div>
 
-            <!-- Layout Info -->
-            <span class="font-707 text-[12px] text-neutral-700">
-              {{ project.pages?.length || 1 }} Pages · {{ project.widget_tree?.length || 0 }} Widgets
-            </span>
+            <!-- Col 2: Layout Info (160px) -->
+            <div class="w-[150px] shrink-0 text-left">
+              <span class="font-707 text-[12px] text-neutral-700 whitespace-nowrap">
+                {{ project.pages?.length || 1 }} Pages · {{ project.widget_tree?.length || 0 }} Widgets
+              </span>
+            </div>
 
-            <!-- Status Badge -->
-            <div>
+            <!-- Col 3: Centered Status Badge (130px) -->
+            <div class="w-[130px] shrink-0 flex items-center justify-center text-center">
               <span 
-                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[100px] text-[10px] font-medium border"
+                class="inline-flex items-center justify-center gap-1.5 px-2.5 py-0.5 rounded-[100px] text-[10px] font-medium border whitespace-nowrap"
                 :class="getStatusBadgeClass(project.status)"
               >
                 <span class="size-1.5 rounded-full" :class="getStatusDotClass(project.status)" />
@@ -348,41 +385,47 @@
               </span>
             </div>
 
-            <!-- Last Updated -->
-            <span class="font-707 text-[12px] text-neutral-500">
-              {{ editorStore.formatRelativeTime(project.updated_at) }}
-            </span>
+            <!-- Col 4: Last Updated (120px) -->
+            <div class="w-[120px] shrink-0 text-center">
+              <span class="font-707 text-[12px] text-neutral-500 whitespace-nowrap">
+                {{ editorStore.formatRelativeTime(project.updated_at) }}
+              </span>
+            </div>
 
-            <!-- Review Actions -->
-            <div class="flex items-center gap-2">
+            <!-- Col 5: Review Actions (aligned right with Inspect, Approve, Decline) -->
+            <div class="flex items-center gap-2 justify-end shrink-0 min-w-[210px]">
               <button 
                 @click="handlePreviewProject(project.id)"
                 class="border-[0.5px] border-black px-2.5 py-1 rounded-[6px] text-[11px] font-707 font-medium text-black hover:bg-black hover:text-white transition-all cursor-pointer"
+                title="Inspect in live designer canvas"
               >
                 Inspect
               </button>
 
               <button 
-                v-if="project.status === 'pending_review' || project.status === 'draft'"
                 @click="handleApproveProject(project.id)"
                 class="bg-black text-white px-3 py-1 rounded-[6px] text-[11px] font-707 font-medium hover:bg-neutral-800 transition-all cursor-pointer flex items-center gap-1"
+                :class="project.status === 'approved' ? 'opacity-40 cursor-default hover:bg-black' : ''"
+                :disabled="project.status === 'approved'"
+                :title="project.status === 'approved' ? 'Already approved' : 'Approve and unlock live distribution'"
               >
                 <CheckCircle class="w-3 h-3" />
-                <span>Approve</span>
+                <span>{{ project.status === 'approved' ? 'Approved' : 'Approve' }}</span>
               </button>
 
               <button 
-                v-if="project.status === 'pending_review'"
-                @click="handleRejectProject(project.id)"
-                class="bg-neutral-100 hover:bg-neutral-200 text-black px-2.5 py-1 rounded-[6px] text-[11px] font-707 cursor-pointer"
+                @click="handleDeclineProject(project.id)"
+                class="border-[0.5px] border-black/20 text-neutral-700 hover:text-red-600 hover:border-red-300 hover:bg-red-50/60 px-2.5 py-1 rounded-[6px] text-[11px] font-707 font-medium transition-colors cursor-pointer flex items-center gap-1"
+                title="Decline submission request and return to draft"
               >
-                Revisions
+                <XCircle class="w-3 h-3" />
+                <span>Decline</span>
               </button>
             </div>
           </div>
 
-          <div v-if="!editorStore.projects.length" class="p-8 text-center text-neutral-400 font-707 text-[12px] w-full">
-            No project submissions found.
+          <div v-if="!filteredProjects.length" class="p-8 text-center text-neutral-400 font-707 text-[12px] w-full">
+            No project submissions found for this filter.
           </div>
         </div>
       </div>
@@ -1106,6 +1149,7 @@ import {
   LogOut, 
   RefreshCw, 
   CheckCircle, 
+  XCircle,
   Eye, 
   EyeOff,
   Plus,
@@ -1126,6 +1170,7 @@ const brandStore = useBrandStore();
 
 const activeTab = ref<'brands' | 'users' | 'submissions' | 'templates'>('brands');
 const templateFilter = ref<'all' | 'published' | 'draft'>('all');
+const projectFilter = ref<'all' | 'pending_review' | 'approved' | 'draft'>('all');
 
 // Modal States
 const showAddBrandModal = ref(false);
@@ -1177,6 +1222,27 @@ const visiblePasswords = reactive<Record<string, boolean>>({});
 
 const pendingSubmissionsCount = computed(() => {
   return editorStore.projects.filter(p => p.status === 'pending_review').length;
+});
+
+const approvedProjectsCount = computed(() => {
+  return editorStore.projects.filter(p => p.status === 'approved').length;
+});
+
+const draftProjectsCount = computed(() => {
+  return editorStore.projects.filter(p => p.status === 'draft' || !p.status).length;
+});
+
+const filteredProjects = computed(() => {
+  if (projectFilter.value === 'pending_review') {
+    return editorStore.projects.filter(p => p.status === 'pending_review');
+  }
+  if (projectFilter.value === 'approved') {
+    return editorStore.projects.filter(p => p.status === 'approved');
+  }
+  if (projectFilter.value === 'draft') {
+    return editorStore.projects.filter(p => p.status === 'draft' || !p.status);
+  }
+  return editorStore.projects;
 });
 
 const currentBrandPics = computed(() => {
@@ -1338,6 +1404,12 @@ function handlePreviewProject(projectId: string) {
 function handleApproveProject(projectId: string) {
   editorStore.updateProjectStatus(projectId, 'approved');
   editorStore.showToast('Project approved and unlocked for live distribution.');
+}
+
+function handleDeclineProject(projectId: string) {
+  const p = editorStore.projects.find(proj => proj.id === projectId);
+  editorStore.updateProjectStatus(projectId, 'draft');
+  editorStore.showToast(`Declined project "${p?.title || 'Drop'}". Status returned to draft.`);
 }
 
 function handleRejectProject(projectId: string) {
