@@ -92,29 +92,6 @@ export interface PageSettings {
   customCss?: string;
 }
 
-export interface ProjectSettings {
-  projectName: string;
-  customSlug: string;
-  startDate?: string;
-  endDate?: string;
-  seoTitle: string;
-  seoDescription: string;
-  socialThumbnailUrl?: string;
-  globalSlotsCapacity: number;
-  autoSoldOutBehavior: 'badge' | 'hide' | 'waitlist';
-  allowMultipleEntries: boolean;
-  defaultCountryCode: string;
-  systemAccessId: string;
-  qrPayloadType: 'secure_hash' | 'unique_id' | 'checkin_url';
-  resendChannel: 'whatsapp' | 'email' | 'both';
-  checkInNotice: string;
-  termsUrl?: string;
-  slackWebhookUrl?: string;
-  slackChannel?: string;
-  accessStatus: 'draft' | 'pending_review' | 'live';
-  reviewerEmail?: string;
-}
-
 export interface ActivationPage {
   id: string;
   brand_id: string;

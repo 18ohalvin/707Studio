@@ -150,7 +150,7 @@
       <ViewportControls 
         v-if="!editorStore.isPagesOpen && !editorStore.isPreviewMode"
         @click.stop
-        @open-settings="editorStore.isProjectSettingsOpen = true"
+        @open-settings="editorStore.isReviewModalOpen = true"
       />
     </Transition>
 
@@ -431,6 +431,16 @@ function toggleLayers() {
 function togglePages() {
   editorStore.togglePages();
 }
+
+watch(
+  () => [editorStore.activePageIndex, editorStore.pages.length, editorStore.zoomLevel],
+  () => {
+    if (!editorStore.isPagesOpen && !isPanning.value && !isWheelActive.value) {
+      editorStore.panX = editorStore.getPageCenterOffsetX(editorStore.activePageIndex);
+      editorStore.panY = 0;
+    }
+  }
+);
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeyDown);

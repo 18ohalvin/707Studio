@@ -12,7 +12,6 @@
     <ReviewSubmitModal />
     <TestFormModal />
     <RequestWidgetModal />
-    <ProjectSettingsModal />
   </div>
 </template>
 
@@ -22,5 +21,4 @@ import EditorCanvas from '../components/editor/EditorCanvas.vue';
 import ReviewSubmitModal from '../components/editor/Modals/ReviewSubmitModal.vue';
 import TestFormModal from '../components/editor/Modals/TestFormModal.vue';
 import RequestWidgetModal from '../components/editor/Modals/RequestWidgetModal.vue';
-import ProjectSettingsModal from '../components/editor/Modals/ProjectSettingsModal.vue';
 </script>

@@ -132,7 +132,8 @@ function handleAnalytics() {
 }
 
 function handleSettings() {
-  editorStore.isProjectSettingsOpen = true;
+  editorStore.activeTab = 'settings';
+  editorStore.isReviewModalOpen = true;
 }
 
 async function handleSignOut() {
