@@ -53,13 +53,14 @@
         </span>
       </button>
 
-      <!-- Submit for Review Button -->
+      <!-- Submit for Review / Save Project CTA Button -->
       <button 
-        @click="editorStore.isReviewModalOpen = true"
+        @click="handlePrimaryCtaClick"
         class="apple-glass-btn-dark content-stretch flex items-center justify-center overflow-clip px-[14px] h-[32px] rounded-[8px] apple-press cursor-pointer"
+        :title="authStore.isSuperAdmin ? 'Save Project & Changes' : 'Submit for UI/UX Team Review'"
       >
         <span class="font-707 font-medium text-white text-[13px] whitespace-nowrap">
-          Submit for Review
+          {{ primaryCtaLabel }}
         </span>
       </button>
 
@@ -96,6 +97,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useEditorStore } from '../../stores/editorStore.ts';
+import { useAuthStore } from '../../stores/authStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { Eye, Edit3 } from 'lucide-vue-next';
 import UserProfileModal from '../modals/UserProfileModal.vue';
@@ -103,10 +105,36 @@ import { logout } from '../../services/apiClient.ts';
 
 const router = useRouter();
 const editorStore = useEditorStore();
+const authStore = useAuthStore();
 const logoFailed = ref(false);
 const avatarFailed = ref(false);
 const showUserProfileModal = ref(false);
 const nowTicker = ref(Date.now());
+
+const primaryCtaLabel = computed(() => {
+  if (authStore.isSuperAdmin) {
+    if (editorStore.currentPage?.status === 'pending_review') {
+      return 'Approve & Save';
+    }
+    return 'Save Project';
+  }
+  return 'Submit for Review';
+});
+
+function handlePrimaryCtaClick() {
+  if (authStore.isSuperAdmin) {
+    if (editorStore.currentPage?.status === 'pending_review') {
+      editorStore.setPageStatus('approved', authStore.currentUser?.name || 'Alvin Decorous (Superadmin)');
+      editorStore.saveCurrentProject();
+      editorStore.showToast('Project approved & changes saved by Superadmin.');
+    } else {
+      editorStore.saveCurrentProject();
+      editorStore.showToast('Project saved successfully.');
+    }
+  } else {
+    editorStore.isReviewModalOpen = true;
+  }
+}
 
 let tickerTimer: any = null;
 onMounted(() => {

@@ -7,6 +7,8 @@ export interface UserAccount {
   id: string;
   name: string;
   email: string;
+  password?: string;
+  phone?: string;
   role: UserRole;
   assignedBrands: string[];
   avatarUrl?: string;
@@ -20,6 +22,8 @@ const DEFAULT_USERS: UserAccount[] = [
     id: 'user_superadmin_1',
     name: 'Alvin Decorous (Lead Admin)',
     email: 'alvin@707designstudio.internal',
+    password: '707admin_master',
+    phone: '+62 811-707-001',
     role: 'superadmin',
     assignedBrands: ['all'],
     status: 'active',
@@ -30,6 +34,8 @@ const DEFAULT_USERS: UserAccount[] = [
     id: 'user_editor_1',
     name: 'Sarah Chen (Atmos Lead)',
     email: 'sarah.chen@atmos.co.id',
+    password: 'atmos_pass_2026',
+    phone: '+62 812-888-7071',
     role: 'editor',
     assignedBrands: ['atmos'],
     status: 'active',
@@ -40,6 +46,8 @@ const DEFAULT_USERS: UserAccount[] = [
     id: 'user_editor_2',
     name: 'Maya Pratama (707 Studio)',
     email: 'maya@707designstudio.internal',
+    password: 'maya_studio_707',
+    phone: '+62 813-777-7072',
     role: 'editor',
     assignedBrands: ['707-standard', 'atmos'],
     status: 'active',
@@ -50,6 +58,8 @@ const DEFAULT_USERS: UserAccount[] = [
     id: 'user_viewer_1',
     name: 'Budi Santoso (Client Reviewer)',
     email: 'budi@client-partner.id',
+    password: 'client_guest_pass',
+    phone: '+62 815-555-7073',
     role: 'viewer',
     assignedBrands: ['atmos'],
     status: 'active',
@@ -156,7 +166,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
     return false;
   }
-
   function removeUser(id: string): boolean {
     const initialLen = users.value.length;
     users.value = users.value.filter(u => u.id !== id);
@@ -165,6 +174,42 @@ export const useAuthStore = defineStore('auth', () => {
       return true;
     }
     return false;
+  }
+
+  function updateUserPassword(id: string, newPassword: string): boolean {
+    const user = users.value.find(u => u.id === id);
+    if (user) {
+      user.password = newPassword.trim();
+      saveUsersToStorage();
+      return true;
+    }
+    return false;
+  }
+
+  function assignBrandPic(brandSlug: string, userId: string): boolean {
+    const user = users.value.find(u => u.id === userId);
+    if (user) {
+      if (!user.assignedBrands.includes(brandSlug)) {
+        user.assignedBrands.push(brandSlug);
+        saveUsersToStorage();
+      }
+      return true;
+    }
+    return false;
+  }
+
+  function unassignBrandPic(brandSlug: string, userId: string): boolean {
+    const user = users.value.find(u => u.id === userId);
+    if (user) {
+      user.assignedBrands = user.assignedBrands.filter(b => b !== brandSlug);
+      saveUsersToStorage();
+      return true;
+    }
+    return false;
+  }
+
+  function getBrandPics(brandSlug: string): UserAccount[] {
+    return users.value.filter(u => u.assignedBrands.includes('all') || u.assignedBrands.includes(brandSlug));
   }
 
   initAuth();
@@ -177,6 +222,10 @@ export const useAuthStore = defineStore('auth', () => {
     exitSuperAdmin,
     addUser,
     updateUser,
-    removeUser
+    removeUser,
+    updateUserPassword,
+    assignBrandPic,
+    unassignBrandPic,
+    getBrandPics
   };
 });

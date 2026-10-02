@@ -34,16 +34,6 @@
           <img :src="FIGMA_ASSETS.landingNotification" alt="Notifications" class="size-full object-contain pointer-events-none" />
         </button>
 
-        <!-- Settings Gear Icon -->
-        <button 
-          @click="handleOpenSettings"
-          class="relative size-[24px] flex items-center justify-center apple-press cursor-pointer hover:opacity-75 transition-opacity border-0 border-none outline-none bg-transparent shadow-none p-0"
-          title="Superadmin Settings"
-          data-node-id="210:6965"
-        >
-          <img :src="FIGMA_ASSETS.landingSettings" alt="Settings" class="size-full object-contain pointer-events-none" />
-        </button>
-
         <!-- User Info Container (Avatar + Brand ID Pill) with anchored UserProfileModal pop up -->
         <div class="relative">
           <div 
