@@ -1272,6 +1272,28 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
+  /** True when the most recent save never reached the server. */
+  const saveFailed = ref<boolean>(false);
+
+  async function retrySave(projectData: ProjectItem): Promise<boolean> {
+    for (const wait of [700, 1800]) {
+      await new Promise(resolve => setTimeout(resolve, wait));
+      try {
+        const res = await apiFetch('/api/pages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(projectData)
+        });
+        if (res.ok) return true;
+        // A refusal from the server is an answer, not a dropped packet.
+        if (res.status >= 400 && res.status < 500) return false;
+      } catch {
+        /* try again */
+      }
+    }
+    return false;
+  }
+
   async function saveCurrentProject(): Promise<ProjectItem | null> {
     isSaving.value = true;
     await uploadInlineImages();
@@ -1338,10 +1360,25 @@ export const useEditorStore = defineStore('editor', () => {
       });
       if (!res.ok) {
         console.warn('[EditorStore] Server returned error saving project:', res.status);
+        saveFailed.value = true;
+      } else {
+        saveFailed.value = false;
+        lastSavedAt.value = new Date();
       }
       return projectData;
     } catch (err) {
-      console.warn('[EditorStore] Failed to sync page to API:', err);
+      // The link to this server drops roughly one request in twenty, so a
+      // single failure usually means a lost packet rather than a real problem.
+      // Retry before giving up — and if it still fails, say so instead of
+      // leaving the header claiming the work was saved.
+      const retried = await retrySave(projectData);
+      if (!retried) {
+        console.warn('[EditorStore] Failed to sync page to API:', err);
+        saveFailed.value = true;
+      } else {
+        saveFailed.value = false;
+        lastSavedAt.value = new Date();
+      }
       return projectData;
     } finally {
       isSaving.value = false;
@@ -1554,6 +1591,7 @@ export const useEditorStore = defineStore('editor', () => {
     isPreviewMode,
     isSaving,
     lastSavedAt,
+    saveFailed,
     activeTab,
     draggedWidget,
     isDraggingOverCanvas,

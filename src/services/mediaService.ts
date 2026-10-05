@@ -81,14 +81,25 @@ export async function uploadMediaDirectly(params: {
   filename?: string;
 }): Promise<MediaItem> {
   try {
-    const res = await apiFetch('/api/media/upload', {
+    // Uploads are the longest request the app makes, so they are the most
+    // exposed to the packet loss on this link. One retry turns most dropped
+    // uploads into a short pause instead of a missing image.
+    let res = await apiFetch('/api/media/upload', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(params)
-    });
-    if (res.ok) {
+    }).catch(() => null) as Response | null;
+
+    if (!res || (!res.ok && res.status >= 500)) {
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      res = await apiFetch('/api/media/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params)
+      });
+    }
+
+    if (res && res.ok) {
       const json = await res.json();
       if (json?.success && json.data) {
         return json.data;

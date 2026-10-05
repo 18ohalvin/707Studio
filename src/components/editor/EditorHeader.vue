@@ -179,6 +179,12 @@ const saveStatusText = computed(() => {
   if (editorStore.isSaving) {
     return 'Saving...';
   }
+  // Never claim the work is saved when it never reached the server — the link
+  // to this host drops requests often enough that a silent failure would let
+  // someone keep editing on top of changes that were already lost.
+  if (editorStore.saveFailed) {
+    return 'Not saved — reconnecting';
+  }
   const lastSaved = editorStore.lastSavedAt ? editorStore.lastSavedAt.getTime() : nowTicker.value;
   const diffSec = Math.max(0, Math.floor((nowTicker.value - lastSaved) / 1000));
   if (diffSec < 15) {
