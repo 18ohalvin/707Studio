@@ -1147,8 +1147,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, reactive, onMounted, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { 
   ArrowLeft, 
   LogOut, 
@@ -1169,11 +1169,32 @@ import { FIGMA_ASSETS } from '../constants/figmaAssets.ts';
 import type { Brand, GlobalTemplate, WidgetItem, ProjectItem } from '../types/editor.ts';
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 const editorStore = useEditorStore();
 const brandStore = useBrandStore();
 
 const activeTab = ref<'brands' | 'users' | 'submissions' | 'templates'>('brands');
+
+onMounted(() => {
+  if (route.query.tab && ['brands', 'users', 'submissions', 'templates'].includes(route.query.tab as string)) {
+    activeTab.value = route.query.tab as any;
+  }
+  if (route.query.action === 'new-template') {
+    activeTab.value = 'templates';
+    showBuildTemplateModal.value = true;
+  }
+});
+
+watch(() => route.query, (query) => {
+  if (query.tab && ['brands', 'users', 'submissions', 'templates'].includes(query.tab as string)) {
+    activeTab.value = query.tab as any;
+  }
+  if (query.action === 'new-template') {
+    activeTab.value = 'templates';
+    showBuildTemplateModal.value = true;
+  }
+}, { deep: true });
 const templateFilter = ref<'all' | 'published' | 'draft'>('all');
 const projectFilter = ref<'all' | 'pending_review' | 'approved' | 'draft'>('all');
 

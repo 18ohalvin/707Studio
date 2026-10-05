@@ -102,8 +102,59 @@
             Hello Fellas! Let’s build something cool.
           </h1>
 
-          <!-- 5 Action Hub Quick Buttons (Figma Node 198:6840) -->
-          <div class="flex gap-[32px] md:gap-[40px] items-start justify-center px-[16px] py-[8px] w-full" data-node-id="198:6840" data-name="Buttons Container">
+          <!-- Superadmin Shortcut Buttons (Strictly 3 items when Superadmin) -->
+          <div v-if="authStore.isSuperAdmin" class="flex gap-[32px] md:gap-[48px] items-start justify-center px-[16px] py-[8px] w-full" data-name="Superadmin Buttons Container">
+            <!-- 1. Create a new template -->
+            <div class="flex flex-col gap-[10px] items-center justify-center w-[100px]">
+              <button 
+                @click="handleCreateNewTemplate"
+                class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] border-[0.5px] border-black/10 hover:border-black/25 flex items-center justify-center p-[8px] rounded-[8px] size-[88px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer transition-all duration-200 group"
+                title="Create a new template preset"
+              >
+                <div class="size-[32px] relative shrink-0 flex items-center justify-center">
+                  <img :src="FIGMA_ASSETS.landingCreateProject" alt="Create a new template" class="size-full object-contain pointer-events-none" />
+                </div>
+              </button>
+              <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal">
+                Create a new template
+              </p>
+            </div>
+
+            <!-- 2. Browse templates -->
+            <div class="flex flex-col gap-[10px] items-center justify-center w-[100px]">
+              <button 
+                @click="handleBrowseTemplates"
+                class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] border-[0.5px] border-black/10 hover:border-black/25 flex items-center justify-center p-[8px] rounded-[8px] size-[88px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer transition-all duration-200 group"
+                title="Browse all template presets"
+              >
+                <div class="size-[32px] relative shrink-0 flex items-center justify-center">
+                  <img :src="FIGMA_ASSETS.landingBrowseTemplates" alt="Browse templates" class="size-full object-contain pointer-events-none" />
+                </div>
+              </button>
+              <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal">
+                Browse templates
+              </p>
+            </div>
+
+            <!-- 3. View all projects -->
+            <div class="flex flex-col gap-[10px] items-center justify-center w-[100px]">
+              <button 
+                @click="handleViewAllProjects"
+                class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] border-[0.5px] border-black/10 hover:border-black/25 flex items-center justify-center p-[8px] rounded-[8px] size-[88px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer transition-all duration-200 group"
+                title="View all projects"
+              >
+                <div class="size-[32px] relative shrink-0 flex items-center justify-center">
+                  <img :src="FIGMA_ASSETS.landingAllProjects" alt="View all projects" class="size-full object-contain pointer-events-none" />
+                </div>
+              </button>
+              <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal">
+                View all projects
+              </p>
+            </div>
+          </div>
+
+          <!-- Standard 5 Action Hub Quick Buttons (When not Superadmin) -->
+          <div v-else class="flex gap-[32px] md:gap-[40px] items-start justify-center px-[16px] py-[8px] w-full" data-node-id="198:6840" data-name="Buttons Container">
             <!-- 1. Create a new project -->
             <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-node-id="198:6926" data-name="Button Container">
               <button 
@@ -401,8 +452,18 @@ function handleCreateNewProject() {
   });
 }
 
+function handleCreateNewTemplate() {
+  requireAuth(() => {
+    router.push('/superadmin?tab=templates&action=new-template');
+  });
+}
+
 function handleBrowseTemplates() {
   requireAuth(() => {
+    if (authStore.isSuperAdmin) {
+      router.push('/superadmin?tab=templates');
+      return;
+    }
     // Navigate to editor with standard multi-block template
     editorStore.createNewProject('Featured Brand Activation', 'featured-brand-activation', [
       {
@@ -522,6 +583,10 @@ function handleCreateTicketing() {
 
 function handleViewAllProjects() {
   requireAuth(() => {
+    if (authStore.isSuperAdmin) {
+      router.push('/superadmin?tab=submissions');
+      return;
+    }
     if (projectsSectionRef.value) {
       projectsSectionRef.value.scrollIntoView({ behavior: 'smooth' });
     }
