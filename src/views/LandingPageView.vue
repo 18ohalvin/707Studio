@@ -356,7 +356,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useEditorStore } from '../stores/editorStore.ts';
 import { useBrandStore } from '../stores/brandStore.ts';
 import { useAuthStore } from '../stores/authStore.ts';
@@ -369,6 +369,7 @@ import UserProfileModal from '../components/modals/UserProfileModal.vue';
 import SuperAdminAuthModal from '../components/modals/SuperAdminAuthModal.vue';
 
 const router = useRouter();
+const route = useRoute();
 const editorStore = useEditorStore();
 const brandStore = useBrandStore();
 const authStore = useAuthStore();
@@ -417,10 +418,13 @@ function triggerToast(msg: string) {
 
 onMounted(() => {
   editorStore.loadProjects();
+  if (route.query.signin === '1') {
+    showSignInModal.value = true;
+  }
 });
 
 function handleSignedIn(brandName: string) {
-  triggerToast(`Signed in to ${brandName} Brand Account.`);
+  triggerToast(`Welcome! Signed in as ${brandName}.`);
 }
 
 function handleAnalytics() {
@@ -431,7 +435,7 @@ function handleSignOut() {
   showUserProfileModal.value = false;
   authStore.signOut();
   brandStore.setActiveBrand(null);
-  triggerToast('Signed out of all accounts.');
+  triggerToast('Signed out of 707 Design Studio.');
 }
 
 function requireAuth(action: () => void) {

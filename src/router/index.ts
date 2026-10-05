@@ -39,14 +39,23 @@ export const router = createRouter({
 });
 
 // Domain is open to all visitors (brands, users, team).
-// Only /settings and /admin require verified Superadmin access.
+// /settings and /admin require verified Superadmin access.
+// /editor requires authenticated Brand or Superadmin session.
 router.beforeEach((to) => {
+  const authStore = useAuthStore();
+  
   if (to.path === '/settings' || to.path === '/admin') {
-    const authStore = useAuthStore();
     if (!authStore.isSuperAdmin) {
-      return { name: 'Login', query: { redirect: to.fullPath } };
+      return { name: 'Login', query: { tab: 'superadmin', redirect: to.fullPath } };
     }
   }
+
+  if (to.path === '/editor') {
+    if (!authStore.isAuthenticated) {
+      return { path: '/', query: { signin: '1' } };
+    }
+  }
+
   return true;
 });
 

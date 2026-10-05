@@ -26,25 +26,125 @@
     </header>
 
     <!-- Center Card -->
-    <div class="w-full max-w-[400px] backdrop-blur-2xl bg-white/95 border border-white/60 p-8 rounded-[16px] shadow-[0px_20px_50px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.04)] flex flex-col gap-6 animate-apple-pop">
-      <div class="flex flex-col items-center text-center gap-3">
-        <div class="size-12 rounded-full bg-black text-white flex items-center justify-center shadow-sm">
-          <ShieldCheck class="w-6 h-6 stroke-[2.2]" />
+    <div class="w-full max-w-[420px] backdrop-blur-2xl bg-white/95 border border-white/60 p-8 rounded-[16px] shadow-[0px_20px_50px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.04)] flex flex-col gap-5 animate-apple-pop">
+      <!-- Title & Icon -->
+      <div class="flex flex-col items-center text-center gap-2.5">
+        <div class="size-11 rounded-full bg-black text-white flex items-center justify-center shadow-sm">
+          <ShieldCheck v-if="activeTab === 'superadmin'" class="w-5 h-5 stroke-[2.2]" />
+          <User v-else class="w-5 h-5 stroke-[2.2]" />
         </div>
         <div>
           <h1 class="font-707 text-[20px] font-normal leading-[26px] text-black">
-            Superadmin Verification
+            {{ activeTab === 'superadmin' ? 'Superadmin Verification' : 'Brand Team Sign In' }}
           </h1>
           <p class="font-707 text-[13px] text-neutral-500 mt-1 leading-relaxed">
-            Enter your Superadmin master passkey to manage system governance, brand PICs, and team accounts.
+            {{ activeTab === 'superadmin' ? 'Enter master passkey for system governance & brand administration.' : 'Sign in to access your assigned brand activations and projects.' }}
           </p>
         </div>
       </div>
 
-      <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
-        <div class="flex flex-col gap-1.5">
+      <!-- Segmented Switcher -->
+      <div class="w-full bg-black/[0.04] p-1 rounded-[10px] flex items-center gap-1">
+        <button
+          type="button"
+          @click="activeTab = 'brand'"
+          :class="[
+            'flex-1 py-1.5 px-3 rounded-[7px] text-[13px] font-707 font-medium transition-all text-center cursor-pointer border-none',
+            activeTab === 'brand' 
+              ? 'bg-white text-black shadow-xs font-semibold' 
+              : 'bg-transparent text-neutral-500 hover:text-black'
+          ]"
+        >
+          Brand Account
+        </button>
+        <button
+          type="button"
+          @click="activeTab = 'superadmin'"
+          :class="[
+            'flex-1 py-1.5 px-3 rounded-[7px] text-[13px] font-707 font-medium transition-all text-center cursor-pointer border-none',
+            activeTab === 'superadmin' 
+              ? 'bg-white text-black shadow-xs font-semibold' 
+              : 'bg-transparent text-neutral-500 hover:text-black'
+          ]"
+        >
+          Superadmin PIN
+        </button>
+      </div>
+
+      <!-- Brand / Team Form -->
+      <form v-if="activeTab === 'brand'" class="flex flex-col gap-3.5" @submit.prevent="handleBrandSubmit">
+        <div class="flex flex-col gap-1">
           <label class="font-707 text-[11px] font-medium text-neutral-700 tracking-wider uppercase">
-            Superadmin Master Passkey
+            Brand Email / Account ID
+          </label>
+          <input
+            ref="brandIdInput"
+            v-model="brandId"
+            type="text"
+            autocomplete="username"
+            placeholder="e.g. sarah.chen@atmos.co.id"
+            required
+            class="w-full h-[46px] px-3.5 rounded-[10px] bg-black/[0.03] border border-black/15 text-black font-707 text-[14px] outline-none focus:border-black focus:bg-white transition-all placeholder:text-neutral-400"
+            :disabled="isLoading"
+            @input="errorMessage = ''"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <div class="flex items-center justify-between">
+            <label class="font-707 text-[11px] font-medium text-neutral-700 tracking-wider uppercase">
+              Password / PIN
+            </label>
+            <button 
+              type="button" 
+              @click="handleForgotPin"
+              class="font-707 text-[12px] text-neutral-400 hover:text-black transition-colors border-none bg-transparent cursor-pointer"
+            >
+              Forgot?
+            </button>
+          </div>
+          <div class="relative flex items-center">
+            <input
+              v-model="brandPassword"
+              :type="showBrandPassword ? 'text' : 'password'"
+              autocomplete="current-password"
+              placeholder="Enter your password"
+              required
+              class="w-full h-[46px] px-3.5 pr-10 rounded-[10px] bg-black/[0.03] border border-black/15 text-black font-707 text-[14px] outline-none focus:border-black focus:bg-white transition-all placeholder:text-neutral-400"
+              :disabled="isLoading"
+              @input="errorMessage = ''"
+            />
+            <button 
+              type="button" 
+              @click="showBrandPassword = !showBrandPassword"
+              class="absolute right-3 text-neutral-400 hover:text-black cursor-pointer bg-transparent border-none p-1"
+              tabindex="-1"
+            >
+              <EyeOff v-if="showBrandPassword" class="w-4 h-4" />
+              <Eye v-else class="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        <p v-if="errorMessage" class="text-xs text-red-500 font-707 flex items-center gap-1.5 mt-1 animate-apple-pop">
+          <AlertCircle class="w-3.5 h-3.5 shrink-0" />
+          <span>{{ errorMessage }}</span>
+        </p>
+
+        <button
+          type="submit"
+          class="w-full h-[46px] rounded-[10px] bg-black text-white text-[14px] font-707 font-medium tracking-wide disabled:opacity-50 transition-all apple-press cursor-pointer flex items-center justify-center gap-2 hover:bg-neutral-800 shadow-sm mt-2"
+          :disabled="isLoading || !brandId || !brandPassword"
+        >
+          <span>{{ isLoading ? 'SIGNING IN…' : 'SIGN IN AS BRAND PIC' }}</span>
+        </button>
+      </form>
+
+      <!-- Superadmin Form -->
+      <form v-else class="flex flex-col gap-3.5" @submit.prevent="handleSuperadminSubmit">
+        <div class="flex flex-col gap-1">
+          <label class="font-707 text-[11px] font-medium text-neutral-700 tracking-wider uppercase">
+            Superadmin Master Passkey PIN
           </label>
           <div class="relative flex items-center">
             <input
@@ -52,8 +152,9 @@
               v-model="password"
               :type="showPassword ? 'text' : 'password'"
               autocomplete="current-password"
-              placeholder="Enter passkey (e.g. 707admin)"
-              class="w-full h-[48px] px-4 pr-10 rounded-[10px] bg-black/[0.03] border border-black/15 text-black font-707 text-[14px] outline-none focus:border-black focus:bg-white transition-all placeholder:text-neutral-400"
+              placeholder="Enter passkey PIN (e.g. 707admin)"
+              required
+              class="w-full h-[46px] px-3.5 pr-10 rounded-[10px] bg-black/[0.03] border border-black/15 text-black font-707 text-[14px] outline-none focus:border-black focus:bg-white transition-all placeholder:text-neutral-400"
               :disabled="isLoading"
               @input="errorMessage = ''"
             />
@@ -69,14 +170,14 @@
           </div>
         </div>
 
-        <p v-if="errorMessage" class="text-xs text-red-500 font-707 flex items-center gap-1.5">
+        <p v-if="errorMessage" class="text-xs text-red-500 font-707 flex items-center gap-1.5 mt-1 animate-apple-pop">
           <AlertCircle class="w-3.5 h-3.5 shrink-0" />
           <span>{{ errorMessage }}</span>
         </p>
 
         <button
           type="submit"
-          class="w-full h-[48px] rounded-[10px] bg-black text-white text-[14px] font-707 font-medium tracking-wide disabled:opacity-50 transition-all apple-press cursor-pointer flex items-center justify-center gap-2 hover:bg-neutral-800 shadow-sm mt-2"
+          class="w-full h-[46px] rounded-[10px] bg-black text-white text-[14px] font-707 font-medium tracking-wide disabled:opacity-50 transition-all apple-press cursor-pointer flex items-center justify-center gap-2 hover:bg-neutral-800 shadow-sm mt-2"
           :disabled="isLoading || !password"
         >
           <Key class="w-4 h-4" />
@@ -93,39 +194,98 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { login } from '../services/apiClient.ts';
 import { useAuthStore } from '../stores/authStore.ts';
+import { useBrandStore } from '../stores/brandStore.ts';
+import { useEditorStore } from '../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../constants/figmaAssets.ts';
-import { ShieldCheck, AlertCircle, Key, ArrowLeft, Eye, EyeOff } from 'lucide-vue-next';
+import { ShieldCheck, User, AlertCircle, Key, ArrowLeft, Eye, EyeOff } from 'lucide-vue-next';
 
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
+const brandStore = useBrandStore();
+const editorStore = useEditorStore();
+
+const activeTab = ref<'brand' | 'superadmin'>('brand');
+
+const brandId = ref('');
+const brandPassword = ref('');
+const showBrandPassword = ref(false);
 
 const password = ref('');
 const showPassword = ref(false);
 const isLoading = ref(false);
 const errorMessage = ref('');
+
+const brandIdInput = ref<HTMLInputElement | null>(null);
 const passwordInput = ref<HTMLInputElement | null>(null);
 
 onMounted(() => {
-  passwordInput.value?.focus();
+  if (route.query.tab === 'superadmin' || route.query.redirect?.toString().includes('settings') || route.query.redirect?.toString().includes('admin')) {
+    activeTab.value = 'superadmin';
+  }
+  focusActiveInput();
 });
 
-async function handleSubmit() {
+watch(activeTab, () => {
+  errorMessage.value = '';
+  focusActiveInput();
+});
+
+async function focusActiveInput() {
+  await nextTick();
+  if (activeTab.value === 'brand') {
+    brandIdInput.value?.focus();
+  } else {
+    passwordInput.value?.focus();
+  }
+}
+
+function handleForgotPin() {
+  editorStore.showToast('Please contact your Superadmin or #707-design-studio-help to reset password.');
+}
+
+async function handleBrandSubmit() {
+  if (!brandId.value || !brandPassword.value || isLoading.value) return;
+
+  isLoading.value = true;
+  errorMessage.value = '';
+
+  const cleanId = brandId.value.trim();
+  const res = authStore.signIn(cleanId, brandPassword.value);
+
+  isLoading.value = false;
+
+  if (res.success) {
+    const found = brandStore.brands.find(b => 
+      b.slug.toLowerCase() === cleanId.toLowerCase() || 
+      b.name.toLowerCase().includes(cleanId.toLowerCase()) ||
+      (authStore.currentUser?.assignedBrands && authStore.currentUser.assignedBrands.includes(b.slug))
+    );
+    if (found) {
+      brandStore.setActiveBrand(found);
+    }
+    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/';
+    router.replace(redirect);
+    return;
+  }
+
+  errorMessage.value = res.error || 'Invalid brand account credentials.';
+  brandPassword.value = '';
+}
+
+async function handleSuperadminSubmit() {
   if (!password.value || isLoading.value) return;
 
   isLoading.value = true;
   errorMessage.value = '';
 
   const cleanPass = password.value.trim();
-  
-  // 1. Check local Superadmin store passkey verification
   const isVerifiedLocally = authStore.verifySuperAdmin(cleanPass);
 
-  // 2. Also try API login for backend token session
   try {
     await login(cleanPass);
   } catch {}
@@ -138,7 +298,7 @@ async function handleSubmit() {
     return;
   }
 
-  errorMessage.value = 'Incorrect superadmin passkey. Access is restricted to system administrators.';
+  errorMessage.value = 'Incorrect superadmin passkey PIN. Access is restricted to system administrators.';
   password.value = '';
 }
 </script>
