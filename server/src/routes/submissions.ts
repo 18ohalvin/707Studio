@@ -1,9 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { pool, getDbStatus } from '../db.js';
+import { readDataFile, writeDataFile } from '../fileStorage.js';
 
 export const submissionsRouter = Router();
 
-let inMemorySubmissions: any[] = [];
+let inMemorySubmissions: any[] = readDataFile<any[]>('submissions.json', []);
 
 // POST /api/submissions - Submit raffle or RSVP entry
 submissionsRouter.post('/', async (req: Request, res: Response) => {
@@ -39,6 +40,7 @@ submissionsRouter.post('/', async (req: Request, res: Response) => {
   }
 
   inMemorySubmissions.unshift(submission);
+  writeDataFile('submissions.json', inMemorySubmissions);
   return res.status(201).json({ success: true, data: submission, message: 'Entry recorded successfully' });
 });
 
@@ -70,6 +72,7 @@ submissionsRouter.get('/', async (req: Request, res: Response) => {
 submissionsRouter.delete('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
   inMemorySubmissions = inMemorySubmissions.filter(s => s.id !== id);
+  writeDataFile('submissions.json', inMemorySubmissions);
 
   if (getDbStatus().isConnected) {
     try {

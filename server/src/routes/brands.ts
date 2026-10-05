@@ -1,10 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { pool, getDbStatus } from '../db.js';
+import { readDataFile, writeDataFile } from '../fileStorage.js';
 
 export const brandsRouter = Router();
 
-// Dynamic in-memory cache for offline/standalone execution (no static mock brands)
-let inMemoryBrands: any[] = [];
+// Dynamic persistent storage for offline/standalone execution
+let inMemoryBrands: any[] = readDataFile<any[]>('brands.json', []);
 
 // GET /api/brands - list all brands from cloud/database
 brandsRouter.get('/', async (req: Request, res: Response) => {
@@ -75,6 +76,7 @@ brandsRouter.post('/', async (req: Request, res: Response) => {
   }
 
   inMemoryBrands.unshift(newBrand);
+  writeDataFile('brands.json', inMemoryBrands);
   return res.status(201).json({ success: true, data: newBrand });
 });
 
@@ -86,6 +88,7 @@ brandsRouter.put('/:id', async (req: Request, res: Response) => {
   const idx = inMemoryBrands.findIndex(b => b.id === id || b.slug === id);
   if (idx !== -1) {
     inMemoryBrands[idx] = { ...inMemoryBrands[idx], ...updates };
+    writeDataFile('brands.json', inMemoryBrands);
   }
 
   if (getDbStatus().isConnected) {
@@ -116,6 +119,7 @@ brandsRouter.put('/:id', async (req: Request, res: Response) => {
 brandsRouter.delete('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
   inMemoryBrands = inMemoryBrands.filter(b => b.id !== id && b.slug !== id);
+  writeDataFile('brands.json', inMemoryBrands);
 
   if (getDbStatus().isConnected) {
     try {

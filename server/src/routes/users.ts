@@ -1,10 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { pool, getDbStatus } from '../db.js';
+import { readDataFile, writeDataFile } from '../fileStorage.js';
 
 export const usersRouter = Router();
 
-// In-memory fallback for standalone mode (empty fresh state)
-let inMemoryUsers: any[] = [];
+// Persistent fallback storage for standalone mode
+let inMemoryUsers: any[] = readDataFile<any[]>('users.json', []);
 
 // GET /api/users - List all users / team accounts
 usersRouter.get('/', async (req: Request, res: Response) => {
@@ -104,6 +105,7 @@ usersRouter.post('/', async (req: Request, res: Response) => {
   }
 
   inMemoryUsers.unshift(newUser);
+  writeDataFile('users.json', inMemoryUsers);
   return res.status(201).json({ success: true, data: newUser });
 });
 
@@ -115,6 +117,7 @@ usersRouter.put('/:id', async (req: Request, res: Response) => {
   const idx = inMemoryUsers.findIndex(u => u.id === id || u.email === id);
   if (idx !== -1) {
     inMemoryUsers[idx] = { ...inMemoryUsers[idx], ...updates };
+    writeDataFile('users.json', inMemoryUsers);
   }
 
   if (getDbStatus().isConnected) {
@@ -170,6 +173,7 @@ usersRouter.put('/:id', async (req: Request, res: Response) => {
 usersRouter.delete('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
   inMemoryUsers = inMemoryUsers.filter(u => u.id !== id && u.email !== id);
+  writeDataFile('users.json', inMemoryUsers);
 
   if (getDbStatus().isConnected) {
     try {

@@ -317,7 +317,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { 
   X, 
@@ -348,6 +348,18 @@ const router = useRouter();
 const editorStore = useEditorStore();
 const authStore = useAuthStore();
 const brandStore = useBrandStore();
+
+watch(() => props.isOpen, (open) => {
+  if (open) {
+    editorStore.loadProjects();
+  }
+});
+
+onMounted(() => {
+  if (props.isOpen) {
+    editorStore.loadProjects();
+  }
+});
 
 const searchQuery = ref('');
 const statusFilter = ref<'all' | 'approved' | 'pending_review' | 'draft'>('all');

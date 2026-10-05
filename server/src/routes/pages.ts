@@ -1,10 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { pool, getDbStatus } from '../db.js';
+import { readDataFile, writeDataFile } from '../fileStorage.js';
 
 export const pagesRouter = Router();
 
-// In-memory fallback pages storage (clean fresh state with 0 ghost data)
-let inMemoryPages: any[] = [];
+// Persistent fallback pages storage (survives restarts and standalone sessions)
+let inMemoryPages: any[] = readDataFile<any[]>('pages.json', []);
 
 // GET /api/pages - list pages (optionally filter by brand_slug or status)
 pagesRouter.get('/', async (req: Request, res: Response) => {
@@ -165,12 +166,13 @@ pagesRouter.post('/', async (req: Request, res: Response) => {
       console.error('[DB] Error saving page to DB:', err.message);
     }
   }
-
+ 
   if (existingIdx >= 0) {
     inMemoryPages[existingIdx] = { ...inMemoryPages[existingIdx], ...pageData };
   } else {
     inMemoryPages.unshift(pageData);
   }
+  writeDataFile('pages.json', inMemoryPages);
 
   return res.json({ success: true, data: pageData });
 });
@@ -184,6 +186,7 @@ pagesRouter.put('/:id', async (req: Request, res: Response) => {
   const idx = inMemoryPages.findIndex(p => p.id === id);
   if (idx !== -1) {
     inMemoryPages[idx] = { ...inMemoryPages[idx], ...updates, updated_at: now };
+    writeDataFile('pages.json', inMemoryPages);
   }
 
   if (getDbStatus().isConnected) {
@@ -222,6 +225,7 @@ pagesRouter.put('/:id', async (req: Request, res: Response) => {
 pagesRouter.delete('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
   inMemoryPages = inMemoryPages.filter(p => p.id !== id);
+  writeDataFile('pages.json', inMemoryPages);
 
   if (getDbStatus().isConnected) {
     try {
@@ -246,6 +250,7 @@ pagesRouter.patch('/:id/review', async (req: Request, res: Response) => {
     page.reviewed_by = reviewed_by || 'Head of UI/UX';
     page.review_notes = review_notes || '';
     page.updated_at = now;
+    writeDataFile('pages.json', inMemoryPages);
   }
 
   if (getDbStatus().isConnected) {

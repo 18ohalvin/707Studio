@@ -1,10 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { pool, getDbStatus } from '../db.js';
+import { readDataFile, writeDataFile } from '../fileStorage.js';
 
 export const templatesRouter = Router();
 
-// In-memory cache (clean fresh state with 0 ghost data)
-let inMemoryTemplates: any[] = [];
+// Persistent templates storage (clean fresh state with 0 ghost data)
+let inMemoryTemplates: any[] = readDataFile<any[]>('templates.json', []);
 
 // GET /api/templates
 templatesRouter.get('/', async (req: Request, res: Response) => {
@@ -108,6 +109,7 @@ templatesRouter.post('/', async (req: Request, res: Response) => {
   }
 
   inMemoryTemplates.unshift(newTemplate);
+  writeDataFile('templates.json', inMemoryTemplates);
   return res.status(201).json({ success: true, data: newTemplate });
 });
 
@@ -120,6 +122,7 @@ templatesRouter.put('/:id', async (req: Request, res: Response) => {
   const idx = inMemoryTemplates.findIndex(t => t.id === id);
   if (idx !== -1) {
     inMemoryTemplates[idx] = { ...inMemoryTemplates[idx], ...updates, updated_at: now };
+    writeDataFile('templates.json', inMemoryTemplates);
   }
 
   if (getDbStatus().isConnected) {
@@ -175,6 +178,7 @@ templatesRouter.put('/:id', async (req: Request, res: Response) => {
 templatesRouter.delete('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
   inMemoryTemplates = inMemoryTemplates.filter(t => t.id !== id);
+  writeDataFile('templates.json', inMemoryTemplates);
 
   if (getDbStatus().isConnected) {
     try {
