@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { apiJson } from '../services/apiClient.ts';
+import { apiJson, setToken, clearToken, getToken } from '../services/apiClient.ts';
 
 export type UserRole = 'superadmin' | 'editor' | 'viewer';
 
@@ -47,7 +47,8 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Initialize from storage
   function initAuth() {
-    loadUsers();
+    // Only after a session exists — the account list is behind sign-in now.
+    if (getToken()) loadUsers();
     try {
       if (typeof localStorage !== 'undefined') {
         const isLoggedOut = localStorage.getItem('707_logged_out');
@@ -90,84 +91,62 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function verifySuperAdmin(passkey: string): boolean {
-    const clean = passkey.trim();
-    // Valid passkeys: 707admin, 707studio, 707admin_master or admin707
-    if (clean === '707admin' || clean === '707studio' || clean === 'admin707' || clean === '707admin_master') {
-      isSuperAdmin.value = true;
-      currentUser.value = {
-        id: 'superadmin_master',
-        name: 'Alvin Decorous (Lead Admin)',
-        email: 'admin@707designstudio.internal',
-        role: 'superadmin',
-        assignedBrands: ['all'],
-        status: 'active',
-        createdAt: new Date().toISOString()
-      };
-      try {
+  function applySession(user: UserAccount, superAdmin: boolean, token: string) {
+    setToken(token);
+    isSuperAdmin.value = superAdmin;
+    currentUser.value = user;
+    try {
+      if (superAdmin) {
         localStorage.setItem(SUPERADMIN_STORAGE_KEY, 'true');
-        localStorage.setItem(CURRENT_USER_STORAGE_KEY, JSON.stringify(currentUser.value));
-        localStorage.removeItem('707_logged_out');
-      } catch {}
-      return true;
-    }
-    return false;
+      } else {
+        localStorage.removeItem(SUPERADMIN_STORAGE_KEY);
+      }
+      localStorage.setItem(CURRENT_USER_STORAGE_KEY, JSON.stringify(user));
+      localStorage.removeItem('707_logged_out');
+    } catch {}
   }
 
-  function signIn(identifier: string, pass: string): { success: boolean; error?: string } {
-    const cleanId = identifier.trim().toLowerCase();
-    const cleanPass = pass.trim();
+  /**
+   * Signs in against the server.
+   *
+   * The browser used to download every account, passwords included, and compare
+   * them itself — so anyone could read them straight from /api/users, and the
+   * superadmin passkeys were constants in a public repository. The server is
+   * the only thing that checks a password now, and it issues the token that the
+   * rest of the API requires.
+   */
+  async function signIn(identifier: string, pass: string): Promise<{ success: boolean; error?: string }> {
+    const cleanId = (identifier || '').trim();
+    const cleanPass = (pass || '').trim();
 
-    if (!cleanId) {
-      return { success: false, error: 'Please enter your account email or ID.' };
-    }
     if (!cleanPass) {
       return { success: false, error: 'Please enter your password or PIN.' };
     }
 
-    // 1. Search user strictly among registered team accounts created by Superadmin
-    const found = users.value.find(u => 
-      u.email.toLowerCase() === cleanId || 
-      u.name.toLowerCase() === cleanId ||
-      u.id.toLowerCase() === cleanId
-    );
+    try {
+      const res = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: cleanId, password: cleanPass })
+      });
+      const data = await res.json().catch(() => ({} as any));
 
-    if (found) {
-      if (found.status === 'suspended') {
-        return { success: false, error: 'This account has been suspended. Please contact Superadmin.' };
-      }
-      if (found.password && found.password !== cleanPass) {
-        return { success: false, error: 'Incorrect password. Please verify your credentials and try again.' };
+      if (!res.ok || !data?.success || !data?.token) {
+        return { success: false, error: data?.error || 'Incorrect credentials. Please try again.' };
       }
 
-      // Brand editor or registered team account
-      isSuperAdmin.value = found.role === 'superadmin';
-      currentUser.value = found;
-      try {
-        if (isSuperAdmin.value) {
-          localStorage.setItem(SUPERADMIN_STORAGE_KEY, 'true');
-        } else {
-          localStorage.removeItem(SUPERADMIN_STORAGE_KEY);
-        }
-        localStorage.setItem(CURRENT_USER_STORAGE_KEY, JSON.stringify(found));
-        localStorage.removeItem('707_logged_out');
-      } catch {}
+      applySession(data.user as UserAccount, Boolean(data.isSuperAdmin), data.token);
+      await loadUsers();
       return { success: true };
+    } catch {
+      return { success: false, error: 'Cannot reach the server. Check your connection and try again.' };
     }
+  }
 
-    // 2. Master Superadmin login by explicit admin email or username
-    if (cleanId === 'admin@707designstudio.internal' || cleanId === 'superadmin' || cleanId === 'alvin') {
-      if (cleanPass === '707admin' || cleanPass === '707studio' || cleanPass === 'admin707' || cleanPass === '707admin_master') {
-        verifySuperAdmin(cleanPass);
-        return { success: true };
-      }
-      return { success: false, error: 'Incorrect master passkey PIN for Superadmin.' };
-    }
-
-    return { 
-      success: false, 
-      error: 'Account not found. Access is restricted to team accounts registered by Superadmin.' 
-    };
+  /** Superadmin tab: no account id, only the studio passkey. */
+  async function verifySuperAdmin(passkey: string): Promise<boolean> {
+    const res = await signIn('', passkey);
+    return res.success && isSuperAdmin.value;
   }
 
   function signOut() {
@@ -178,7 +157,7 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
       localStorage.removeItem('707_active_brand');
       localStorage.removeItem('707_auth_token');
-      localStorage.removeItem('studio_token');
+      clearToken();
       localStorage.setItem('707_logged_out', 'true');
     } catch {}
   }

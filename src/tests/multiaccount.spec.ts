@@ -30,7 +30,7 @@ describe('Multiaccount & Data Isolation Logic', () => {
     ];
   });
 
-  it('1. Sign out clears all account state and marks isAuthenticated as false', () => {
+  it('1. Sign out clears all account state and marks isAuthenticated as false', async () => {
     const authStore = useAuthStore();
     authStore.signOut();
 
@@ -39,7 +39,7 @@ describe('Multiaccount & Data Isolation Logic', () => {
     expect(authStore.isSuperAdmin).toBe(false);
   });
 
-  it('2. Sign in is strictly restricted to accounts registered by superadmin', () => {
+  it('2. Sign in is strictly restricted to accounts registered by superadmin', async () => {
     const authStore = useAuthStore();
     authStore.signOut();
 
@@ -58,19 +58,19 @@ describe('Multiaccount & Data Isolation Logic', () => {
     ];
 
     // Attempt sign in with unregistered account
-    const failRes = authStore.signIn('unregistered_brand_123', 'wrong_pass');
+    const failRes = await authStore.signIn('unregistered_brand_123', 'wrong_pass');
     expect(failRes.success).toBe(false);
     expect(authStore.isAuthenticated).toBe(false);
 
     // Sign in with registered PIC account (Sarah Chen - Atmos Lead)
-    const passRes = authStore.signIn('sarah.chen@atmos.co.id', 'atmos_pass_2026');
+    const passRes = await authStore.signIn('sarah.chen@atmos.co.id', 'atmos_pass_2026');
     expect(passRes.success).toBe(true);
     expect(authStore.isAuthenticated).toBe(true);
     expect(authStore.currentUser?.name).toContain('Sarah Chen');
     expect(authStore.currentUser?.assignedBrands).toContain('atmos');
   });
 
-  it('3. Each brand/PIC has independent project data based on registered PIC assignedBrands', () => {
+  it('3. Each brand/PIC has independent project data based on registered PIC assignedBrands', async () => {
     const authStore = useAuthStore();
     const editorStore = useEditorStore();
 
@@ -111,7 +111,7 @@ describe('Multiaccount & Data Isolation Logic', () => {
     expect(editorStore.userProjects[0].brand_slug).toBe('atmos');
   });
 
-  it('4. One brand can have more than one PIC sharing access to that brand', () => {
+  it('4. One brand can have more than one PIC sharing access to that brand', async () => {
     const authStore = useAuthStore();
     const editorStore = useEditorStore();
 
@@ -142,13 +142,13 @@ describe('Multiaccount & Data Isolation Logic', () => {
     editorStore.projects = [mockSharedProj];
 
     // Second PIC logs in and accesses the shared Atmos project
-    const res = authStore.signIn('rian@atmos.co.id', 'rian_atmos_pass');
+    const res = await authStore.signIn('rian@atmos.co.id', 'rian_atmos_pass');
     expect(res.success).toBe(true);
     expect(editorStore.userProjects.length).toBe(1);
     expect(editorStore.userProjects[0].id).toBe('proj_atmos_shared');
   });
 
-  it('5. Other brands cannot access another brand project, but Superadmin can access all and templates are accessible', () => {
+  it('5. Other brands cannot access another brand project, but Superadmin can access all and templates are accessible', async () => {
     const authStore = useAuthStore();
     const editorStore = useEditorStore();
     const brandStore = useBrandStore();
@@ -210,7 +210,7 @@ describe('Multiaccount & Data Isolation Logic', () => {
     expect(brandStore.templates[0].category).toBe('rsvp');
   });
 
-  it('6. Signed out users see ZERO projects in userProjects', () => {
+  it('6. Signed out users see ZERO projects in userProjects', async () => {
     const authStore = useAuthStore();
     const editorStore = useEditorStore();
 
@@ -241,7 +241,7 @@ describe('Multiaccount & Data Isolation Logic', () => {
     expect(editorStore.userProjects).toEqual([]);
   });
 
-  it('7. Only the owner account can see their recent and all projects', () => {
+  it('7. Only the owner account can see their recent and all projects', async () => {
     const authStore = useAuthStore();
     const editorStore = useEditorStore();
 
@@ -308,7 +308,7 @@ describe('Multiaccount & Data Isolation Logic', () => {
     expect(editorStore.userProjects.length).toBe(2);
   });
 
-  it('8. openProjectById prevents opening projects owned by another account', () => {
+  it('8. openProjectById prevents opening projects owned by another account', async () => {
     const authStore = useAuthStore();
     const editorStore = useEditorStore();
 

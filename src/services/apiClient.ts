@@ -85,8 +85,14 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
   });
 
   if (res.status === 401) {
-    handleUnauthorized();
-    throw new ApiError('Unauthorized or session expired.', 401);
+    // Only treat this as an expired session if we actually had one. Without
+    // this, a stray call made before sign-in bounces the page to /login and
+    // can throw someone out of a session they had just started.
+    if (token) {
+      handleUnauthorized();
+      throw new ApiError('Unauthorized or session expired.', 401);
+    }
+    throw new ApiError('Sign-in required.', 401);
   }
 
   return res;

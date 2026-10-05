@@ -103,18 +103,18 @@ watch(
   }
 );
 
-function handleVerify() {
+async function handleVerify() {
   if (!passkey.value) {
     errorMessage.value = 'Please enter the passkey.';
     return;
   }
 
-  const success = authStore.verifySuperAdmin(passkey.value);
+  const success = await authStore.verifySuperAdmin(passkey.value);
   if (success) {
     emit('verified');
     emit('close');
   } else {
-    errorMessage.value = 'Invalid superadmin passkey. Try "707admin" or "707studio".';
+    errorMessage.value = 'Invalid superadmin passkey.';
     passkey.value = '';
   }
 }

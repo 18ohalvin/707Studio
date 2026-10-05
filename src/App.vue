@@ -24,6 +24,12 @@ const editorStore = useEditorStore();
 
 onMounted(async () => {
   authStore.initAuth();
+
+  // Nothing to fetch until someone is signed in. Firing these on the login
+  // screen produced a burst of 401s, and a 401 sends the app back to /login —
+  // which risks bouncing a user straight out of a session they just started.
+  if (!authStore.isAuthenticated) return;
+
   try {
     await Promise.allSettled([
       brandStore.loadBrands(),

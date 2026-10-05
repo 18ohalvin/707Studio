@@ -1,3 +1,4 @@
+import { getToken } from '../services/apiClient.ts';
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import type { Brand, GlobalTemplate } from '../types/editor.ts';
@@ -150,9 +151,12 @@ export const useBrandStore = defineStore('brand', () => {
     }
   }
 
-  // Load live cloud data on initialization
-  loadBrands();
-  loadTemplates();
+  // Load live cloud data once a session exists. Calling these on the sign-in
+  // screen produced a burst of 401s before anyone had signed in.
+  if (getToken()) {
+    loadBrands();
+    loadTemplates();
+  }
 
   return {
     brands,

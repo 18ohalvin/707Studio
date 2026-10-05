@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { pool, getDbStatus } from '../db.js';
 import { readDataFile, writeDataFile } from '../fileStorage.js';
+import { hashPassword, withoutPassword } from '../password.js';
 
 export const usersRouter = Router();
 
@@ -17,7 +18,6 @@ usersRouter.get('/', async (req: Request, res: Response) => {
         name: r.name,
         email: r.email,
         phone: r.phone || '',
-        password: r.password || '',
         role: r.role || 'editor',
         assignedBrands: typeof r.assigned_brands === 'string' ? JSON.parse(r.assigned_brands) : (r.assigned_brands || ['all']),
         avatarUrl: r.avatar_url || '',
@@ -31,7 +31,8 @@ usersRouter.get('/', async (req: Request, res: Response) => {
     }
   }
   inMemoryUsers = readDataFile<any[]>('users.json', inMemoryUsers);
-  return res.json({ success: true, data: inMemoryUsers });
+  // Never hand the stored password to a browser.
+  return res.json({ success: true, data: inMemoryUsers.map(withoutPassword) });
 });
 
 // POST /api/users - Create new team user
@@ -47,7 +48,7 @@ usersRouter.post('/', async (req: Request, res: Response) => {
     name,
     email: email.trim().toLowerCase(),
     phone: phone || '',
-    password: password || '',
+    password: password ? hashPassword(password) : '',
     role: role || 'editor',
     assignedBrands: Array.isArray(assignedBrands) ? assignedBrands : [assignedBrands || 'all'],
     avatarUrl: avatarUrl || '',
@@ -91,7 +92,6 @@ usersRouter.post('/', async (req: Request, res: Response) => {
           name: r.name,
           email: r.email,
           phone: r.phone,
-          password: r.password,
           role: r.role,
           assignedBrands: typeof r.assigned_brands === 'string' ? JSON.parse(r.assigned_brands) : r.assigned_brands,
           avatarUrl: r.avatar_url,
@@ -129,7 +129,7 @@ usersRouter.put('/:id', async (req: Request, res: Response) => {
       if (updates.name !== undefined) dbUpdates.name = updates.name;
       if (updates.email !== undefined) dbUpdates.email = updates.email.trim().toLowerCase();
       if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
-      if (updates.password !== undefined) dbUpdates.password = updates.password;
+      if (updates.password !== undefined) dbUpdates.password = updates.password ? hashPassword(updates.password) : '';
       if (updates.role !== undefined) dbUpdates.role = updates.role;
       if (updates.assignedBrands !== undefined) dbUpdates.assigned_brands = JSON.stringify(updates.assignedBrands);
       if (updates.status !== undefined) dbUpdates.status = updates.status;
@@ -152,8 +152,7 @@ usersRouter.put('/:id', async (req: Request, res: Response) => {
               name: r.name,
               email: r.email,
               phone: r.phone,
-              password: r.password,
-              role: r.role,
+                  role: r.role,
               assignedBrands: typeof r.assigned_brands === 'string' ? JSON.parse(r.assigned_brands) : r.assigned_brands,
               avatarUrl: r.avatar_url,
               status: r.status,

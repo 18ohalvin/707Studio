@@ -277,11 +277,11 @@ async function handleBrandSignIn() {
     await brandStore.loadBrands();
   }
 
-  let res = authStore.signIn(inputId, brandPin.value);
+  let res = await authStore.signIn(inputId, brandPin.value);
   if (!res.success) {
     // Retry fresh load from cloud server in case a new account was just created on another device
     await authStore.loadUsers();
-    res = authStore.signIn(inputId, brandPin.value);
+    res = await authStore.signIn(inputId, brandPin.value);
   }
 
   if (!res.success) {

@@ -215,7 +215,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { login } from '../services/apiClient.ts';
 import { useAuthStore } from '../stores/authStore.ts';
 import { useBrandStore } from '../stores/brandStore.ts';
 import { useEditorStore } from '../stores/editorStore.ts';
@@ -274,7 +273,7 @@ async function handleBrandSubmit() {
   errorMessage.value = '';
 
   const cleanId = brandId.value.trim();
-  const res = authStore.signIn(cleanId, brandPassword.value);
+  const res = await authStore.signIn(cleanId, brandPassword.value);
 
   isLoading.value = false;
 
@@ -303,15 +302,13 @@ async function handleSuperadminSubmit() {
   errorMessage.value = '';
 
   const cleanPass = password.value.trim();
-  const isVerifiedLocally = authStore.verifySuperAdmin(cleanPass);
-
-  try {
-    await login(cleanPass);
-  } catch {}
+  // Verified by the server, which also issues the token the rest of the API
+  // needs. The passkeys used to be constants in this file.
+  const verified = await authStore.verifySuperAdmin(cleanPass);
 
   isLoading.value = false;
 
-  if (isVerifiedLocally || authStore.isSuperAdmin) {
+  if (verified) {
     const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/settings';
     router.replace(redirect);
     return;
