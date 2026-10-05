@@ -126,6 +126,23 @@ export async function initDbSchema(): Promise<void> {
   }
 }
 
+let reconnectTimer: NodeJS.Timeout | null = null;
+
+// Handle idle client errors without crashing the process
+pool.on('error', (err) => {
+  console.warn('[DB Pool] Unexpected error on idle client:', err.message);
+  isDbConnected = false;
+  scheduleReconnect(5000);
+});
+
+export function scheduleReconnect(delayMs = 5000) {
+  if (reconnectTimer) return;
+  reconnectTimer = setTimeout(async () => {
+    reconnectTimer = null;
+    await testDbConnection();
+  }, delayMs);
+}
+
 export async function testDbConnection(): Promise<boolean> {
   try {
     const client = await pool.connect();
@@ -137,8 +154,9 @@ export async function testDbConnection(): Promise<boolean> {
     return true;
   } catch (err: any) {
     isDbConnected = false;
-    console.warn('[DB] PostgreSQL connection notice:', err.message);
-    console.log('[DB] Running with standalone memory mode (clean fresh state).');
+    console.warn('[DB] PostgreSQL connection notice:', err.message || err.code || 'Unreachable');
+    console.log('[DB] Running with standalone memory mode (clean fresh state). Auto-retry scheduled...');
+    scheduleReconnect(5000);
     return false;
   }
 }
