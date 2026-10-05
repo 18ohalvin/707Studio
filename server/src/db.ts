@@ -165,6 +165,10 @@ export async function initDbSchema(): Promise<void> {
       -- the live database silently keeps the old shape. Missing brand_slug and
       -- pages is exactly what broke saving: each INSERT failed with
       -- 'column "brand_slug" does not exist' while the API still answered 200.
+      -- A scrypt hash is 104 characters, so the original VARCHAR(100) silently
+      -- rejected every upgrade from a clear-text password.
+      ALTER TABLE users ALTER COLUMN password TYPE VARCHAR(255);
+
       ALTER TABLE pages ADD COLUMN IF NOT EXISTS brand_slug VARCHAR(100) NOT NULL DEFAULT 'atmos';
       ALTER TABLE pages ADD COLUMN IF NOT EXISTS pages JSONB DEFAULT '[]'::jsonb;
       ALTER TABLE pages ADD COLUMN IF NOT EXISTS owner_id VARCHAR(100);
