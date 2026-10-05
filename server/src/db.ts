@@ -140,6 +140,23 @@ export async function initDbSchema(): Promise<void> {
           EXECUTE format('ALTER TABLE %I ALTER COLUMN %I TYPE VARCHAR(100) USING %I::text',
                          rec.table_name, rec.column_name, rec.column_name);
         END LOOP;
+
+        -- brand_id is a leftover from the original schema, where it was NOT
+        -- NULL. Nothing writes it any more — brand_slug replaced it — so every
+        -- insert failed with 'null value in column "brand_id" violates
+        -- not-null constraint'. Relax it where it still exists; a database
+        -- created by the current schema has no such column.
+        FOR rec IN
+          SELECT table_name, column_name
+          FROM information_schema.columns
+          WHERE table_schema = 'public'
+            AND is_nullable = 'NO'
+            AND column_default IS NULL
+            AND column_name = 'brand_id'
+            AND table_name IN ('pages', 'submissions')
+        LOOP
+          EXECUTE format('ALTER TABLE %I ALTER COLUMN %I DROP NOT NULL', rec.table_name, rec.column_name);
+        END LOOP;
       END $$;
 
       -- CREATE TABLE IF NOT EXISTS does nothing when the table already exists,
