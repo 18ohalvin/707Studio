@@ -77,6 +77,7 @@ brandsRouter.post('/', async (req: Request, res: Response) => {
     }
   }
 
+  inMemoryBrands = readDataFile<any[]>('brands.json', inMemoryBrands);
   inMemoryBrands.unshift(newBrand);
   writeDataFile('brands.json', inMemoryBrands);
   return res.status(201).json({ success: true, data: newBrand });
@@ -87,6 +88,7 @@ brandsRouter.put('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
   const updates = req.body;
 
+  inMemoryBrands = readDataFile<any[]>('brands.json', inMemoryBrands);
   const idx = inMemoryBrands.findIndex(b => b.id === id || b.slug === id);
   if (idx !== -1) {
     inMemoryBrands[idx] = { ...inMemoryBrands[idx], ...updates };

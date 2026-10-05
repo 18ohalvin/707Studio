@@ -105,6 +105,7 @@ usersRouter.post('/', async (req: Request, res: Response) => {
     }
   }
 
+  inMemoryUsers = readDataFile<any[]>('users.json', inMemoryUsers);
   inMemoryUsers.unshift(newUser);
   writeDataFile('users.json', inMemoryUsers);
   return res.status(201).json({ success: true, data: newUser });
@@ -115,6 +116,7 @@ usersRouter.put('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
   const updates = req.body;
 
+  inMemoryUsers = readDataFile<any[]>('users.json', inMemoryUsers);
   const idx = inMemoryUsers.findIndex(u => u.id === id || u.email === id);
   if (idx !== -1) {
     inMemoryUsers[idx] = { ...inMemoryUsers[idx], ...updates };

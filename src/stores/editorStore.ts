@@ -36,13 +36,13 @@ export const useEditorStore = defineStore('editor', () => {
         return projects.value;
       }
       return projects.value.filter(p => {
-        const slug = (p.brand_slug || '').toLowerCase().replace(/_/g, '-').trim();
+        const slug = (p.brand_slug || 'atmos').toLowerCase().replace(/_/g, '-').trim();
         return userBrands.some(ub => ub === slug || slug.includes(ub) || ub.includes(slug));
       });
     }
     if (brandStore.activeBrand) {
       const activeSlug = brandStore.activeBrand.slug.toLowerCase().replace(/_/g, '-').trim();
-      return projects.value.filter(p => (p.brand_slug || '').toLowerCase().replace(/_/g, '-').trim() === activeSlug);
+      return projects.value.filter(p => (p.brand_slug || 'atmos').toLowerCase().replace(/_/g, '-').trim() === activeSlug);
     }
     return projects.value;
   });
@@ -1089,6 +1089,14 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
+  const syncChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('707_project_sync') : null;
+
+  function broadcastProjectUpdate() {
+    try {
+      syncChannel?.postMessage({ type: 'PROJECTS_UPDATED', timestamp: Date.now() });
+    } catch {}
+  }
+
   async function loadProjects() {
     try {
       const res = await apiFetch('/api/pages');
@@ -1099,18 +1107,23 @@ export const useEditorStore = defineStore('editor', () => {
           const localList = getStoredProjects();
           
           const mergedMap = new Map<string, ProjectItem>();
-          // Put local list first
-          localList.forEach(p => mergedMap.set(p.id, p));
-          // Merge server list
-          serverList.forEach(p => {
-            const existing = mergedMap.get(p.id);
+          
+          // 1. Cloud server data is authoritative across devices
+          serverList.forEach(p => mergedMap.set(p.id, p));
+
+          // 2. Preserve any local-only offline projects or local edits with newer timestamp
+          const pendingSync: ProjectItem[] = [];
+          localList.forEach(localProj => {
+            const existing = mergedMap.get(localProj.id);
             if (!existing) {
-              mergedMap.set(p.id, p);
+              mergedMap.set(localProj.id, localProj);
+              pendingSync.push(localProj);
             } else {
-              const localTime = new Date(existing.updated_at || 0).getTime();
-              const serverTime = new Date(p.updated_at || 0).getTime();
-              if (serverTime >= localTime) {
-                mergedMap.set(p.id, p);
+              const localTime = new Date(localProj.updated_at || 0).getTime();
+              const serverTime = new Date(existing.updated_at || 0).getTime();
+              if (localTime > serverTime) {
+                mergedMap.set(localProj.id, localProj);
+                pendingSync.push(localProj);
               }
             }
           });
@@ -1118,6 +1131,21 @@ export const useEditorStore = defineStore('editor', () => {
           const combined = Array.from(mergedMap.values()).sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
           projects.value = combined;
           persistProjectsLocally();
+
+          // Push any local offline drafts up to cloud server so other devices see them
+          if (pendingSync.length > 0) {
+            Promise.allSettled(
+              pendingSync.map(p =>
+                apiFetch('/api/pages', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(p),
+                  keepalive: true
+                })
+              )
+            ).catch(err => console.warn('[EditorStore] Background cloud sync error:', err));
+          }
+
           return;
         }
       }
@@ -1129,6 +1157,7 @@ export const useEditorStore = defineStore('editor', () => {
   async function deleteProject(projectId: string) {
     projects.value = projects.value.filter(p => p.id !== projectId);
     persistProjectsLocally();
+    broadcastProjectUpdate();
     if (currentProjectId.value === projectId) {
       currentProjectId.value = '';
       projectTitle.value = 'Untitled Activation Drop';
@@ -1156,14 +1185,15 @@ export const useEditorStore = defineStore('editor', () => {
     }
     try {
       await apiFetch(`/api/pages/${projectId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        keepalive: true
       });
     } catch (e) {
       console.error('[EditorStore] Failed to delete project on cloud server:', e);
     }
   }
 
-  function saveCurrentProject() {
+  async function saveCurrentProject(): Promise<ProjectItem | null> {
     isSaving.value = true;
     const now = new Date().toISOString();
     const existingIndex = projects.value.findIndex(p => p.id === currentProjectId.value);
@@ -1212,17 +1242,26 @@ export const useEditorStore = defineStore('editor', () => {
     projects.value.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
     lastSavedAt.value = new Date();
     persistProjectsLocally();
+    broadcastProjectUpdate();
 
-    // Async sync to server
-    apiFetch('/api/pages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(projectData)
-    })
-      .catch(err => console.warn('Failed to sync page to API:', err))
-      .finally(() => {
-        isSaving.value = false;
+    // Async sync to server with keepalive
+    try {
+      const res = await apiFetch('/api/pages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(projectData),
+        keepalive: true
       });
+      if (!res.ok) {
+        console.warn('[EditorStore] Server returned error saving project:', res.status);
+      }
+      return projectData;
+    } catch (err) {
+      console.warn('[EditorStore] Failed to sync page to API:', err);
+      return projectData;
+    } finally {
+      isSaving.value = false;
+    }
   }
 
   function createNewProject(title: string, slug?: string, widgets?: WidgetItem[], brandSlug?: string): ProjectItem {
@@ -1278,6 +1317,7 @@ export const useEditorStore = defineStore('editor', () => {
     projectTitle.value = cleanTitle;
     pages.value = JSON.parse(JSON.stringify(initialPages));
     persistProjectsLocally();
+    broadcastProjectUpdate();
 
     activePageIndex.value = 0;
     panX.value = getPageCenterOffsetX(0);
@@ -1285,11 +1325,12 @@ export const useEditorStore = defineStore('editor', () => {
     selectedWidgetId.value = initialWidgets.length > 0 ? initialWidgets[0].id : null;
     closeAllSidebars();
 
-    // Async sync to server
+    // Async sync to server with keepalive
     apiFetch('/api/pages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newProject)
+      body: JSON.stringify(newProject),
+      keepalive: true
     }).catch(err => console.warn('Failed to sync new project to API:', err));
 
     return newProject;
@@ -1347,12 +1388,40 @@ export const useEditorStore = defineStore('editor', () => {
     { deep: true }
   );
 
-  function flushPendingSave() {
+  async function flushPendingSave(): Promise<void> {
     if (saveDebounceTimer) {
       clearTimeout(saveDebounceTimer);
       saveDebounceTimer = null;
     }
-    saveCurrentProject();
+    await saveCurrentProject();
+  }
+
+  // Realtime cross-device & cross-tab synchronization listeners
+  if (typeof window !== 'undefined') {
+    if (syncChannel) {
+      syncChannel.onmessage = (event) => {
+        if (event.data?.type === 'PROJECTS_UPDATED') {
+          loadProjects();
+        }
+      };
+    }
+
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          loadProjects();
+        }
+      });
+    }
+
+    window.addEventListener('focus', () => {
+      loadProjects();
+    });
+
+    // Periodic cloud poll every 10 seconds to keep all devices in sync
+    setInterval(() => {
+      loadProjects();
+    }, 10000);
   }
 
   // Initialize history

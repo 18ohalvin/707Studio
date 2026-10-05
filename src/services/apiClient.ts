@@ -73,8 +73,10 @@ function resolveUrl(path: string): string {
 export async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const token = getToken();
   const url = resolveUrl(path);
+  const isMutation = !!options.method && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(options.method.toUpperCase());
 
   const res = await fetch(url, {
+    keepalive: options.keepalive !== undefined ? options.keepalive : isMutation,
     ...options,
     headers: {
       ...(options.headers || {}),

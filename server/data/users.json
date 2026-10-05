@@ -1,5 +1,20 @@
 [
   {
+    "id": "user_1791193546732",
+    "name": "Rian Atmos PIC",
+    "email": "rian@atmos.co.id",
+    "phone": "",
+    "password": "rian_atmos_pass",
+    "role": "editor",
+    "assignedBrands": [
+      "atmos"
+    ],
+    "avatarUrl": "",
+    "status": "active",
+    "createdAt": "2026-10-05T09:45:46.732Z",
+    "lastActiveAt": "Just now"
+  },
+  {
     "id": "user_1791191980569",
     "name": "Rian Atmos PIC",
     "email": "rian@atmos.co.id",

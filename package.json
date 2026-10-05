@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host 0.0.0.0",
+    "dev": "concurrently -k -p \"[{name}]\" -n \"VITE,API\" -c \"cyan,magenta\" \"vite --host 0.0.0.0\" \"npm --prefix server run dev\"",
+    "dev:frontend": "vite --host 0.0.0.0",
+    "dev:server": "npm --prefix server run dev",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0",
     "test": "vitest",
@@ -21,6 +23,7 @@
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/test-utils": "^2.4.6",
     "autoprefixer": "^10.4.20",
+    "concurrently": "^10.0.5",
     "jsdom": "^26.0.0",
     "postcss": "^8.5.2",
     "tailwindcss": "^3.4.17",

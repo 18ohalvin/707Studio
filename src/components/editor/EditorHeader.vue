@@ -3,7 +3,12 @@
     <!-- Left: 707 Logo, Dynamic-Width Title, and Save Status Pill -->
     <div class="content-stretch flex gap-[16px] md:gap-[20px] items-center flex-1 min-w-0 mr-4">
       <!-- 707 Official Logo from Figma (Click to return to Landing Page) -->
-      <router-link to="/" @click="handleReturnHome" class="h-[15px] w-[48px] relative shrink-0 flex items-center cursor-pointer hover:opacity-80 transition-opacity" title="Back to Design Studio">
+      <a 
+        href="/"
+        @click.prevent="navigateHome" 
+        class="h-[15px] w-[48px] relative shrink-0 flex items-center cursor-pointer hover:opacity-80 transition-opacity" 
+        title="Back to Design Studio"
+      >
         <img 
           :src="FIGMA_ASSETS.logo707" 
           alt="707 Logo" 
@@ -12,7 +17,7 @@
         />
         <!-- Fallback if localhost asset server isn't running -->
         <span v-if="logoFailed" class="font-black text-black text-xs tracking-tighter">707</span>
-      </router-link>
+      </a>
 
       <!-- Title Container & Save Status -->
       <div class="flex flex-row items-center gap-[8px] shrink-0 max-w-full">
@@ -129,8 +134,13 @@ function handlePrimaryCtaClick() {
   }
 }
 
-function handleReturnHome() {
-  editorStore.flushPendingSave();
+async function handleReturnHome() {
+  await editorStore.flushPendingSave();
+}
+
+async function navigateHome() {
+  await editorStore.flushPendingSave();
+  router.push('/');
 }
 
 let tickerTimer: any = null;

@@ -115,6 +115,7 @@ pagesRouter.post('/', async (req: Request, res: Response) => {
   const pageList = pages || [];
   const settings = page_settings || {};
 
+  inMemoryPages = readDataFile<any[]>('pages.json', inMemoryPages);
   const existingIdx = inMemoryPages.findIndex(p => p.id === pageId);
 
   const pageData = {
@@ -185,6 +186,7 @@ pagesRouter.put('/:id', async (req: Request, res: Response) => {
   const updates = req.body;
   const now = new Date().toISOString();
 
+  inMemoryPages = readDataFile<any[]>('pages.json', inMemoryPages);
   const idx = inMemoryPages.findIndex(p => p.id === id);
   if (idx !== -1) {
     inMemoryPages[idx] = { ...inMemoryPages[idx], ...updates, updated_at: now };
@@ -226,6 +228,7 @@ pagesRouter.put('/:id', async (req: Request, res: Response) => {
 // DELETE /api/pages/:id - Delete page / project permanently from cloud DB
 pagesRouter.delete('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
+  inMemoryPages = readDataFile<any[]>('pages.json', inMemoryPages);
   inMemoryPages = inMemoryPages.filter(p => p.id !== id);
   writeDataFile('pages.json', inMemoryPages);
 
@@ -246,6 +249,7 @@ pagesRouter.patch('/:id/review', async (req: Request, res: Response) => {
   const { status, reviewed_by, review_notes } = req.body;
   const now = new Date().toISOString();
 
+  inMemoryPages = readDataFile<any[]>('pages.json', inMemoryPages);
   const page = inMemoryPages.find(p => p.id === id);
   if (page) {
     page.status = status;
