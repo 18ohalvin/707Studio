@@ -75,7 +75,12 @@
                 autocomplete="username"
                 placeholder="e.g. sarah.chen@atmos.co.id or atmos"
                 required
-                class="border border-[#aaa]/60 focus:border-black focus:outline-none rounded-[8px] h-[48px] px-[16px] py-[8px] font-707 text-[14px] text-black bg-white/70 transition-all placeholder:text-[#aaa] w-full focus:bg-white"
+                :class="[
+                  'focus:outline-none rounded-[8px] h-[48px] px-[16px] py-[8px] font-707 text-[14px] transition-all placeholder:text-[#aaa] w-full focus:bg-white',
+                  errorMessage 
+                    ? 'border border-red-400 bg-red-50/20 text-red-900 focus:border-red-500' 
+                    : 'border border-[#aaa]/60 focus:border-black text-black bg-white/70'
+                ]"
                 @input="errorMessage = ''"
               />
             </div>
@@ -94,7 +99,14 @@
                   Forgot?
                 </button>
               </div>
-              <div class="border border-[#aaa]/60 focus-within:border-black rounded-[8px] h-[48px] px-[16px] py-[8px] flex items-center justify-between bg-white/70 transition-all w-full focus-within:bg-white">
+              <div 
+                :class="[
+                  'rounded-[8px] h-[48px] px-[16px] py-[8px] flex items-center justify-between transition-all w-full focus-within:bg-white',
+                  errorMessage 
+                    ? 'border border-red-400 bg-red-50/20 focus-within:border-red-500' 
+                    : 'border border-[#aaa]/60 focus-within:border-black bg-white/70'
+                ]"
+              >
                 <input 
                   v-model="brandPin"
                   :type="showPin ? 'text' : 'password'"
@@ -142,7 +154,14 @@
               <label class="font-707 text-[11px] font-medium text-neutral-600 uppercase tracking-wider mb-1 block">
                 Superadmin Passkey / Master PIN
               </label>
-              <div class="border border-[#aaa]/60 focus-within:border-black rounded-[8px] h-[48px] px-[16px] py-[8px] flex items-center justify-between bg-white/70 transition-all w-full focus-within:bg-white">
+              <div 
+                :class="[
+                  'rounded-[8px] h-[48px] px-[16px] py-[8px] flex items-center justify-between transition-all w-full focus-within:bg-white',
+                  errorMessage 
+                    ? 'border border-red-400 bg-red-50/20 focus-within:border-red-500' 
+                    : 'border border-[#aaa]/60 focus-within:border-black bg-white/70'
+                ]"
+              >
                 <input 
                   v-model="superadminPin"
                   ref="superadminInputRef"

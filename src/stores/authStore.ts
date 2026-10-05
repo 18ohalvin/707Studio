@@ -50,12 +50,26 @@ export const useAuthStore = defineStore('auth', () => {
     loadUsers();
     try {
       if (typeof localStorage !== 'undefined') {
+        const isLoggedOut = localStorage.getItem('707_logged_out');
+        if (isLoggedOut === 'true') {
+          isSuperAdmin.value = false;
+          currentUser.value = null;
+          return;
+        }
         const adminStored = localStorage.getItem(SUPERADMIN_STORAGE_KEY);
         const userStored = localStorage.getItem(CURRENT_USER_STORAGE_KEY);
 
         if (adminStored === 'true') {
           isSuperAdmin.value = true;
-          currentUser.value = users.value.find(u => u.role === 'superadmin') || null;
+          currentUser.value = {
+            id: 'superadmin_master',
+            name: 'Alvin Decorous (Lead Admin)',
+            email: 'admin@707designstudio.internal',
+            role: 'superadmin',
+            assignedBrands: ['all'],
+            status: 'active',
+            createdAt: new Date().toISOString()
+          };
         } else if (userStored) {
           try {
             const parsedUser = JSON.parse(userStored);
@@ -81,9 +95,9 @@ export const useAuthStore = defineStore('auth', () => {
     // Valid passkeys: 707admin, 707studio, 707admin_master or admin707
     if (clean === '707admin' || clean === '707studio' || clean === 'admin707' || clean === '707admin_master') {
       isSuperAdmin.value = true;
-      currentUser.value = users.value.find(u => u.role === 'superadmin') || {
+      currentUser.value = {
         id: 'superadmin_master',
-        name: 'Superadmin Lead',
+        name: 'Alvin Decorous (Lead Admin)',
         email: 'admin@707designstudio.internal',
         role: 'superadmin',
         assignedBrands: ['all'],
@@ -104,39 +118,50 @@ export const useAuthStore = defineStore('auth', () => {
     const cleanId = identifier.trim().toLowerCase();
     const cleanPass = pass.trim();
 
-    // 1. Superadmin master passkey check
-    if (cleanPass === '707admin' || cleanPass === '707studio' || cleanPass === 'admin707' || cleanPass === '707admin_master' || cleanId === 'superadmin' || cleanId === 'alvin') {
+    if (!cleanId) {
+      return { success: false, error: 'Please enter your account email or ID.' };
+    }
+    if (!cleanPass) {
+      return { success: false, error: 'Please enter your password or PIN.' };
+    }
+
+    // 1. Search user strictly among registered team accounts created by Superadmin
+    const found = users.value.find(u => 
+      u.email.toLowerCase() === cleanId || 
+      u.name.toLowerCase() === cleanId ||
+      u.id.toLowerCase() === cleanId
+    );
+
+    if (found) {
+      if (found.status === 'suspended') {
+        return { success: false, error: 'This account has been suspended. Please contact Superadmin.' };
+      }
+      if (found.password && found.password !== cleanPass) {
+        return { success: false, error: 'Incorrect password. Please verify your credentials and try again.' };
+      }
+
+      // Brand editor or registered team account
+      isSuperAdmin.value = found.role === 'superadmin';
+      currentUser.value = found;
+      try {
+        if (isSuperAdmin.value) {
+          localStorage.setItem(SUPERADMIN_STORAGE_KEY, 'true');
+        } else {
+          localStorage.removeItem(SUPERADMIN_STORAGE_KEY);
+        }
+        localStorage.setItem(CURRENT_USER_STORAGE_KEY, JSON.stringify(found));
+        localStorage.removeItem('707_logged_out');
+      } catch {}
+      return { success: true };
+    }
+
+    // 2. Master Superadmin login by explicit admin email or username
+    if (cleanId === 'admin@707designstudio.internal' || cleanId === 'superadmin' || cleanId === 'alvin') {
       if (cleanPass === '707admin' || cleanPass === '707studio' || cleanPass === 'admin707' || cleanPass === '707admin_master') {
         verifySuperAdmin(cleanPass);
         return { success: true };
       }
-    }
-
-    // 2. Search user strictly among registered team accounts created by Superadmin
-    const found = users.value.find(u => 
-      u.email.toLowerCase() === cleanId || 
-      u.name.toLowerCase() === cleanId ||
-      u.name.toLowerCase().includes(cleanId) ||
-      u.assignedBrands.some(b => b.toLowerCase() === cleanId)
-    );
-
-    if (found) {
-      // Validate password / PIN against registered account
-      if (!found.password || found.password === cleanPass || cleanPass === 'atmos_pass_2026' || cleanPass === '707admin') {
-        isSuperAdmin.value = found.role === 'superadmin';
-        currentUser.value = found;
-        try {
-          if (isSuperAdmin.value) {
-            localStorage.setItem(SUPERADMIN_STORAGE_KEY, 'true');
-          } else {
-            localStorage.removeItem(SUPERADMIN_STORAGE_KEY);
-          }
-          localStorage.setItem(CURRENT_USER_STORAGE_KEY, JSON.stringify(found));
-          localStorage.removeItem('707_logged_out');
-        } catch {}
-        return { success: true };
-      }
-      return { success: false, error: 'Incorrect PIN or password for this account.' };
+      return { success: false, error: 'Incorrect master passkey PIN for Superadmin.' };
     }
 
     return { 
@@ -153,6 +178,7 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
       localStorage.removeItem('707_active_brand');
       localStorage.removeItem('707_auth_token');
+      localStorage.removeItem('studio_token');
       localStorage.setItem('707_logged_out', 'true');
     } catch {}
   }

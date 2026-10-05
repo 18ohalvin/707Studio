@@ -84,7 +84,12 @@
             autocomplete="username"
             placeholder="e.g. sarah.chen@atmos.co.id"
             required
-            class="w-full h-[46px] px-3.5 rounded-[10px] bg-black/[0.03] border border-black/15 text-black font-707 text-[14px] outline-none focus:border-black focus:bg-white transition-all placeholder:text-neutral-400"
+            :class="[
+              'w-full h-[46px] px-3.5 rounded-[10px] font-707 text-[14px] outline-none transition-all placeholder:text-neutral-400 focus:bg-white',
+              errorMessage 
+                ? 'border border-red-400 bg-red-50/20 text-red-900 focus:border-red-500' 
+                : 'bg-black/[0.03] border border-black/15 text-black focus:border-black'
+            ]"
             :disabled="isLoading"
             @input="errorMessage = ''"
           />
@@ -103,14 +108,21 @@
               Forgot?
             </button>
           </div>
-          <div class="relative flex items-center">
+          <div 
+            :class="[
+              'relative flex items-center rounded-[10px] transition-all focus-within:bg-white',
+              errorMessage 
+                ? 'border border-red-400 bg-red-50/20 focus-within:border-red-500' 
+                : 'bg-black/[0.03] border border-black/15 focus-within:border-black'
+            ]"
+          >
             <input
               v-model="brandPassword"
               :type="showBrandPassword ? 'text' : 'password'"
               autocomplete="current-password"
               placeholder="Enter your password"
               required
-              class="w-full h-[46px] px-3.5 pr-10 rounded-[10px] bg-black/[0.03] border border-black/15 text-black font-707 text-[14px] outline-none focus:border-black focus:bg-white transition-all placeholder:text-neutral-400"
+              class="w-full h-[46px] px-3.5 pr-10 bg-transparent text-black font-707 text-[14px] outline-none placeholder:text-neutral-400 border-none"
               :disabled="isLoading"
               @input="errorMessage = ''"
             />
@@ -146,7 +158,14 @@
           <label class="font-707 text-[11px] font-medium text-neutral-700 tracking-wider uppercase">
             Superadmin Master Passkey PIN
           </label>
-          <div class="relative flex items-center">
+          <div 
+            :class="[
+              'relative flex items-center rounded-[10px] transition-all focus-within:bg-white',
+              errorMessage 
+                ? 'border border-red-400 bg-red-50/20 focus-within:border-red-500' 
+                : 'bg-black/[0.03] border border-black/15 focus-within:border-black'
+            ]"
+          >
             <input
               ref="passwordInput"
               v-model="password"
@@ -154,7 +173,7 @@
               autocomplete="current-password"
               placeholder="Enter passkey PIN (e.g. 707admin)"
               required
-              class="w-full h-[46px] px-3.5 pr-10 rounded-[10px] bg-black/[0.03] border border-black/15 text-black font-707 text-[14px] outline-none focus:border-black focus:bg-white transition-all placeholder:text-neutral-400"
+              class="w-full h-[46px] px-3.5 pr-10 bg-transparent text-black font-707 text-[14px] outline-none placeholder:text-neutral-400 border-none"
               :disabled="isLoading"
               @input="errorMessage = ''"
             />

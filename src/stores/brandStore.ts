@@ -20,9 +20,6 @@ export const useBrandStore = defineStore('brand', () => {
       const res = await apiJson<{ success: boolean; data: Brand[] }>('/api/brands');
       if (res && res.success && Array.isArray(res.data)) {
         brands.value = res.data;
-        if (brands.value.length > 0 && !activeBrand.value) {
-          activeBrand.value = brands.value[0];
-        }
       } else {
         brands.value = [];
       }

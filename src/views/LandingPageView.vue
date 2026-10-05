@@ -47,7 +47,7 @@
             <!-- Brand Badge (Figma Node 210:6969) -->
             <div class="border-[#d9d9d9] border-[0.5px] border-solid flex h-[26px] items-center justify-center px-[8px] rounded-[10px] shrink-0 bg-transparent" data-node-id="210:6969" data-name="Save Info Container">
               <p class="font-707 text-[12px] text-black font-light leading-[16px] whitespace-nowrap" data-node-id="210:6970">
-                {{ authStore.isSuperAdmin ? 'Superadmin ID' : (brandStore.activeBrand?.slug ? brandStore.activeBrand.slug + ' ID' : (authStore.currentUser?.name ? authStore.currentUser.name + ' ID' : 'atmos ID')) }}
+                {{ authStore.isSuperAdmin ? 'Superadmin ID' : (brandStore.activeBrand?.slug ? brandStore.activeBrand.slug + ' ID' : (authStore.currentUser?.assignedBrands?.[0] ? authStore.currentUser.assignedBrands[0] + ' ID' : (authStore.currentUser?.name ? authStore.currentUser.name + ' ID' : 'Brand ID'))) }}
               </p>
             </div>
           </button>
