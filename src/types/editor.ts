@@ -138,6 +138,9 @@ export interface ProjectItem {
   widget_tree: WidgetItem[];
   pages?: ActivationPage[];
   page_settings?: PageSettings;
+  owner_id?: string;
+  owner_email?: string;
+  created_by?: string;
   created_at: string;
   updated_at: string;
 }

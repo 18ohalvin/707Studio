@@ -96,10 +96,17 @@ export async function initDbSchema(): Promise<void> {
         widget_tree JSONB NOT NULL DEFAULT '[]'::jsonb,
         pages JSONB DEFAULT '[]'::jsonb,
         page_settings JSONB NOT NULL DEFAULT '{}'::jsonb,
+        owner_id VARCHAR(100),
+        owner_email VARCHAR(150),
+        created_by VARCHAR(150),
         published_at TIMESTAMP WITH TIME ZONE,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+
+      ALTER TABLE pages ADD COLUMN IF NOT EXISTS owner_id VARCHAR(100);
+      ALTER TABLE pages ADD COLUMN IF NOT EXISTS owner_email VARCHAR(150);
+      ALTER TABLE pages ADD COLUMN IF NOT EXISTS created_by VARCHAR(150);
 
       CREATE TABLE IF NOT EXISTS submissions (
         id VARCHAR(100) PRIMARY KEY,

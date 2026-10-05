@@ -1,5 +1,50 @@
 [
   {
+    "id": "user_1791194386992",
+    "name": "Rian Atmos PIC",
+    "email": "rian@atmos.co.id",
+    "phone": "",
+    "password": "rian_atmos_pass",
+    "role": "editor",
+    "assignedBrands": [
+      "atmos"
+    ],
+    "avatarUrl": "",
+    "status": "active",
+    "createdAt": "2026-10-05T09:59:46.992Z",
+    "lastActiveAt": "Just now"
+  },
+  {
+    "id": "user_1791194386991",
+    "name": "Rian Atmos PIC",
+    "email": "rian@atmos.co.id",
+    "phone": "",
+    "password": "rian_atmos_pass",
+    "role": "editor",
+    "assignedBrands": [
+      "atmos"
+    ],
+    "avatarUrl": "",
+    "status": "active",
+    "createdAt": "2026-10-05T09:59:46.991Z",
+    "lastActiveAt": "Just now"
+  },
+  {
+    "id": "user_1791194366782",
+    "name": "Rian Atmos PIC",
+    "email": "rian@atmos.co.id",
+    "phone": "",
+    "password": "rian_atmos_pass",
+    "role": "editor",
+    "assignedBrands": [
+      "atmos"
+    ],
+    "avatarUrl": "",
+    "status": "active",
+    "createdAt": "2026-10-05T09:59:26.782Z",
+    "lastActiveAt": "Just now"
+  },
+  {
     "id": "user_1791193546732",
     "name": "Rian Atmos PIC",
     "email": "rian@atmos.co.id",

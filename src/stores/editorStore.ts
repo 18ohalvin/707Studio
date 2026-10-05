@@ -23,28 +23,55 @@ export const useEditorStore = defineStore('editor', () => {
   // Realtime Projects List (Synced with Cloud API & Local Mirror)
   const projects = ref<ProjectItem[]>(getStoredProjects());
 
-  // Filtered Projects for Current User's Brand Permissions
+  // Filtered Projects: Strictly visible ONLY to the signed-in account owner or Superadmin
   const userProjects = computed<ProjectItem[]>(() => {
     const authStore = useAuthStore();
-    const brandStore = useBrandStore();
+
+    // 1. When not authenticated (signed out), nobody can see any projects
+    if (!authStore.isAuthenticated) {
+      return [];
+    }
+
+    // 2. Superadmin has oversight across all projects
     if (authStore.isSuperAdmin) {
       return projects.value;
     }
+
+    // 3. Authenticated account / Brand editor
     if (authStore.currentUser) {
+      const currentUserId = authStore.currentUser.id;
+      const currentUserEmail = (authStore.currentUser.email || '').toLowerCase().trim();
       const userBrands = (authStore.currentUser.assignedBrands || []).map(b => b.toLowerCase().replace(/_/g, '-').trim());
-      if (userBrands.includes('all')) {
-        return projects.value;
-      }
+
       return projects.value.filter(p => {
-        const slug = (p.brand_slug || 'atmos').toLowerCase().replace(/_/g, '-').trim();
-        return userBrands.some(ub => ub === slug || slug.includes(ub) || ub.includes(slug));
+        // Direct owner match: account ID or email matches
+        const matchesOwnerId = Boolean(p.owner_id && p.owner_id === currentUserId);
+        const matchesOwnerEmail = Boolean(p.owner_email && p.owner_email.toLowerCase().trim() === currentUserEmail);
+
+        if (matchesOwnerId || matchesOwnerEmail) {
+          return true;
+        }
+
+        // If the project explicitly has an owner assigned that is NOT the current user,
+        // it belongs exclusively to that other owner - hide it from this account
+        if (p.owner_id && p.owner_id !== currentUserId) {
+          return false;
+        }
+        if (p.owner_email && currentUserEmail && p.owner_email.toLowerCase().trim() !== currentUserEmail) {
+          return false;
+        }
+
+        // Fallback for legacy or shared team brand projects without explicit owner_id:
+        if (userBrands.includes('all')) {
+          return true;
+        }
+        const slug = (p.brand_slug || '').toLowerCase().replace(/_/g, '-').trim();
+        if (!slug) return false;
+        return userBrands.some(ub => ub && (ub === slug || slug.includes(ub) || ub.includes(slug)));
       });
     }
-    if (brandStore.activeBrand) {
-      const activeSlug = brandStore.activeBrand.slug.toLowerCase().replace(/_/g, '-').trim();
-      return projects.value.filter(p => (p.brand_slug || 'atmos').toLowerCase().replace(/_/g, '-').trim() === activeSlug);
-    }
-    return projects.value;
+
+    return [];
   });
 
   const currentProjectId = ref<string>('');
@@ -1217,6 +1244,7 @@ export const useEditorStore = defineStore('editor', () => {
       currentPage.value.brand_slug = resolvedBrandSlug;
     }
     
+    const existingProj = existingIndex >= 0 ? projects.value[existingIndex] : null;
     const projectData: ProjectItem = {
       id: currentProjectId.value || `proj-${Date.now()}`,
       title: projectTitle.value.trim() || 'Untitled Activation Drop',
@@ -1227,7 +1255,10 @@ export const useEditorStore = defineStore('editor', () => {
       widget_tree: JSON.parse(JSON.stringify(currentPage.value?.widget_tree || [])),
       pages: JSON.parse(JSON.stringify(pages.value)),
       page_settings: currentPage.value?.page_settings,
-      created_at: existingIndex >= 0 ? projects.value[existingIndex].created_at : now,
+      owner_id: existingProj?.owner_id || authStore.currentUser?.id || (authStore.isSuperAdmin ? 'superadmin_master' : ''),
+      owner_email: existingProj?.owner_email || authStore.currentUser?.email || (authStore.isSuperAdmin ? 'admin@707designstudio.internal' : ''),
+      created_by: existingProj?.created_by || authStore.currentUser?.name || authStore.currentUser?.email || (authStore.isSuperAdmin ? 'Superadmin' : ''),
+      created_at: existingProj ? existingProj.created_at : now,
       updated_at: now
     };
 
@@ -1308,6 +1339,9 @@ export const useEditorStore = defineStore('editor', () => {
       current_version: 1,
       widget_tree: initialWidgets,
       pages: initialPages,
+      owner_id: authStore.currentUser?.id || (authStore.isSuperAdmin ? 'superadmin_master' : ''),
+      owner_email: authStore.currentUser?.email || (authStore.isSuperAdmin ? 'admin@707designstudio.internal' : ''),
+      created_by: authStore.currentUser?.name || authStore.currentUser?.email || (authStore.isSuperAdmin ? 'Superadmin' : ''),
       created_at: now,
       updated_at: now
     };
@@ -1337,8 +1371,15 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   function openProjectById(projectId: string) {
-    const proj = projects.value.find(p => p.id === projectId || p.title === projectId);
-    if (!proj) return;
+    const authStore = useAuthStore();
+    if (!authStore.isAuthenticated) return;
+
+    // Only allow opening if project is owned or accessible by user
+    const proj = userProjects.value.find(p => p.id === projectId || p.title === projectId);
+    if (!proj) {
+      console.warn(`[EditorStore] Project not accessible or not owned by user: ${projectId}`);
+      return;
+    }
 
     currentProjectId.value = proj.id;
     projectTitle.value = proj.title;

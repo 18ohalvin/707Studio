@@ -37,6 +37,9 @@ pagesRouter.get('/', async (req: Request, res: Response) => {
         widget_tree: typeof r.widget_tree === 'string' ? JSON.parse(r.widget_tree) : (r.widget_tree || []),
         pages: typeof r.pages === 'string' ? JSON.parse(r.pages) : (r.pages || []),
         page_settings: typeof r.page_settings === 'string' ? JSON.parse(r.page_settings) : (r.page_settings || {}),
+        owner_id: r.owner_id || '',
+        owner_email: r.owner_email || '',
+        created_by: r.created_by || '',
         created_at: r.created_at,
         updated_at: r.updated_at
       }));
@@ -83,6 +86,9 @@ pagesRouter.get('/:brandSlug/:pageSlug', async (req: Request, res: Response) => 
             widget_tree: typeof r.widget_tree === 'string' ? JSON.parse(r.widget_tree) : (r.widget_tree || []),
             pages: typeof r.pages === 'string' ? JSON.parse(r.pages) : (r.pages || []),
             page_settings: typeof r.page_settings === 'string' ? JSON.parse(r.page_settings) : (r.page_settings || {}),
+            owner_id: r.owner_id || '',
+            owner_email: r.owner_email || '',
+            created_by: r.created_by || '',
             created_at: r.created_at,
             updated_at: r.updated_at
           }
@@ -103,7 +109,7 @@ pagesRouter.get('/:brandSlug/:pageSlug', async (req: Request, res: Response) => 
 
 // POST /api/pages - Create or update a page draft
 pagesRouter.post('/', async (req: Request, res: Response) => {
-  const { id, brand_slug, title, slug, widget_tree, pages, page_settings, status } = req.body;
+  const { id, brand_slug, title, slug, widget_tree, pages, page_settings, status, owner_id, owner_email, created_by } = req.body;
 
   const now = new Date().toISOString();
   const pageId = id || `page-${Date.now()}`;
@@ -128,6 +134,9 @@ pagesRouter.post('/', async (req: Request, res: Response) => {
     widget_tree: pageWidgets,
     pages: pageList,
     page_settings: settings,
+    owner_id: owner_id || (existingIdx >= 0 ? inMemoryPages[existingIdx].owner_id : '') || '',
+    owner_email: owner_email || (existingIdx >= 0 ? inMemoryPages[existingIdx].owner_email : '') || '',
+    created_by: created_by || (existingIdx >= 0 ? inMemoryPages[existingIdx].created_by : '') || '',
     updated_at: now,
     created_at: existingIdx >= 0 ? inMemoryPages[existingIdx].created_at : now
   };
@@ -135,8 +144,8 @@ pagesRouter.post('/', async (req: Request, res: Response) => {
   if (getDbStatus().isConnected) {
     try {
       const result = await pool.query(
-        `INSERT INTO pages (id, brand_slug, title, slug, status, current_version, widget_tree, pages, page_settings, updated_at, created_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        `INSERT INTO pages (id, brand_slug, title, slug, status, current_version, widget_tree, pages, page_settings, owner_id, owner_email, created_by, updated_at, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
          ON CONFLICT (id) DO UPDATE SET
            title = EXCLUDED.title,
            brand_slug = EXCLUDED.brand_slug,
@@ -145,6 +154,9 @@ pagesRouter.post('/', async (req: Request, res: Response) => {
            widget_tree = EXCLUDED.widget_tree,
            pages = EXCLUDED.pages,
            page_settings = EXCLUDED.page_settings,
+           owner_id = COALESCE(EXCLUDED.owner_id, pages.owner_id),
+           owner_email = COALESCE(EXCLUDED.owner_email, pages.owner_email),
+           created_by = COALESCE(EXCLUDED.created_by, pages.created_by),
            updated_at = EXCLUDED.updated_at
          RETURNING *`,
         [
@@ -157,6 +169,9 @@ pagesRouter.post('/', async (req: Request, res: Response) => {
           JSON.stringify(pageData.widget_tree),
           JSON.stringify(pageData.pages),
           JSON.stringify(pageData.page_settings),
+          pageData.owner_id || null,
+          pageData.owner_email || null,
+          pageData.created_by || null,
           pageData.updated_at,
           pageData.created_at
         ]
