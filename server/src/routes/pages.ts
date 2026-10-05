@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { pool, getDbStatus } from '../db.js';
 import { readDataFile, writeDataFile } from '../fileStorage.js';
+import { externalizeInlineImages } from '../inlineImages.js';
 
 export const pagesRouter = Router();
 
@@ -117,9 +118,11 @@ pagesRouter.post('/', async (req: Request, res: Response) => {
   const pageTitle = title || 'Untitled Activation Drop';
   const pageSlug = slug || pageTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   const pageStatus = status || 'draft';
-  const pageWidgets = widget_tree || [];
-  const pageList = pages || [];
-  const settings = page_settings || {};
+  // Embedded base64 images are moved to the uploads volume before storing, so
+  // a project stays a few KB instead of tens of MB that every device re-polls.
+  const pageWidgets = externalizeInlineImages(widget_tree || []);
+  const pageList = externalizeInlineImages(pages || []);
+  const settings = externalizeInlineImages(page_settings || {});
 
   inMemoryPages = readDataFile<any[]>('pages.json', inMemoryPages);
   const existingIdx = inMemoryPages.findIndex(p => p.id === pageId);
