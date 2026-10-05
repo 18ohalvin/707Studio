@@ -155,7 +155,7 @@
 
           <!-- Standard 5 Action Hub Quick Buttons (When not Superadmin) -->
           <div v-else class="flex gap-[32px] md:gap-[40px] items-start justify-center px-[16px] py-[8px] w-full" data-node-id="198:6840" data-name="Buttons Container">
-            <!-- 1. Create a new project -->
+            <!-- 1. Create a new project (ACTIVE) -->
             <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-node-id="198:6926" data-name="Button Container">
               <button 
                 @click="handleCreateNewProject"
@@ -172,70 +172,90 @@
               </p>
             </div>
 
-            <!-- 2. Browse Templates -->
+            <!-- 2. Browse Templates (COMING SOON) -->
             <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-node-id="198:6869" data-name="Button Container">
-              <button 
-                @click="handleBrowseTemplates"
-                class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] border-[0.5px] border-black/10 hover:border-black/25 flex items-center justify-center p-[8px] rounded-[8px] size-[88px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer transition-all duration-200 group"
-                data-node-id="198:6863"
-                title="Browse pre-built activation templates"
-              >
-                <div class="size-[32px] relative shrink-0 flex items-center justify-center">
-                  <img :src="FIGMA_ASSETS.landingBrowseTemplates" alt="Browse Templates" class="size-full object-contain pointer-events-none" />
-                </div>
-              </button>
-              <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal" data-node-id="198:6868">
+              <div class="relative size-[88px]">
+                <button 
+                  @click="triggerToast('Browse Templates feature is coming soon in the next update.')"
+                  class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.45)] border-[0.5px] border-black/5 flex items-center justify-center p-[8px] rounded-[8px] size-full cursor-not-allowed opacity-60 hover:opacity-75 transition-all group"
+                  data-node-id="198:6863"
+                  title="Browse Templates (Coming Soon)"
+                >
+                  <div class="size-[32px] relative shrink-0 flex items-center justify-center grayscale opacity-50">
+                    <img :src="FIGMA_ASSETS.landingBrowseTemplates" alt="Browse Templates" class="size-full object-contain pointer-events-none" />
+                  </div>
+                </button>
+                <span class="absolute -top-1.5 -right-1.5 bg-black/80 text-white font-707 text-[8.5px] tracking-wider uppercase px-1.5 py-0.5 rounded-[4px] pointer-events-none shadow-xs font-medium">
+                  Soon
+                </span>
+              </div>
+              <p class="font-707 text-[13px] md:text-[14px] text-neutral-400 text-center leading-[18px] font-normal" data-node-id="198:6868">
                 Browse Templates
               </p>
             </div>
 
-            <!-- 3. Create Event Registration -->
+            <!-- 3. Create Event Registration (COMING SOON) -->
             <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-node-id="198:6933" data-name="Button Container">
-              <button 
-                @click="handleCreateEventRegistration"
-                class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] border-[0.5px] border-black/10 hover:border-black/25 flex items-center justify-center p-[8px] rounded-[8px] size-[88px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer transition-all duration-200 group"
-                data-node-id="198:6934"
-                title="Start with Event RSVP form template"
-              >
-                <div class="h-[32px] w-[28.5px] relative shrink-0 flex items-center justify-center">
-                  <img :src="FIGMA_ASSETS.landingEventRegistration" alt="Event Registration" class="size-full object-contain pointer-events-none" />
-                </div>
-              </button>
-              <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal" data-node-id="198:6938">
+              <div class="relative size-[88px]">
+                <button 
+                  @click="triggerToast('Event Registration presets are coming soon in the next update.')"
+                  class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.45)] border-[0.5px] border-black/5 flex items-center justify-center p-[8px] rounded-[8px] size-full cursor-not-allowed opacity-60 hover:opacity-75 transition-all group"
+                  data-node-id="198:6934"
+                  title="Event Registration (Coming Soon)"
+                >
+                  <div class="h-[32px] w-[28.5px] relative shrink-0 flex items-center justify-center grayscale opacity-50">
+                    <img :src="FIGMA_ASSETS.landingEventRegistration" alt="Event Registration" class="size-full object-contain pointer-events-none" />
+                  </div>
+                </button>
+                <span class="absolute -top-1.5 -right-1.5 bg-black/80 text-white font-707 text-[8.5px] tracking-wider uppercase px-1.5 py-0.5 rounded-[4px] pointer-events-none shadow-xs font-medium">
+                  Soon
+                </span>
+              </div>
+              <p class="font-707 text-[13px] md:text-[14px] text-neutral-400 text-center leading-[18px] font-normal" data-node-id="198:6938">
                 Create Event Registration
               </p>
             </div>
 
-            <!-- 4. e-Pass QR Ticketing -->
+            <!-- 4. e-Pass QR Ticketing (COMING SOON) -->
             <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-node-id="212:7004" data-name="Button Container">
-              <button 
-                @click="handleCreateTicketing"
-                class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] border-[0.5px] border-black/10 hover:border-black/25 flex items-center justify-center p-[8px] rounded-[8px] size-[88px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer transition-all duration-200 group"
-                data-node-id="212:7005"
-                title="Start with QR ticketing activation"
-              >
-                <div class="size-[32px] relative shrink-0 flex items-center justify-center">
-                  <img :src="FIGMA_ASSETS.landingTicket" alt="e-Pass QR Ticketing" class="size-full object-contain pointer-events-none" />
-                </div>
-              </button>
-              <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal" data-node-id="212:7009">
+              <div class="relative size-[88px]">
+                <button 
+                  @click="triggerToast('e-Pass QR Ticketing module is coming soon in the next update.')"
+                  class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.45)] border-[0.5px] border-black/5 flex items-center justify-center p-[8px] rounded-[8px] size-full cursor-not-allowed opacity-60 hover:opacity-75 transition-all group"
+                  data-node-id="212:7005"
+                  title="e-Pass QR Ticketing (Coming Soon)"
+                >
+                  <div class="size-[32px] relative shrink-0 flex items-center justify-center grayscale opacity-50">
+                    <img :src="FIGMA_ASSETS.landingTicket" alt="e-Pass QR Ticketing" class="size-full object-contain pointer-events-none" />
+                  </div>
+                </button>
+                <span class="absolute -top-1.5 -right-1.5 bg-black/80 text-white font-707 text-[8.5px] tracking-wider uppercase px-1.5 py-0.5 rounded-[4px] pointer-events-none shadow-xs font-medium">
+                  Soon
+                </span>
+              </div>
+              <p class="font-707 text-[13px] md:text-[14px] text-neutral-400 text-center leading-[18px] font-normal" data-node-id="212:7009">
                 e-Pass QR Ticketing
               </p>
             </div>
 
-            <!-- 5. View all projects -->
+            <!-- 5. View all projects (COMING SOON) -->
             <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-node-id="212:7037" data-name="Button Container">
-              <button 
-                @click="handleViewAllProjects"
-                class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] border-[0.5px] border-black/10 hover:border-black/25 flex items-center justify-center p-[8px] rounded-[8px] size-[88px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer transition-all duration-200 group"
-                data-node-id="212:7038"
-                title="View all saved projects"
-              >
-                <div class="size-[32px] relative shrink-0 flex items-center justify-center">
-                  <img :src="FIGMA_ASSETS.landingAllProjects" alt="View all projects" class="size-full object-contain pointer-events-none" />
-                </div>
-              </button>
-              <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal" data-node-id="212:7042">
+              <div class="relative size-[88px]">
+                <button 
+                  @click="triggerToast('View all projects hub is coming soon in the next update.')"
+                  class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.45)] border-[0.5px] border-black/5 flex items-center justify-center p-[8px] rounded-[8px] size-full cursor-not-allowed opacity-60 hover:opacity-75 transition-all group"
+                  data-node-id="212:7038"
+                  title="View all projects (Coming Soon)"
+                >
+                  <div class="size-[32px] relative shrink-0 flex items-center justify-center grayscale opacity-50">
+                    <img :src="FIGMA_ASSETS.landingAllProjects" alt="View all projects" class="size-full object-contain pointer-events-none" />
+                  </div>
+                </button>
+                <span class="absolute -top-1.5 -right-1.5 bg-black/80 text-white font-707 text-[8.5px] tracking-wider uppercase px-1.5 py-0.5 rounded-[4px] pointer-events-none shadow-xs font-medium">
+                  Soon
+                </span>
+              </div>
+              <p class="font-707 text-[13px] md:text-[14px] text-neutral-400 text-center leading-[18px] font-normal" data-node-id="212:7042">
                 View all projects
               </p>
             </div>

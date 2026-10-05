@@ -283,6 +283,7 @@ function handleBrandSignIn() {
   if (found) {
     brandStore.setActiveBrand(found);
   }
+  editorStore.loadProjects();
   emit('signed-in', authStore.currentUser?.name || found?.name || inputId);
   emit('close');
 }
@@ -294,6 +295,7 @@ function handleSuperadminSignIn() {
     errorMessage.value = 'Invalid superadmin passkey PIN. Try "707admin".';
     return;
   }
+  editorStore.loadProjects();
   emit('signed-in', 'Superadmin Lead');
   emit('close');
 }

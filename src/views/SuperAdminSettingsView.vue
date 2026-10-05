@@ -132,12 +132,19 @@
           >
             <!-- Left: Brand Avatar, Name, Status Pill & Slug -->
             <div class="flex gap-[20px] md:gap-[24px] items-center shrink-0" data-name="Brand Info Container">
-              <!-- Avatar Circle -->
+              <!-- Avatar Circle / Brand Photo -->
               <div 
-                class="size-[38px] rounded-full text-white flex items-center justify-center font-bold text-[14px] shrink-0 border border-black/10 shadow-xs"
+                class="size-[38px] rounded-full text-white flex items-center justify-center font-bold text-[14px] shrink-0 border border-black/10 shadow-xs overflow-hidden bg-black"
                 :style="{ backgroundColor: brand.primary_color || '#000000' }"
               >
-                {{ brand.name.charAt(0) }}
+                <img 
+                  v-if="brand.logo_url" 
+                  :src="brand.logo_url" 
+                  :alt="brand.name" 
+                  class="size-full object-cover" 
+                  @error="(e: any) => (e.target.style.display = 'none')"
+                />
+                <span v-else>{{ brand.name.charAt(0) }}</span>
               </div>
 
               <!-- Brand Name & Link -->
@@ -284,7 +291,13 @@
             </div>
 
             <!-- Actions -->
-            <div class="flex items-center justify-end gap-3 w-[120px] text-right">
+            <div class="flex items-center justify-end gap-3 w-[150px] text-right">
+              <button 
+                @click="openEditUserModal(user)"
+                class="font-707 text-[12px] text-black hover:underline cursor-pointer bg-transparent border-none font-medium"
+              >
+                Edit
+              </button>
               <button 
                 v-if="user.role !== 'superadmin'"
                 @click="authStore.removeUser(user.id)"
@@ -292,7 +305,7 @@
               >
                 Remove
               </button>
-              <span v-else class="font-707 text-[11px] text-neutral-400 italic">Primary Admin</span>
+              <span v-else class="font-707 text-[10px] text-neutral-400 italic">Primary</span>
             </div>
           </div>
         </div>
@@ -626,6 +639,21 @@
             </div>
 
             <div class="flex flex-col gap-1">
+              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Brand Photo / Logo Image URL</label>
+              <div class="flex items-center gap-2">
+                <input 
+                  v-model="newBrandLogoUrl" 
+                  type="url" 
+                  placeholder="https://example.com/logo.png" 
+                  class="flex-1 h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black font-mono text-[12px]"
+                />
+                <div v-if="newBrandLogoUrl" class="size-[38px] rounded-[6px] overflow-hidden border border-black/10 shrink-0 bg-neutral-100 flex items-center justify-center">
+                  <img :src="newBrandLogoUrl" alt="Preview" class="size-full object-cover" @error="(e: any) => (e.target.style.display = 'none')" />
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
               <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Description</label>
               <textarea 
                 v-model="newBrandDesc" 
@@ -666,10 +694,17 @@
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2.5">
               <div 
-                class="size-8 rounded-[6px] text-white flex items-center justify-center font-bold text-[14px]"
+                class="size-8 rounded-[6px] text-white flex items-center justify-center font-bold text-[14px] overflow-hidden"
                 :style="{ backgroundColor: targetBrand?.primary_color || '#000' }"
               >
-                {{ targetBrand?.name.charAt(0) }}
+                <img 
+                  v-if="editBrandLogoUrl || targetBrand?.logo_url" 
+                  :src="editBrandLogoUrl || targetBrand?.logo_url" 
+                  alt="Logo" 
+                  class="size-full object-cover" 
+                  @error="(e: any) => (e.target.style.display = 'none')"
+                />
+                <span v-else>{{ targetBrand?.name.charAt(0) }}</span>
               </div>
               <div>
                 <h3 class="font-707 font-medium text-[16px] text-black">{{ targetBrand?.name }}</h3>
@@ -688,6 +723,21 @@
                 required 
                 class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
               />
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Brand Photo / Logo Image URL</label>
+              <div class="flex items-center gap-2">
+                <input 
+                  v-model="editBrandLogoUrl" 
+                  type="url" 
+                  placeholder="https://example.com/logo.png" 
+                  class="flex-1 h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black font-mono text-[12px]"
+                />
+                <div v-if="editBrandLogoUrl" class="size-[38px] rounded-[6px] overflow-hidden border border-black/10 shrink-0 bg-neutral-100 flex items-center justify-center">
+                  <img :src="editBrandLogoUrl" alt="Preview" class="size-full object-cover" @error="(e: any) => (e.target.style.display = 'none')" />
+                </div>
+              </div>
             </div>
 
             <div class="flex flex-col gap-1">
@@ -861,6 +911,120 @@
                 class="apple-glass-btn-dark bg-black text-white px-5 h-[36px] rounded-[8px] font-707 text-[12px] font-medium"
               >
                 Create Account
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- Modal 2B: Edit Team Member Modal -->
+    <Transition name="apple-dock-fade">
+      <div 
+        v-if="showEditUserModal" 
+        class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
+        @click.self="showEditUserModal = false"
+      >
+        <div class="backdrop-blur-2xl bg-white/95 rounded-[16px] border border-white/60 p-6 w-full max-w-[460px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707">
+          <div class="flex items-center justify-between">
+            <h3 class="font-707 font-medium text-[16px] text-black">Edit Registered Team Member</h3>
+            <button @click="showEditUserModal = false" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
+          </div>
+
+          <form @submit.prevent="handleSaveEditUserSubmit" class="flex flex-col gap-3.5">
+            <div class="flex flex-col gap-1">
+              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Full Name</label>
+              <input 
+                v-model="editUserName" 
+                type="text" 
+                required 
+                placeholder="e.g. Maya Chen" 
+                class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+              />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div class="flex flex-col gap-1">
+                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Email Address</label>
+                <input 
+                  v-model="editUserEmail" 
+                  type="email" 
+                  required 
+                  placeholder="maya@atmos.co.id" 
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Phone Number</label>
+                <input 
+                  v-model="editUserPhone" 
+                  type="tel" 
+                  placeholder="+62 812..." 
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                />
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Sign-in Password / PIN</label>
+              <input 
+                v-model="editUserPassword" 
+                type="text" 
+                placeholder="Leave blank or edit password" 
+                class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black font-mono"
+              />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div class="flex flex-col gap-1">
+                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Access Role</label>
+                <select 
+                  v-model="editUserRole" 
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                >
+                  <option value="editor">Brand Designer / Editor</option>
+                  <option value="viewer">Viewer / Reviewer</option>
+                  <option value="superadmin">Superadmin</option>
+                </select>
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Primary Assigned Brand</label>
+                <select 
+                  v-model="editUserBrand" 
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                >
+                  <option v-for="b in brandStore.brands" :key="b.id" :value="b.slug">{{ b.name }}</option>
+                  <option value="all">All Brands (Master)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Account Status</label>
+              <select 
+                v-model="editUserStatus" 
+                class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+              >
+                <option value="active">Active</option>
+                <option value="pending">Pending</option>
+                <option value="suspended">Suspended</option>
+              </select>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 mt-2">
+              <button 
+                type="button" 
+                @click="showEditUserModal = false" 
+                class="px-4 h-[36px] rounded-[8px] border border-black/15 text-neutral-600 font-707 text-[12px] font-medium"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                class="apple-glass-btn-dark bg-black text-white px-5 h-[36px] rounded-[8px] font-707 text-[12px] font-medium"
+              >
+                Save Changes
               </button>
             </div>
           </form>
@@ -1202,6 +1366,7 @@ const projectFilter = ref<'all' | 'pending_review' | 'approved' | 'draft'>('all'
 const showAddBrandModal = ref(false);
 const showBrandDetailsModal = ref(false);
 const showAddUserModal = ref(false);
+const showEditUserModal = ref(false);
 const showPasswordModal = ref(false);
 const showAssignPicModal = ref(false);
 const showBuildTemplateModal = ref(false);
@@ -1210,11 +1375,13 @@ const showEditTemplateModal = ref(false);
 // Form States
 const targetBrand = ref<Brand | null>(null);
 const editBrandName = ref('');
+const editBrandLogoUrl = ref('');
 const editBrandDesc = ref('');
 
 const newBrandName = ref('');
 const newBrandSlug = ref('');
 const newBrandColor = ref('#000000');
+const newBrandLogoUrl = ref('');
 const newBrandDesc = ref('');
 
 const newUserName = ref('');
@@ -1223,6 +1390,15 @@ const newUserPhone = ref('');
 const newUserPassword = ref('atmos_pass_2026');
 const newUserRole = ref<UserRole>('editor');
 const newUserBrand = ref('atmos');
+
+const targetUserForEdit = ref<UserAccount | null>(null);
+const editUserName = ref('');
+const editUserEmail = ref('');
+const editUserPhone = ref('');
+const editUserPassword = ref('');
+const editUserRole = ref<UserRole>('editor');
+const editUserBrand = ref('all');
+const editUserStatus = ref<'active' | 'pending' | 'suspended'>('active');
 
 const targetUserForPassword = ref<UserAccount | null>(null);
 const updatedPasswordValue = ref('');
@@ -1325,12 +1501,14 @@ async function handleAddBrandSubmit() {
     name: newBrandName.value.trim(),
     slug,
     primary_color: newBrandColor.value || '#000000',
+    logo_url: newBrandLogoUrl.value.trim(),
     description: newBrandDesc.value.trim()
   });
   editorStore.showToast(`Brand "${newBrandName.value}" added successfully.`);
   newBrandName.value = '';
   newBrandSlug.value = '';
   newBrandColor.value = '#000000';
+  newBrandLogoUrl.value = '';
   newBrandDesc.value = '';
   showAddBrandModal.value = false;
 }
@@ -1338,6 +1516,7 @@ async function handleAddBrandSubmit() {
 function openBrandDetailsModal(brand: Brand) {
   targetBrand.value = brand;
   editBrandName.value = brand.name;
+  editBrandLogoUrl.value = brand.logo_url || '';
   editBrandDesc.value = brand.description || '';
   showBrandDetailsModal.value = true;
 }
@@ -1346,11 +1525,46 @@ async function handleSaveBrandDetails() {
   if (targetBrand.value) {
     await brandStore.updateBrand(targetBrand.value.id, {
       name: editBrandName.value,
+      logo_url: editBrandLogoUrl.value.trim(),
       description: editBrandDesc.value
     });
     editorStore.showToast(`Updated details for ${editBrandName.value}.`);
     showBrandDetailsModal.value = false;
   }
+}
+
+function openEditUserModal(user: UserAccount) {
+  targetUserForEdit.value = user;
+  editUserName.value = user.name;
+  editUserEmail.value = user.email;
+  editUserPhone.value = user.phone || '';
+  editUserPassword.value = user.password || '';
+  editUserRole.value = user.role;
+  editUserBrand.value = user.assignedBrands?.[0] || 'all';
+  editUserStatus.value = user.status || 'active';
+  showEditUserModal.value = true;
+}
+
+async function handleSaveEditUserSubmit() {
+  if (!targetUserForEdit.value) return;
+  if (!editUserName.value.trim() || !editUserEmail.value.trim()) return;
+
+  const updates: Partial<UserAccount> = {
+    name: editUserName.value.trim(),
+    email: editUserEmail.value.trim(),
+    phone: editUserPhone.value.trim(),
+    role: editUserRole.value,
+    assignedBrands: [editUserBrand.value],
+    status: editUserStatus.value
+  };
+
+  if (editUserPassword.value.trim()) {
+    updates.password = editUserPassword.value.trim();
+  }
+
+  await authStore.updateUser(targetUserForEdit.value.id, updates);
+  editorStore.showToast(`Updated team member "${editUserName.value}".`);
+  showEditUserModal.value = false;
 }
 
 async function handleRemoveBrand(brand: Brand) {

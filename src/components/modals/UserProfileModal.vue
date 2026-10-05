@@ -47,15 +47,16 @@
 
         <!-- Menu Action Items Container -->
         <div class="flex flex-col w-full px-[10px] py-[8px] gap-[2px]">
-          <!-- 1. Settings / Control Center -->
+          <!-- 1. Superadmin Settings (Strictly hidden for brand editors) -->
           <button 
+            v-if="authStore.isSuperAdmin"
             type="button"
             @click="handleAccountSettings"
             class="w-full text-left px-[12px] py-[9px] rounded-[8px] hover:bg-black/5 active:bg-black/10 transition-colors cursor-pointer border-0 outline-none bg-transparent flex items-center gap-2.5 text-black"
           >
             <Settings class="w-4 h-4 text-neutral-500" />
             <span class="font-707 text-[13px] font-normal">
-              {{ authStore.isSuperAdmin ? 'Superadmin Settings' : 'Brand Team Settings' }}
+              Superadmin Settings
             </span>
           </button>
 
@@ -94,7 +95,7 @@
 import { X, User, ShieldCheck, Settings, BarChart2, LogOut } from 'lucide-vue-next';
 import { useBrandStore } from '../../stores/brandStore.ts';
 import { useAuthStore } from '../../stores/authStore.ts';
-import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
+import { useEditorStore } from '../../stores/editorStore.ts';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -109,6 +110,7 @@ const emit = defineEmits<{
 
 const brandStore = useBrandStore();
 const authStore = useAuthStore();
+const editorStore = useEditorStore();
 
 function handleAnalytics() {
   emit('close');

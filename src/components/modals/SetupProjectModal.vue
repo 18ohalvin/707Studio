@@ -28,7 +28,7 @@
               <X class="w-3.5 h-3.5 text-black" />
             </button>
           </div>
-          <!-- Subtitle copy fixed from typo to 'custom slug' -->
+          <!-- Subtitle copy -->
           <p class="font-707 text-[14px] font-normal leading-[18px] text-black w-full" data-node-id="224:9597">
             Name and create a custom slug for your project
           </p>
@@ -61,6 +61,7 @@
               </span>
               <input 
                 v-model="campaignSlug"
+                @input="handleSlugInput"
                 type="text"
                 placeholder="Enter your campaign url"
                 class="flex-1 min-w-0 bg-transparent font-707 text-[14px] text-black focus:outline-none placeholder:text-[#aaa] p-0 m-0 border-none"
@@ -91,6 +92,8 @@ import { ref, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { X } from 'lucide-vue-next';
 import { useEditorStore } from '../../stores/editorStore.ts';
+import { useAuthStore } from '../../stores/authStore.ts';
+import { useBrandStore } from '../../stores/brandStore.ts';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -102,26 +105,13 @@ const emit = defineEmits<{
 
 const router = useRouter();
 const editorStore = useEditorStore();
+const authStore = useAuthStore();
+const brandStore = useBrandStore();
 
 const campaignName = ref('');
 const campaignSlug = ref('');
+const isSlugManuallyEdited = ref(false);
 const nameInputRef = ref<HTMLInputElement | null>(null);
-
-// Auto-generate slug from name if user hasn't typed a custom slug
-watch(campaignName, (newName) => {
-  if (!campaignSlug.value || campaignSlug.value === slugify(campaignName.value.slice(0, -1))) {
-    campaignSlug.value = slugify(newName);
-  }
-});
-
-watch(() => props.isOpen, async (open) => {
-  if (open) {
-    campaignName.value = '';
-    campaignSlug.value = '';
-    await nextTick();
-    nameInputRef.value?.focus();
-  }
-});
 
 function slugify(text: string) {
   return text
@@ -132,10 +122,40 @@ function slugify(text: string) {
     .replace(/^-+|-+$/g, '');
 }
 
+// Auto-generate slug from name unless user has manually customized the slug
+watch(campaignName, (newName) => {
+  if (!isSlugManuallyEdited.value) {
+    campaignSlug.value = slugify(newName);
+  }
+});
+
+function handleSlugInput() {
+  if (!campaignSlug.value) {
+    isSlugManuallyEdited.value = false;
+    campaignSlug.value = slugify(campaignName.value);
+  } else {
+    isSlugManuallyEdited.value = campaignSlug.value !== slugify(campaignName.value);
+  }
+}
+
+watch(() => props.isOpen, async (open) => {
+  if (open) {
+    campaignName.value = '';
+    campaignSlug.value = '';
+    isSlugManuallyEdited.value = false;
+    await nextTick();
+    nameInputRef.value?.focus();
+  }
+});
+
 function handleCreate() {
   const title = campaignName.value.trim() || 'Untitled Activation Project';
-  const slug = campaignSlug.value.trim() || undefined;
-  editorStore.createNewProject(title, slug);
+  const slug = campaignSlug.value.trim() || slugify(title) || undefined;
+  const brandSlug = (!authStore.isSuperAdmin && authStore.currentUser?.assignedBrands?.[0]) 
+    ? authStore.currentUser.assignedBrands[0] 
+    : (brandStore.activeBrand?.slug || undefined);
+
+  editorStore.createNewProject(title, slug, undefined, brandSlug);
   emit('close');
   editorStore.triggerProjectLoading(3000);
   router.push('/editor');
