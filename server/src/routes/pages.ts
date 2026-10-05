@@ -181,10 +181,20 @@ pagesRouter.post('/', async (req: Request, res: Response) => {
         pageData.created_at = r.created_at;
       }
     } catch (err: any) {
+      // The database is up but rejected the write, so the file fallback below
+      // would strand this project where nothing reads it: GET serves from the
+      // database whenever it is connected. Answering 200 here is what hid a
+      // broken schema for days — every device reported "Saved" while the
+      // database stayed empty and nothing synced. Fail loudly instead.
       console.error('[DB] Error saving page to DB:', err.message);
+      return res.status(500).json({
+        success: false,
+        error: 'Could not save to the database — your changes are NOT synced to other devices.',
+        detail: err.message
+      });
     }
   }
- 
+
   if (existingIdx >= 0) {
     inMemoryPages[existingIdx] = { ...inMemoryPages[existingIdx], ...pageData };
   } else {

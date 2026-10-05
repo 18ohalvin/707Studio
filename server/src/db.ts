@@ -104,9 +104,18 @@ export async function initDbSchema(): Promise<void> {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
 
+      -- CREATE TABLE IF NOT EXISTS does nothing when the table already exists,
+      -- so it never adds columns to a database created by an earlier schema.
+      -- Every column added after the first release needs its own ALTER here or
+      -- the live database silently keeps the old shape. Missing brand_slug and
+      -- pages is exactly what broke saving: each INSERT failed with
+      -- 'column "brand_slug" does not exist' while the API still answered 200.
+      ALTER TABLE pages ADD COLUMN IF NOT EXISTS brand_slug VARCHAR(100) NOT NULL DEFAULT 'atmos';
+      ALTER TABLE pages ADD COLUMN IF NOT EXISTS pages JSONB DEFAULT '[]'::jsonb;
       ALTER TABLE pages ADD COLUMN IF NOT EXISTS owner_id VARCHAR(100);
       ALTER TABLE pages ADD COLUMN IF NOT EXISTS owner_email VARCHAR(150);
       ALTER TABLE pages ADD COLUMN IF NOT EXISTS created_by VARCHAR(150);
+      ALTER TABLE pages ADD COLUMN IF NOT EXISTS published_at TIMESTAMP WITH TIME ZONE;
 
       CREATE TABLE IF NOT EXISTS submissions (
         id VARCHAR(100) PRIMARY KEY,
