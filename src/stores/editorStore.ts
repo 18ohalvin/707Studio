@@ -31,18 +31,18 @@ export const useEditorStore = defineStore('editor', () => {
       return projects.value;
     }
     if (authStore.currentUser) {
-      const userBrands = (authStore.currentUser.assignedBrands || []).map(b => b.toLowerCase().trim());
+      const userBrands = (authStore.currentUser.assignedBrands || []).map(b => b.toLowerCase().replace(/_/g, '-').trim());
       if (userBrands.includes('all')) {
         return projects.value;
       }
       return projects.value.filter(p => {
-        const slug = (p.brand_slug || '').toLowerCase().trim();
+        const slug = (p.brand_slug || '').toLowerCase().replace(/_/g, '-').trim();
         return userBrands.some(ub => ub === slug || slug.includes(ub) || ub.includes(slug));
       });
     }
     if (brandStore.activeBrand) {
-      const activeSlug = brandStore.activeBrand.slug.toLowerCase().trim();
-      return projects.value.filter(p => (p.brand_slug || '').toLowerCase().trim() === activeSlug);
+      const activeSlug = brandStore.activeBrand.slug.toLowerCase().replace(/_/g, '-').trim();
+      return projects.value.filter(p => (p.brand_slug || '').toLowerCase().replace(/_/g, '-').trim() === activeSlug);
     }
     return projects.value;
   });
@@ -1238,24 +1238,7 @@ export const useEditorStore = defineStore('editor', () => {
 
     const initialWidgets = widgets ? JSON.parse(JSON.stringify(widgets)) : [];
 
-    const newProject: ProjectItem = {
-      id,
-      title: cleanTitle,
-      brand_slug: targetBrandSlug,
-      slug: cleanSlug,
-      status: 'draft',
-      current_version: 1,
-      widget_tree: initialWidgets,
-      created_at: now,
-      updated_at: now
-    };
-
-    projects.value.unshift(newProject);
-    currentProjectId.value = id;
-    projectTitle.value = cleanTitle;
-    persistProjectsLocally();
-
-    pages.value = [
+    const initialPages: ActivationPage[] = [
       {
         id: `page_${Date.now()}`,
         brand_id: '1',
@@ -1276,6 +1259,26 @@ export const useEditorStore = defineStore('editor', () => {
         updated_at: now
       }
     ];
+
+    const newProject: ProjectItem = {
+      id,
+      title: cleanTitle,
+      brand_slug: targetBrandSlug,
+      slug: cleanSlug,
+      status: 'draft',
+      current_version: 1,
+      widget_tree: initialWidgets,
+      pages: initialPages,
+      created_at: now,
+      updated_at: now
+    };
+
+    projects.value.unshift(newProject);
+    currentProjectId.value = id;
+    projectTitle.value = cleanTitle;
+    pages.value = JSON.parse(JSON.stringify(initialPages));
+    persistProjectsLocally();
+
     activePageIndex.value = 0;
     panX.value = getPageCenterOffsetX(0);
     panY.value = 0;

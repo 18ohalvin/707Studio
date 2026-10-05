@@ -1,0 +1,32 @@
+[
+  {
+    "id": "user_1791191086554",
+    "name": "Rian Atmos PIC",
+    "email": "rian@atmos.co.id",
+    "phone": "",
+    "password": "rian_atmos_pass",
+    "role": "editor",
+    "assignedBrands": [
+      "atmos"
+    ],
+    "avatarUrl": "",
+    "status": "active",
+    "createdAt": "2026-10-05T09:04:46.554Z",
+    "lastActiveAt": "Just now"
+  },
+  {
+    "id": "user_1791191034294",
+    "name": "Rian Atmos PIC",
+    "email": "rian@atmos.co.id",
+    "phone": "",
+    "password": "rian_atmos_pass",
+    "role": "editor",
+    "assignedBrands": [
+      "atmos"
+    ],
+    "avatarUrl": "",
+    "status": "active",
+    "createdAt": "2026-10-05T09:03:54.294Z",
+    "lastActiveAt": "Just now"
+  }
+]

@@ -17,6 +17,7 @@ brandsRouter.get('/', async (req: Request, res: Response) => {
       console.error('[DB] Error fetching brands from DB:', err.message);
     }
   }
+  inMemoryBrands = readDataFile<any[]>('brands.json', inMemoryBrands);
   return res.json({ success: true, data: inMemoryBrands });
 });
 
@@ -33,6 +34,7 @@ brandsRouter.get('/:slug', async (req: Request, res: Response) => {
       console.error('[DB] Error fetching brand from DB:', err.message);
     }
   }
+  inMemoryBrands = readDataFile<any[]>('brands.json', inMemoryBrands);
   const brand = inMemoryBrands.find(b => b.slug === slug);
   if (brand) {
     return res.json({ success: true, data: brand });

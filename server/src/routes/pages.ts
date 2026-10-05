@@ -46,6 +46,7 @@ pagesRouter.get('/', async (req: Request, res: Response) => {
     }
   }
 
+  inMemoryPages = readDataFile<any[]>('pages.json', inMemoryPages);
   let filtered = [...inMemoryPages];
   if (brand_slug) {
     filtered = filtered.filter(p => p.brand_slug === brand_slug);
@@ -92,6 +93,7 @@ pagesRouter.get('/:brandSlug/:pageSlug', async (req: Request, res: Response) => 
     }
   }
 
+  inMemoryPages = readDataFile<any[]>('pages.json', inMemoryPages);
   const page = inMemoryPages.find(p => p.brand_slug === brandSlug && p.slug === pageSlug);
   if (page) {
     return res.json({ success: true, data: page });

@@ -49,10 +49,32 @@ function handleUnauthorized(): void {
   clearToken();
 }
 
+function resolveUrl(path: string): string {
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  const env = typeof import.meta !== 'undefined' ? (import.meta as any).env : undefined;
+  const envUrl = (env?.VITE_API_BASE_URL || env?.VITE_API_URL || '').replace(/\/+$/, '');
+
+  if (envUrl) {
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    return `${envUrl}${cleanPath}`;
+  }
+
+  // Fallback for Node / test environments where fetch requires an absolute origin
+  if (typeof window === 'undefined') {
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    return `http://localhost:3001${cleanPath}`;
+  }
+
+  return path;
+}
+
 export async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const token = getToken();
+  const url = resolveUrl(path);
 
-  const res = await fetch(path, {
+  const res = await fetch(url, {
     ...options,
     headers: {
       ...(options.headers || {}),
@@ -83,14 +105,8 @@ export async function apiJson<T = any>(path: string, options: RequestInit = {}):
 export async function login(password: string): Promise<{ success: boolean; error?: string }> {
   const trimmed = (password || '').trim();
 
-  // The server is the only thing that decides whether a password is valid.
-  // Accepting known passwords here, or minting a token when the backend cannot
-  // be reached, hands out a session this server never issued — every API call
-  // then fails with 401 anyway, so it only looks like a successful sign-in.
-  // Running locally still works without any setup: the server itself falls back
-  // to a development password outside production.
   try {
-    const res = await fetch('/api/auth/login', {
+    const res = await fetch(resolveUrl('/api/auth/login'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password: trimmed })

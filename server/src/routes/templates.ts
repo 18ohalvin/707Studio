@@ -31,6 +31,7 @@ templatesRouter.get('/', async (req: Request, res: Response) => {
       console.error('[DB] Error fetching templates from DB:', err.message);
     }
   }
+  inMemoryTemplates = readDataFile<any[]>('templates.json', inMemoryTemplates);
   return res.json({ success: true, data: inMemoryTemplates });
 });
 

@@ -291,6 +291,7 @@ export const useAuthStore = defineStore('auth', () => {
     currentUser,
     isAuthenticated,
     users,
+    initAuth,
     loadUsers,
     verifySuperAdmin,
     signIn,

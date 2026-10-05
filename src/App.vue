@@ -11,7 +11,29 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import DesktopOnlyGuard from './components/common/DesktopOnlyGuard.vue';
 import ProjectLoadingScreen from './components/common/ProjectLoadingScreen.vue';
+import { useAuthStore } from './stores/authStore.ts';
+import { useBrandStore } from './stores/brandStore.ts';
+import { useEditorStore } from './stores/editorStore.ts';
+
+const authStore = useAuthStore();
+const brandStore = useBrandStore();
+const editorStore = useEditorStore();
+
+onMounted(async () => {
+  authStore.initAuth();
+  try {
+    await Promise.allSettled([
+      brandStore.loadBrands(),
+      brandStore.loadTemplates(),
+      authStore.loadUsers(),
+      editorStore.loadProjects()
+    ]);
+  } catch (e) {
+    console.warn('[App] Initial cloud store sync error:', e);
+  }
+});
 </script>
 

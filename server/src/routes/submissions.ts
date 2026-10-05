@@ -61,6 +61,7 @@ submissionsRouter.get('/', async (req: Request, res: Response) => {
     }
   }
 
+  inMemorySubmissions = readDataFile<any[]>('submissions.json', inMemorySubmissions);
   let filtered = [...inMemorySubmissions];
   if (page_id) {
     filtered = filtered.filter(s => s.page_id === page_id);

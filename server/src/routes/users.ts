@@ -30,6 +30,7 @@ usersRouter.get('/', async (req: Request, res: Response) => {
       console.error('[DB] Error fetching users from DB:', err.message);
     }
   }
+  inMemoryUsers = readDataFile<any[]>('users.json', inMemoryUsers);
   return res.json({ success: true, data: inMemoryUsers });
 });
 

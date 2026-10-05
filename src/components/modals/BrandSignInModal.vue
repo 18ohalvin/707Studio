@@ -266,36 +266,52 @@ function handleForgotPin() {
   editorStore.showToast('Please contact your Superadmin or #707-design-studio-help to reset PIN.');
 }
 
-function handleBrandSignIn() {
+async function handleBrandSignIn() {
   errorMessage.value = '';
   const inputId = brandId.value.trim();
-  const res = authStore.signIn(inputId, brandPin.value);
+  
+  if (authStore.users.length === 0) {
+    await authStore.loadUsers();
+  }
+  if (brandStore.brands.length === 0) {
+    await brandStore.loadBrands();
+  }
+
+  let res = authStore.signIn(inputId, brandPin.value);
+  if (!res.success) {
+    // Retry fresh load from cloud server in case a new account was just created on another device
+    await authStore.loadUsers();
+    res = authStore.signIn(inputId, brandPin.value);
+  }
+
   if (!res.success) {
     errorMessage.value = res.error || 'Invalid account identifier or password.';
     return;
   }
+
   // Match or activate brand
   const found = brandStore.brands.find(b => 
     b.slug.toLowerCase() === inputId.toLowerCase() || 
     b.name.toLowerCase().includes(inputId.toLowerCase()) ||
-    (authStore.currentUser?.assignedBrands && authStore.currentUser.assignedBrands.includes(b.slug))
+    (authStore.currentUser?.assignedBrands && authStore.currentUser.assignedBrands.some(ub => ub.toLowerCase() === b.slug.toLowerCase() || ub.toLowerCase() === b.name.toLowerCase()))
   );
   if (found) {
     brandStore.setActiveBrand(found);
   }
-  editorStore.loadProjects();
+
+  await editorStore.loadProjects();
   emit('signed-in', authStore.currentUser?.name || found?.name || inputId);
   emit('close');
 }
 
-function handleSuperadminSignIn() {
+async function handleSuperadminSignIn() {
   errorMessage.value = '';
   const success = authStore.verifySuperAdmin(superadminPin.value);
   if (!success) {
     errorMessage.value = 'Invalid superadmin passkey PIN. Try "707admin".';
     return;
   }
-  editorStore.loadProjects();
+  await editorStore.loadProjects();
   emit('signed-in', 'Superadmin Lead');
   emit('close');
 }
