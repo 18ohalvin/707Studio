@@ -15,6 +15,19 @@ describe('Multiaccount & Data Isolation Logic', () => {
       clear: () => { for (const k in store) delete store[k]; }
     };
     setActivePinia(createPinia());
+    const authStore = useAuthStore();
+    authStore.users = [
+      {
+        id: 'user_editor_1',
+        name: 'Sarah Chen (Atmos Lead)',
+        email: 'sarah.chen@atmos.co.id',
+        password: 'atmos_pass_2026',
+        role: 'editor',
+        assignedBrands: ['atmos'],
+        status: 'active',
+        createdAt: new Date().toISOString()
+      }
+    ];
   });
 
   it('1. Sign out clears all account state and marks isAuthenticated as false', () => {
@@ -29,6 +42,20 @@ describe('Multiaccount & Data Isolation Logic', () => {
   it('2. Sign in is strictly restricted to accounts registered by superadmin', () => {
     const authStore = useAuthStore();
     authStore.signOut();
+
+    // Setup registered PIC
+    authStore.users = [
+      {
+        id: 'user_editor_1',
+        name: 'Sarah Chen (Atmos Lead)',
+        email: 'sarah.chen@atmos.co.id',
+        password: 'atmos_pass_2026',
+        role: 'editor',
+        assignedBrands: ['atmos'],
+        status: 'active',
+        createdAt: new Date().toISOString()
+      }
+    ];
 
     // Attempt sign in with unregistered account
     const failRes = authStore.signIn('unregistered_brand_123', 'wrong_pass');

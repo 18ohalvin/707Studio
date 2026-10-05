@@ -6,6 +6,7 @@ import fs from 'fs';
 import { testDbConnection, getDbStatus } from './db.js';
 import { authRouter, requireAuth } from './auth.js';
 import { brandsRouter } from './routes/brands.js';
+import { usersRouter } from './routes/users.js';
 import { pagesRouter } from './routes/pages.js';
 import { templatesRouter } from './routes/templates.js';
 import { submissionsRouter } from './routes/submissions.js';
@@ -45,6 +46,7 @@ app.use('/api/auth', authRouter);
 
 // Studio & Brand Activation Endpoints
 app.use('/api/brands', brandsRouter);
+app.use('/api/users', usersRouter);
 app.use('/api/pages', pagesRouter);
 app.use('/api/templates', templatesRouter);
 app.use('/api/submissions', submissionsRouter);

@@ -65,3 +65,19 @@ submissionsRouter.get('/', async (req: Request, res: Response) => {
   }
   return res.json({ success: true, data: filtered });
 });
+
+// DELETE /api/submissions/:id - Remove submission
+submissionsRouter.delete('/:id', async (req: Request, res: Response) => {
+  const { id } = req.params;
+  inMemorySubmissions = inMemorySubmissions.filter(s => s.id !== id);
+
+  if (getDbStatus().isConnected) {
+    try {
+      await pool.query('DELETE FROM submissions WHERE id = $1', [id]);
+    } catch (err: any) {
+      console.error('[DB] Error deleting submission from DB:', err.message);
+    }
+  }
+
+  return res.json({ success: true, message: 'Submission removed successfully' });
+});

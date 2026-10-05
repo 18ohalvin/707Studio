@@ -388,8 +388,8 @@
               </span>
             </div>
 
-            <!-- Col 5: Review Actions (aligned right with Inspect, Approve, Decline) -->
-            <div class="flex items-center gap-2 justify-end shrink-0 min-w-[210px]">
+            <!-- Col 5: Review Actions (aligned right with Inspect, Approve, Decline, Delete) -->
+            <div class="flex items-center gap-2 justify-end shrink-0 min-w-[260px]">
               <button 
                 @click="handlePreviewProject(project.id)"
                 class="border-[0.5px] border-black px-2.5 py-1 rounded-[6px] text-[11px] font-707 font-medium text-black hover:bg-black hover:text-white transition-all cursor-pointer"
@@ -411,11 +411,20 @@
 
               <button 
                 @click="handleDeclineProject(project.id)"
-                class="border-[0.5px] border-black/20 text-neutral-700 hover:text-red-600 hover:border-red-300 hover:bg-red-50/60 px-2.5 py-1 rounded-[6px] text-[11px] font-707 font-medium transition-colors cursor-pointer flex items-center gap-1"
+                class="border-[0.5px] border-black/20 text-neutral-700 hover:text-neutral-900 hover:border-black/40 hover:bg-neutral-100 px-2.5 py-1 rounded-[6px] text-[11px] font-707 font-medium transition-colors cursor-pointer flex items-center gap-1"
                 title="Decline submission request and return to draft"
               >
                 <XCircle class="w-3 h-3" />
                 <span>Decline</span>
+              </button>
+
+              <button 
+                @click="handleDeleteProject(project)"
+                class="border-[0.5px] border-red-200 text-red-600 hover:bg-red-600 hover:text-white px-2.5 py-1 rounded-[6px] text-[11px] font-707 font-medium transition-all cursor-pointer flex items-center gap-1"
+                title="Delete project permanently from cloud server"
+              >
+                <Trash2 class="w-3 h-3" />
+                <span>Delete</span>
               </button>
             </div>
           </div>
@@ -1157,7 +1166,7 @@ import { useAuthStore, type UserAccount, type UserRole } from '../stores/authSto
 import { useEditorStore } from '../stores/editorStore.ts';
 import { useBrandStore } from '../stores/brandStore.ts';
 import { FIGMA_ASSETS } from '../constants/figmaAssets.ts';
-import type { Brand, GlobalTemplate, WidgetItem } from '../types/editor.ts';
+import type { Brand, GlobalTemplate, WidgetItem, ProjectItem } from '../types/editor.ts';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -1406,6 +1415,13 @@ function handleDeclineProject(projectId: string) {
   const p = editorStore.projects.find(proj => proj.id === projectId);
   editorStore.updateProjectStatus(projectId, 'draft');
   editorStore.showToast(`Declined project "${p?.title || 'Drop'}". Status returned to draft.`);
+}
+
+async function handleDeleteProject(project: ProjectItem) {
+  if (confirm(`Permanently delete project "${project.title}" from cloud database?`)) {
+    await editorStore.deleteProject(project.id);
+    editorStore.showToast(`Deleted "${project.title}".`);
+  }
 }
 
 function handleRejectProject(projectId: string) {

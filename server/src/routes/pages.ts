@@ -3,117 +3,45 @@ import { pool, getDbStatus } from '../db.js';
 
 export const pagesRouter = Router();
 
-// In-memory fallback pages storage
-let inMemoryPages: any[] = [
-  {
-    id: 'proj-asics-1',
-    brand_id: '1',
-    brand_slug: 'atmos',
-    title: 'atmos x ASICS Gel Kayano',
-    slug: 'asics-gel-kayano-pandan',
-    description: 'Exclusive limited RSVP activation for atmos x ASICS',
-    status: 'draft',
-    current_version: 1,
-    widget_tree: [
-      {
-        id: 'hero_asics_1',
-        type: 'HeroDrop',
-        props: {
-          ratio: '4:5',
-          title: 'ATMOS X ASICS',
-          headline: 'GEL KAYANO PANDAN',
-          subtitle: 'LIMITED RAFFLE LAUNCH'
-        }
-      },
-      {
-        id: 'text_asics_1',
-        type: 'TextBanner',
-        props: {
-          text: 'SELECT YOUR SIZE',
-          placeholder: 'WRITE YOUR TEXT HERE',
-          typographyStyle: 'headline-1'
-        }
-      },
-      {
-        id: 'raffle_asics_1',
-        type: 'RaffleForm',
-        props: {
-          heading: 'OFFICIAL ENTRY FORM'
-        }
-      }
-    ],
-    page_settings: {
-      seoTitle: 'atmos x ASICS Gel Kayano Pandan RSVP',
-      seoDescription: 'Enter the official 707 activation for atmos x ASICS.',
-      theme: 'the-707-standard'
-    },
-    created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
-    updated_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: 'proj-raffle-2',
-    brand_id: '1',
-    brand_slug: 'atmos',
-    title: 'Raffle Projects',
-    slug: 'raffle-projects',
-    description: 'Multi-brand seasonal raffle drop hub',
-    status: 'draft',
-    current_version: 1,
-    widget_tree: [
-      {
-        id: 'hero_raffle_1',
-        type: 'HeroDrop',
-        props: {
-          ratio: '16:9',
-          title: 'SEASONAL RAFFLE HUB',
-          headline: 'SUMMER 2026',
-          subtitle: 'EXCLUSIVE ENTRIES'
-        }
-      },
-      {
-        id: 'raffle_form_2',
-        type: 'RaffleForm',
-        props: {
-          heading: 'ENTER RAFFLE DETAILS'
-        }
-      }
-    ],
-    page_settings: {
-      seoTitle: 'Raffle Projects',
-      seoDescription: '707 Raffle Hub',
-      theme: 'the-707-standard'
-    },
-    created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // 1 month ago
-    updated_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-  }
-];
+// In-memory fallback pages storage (clean fresh state with 0 ghost data)
+let inMemoryPages: any[] = [];
 
-// GET /api/pages - list pages (optionally filter by brand_id or status)
+// GET /api/pages - list pages (optionally filter by brand_slug or status)
 pagesRouter.get('/', async (req: Request, res: Response) => {
   const { brand_slug, status } = req.query;
 
   if (getDbStatus().isConnected) {
     try {
-      let query = `
-        SELECT p.*, b.name as brand_name, b.slug as brand_slug, b.logo_url as brand_logo
-        FROM pages p
-        JOIN brands b ON p.brand_id = b.id
-        WHERE 1=1
-      `;
+      let query = 'SELECT * FROM pages WHERE 1=1';
       const params: any[] = [];
       if (brand_slug) {
         params.push(brand_slug);
-        query += ` AND b.slug = $${params.length}`;
+        query += ` AND brand_slug = $${params.length}`;
       }
       if (status) {
         params.push(status);
-        query += ` AND p.status = $${params.length}`;
+        query += ` AND status = $${params.length}`;
       }
-      query += ' ORDER BY p.updated_at DESC';
+      query += ' ORDER BY updated_at DESC';
       const result = await pool.query(query, params);
-      return res.json({ success: true, data: result.rows });
+      const rows = result.rows.map(r => ({
+        id: r.id,
+        brand_id: r.brand_id || '1',
+        brand_slug: r.brand_slug || 'atmos',
+        title: r.title,
+        slug: r.slug,
+        description: r.description || '',
+        status: r.status || 'draft',
+        current_version: r.current_version || 1,
+        widget_tree: typeof r.widget_tree === 'string' ? JSON.parse(r.widget_tree) : (r.widget_tree || []),
+        pages: typeof r.pages === 'string' ? JSON.parse(r.pages) : (r.pages || []),
+        page_settings: typeof r.page_settings === 'string' ? JSON.parse(r.page_settings) : (r.page_settings || {}),
+        created_at: r.created_at,
+        updated_at: r.updated_at
+      }));
+      return res.json({ success: true, data: rows });
     } catch (err: any) {
-      console.error('Error querying pages from DB:', err.message);
+      console.error('[DB] Error querying pages from DB:', err.message);
     }
   }
 
@@ -134,17 +62,32 @@ pagesRouter.get('/:brandSlug/:pageSlug', async (req: Request, res: Response) => 
   if (getDbStatus().isConnected) {
     try {
       const result = await pool.query(
-        `SELECT p.*, b.name as brand_name, b.slug as brand_slug, b.logo_url as brand_logo
-         FROM pages p
-         JOIN brands b ON p.brand_id = b.id
-         WHERE b.slug = $1 AND p.slug = $2`,
+        'SELECT * FROM pages WHERE brand_slug = $1 AND slug = $2 LIMIT 1',
         [brandSlug, pageSlug]
       );
       if (result.rows.length > 0) {
-        return res.json({ success: true, data: result.rows[0] });
+        const r = result.rows[0];
+        return res.json({
+          success: true,
+          data: {
+            id: r.id,
+            brand_id: r.brand_id || '1',
+            brand_slug: r.brand_slug || 'atmos',
+            title: r.title,
+            slug: r.slug,
+            description: r.description || '',
+            status: r.status || 'draft',
+            current_version: r.current_version || 1,
+            widget_tree: typeof r.widget_tree === 'string' ? JSON.parse(r.widget_tree) : (r.widget_tree || []),
+            pages: typeof r.pages === 'string' ? JSON.parse(r.pages) : (r.pages || []),
+            page_settings: typeof r.page_settings === 'string' ? JSON.parse(r.page_settings) : (r.page_settings || {}),
+            created_at: r.created_at,
+            updated_at: r.updated_at
+          }
+        });
       }
     } catch (err: any) {
-      console.error('Error querying single page from DB:', err.message);
+      console.error('[DB] Error querying single page from DB:', err.message);
     }
   }
 
@@ -157,23 +100,71 @@ pagesRouter.get('/:brandSlug/:pageSlug', async (req: Request, res: Response) => 
 
 // POST /api/pages - Create or update a page draft
 pagesRouter.post('/', async (req: Request, res: Response) => {
-  const { id, brand_slug, title, slug, widget_tree, page_settings, status } = req.body;
+  const { id, brand_slug, title, slug, widget_tree, pages, page_settings, status } = req.body;
 
   const now = new Date().toISOString();
-  const existingIdx = inMemoryPages.findIndex(p => p.id === id || (p.brand_slug === brand_slug && p.slug === slug));
+  const pageId = id || `page-${Date.now()}`;
+  const targetBrandSlug = brand_slug || 'atmos';
+  const pageTitle = title || 'Untitled Activation Drop';
+  const pageSlug = slug || pageTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  const pageStatus = status || 'draft';
+  const pageWidgets = widget_tree || [];
+  const pageList = pages || [];
+  const settings = page_settings || {};
+
+  const existingIdx = inMemoryPages.findIndex(p => p.id === pageId);
 
   const pageData = {
-    id: id || `page-${Date.now()}`,
-    brand_slug: brand_slug || 'atmos',
-    title: title || 'Untitled Activation Drop',
-    slug: slug || 'untitled-drop',
-    status: status || 'draft',
+    id: pageId,
+    brand_slug: targetBrandSlug,
+    title: pageTitle,
+    slug: pageSlug,
+    status: pageStatus,
     current_version: 1,
-    widget_tree: widget_tree || [],
-    page_settings: page_settings || {},
+    widget_tree: pageWidgets,
+    pages: pageList,
+    page_settings: settings,
     updated_at: now,
     created_at: existingIdx >= 0 ? inMemoryPages[existingIdx].created_at : now
   };
+
+  if (getDbStatus().isConnected) {
+    try {
+      const result = await pool.query(
+        `INSERT INTO pages (id, brand_slug, title, slug, status, current_version, widget_tree, pages, page_settings, updated_at, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+         ON CONFLICT (id) DO UPDATE SET
+           title = EXCLUDED.title,
+           brand_slug = EXCLUDED.brand_slug,
+           slug = EXCLUDED.slug,
+           status = EXCLUDED.status,
+           widget_tree = EXCLUDED.widget_tree,
+           pages = EXCLUDED.pages,
+           page_settings = EXCLUDED.page_settings,
+           updated_at = EXCLUDED.updated_at
+         RETURNING *`,
+        [
+          pageData.id,
+          pageData.brand_slug,
+          pageData.title,
+          pageData.slug,
+          pageData.status,
+          pageData.current_version,
+          JSON.stringify(pageData.widget_tree),
+          JSON.stringify(pageData.pages),
+          JSON.stringify(pageData.page_settings),
+          pageData.updated_at,
+          pageData.created_at
+        ]
+      );
+      if (result.rows.length > 0) {
+        const r = result.rows[0];
+        pageData.created_at = r.created_at;
+      }
+    } catch (err: any) {
+      console.error('[DB] Error saving page to DB:', err.message);
+    }
+  }
 
   if (existingIdx >= 0) {
     inMemoryPages[existingIdx] = { ...inMemoryPages[existingIdx], ...pageData };
@@ -184,24 +175,89 @@ pagesRouter.post('/', async (req: Request, res: Response) => {
   return res.json({ success: true, data: pageData });
 });
 
-// PATCH /api/pages/:id/review - Review status change (Submit for Review, Approve, Reject, Publish)
+// PUT /api/pages/:id - Update page fields / status
+pagesRouter.put('/:id', async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const updates = req.body;
+  const now = new Date().toISOString();
+
+  const idx = inMemoryPages.findIndex(p => p.id === id);
+  if (idx !== -1) {
+    inMemoryPages[idx] = { ...inMemoryPages[idx], ...updates, updated_at: now };
+  }
+
+  if (getDbStatus().isConnected) {
+    try {
+      const dbUpdates: any = { updated_at: now };
+      if (updates.title !== undefined) dbUpdates.title = updates.title;
+      if (updates.status !== undefined) dbUpdates.status = updates.status;
+      if (updates.slug !== undefined) dbUpdates.slug = updates.slug;
+      if (updates.widget_tree !== undefined) dbUpdates.widget_tree = JSON.stringify(updates.widget_tree);
+      if (updates.pages !== undefined) dbUpdates.pages = JSON.stringify(updates.pages);
+      if (updates.page_settings !== undefined) dbUpdates.page_settings = JSON.stringify(updates.page_settings);
+
+      const fields = Object.keys(dbUpdates);
+      if (fields.length > 0) {
+        const setClause = fields.map((f, i) => `${f} = $${i + 1}`).join(', ');
+        const values = fields.map(f => dbUpdates[f]);
+        values.push(id);
+        const result = await pool.query(
+          `UPDATE pages SET ${setClause} WHERE id = $${values.length} RETURNING *`,
+          values
+        );
+        if (result.rows.length > 0) {
+          return res.json({ success: true, data: result.rows[0] });
+        }
+      }
+    } catch (err: any) {
+      console.error('[DB] Error updating page in DB:', err.message);
+    }
+  }
+
+  const updated = inMemoryPages.find(p => p.id === id);
+  return res.json({ success: true, data: updated || updates });
+});
+
+// DELETE /api/pages/:id - Delete page / project permanently from cloud DB
+pagesRouter.delete('/:id', async (req: Request, res: Response) => {
+  const { id } = req.params;
+  inMemoryPages = inMemoryPages.filter(p => p.id !== id);
+
+  if (getDbStatus().isConnected) {
+    try {
+      await pool.query('DELETE FROM pages WHERE id = $1', [id]);
+    } catch (err: any) {
+      console.error('[DB] Error deleting page from DB:', err.message);
+    }
+  }
+
+  return res.json({ success: true, message: 'Page removed successfully' });
+});
+
+// PATCH /api/pages/:id/review - Review status change
 pagesRouter.patch('/:id/review', async (req: Request, res: Response) => {
   const { id } = req.params;
   const { status, reviewed_by, review_notes } = req.body;
+  const now = new Date().toISOString();
 
   const page = inMemoryPages.find(p => p.id === id);
-  if (!page) {
-    return res.status(404).json({ success: false, error: 'Page not found' });
+  if (page) {
+    page.status = status;
+    page.reviewed_by = reviewed_by || 'Head of UI/UX';
+    page.review_notes = review_notes || '';
+    page.updated_at = now;
   }
 
-  page.status = status;
-  page.reviewed_by = reviewed_by || 'Head of UI/UX';
-  page.review_notes = review_notes || '';
-  page.updated_at = new Date().toISOString();
-
-  if (status === 'published') {
-    page.published_at = new Date().toISOString();
+  if (getDbStatus().isConnected) {
+    try {
+      await pool.query(
+        'UPDATE pages SET status = $1, updated_at = $2 WHERE id = $3',
+        [status, now, id]
+      );
+    } catch (err: any) {
+      console.error('[DB] Error updating page review in DB:', err.message);
+    }
   }
 
-  return res.json({ success: true, data: page });
+  return res.json({ success: true, data: page || { id, status } });
 });

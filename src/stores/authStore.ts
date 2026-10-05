@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+import { apiJson } from '../services/apiClient.ts';
 
 export type UserRole = 'superadmin' | 'editor' | 'viewer';
 
@@ -17,56 +18,7 @@ export interface UserAccount {
   lastActiveAt?: string;
 }
 
-const DEFAULT_USERS: UserAccount[] = [
-  {
-    id: 'user_superadmin_1',
-    name: 'Alvin Decorous (Lead Admin)',
-    email: 'alvin@707designstudio.internal',
-    password: '707admin_master',
-    phone: '+62 811-707-001',
-    role: 'superadmin',
-    assignedBrands: ['all'],
-    status: 'active',
-    createdAt: new Date().toISOString(),
-    lastActiveAt: 'Just now'
-  },
-  {
-    id: 'user_editor_1',
-    name: 'Sarah Chen (Atmos Lead)',
-    email: 'sarah.chen@atmos.co.id',
-    password: 'atmos_pass_2026',
-    phone: '+62 812-888-7071',
-    role: 'editor',
-    assignedBrands: ['atmos'],
-    status: 'active',
-    createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
-    lastActiveAt: '2 hours ago'
-  },
-  {
-    id: 'user_editor_2',
-    name: 'Maya Pratama (707 Studio)',
-    email: 'maya@707designstudio.internal',
-    password: 'maya_studio_707',
-    phone: '+62 813-777-7072',
-    role: 'editor',
-    assignedBrands: ['707-standard', 'atmos'],
-    status: 'active',
-    createdAt: new Date(Date.now() - 86400000 * 12).toISOString(),
-    lastActiveAt: 'Yesterday'
-  },
-  {
-    id: 'user_viewer_1',
-    name: 'Budi Santoso (Client Reviewer)',
-    email: 'budi@client-partner.id',
-    password: 'client_guest_pass',
-    phone: '+62 815-555-7073',
-    role: 'viewer',
-    assignedBrands: ['atmos'],
-    status: 'active',
-    createdAt: new Date(Date.now() - 86400000 * 20).toISOString(),
-    lastActiveAt: '3 days ago'
-  }
-];
+const DEFAULT_USERS: UserAccount[] = [];
 
 const SUPERADMIN_STORAGE_KEY = '707_superadmin_auth';
 const CURRENT_USER_STORAGE_KEY = '707_current_user';
@@ -81,29 +33,29 @@ export const useAuthStore = defineStore('auth', () => {
     return isSuperAdmin.value || currentUser.value !== null;
   });
 
+  async function loadUsers() {
+    try {
+      const res = await apiJson<{ success: boolean; data: UserAccount[] }>('/api/users');
+      if (res && res.success && Array.isArray(res.data)) {
+        users.value = res.data;
+        return;
+      }
+    } catch (e) {
+      console.warn('[AuthStore] Error loading users from cloud server:', e);
+    }
+  }
+
   // Initialize from storage
   function initAuth() {
+    loadUsers();
     try {
       if (typeof localStorage !== 'undefined') {
         const adminStored = localStorage.getItem(SUPERADMIN_STORAGE_KEY);
         const userStored = localStorage.getItem(CURRENT_USER_STORAGE_KEY);
 
-        const usersStored = localStorage.getItem(USERS_STORAGE_KEY);
-        if (usersStored) {
-          const parsed = JSON.parse(usersStored);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            users.value = parsed;
-          } else {
-            users.value = [...DEFAULT_USERS];
-          }
-        } else {
-          users.value = [...DEFAULT_USERS];
-          saveUsersToStorage();
-        }
-
         if (adminStored === 'true') {
           isSuperAdmin.value = true;
-          currentUser.value = users.value.find(u => u.role === 'superadmin') || DEFAULT_USERS[0];
+          currentUser.value = users.value.find(u => u.role === 'superadmin') || null;
         } else if (userStored) {
           try {
             const parsedUser = JSON.parse(userStored);
@@ -114,31 +66,13 @@ export const useAuthStore = defineStore('auth', () => {
             isSuperAdmin.value = false;
           }
         } else {
-          // Default initial state is logged in as Superadmin for dev/prototype convenience, unless explicitly signed out
-          const wasLoggedOut = localStorage.getItem('707_logged_out');
-          if (wasLoggedOut !== 'true') {
-            isSuperAdmin.value = true;
-            currentUser.value = users.value[0] || DEFAULT_USERS[0];
-          } else {
-            isSuperAdmin.value = false;
-            currentUser.value = null;
-          }
+          isSuperAdmin.value = false;
+          currentUser.value = null;
         }
       }
     } catch {
-      users.value = [...DEFAULT_USERS];
       currentUser.value = null;
       isSuperAdmin.value = false;
-    }
-  }
-
-  function saveUsersToStorage() {
-    try {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users.value));
-      }
-    } catch (e) {
-      console.error('Failed to save users to storage', e);
     }
   }
 
@@ -147,7 +81,15 @@ export const useAuthStore = defineStore('auth', () => {
     // Valid passkeys: 707admin, 707studio, 707admin_master or admin707
     if (clean === '707admin' || clean === '707studio' || clean === 'admin707' || clean === '707admin_master') {
       isSuperAdmin.value = true;
-      currentUser.value = users.value.find(u => u.role === 'superadmin') || DEFAULT_USERS[0];
+      currentUser.value = users.value.find(u => u.role === 'superadmin') || {
+        id: 'superadmin_master',
+        name: 'Superadmin Lead',
+        email: 'admin@707designstudio.internal',
+        role: 'superadmin',
+        assignedBrands: ['all'],
+        status: 'active',
+        createdAt: new Date().toISOString()
+      };
       try {
         localStorage.setItem(SUPERADMIN_STORAGE_KEY, 'true');
         localStorage.setItem(CURRENT_USER_STORAGE_KEY, JSON.stringify(currentUser.value));
@@ -217,88 +159,103 @@ export const useAuthStore = defineStore('auth', () => {
 
   function exitSuperAdmin() {
     isSuperAdmin.value = false;
-    currentUser.value = users.value.find(u => u.role !== 'superadmin') || DEFAULT_USERS[1];
+    currentUser.value = users.value.find(u => u.role !== 'superadmin') || null;
     try {
       localStorage.removeItem(SUPERADMIN_STORAGE_KEY);
-      localStorage.setItem(CURRENT_USER_STORAGE_KEY, JSON.stringify(currentUser.value));
+      if (currentUser.value) {
+        localStorage.setItem(CURRENT_USER_STORAGE_KEY, JSON.stringify(currentUser.value));
+      } else {
+        localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
+      }
     } catch {}
   }
 
-  function addUser(user: Omit<UserAccount, 'id' | 'createdAt'>): UserAccount {
+  async function addUser(user: Omit<UserAccount, 'id' | 'createdAt'>): Promise<UserAccount> {
     const newUser: UserAccount = {
       id: `user_${Date.now()}`,
       ...user,
       createdAt: new Date().toISOString()
     };
     users.value.unshift(newUser);
-    saveUsersToStorage();
+
+    try {
+      const res = await apiJson<{ success: boolean; data: UserAccount }>('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newUser)
+      });
+      if (res && res.success && res.data) {
+        const idx = users.value.findIndex(u => u.id === newUser.id);
+        if (idx !== -1) {
+          users.value[idx] = res.data;
+        }
+        return res.data;
+      }
+    } catch (e) {
+      console.error('[AuthStore] Failed to create user on cloud server:', e);
+    }
     return newUser;
   }
 
-  function updateUser(id: string, updates: Partial<UserAccount>): boolean {
+  async function updateUser(id: string, updates: Partial<UserAccount>): Promise<boolean> {
     const idx = users.value.findIndex(u => u.id === id);
     if (idx !== -1) {
       users.value[idx] = { ...users.value[idx], ...updates };
-      saveUsersToStorage();
-      return true;
     }
-    return false;
+    try {
+      await apiJson(`/api/users/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      });
+      return true;
+    } catch (e) {
+      console.error('[AuthStore] Failed to update user on cloud server:', e);
+      return false;
+    }
   }
-  function removeUser(id: string): boolean {
-    const initialLen = users.value.length;
+
+  async function removeUser(id: string): Promise<boolean> {
     users.value = users.value.filter(u => u.id !== id);
-    if (users.value.length !== initialLen) {
-      saveUsersToStorage();
+    try {
+      await apiJson(`/api/users/${id}`, {
+        method: 'DELETE'
+      });
       return true;
+    } catch (e) {
+      console.error('[AuthStore] Failed to delete user from cloud server:', e);
+      return false;
     }
-    return false;
   }
 
-  function updateUserPassword(id: string, newPassword: string): boolean {
-    const user = users.value.find(u => u.id === id);
-    if (user) {
-      user.password = newPassword.trim();
-      saveUsersToStorage();
-      return true;
-    }
-    return false;
+  async function updateUserPassword(id: string, newPassword: string): Promise<boolean> {
+    return updateUser(id, { password: newPassword.trim() });
   }
 
-  function assignBrandPic(brandSlug: string, userId: string): boolean {
+  async function assignBrandPic(brandSlug: string, userId: string): Promise<boolean> {
     const user = users.value.find(u => u.id === userId);
     if (user) {
-      if (!user.assignedBrands.includes(brandSlug)) {
-        user.assignedBrands.push(brandSlug);
-        saveUsersToStorage();
+      const currentBrands = user.assignedBrands || [];
+      if (!currentBrands.includes(brandSlug)) {
+        const updatedBrands = [...currentBrands, brandSlug];
+        return updateUser(userId, { assignedBrands: updatedBrands });
       }
       return true;
     }
     return false;
   }
 
-  function unassignBrandPic(brandSlug: string, userId: string): boolean {
+  async function unassignBrandPic(brandSlug: string, userId: string): Promise<boolean> {
     const user = users.value.find(u => u.id === userId);
     if (user) {
-      user.assignedBrands = user.assignedBrands.filter(b => b !== brandSlug);
-      saveUsersToStorage();
-      return true;
+      const updatedBrands = (user.assignedBrands || []).filter(b => b !== brandSlug);
+      return updateUser(userId, { assignedBrands: updatedBrands });
     }
     return false;
   }
 
-  function resetUsers(): boolean {
-    users.value = JSON.parse(JSON.stringify(DEFAULT_USERS));
-    saveUsersToStorage();
-    if (isSuperAdmin.value) {
-      currentUser.value = users.value[0];
-    } else {
-      currentUser.value = users.value[1];
-    }
-    return true;
-  }
-
   function getBrandPics(brandSlug: string): UserAccount[] {
-    return users.value.filter(u => u.assignedBrands.includes('all') || u.assignedBrands.includes(brandSlug));
+    return users.value.filter(u => u.assignedBrands && (u.assignedBrands.includes(brandSlug) || u.assignedBrands.includes('all')));
   }
 
   initAuth();
@@ -308,6 +265,7 @@ export const useAuthStore = defineStore('auth', () => {
     currentUser,
     isAuthenticated,
     users,
+    loadUsers,
     verifySuperAdmin,
     signIn,
     signOut,
@@ -318,7 +276,6 @@ export const useAuthStore = defineStore('auth', () => {
     updateUserPassword,
     assignBrandPic,
     unassignBrandPic,
-    getBrandPics,
-    resetUsers
+    getBrandPics
   };
 });

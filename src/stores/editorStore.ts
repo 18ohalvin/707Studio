@@ -681,7 +681,17 @@ export const useEditorStore = defineStore('editor', () => {
           pg.updated_at = new Date().toISOString();
         });
       }
-      saveProjectsToStorage();
+      // Async sync to cloud database
+      apiFetch(`/api/pages/${projectId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status,
+          reviewed_by: reviewedBy,
+          updated_at: proj.updated_at,
+          pages: proj.pages
+        })
+      }).catch(err => console.warn('[EditorStore] Failed to update project status on cloud:', err));
     }
   }
 
@@ -1057,41 +1067,49 @@ export const useEditorStore = defineStore('editor', () => {
       const res = await apiFetch('/api/pages');
       if (res.ok) {
         const json = await res.json();
-        if (json.success && Array.isArray(json.data)) {
+        if (json && json.success && Array.isArray(json.data)) {
           projects.value = json.data;
-          saveProjectsToStorage();
           return;
         }
       }
     } catch (e) {
-      console.warn('API fetch failed, reading from localStorage', e);
-    }
-    loadProjectsFromStorage();
-  }
-
-  function saveProjectsToStorage() {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.setItem('707_saved_projects', JSON.stringify(projects.value));
-      }
-    } catch (e) {
-      console.error('Failed to write to localStorage', e);
+      console.warn('[EditorStore] API fetch pages error:', e);
     }
   }
 
-  function loadProjectsFromStorage() {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        const stored = localStorage.getItem('707_saved_projects');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed)) {
-            projects.value = parsed;
-          }
+  async function deleteProject(projectId: string) {
+    projects.value = projects.value.filter(p => p.id !== projectId);
+    if (currentProjectId.value === projectId) {
+      currentProjectId.value = '';
+      projectTitle.value = 'Untitled Activation Drop';
+      pages.value = [
+        {
+          id: `page_${Date.now()}`,
+          brand_id: '1',
+          brand_slug: 'atmos',
+          title: 'Landing Page',
+          page_name: 'Landing Page',
+          slug: 'landing-page',
+          description: '',
+          status: 'draft',
+          current_version: 1,
+          widget_tree: [],
+          page_settings: {
+            seoTitle: 'Landing Page',
+            seoDescription: '',
+            theme: 'the-707-standard'
+          },
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         }
-      }
+      ];
+    }
+    try {
+      await apiFetch(`/api/pages/${projectId}`, {
+        method: 'DELETE'
+      });
     } catch (e) {
-      console.error('Failed to read from localStorage', e);
+      console.error('[EditorStore] Failed to delete project on cloud server:', e);
     }
   }
 
@@ -1123,7 +1141,6 @@ export const useEditorStore = defineStore('editor', () => {
 
     // Sort projects so newest is at the top
     projects.value.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
-    saveProjectsToStorage();
     lastSavedAt.value = new Date();
 
     // Async sync to server
@@ -1193,7 +1210,13 @@ export const useEditorStore = defineStore('editor', () => {
     selectedWidgetId.value = initialWidgets.length > 0 ? initialWidgets[0].id : null;
     closeAllSidebars();
 
-    saveProjectsToStorage();
+    // Async sync to server
+    apiFetch('/api/pages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newProject)
+    }).catch(err => console.warn('Failed to sync new project to API:', err));
+
     return newProject;
   }
 
@@ -1249,9 +1272,6 @@ export const useEditorStore = defineStore('editor', () => {
     { deep: true }
   );
 
-  // Initialize storage
-  loadProjectsFromStorage();
-
   // Initialize history
   pushHistory();
 
@@ -1265,6 +1285,7 @@ export const useEditorStore = defineStore('editor', () => {
     currentPage,
     loadProjects,
     saveCurrentProject,
+    deleteProject,
     createNewProject,
     openProjectById,
     formatRelativeTime,
