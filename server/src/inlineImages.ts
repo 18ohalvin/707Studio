@@ -17,7 +17,8 @@ import { resolveUploadDir } from './uploads.js';
  * images collapse onto the same file because the name is a hash of the bytes.
  */
 
-const DATA_URL = /^data:image\/([a-zA-Z0-9.+-]+);base64,([A-Za-z0-9+/=\s]+)$/;
+const PREFIX = 'data:image/';
+const MARKER = ';base64,';
 
 function extensionFor(mime: string): string {
   if (mime === 'svg+xml') return 'svg';
@@ -26,16 +27,26 @@ function extensionFor(mime: string): string {
 }
 
 function storeDataUrl(value: string, uploadDir: string): string {
-  const match = value.match(DATA_URL);
-  if (!match) return value;
+  // Parsed by index rather than a regular expression on purpose. A pattern
+  // like ([A-Za-z0-9+/=]+)$ backtracks catastrophically over a 24 MB data
+  // URL — one image took the save past the proxy's 60s timeout and returned
+  // 502, so the whole project (image included) was never stored.
+  if (!value.startsWith(PREFIX)) return value;
+
+  const marker = value.indexOf(MARKER, PREFIX.length);
+  if (marker === -1) return value;
+
+  const mime = value.slice(PREFIX.length, marker);
+  const payload = value.slice(marker + MARKER.length);
+  if (!mime || !payload) return value;
 
   try {
-    const buffer = Buffer.from(match[2].replace(/\s/g, ''), 'base64');
+    const buffer = Buffer.from(payload, 'base64');
     // Very small images cost more as a request than as inline bytes.
     if (buffer.length < 8 * 1024) return value;
 
     const hash = crypto.createHash('sha1').update(buffer).digest('hex').slice(0, 16);
-    const filename = `inline_${hash}.${extensionFor(match[1])}`;
+    const filename = `inline_${hash}.${extensionFor(mime)}`;
     const filePath = path.join(uploadDir, filename);
 
     if (!fs.existsSync(filePath)) {

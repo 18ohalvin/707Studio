@@ -1,3 +1,4 @@
+import { uploadMediaDirectly } from '../services/mediaService.ts';
 import { apiFetch } from '../services/apiClient.ts';
 import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
@@ -1224,8 +1225,56 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
+  /**
+   * Replaces any embedded base64 image in the live pages with an uploaded URL.
+   *
+   * An 18 MB image becomes ~24 MB of base64, and the tree is sent twice
+   * (widget_tree and pages), so one image pushed the save body to 47 MB and the
+   * request died at the proxy with a 502 — the project, and the image with it,
+   * was never stored. Uploading first keeps the save payload a few KB no matter
+   * how large the picture is.
+   */
+  async function uploadInlineImages(): Promise<void> {
+    const pending: Array<{ holder: any; key: string; dataUrl: string }> = [];
+
+    const scan = (node: any) => {
+      if (Array.isArray(node)) return node.forEach(scan);
+      if (!node || typeof node !== 'object') return;
+      for (const [key, child] of Object.entries(node)) {
+        if (typeof child === 'string' && child.startsWith('data:image/')) {
+          if (child.length > 12000) pending.push({ holder: node, key, dataUrl: child });
+        } else {
+          scan(child);
+        }
+      }
+    };
+    scan(pages.value);
+
+    if (pending.length === 0) return;
+
+    // Identical images share one upload.
+    const uploaded = new Map<string, string>();
+    for (const item of pending) {
+      try {
+        let url = uploaded.get(item.dataUrl);
+        if (!url) {
+          const saved = await uploadMediaDirectly({ dataUrl: item.dataUrl, category: 'Photos' });
+          if (!saved?.url || saved.url.startsWith('data:')) continue;
+          url = saved.url;
+          uploaded.set(item.dataUrl, url);
+        }
+        item.holder[item.key] = url;
+      } catch (err) {
+        // Keep the inline copy: the picture still shows, and the server
+        // externalises it on save as a second line of defence.
+        console.warn('[EditorStore] Could not upload an embedded image before saving:', err);
+      }
+    }
+  }
+
   async function saveCurrentProject(): Promise<ProjectItem | null> {
     isSaving.value = true;
+    await uploadInlineImages();
     const now = new Date().toISOString();
     const existingIndex = projects.value.findIndex(p => p.id === currentProjectId.value);
     
