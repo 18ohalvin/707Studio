@@ -193,13 +193,6 @@
 
                 <div class="flex items-center gap-1" @click.stop>
                   <button 
-                    @click="handleOpenGuests(project)"
-                    class="p-1.5 rounded-[6px] hover:bg-black/5 text-neutral-600 hover:text-black transition-colors"
-                    title="Attendees & Door Scanner"
-                  >
-                    <Users class="w-3.5 h-3.5" />
-                  </button>
-                  <button 
                     @click="handleDuplicate(project)"
                     class="p-1.5 rounded-[6px] hover:bg-black/5 text-neutral-600 hover:text-black transition-colors"
                     title="Duplicate Project"
@@ -275,13 +268,6 @@
               <!-- Actions -->
               <div class="flex items-center gap-1 shrink-0 ml-4" @click.stop>
                 <button 
-                  @click="handleOpenGuests(project)"
-                  class="p-1.5 rounded-[6px] hover:bg-black/5 text-neutral-600 hover:text-black transition-colors"
-                  title="Attendees & Door Scanner"
-                >
-                  <Users class="w-3.5 h-3.5" />
-                </button>
-                <button 
                   @click="handleDuplicate(project)"
                   class="p-1.5 rounded-[6px] hover:bg-black/5 text-neutral-500 hover:text-black transition-colors"
                   title="Duplicate"
@@ -328,13 +314,6 @@
       </div>
     </div>
   </Transition>
-
-  <!-- Project Attendees & QR Ticketing Modal -->
-  <ProjectGuestsModal 
-    :is-open="isGuestsModalOpen"
-    :project="selectedProjectForGuests"
-    @close="isGuestsModalOpen = false"
-  />
 </template>
 
 <script setup lang="ts">
@@ -349,14 +328,12 @@ import {
   List, 
   Layers, 
   Copy, 
-  Trash2,
-  Users
+  Trash2 
 } from 'lucide-vue-next';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { useAuthStore } from '../../stores/authStore.ts';
 import { useBrandStore } from '../../stores/brandStore.ts';
 import type { ProjectItem } from '../../types/editor.ts';
-import ProjectGuestsModal from './ProjectGuestsModal.vue';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -366,14 +343,6 @@ const emit = defineEmits<{
   (e: 'close'): void;
   (e: 'open-setup-modal'): void;
 }>();
-
-const isGuestsModalOpen = ref(false);
-const selectedProjectForGuests = ref<ProjectItem | null>(null);
-
-function handleOpenGuests(project: ProjectItem) {
-  selectedProjectForGuests.value = project;
-  isGuestsModalOpen.value = true;
-}
 
 const router = useRouter();
 const editorStore = useEditorStore();
