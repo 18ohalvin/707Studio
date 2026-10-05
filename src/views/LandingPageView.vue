@@ -310,7 +310,7 @@
     <Transition name="apple-dock-fade">
       <div 
         v-if="showContactModal" 
-        class="fixed inset-0 z-50 bg-transparent flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
+        class="fixed inset-0 z-50 bg-white/50 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showContactModal = false"
       >
         <div class="backdrop-blur-2xl bg-white/70 rounded-[16px] border border-white/60 p-6 w-full max-w-[420px] shadow-[0px_20px_50px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] flex flex-col gap-4 animate-apple-pop">
