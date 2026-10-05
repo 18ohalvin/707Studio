@@ -585,7 +585,7 @@
     <Transition name="apple-dock-fade">
       <div 
         v-if="showAddBrandModal" 
-        class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
+        class="fixed inset-0 z-50 bg-transparent flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showAddBrandModal = false"
       >
         <div class="backdrop-blur-2xl bg-white/70 rounded-[16px] border border-white/60 p-6 w-full max-w-[460px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707">
@@ -687,7 +687,7 @@
     <Transition name="apple-dock-fade">
       <div 
         v-if="showBrandDetailsModal" 
-        class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
+        class="fixed inset-0 z-50 bg-transparent flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showBrandDetailsModal = false"
       >
         <div class="backdrop-blur-2xl bg-white/70 rounded-[16px] border border-white/60 p-6 w-full max-w-[480px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707">
@@ -810,7 +810,7 @@
     <Transition name="apple-dock-fade">
       <div 
         v-if="showAddUserModal" 
-        class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
+        class="fixed inset-0 z-50 bg-transparent flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showAddUserModal = false"
       >
         <div class="backdrop-blur-2xl bg-white/70 rounded-[16px] border border-white/60 p-6 w-full max-w-[460px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707">
@@ -922,7 +922,7 @@
     <Transition name="apple-dock-fade">
       <div 
         v-if="showEditUserModal" 
-        class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
+        class="fixed inset-0 z-50 bg-transparent flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showEditUserModal = false"
       >
         <div class="backdrop-blur-2xl bg-white/70 rounded-[16px] border border-white/60 p-6 w-full max-w-[460px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707">
@@ -1036,7 +1036,7 @@
     <Transition name="apple-dock-fade">
       <div 
         v-if="showPasswordModal" 
-        class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
+        class="fixed inset-0 z-50 bg-transparent flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showPasswordModal = false"
       >
         <div class="backdrop-blur-2xl bg-white/70 rounded-[16px] border border-white/60 p-6 w-full max-w-[400px] shadow-xl flex flex-col gap-4 animate-apple-pop font-707">
@@ -1094,7 +1094,7 @@
     <Transition name="apple-dock-fade">
       <div 
         v-if="showBuildTemplateModal" 
-        class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
+        class="fixed inset-0 z-50 bg-transparent flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showBuildTemplateModal = false"
       >
         <div class="backdrop-blur-2xl bg-white/70 rounded-[16px] border border-white/60 p-6 w-full max-w-[500px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707 max-h-[90vh] overflow-y-auto">
@@ -1231,7 +1231,7 @@
     <Transition name="apple-dock-fade">
       <div 
         v-if="showEditTemplateModal" 
-        class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
+        class="fixed inset-0 z-50 bg-transparent flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showEditTemplateModal = false"
       >
         <div class="backdrop-blur-2xl bg-white/70 rounded-[16px] border border-white/60 p-6 w-full max-w-[460px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707">

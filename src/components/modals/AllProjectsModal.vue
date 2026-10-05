@@ -2,7 +2,7 @@
   <Transition name="apple-modal-fade">
     <div 
       v-if="isOpen"
-      class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 md:p-8 select-none"
+      class="fixed inset-0 z-50 bg-transparent flex items-center justify-center p-4 md:p-8 select-none"
       @click.self="emit('close')"
     >
       <!-- Modal Box (Apple Glass UI Hub) -->

@@ -2,7 +2,7 @@
   <Transition name="apple-modal-fade">
     <div 
       v-if="editorStore.isReviewModalOpen" 
-      class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 select-none"
+      class="fixed inset-0 z-50 bg-transparent flex items-center justify-center p-4 select-none"
       @click.self="editorStore.isReviewModalOpen = false"
     >
       <!-- Modal Box (Figma Node 212:8954) -->
@@ -125,6 +125,7 @@ async function copyUrl() {
 
 function handleSubmit() {
   editorStore.setPageStatus('pending_review', 'Brand Team', 'Submitted for UI/UX Division final approval');
+  editorStore.saveCurrentProject();
   editorStore.isReviewModalOpen = false;
   editorStore.showToast('Design successfully submitted to the UI/UX Division for final approval!');
 }
