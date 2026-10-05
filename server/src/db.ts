@@ -104,6 +104,28 @@ export async function initDbSchema(): Promise<void> {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
 
+      -- The first release created these tables with uuid primary keys, but the
+      -- application generates readable string ids ("proj-1759...", "page-..."),
+      -- so every insert failed with 'invalid input syntax for type uuid'.
+      -- CREATE TABLE IF NOT EXISTS cannot change an existing column's type, so
+      -- convert any leftover uuid column to text. Idempotent: the loop finds
+      -- nothing once the database is already the right shape.
+      DO $$
+      DECLARE col record;
+      BEGIN
+        FOR col IN
+          SELECT table_name, column_name
+          FROM information_schema.columns
+          WHERE table_schema = 'public'
+            AND data_type = 'uuid'
+            AND table_name IN ('pages', 'brands', 'templates', 'submissions', 'page_revisions', 'users')
+        LOOP
+          EXECUTE format('ALTER TABLE %I ALTER COLUMN %I DROP DEFAULT', col.table_name, col.column_name);
+          EXECUTE format('ALTER TABLE %I ALTER COLUMN %I TYPE VARCHAR(100) USING %I::text',
+                         col.table_name, col.column_name, col.column_name);
+        END LOOP;
+      END $$;
+
       -- CREATE TABLE IF NOT EXISTS does nothing when the table already exists,
       -- so it never adds columns to a database created by an earlier schema.
       -- Every column added after the first release needs its own ALTER here or
