@@ -24,8 +24,12 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 app.use(cors());
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+// Images arrive base64-encoded, which is ~33% larger than the file, so 50mb
+// rejected any picture over roughly 37 MB outright. Raised so file size is not
+// the cap; the practical ceiling is now upload time against the proxy's 60s
+// timeout, not an artificial byte limit.
+app.use(express.json({ limit: '200mb' }));
+app.use(express.urlencoded({ limit: '200mb', extended: true }));
 app.use('/uploads', express.static(uploadDir));
 
 // API Health Check — reports the database too. The pool falls back to
