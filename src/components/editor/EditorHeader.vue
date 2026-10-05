@@ -3,7 +3,7 @@
     <!-- Left: 707 Logo, Dynamic-Width Title, and Save Status Pill -->
     <div class="content-stretch flex gap-[16px] md:gap-[20px] items-center flex-1 min-w-0 mr-4">
       <!-- 707 Official Logo from Figma (Click to return to Landing Page) -->
-      <router-link to="/" class="h-[15px] w-[48px] relative shrink-0 flex items-center cursor-pointer hover:opacity-80 transition-opacity" title="Back to Design Studio">
+      <router-link to="/" @click="handleReturnHome" class="h-[15px] w-[48px] relative shrink-0 flex items-center cursor-pointer hover:opacity-80 transition-opacity" title="Back to Design Studio">
         <img 
           :src="FIGMA_ASSETS.logo707" 
           alt="707 Logo" 
@@ -129,6 +129,10 @@ function handlePrimaryCtaClick() {
   }
 }
 
+function handleReturnHome() {
+  editorStore.flushPendingSave();
+}
+
 let tickerTimer: any = null;
 onMounted(() => {
   tickerTimer = setInterval(() => {
@@ -138,6 +142,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (tickerTimer) clearInterval(tickerTimer);
+  editorStore.flushPendingSave();
 });
 
 function handleLogoError() {

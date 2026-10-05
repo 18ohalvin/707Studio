@@ -7,7 +7,7 @@
     >
       <!-- Modal Box (Figma Node 212:8954) -->
       <div 
-        class="backdrop-blur-2xl bg-white/90 border border-white/60 flex flex-col items-start p-[24px] pb-[32px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] w-full max-w-[432px] apple-modal-box"
+        class="backdrop-blur-2xl bg-white/70 border border-white/60 flex flex-col items-start p-[24px] pb-[32px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] w-full max-w-[432px] apple-modal-box"
         data-node-id="212:8954"
         data-name="Leave Edit / Submit for Review Modal"
       >

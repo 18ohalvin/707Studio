@@ -7,27 +7,44 @@ import { useBrandStore } from './brandStore.ts';
 
 export type MediaGalleryTarget = 'bannerImage' | 'brandLogo' | 'replaceBannerImage' | 'addNewMedia' | 'choiceOptionImage';
 
+const STORAGE_PROJECTS_KEY = '707_cloud_projects';
+
+function getStoredProjects(): ProjectItem[] {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const raw = localStorage.getItem(STORAGE_PROJECTS_KEY);
+      if (raw) return JSON.parse(raw);
+    }
+  } catch {}
+  return [];
+}
+
 export const useEditorStore = defineStore('editor', () => {
-  // Realtime Projects List (Synced with API & Local Storage)
-  const projects = ref<ProjectItem[]>([]);
+  // Realtime Projects List (Synced with Cloud API & Local Mirror)
+  const projects = ref<ProjectItem[]>(getStoredProjects());
 
   // Filtered Projects for Current User's Brand Permissions
   const userProjects = computed<ProjectItem[]>(() => {
     const authStore = useAuthStore();
+    const brandStore = useBrandStore();
     if (authStore.isSuperAdmin) {
       return projects.value;
     }
-    if (!authStore.currentUser) {
-      return [];
+    if (authStore.currentUser) {
+      const userBrands = (authStore.currentUser.assignedBrands || []).map(b => b.toLowerCase().trim());
+      if (userBrands.includes('all')) {
+        return projects.value;
+      }
+      return projects.value.filter(p => {
+        const slug = (p.brand_slug || '').toLowerCase().trim();
+        return userBrands.some(ub => ub === slug || slug.includes(ub) || ub.includes(slug));
+      });
     }
-    const userBrands = (authStore.currentUser.assignedBrands || []).map(b => b.toLowerCase());
-    if (userBrands.includes('all')) {
-      return projects.value;
+    if (brandStore.activeBrand) {
+      const activeSlug = brandStore.activeBrand.slug.toLowerCase().trim();
+      return projects.value.filter(p => (p.brand_slug || '').toLowerCase().trim() === activeSlug);
     }
-    return projects.value.filter(p => {
-      const slug = (p.brand_slug || '').toLowerCase();
-      return userBrands.includes(slug);
-    });
+    return projects.value;
   });
 
   const currentProjectId = ref<string>('');
@@ -1062,13 +1079,45 @@ export const useEditorStore = defineStore('editor', () => {
     return `${years} year${years === 1 ? '' : 's'} ago`;
   }
 
+  function persistProjectsLocally() {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(STORAGE_PROJECTS_KEY, JSON.stringify(projects.value));
+      }
+    } catch (e) {
+      console.warn('[EditorStore] Failed to persist projects locally:', e);
+    }
+  }
+
   async function loadProjects() {
     try {
       const res = await apiFetch('/api/pages');
       if (res.ok) {
         const json = await res.json();
         if (json && json.success && Array.isArray(json.data)) {
-          projects.value = json.data;
+          const serverList: ProjectItem[] = json.data;
+          const localList = getStoredProjects();
+          
+          const mergedMap = new Map<string, ProjectItem>();
+          // Put local list first
+          localList.forEach(p => mergedMap.set(p.id, p));
+          // Merge server list
+          serverList.forEach(p => {
+            const existing = mergedMap.get(p.id);
+            if (!existing) {
+              mergedMap.set(p.id, p);
+            } else {
+              const localTime = new Date(existing.updated_at || 0).getTime();
+              const serverTime = new Date(p.updated_at || 0).getTime();
+              if (serverTime >= localTime) {
+                mergedMap.set(p.id, p);
+              }
+            }
+          });
+          
+          const combined = Array.from(mergedMap.values()).sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+          projects.value = combined;
+          persistProjectsLocally();
           return;
         }
       }
@@ -1079,6 +1128,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   async function deleteProject(projectId: string) {
     projects.value = projects.value.filter(p => p.id !== projectId);
+    persistProjectsLocally();
     if (currentProjectId.value === projectId) {
       currentProjectId.value = '';
       projectTitle.value = 'Untitled Activation Drop';
@@ -1161,6 +1211,7 @@ export const useEditorStore = defineStore('editor', () => {
     // Sort projects so newest is at the top
     projects.value.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
     lastSavedAt.value = new Date();
+    persistProjectsLocally();
 
     // Async sync to server
     apiFetch('/api/pages', {
@@ -1202,6 +1253,7 @@ export const useEditorStore = defineStore('editor', () => {
     projects.value.unshift(newProject);
     currentProjectId.value = id;
     projectTitle.value = cleanTitle;
+    persistProjectsLocally();
 
     pages.value = [
       {
@@ -1292,6 +1344,14 @@ export const useEditorStore = defineStore('editor', () => {
     { deep: true }
   );
 
+  function flushPendingSave() {
+    if (saveDebounceTimer) {
+      clearTimeout(saveDebounceTimer);
+      saveDebounceTimer = null;
+    }
+    saveCurrentProject();
+  }
+
   // Initialize history
   pushHistory();
 
@@ -1305,6 +1365,7 @@ export const useEditorStore = defineStore('editor', () => {
     currentPage,
     loadProjects,
     saveCurrentProject,
+    flushPendingSave,
     deleteProject,
     createNewProject,
     openProjectById,

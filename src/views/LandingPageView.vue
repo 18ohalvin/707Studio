@@ -238,24 +238,19 @@
               </p>
             </div>
 
-            <!-- 5. View all projects (COMING SOON) -->
+            <!-- 5. View all projects (ACTIVE) -->
             <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-node-id="212:7037" data-name="Button Container">
-              <div class="relative size-[88px]">
-                <button 
-                  @click="triggerToast('View all projects hub is coming soon in the next update.')"
-                  class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.45)] border-[0.5px] border-black/5 flex items-center justify-center p-[8px] rounded-[8px] size-full cursor-not-allowed opacity-60 hover:opacity-75 transition-all group"
-                  data-node-id="212:7038"
-                  title="View all projects (Coming Soon)"
-                >
-                  <div class="size-[32px] relative shrink-0 flex items-center justify-center grayscale opacity-50">
-                    <img :src="FIGMA_ASSETS.landingAllProjects" alt="View all projects" class="size-full object-contain pointer-events-none" />
-                  </div>
-                </button>
-                <span class="absolute -top-1.5 -right-1.5 bg-black/80 text-white font-707 text-[8.5px] tracking-wider uppercase px-1.5 py-0.5 rounded-[4px] pointer-events-none shadow-xs font-medium">
-                  Soon
-                </span>
-              </div>
-              <p class="font-707 text-[13px] md:text-[14px] text-neutral-400 text-center leading-[18px] font-normal" data-node-id="212:7042">
+              <button 
+                @click="handleViewAllProjects"
+                class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] border-[0.5px] border-black/10 hover:border-black/25 flex items-center justify-center p-[8px] rounded-[8px] size-[88px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer transition-all duration-200 group"
+                data-node-id="212:7038"
+                title="View all projects"
+              >
+                <div class="size-[32px] relative shrink-0 flex items-center justify-center">
+                  <img :src="FIGMA_ASSETS.landingAllProjects" alt="View all projects" class="size-full object-contain pointer-events-none" />
+                </div>
+              </button>
+              <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal" data-node-id="212:7042">
                 View all projects
               </p>
             </div>
@@ -318,7 +313,7 @@
         class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showContactModal = false"
       >
-        <div class="backdrop-blur-2xl bg-white/90 rounded-[16px] border border-white/60 p-6 w-full max-w-[420px] shadow-[0px_20px_50px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] flex flex-col gap-4 animate-apple-pop">
+        <div class="backdrop-blur-2xl bg-white/70 rounded-[16px] border border-white/60 p-6 w-full max-w-[420px] shadow-[0px_20px_50px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] flex flex-col gap-4 animate-apple-pop">
           <div class="flex items-center justify-between">
             <h3 class="font-707 font-medium text-[16px] text-black">Contact UI/UX Team</h3>
             <button @click="showContactModal = false" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
@@ -344,7 +339,7 @@
     <Transition name="apple-dock-fade">
       <div 
         v-if="showNotificationToast" 
-        class="fixed top-[64px] right-[24px] z-50 backdrop-blur-2xl bg-white/90 border border-white/60 rounded-2xl p-4 shadow-[0px_12px_40px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-3 animate-apple-slide-up select-none"
+        class="fixed top-[64px] right-[24px] z-50 backdrop-blur-2xl bg-white/70 border border-white/60 rounded-2xl p-4 shadow-[0px_12px_40px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-3 animate-apple-slide-up select-none"
       >
         <div class="size-2 rounded-full bg-emerald-500 animate-ping" />
         <p class="font-707 text-[12px] text-black font-medium">{{ toastMessage }}</p>
@@ -371,6 +366,13 @@
       @close="showSuperAdminModal = false"
       @verified="handleSuperAdminVerified"
     />
+
+    <!-- All Projects Hub Modal (Option A) -->
+    <AllProjectsModal
+      :is-open="showAllProjectsModal"
+      @close="showAllProjectsModal = false"
+      @open-setup-modal="showSetupModal = true"
+    />
   </div>
 </template>
 
@@ -387,6 +389,7 @@ import SetupProjectModal from '../components/modals/SetupProjectModal.vue';
 import BrandSignInModal from '../components/modals/BrandSignInModal.vue';
 import UserProfileModal from '../components/modals/UserProfileModal.vue';
 import SuperAdminAuthModal from '../components/modals/SuperAdminAuthModal.vue';
+import AllProjectsModal from '../components/modals/AllProjectsModal.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -404,6 +407,7 @@ const showSignInModal = ref(false);
 const showContactModal = ref(false);
 const showSettingsModal = ref(false);
 const showSuperAdminModal = ref(false);
+const showAllProjectsModal = ref(false);
 const showNotificationToast = ref(false);
 const hasUnreadNotifications = ref(true);
 const toastMessage = ref('All design systems and cloud sync are up to date.');
@@ -607,13 +611,7 @@ function handleCreateTicketing() {
 
 function handleViewAllProjects() {
   requireAuth(() => {
-    if (authStore.isSuperAdmin) {
-      router.push('/superadmin?tab=submissions');
-      return;
-    }
-    if (projectsSectionRef.value) {
-      projectsSectionRef.value.scrollIntoView({ behavior: 'smooth' });
-    }
+    showAllProjectsModal.value = true;
   });
 }
 

@@ -588,7 +588,7 @@
         class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showAddBrandModal = false"
       >
-        <div class="backdrop-blur-2xl bg-white/95 rounded-[16px] border border-white/60 p-6 w-full max-w-[460px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707">
+        <div class="backdrop-blur-2xl bg-white/70 rounded-[16px] border border-white/60 p-6 w-full max-w-[460px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707">
           <div class="flex items-center justify-between">
             <h3 class="font-707 font-medium text-[16px] text-black">Add Brand Account</h3>
             <button @click="showAddBrandModal = false" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
@@ -690,7 +690,7 @@
         class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showBrandDetailsModal = false"
       >
-        <div class="backdrop-blur-2xl bg-white/95 rounded-[16px] border border-white/60 p-6 w-full max-w-[480px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707">
+        <div class="backdrop-blur-2xl bg-white/70 rounded-[16px] border border-white/60 p-6 w-full max-w-[480px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2.5">
               <div 
@@ -813,7 +813,7 @@
         class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showAddUserModal = false"
       >
-        <div class="backdrop-blur-2xl bg-white/95 rounded-[16px] border border-white/60 p-6 w-full max-w-[460px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707">
+        <div class="backdrop-blur-2xl bg-white/70 rounded-[16px] border border-white/60 p-6 w-full max-w-[460px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707">
           <div class="flex items-center justify-between">
             <h3 class="font-707 font-medium text-[16px] text-black">Create Team Member Account</h3>
             <button @click="showAddUserModal = false" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
@@ -925,7 +925,7 @@
         class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showEditUserModal = false"
       >
-        <div class="backdrop-blur-2xl bg-white/95 rounded-[16px] border border-white/60 p-6 w-full max-w-[460px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707">
+        <div class="backdrop-blur-2xl bg-white/70 rounded-[16px] border border-white/60 p-6 w-full max-w-[460px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707">
           <div class="flex items-center justify-between">
             <h3 class="font-707 font-medium text-[16px] text-black">Edit Registered Team Member</h3>
             <button @click="showEditUserModal = false" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
@@ -1039,7 +1039,7 @@
         class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showPasswordModal = false"
       >
-        <div class="backdrop-blur-2xl bg-white/95 rounded-[16px] border border-white/60 p-6 w-full max-w-[400px] shadow-xl flex flex-col gap-4 animate-apple-pop font-707">
+        <div class="backdrop-blur-2xl bg-white/70 rounded-[16px] border border-white/60 p-6 w-full max-w-[400px] shadow-xl flex flex-col gap-4 animate-apple-pop font-707">
           <div class="flex items-center justify-between">
             <h3 class="font-707 font-medium text-[16px] text-black">Reset Sign-in Password</h3>
             <button @click="showPasswordModal = false" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
@@ -1097,7 +1097,7 @@
         class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showBuildTemplateModal = false"
       >
-        <div class="backdrop-blur-2xl bg-white/95 rounded-[16px] border border-white/60 p-6 w-full max-w-[500px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707 max-h-[90vh] overflow-y-auto">
+        <div class="backdrop-blur-2xl bg-white/70 rounded-[16px] border border-white/60 p-6 w-full max-w-[500px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707 max-h-[90vh] overflow-y-auto">
           <div class="flex items-center justify-between">
             <h3 class="font-707 font-medium text-[16px] text-black">Build Master Activation Template</h3>
             <button @click="showBuildTemplateModal = false" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
@@ -1234,7 +1234,7 @@
         class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showEditTemplateModal = false"
       >
-        <div class="backdrop-blur-2xl bg-white/95 rounded-[16px] border border-white/60 p-6 w-full max-w-[460px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707">
+        <div class="backdrop-blur-2xl bg-white/70 rounded-[16px] border border-white/60 p-6 w-full max-w-[460px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707">
           <div class="flex items-center justify-between">
             <h3 class="font-707 font-medium text-[16px] text-black">Edit Template Details</h3>
             <button @click="showEditTemplateModal = false" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
