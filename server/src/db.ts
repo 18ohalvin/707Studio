@@ -172,6 +172,15 @@ export async function initDbSchema(): Promise<void> {
       ALTER TABLE pages ADD COLUMN IF NOT EXISTS created_by VARCHAR(150);
       ALTER TABLE pages ADD COLUMN IF NOT EXISTS published_at TIMESTAMP WITH TIME ZONE;
 
+      -- Records which projects were deleted. Without it, any device still
+      -- holding a copy in localStorage re-uploads the project on its next poll
+      -- (loadProjects treats "on this device but not on the server" as an
+      -- offline draft), so deletes undid themselves within seconds.
+      CREATE TABLE IF NOT EXISTS deleted_pages (
+        id VARCHAR(100) PRIMARY KEY,
+        deleted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+
       CREATE TABLE IF NOT EXISTS submissions (
         id VARCHAR(100) PRIMARY KEY,
         page_id VARCHAR(100) NOT NULL,

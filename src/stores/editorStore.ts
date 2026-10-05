@@ -1131,8 +1131,12 @@ export const useEditorStore = defineStore('editor', () => {
         const json = await res.json();
         if (json && json.success && Array.isArray(json.data)) {
           const serverList: ProjectItem[] = json.data;
-          const localList = getStoredProjects();
-          
+          // Projects the server says were deleted. A local copy of one of these
+          // must be dropped, not treated as an offline draft — re-uploading it
+          // is what made deletes undo themselves across devices.
+          const deletedIds = new Set<string>(Array.isArray(json.deleted) ? json.deleted : []);
+          const localList = getStoredProjects().filter(p => !deletedIds.has(p.id));
+
           const mergedMap = new Map<string, ProjectItem>();
           
           // 1. Cloud server data is authoritative across devices

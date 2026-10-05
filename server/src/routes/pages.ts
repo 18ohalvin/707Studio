@@ -26,6 +26,7 @@ pagesRouter.get('/', async (req: Request, res: Response) => {
       }
       query += ' ORDER BY updated_at DESC';
       const result = await pool.query(query, params);
+      const tombstones = await pool.query('SELECT id FROM deleted_pages');
       const rows = result.rows.map(r => ({
         id: r.id,
         brand_id: r.brand_id || '1',
@@ -44,7 +45,9 @@ pagesRouter.get('/', async (req: Request, res: Response) => {
         created_at: r.created_at,
         updated_at: r.updated_at
       }));
-      return res.json({ success: true, data: rows });
+      // Devices prune their local copies from this list; without it a stale
+      // copy keeps reappearing in the project list after a delete.
+      return res.json({ success: true, data: rows, deleted: tombstones.rows.map(t => t.id) });
     } catch (err: any) {
       console.error('[DB] Error querying pages from DB:', err.message);
     }
@@ -118,6 +121,22 @@ pagesRouter.post('/', async (req: Request, res: Response) => {
   const pageTitle = title || 'Untitled Activation Drop';
   const pageSlug = slug || pageTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   const pageStatus = status || 'draft';
+  // Refuse to resurrect a project someone deleted. An older client that does
+  // not know about tombstones still cannot bring it back this way.
+  if (getDbStatus().isConnected) {
+    try {
+      const gone = await pool.query('SELECT 1 FROM deleted_pages WHERE id = $1', [pageId]);
+      if (gone.rows.length > 0) {
+        return res.status(409).json({
+          success: false,
+          error: 'This project was deleted and cannot be restored by a sync from another device.'
+        });
+      }
+    } catch (err: any) {
+      console.warn('[DB] Could not check deleted_pages:', err.message);
+    }
+  }
+
   // Embedded base64 images are moved to the uploads volume before storing, so
   // a project stays a few KB instead of tens of MB that every device re-polls.
   const pageWidgets = externalizeInlineImages(widget_tree || []);
@@ -263,8 +282,15 @@ pagesRouter.delete('/:id', async (req: Request, res: Response) => {
   if (getDbStatus().isConnected) {
     try {
       await pool.query('DELETE FROM pages WHERE id = $1', [id]);
+      // Remember the deletion so a device still holding this project cannot
+      // upload it again on its next poll.
+      await pool.query(
+        'INSERT INTO deleted_pages (id) VALUES ($1) ON CONFLICT (id) DO NOTHING',
+        [id]
+      );
     } catch (err: any) {
       console.error('[DB] Error deleting page from DB:', err.message);
+      return res.status(500).json({ success: false, error: 'Could not delete on the server.' });
     }
   }
 
