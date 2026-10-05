@@ -114,4 +114,36 @@ describe('Brand Slug & Mobile Canvas Validation', () => {
     const refreshedBrandStore = useBrandStore();
     expect(refreshedBrandStore.activeBrand?.slug).toBe('fredperry');
   });
+
+  it('4. Multi-page campaigns resolve all pages properly with widget trees intact', () => {
+    const editorStore = useEditorStore();
+    const proj = editorStore.createNewProject('Fred Perry DNA Night 2026', 'fred-perry-dna-night-2026');
+    
+    // Add page 2 and page 3
+    editorStore.addPage();
+    editorStore.addPage();
+    expect(editorStore.pages.length).toBe(3);
+
+    // Populate Page 1 HeroDrop
+    editorStore.selectPage(0);
+    editorStore.addWidget('HeroDrop', undefined, {
+      ratio: 'Dynamic Fit',
+      imageUrl: '/uploads/upload_fp.png',
+      buttonText: 'Action',
+      isCtaEnabled: true
+    });
+    expect(editorStore.pages[0].widget_tree.length).toBe(1);
+
+    // Populate Page 2 RegistrationForm
+    editorStore.selectPage(1);
+    editorStore.addWidget('RegistrationForm', undefined, {
+      title: 'REGISTRATION FORM',
+      fields: [{ id: 'f1', name: 'Full Name', value: 'Alvin' }]
+    });
+    expect(editorStore.pages[1].widget_tree.length).toBe(1);
+
+    // Verify all pages are preserved
+    expect(editorStore.pages[0].widget_tree[0].type).toBe('HeroDrop');
+    expect(editorStore.pages[1].widget_tree[0].type).toBe('RegistrationForm');
+  });
 });

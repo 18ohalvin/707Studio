@@ -1,12 +1,16 @@
 <template>
   <div 
-    class="relative select-none shrink-0"
-    :class="isPreviewModal ? 'w-full h-full' : 'w-[340px] h-[680px]'"
+    class="relative select-none"
+    :class="[
+      (isPreviewModal || isLivePage) 
+        ? 'w-full h-full min-h-[100dvh] flex flex-col flex-1' 
+        : 'w-[340px] h-[680px] shrink-0'
+    ]"
     @click="handleSelectThisPage"
     @dblclick="handleDoubleClickThisPage"
   >
     <!-- Artboard Tab Label (Positioned absolutely above artboard so it never pushes or shifts canvas vertical centering) -->
-    <template v-if="!isMiniPreview && !isPreviewModal">
+    <template v-if="!isMiniPreview && !isPreviewModal && !isLivePage">
       <div 
         v-if="isSelected"
         class="animate-apple-pop absolute bottom-full left-0 mb-[12px] group bg-[#ececec]/50 hover:bg-[#ececec] border-black/15 hover:border-black/50 border-[0.5px] border-solid content-stretch flex h-[24px] items-center justify-center px-[8px] rounded-[10px] shadow-sm transition-all cursor-pointer will-change-transform backdrop-blur-md z-30"
@@ -56,25 +60,25 @@
       @wheel="handleArtboardWheel"
       class="relative flex flex-col overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
       :class="[
-        isPreviewModal ? 'bg-white' : 'bg-[#f5f5f5]',
-        isPreviewModal
-          ? 'w-full h-full border-none shadow-none'
+        (isPreviewModal || isLivePage) ? 'bg-white' : 'bg-[#f5f5f5]',
+        (isPreviewModal || isLivePage)
+          ? 'w-full h-full min-h-[100dvh] flex-1 border-none shadow-none'
           : (isMiniPreview 
               ? 'w-[340px] h-[680px] border-none shadow-none' 
               : 'border-[0.5px] w-[340px] h-[680px]'),
-        !isMiniPreview && !isPreviewModal && isSelected 
+        !isMiniPreview && !isPreviewModal && !isLivePage && isSelected 
           ? 'border-black shadow-[0px_16px_48px_rgba(0,0,0,0.12)]' 
-          : (!isMiniPreview && !isPreviewModal ? 'border-neutral-300 opacity-80 shadow-[0px_0px_30px_rgba(0,0,0,0.04)] cursor-pointer' : '')
+          : (!isMiniPreview && !isPreviewModal && !isLivePage ? 'border-neutral-300 opacity-80 shadow-[0px_0px_30px_rgba(0,0,0,0.04)] cursor-pointer' : '')
       ]"
     >
       <!-- Persistent Thin 0.5px Black Selected Page Outline Overlay (Only on selected artboard) -->
-      <div v-if="!isMiniPreview && !isPreviewModal && isSelected" class="pointer-events-none absolute inset-0 z-50 border-[0.5px] border-black border-solid" />
+      <div v-if="!isMiniPreview && !isPreviewModal && !isLivePage && isSelected" class="pointer-events-none absolute inset-0 z-50 border-[0.5px] border-black border-solid" />
 
       <!-- Fixed 48px Header with Right 707 Logo (Figma Node 107:3820) -->
       <div 
         @click="handleArtboardClick"
         class="sticky top-0 left-0 right-0 h-[48px] w-full z-30 flex items-center justify-end px-[16px] shrink-0 cursor-default"
-        :class="isPreviewModal ? 'bg-white' : 'bg-[#f5f5f5]'"
+        :class="(isPreviewModal || isLivePage) ? 'bg-white' : 'bg-[#f5f5f5]'"
       >
         <div class="h-[15px] w-[48px] relative flex items-center justify-end">
           <img 
@@ -94,9 +98,9 @@
         @scroll="handleScroll"
         @wheel.stop="handleArtboardWheel"
         @mousedown="handleArtboardMouseDown"
-        class="artboard-scroll-container flex-1 flex flex-col no-scrollbar px-0 pt-0 pb-0 relative overscroll-contain will-change-scroll select-none"
+        class="artboard-scroll-container flex-1 flex flex-col no-scrollbar px-0 pt-0 pb-0 relative overscroll-contain will-change-scroll select-none w-full"
         :class="[
-          isPreviewModal ? 'bg-white' : 'bg-[#f5f5f5]',
+          (isPreviewModal || isLivePage) ? 'bg-white' : 'bg-[#f5f5f5]',
           isDragOver ? 'bg-neutral-200/60' : '',
           isSingleFullScreenHero ? 'overflow-hidden cursor-default' : (isArtboardDragging ? 'cursor-grabbing' : (isContentScrollable ? 'cursor-grab' : 'cursor-default')),
           isSingleFullScreenHero ? 'overflow-hidden' : 'overflow-y-auto'
@@ -144,8 +148,9 @@
         <div 
           v-else 
           @click.self="handleArtboardClick"
-          class="flex-1 flex flex-col w-full shrink-0 min-h-full cursor-default"
+          class="flex-1 flex flex-col w-full min-h-full cursor-default"
           :class="[
+            (isPreviewModal || isLivePage) ? '' : 'shrink-0',
             containerBottomPaddingClass,
             isHeroWithButtonOnly ? 'h-full justify-between' : ''
           ]"
@@ -163,7 +168,7 @@
             :class="[
               (widget.type === 'TextBanner' || widget.type === 'MultipleChoice' || widget.type === 'FieldInput' || widget.type === 'RegistrationForm' || widget.type === 'ActionButton') ? 'overflow-visible' : 'overflow-hidden',
               getWidgetMarginTopClass(index),
-              (isHeroWithButtonOnly && widget.type === 'HeroDrop') ? 'h-full min-h-0 flex-1' : '',
+              (isHeroWithButtonOnly && widget.type === 'HeroDrop') ? 'h-full min-h-[calc(100dvh-48px)] flex-1' : '',
               (isHeroWithButtonOnly && (widget.type === 'ActionButton' || widget.type === 'TextBanner')) ? 'shrink-0' : '',
               'group relative cursor-pointer shrink-0 w-full'
             ]"
@@ -1002,7 +1007,7 @@
                     :class="opt.description && opt.description.trim() ? 'flex-col gap-[8px] items-start' : 'items-center'"
                   >
                     <!-- Layout A: With Event Description -->
-                    <template v-if="opt.description && opt.description.trim()">
+                    <div v-if="opt.description && opt.description.trim()" class="w-full flex flex-col gap-[8px]">
                       <div class="flex items-baseline justify-between w-full font-707 gap-3">
                         <span class="font-707 truncate" :class="getChoiceOptionTypographyClass(widget, opt)">{{ opt.label }}</span>
                         <span v-if="opt.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[18px] text-neutral-500">{{ opt.sublabel }}</span>
@@ -1019,24 +1024,22 @@
                           {{ getOptionSlotsBadge(widget, opt) }}
                         </span>
                       </div>
-                    </template>
+                    </div>
 
                     <!-- Layout B: Without Event Description (Badge Label Under the Date) -->
-                    <template v-else>
-                      <div class="flex items-center justify-between w-full font-707 gap-3">
-                        <span class="font-707 truncate" :class="getChoiceOptionTypographyClass(widget, opt)">{{ opt.label }}</span>
-                        <div class="flex flex-col items-end shrink-0 gap-[3px]">
-                          <span v-if="opt.sublabel" class="font-707 font-normal text-[12px] leading-[16px] text-neutral-500">{{ opt.sublabel }}</span>
-                          <span 
-                            v-if="getOptionSlotsBadge(widget, opt)" 
-                            class="inline-flex items-center px-[6px] py-[1.5px] border-[0.5px] rounded-[4px] font-707 text-[10px] font-medium leading-[13px]"
-                            :class="isChoiceOptionDisabled(widget, opt) ? 'bg-neutral-200 text-neutral-500 border-neutral-300' : 'bg-neutral-100 border-[#e0e0e0] text-neutral-700'"
-                          >
-                            {{ getOptionSlotsBadge(widget, opt) }}
-                          </span>
-                        </div>
+                    <div v-else class="flex items-center justify-between w-full font-707 gap-3">
+                      <span class="font-707 truncate" :class="getChoiceOptionTypographyClass(widget, opt)">{{ opt.label }}</span>
+                      <div class="flex flex-col items-end shrink-0 gap-[3px]">
+                        <span v-if="opt.sublabel" class="font-707 font-normal text-[12px] leading-[16px] text-neutral-500">{{ opt.sublabel }}</span>
+                        <span 
+                          v-if="getOptionSlotsBadge(widget, opt)" 
+                          class="inline-flex items-center px-[6px] py-[1.5px] border-[0.5px] rounded-[4px] font-707 text-[10px] font-medium leading-[13px]"
+                          :class="isChoiceOptionDisabled(widget, opt) ? 'bg-neutral-200 text-neutral-500 border-neutral-300' : 'bg-neutral-100 border-[#e0e0e0] text-neutral-700'"
+                        >
+                          {{ getOptionSlotsBadge(widget, opt) }}
+                        </span>
                       </div>
-                    </template>
+                    </div>
                   </div>
                 </div>
 
@@ -1391,41 +1394,39 @@ more</span>
 
                 <div class="flex flex-col gap-[8px] w-full">
                   <div 
-                    v-for="(slot, sIdx) in getValidForSessions(widget)" 
-                    :key="slot.id || sIdx"
+                    v-for="(sessionItem, sIdx) in getValidForSessions(widget)" 
+                    :key="sessionItem.id || sIdx"
                     class="border-[0.5px] border-solid border-[#d4d4d4] bg-transparent w-full select-none rounded-none"
                     :class="[
-                      slot.description && slot.description.trim()
+                      sessionItem.description && sessionItem.description.trim()
                         ? 'p-[16px] flex flex-col gap-[8px] items-start'
                         : 'min-h-[48px] h-[48px] px-[16px] py-[12px] flex items-center justify-between'
                     ]"
                   >
                     <!-- Layout A: With Description -->
-                    <template v-if="slot.description && slot.description.trim()">
+                    <div v-if="sessionItem.description && sessionItem.description.trim()" class="w-full flex flex-col gap-[8px]">
                       <div class="flex items-baseline justify-between w-full font-707 gap-3">
                         <span class="font-707 font-medium text-[12px] leading-[18px] text-black truncate">
-                          {{ slot.label }}
+                          {{ sessionItem.label }}
                         </span>
-                        <span v-if="slot.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[18px] text-neutral-500">
-                          {{ slot.sublabel }}
+                        <span v-if="sessionItem.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[18px] text-neutral-500">
+                          {{ sessionItem.sublabel }}
                         </span>
                       </div>
                       <div class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-600 whitespace-pre-line">
-                        {{ slot.description }}
+                        {{ sessionItem.description }}
                       </div>
-                    </template>
+                    </div>
 
                     <!-- Layout B: Without Description -->
-                    <template v-else>
-                      <div class="flex items-center justify-between w-full font-707 gap-3">
-                        <span class="font-707 font-medium text-[12px] leading-[18px] text-black truncate">
-                          {{ slot.label }}
-                        </span>
-                        <span v-if="slot.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[16px] text-neutral-500">
-                          {{ slot.sublabel }}
-                        </span>
-                      </div>
-                    </template>
+                    <div v-else class="flex items-center justify-between w-full font-707 gap-3">
+                      <span class="font-707 font-medium text-[12px] leading-[18px] text-black truncate">
+                        {{ sessionItem.label }}
+                      </span>
+                      <span v-if="sessionItem.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[16px] text-neutral-500">
+                        {{ sessionItem.sublabel }}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1499,7 +1500,7 @@ more</span>
       >
         <!-- Floating Toolbar on Hover for Sticky Bottom Button in Editor -->
         <div 
-          v-if="!isMiniPreview && !isPreviewModal && (hoveredWidgetId === stickyButtonForThisPage.id || editorStore.selectedWidgetId === stickyButtonForThisPage.id)"
+          v-if="!isMiniPreview && !isPreviewModal && !isLivePage && (hoveredWidgetId === stickyButtonForThisPage.id || editorStore.selectedWidgetId === stickyButtonForThisPage.id)"
           class="absolute z-40 apple-glass-modal flex gap-[5px] items-center p-[4px] rounded-[10px] shadow-[0px_8px_24px_rgba(0,0,0,0.12)] border border-white/80 transition-all -top-[28px] right-[12px] select-none"
         >
           <button 
@@ -1523,11 +1524,11 @@ more</span>
           :disabled="isButtonInactive(stickyButtonForThisPage)"
           :class="[
             (stickyButtonForThisPage.props?.variant === 'white' || stickyButtonForThisPage.props?.buttonVariant === 'white')
-              ? 'bg-white text-black apple-cta-btn-white'
+              ? 'bg-white text-black apple-cta-btn-white border-t border-black/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]'
               : (stickyButtonForThisPage.props?.variant === 'black' || stickyButtonForThisPage.props?.buttonVariant === 'black')
                 ? 'bg-black text-white apple-cta-btn-dark'
                 : (isStickyButtonOnDarkBackground
-                    ? 'bg-white text-black apple-cta-btn-white'
+                    ? 'bg-white text-black apple-cta-btn-white border-t border-black/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]'
                     : 'bg-black text-white apple-cta-btn-dark'),
             isButtonInactive(stickyButtonForThisPage) ? 'opacity-40 cursor-not-allowed pointer-events-none' : 'apple-cta-btn'
           ]"
@@ -1848,6 +1849,8 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   (e: 'select-page', index: number): void;
+  (e: 'next-page', formData?: Record<string, any>): void;
+  (e: 'prev-page'): void;
 }>();
 
 const editorStore = useEditorStore();
@@ -2470,26 +2473,8 @@ function handleButtonClick(widget: any) {
       if (!formData.fullName) formData.fullName = formData.name || 'Guest Participant';
       if (!formData.email) formData.email = 'guest@activation.internal';
 
-      // Submit to backend
-      fetch('/api/submissions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          page_id: activePage.value.id || 'live-page',
-          brand_slug: activePage.value.brand_slug || 'brand',
-          submission_type: 'raffle',
-          form_data: formData
-        })
-      }).catch(e => console.warn('[LiveDrop] Submissions error:', e));
-
-      // Trigger success confirmation modal
-      activeTriggeredModal.value = {
-        variant: 'message-alert',
-        title: 'RSVP Confirmed!',
-        subtitle: `Thank you, ${formData.fullName}. Your entry has been recorded and confirmed.`,
-        buttonText: 'Done',
-        buttonVariant: 'black'
-      };
+      // Emit next page navigation event with accumulated form data
+      emit('next-page', formData);
       return;
     }
 
@@ -2576,7 +2561,7 @@ function handleHeroImageError(widget: any) {
 function getRatioClass(ratio?: string) {
   switch (ratio) {
     case 'Dynamic Fit':
-      return 'h-full min-h-0 flex-1 w-full shrink-0';
+      return 'min-h-[calc(100dvh-48px)] h-full flex-1 w-full shrink-0';
     case '4:5':
       return 'aspect-[4/5] w-full shrink-0';
     case '3:4':
@@ -2594,7 +2579,7 @@ function getRatioClass(ratio?: string) {
     case 'Full screen landing page':
     default:
       return isHeroWithButtonOnly.value
-        ? 'h-full min-h-0 flex-1 w-full shrink-0'
+        ? 'min-h-[calc(100dvh-48px)] h-full flex-1 w-full shrink-0'
         : 'h-[580px] min-h-[580px] w-full shrink-0';
   }
 }
