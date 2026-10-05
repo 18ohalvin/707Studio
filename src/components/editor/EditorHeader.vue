@@ -45,6 +45,18 @@
 
     <!-- Right: Test Your Form, Ask for Review & Avatar proportioned for 48px Header -->
     <div class="content-stretch flex gap-[10px] items-center shrink-0">
+      <!-- Guests & QR Scanner Button -->
+      <button 
+        @click="showGuestsModal = true"
+        class="apple-glass-btn text-black content-stretch flex items-center justify-center gap-1.5 overflow-clip px-[12px] h-[32px] rounded-[8px] apple-press cursor-pointer transition-all"
+        title="View Campaign Guests & Door Scanner"
+      >
+        <Users class="w-3.5 h-3.5 text-black" />
+        <span class="font-707 font-medium text-[13px] whitespace-nowrap text-black">
+          Guests & Tickets
+        </span>
+      </button>
+
       <!-- Preview / Editor Mode Toggle Button -->
       <button 
         @click="editorStore.togglePreviewMode()"
@@ -90,6 +102,13 @@
       </div>
     </div>
   </header>
+
+  <!-- Project Guests & QR Scanner Modal -->
+  <ProjectGuestsModal
+    :is-open="showGuestsModal"
+    :project="currentProjectItem"
+    @close="showGuestsModal = false"
+  />
 </template>
 
 <script setup lang="ts">
@@ -98,16 +117,36 @@ import { useRouter } from 'vue-router';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { useAuthStore } from '../../stores/authStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
-import { Eye, Edit3, User } from 'lucide-vue-next';
+import { Eye, Edit3, User, Users } from 'lucide-vue-next';
 import UserProfileModal from '../modals/UserProfileModal.vue';
+import ProjectGuestsModal from '../modals/ProjectGuestsModal.vue';
 import { logout } from '../../services/apiClient.ts';
+import type { ProjectItem } from '../../types/editor.ts';
 
 const router = useRouter();
 const editorStore = useEditorStore();
 const authStore = useAuthStore();
 const logoFailed = ref(false);
 const showUserProfileModal = ref(false);
+const showGuestsModal = ref(false);
 const nowTicker = ref(Date.now());
+
+const currentProjectItem = computed<ProjectItem>(() => {
+  const found = editorStore.projects.find(p => p.id === editorStore.currentProjectId);
+  if (found) return found;
+
+  return {
+    id: editorStore.currentProjectId || 'active-project',
+    title: editorStore.projectTitle,
+    brand_slug: editorStore.currentPage?.brand_slug || 'atmos',
+    slug: editorStore.currentPage?.slug || 'campaign',
+    status: editorStore.currentPage?.status || 'draft',
+    current_version: 1,
+    widget_tree: [],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+});
 
 const primaryCtaLabel = computed(() => {
   if (authStore.isSuperAdmin) {

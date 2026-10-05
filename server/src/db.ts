@@ -178,11 +178,18 @@ export async function initDbSchema(): Promise<void> {
         brand_slug VARCHAR(100) NOT NULL DEFAULT 'atmos',
         submission_type VARCHAR(50) NOT NULL DEFAULT 'raffle',
         form_data JSONB NOT NULL,
+        ticket_code VARCHAR(100),
+        checked_in_at TIMESTAMP WITH TIME ZONE,
+        checked_in_by VARCHAR(100),
         ip_address VARCHAR(45),
         user_agent TEXT,
-        status VARCHAR(50) DEFAULT 'submitted',
+        status VARCHAR(50) DEFAULT 'registered',
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+
+      ALTER TABLE submissions ADD COLUMN IF NOT EXISTS ticket_code VARCHAR(100);
+      ALTER TABLE submissions ADD COLUMN IF NOT EXISTS checked_in_at TIMESTAMP WITH TIME ZONE;
+      ALTER TABLE submissions ADD COLUMN IF NOT EXISTS checked_in_by VARCHAR(100);
     `);
     console.log('[DB] Database schema initialized and verified successfully.');
   } catch (err: any) {

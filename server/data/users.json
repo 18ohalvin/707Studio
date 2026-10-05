@@ -1,5 +1,65 @@
 [
   {
+    "id": "user_1791196324994",
+    "name": "Rian Atmos PIC",
+    "email": "rian@atmos.co.id",
+    "phone": "",
+    "password": "rian_atmos_pass",
+    "role": "editor",
+    "assignedBrands": [
+      "atmos"
+    ],
+    "avatarUrl": "",
+    "status": "active",
+    "createdAt": "2026-10-05T10:32:04.994Z",
+    "lastActiveAt": "Just now"
+  },
+  {
+    "id": "user_1791196324991",
+    "name": "Rian Atmos PIC",
+    "email": "rian@atmos.co.id",
+    "phone": "",
+    "password": "rian_atmos_pass",
+    "role": "editor",
+    "assignedBrands": [
+      "atmos"
+    ],
+    "avatarUrl": "",
+    "status": "active",
+    "createdAt": "2026-10-05T10:32:04.991Z",
+    "lastActiveAt": "Just now"
+  },
+  {
+    "id": "user_1791194825238",
+    "name": "Rian Atmos PIC",
+    "email": "rian@atmos.co.id",
+    "phone": "",
+    "password": "rian_atmos_pass",
+    "role": "editor",
+    "assignedBrands": [
+      "atmos"
+    ],
+    "avatarUrl": "",
+    "status": "active",
+    "createdAt": "2026-10-05T10:07:05.238Z",
+    "lastActiveAt": "Just now"
+  },
+  {
+    "id": "user_1791194825235",
+    "name": "Rian Atmos PIC",
+    "email": "rian@atmos.co.id",
+    "phone": "",
+    "password": "rian_atmos_pass",
+    "role": "editor",
+    "assignedBrands": [
+      "atmos"
+    ],
+    "avatarUrl": "",
+    "status": "active",
+    "createdAt": "2026-10-05T10:07:05.235Z",
+    "lastActiveAt": "Just now"
+  },
+  {
     "id": "user_1791194386992",
     "name": "Rian Atmos PIC",
     "email": "rian@atmos.co.id",
