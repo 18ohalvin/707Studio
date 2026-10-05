@@ -111,18 +111,34 @@ export async function initDbSchema(): Promise<void> {
       -- convert any leftover uuid column to text. Idempotent: the loop finds
       -- nothing once the database is already the right shape.
       DO $$
-      DECLARE col record;
+      DECLARE rec record;
       BEGIN
-        FOR col IN
+        -- Foreign keys from the original schema block the conversion: changing
+        -- pages.brand_id while brands.id is still uuid fails with 'foreign key
+        -- constraint cannot be implemented'. The current schema declares no
+        -- foreign keys, so drop them rather than trying to order the changes.
+        FOR rec IN
+          SELECT con.conname, rel.relname
+          FROM pg_constraint con
+          JOIN pg_class rel ON rel.oid = con.conrelid
+          JOIN pg_namespace ns ON ns.oid = rel.relnamespace
+          WHERE con.contype = 'f'
+            AND ns.nspname = 'public'
+            AND rel.relname IN ('pages', 'brands', 'templates', 'submissions', 'page_revisions', 'users')
+        LOOP
+          EXECUTE format('ALTER TABLE %I DROP CONSTRAINT %I', rec.relname, rec.conname);
+        END LOOP;
+
+        FOR rec IN
           SELECT table_name, column_name
           FROM information_schema.columns
           WHERE table_schema = 'public'
             AND data_type = 'uuid'
             AND table_name IN ('pages', 'brands', 'templates', 'submissions', 'page_revisions', 'users')
         LOOP
-          EXECUTE format('ALTER TABLE %I ALTER COLUMN %I DROP DEFAULT', col.table_name, col.column_name);
+          EXECUTE format('ALTER TABLE %I ALTER COLUMN %I DROP DEFAULT', rec.table_name, rec.column_name);
           EXECUTE format('ALTER TABLE %I ALTER COLUMN %I TYPE VARCHAR(100) USING %I::text',
-                         col.table_name, col.column_name, col.column_name);
+                         rec.table_name, rec.column_name, rec.column_name);
         END LOOP;
       END $$;
 
