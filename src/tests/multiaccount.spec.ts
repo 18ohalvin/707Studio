@@ -106,7 +106,7 @@ describe('Multiaccount & Data Isolation Logic', () => {
     editorStore.projects = [mockAtmosProj, mockAsicsProj];
 
     // Sarah Chen (Atmos) only sees Atmos project
-    authStore.signIn('sarah.chen@atmos.co.id', 'atmos_pass_2026');
+    await authStore.signIn('sarah.chen@atmos.co.id', 'atmos_pass_2026');
     expect(editorStore.userProjects.length).toBe(1);
     expect(editorStore.userProjects[0].brand_slug).toBe('atmos');
   });
@@ -184,11 +184,11 @@ describe('Multiaccount & Data Isolation Logic', () => {
     editorStore.projects = [mockAtmosProj, mockNikeProj];
 
     // Atmos user cannot see Nike project
-    authStore.signIn('sarah.chen@atmos.co.id', 'atmos_pass_2026');
+    await authStore.signIn('sarah.chen@atmos.co.id', 'atmos_pass_2026');
     expect(editorStore.userProjects.some(p => p.brand_slug === 'nike')).toBe(false);
 
     // Superadmin logs in and can see all brand projects
-    authStore.verifySuperAdmin('707admin');
+    await authStore.verifySuperAdmin('707admin');
     expect(authStore.isSuperAdmin).toBe(true);
     expect(editorStore.userProjects.length).toBe(2);
 
@@ -290,7 +290,7 @@ describe('Multiaccount & Data Isolation Logic', () => {
     editorStore.projects = [sarahProject, rianProject];
 
     // Sarah signs in: can only see Sarah's project
-    authStore.signIn('sarah.chen@atmos.co.id', 'atmos_pass_2026');
+    await authStore.signIn('sarah.chen@atmos.co.id', 'atmos_pass_2026');
     expect(editorStore.userProjects.length).toBe(1);
     expect(editorStore.userProjects[0].id).toBe('proj_sarah_exclusive');
 
@@ -299,12 +299,12 @@ describe('Multiaccount & Data Isolation Logic', () => {
     expect(editorStore.userProjects.length).toBe(0);
 
     // Rian signs in: can only see Rian's project, NOT Sarah's project
-    authStore.signIn('rian@atmos.co.id', 'rian_atmos_pass');
+    await authStore.signIn('rian@atmos.co.id', 'rian_atmos_pass');
     expect(editorStore.userProjects.length).toBe(1);
     expect(editorStore.userProjects[0].id).toBe('proj_rian_exclusive');
 
     // Superadmin signs in: can see both projects
-    authStore.verifySuperAdmin('707admin');
+    await authStore.verifySuperAdmin('707admin');
     expect(editorStore.userProjects.length).toBe(2);
   });
 
@@ -336,12 +336,12 @@ describe('Multiaccount & Data Isolation Logic', () => {
     expect(editorStore.currentProjectId).toBe('');
 
     // Different user attempts to open project
-    authStore.signIn('rian@atmos.co.id', 'rian_atmos_pass');
+    await authStore.signIn('rian@atmos.co.id', 'rian_atmos_pass');
     editorStore.openProjectById('proj_sarah_secret');
     expect(editorStore.currentProjectId).toBe('');
 
     // Owner opens project
-    authStore.signIn('sarah.chen@atmos.co.id', 'atmos_pass_2026');
+    await authStore.signIn('sarah.chen@atmos.co.id', 'atmos_pass_2026');
     editorStore.openProjectById('proj_sarah_secret');
     expect(editorStore.currentProjectId).toBe('proj_sarah_secret');
   });

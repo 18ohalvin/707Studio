@@ -1,26 +1,31 @@
 <template>
-  <div class="h-screen w-screen overflow-hidden flex flex-col bg-[#f5f5f5] text-black font-sans relative">
-    <!-- Every route here is staff tooling (studio home + editor), so the
-         desktop guard stays app-wide. When a public route for published pages
-         is added, move this guard onto the staff routes only — guests open
-         those pages on phones and must not be blocked. -->
-    <DesktopOnlyGuard />
-    <ProjectLoadingScreen />
+  <div 
+    class="w-full relative"
+    :class="isPublicDrop ? 'min-h-[100dvh] bg-white text-black overflow-y-auto' : 'h-screen w-screen overflow-hidden flex flex-col bg-[#f5f5f5] text-black font-sans'"
+  >
+    <DesktopOnlyGuard v-if="!isPublicDrop" />
+    <ProjectLoadingScreen v-if="!isPublicDrop" />
     <router-view />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import DesktopOnlyGuard from './components/common/DesktopOnlyGuard.vue';
 import ProjectLoadingScreen from './components/common/ProjectLoadingScreen.vue';
 import { useAuthStore } from './stores/authStore.ts';
 import { useBrandStore } from './stores/brandStore.ts';
 import { useEditorStore } from './stores/editorStore.ts';
 
+const route = useRoute();
 const authStore = useAuthStore();
 const brandStore = useBrandStore();
 const editorStore = useEditorStore();
+
+const isPublicDrop = computed(() => {
+  return route.name === 'PublicDrop' || (Boolean(route.meta?.public) && route.name !== 'Login');
+});
 
 onMounted(async () => {
   authStore.initAuth();

@@ -1838,10 +1838,12 @@ const props = withDefaults(defineProps<{
   isSelected?: boolean;
   isMiniPreview?: boolean;
   isPreviewModal?: boolean;
+  isLivePage?: boolean;
 }>(), {
   isSelected: true,
   isMiniPreview: false,
-  isPreviewModal: false
+  isPreviewModal: false,
+  isLivePage: false
 });
 
 const emit = defineEmits<{
@@ -2438,6 +2440,59 @@ function handleButtonClick(widget: any) {
       scrollToWidget(firstInvalidWidget.id);
       return;
     }
+    if (props.isLivePage) {
+      const formData: Record<string, any> = {};
+      let userEmail = '';
+      let userName = '';
+
+      activePage.value.widget_tree.forEach((w) => {
+        if (w.type === 'FieldInput') {
+          const key = w.props?.label || w.props?.placeholder || w.id;
+          formData[key] = w.props?.value || '';
+          if (w.props?.inputType === 'email' || /email/i.test(key)) userEmail = w.props?.value;
+          if (/name/i.test(key)) userName = w.props?.value;
+        } else if (w.type === 'RegistrationForm') {
+          const fields = (w.props?.fields || []) as any[];
+          fields.forEach((f: any) => {
+            const key = f.name || f.label || 'field';
+            formData[key] = f.value || '';
+            if (f.type === 'email' || /email/i.test(key)) userEmail = f.value;
+            if (/name/i.test(key)) userName = f.value;
+          });
+        } else if (w.type === 'MultipleChoice') {
+          const key = w.props?.question || w.id;
+          formData[key] = w.props?.selectedValues || [];
+        }
+      });
+
+      if (!formData.email && userEmail) formData.email = userEmail;
+      if (!formData.fullName && userName) formData.fullName = userName;
+      if (!formData.fullName) formData.fullName = formData.name || 'Guest Participant';
+      if (!formData.email) formData.email = 'guest@activation.internal';
+
+      // Submit to backend
+      fetch('/api/submissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          page_id: activePage.value.id || 'live-page',
+          brand_slug: activePage.value.brand_slug || 'brand',
+          submission_type: 'raffle',
+          form_data: formData
+        })
+      }).catch(e => console.warn('[LiveDrop] Submissions error:', e));
+
+      // Trigger success confirmation modal
+      activeTriggeredModal.value = {
+        variant: 'message-alert',
+        title: 'RSVP Confirmed!',
+        subtitle: `Thank you, ${formData.fullName}. Your entry has been recorded and confirmed.`,
+        buttonText: 'Done',
+        buttonVariant: 'black'
+      };
+      return;
+    }
+
     const currentIdx = typeof props.pageIndex === 'number' ? props.pageIndex : editorStore.activePageIndex;
     if (currentIdx < editorStore.pages.length - 1) {
       editorStore.selectPage(currentIdx + 1);

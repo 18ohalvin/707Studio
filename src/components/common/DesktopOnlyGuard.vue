@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isMobileViewport && !isDismissed" class="fixed inset-0 z-[9999] bg-[#0c0d0e] flex flex-col items-center justify-center p-8 text-center text-white">
+  <div v-if="isMobileViewport && !isDismissed && !isPublicRoute" class="fixed inset-0 z-[9999] bg-[#0c0d0e] flex flex-col items-center justify-center p-8 text-center text-white">
     <div class="w-16 h-16 rounded-2xl bg-[#1e2023] border border-[#2c2f35] flex items-center justify-center mb-6 shadow-2xl">
       <Monitor class="w-8 h-8 text-white" />
     </div>
@@ -25,12 +25,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { Monitor, AlertTriangle } from 'lucide-vue-next';
 
-const windowWidth = ref(window.innerWidth);
-const isMobileViewport = ref(window.innerWidth < 1024);
+const route = useRoute();
+const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1200);
+const isMobileViewport = ref(typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
 const isDismissed = ref(false);
+
+const isPublicRoute = computed(() => {
+  return route.meta?.public === true || route.name === 'PublicDrop';
+});
 
 function handleResize() {
   windowWidth.value = window.innerWidth;

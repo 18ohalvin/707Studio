@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { pool, getDbStatus } from '../db.js';
 import { readDataFile, writeDataFile } from '../fileStorage.js';
 import { externalizeInlineImages } from '../inlineImages.js';
+import { requireAuth } from '../auth.js';
 
 export const pagesRouter = Router();
 
@@ -9,7 +10,7 @@ export const pagesRouter = Router();
 let inMemoryPages: any[] = readDataFile<any[]>('pages.json', []);
 
 // GET /api/pages - list pages (optionally filter by brand_slug or status)
-pagesRouter.get('/', async (req: Request, res: Response) => {
+pagesRouter.get('/', requireAuth, async (req: Request, res: Response) => {
   const { brand_slug, status } = req.query;
 
   if (getDbStatus().isConnected) {
@@ -66,13 +67,20 @@ pagesRouter.get('/', async (req: Request, res: Response) => {
 
 // GET /api/pages/:brandSlug/:pageSlug - Public live page endpoint
 pagesRouter.get('/:brandSlug/:pageSlug', async (req: Request, res: Response) => {
-  const { brandSlug, pageSlug } = req.params;
+  const brandSlug = String(req.params.brandSlug || '');
+  const pageSlug = String(req.params.pageSlug || '');
+  const normalize = (str: string) => (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const normBrand = normalize(brandSlug);
+  const normPage = normalize(pageSlug);
 
   if (getDbStatus().isConnected) {
     try {
       const result = await pool.query(
-        'SELECT * FROM pages WHERE brand_slug = $1 AND slug = $2 LIMIT 1',
-        [brandSlug, pageSlug]
+        `SELECT * FROM pages 
+         WHERE (brand_slug = $1 OR regexp_replace(lower(brand_slug), '[^a-z0-9]', '', 'g') = $2)
+           AND (slug = $3 OR regexp_replace(lower(slug), '[^a-z0-9]', '', 'g') = $4)
+         LIMIT 1`,
+        [brandSlug, normBrand, pageSlug, normPage]
       );
       if (result.rows.length > 0) {
         const r = result.rows[0];
@@ -81,7 +89,7 @@ pagesRouter.get('/:brandSlug/:pageSlug', async (req: Request, res: Response) => 
           data: {
             id: r.id,
             brand_id: r.brand_id || '1',
-            brand_slug: r.brand_slug || 'atmos',
+            brand_slug: r.brand_slug || brandSlug,
             title: r.title,
             slug: r.slug,
             description: r.description || '',
@@ -104,7 +112,11 @@ pagesRouter.get('/:brandSlug/:pageSlug', async (req: Request, res: Response) => 
   }
 
   inMemoryPages = readDataFile<any[]>('pages.json', inMemoryPages);
-  const page = inMemoryPages.find(p => p.brand_slug === brandSlug && p.slug === pageSlug);
+  const page = inMemoryPages.find(p => {
+    const pBrand = normalize(p.brand_slug);
+    const pSlug = normalize(p.slug);
+    return (pBrand === normBrand || p.brand_slug === brandSlug) && (pSlug === normPage || p.slug === pageSlug);
+  });
   if (page) {
     return res.json({ success: true, data: page });
   }
@@ -112,7 +124,7 @@ pagesRouter.get('/:brandSlug/:pageSlug', async (req: Request, res: Response) => 
 });
 
 // POST /api/pages - Create or update a page draft
-pagesRouter.post('/', async (req: Request, res: Response) => {
+pagesRouter.post('/', requireAuth, async (req: Request, res: Response) => {
   const { id, brand_slug, title, slug, widget_tree, pages, page_settings, status, owner_id, owner_email, created_by } = req.body;
 
   const now = new Date().toISOString();
@@ -228,7 +240,7 @@ pagesRouter.post('/', async (req: Request, res: Response) => {
 });
 
 // PUT /api/pages/:id - Update page fields / status
-pagesRouter.put('/:id', async (req: Request, res: Response) => {
+pagesRouter.put('/:id', requireAuth, async (req: Request, res: Response) => {
   const { id } = req.params;
   const updates = req.body;
   const now = new Date().toISOString();
@@ -273,7 +285,7 @@ pagesRouter.put('/:id', async (req: Request, res: Response) => {
 });
 
 // DELETE /api/pages/:id - Delete page / project permanently from cloud DB
-pagesRouter.delete('/:id', async (req: Request, res: Response) => {
+pagesRouter.delete('/:id', requireAuth, async (req: Request, res: Response) => {
   const { id } = req.params;
   inMemoryPages = readDataFile<any[]>('pages.json', inMemoryPages);
   inMemoryPages = inMemoryPages.filter(p => p.id !== id);
@@ -298,7 +310,7 @@ pagesRouter.delete('/:id', async (req: Request, res: Response) => {
 });
 
 // PATCH /api/pages/:id/review - Review status change
-pagesRouter.patch('/:id/review', async (req: Request, res: Response) => {
+pagesRouter.patch('/:id/review', requireAuth, async (req: Request, res: Response) => {
   const { id } = req.params;
   const { status, reviewed_by, review_notes } = req.body;
   const now = new Date().toISOString();

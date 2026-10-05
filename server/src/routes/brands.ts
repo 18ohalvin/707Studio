@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { pool, getDbStatus } from '../db.js';
 import { readDataFile, writeDataFile } from '../fileStorage.js';
+import { requireAuth } from '../auth.js';
 
 export const brandsRouter = Router();
 
@@ -43,7 +44,7 @@ brandsRouter.get('/:slug', async (req: Request, res: Response) => {
 });
 
 // POST /api/brands - create new brand in database
-brandsRouter.post('/', async (req: Request, res: Response) => {
+brandsRouter.post('/', requireAuth, async (req: Request, res: Response) => {
   const { name, slug, description, primary_color, logo_url } = req.body;
   const brandSlug = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   const newBrand = {
@@ -84,7 +85,7 @@ brandsRouter.post('/', async (req: Request, res: Response) => {
 });
 
 // PUT /api/brands/:id - update brand details
-brandsRouter.put('/:id', async (req: Request, res: Response) => {
+brandsRouter.put('/:id', requireAuth, async (req: Request, res: Response) => {
   const { id } = req.params;
   const updates = req.body;
 
@@ -120,7 +121,7 @@ brandsRouter.put('/:id', async (req: Request, res: Response) => {
 });
 
 // DELETE /api/brands/:id - delete brand from database
-brandsRouter.delete('/:id', async (req: Request, res: Response) => {
+brandsRouter.delete('/:id', requireAuth, async (req: Request, res: Response) => {
   const { id } = req.params;
   inMemoryBrands = inMemoryBrands.filter(b => b.id !== id && b.slug !== id);
   writeDataFile('brands.json', inMemoryBrands);

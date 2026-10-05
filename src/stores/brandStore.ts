@@ -11,8 +11,50 @@ export const useBrandStore = defineStore('brand', () => {
   const templates = ref<GlobalTemplate[]>([]);
   const isLoading = ref<boolean>(false);
 
+  // Restore active brand from local storage if available
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const stored = localStorage.getItem('707_active_brand');
+      if (stored) {
+        activeBrand.value = JSON.parse(stored);
+      }
+    }
+  } catch {}
+
   function setActiveBrand(brand: Brand | null) {
     activeBrand.value = brand;
+    try {
+      if (typeof localStorage !== 'undefined') {
+        if (brand) {
+          localStorage.setItem('707_active_brand', JSON.stringify(brand));
+        } else {
+          localStorage.removeItem('707_active_brand');
+        }
+      }
+    } catch {}
+  }
+
+  function syncActiveBrandWithUser(currentUser: any) {
+    if (!currentUser) return;
+    const userBrand = currentUser.assignedBrands?.[0];
+    if (userBrand && userBrand !== 'all') {
+      const clean = userBrand.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const found = brands.value.find(b => 
+        (b.slug || '').toLowerCase().replace(/[^a-z0-9]/g, '') === clean ||
+        (b.name || '').toLowerCase().replace(/[^a-z0-9]/g, '') === clean
+      );
+      if (found) {
+        setActiveBrand(found);
+      } else {
+        const synthesized: Brand = {
+          id: `brand_${clean}`,
+          name: currentUser.name || userBrand,
+          slug: userBrand.toLowerCase().replace(/[^a-z0-9_-]/g, ''),
+          primary_color: '#000000'
+        };
+        setActiveBrand(synthesized);
+      }
+    }
   }
 
   async function loadBrands() {
@@ -21,6 +63,14 @@ export const useBrandStore = defineStore('brand', () => {
       const res = await apiJson<{ success: boolean; data: Brand[] }>('/api/brands');
       if (res && res.success && Array.isArray(res.data)) {
         brands.value = res.data;
+        // If active brand is set, re-link to official brand from backend
+        if (activeBrand.value) {
+          const clean = (activeBrand.value.slug || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+          const matched = brands.value.find(b => (b.slug || '').toLowerCase().replace(/[^a-z0-9]/g, '') === clean);
+          if (matched) {
+            setActiveBrand(matched);
+          }
+        }
       } else {
         brands.value = [];
       }
@@ -168,6 +218,7 @@ export const useBrandStore = defineStore('brand', () => {
     addBrand,
     updateBrand,
     removeBrand,
+    syncActiveBrandWithUser,
     loadTemplates,
     addTemplate,
     updateTemplate,

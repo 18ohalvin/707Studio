@@ -80,12 +80,32 @@ export const useEditorStore = defineStore('editor', () => {
   // Global Project Campaign Title (Applies to entire project, independent of page switching)
   const projectTitle = ref<string>('Untitled Project');
 
+  function getInitialBrandSlug(): string {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const auth = localStorage.getItem('707_current_user');
+        if (auth) {
+          const parsed = JSON.parse(auth);
+          if (parsed.assignedBrands?.[0] && parsed.assignedBrands[0] !== 'all') {
+            return parsed.assignedBrands[0].toLowerCase().replace(/[^a-z0-9_-]/g, '');
+          }
+        }
+        const brand = localStorage.getItem('707_active_brand');
+        if (brand) {
+          const parsed = JSON.parse(brand);
+          if (parsed.slug) return parsed.slug.toLowerCase().replace(/[^a-z0-9_-]/g, '');
+        }
+      }
+    } catch {}
+    return 'atmos';
+  }
+
   // Multi-page Activation Pages Array (Default single page for new project)
   const pages = ref<ActivationPage[]>([
     {
       id: 'page_1',
       brand_id: '1',
-      brand_slug: 'atmos',
+      brand_slug: getInitialBrandSlug(),
       title: 'Landing Page',
       page_name: 'Landing Page',
       slug: 'landing-page',
@@ -1299,17 +1319,22 @@ export const useEditorStore = defineStore('editor', () => {
     await uploadInlineImages();
     const now = new Date().toISOString();
     const existingIndex = projects.value.findIndex(p => p.id === currentProjectId.value);
+    const existingProj = existingIndex >= 0 ? projects.value[existingIndex] : null;
     
     const brandStore = useBrandStore();
     const authStore = useAuthStore();
     const userBrand = authStore.currentUser?.assignedBrands?.[0];
 
     let resolvedBrandSlug = currentPage.value?.brand_slug;
-    if (!resolvedBrandSlug || (resolvedBrandSlug === 'atmos' && userBrand && userBrand !== 'atmos' && !authStore.isSuperAdmin)) {
-      if (!authStore.isSuperAdmin && userBrand) {
-        resolvedBrandSlug = userBrand;
+    if (!authStore.isSuperAdmin && userBrand && userBrand !== 'all') {
+      resolvedBrandSlug = userBrand.toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    } else if (!resolvedBrandSlug || (resolvedBrandSlug === 'atmos' && userBrand && userBrand !== 'atmos')) {
+      if (userBrand && userBrand !== 'all') {
+        resolvedBrandSlug = userBrand.toLowerCase().replace(/[^a-z0-9_-]/g, '');
       } else if (brandStore.activeBrand?.slug) {
-        resolvedBrandSlug = brandStore.activeBrand.slug;
+        resolvedBrandSlug = brandStore.activeBrand.slug.toLowerCase().replace(/[^a-z0-9_-]/g, '');
+      } else if (existingProj?.brand_slug) {
+        resolvedBrandSlug = existingProj.brand_slug.toLowerCase().replace(/[^a-z0-9_-]/g, '');
       } else {
         resolvedBrandSlug = 'atmos';
       }
@@ -1319,7 +1344,6 @@ export const useEditorStore = defineStore('editor', () => {
       currentPage.value.brand_slug = resolvedBrandSlug;
     }
     
-    const existingProj = existingIndex >= 0 ? projects.value[existingIndex] : null;
     const projectData: ProjectItem = {
       id: currentProjectId.value || `proj-${Date.now()}`,
       title: projectTitle.value.trim() || 'Untitled Activation Drop',
@@ -1394,7 +1418,9 @@ export const useEditorStore = defineStore('editor', () => {
     const brandStore = useBrandStore();
     const authStore = useAuthStore();
     const userBrand = authStore.currentUser?.assignedBrands?.[0];
-    const targetBrandSlug = brandSlug || (!authStore.isSuperAdmin && userBrand ? userBrand : (brandStore.activeBrand?.slug || userBrand || 'atmos'));
+    const targetBrandSlug = (brandSlug || (!authStore.isSuperAdmin && userBrand && userBrand !== 'all' 
+      ? userBrand 
+      : (brandStore.activeBrand?.slug || userBrand || 'atmos'))).toLowerCase().replace(/[^a-z0-9_-]/g, '');
 
     const initialWidgets = widgets ? JSON.parse(JSON.stringify(widgets)) : [];
 

@@ -89,10 +89,12 @@
 import { ref, computed } from 'vue';
 import { useEditorStore } from '../../../stores/editorStore.ts';
 import { useBrandStore } from '../../../stores/brandStore.ts';
+import { useAuthStore } from '../../../stores/authStore.ts';
 import { X, Copy, Check } from 'lucide-vue-next';
 
 const editorStore = useEditorStore();
 const brandStore = useBrandStore();
+const authStore = useAuthStore();
 
 const copied = ref(false);
 
@@ -106,7 +108,22 @@ function slugify(text: string): string {
 }
 
 const campaignUrl = computed(() => {
-  const brandSlug = brandStore.activeBrand?.slug || 'atmos';
+  const userBrand = authStore.currentUser?.assignedBrands?.[0];
+  let rawBrand = '';
+  
+  if (!authStore.isSuperAdmin && userBrand && userBrand !== 'all') {
+    rawBrand = userBrand;
+  } else if (editorStore.currentPage?.brand_slug && editorStore.currentPage.brand_slug !== 'atmos') {
+    rawBrand = editorStore.currentPage.brand_slug;
+  } else if (brandStore.activeBrand?.slug) {
+    rawBrand = brandStore.activeBrand.slug;
+  } else if (editorStore.currentPage?.brand_slug) {
+    rawBrand = editorStore.currentPage.brand_slug;
+  } else {
+    rawBrand = userBrand || 'events';
+  }
+
+  const brandSlug = slugify(rawBrand) || 'events';
   const projectSlug = slugify(editorStore.projectTitle) || editorStore.currentPage?.slug || 'campaign-activation';
   return `events.707.co.id/${brandSlug}/${projectSlug}`;
 });

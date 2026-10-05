@@ -30,6 +30,12 @@ const routes = [
   {
     path: '/admin',
     redirect: '/settings'
+  },
+  {
+    path: '/:brandSlug/:pageSlug',
+    name: 'PublicDrop',
+    component: () => import('../views/PublicDropView.vue'),
+    meta: { public: true }
   }
 ];
 

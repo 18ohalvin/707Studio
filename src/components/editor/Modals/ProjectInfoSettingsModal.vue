@@ -88,6 +88,8 @@
 import { ref, watch, computed } from 'vue';
 import { Sliders } from 'lucide-vue-next';
 import { useEditorStore } from '../../../stores/editorStore.ts';
+import { useBrandStore } from '../../../stores/brandStore.ts';
+import { useAuthStore } from '../../../stores/authStore.ts';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -98,12 +100,27 @@ const emit = defineEmits<{
 }>();
 
 const editorStore = useEditorStore();
+const brandStore = useBrandStore();
+const authStore = useAuthStore();
 
 const title = ref('');
 const slug = ref('');
 
 const brandSlug = computed(() => {
-  return editorStore.currentPage?.brand_slug || 'atmos';
+  const userBrand = authStore.currentUser?.assignedBrands?.[0];
+  let raw = '';
+  if (!authStore.isSuperAdmin && userBrand && userBrand !== 'all') {
+    raw = userBrand;
+  } else if (editorStore.currentPage?.brand_slug && editorStore.currentPage.brand_slug !== 'atmos') {
+    raw = editorStore.currentPage.brand_slug;
+  } else if (brandStore.activeBrand?.slug) {
+    raw = brandStore.activeBrand.slug;
+  } else if (editorStore.currentPage?.brand_slug) {
+    raw = editorStore.currentPage.brand_slug;
+  } else {
+    raw = userBrand || 'events';
+  }
+  return raw.toLowerCase().replace(/[^a-z0-9_-]/g, '') || 'events';
 });
 
 watch(

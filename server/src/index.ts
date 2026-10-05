@@ -49,13 +49,14 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRouter);
 
 // Studio & Brand Activation Endpoints
-// Everything below is the team's workspace and stays closed. requireAuth was
-// imported but never applied, so these were all reachable without signing in.
-app.use('/api/brands', requireAuth, brandsRouter);
+// Protected routes require authentication inside each router; public endpoints
+// like published drop canvas pages (GET /api/pages/:brandSlug/:pageSlug) and
+// raffle entries (POST /api/submissions) are open to public mobile visitors.
+app.use('/api/brands', brandsRouter);
 app.use('/api/users', requireAuth, usersRouter);
-app.use('/api/pages', requireAuth, pagesRouter);
+app.use('/api/pages', pagesRouter);
 app.use('/api/templates', requireAuth, templatesRouter);
-app.use('/api/submissions', requireAuth, submissionsRouter);
+app.use('/api/submissions', submissionsRouter);
 app.use('/api/media', requireAuth, mediaRouter);
 
 // Any unmatched /api path must fail as JSON. Letting it fall through to the SPA
@@ -68,7 +69,13 @@ app.use('/api', (_req, res) => {
 // ----------------------------------------------------
 // Serve the built frontend (single container, single domain)
 // ----------------------------------------------------
-const distDir = path.resolve(process.cwd(), 'public/app');
+const candidateDirs = [
+  path.resolve(process.cwd(), 'public/app'),
+  path.resolve(process.cwd(), 'dist'),
+  path.resolve(process.cwd(), '../dist'),
+  path.resolve(process.cwd(), '../public/app')
+];
+const distDir = candidateDirs.find(d => fs.existsSync(d) && fs.existsSync(path.join(d, 'index.html'))) || candidateDirs[0];
 
 if (fs.existsSync(distDir)) {
   // Hashed asset filenames can be cached hard; index.html is the manifest that

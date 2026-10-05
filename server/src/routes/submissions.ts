@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { pool, getDbStatus } from '../db.js';
 import { readDataFile, writeDataFile } from '../fileStorage.js';
+import { requireAuth } from '../auth.js';
 
 export const submissionsRouter = Router();
 
@@ -63,7 +64,7 @@ submissionsRouter.post('/', async (req: Request, res: Response) => {
 });
 
 // GET /api/submissions - Query submissions (optionally by page_id and brand_slug)
-submissionsRouter.get('/', async (req: Request, res: Response) => {
+submissionsRouter.get('/', requireAuth, async (req: Request, res: Response) => {
   const { page_id, brand_slug } = req.query;
 
   if (getDbStatus().isConnected) {
@@ -103,7 +104,7 @@ submissionsRouter.get('/', async (req: Request, res: Response) => {
 });
 
 // DELETE /api/submissions/:id - Remove submission
-submissionsRouter.delete('/:id', async (req: Request, res: Response) => {
+submissionsRouter.delete('/:id', requireAuth, async (req: Request, res: Response) => {
   const { id } = req.params;
   inMemorySubmissions = inMemorySubmissions.filter(s => s.id !== id);
   writeDataFile('submissions.json', inMemorySubmissions);
