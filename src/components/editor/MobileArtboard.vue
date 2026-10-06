@@ -214,14 +214,16 @@
                 <div
                   v-if="isTicketPage"
                   class="w-full h-full absolute inset-0 bg-no-repeat bg-center"
-                  :style="{ backgroundImage: `url('${widget.props.imageUrl}')`, backgroundSize: ticketBannerSize(widget.props.mediaFit) }"
+                  :style="{ backgroundImage: `url('${sizedUrl(widget.props.imageUrl, 1080)}')`, backgroundSize: ticketBannerSize(widget.props.mediaFit) }"
                 />
+                <!-- Screen-sized AVIF/WebP from the upload, not the photoshoot original; blurred preview until it lands -->
                 <img 
                   v-else
-                  :src="widget.props.imageUrl" 
+                  v-bind="responsiveImgAttrs(widget.props.imageUrl, { priority: index === 0 })"
                   alt="Drop Banner" 
                   class="w-full h-full absolute inset-0"
                   :class="getMediaFitClass(widget.props.mediaFit)"
+                  :style="isCoverFit(widget.props.mediaFit) ? placeholderStyle(widget.props.imageUrl) : undefined"
                   @error="handleHeroImageError(widget)"
                 />
                 <!-- Dynamic Image Overlay / Scrim automatically following text position (auto disabled on Center) -->
@@ -259,7 +261,7 @@
                 <!-- Render brand logo if url exists (Fixed height 48px, width auto to maintain aspect ratio) -->
                 <div v-if="widget.props.brandLogoUrl" class="max-h-[48px] h-[48px] flex items-center shrink-0">
                   <img 
-                    :src="widget.props.brandLogoUrl" 
+                    :src="sizedUrl(widget.props.brandLogoUrl, 320)" 
                     alt="Brand Logo" 
                     class="max-h-[48px] h-[48px] w-auto object-contain transition-transform"
                   />
@@ -1197,7 +1199,7 @@
                 >
                   <img 
                     v-if="opt.imageUrl" 
-                    :src="opt.imageUrl" 
+                    v-bind="responsiveImgAttrs(opt.imageUrl, { sizes: '(max-width: 440px) 50vw, 220px' })"
                     :alt="opt.label"
                     class="size-full object-cover pointer-events-none transition-transform duration-300" 
                   />
@@ -1261,7 +1263,7 @@ more</span>
                   </div>
                   <!-- Brand logo, or the campaign title when there is none -->
                   <template v-else-if="field === 'brandLogo'">
-                    <img v-if="ticketLogo" :src="ticketLogo" alt="Brand logo" class="h-[22px] w-auto max-w-[160px] object-contain" crossorigin="anonymous" />
+                    <img v-if="ticketLogo" :src="sizedUrl(ticketLogo, 320)" alt="Brand logo" class="h-[22px] w-auto max-w-[160px] object-contain" crossorigin="anonymous" />
                     <span v-else class="font-707 text-[10px] uppercase tracking-[0.12em] text-neutral-500">{{ ticketCampaignTitle }}</span>
                   </template>
                   <!-- Sessions the guest picked -->
@@ -1341,7 +1343,7 @@ more</span>
               >
                 <div class="max-h-[48px] h-[48px] flex items-center shrink-0">
                   <img 
-                    :src="getBrandLogo(widget)" 
+                    :src="sizedUrl(getBrandLogo(widget), 320)" 
                     alt="Brand Logo" 
                     class="max-h-[48px] h-[48px] w-auto object-contain brightness-0 transition-transform" 
                     style="filter: brightness(0);"
@@ -1861,7 +1863,7 @@ more</span>
                   class="aspect-[3/4] bg-transparent border-[0.5px] border-solid border-neutral-300 relative overflow-hidden transition-all cursor-pointer select-none rounded-none"
                   :class="isModalSlotSelected(slot) ? 'border-black ring-[0.5px] ring-black' : 'hover:border-black/50'"
                 >
-                  <img v-if="slot.url" :src="slot.url" class="w-full h-full object-cover" />
+                  <img v-if="slot.url" :src="sizedUrl(slot.url, 640)" loading="lazy" decoding="async" class="w-full h-full object-cover" />
                   <div v-if="isModalSlotSelected(slot)" class="absolute inset-0 bg-black/30 flex items-center justify-center">
                     <Check class="size-4 text-white stroke-[2.5]" />
                   </div>
@@ -1895,6 +1897,7 @@ import { ref, computed, watch, nextTick, onMounted, inject } from 'vue';
 import QRCode from 'qrcode';
 import { LIVE_PASS_KEY, SESSIONS_ANSWER_KEY, type PassSession } from './livePass.ts';
 import { normalizeCtaAction } from './ctaActions.ts';
+import { responsiveImgAttrs, placeholderStyle, sizedUrl } from '../../services/responsiveImage.ts';
 import { TICKET_CONTEXT_KEY, TICKET_SOURCE_KEY, ticketFieldMeta, type TicketFieldKey } from './ticket/ticketFields.ts';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
@@ -2797,6 +2800,11 @@ function ticketBannerSize(fit?: string): string {
   if (fit === 'Fit to screen' || fit === 'fit') return 'contain';
   if (fit === 'Center' || fit === 'center') return 'auto';
   return 'cover';
+}
+
+/** The blurred preview only suits cover-fit banners; letterboxed ones would show it around the image. */
+function isCoverFit(fit?: string): boolean {
+  return !fit || fit === 'Fill the screen' || fit === 'fill';
 }
 
 function getMediaFitClass(fit?: string) {

@@ -1,7 +1,8 @@
-import { Router, Request, Response } from 'express';
+import express, { Router, Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
 import { resolveUploadDir } from '../uploads.js';
+import { warmVariants, removeVariants } from '../imageVariants.js';
 
 export const mediaRouter = Router();
 
@@ -121,37 +122,61 @@ mediaRouter.get('/', (req: Request, res: Response) => {
   });
 });
 
-// 2. POST /api/media/upload - Store uploaded/dropped image to server directly
-mediaRouter.post('/upload', (req: Request, res: Response) => {
+// 2. POST /api/media/upload - Store an uploaded/dropped image on the server.
+// The editor sends the file itself (Content-Type: image/*, details in the
+// query string). The older JSON body with a base64 dataUrl is still accepted;
+// it is a third larger on the wire, which matters for photoshoot-size files.
+const IMAGE_EXT: Record<string, string> = {
+  'image/jpeg': 'jpeg', 'image/jpg': 'jpeg', 'image/png': 'png', 'image/webp': 'webp',
+  'image/avif': 'avif', 'image/gif': 'gif', 'image/svg+xml': 'svg', 'image/heic': 'heic', 'image/heif': 'heif'
+};
+
+mediaRouter.post('/upload', express.raw({ type: 'image/*', limit: '200mb' }), (req: Request, res: Response) => {
   ensureHydrated();
   try {
-    const { dataUrl, title, category, filename } = req.body;
-    if (!dataUrl) {
-      return res.status(400).json({ success: false, message: 'dataUrl is required' });
-    }
+    const isBinary = Buffer.isBuffer(req.body);
+    const meta = isBinary ? req.query : (req.body || {});
+    const title = meta.title ? String(meta.title) : undefined;
+    const category = meta.category ? String(meta.category) : undefined;
+    const filename = meta.filename ? String(meta.filename) : undefined;
 
-    let fileUrl = dataUrl;
+    let fileUrl: string;
     let savedFilename: string | undefined;
+    const uniqueId = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
 
-    // If it is a base64 data URL, save it to the public/uploads directory
-    if (typeof dataUrl === 'string' && dataUrl.startsWith('data:image/')) {
-      const matches = dataUrl.match(/^data:image\/([a-zA-Z0-9+]+);base64,(.+)$/);
-      if (matches) {
-        const ext = matches[1] === 'svg+xml' ? 'svg' : matches[1];
-        const base64Data = matches[2];
-        const uniqueId = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-        savedFilename = `upload_${uniqueId}.${ext}`;
-        const filePath = path.join(rootUploadDir, savedFilename);
-
-        fs.writeFileSync(filePath, Buffer.from(base64Data, 'base64'));
-        fileUrl = `/uploads/${savedFilename}`;
+    if (isBinary) {
+      const ext = IMAGE_EXT[String(req.headers['content-type'] || '').split(';')[0].trim().toLowerCase()];
+      if (!ext || !(req.body as Buffer).length) {
+        return res.status(400).json({ success: false, message: 'Unsupported or empty image.' });
+      }
+      savedFilename = `upload_${uniqueId}.${ext}`;
+      fs.writeFileSync(path.join(rootUploadDir, savedFilename), req.body as Buffer);
+      fileUrl = `/uploads/${savedFilename}`;
+    } else {
+      const { dataUrl } = req.body || {};
+      if (!dataUrl) {
+        return res.status(400).json({ success: false, message: 'dataUrl is required' });
+      }
+      fileUrl = dataUrl;
+      // If it is a base64 data URL, save it to the uploads directory
+      if (typeof dataUrl === 'string' && dataUrl.startsWith('data:image/')) {
+        const matches = dataUrl.match(/^data:image\/([a-zA-Z0-9+]+);base64,(.+)$/);
+        if (matches) {
+          const ext = matches[1] === 'svg+xml' ? 'svg' : matches[1];
+          savedFilename = `upload_${uniqueId}.${ext}`;
+          fs.writeFileSync(path.join(rootUploadDir, savedFilename), Buffer.from(matches[2], 'base64'));
+          fileUrl = `/uploads/${savedFilename}`;
+        }
       }
     }
+
+    // Make the sizes a page loads first, so the first visitor gets them instantly.
+    if (savedFilename) warmVariants(rootUploadDir, savedFilename);
 
     const newItem: ServerMediaItem = {
       id: `m_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       title: title || filename?.replace(/\.[^/.]+$/, '') || `Campaign Asset ${mediaAssets.length + 1}`,
-      category: category || (title?.toLowerCase().includes('logo') ? 'Logo' : 'Photos'),
+      category: (category || (title?.toLowerCase().includes('logo') ? 'Logo' : 'Photos')) as ServerMediaItem['category'],
       url: fileUrl,
       filename: savedFilename,
       createdAt: new Date().toISOString()
@@ -191,6 +216,7 @@ mediaRouter.delete('/:id', (req: Request, res: Response) => {
     if (fs.existsSync(filePath)) {
       try {
         fs.unlinkSync(filePath);
+        removeVariants(rootUploadDir, removedItem.filename);
       } catch (err) {
         console.warn('Could not delete physical file:', err);
       }

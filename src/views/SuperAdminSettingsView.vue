@@ -139,7 +139,7 @@
               >
                 <img 
                   v-if="brand.logo_url" 
-                  :src="brand.logo_url" 
+                  :src="sizedUrl(brand.logo_url, 320)" 
                   :alt="brand.name" 
                   class="size-full object-cover" 
                   @error="(e: any) => (e.target.style.display = 'none')"
@@ -1312,6 +1312,7 @@
 </template>
 
 <script setup lang="ts">
+import { sizedUrl } from '../services/responsiveImage.ts';
 import { glassConfirm, glassPrompt } from '../services/glassDialog.ts';
 import { ref, computed, reactive, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';

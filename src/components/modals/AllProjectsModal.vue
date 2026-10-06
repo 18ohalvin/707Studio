@@ -148,7 +148,7 @@
                 <!-- Cover Image if HeroDrop image exists -->
                 <img 
                   v-if="getProjectCover(project)"
-                  :src="getProjectCover(project)" 
+                  :src="sizedUrl(getProjectCover(project), 640)" loading="lazy" decoding="async" 
                   alt="Cover"
                   class="size-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
@@ -230,7 +230,7 @@
                 <div class="size-9 rounded-[8px] bg-neutral-100 border border-black/5 shrink-0 overflow-hidden flex items-center justify-center">
                   <img 
                     v-if="getProjectCover(project)"
-                    :src="getProjectCover(project)" 
+                    :src="sizedUrl(getProjectCover(project), 640)" loading="lazy" decoding="async" 
                     alt="Thumbnail"
                     class="size-full object-cover"
                   />
@@ -317,6 +317,7 @@
 </template>
 
 <script setup lang="ts">
+import { sizedUrl } from '../../services/responsiveImage.ts';
 import { glassConfirm } from '../../services/glassDialog.ts';
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';

@@ -63,7 +63,7 @@
           </span>
         </div>
         <div v-if="projectBrandLogoUrl" class="border-[0.5px] border-neutral-200 p-3 rounded-[8px] bg-neutral-50 flex items-center justify-between">
-          <img :src="projectBrandLogoUrl" alt="Brand Logo" class="max-h-[32px] h-[24px] w-auto object-contain" />
+          <img :src="sizedUrl(projectBrandLogoUrl, 320)" alt="Brand Logo" class="max-h-[32px] h-[24px] w-auto object-contain" />
           <span class="font-707 text-[11px] text-emerald-600 font-medium">● Visible on Summary</span>
         </div>
         <p v-else class="font-707 text-[11px] text-neutral-400 leading-normal">
@@ -540,6 +540,7 @@
 </template>
 
 <script setup lang="ts">
+import { sizedUrl } from '../../services/responsiveImage.ts';
 import { CTA_ACTION_OPTIONS, normalizeCtaAction } from './ctaActions.ts';
 import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';

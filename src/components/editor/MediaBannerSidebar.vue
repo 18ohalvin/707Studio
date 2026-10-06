@@ -43,7 +43,7 @@
         <!-- If media already uploaded, show thumbnail preview with replace overlay -->
         <template v-if="currentImageUrl && !isCurrentSolidSpace">
           <img 
-            :src="currentImageUrl" 
+            :src="sizedUrl(currentImageUrl, 640)" 
             class="size-full object-cover absolute inset-0" 
             alt="Uploaded Media" 
             @error="handleUploadThumbError"
@@ -190,7 +190,7 @@
           >
             <div class="flex items-center gap-3">
               <div class="h-[52px] min-w-[52px] max-w-[150px] flex items-center justify-center bg-neutral-50 px-2 rounded border border-neutral-200">
-                <img :src="brandLogoUrl" alt="Brand Logo" class="max-h-[48px] h-[48px] w-auto object-contain" />
+                <img :src="sizedUrl(brandLogoUrl, 320)" alt="Brand Logo" class="max-h-[48px] h-[48px] w-auto object-contain" />
               </div>
               <div class="flex flex-col">
                 <span class="text-[12px] font-707 font-medium text-black truncate max-w-[130px]">Brand Logo</span>
@@ -656,6 +656,7 @@
 </template>
 
 <script setup lang="ts">
+import { sizedUrl } from '../../services/responsiveImage.ts';
 import { CTA_ACTION_OPTIONS, normalizeCtaAction } from './ctaActions.ts';
 import { ref, computed, watch, nextTick } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';

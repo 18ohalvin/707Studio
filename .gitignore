@@ -39,3 +39,6 @@ Thumbs.db
 
 # TypeScript cache
 *.tsbuildinfo
+
+# Resized image cache made by the API (server/src/imageVariants.ts)
+.variants/

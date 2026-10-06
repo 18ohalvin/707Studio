@@ -392,7 +392,7 @@
           <div class="aspect-[3/4] bg-[#ededed] rounded-[6px] overflow-hidden relative group flex items-center justify-center border-[0.5px] border-black/5">
             <img 
               v-if="slot.url" 
-              :src="slot.url" 
+              :src="sizedUrl(slot.url, 320)" 
               class="w-full h-full object-cover" 
               alt="Slot" 
             />
@@ -524,6 +524,7 @@
 </template>
 
 <script setup lang="ts">
+import { sizedUrl } from '../../services/responsiveImage.ts';
 import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';

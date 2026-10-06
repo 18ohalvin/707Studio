@@ -62,7 +62,7 @@
             :class="isPickerOpen ? 'border-black ring-4 ring-black/5' : ''"
           >
             <div class="size-7 rounded-[7px] bg-neutral-100 border border-black/5 overflow-hidden flex items-center justify-center shrink-0">
-              <img v-if="selectedProject && projectCover(selectedProject)" :src="projectCover(selectedProject)" class="size-full object-cover" alt="" />
+              <img v-if="selectedProject && projectCover(selectedProject)" :src="sizedUrl(projectCover(selectedProject), 320)" class="size-full object-cover" alt="" />
               <Layers v-else class="w-3.5 h-3.5 text-neutral-400" />
             </div>
             <div class="flex flex-col min-w-0 flex-1">
@@ -108,7 +108,7 @@
                 class="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] hover:bg-black/5 cursor-pointer text-left"
               >
                 <div class="size-7 rounded-[7px] bg-neutral-100 border border-black/5 overflow-hidden flex items-center justify-center shrink-0">
-                  <img v-if="projectCover(p)" :src="projectCover(p)" class="size-full object-cover" alt="" />
+                  <img v-if="projectCover(p)" :src="sizedUrl(projectCover(p), 320)" loading="lazy" class="size-full object-cover" alt="" />
                   <Layers v-else class="w-3.5 h-3.5 text-neutral-400" />
                 </div>
                 <div class="flex flex-col min-w-0 flex-1">
@@ -205,6 +205,7 @@
 </template>
 
 <script setup lang="ts">
+import { sizedUrl } from '../services/responsiveImage.ts';
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ArrowLeft, RefreshCw, ChevronDown, Layers, LayoutGrid, Check, Search, AlertTriangle, ScanLine, ArrowUpRight } from 'lucide-vue-next';

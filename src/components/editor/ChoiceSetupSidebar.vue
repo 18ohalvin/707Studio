@@ -441,7 +441,7 @@
             >
               <div class="flex items-center gap-2.5 min-w-0">
                 <div class="size-[44px] rounded bg-neutral-50 overflow-hidden border border-neutral-200 shrink-0">
-                  <img :src="opt.imageUrl" :alt="opt.label" class="size-full object-cover" />
+                  <img :src="sizedUrl(opt.imageUrl, 320)" :alt="opt.label" class="size-full object-cover" />
                 </div>
                 <div class="flex flex-col min-w-0">
                   <span class="text-[11px] font-707 font-medium text-black truncate">{{ opt.label || 'Model Image' }}</span>
@@ -527,6 +527,7 @@
 </template>
 
 <script setup lang="ts">
+import { sizedUrl } from '../../services/responsiveImage.ts';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';

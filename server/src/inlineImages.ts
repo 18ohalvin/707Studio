@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { resolveUploadDir } from './uploads.js';
+import { warmVariants } from './imageVariants.js';
 
 /**
  * Move base64 images out of saved project JSON and onto disk.
@@ -51,6 +52,7 @@ function storeDataUrl(value: string, uploadDir: string): string {
 
     if (!fs.existsSync(filePath)) {
       fs.writeFileSync(filePath, buffer);
+      warmVariants(uploadDir, filename);
     }
     return `/uploads/${filename}`;
   } catch {

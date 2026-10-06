@@ -80,23 +80,43 @@ export async function uploadMediaDirectly(params: {
   category?: 'Photos' | 'Logo' | 'Product Catalog' | 'Editorial Photos';
   filename?: string;
 }): Promise<MediaItem> {
+  // Send the file's bytes, not base64 inside JSON: a photoshoot original is
+  // a third smaller on the wire this way, which is most of an upload's time.
+  // The server makes the screen-sized versions pages actually load.
+  const send = async (): Promise<Response | null> => {
+    let blob: Blob | null = null;
+    try {
+      blob = params.dataUrl.startsWith('data:image/') ? await (await fetch(params.dataUrl)).blob() : null;
+    } catch {
+      blob = null;
+    }
+    if (blob && blob.type.startsWith('image/')) {
+      const query = new URLSearchParams();
+      if (params.title) query.set('title', params.title);
+      if (params.category) query.set('category', params.category);
+      if (params.filename) query.set('filename', params.filename);
+      return apiFetch(`/api/media/upload?${query.toString()}`, {
+        method: 'POST',
+        headers: { 'Content-Type': blob.type },
+        body: blob
+      }).catch(() => null);
+    }
+    return apiFetch('/api/media/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params)
+    }).catch(() => null);
+  };
+
   try {
     // Uploads are the longest request the app makes, so they are the most
     // exposed to the packet loss on this link. One retry turns most dropped
     // uploads into a short pause instead of a missing image.
-    let res = await apiFetch('/api/media/upload', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params)
-    }).catch(() => null) as Response | null;
+    let res = await send();
 
     if (!res || (!res.ok && res.status >= 500)) {
       await new Promise(resolve => setTimeout(resolve, 1200));
-      res = await apiFetch('/api/media/upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(params)
-      });
+      res = await send();
     }
 
     if (res && res.ok) {

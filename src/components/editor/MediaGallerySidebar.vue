@@ -248,7 +248,7 @@
             :title="`Click or drag ${item.title}`"
           >
             <img 
-              :src="item.url" 
+              :src="sizedUrl(item.url, 320)" loading="lazy" decoding="async" 
               :alt="item.title"
               class="w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-200"
             />
@@ -291,6 +291,7 @@
 </template>
 
 <script setup lang="ts">
+import { sizedUrl } from '../../services/responsiveImage.ts';
 import { ref, computed, watch, onMounted } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';

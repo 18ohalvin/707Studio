@@ -13,6 +13,7 @@ import { submissionsRouter } from './routes/submissions.js';
 import { mediaRouter } from './routes/media.js';
 import { notificationsRouter } from './routes/notifications.js';
 import { resolveUploadDir } from './uploads.js';
+import { imageVariantMiddleware } from './imageVariants.js';
 
 dotenv.config();
 
@@ -31,7 +32,15 @@ app.use(cors());
 // timeout, not an artificial byte limit.
 app.use(express.json({ limit: '200mb' }));
 app.use(express.urlencoded({ limit: '200mb', extended: true }));
-app.use('/uploads', express.static(uploadDir));
+// /uploads/<file>?w=<width> serves a resized AVIF/WebP version (see imageVariants.ts);
+// without ?w the original file. Upload names are unique and never reused, so
+// both can be cached by browsers for a year.
+app.use('/uploads', imageVariantMiddleware(uploadDir));
+app.use('/uploads', express.static(uploadDir, {
+  // The .variants cache is reached through ?w= only, not by its own path.
+  dotfiles: 'ignore',
+  setHeaders: (res) => res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+}));
 
 // API Health Check — reports the database too. The pool falls back to
 // in-memory storage when Postgres is unreachable, which looks healthy from the
