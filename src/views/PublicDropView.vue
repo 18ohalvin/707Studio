@@ -87,6 +87,7 @@ import { TICKET_SOURCE_KEY, type TicketSource } from '../components/editor/ticke
 import { stripTextAnswers } from '../components/editor/guestAnswers.ts';
 import { getToken } from '../services/apiClient.ts';
 import { postEntry, createEntryKeyring } from '../services/submitEntry.ts';
+import { PLACES_KEY, PLACES_POLL_MS, collectPicks, fetchPlaces, wantsWaitlist, type PlacesMap } from '../services/places.ts';
 import type { ActivationPage } from '../types/editor.ts';
 import { useEditorStore } from '../stores/editorStore.ts';
 
@@ -127,6 +128,7 @@ async function loadPage() {
   activePageIndex.value = 0;
   collectedFormData.value = {};
   livePass.status = 'idle';
+  livePass.waitlisted = false;
   livePass.code = '';
   livePass.guestName = '';
   livePass.email = '';
@@ -345,8 +347,33 @@ function handlePopState() {
   }
 }
 
+// Live places per option, re-read while the guest is on the page.
+const places = ref<PlacesMap>({});
+provide(PLACES_KEY, places);
+let placesTimer: ReturnType<typeof setInterval> | null = null;
+/** The guest was told an option is full and tapped "Try again": that is their yes to the waitlist. */
+let joinWaitlist = false;
+
+async function refreshPlaces() {
+  if (!submissionPageId.value || document.hidden) return;
+  const next = await fetchPlaces(submissionPageId.value);
+  if (next) places.value = next;
+}
+
+function startPlacesPolling() {
+  stopPlacesPolling();
+  void refreshPlaces();
+  placesTimer = setInterval(() => void refreshPlaces(), PLACES_POLL_MS);
+}
+
+function stopPlacesPolling() {
+  if (placesTimer) clearInterval(placesTimer);
+  placesTimer = null;
+}
+
 const livePass = reactive<LivePassState>({
   status: 'idle',
+  waitlisted: false,
   code: '',
   guestName: '',
   email: '',
@@ -377,8 +404,15 @@ async function sendSubmission() {
 
   // Transient failures (signal drop, server briefly without its database) are retried
   // here, with the pass still showing "Issuing…", before the guest sees an error.
+  const picks = collectPicks(projectPages.value);
   const outcome = await postEntry(
-    { page_id: submissionPageId.value, submission_type: 'raffle', form_data: { ...answers, submittedAt: new Date().toISOString() } },
+    {
+      page_id: submissionPageId.value,
+      submission_type: 'raffle',
+      form_data: { ...answers, submittedAt: new Date().toISOString() },
+      slot_picks: picks,
+      waitlist: joinWaitlist || wantsWaitlist(picks, places.value)
+    },
     entryKeyring.keyFor(answers),
     { headers: staffAuthHeaders() }
   );
@@ -391,7 +425,21 @@ async function sendSubmission() {
     livePass.guestType = String(recorded['Guest Type'] || campaignGuestType() || '');
     const sessions = recorded[SESSIONS_ANSWER_KEY];
     livePass.sessions = Array.isArray(sessions) ? sessions.filter((x: any) => x && typeof x === 'object' && x.label) : [];
+    livePass.waitlisted = outcome.entry.status === 'waitlisted';
     livePass.status = 'ready';
+    joinWaitlist = false;
+    void refreshPlaces();
+    return;
+  }
+  if (outcome.code === 'slots_full' || outcome.code === 'option_closed') {
+    if (outcome.availability) places.value = outcome.availability;
+    const names = (outcome.full || []).map(f => f.label).filter(Boolean).join(', ') || 'One of your choices';
+    const canWait = outcome.code === 'slots_full' && (outcome.full || []).length > 0 && (outcome.full || []).every(f => f.waitlist);
+    joinWaitlist = canWait;
+    livePass.error = canWait
+      ? `${names} is now fully reserved. Tap “Try again” to join the waitlist, or go back and choose another.`
+      : `${names} is no longer available. Go back and choose another.`;
+    livePass.status = 'error';
     return;
   }
   livePass.error = outcome.message;
@@ -408,13 +456,14 @@ function applySeo(page: ActivationPage) {
 }
 
 onMounted(() => {
-  loadPage();
+  loadPage().then(startPlacesPolling);
   if (typeof window !== 'undefined') {
     window.addEventListener('popstate', handlePopState);
   }
 });
 
 onUnmounted(() => {
+  stopPlacesPolling();
   if (typeof window !== 'undefined') {
     window.removeEventListener('popstate', handlePopState);
   }
@@ -423,7 +472,7 @@ onUnmounted(() => {
 watch(
   () => [route.params.brandSlug, route.params.pageSlug],
   () => {
-    loadPage();
+    loadPage().then(startPlacesPolling);
   }
 );
 </script>

@@ -181,44 +181,6 @@
         </div>
       </div>
 
-      <!-- Slots Capacity Toggle & Global Value -->
-      <div class="flex items-center justify-between w-full pt-1 border-t border-neutral-100">
-        <div class="flex flex-col">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Slots Capacity
-          </p>
-          <span class="font-707 text-[11px] text-neutral-400">
-            Badge on choice tiles
-          </span>
-        </div>
-        <button 
-          type="button"
-          @click="showSlotsCapacity = !showSlotsCapacity"
-          :class="showSlotsCapacity ? 'bg-black' : 'bg-neutral-200'"
-          class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
-        >
-          <span 
-            :class="showSlotsCapacity ? 'translate-x-[18px]' : 'translate-x-0'"
-            class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
-          />
-        </button>
-      </div>
-
-      <!-- Global Slots per Option Input -->
-      <div v-if="showSlotsCapacity" class="flex flex-col gap-[6px] w-full animate-in fade-in slide-in-from-top-1 duration-150">
-        <div class="flex items-center justify-between">
-          <span class="font-707 text-[12px] font-medium text-neutral-700">Slots per Option</span>
-          <span class="font-707 text-[11px] text-neutral-400">Applies to all options</span>
-        </div>
-        <div class="border-[0.5px] border-[#aaa] focus-within:border-black rounded-[8px] px-3.5 h-[38px] flex items-center w-full bg-white transition-colors">
-          <input 
-            v-model="globalSlotsCapacity"
-            placeholder="e.g. 25"
-            class="w-full font-707 text-[13px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
-          />
-        </div>
-      </div>
-
       <!-- Options Manager Section Header -->
       <div class="flex items-center justify-between w-full pt-1 border-t border-neutral-100">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
@@ -668,20 +630,6 @@ const allowMultiple = computed({
   }
 });
 
-const showSlotsCapacity = computed({
-  get: () => targetModalData.value.showSlotsCapacity ?? false,
-  set: (val: boolean) => {
-    updateModalData({ showSlotsCapacity: val });
-  }
-});
-
-const globalSlotsCapacity = computed({
-  get: () => targetModalData.value.globalSlotsCapacity ?? 25,
-  set: (val: string | number) => {
-    updateModalData({ globalSlotsCapacity: val });
-  }
-});
-
 const fieldPlaceholder = computed({
   get: () => targetModalData.value.fieldPlaceholder || 'Email*',
   set: (val: string) => {
@@ -800,8 +748,6 @@ function selectVariant(v: ModalVariant) {
     defaultProps.buttonText = 'Done';
     defaultProps.buttonVariant = 'black';
     defaultProps.allowMultiple = true;
-    defaultProps.showSlotsCapacity = true;
-    defaultProps.globalSlotsCapacity = 25;
     defaultProps.options = [
       { id: 'opt_1', label: 'Pass Option 1', sublabel: '24 Oct 2026', description: 'Access to activation area and special event lounge', selected: true },
       { id: 'opt_2', label: 'Pass Option 2', sublabel: '25 Oct 2026', description: 'Access to activation area and special event lounge', selected: false }
@@ -812,7 +758,6 @@ function selectVariant(v: ModalVariant) {
     defaultProps.buttonText = 'Done';
     defaultProps.buttonVariant = 'black';
     defaultProps.allowMultiple = false;
-    defaultProps.showSlotsCapacity = false;
     defaultProps.options = [
       { id: 'opt_1', label: 'Day 1', sublabel: '2 Sept', selected: true },
       { id: 'opt_2', label: 'Day 2', sublabel: '3 Sept', selected: false }

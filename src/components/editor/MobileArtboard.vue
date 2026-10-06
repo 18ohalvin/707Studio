@@ -1391,12 +1391,15 @@ more</span>
 
               <!-- 1. Big Headline Display (H2 - responsive multiline without double line restriction) -->
               <h2 class="font-707 font-medium text-heading-h2 text-[22px] leading-[28px] tracking-tight uppercase text-black whitespace-pre-line break-words mt-[2px]">
-                {{ widget.props?.heading || 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.' }}
+                {{ isLivePass && livePass!.waitlisted ? 'YOU ARE ON\nTHE WAITLIST.' : (widget.props?.heading || 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.') }}
               </h2>
+              <p v-if="isLivePass && livePass!.waitlisted" class="font-707 text-[13px] leading-[19px] text-neutral-600 -mt-[6px]">
+                Your details are held. We will write to you the moment a place opens — this code does not admit you until then.
+              </p>
 
               <!-- 2. QR Code Section (Positioned directly under Headline and ABOVE Pass Information fields, Left Aligned with transparent canvas bg) -->
               <div 
-                v-if="widget.props?.showQrCode !== false" 
+                v-if="widget.props?.showQrCode !== false && !(isLivePass && livePass!.waitlisted)" 
                 class="w-full flex items-start justify-start pt-[4px]"
               >
                 <div class="size-[132px] border-[0.5px] border-black bg-transparent rounded-[6px] p-[10px] flex items-center justify-center relative overflow-hidden shadow-xs">
@@ -1934,6 +1937,7 @@ more</span>
 import { clampLogoHeight, logoImageWidth, TICKET_LOGO_HEIGHT } from './logoSize.ts';
 import { ref, reactive, computed, watch, nextTick, onMounted, inject } from 'vue';
 import QRCode from 'qrcode';
+import { PLACES_KEY, placeStatus, placeKey, configuredLimit, type PlaceStatus } from '../../services/places.ts';
 import { LIVE_PASS_KEY, SESSIONS_ANSWER_KEY, type PassSession } from './livePass.ts';
 import { normalizeCtaAction } from './ctaActions.ts';
 import { responsiveImgAttrs, placeholderStyle, sizedUrl } from '../../services/responsiveImage.ts';
@@ -1984,6 +1988,7 @@ const editorStore = useEditorStore();
 
 // Real pass state on a published page (provided by PublicDropView); absent in the editor.
 const livePass = inject(LIVE_PASS_KEY, null);
+const livePlaces = inject(PLACES_KEY, null);
 const isLivePass = computed(() => Boolean(props.isLivePage && livePass));
 const livePassQr = ref('');
 
@@ -2493,50 +2498,29 @@ function getChoiceOptionTypographyClass(widget: any, opt?: any) {
   }
 }
 
-function getOptionSlotsCapacity(widget: any, opt?: any): number | null {
-  if (widget?.props?.showSlotsCapacity === false) return null;
-  if (opt?.slotsCapacity !== undefined && opt?.slotsCapacity !== null && String(opt.slotsCapacity).trim() !== '') {
-    const num = Number(opt.slotsCapacity);
-    if (!isNaN(num)) return num;
-  }
-  if (widget?.props?.globalSlotsCapacity !== undefined && widget?.props?.globalSlotsCapacity !== null && String(widget.props.globalSlotsCapacity).trim() !== '') {
-    const num = Number(widget.props.globalSlotsCapacity);
-    if (!isNaN(num)) return num;
-  }
-  return 25;
+/** How one option stands: live numbers on a published page, the configured limit as a preview in the editor. */
+function placeStatusOf(widget: any, opt: any): PlaceStatus {
+  const info = props.isLivePage ? livePlaces?.value?.[placeKey(String(widget?.id), String(opt?.id))] : undefined;
+  const limit = configuredLimit(widget?.props, opt);
+  return placeStatus(info, {
+    limited: widget?.props?.limitPlaces === true,
+    capacity: limit,
+    closed: opt?.disabled === true,
+    waitlist: widget?.props?.waitlistEnabled !== false
+  });
 }
 
 function isChoiceOptionDisabled(widget: any, opt: any): boolean {
   if (!opt) return false;
   if (opt.disabled) return true;
-  if (widget?.props?.showSlotsCapacity) {
-    const capacity = getOptionSlotsCapacity(widget, opt);
-    if (capacity !== null && capacity <= 0) {
-      return true;
-    }
-  }
-  return false;
-}
-
-function formatSlotsBadge(val?: string | number): string {
-  if (val === undefined || val === null) return '';
-  const str = String(val).trim();
-  if (!str) return '';
-  if (/slots/i.test(str)) return str;
-  const num = Number(str);
-  if (!isNaN(num) && num <= 0) {
-    return '0 Slots Available (Full)';
-  }
-  return `${str} Slots Available`;
+  return !placeStatusOf(widget, opt).selectable;
 }
 
 function getOptionSlotsBadge(widget: any, opt?: any): string {
   const v = widget?.props?.variant || 'detailed-card';
   if (v !== 'detailed-card' && v !== 'simple-row') return '';
   if (widget?.props?.showSlotsCapacity === false) return '';
-  const val = getOptionSlotsCapacity(widget, opt);
-  if (val === null) return '';
-  return formatSlotsBadge(val);
+  return placeStatusOf(widget, opt).label;
 }
 
 function getImageGridColsClass(widget: any): string {
@@ -2784,6 +2768,10 @@ function findPassWidget(trigger: any): any | null {
 
 async function downloadPass(trigger: any) {
   const pass = findPassWidget(trigger);
+  if (isLivePass.value && livePass!.waitlisted) {
+    editorStore.showToast('You are on the waitlist — your pass is issued once a place opens.');
+    return;
+  }
   if (isLivePass.value && livePass!.status !== 'ready') {
     editorStore.showToast(livePass!.status === 'error' ? 'Your pass was not issued yet — tap "Try again" on the pass first.' : 'Your pass is still being issued — one moment.');
     return;
@@ -3571,14 +3559,9 @@ function isModalSlotSelected(slot: any): boolean {
   return !!slot.selected;
 }
 
-function getModalOptionSlotsBadge(opt: any): string | null {
-  if (!modalDisplayProps.value.showSlotsCapacity) return null;
-  const rawSlots = opt.slotsCapacity !== undefined && opt.slotsCapacity !== ''
-    ? opt.slotsCapacity
-    : modalDisplayProps.value.globalSlotsCapacity ?? 25;
-  const num = parseInt(String(rawSlots), 10);
-  if (isNaN(num)) return `${rawSlots} Slots Available`;
-  return `${num} Slots Available`;
+/** Modal options are not counted by the server, so they carry no places badge. */
+function getModalOptionSlotsBadge(_opt: any): string | null {
+  return null;
 }
 
 function handleModalAddOption() {

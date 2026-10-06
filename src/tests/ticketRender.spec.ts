@@ -44,6 +44,7 @@ describe('Ticket page rendering', () => {
       guestName: 'Rian Pratama',
       email: 'rian@atmos.co',
       guestType: 'VIP',
+      waitlisted: false,
       sessions: [{ label: 'Day 2 — Raffle Draw', sublabel: '3 Sept 2026' }],
       error: '',
       retry: () => {}

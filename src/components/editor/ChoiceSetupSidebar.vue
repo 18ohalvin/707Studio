@@ -266,43 +266,63 @@
       </div>
     </div>
 
-    <!-- Section 6: Slots Capacity (For Detailed Cards and Simple Rows) -->
-    <div v-if="variant === 'detailed-card' || variant === 'simple-row'" class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
+    <!-- Section 6: Places (limit how many guests can take an option) -->
+    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
       <div class="flex items-center justify-between w-full">
         <div class="flex flex-col">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Slots Capacity
+            Limit places
           </p>
           <span class="font-707 text-[11px] text-neutral-400">
-            Badge on option tiles
+            Counted live from registrations
           </span>
         </div>
         <!-- 707 Switch Toggle -->
         <button 
           type="button"
-          @click="toggleSlotsCapacity"
-          :class="showSlotsCapacity ? 'bg-black' : 'bg-neutral-200'"
+          @click="limitPlaces = !limitPlaces"
+          :class="limitPlaces ? 'bg-black' : 'bg-neutral-200'"
           class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
         >
           <span 
-            :class="showSlotsCapacity ? 'translate-x-[18px]' : 'translate-x-0'"
+            :class="limitPlaces ? 'translate-x-[18px]' : 'translate-x-0'"
             class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
           />
         </button>
       </div>
 
-      <!-- Global Slots Input -->
-      <div v-if="showSlotsCapacity" class="flex flex-col gap-[8px] w-full pt-1 animate-in fade-in slide-in-from-top-1 duration-150">
-        <div class="flex items-center justify-between">
-          <span class="font-707 text-[12px] font-medium text-neutral-700">Slots per Option</span>
-          <span class="font-707 text-[11px] text-neutral-400">Applies to all options</span>
+      <div v-if="limitPlaces" class="flex flex-col gap-[12px] w-full pt-1 animate-in fade-in slide-in-from-top-1 duration-150">
+        <div class="flex flex-col gap-[8px]">
+          <div class="flex items-center justify-between">
+            <span class="font-707 text-[12px] font-medium text-neutral-700">Places per option</span>
+            <span class="font-707 text-[11px] text-neutral-400">Override on any option below</span>
+          </div>
+          <div class="border border-[#aaa] focus-within:border-black rounded-[8px] px-3.5 h-[38px] flex items-center w-full bg-white transition-colors">
+            <input 
+              v-model="globalSlotsCapacity"
+              inputmode="numeric"
+              placeholder="e.g. 500"
+              class="w-full font-707 text-[13px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
+            />
+          </div>
         </div>
-        <div class="border border-[#aaa] focus-within:border-black rounded-[8px] px-3.5 h-[38px] flex items-center w-full bg-white transition-colors">
-          <input 
-            v-model="globalSlotsCapacity"
-            placeholder="e.g. 25"
-            class="w-full font-707 text-[13px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
-          />
+
+        <div class="flex items-center justify-between w-full">
+          <div class="flex flex-col">
+            <span class="font-707 text-[12px] font-medium text-neutral-700">Waitlist when full</span>
+            <span class="font-707 text-[11px] text-neutral-400">Guests may queue; a place returns when a guest is removed</span>
+          </div>
+          <button 
+            type="button"
+            @click="waitlistEnabled = !waitlistEnabled"
+            :class="waitlistEnabled ? 'bg-black' : 'bg-neutral-200'"
+            class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+          >
+            <span 
+              :class="waitlistEnabled ? 'translate-x-[18px]' : 'translate-x-0'"
+              class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+            />
+          </button>
         </div>
       </div>
     </div>
@@ -367,6 +387,29 @@
               title="Remove Option"
             >
               <Trash2 class="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <!-- Places for this option -->
+          <div v-if="limitPlaces" class="flex items-center gap-2 pl-7">
+            <span class="font-707 text-[11px] font-medium text-neutral-600 shrink-0">Places</span>
+            <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2.5 h-[28px] flex items-center flex-1 bg-white transition-colors">
+              <input 
+                :value="opt.slotsCapacity ?? ''"
+                @input="updateOptionField(idx, { slotsCapacity: ($event.target as HTMLInputElement).value.replace(/[^\d]/g, '') })"
+                inputmode="numeric"
+                :placeholder="globalSlotsCapacity ? `${globalSlotsCapacity} (shared)` : 'No limit'"
+                class="w-full font-707 text-[11px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
+              />
+            </div>
+            <button 
+              type="button"
+              @click="updateOptionField(idx, { disabled: !opt.disabled })"
+              :class="opt.disabled ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-500 hover:text-black'"
+              class="h-[28px] px-2.5 rounded-[6px] font-707 text-[11px] font-medium cursor-pointer transition-colors shrink-0"
+              title="Close this option to new registrations"
+            >
+              {{ opt.disabled ? 'Closed' : 'Close' }}
             </button>
           </div>
 
@@ -730,26 +773,40 @@ function setGridColumns(col: number) {
   gridColumns.value = col;
 }
 
-const showSlotsCapacity = computed({
-  get: () => currentWidget.value?.props.showSlotsCapacity ?? true,
+const limitPlaces = computed({
+  get: () => currentWidget.value?.props.limitPlaces === true,
   set: (val: boolean) => {
     if (currentWidget.value) {
-      editorStore.updateWidgetProps(currentWidget.value.id, { showSlotsCapacity: val });
+      editorStore.updateWidgetProps(currentWidget.value.id, { limitPlaces: val });
     }
   }
 });
 
+const waitlistEnabled = computed({
+  get: () => currentWidget.value?.props.waitlistEnabled !== false,
+  set: (val: boolean) => {
+    if (currentWidget.value) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { waitlistEnabled: val });
+    }
+  }
+});
+
+/** The shared limit; blank means "no number yet" — never a made-up default. */
 const globalSlotsCapacity = computed({
-  get: () => currentWidget.value?.props.globalSlotsCapacity ?? 25,
+  get: () => currentWidget.value?.props.globalSlotsCapacity ?? '',
   set: (val: string | number) => {
     if (currentWidget.value) {
-      editorStore.updateWidgetProps(currentWidget.value.id, { globalSlotsCapacity: val });
+      editorStore.updateWidgetProps(currentWidget.value.id, { globalSlotsCapacity: String(val).replace(/[^\d]/g, '') });
     }
   }
 });
 
-function toggleSlotsCapacity() {
-  showSlotsCapacity.value = !showSlotsCapacity.value;
+function updateOptionField(index: number, patch: Partial<ChoiceOption>) {
+  if (!currentWidget.value) return;
+  const currentOptions = [...(currentWidget.value.props.options || [])];
+  if (!currentOptions[index]) return;
+  currentOptions[index] = { ...currentOptions[index], ...patch };
+  editorStore.updateWidgetProps(currentWidget.value.id, { options: currentOptions });
 }
 
 const options = computed<ChoiceOption[]>({
@@ -827,17 +884,7 @@ function setRequired(val: boolean) {
 }
 
 function isOptionDisabled(opt: ChoiceOption): boolean {
-  if (opt.disabled) return true;
-  if (showSlotsCapacity.value) {
-    if (opt.slotsCapacity !== undefined && opt.slotsCapacity !== null && String(opt.slotsCapacity).trim() !== '') {
-      const n = Number(opt.slotsCapacity);
-      if (!isNaN(n) && n <= 0) return true;
-    } else if (globalSlotsCapacity.value !== undefined && globalSlotsCapacity.value !== null && String(globalSlotsCapacity.value).trim() !== '') {
-      const n = Number(globalSlotsCapacity.value);
-      if (!isNaN(n) && n <= 0) return true;
-    }
-  }
-  return false;
+  return opt.disabled === true;
 }
 
 function isOptionSelected(id: string): boolean {

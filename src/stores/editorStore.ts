@@ -588,8 +588,9 @@ export const useEditorStore = defineStore('editor', () => {
           optionTypographyStyle: 'body-text-medium',
           allowMultiple: true,
           required: false,
-          showSlotsCapacity: true,
-          globalSlotsCapacity: 25,
+          limitPlaces: false,
+          waitlistEnabled: true,
+          globalSlotsCapacity: '',
           selectedValues: [],
           options: [
             {

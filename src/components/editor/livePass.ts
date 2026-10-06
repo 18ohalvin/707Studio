@@ -24,6 +24,8 @@ export interface LivePassState {
   guestName: string;
   email: string;
   guestType: string;
+  /** Registered, but on the waitlist: no place yet, and the door will not admit the code. */
+  waitlisted: boolean;
   /** Sessions the guest picked, as recorded — the pass and its PDF print exactly these. */
   sessions: PassSession[];
   error: string;

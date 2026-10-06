@@ -14,6 +14,10 @@ export interface EntryPayload {
   page_id: string;
   submission_type: string;
   form_data: Record<string, any>;
+  /** Options ticked on limited blocks, so the server can count the places. */
+  slot_picks?: Array<{ widget: string; option: string }>;
+  /** The guest accepts the waitlist for any option that turns out to be full. */
+  waitlist?: boolean;
 }
 
 export interface RecordedEntry {
@@ -24,7 +28,7 @@ export interface RecordedEntry {
 
 export type EntryOutcome =
   | { ok: true; entry: RecordedEntry; duplicate: boolean }
-  | { ok: false; message: string; retryable: boolean };
+  | { ok: false; message: string; retryable: boolean; code?: string; full?: Array<{ widget: string; option: string; label: string; waitlist: boolean }>; availability?: Record<string, any> };
 
 /** Waits before the 1st, 2nd, … retry: about 13 s in all, enough to ride out a database restart. */
 export const RETRY_DELAYS_MS = [1000, 2000, 4000, 6000];
@@ -63,7 +67,7 @@ export async function postEntry(payload: EntryPayload, clientKey: string, opts: 
       lastMessage = json?.error || 'We could not register your entry.';
       // The entry itself was refused (missing name, unknown campaign…): trying again cannot help.
       if (res.status >= 400 && res.status < 500 && res.status !== 408 && res.status !== 429) {
-        return { ok: false, message: lastMessage, retryable: false };
+        return { ok: false, message: lastMessage, retryable: false, code: json?.code, full: json?.full, availability: json?.availability };
       }
     } catch {
       lastMessage = NO_CONNECTION;
