@@ -259,11 +259,12 @@
                 @drop.prevent.stop="handleLogoDropOnBanner($event, widget.id)"
               >
                 <!-- Render brand logo if url exists (Fixed height 48px, width auto to maintain aspect ratio) -->
-                <div v-if="widget.props.brandLogoUrl" class="max-h-[48px] h-[48px] flex items-center shrink-0">
+                <div v-if="widget.props.brandLogoUrl" class="flex items-center min-w-0 max-w-full" :style="{ height: `${logoHeightOf(widget)}px` }">
                   <img 
-                    :src="sizedUrl(widget.props.brandLogoUrl, 320)" 
+                    :src="sizedUrl(widget.props.brandLogoUrl, logoImageWidth(logoHeightOf(widget)))" 
                     alt="Brand Logo" 
-                    class="max-h-[48px] h-[48px] w-auto object-contain transition-transform"
+                    class="w-auto max-w-full object-contain transition-transform"
+                    :style="{ height: `${logoHeightOf(widget)}px` }"
                   />
                 </div>
                 <!-- Placeholder if enabled but no logo uploaded yet -->
@@ -275,9 +276,9 @@
                     widget.props.isSolidSpace ? 'bg-black/5 border-black/30 text-black/70' : 'bg-white/20 border-white/40 text-white backdrop-blur-sm',
                     isDragOverLogoSlot === widget.id ? 'border-black ring-2 ring-black' : ''
                   ]"
-                  title="Click or drop brand logo (Height 48px)"
+                  title="Click or drop a brand logo"
                 >
-                  <span>Select / Drop Brand Logo (48px)</span>
+                  <span>Select / Drop Brand Logo</span>
                 </div>
               </div>
 
@@ -293,6 +294,7 @@
                   widget.props.textAlign === 'right' ? 'text-right' : 
                   'text-left items-start'
                 ]"
+                :style="widget.props.textPosition === 'top' && index === 0 && widget.props.brandLogoUrl ? { paddingTop: `${logoHeightOf(widget) + 20}px` } : undefined"
               >
                 <!-- 1. Optional Tag / Badge (Placed on Top of H1 Headline) -->
                 <div 
@@ -1291,7 +1293,7 @@ more</span>
                   </div>
                   <!-- Brand logo, or the campaign title when there is none -->
                   <template v-else-if="field === 'brandLogo'">
-                    <img v-if="ticketLogo" :src="sizedUrl(ticketLogo, 320)" alt="Brand logo" class="h-[22px] w-auto max-w-[160px] object-contain" crossorigin="anonymous" />
+                    <img v-if="ticketLogo" :src="sizedUrl(ticketLogo, logoImageWidth(ticketLogoHeight(widget)))" alt="Brand logo" class="w-auto max-w-full object-contain" :style="{ height: `${ticketLogoHeight(widget)}px` }" crossorigin="anonymous" />
                     <span v-else class="font-707 text-[10px] uppercase tracking-[0.12em] text-neutral-500">{{ ticketCampaignTitle }}</span>
                   </template>
                   <!-- Sessions the guest picked -->
@@ -1369,12 +1371,12 @@ more</span>
                   'justify-start'
                 ]"
               >
-                <div class="max-h-[48px] h-[48px] flex items-center shrink-0">
+                <div class="flex items-center min-w-0 max-w-full" :style="{ height: `${getBrandLogoHeight(widget)}px` }">
                   <img 
-                    :src="sizedUrl(getBrandLogo(widget), 320)" 
+                    :src="sizedUrl(getBrandLogo(widget), logoImageWidth(getBrandLogoHeight(widget)))" 
                     alt="Brand Logo" 
-                    class="max-h-[48px] h-[48px] w-auto object-contain brightness-0 transition-transform" 
-                    style="filter: brightness(0);"
+                    class="w-auto max-w-full object-contain brightness-0 transition-transform" 
+                    :style="{ height: `${getBrandLogoHeight(widget)}px`, filter: 'brightness(0)' }"
                   />
                 </div>
               </div>
@@ -1921,6 +1923,7 @@ more</span>
 </template>
 
 <script setup lang="ts">
+import { clampLogoHeight, logoImageWidth, TICKET_LOGO_HEIGHT } from './logoSize.ts';
 import { ref, computed, watch, nextTick, onMounted, inject } from 'vue';
 import QRCode from 'qrcode';
 import { LIVE_PASS_KEY, SESSIONS_ANSWER_KEY, type PassSession } from './livePass.ts';
@@ -3010,6 +3013,21 @@ function isChoiceSelected(widget: any, optId: string): boolean {
   return selected.includes(optId);
 }
 
+/**
+ * Writes to the widget being shown. The editor store only knows the page
+ * open in the editor, so on a published page — where the widget belongs to
+ * the visitor's own copy of the campaign — its updateWidgetProps found
+ * nothing: a guest's pick was never recorded, a required choice never became
+ * valid, and the funnel could not move past it.
+ */
+function setWidgetProps(widget: any, patch: Record<string, any>) {
+  if (props.isLivePage) {
+    Object.assign(widget.props, patch);
+    return;
+  }
+  editorStore.updateWidgetProps(widget.id, patch);
+}
+
 function toggleChoiceOption(widget: any, optId: string) {
   if (wasDraggingRecently.value) return;
   if (props.isMiniPreview) return;
@@ -3041,7 +3059,7 @@ function toggleChoiceOption(widget: any, optId: string) {
     }
   }
 
-  editorStore.updateWidgetProps(widget.id, { selectedValues: selected });
+  setWidgetProps(widget, { selectedValues: selected });
 }
 
 function getAutomaticOptionLabel(v: string, index: number): string {
@@ -4298,6 +4316,29 @@ function getBrandLogo(widget: any) {
     }
   }
   return '';
+}
+
+/** Height of the logo on a banner: its own setting, 48px by default. */
+function logoHeightOf(widget: any): number {
+  return clampLogoHeight(widget?.props?.brandLogoHeight);
+}
+
+/** The e-pass inherits the logo — and its height — from the banner. */
+function getBrandLogoHeight(widget: any): number {
+  if (widget?.props?.brandLogoHeight) return clampLogoHeight(widget.props.brandLogoHeight);
+  const heroHere = activePage.value.widget_tree.find((w: any) => w.type === 'HeroDrop' && w.props?.brandLogoUrl);
+  if (heroHere) return logoHeightOf(heroHere);
+  if (!props.isLivePage) {
+    for (const page of editorStore.pages) {
+      const hero = page.widget_tree.find((w: any) => w.type === 'HeroDrop' && w.props?.brandLogoUrl);
+      if (hero) return logoHeightOf(hero);
+    }
+  }
+  return clampLogoHeight(undefined);
+}
+
+function ticketLogoHeight(widget: any): number {
+  return clampLogoHeight(widget?.props?.logoHeight, TICKET_LOGO_HEIGHT);
 }
 
 function getBrandLogoAlign(widget: any) {

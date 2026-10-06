@@ -190,11 +190,11 @@
           >
             <div class="flex items-center gap-3">
               <div class="h-[52px] min-w-[52px] max-w-[150px] flex items-center justify-center bg-neutral-50 px-2 rounded border border-neutral-200">
-                <img :src="sizedUrl(brandLogoUrl, 320)" alt="Brand Logo" class="max-h-[48px] h-[48px] w-auto object-contain" />
+                <img :src="sizedUrl(brandLogoUrl, 640)" alt="Brand Logo" class="max-h-[48px] w-auto max-w-full object-contain" />
               </div>
               <div class="flex flex-col">
                 <span class="text-[12px] font-707 font-medium text-black truncate max-w-[130px]">Brand Logo</span>
-                <span class="text-[10px] font-707 text-neutral-400">Height: 48px</span>
+                <span class="text-[10px] font-707 text-neutral-400">Height: {{ brandLogoHeight }}px</span>
               </div>
             </div>
             <div class="flex items-center gap-1.5">
@@ -245,7 +245,50 @@
               </button>
               <span> or Drag</span>
             </p>
-            <span class="text-[10px] font-707 text-neutral-400">Fixed height 48px</span>
+            <span class="text-[10px] font-707 text-neutral-400">Any size — set the height below</span>
+          </div>
+
+          <!-- Logo Height: whatever size was uploaded, the editor sets how tall it shows -->
+          <div v-if="brandLogoUrl" class="flex flex-col gap-[8px] w-full pt-1">
+            <div class="flex items-center justify-between w-full">
+              <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Logo Height</p>
+              <div class="flex items-center gap-1.5">
+                <div class="border-[0.5px] border-[#aaa] focus-within:border-black flex h-[28px] items-center px-2 rounded-[6px] bg-white transition-colors">
+                  <input
+                    type="number"
+                    :min="LOGO_HEIGHT.min"
+                    :max="LOGO_HEIGHT.max"
+                    :value="brandLogoHeight"
+                    @change="brandLogoHeight = clampLogoHeight(($event.target as HTMLInputElement).value)"
+                    class="w-[44px] text-[12px] font-707 text-black text-right outline-none tabular-nums bg-transparent"
+                    aria-label="Logo height in pixels"
+                  />
+                  <span class="text-[11px] font-707 text-neutral-400 ml-0.5">px</span>
+                </div>
+                <button
+                  v-if="brandLogoHeight !== LOGO_HEIGHT.default"
+                  type="button"
+                  @click="brandLogoHeight = LOGO_HEIGHT.default"
+                  class="h-[28px] px-2 rounded-[6px] text-[11px] font-707 text-neutral-600 hover:text-black hover:bg-black/5 cursor-pointer"
+                  title="Back to the default height"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+            <input
+              type="range"
+              :min="LOGO_HEIGHT.min"
+              :max="LOGO_HEIGHT.max"
+              step="1"
+              v-model.number="brandLogoHeight"
+              class="w-full accent-black cursor-pointer"
+              aria-label="Logo height"
+            />
+            <div class="flex justify-between text-[10px] font-707 text-neutral-400 tabular-nums">
+              <span>{{ LOGO_HEIGHT.min }}px</span>
+              <span>{{ LOGO_HEIGHT.max }}px</span>
+            </div>
           </div>
 
           <!-- Logo Alignment (Left, Center, Right) -->
@@ -656,6 +699,7 @@
 </template>
 
 <script setup lang="ts">
+import { LOGO_HEIGHT, clampLogoHeight } from './logoSize.ts';
 import { sizedUrl } from '../../services/responsiveImage.ts';
 import { CTA_ACTION_OPTIONS, normalizeCtaAction } from './ctaActions.ts';
 import { ref, computed, watch, nextTick } from 'vue';
@@ -797,6 +841,7 @@ const isTopPosition = computed(() => {
 const isBrandLogoEnabled = ref(false);
 const brandLogoUrl = ref('');
 const brandLogoAlign = ref<'left' | 'center' | 'right'>('left');
+const brandLogoHeight = ref<number>(LOGO_HEIGHT.default);
 const isDragOverLogo = ref(false);
 
 const badge = ref('');
@@ -1180,6 +1225,7 @@ watch(targetWidget, (widget) => {
     }
     brandLogoUrl.value = widget.props.brandLogoUrl || '';
     brandLogoAlign.value = widget.props.brandLogoAlign || 'left';
+    brandLogoHeight.value = clampLogoHeight(widget.props.brandLogoHeight);
 
     badge.value = widget.props.badge || '';
     isBadgeOptionOpen.value = !!widget.props.badge;
@@ -1243,6 +1289,19 @@ watch(() => targetWidget.value?.props?.brandLogoUrl, (storeUrl) => {
 
 watch(brandLogoAlign, (newAlign) => {
   updateHeroProps({ brandLogoAlign: newAlign });
+});
+
+watch(brandLogoHeight, (height) => {
+  const clamped = clampLogoHeight(height);
+  if (clamped !== height) {
+    brandLogoHeight.value = clamped;
+    return;
+  }
+  // Only when it actually differs from the stored value: selecting a banner
+  // syncs this ref from its props and must not count as an edit.
+  if (clamped !== clampLogoHeight(targetWidget.value?.props?.brandLogoHeight)) {
+    updateHeroProps({ brandLogoHeight: clamped });
+  }
 });
 
 watch(isBannerTextEnabled, (newVal) => {

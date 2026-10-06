@@ -67,6 +67,32 @@
       </div>
     </div>
 
+    <!-- Logo height (only for a block that shows the brand logo) -->
+    <div v-if="fields.includes('brandLogo')" class="flex flex-col gap-[10px] items-start p-[24px] w-full border-b border-[#f0f0f0]">
+      <div class="flex items-center justify-between w-full">
+        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Logo Height</p>
+        <div class="flex items-center gap-1.5">
+          <span class="font-707 text-[12px] text-black tabular-nums">{{ logoHeight }}px</span>
+          <button
+            v-if="logoHeight !== TICKET_LOGO_HEIGHT.default"
+            type="button"
+            @click="update({ logoHeight: TICKET_LOGO_HEIGHT.default })"
+            class="h-[26px] px-2 rounded-[6px] text-[11px] font-707 text-neutral-600 hover:text-black hover:bg-black/5 cursor-pointer"
+          >Reset</button>
+        </div>
+      </div>
+      <input
+        type="range"
+        :min="TICKET_LOGO_HEIGHT.min"
+        :max="TICKET_LOGO_HEIGHT.max"
+        step="1"
+        :value="logoHeight"
+        @input="update({ logoHeight: clampLogoHeight(($event.target as HTMLInputElement).value, TICKET_LOGO_HEIGHT) })"
+        class="w-full accent-black cursor-pointer"
+        aria-label="Ticket logo height"
+      />
+    </div>
+
     <!-- Alignment -->
     <div class="flex flex-col gap-[12px] items-start p-[24px] w-full border-b border-[#f0f0f0]">
       <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Alignment</p>
@@ -125,6 +151,7 @@
 </template>
 
 <script setup lang="ts">
+import { clampLogoHeight, TICKET_LOGO_HEIGHT } from './logoSize.ts';
 import { computed } from 'vue';
 import { Ticket, Plus, Check, Trash2, Image as ImageIcon } from 'lucide-vue-next';
 import { useEditorStore } from '../../stores/editorStore.ts';
@@ -145,6 +172,7 @@ const fields = computed<TicketFieldKey[]>(() => {
   const raw = currentWidget.value?.props?.fields;
   return (Array.isArray(raw) && raw.length ? raw : ['guestName']) as TicketFieldKey[];
 });
+const logoHeight = computed(() => clampLogoHeight(currentWidget.value?.props?.logoHeight, TICKET_LOGO_HEIGHT));
 const captionFields = computed(() => fields.value.filter(k => ticketFieldMeta(k).caption));
 
 function update(props: Record<string, any>) {
