@@ -62,7 +62,7 @@
             <span class="hidden md:inline">Columns</span>
           </button>
           <Transition name="hub-pop">
-            <div v-if="isColumnsOpen" class="absolute right-0 top-[calc(100%+6px)] z-40 w-[240px] backdrop-blur-2xl bg-white/90 border border-black/10 rounded-[12px] shadow-[0px_24px_60px_rgba(0,0,0,0.16)] p-1.5">
+            <div v-if="isColumnsOpen" class="absolute right-0 top-[calc(100%+6px)] z-40 w-[240px] apple-frost border border-black/10 rounded-[12px] shadow-[0px_24px_60px_rgba(0,0,0,0.16)] p-1.5">
               <p class="px-2.5 pt-1.5 pb-1 text-[10px] uppercase tracking-[0.12em] text-neutral-400">Visible columns</p>
               <label
                 v-for="col in toggleableColumns"
@@ -252,7 +252,7 @@
         <div
           v-if="statusMenu"
           ref="statusMenuRef"
-          class="fixed z-[80] w-[190px] backdrop-blur-2xl bg-white/90 border border-black/10 rounded-[12px] shadow-[0px_24px_60px_rgba(0,0,0,0.18)] p-1.5 font-707"
+          class="fixed z-[80] w-[190px] apple-frost border border-black/10 rounded-[12px] shadow-[0px_24px_60px_rgba(0,0,0,0.18)] p-1.5 font-707"
           :style="{ top: `${statusMenu.y}px`, left: `${statusMenu.x}px` }"
         >
           <button
@@ -309,7 +309,7 @@
       <Transition name="hub-drawer">
         <aside
           v-if="drawerRow"
-          class="fixed top-0 right-0 bottom-0 z-[76] w-full sm:w-[440px] backdrop-blur-2xl bg-white/90 border-l border-black/10 shadow-[-24px_0_60px_rgba(0,0,0,0.12)] flex flex-col font-707"
+          class="fixed top-0 right-0 bottom-0 z-[76] w-full sm:w-[440px] apple-frost-strong border-l border-black/10 shadow-[-24px_0_60px_rgba(0,0,0,0.12)] flex flex-col font-707"
           role="dialog"
           aria-label="Guest details"
         >

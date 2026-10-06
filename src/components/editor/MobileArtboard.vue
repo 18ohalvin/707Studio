@@ -1630,7 +1630,7 @@ more</span>
           <!-- Bottom Sheet Card (White background with premium Apple blur transparent effect) -->
           <div 
             @click.stop
-            class="apple-bottom-sheet-card relative z-10 w-full backdrop-blur-2xl bg-white/90 border-t border-white/60 text-black rounded-t-[20px] shadow-[0px_-10px_40px_rgba(0,0,0,0.16),0_-1px_3px_rgba(0,0,0,0.05)] max-h-[85%] flex flex-col overflow-hidden"
+            class="apple-bottom-sheet-card relative z-10 w-full apple-frost-strong border-t border-white/60 text-black rounded-t-[20px] shadow-[0px_-10px_40px_rgba(0,0,0,0.16),0_-1px_3px_rgba(0,0,0,0.05)] max-h-[85%] flex flex-col overflow-hidden"
             data-node-id="276:4722"
             data-name="Bottom Modal Popup"
           >

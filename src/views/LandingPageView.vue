@@ -307,10 +307,10 @@
     <Transition name="apple-dock-fade">
       <div 
         v-if="showContactModal" 
-        class="fixed inset-0 z-50 bg-white/50 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
+        class="fixed inset-0 z-50 apple-frost-backdrop flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showContactModal = false"
       >
-        <div class="backdrop-blur-2xl bg-white/70 rounded-[16px] border border-white/60 p-6 w-full max-w-[420px] shadow-[0px_20px_50px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] flex flex-col gap-4 animate-apple-pop">
+        <div class="apple-frost rounded-[16px] border border-white/60 p-6 w-full max-w-[420px] shadow-[0px_20px_50px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] flex flex-col gap-4 animate-apple-pop">
           <div class="flex items-center justify-between">
             <h3 class="font-707 font-medium text-[16px] text-black">Contact UI/UX Team</h3>
             <button @click="showContactModal = false" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
@@ -336,7 +336,7 @@
     <Transition name="apple-dock-fade">
       <div 
         v-if="showNotificationToast" 
-        class="fixed top-[64px] right-[24px] z-50 backdrop-blur-2xl bg-white/70 border border-white/60 rounded-2xl p-4 shadow-[0px_12px_40px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-3 animate-apple-slide-up select-none"
+        class="fixed top-[64px] right-[24px] z-50 apple-frost border border-white/60 rounded-2xl p-4 shadow-[0px_12px_40px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-3 animate-apple-slide-up select-none"
       >
         <div class="size-2 rounded-full bg-emerald-500 animate-ping" />
         <p class="font-707 text-[12px] text-black font-medium">{{ toastMessage }}</p>

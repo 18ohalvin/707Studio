@@ -2,10 +2,13 @@
   <div class="relative" ref="rootRef">
     <NotificationBell :has-unread="unreadCount > 0" @click="toggle" />
 
+    <Teleport to="body">
     <Transition name="notif-pop">
       <div
         v-if="isOpen"
-        class="absolute right-0 top-[34px] w-[360px] max-h-[70vh] flex flex-col backdrop-blur-2xl bg-white/70 border border-white/60 rounded-[12px] shadow-[0px_16px_45px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] apple-popover-box z-50 font-707 overflow-hidden"
+        ref="panelRef"
+        :style="popoverStyle"
+        class="w-[360px] max-h-[70vh] flex flex-col apple-frost border border-white/60 rounded-[12px] shadow-[0px_16px_45px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] apple-popover-box z-[90] font-707 overflow-hidden"
         role="dialog"
         aria-label="Notifications"
       >
@@ -45,6 +48,7 @@
         </div>
       </div>
     </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -52,6 +56,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import NotificationBell from './NotificationBell.vue';
+import { useAnchoredPopover } from './anchoredPopover.ts';
 import { useAuthStore } from '../../stores/authStore.ts';
 import { apiJson } from '../../services/apiClient.ts';
 
@@ -77,6 +82,9 @@ const pendingCount = ref(0);
 const error = ref('');
 const isOpen = ref(false);
 const rootRef = ref<HTMLElement | null>(null);
+const panelRef = ref<HTMLElement | null>(null);
+const { style: popoverStyle, track } = useAnchoredPopover(rootRef);
+watch(isOpen, open => track(open));
 
 /** Read state is per account, per device: the time the list was last opened. */
 const seenKey = computed(() => `707_notifications_seen_at:${authStore.currentUser?.id || 'anon'}`);
@@ -141,7 +149,8 @@ function openItem(item: NotificationItem) {
 }
 
 function handleOutside(e: MouseEvent) {
-  if (isOpen.value && rootRef.value && !rootRef.value.contains(e.target as Node)) {
+  const target = e.target as Node;
+  if (isOpen.value && rootRef.value && !rootRef.value.contains(target) && !panelRef.value?.contains(target)) {
     isOpen.value = false;
     markAllSeen();
   }

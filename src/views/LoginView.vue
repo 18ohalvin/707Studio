@@ -26,7 +26,7 @@
     </header>
 
     <!-- Center Card -->
-    <div class="w-full max-w-[420px] backdrop-blur-2xl bg-white/95 border border-white/60 p-8 rounded-[16px] shadow-[0px_20px_50px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.04)] flex flex-col gap-5 animate-apple-pop">
+    <div class="w-full max-w-[420px] apple-frost-strong border border-white/60 p-8 rounded-[16px] shadow-[0px_20px_50px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.04)] flex flex-col gap-5 animate-apple-pop">
       <!-- Title & Icon -->
       <div class="flex flex-col items-center text-center gap-2.5">
         <div class="size-11 rounded-full bg-black text-white flex items-center justify-center shadow-sm">

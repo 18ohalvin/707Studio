@@ -1,6 +1,9 @@
 <template>
+  <Teleport to="body">
   <div
-    class="absolute right-0 top-[34px] w-[360px] max-h-[70vh] flex flex-col backdrop-blur-2xl bg-white/70 border border-white/60 rounded-[12px] shadow-[0px_16px_45px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] apple-popover-box z-50 font-707 overflow-hidden"
+    ref="panelRef"
+    :style="popoverStyle"
+    class="w-[360px] max-h-[70vh] flex flex-col apple-frost border border-white/60 rounded-[12px] shadow-[0px_16px_45px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] apple-popover-box z-[90] font-707 overflow-hidden"
     role="dialog"
     aria-label="Project history"
     @click.stop
@@ -74,16 +77,29 @@
       </div>
     </div>
   </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
 import { glassConfirm } from '../../services/glassDialog.ts';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useAnchoredPopover } from '../common/anchoredPopover.ts';
 import { X, ExternalLink, Undo2, Send, Rocket, CornerUpLeft, Trash2, History } from 'lucide-vue-next';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import type { ProjectHistoryEntry } from '../../types/editor.ts';
 
+const props = defineProps<{ anchor: HTMLElement | null }>();
 const emit = defineEmits<{ (e: 'close'): void }>();
+
+const panelRef = ref<HTMLElement | null>(null);
+const anchorRef = computed(() => props.anchor);
+const { style: popoverStyle, track } = useAnchoredPopover(anchorRef as any);
+
+function handleOutside(e: MouseEvent) {
+  const target = e.target as Node;
+  if (panelRef.value?.contains(target) || props.anchor?.contains(target)) return;
+  emit('close');
+}
 
 const editorStore = useEditorStore();
 const entries = ref<ProjectHistoryEntry[]>([]);
@@ -154,6 +170,11 @@ async function discard() {
   if (res.ok) load();
 }
 
-onMounted(load);
+onMounted(() => {
+  track(true);
+  load();
+  document.addEventListener('mousedown', handleOutside);
+});
+onUnmounted(() => document.removeEventListener('mousedown', handleOutside));
 defineExpose({ reload: load });
 </script>

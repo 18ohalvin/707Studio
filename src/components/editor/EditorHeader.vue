@@ -1,5 +1,9 @@
 <template>
-  <header class="absolute top-0 left-0 right-0 z-40 backdrop-blur-[4px] bg-white/20 content-stretch flex items-center justify-between px-[20px] h-[48px] w-full select-none transition-all">
+  <header class="absolute top-0 left-0 right-0 z-40 isolate content-stretch flex items-center justify-between px-[20px] h-[48px] w-full select-none transition-all">
+    <!-- The header's frost lives on this layer, not on <header>: a blur on the
+         header itself would trap every menu inside it (profile, notifications,
+         history), leaving them nothing to blur — they showed fully transparent. -->
+    <div class="absolute inset-0 -z-10 pointer-events-none bg-white/20 [backdrop-filter:blur(4px)] [-webkit-backdrop-filter:blur(4px)]" aria-hidden="true" />
     <!-- Left: 707 Logo, Dynamic-Width Title, and Save Status Pill -->
     <div class="content-stretch flex gap-[16px] md:gap-[20px] items-center flex-1 min-w-0 mr-4">
       <!-- 707 Official Logo from Figma (Click to return to Landing Page) -->
@@ -70,7 +74,7 @@
         >
           <History class="w-[18px] h-[18px] stroke-[1.35] transition-transform duration-200 group-hover:scale-105" />
         </button>
-        <ProjectHistoryPanel v-if="showHistory" @close="showHistory = false" />
+        <ProjectHistoryPanel v-if="showHistory" :anchor="historyRef" @close="showHistory = false" />
       </div>
 
       <!-- Preview / Editor Mode Toggle Button -->
@@ -225,9 +229,6 @@ async function handleDecline() {
   editorStore.showToast(res.ok ? 'Sent back to the brand.' : `Could not send back: ${res.error}`);
 }
 
-function handleOutsideHistoryClick(e: MouseEvent) {
-  if (showHistory.value && historyRef.value && !historyRef.value.contains(e.target as Node)) showHistory.value = false;
-}
 
 async function handleReturnHome() {
   await editorStore.flushPendingSave();
@@ -240,14 +241,12 @@ async function navigateHome() {
 
 let tickerTimer: any = null;
 onMounted(() => {
-  document.addEventListener('mousedown', handleOutsideHistoryClick);
   tickerTimer = setInterval(() => {
     nowTicker.value = Date.now();
   }, 10000);
 });
 
 onUnmounted(() => {
-  document.removeEventListener('mousedown', handleOutsideHistoryClick);
   if (tickerTimer) clearInterval(tickerTimer);
   editorStore.flushPendingSave();
 });

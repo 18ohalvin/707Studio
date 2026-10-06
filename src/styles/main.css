@@ -980,3 +980,36 @@ button:active,
   opacity: 0;
 }
 
+
+/* ------------------------------------------------------------------
+   Frosted glass for pop-ups (modals, dialogs, popovers, toasts).
+   Written with literal values on purpose: Safari ignores
+   -webkit-backdrop-filter when it is built from CSS variables, which is
+   how Tailwind's backdrop-blur-* utilities are written — so those showed
+   no blur at all there. Where blur is unsupported, the surface turns
+   near-opaque instead of letting the text behind show through.
+   ------------------------------------------------------------------ */
+.apple-frost {
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  backdrop-filter: blur(28px) saturate(180%);
+}
+
+.apple-frost-strong {
+  background: rgba(255, 255, 255, 0.82);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  backdrop-filter: blur(32px) saturate(180%);
+}
+
+/* The dimmed layer behind a modal: blurs the page so its text stops competing. */
+.apple-frost-backdrop {
+  background: rgba(255, 255, 255, 0.45);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .apple-frost { background: rgba(255, 255, 255, 0.96); }
+  .apple-frost-strong { background: rgba(255, 255, 255, 0.98); }
+  .apple-frost-backdrop { background: rgba(255, 255, 255, 0.85); }
+}

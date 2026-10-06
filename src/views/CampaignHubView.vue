@@ -39,9 +39,9 @@
       </div>
     </header>
 
-    <main class="flex-1 w-full max-w-[1280px] mx-auto py-[28px] md:py-[48px] flex flex-col gap-[28px] md:gap-[36px]">
+    <main class="flex-1 w-full py-[24px] md:py-[36px] flex flex-col gap-[24px] md:gap-[32px]">
       <!-- Intro + Campaign Selector -->
-      <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-5 px-[20px] md:px-[48px] w-full">
+      <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-5 px-[16px] md:px-[20px] w-full">
         <div class="flex flex-col gap-[8px] items-start">
           <h1 class="font-707 text-[24px] md:text-[28px] leading-[34px] tracking-[-0.56px] text-black font-normal">
             Campaign Hub
@@ -77,7 +77,7 @@
           <Transition name="hub-pop">
             <div
               v-if="isPickerOpen"
-              class="absolute right-0 left-0 top-[calc(100%+6px)] z-40 backdrop-blur-2xl bg-white/90 border border-black/10 rounded-[12px] shadow-[0px_24px_60px_rgba(0,0,0,0.16)] p-1.5 max-h-[340px] overflow-y-auto"
+              class="absolute right-0 left-0 top-[calc(100%+6px)] z-40 apple-frost border border-black/10 rounded-[12px] shadow-[0px_24px_60px_rgba(0,0,0,0.16)] p-1.5 max-h-[340px] overflow-y-auto"
             >
               <div class="px-2 pt-1 pb-2">
                 <div class="relative">
@@ -125,7 +125,7 @@
       </div>
 
       <!-- Text Navigation (Settings-page style) -->
-      <nav class="flex gap-[28px] md:gap-[44px] items-center px-[20px] md:px-[48px] w-full whitespace-nowrap overflow-x-auto no-scrollbar select-none" aria-label="Campaign hub sections">
+      <nav class="flex gap-[28px] md:gap-[44px] items-center px-[16px] md:px-[20px] w-full whitespace-nowrap overflow-x-auto no-scrollbar select-none" aria-label="Campaign hub sections">
         <button
           v-for="t in tabs"
           :id="`hub-tab-${t.id}`"
@@ -151,7 +151,7 @@
       </nav>
 
       <!-- Content -->
-      <section class="px-[20px] md:px-[48px] w-full">
+      <section class="px-[16px] md:px-[20px] w-full">
         <div v-if="isInitialLoad" class="flex flex-col gap-3">
           <div v-for="i in 5" :key="i" class="h-[52px] rounded-[10px] bg-neutral-100 hub-shimmer" />
         </div>
@@ -194,7 +194,7 @@
     <Transition name="hub-pop">
       <div
         v-if="toastMessage"
-        class="fixed bottom-[24px] left-1/2 -translate-x-1/2 z-[60] backdrop-blur-2xl bg-white/80 border border-white/60 rounded-2xl px-4 py-3 shadow-[0px_12px_40px_rgba(0,0,0,0.14),0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-3 select-none max-w-[92vw]"
+        class="fixed bottom-[24px] left-1/2 -translate-x-1/2 z-[60] apple-frost border border-white/60 rounded-2xl px-4 py-3 shadow-[0px_12px_40px_rgba(0,0,0,0.14),0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-3 select-none max-w-[92vw]"
         role="status"
       >
         <div class="size-2 rounded-full bg-emerald-500 shrink-0" />

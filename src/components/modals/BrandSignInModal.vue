@@ -2,12 +2,12 @@
   <Transition name="apple-modal-fade">
     <div 
       v-if="isOpen"
-      class="fixed inset-0 z-50 bg-white/50 backdrop-blur-md flex items-center justify-center p-4 select-none"
+      class="fixed inset-0 z-50 apple-frost-backdrop flex items-center justify-center p-4 select-none"
       @click.self="emit('close')"
     >
       <!-- Modal Box (Figma Node 212:7461) -->
       <div 
-        class="backdrop-blur-2xl bg-white/70 border border-white/60 flex flex-col items-start p-[24px] rounded-[14px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] w-full max-w-[420px] apple-modal-box animate-apple-pop"
+        class="apple-frost border border-white/60 flex flex-col items-start p-[24px] rounded-[14px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] w-full max-w-[420px] apple-modal-box animate-apple-pop"
         data-node-id="212:7461"
         data-name="Access your Brand Account Modal"
       >

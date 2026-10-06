@@ -2,12 +2,12 @@
   <Transition name="apple-modal-fade">
     <div
       v-if="dialog"
-      class="fixed inset-0 z-[120] bg-white/50 backdrop-blur-md flex items-center justify-center p-4 select-none"
+      class="fixed inset-0 z-[120] apple-frost-backdrop flex items-center justify-center p-4 select-none"
       @click.self="cancel"
       @keydown.esc="cancel"
     >
       <div
-        class="backdrop-blur-2xl bg-white/70 border border-white/60 flex flex-col items-start p-[24px] pb-[28px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] w-full max-w-[432px] apple-modal-box"
+        class="apple-frost border border-white/60 flex flex-col items-start p-[24px] pb-[28px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] w-full max-w-[432px] apple-modal-box"
         role="dialog"
         aria-modal="true"
         :aria-label="dialog.title"

@@ -2,10 +2,10 @@
   <Transition name="apple-dock-fade">
     <div 
       v-if="isOpen" 
-      class="fixed inset-0 z-50 bg-white/50 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
+      class="fixed inset-0 z-50 apple-frost-backdrop flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
       @click.self="emit('close')"
     >
-      <div class="backdrop-blur-2xl bg-white/70 rounded-[16px] border border-white/60 p-6 w-full max-w-[420px] shadow-[0px_20px_50px_rgba(0,0,0,0.15),0_1px_3px_rgba(0,0,0,0.06)] flex flex-col gap-4 animate-apple-pop">
+      <div class="apple-frost rounded-[16px] border border-white/60 p-6 w-full max-w-[420px] shadow-[0px_20px_50px_rgba(0,0,0,0.15),0_1px_3px_rgba(0,0,0,0.06)] flex flex-col gap-4 animate-apple-pop">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2.5">
             <div class="size-8 rounded-full bg-black text-white flex items-center justify-center shadow-sm">

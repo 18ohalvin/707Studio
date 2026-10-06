@@ -1,7 +1,7 @@
 <template>
   <div class="h-full w-full min-h-[100dvh] bg-[#f4f4f5] text-black font-707 flex flex-col overflow-y-auto overflow-x-hidden" data-name="Door Scanner">
     <!-- Slim header: campaign, operator, back to the hub -->
-    <header class="w-full h-[52px] px-[16px] md:px-[24px] flex items-center justify-between gap-3 border-b border-black/10 bg-white/80 backdrop-blur-md shrink-0 sticky top-0 z-30 select-none">
+    <header class="w-full h-[52px] px-[16px] md:px-[20px] flex items-center justify-between gap-3 border-b border-black/10 bg-white/80 backdrop-blur-md shrink-0 sticky top-0 z-30 select-none">
       <div class="flex items-center gap-3 min-w-0">
         <router-link :to="hubLink" class="size-[32px] rounded-[8px] hover:bg-black/5 flex items-center justify-center shrink-0" title="Back to Campaign Hub">
           <ArrowLeft class="w-4 h-4" />
@@ -29,7 +29,7 @@
       </div>
     </header>
 
-    <main class="flex-1 w-full max-w-[1280px] mx-auto p-3 md:p-6">
+    <main class="flex-1 w-full px-[16px] md:px-[20px] py-[16px] md:py-[20px]">
       <div v-if="loadError" class="mb-4 flex items-center gap-3 px-4 py-3 rounded-[10px] border border-red-200 bg-red-50 text-[12px] text-red-700">
         <AlertTriangle class="w-4 h-4 shrink-0" />
         <span class="flex-1">{{ loadError }} Scans still go straight to the server.</span>
@@ -50,7 +50,7 @@
     <Transition name="scanner-pop">
       <div
         v-if="toastMessage"
-        class="fixed bottom-[24px] left-1/2 -translate-x-1/2 z-[60] backdrop-blur-2xl bg-white/70 border border-white/60 rounded-2xl px-4 py-3 shadow-[0px_12px_40px_rgba(0,0,0,0.14),0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-3 select-none max-w-[92vw]"
+        class="fixed bottom-[24px] left-1/2 -translate-x-1/2 z-[60] apple-frost border border-white/60 rounded-2xl px-4 py-3 shadow-[0px_12px_40px_rgba(0,0,0,0.14),0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-3 select-none max-w-[92vw]"
         role="status"
       >
         <div class="size-2 rounded-full bg-emerald-500 shrink-0" />

@@ -2,12 +2,12 @@
   <Transition name="apple-modal-fade">
     <div 
       v-if="isOpen"
-      class="fixed inset-0 z-50 bg-white/50 backdrop-blur-md flex items-center justify-center p-4 md:p-8 select-none"
+      class="fixed inset-0 z-50 apple-frost-backdrop flex items-center justify-center p-4 md:p-8 select-none"
       @click.self="emit('close')"
     >
       <!-- Modal Box (Apple Glass UI Hub) -->
       <div 
-        class="backdrop-blur-2xl bg-white/70 border border-white/60 flex flex-col items-start rounded-[20px] shadow-[0px_24px_60px_0px_rgba(0,0,0,0.16),0_1px_3px_rgba(0,0,0,0.05)] w-full max-w-[1020px] max-h-[88vh] overflow-hidden apple-modal-box font-707"
+        class="apple-frost border border-white/60 flex flex-col items-start rounded-[20px] shadow-[0px_24px_60px_0px_rgba(0,0,0,0.16),0_1px_3px_rgba(0,0,0,0.05)] w-full max-w-[1020px] max-h-[88vh] overflow-hidden apple-modal-box font-707"
         data-name="All Projects Hub Modal"
       >
         <!-- Modal Top Header -->

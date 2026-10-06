@@ -1,7 +1,7 @@
 <template>
   <div 
     v-if="editorStore.isRequestWidgetModalOpen" 
-    class="fixed inset-0 z-50 bg-white/50 backdrop-blur-md flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
+    class="fixed inset-0 z-50 apple-frost-backdrop flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
     @click.self="editorStore.isRequestWidgetModalOpen = false"
   >
     <div class="apple-glass-modal rounded-2xl w-full max-w-md overflow-hidden animate-apple-pop select-none">
