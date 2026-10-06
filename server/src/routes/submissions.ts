@@ -2,8 +2,8 @@ import crypto from 'crypto';
 import { Router, Request, Response } from 'express';
 import { pool, getDbStatus } from '../db.js';
 import { readDataFile, writeDataFile } from '../fileStorage.js';
-import { requireAuth, getClaims } from '../auth.js';
-import { accessiblePageIds, findProjectForPageId } from '../access.js';
+import { requireAuth, getClaims, optionalClaims } from '../auth.js';
+import { accessiblePageIds, canViewPublicPage, findProjectForPageId } from '../access.js';
 
 export const submissionsRouter = Router();
 
@@ -88,7 +88,9 @@ submissionsRouter.post('/', async (req: Request, res: Response) => {
   // record, never from the visitor. An entry for an unknown page would never
   // appear in any Campaign Hub, so refuse it instead of storing an orphan.
   const project = await findProjectForPageId(String(page_id || ''));
-  if (!project) {
+  // An unpublished campaign takes entries only from its owner or the
+  // superadmin testing the funnel — the public cannot sign up to it yet.
+  if (!project || !canViewPublicPage(optionalClaims(req), project)) {
     return res.status(404).json({ success: false, error: 'This campaign is not available.' });
   }
 

@@ -143,6 +143,11 @@ function readBearer(req: Request): string | null {
   return header.startsWith('Bearer ') ? header.slice(7) : null;
 }
 
+/** Claims of the caller if it sent a valid token; public routes use this to recognise staff. */
+export function optionalClaims(req: Request): SessionClaims | null {
+  return verifyToken(readBearer(req));
+}
+
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
   const claims = verifyToken(readBearer(req));
   if (!claims) {

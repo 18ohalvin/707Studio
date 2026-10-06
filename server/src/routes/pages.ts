@@ -2,8 +2,8 @@ import { Router, Request, Response } from 'express';
 import { pool, getDbStatus } from '../db.js';
 import { readDataFile, writeDataFile } from '../fileStorage.js';
 import { externalizeInlineImages } from '../inlineImages.js';
-import { requireAuth, getClaims, isSuperAdminClaims } from '../auth.js';
-import { canAccessProject, findProject } from '../access.js';
+import { requireAuth, getClaims, isSuperAdminClaims, optionalClaims } from '../auth.js';
+import { canAccessProject, canViewPublicPage, findProject } from '../access.js';
 
 export const pagesRouter = Router();
 
@@ -96,6 +96,9 @@ pagesRouter.get('/', requireAuth, async (req: Request, res: Response) => {
 });
 
 // GET /api/pages/:brandSlug/:pageSlug - Public live page endpoint
+// Live (approved/published) projects are public. A draft or in-review project
+// answers only to its owner and the superadmin, who send their token to
+// inspect it; everyone else gets the same 404 as a page that does not exist.
 pagesRouter.get('/:brandSlug/:pageSlug', async (req: Request, res: Response) => {
   const brandSlug = String(req.params.brandSlug || '');
   const pageSlug = String(req.params.pageSlug || '');
@@ -103,54 +106,64 @@ pagesRouter.get('/:brandSlug/:pageSlug', async (req: Request, res: Response) => 
   const normBrand = normalize(brandSlug);
   const normPage = normalize(pageSlug);
 
+  let page: any = null;
+
   if (getDbStatus().isConnected) {
     try {
       const result = await pool.query(
         `SELECT * FROM pages 
          WHERE (brand_slug = $1 OR regexp_replace(lower(brand_slug), '[^a-z0-9]', '', 'g') = $2)
            AND (slug = $3 OR regexp_replace(lower(slug), '[^a-z0-9]', '', 'g') = $4)
+         ORDER BY (status IN ('approved', 'published')) DESC, updated_at DESC
          LIMIT 1`,
         [brandSlug, normBrand, pageSlug, normPage]
       );
       if (result.rows.length > 0) {
         const r = result.rows[0];
-        return res.json({
-          success: true,
-          data: {
-            id: r.id,
-            brand_id: r.brand_id || '1',
-            brand_slug: r.brand_slug || brandSlug,
-            title: r.title,
-            slug: r.slug,
-            description: r.description || '',
-            status: r.status || 'draft',
-            current_version: r.current_version || 1,
-            widget_tree: typeof r.widget_tree === 'string' ? JSON.parse(r.widget_tree) : (r.widget_tree || []),
-            pages: typeof r.pages === 'string' ? JSON.parse(r.pages) : (r.pages || []),
-            page_settings: typeof r.page_settings === 'string' ? JSON.parse(r.page_settings) : (r.page_settings || {}),
-            owner_id: r.owner_id || '',
-            owner_email: r.owner_email || '',
-            created_by: r.created_by || '',
-            created_at: r.created_at,
-            updated_at: r.updated_at
-          }
-        });
+        page = {
+          id: r.id,
+          brand_id: r.brand_id || '1',
+          brand_slug: r.brand_slug || brandSlug,
+          title: r.title,
+          slug: r.slug,
+          description: r.description || '',
+          status: r.status || 'draft',
+          current_version: r.current_version || 1,
+          widget_tree: typeof r.widget_tree === 'string' ? JSON.parse(r.widget_tree) : (r.widget_tree || []),
+          pages: typeof r.pages === 'string' ? JSON.parse(r.pages) : (r.pages || []),
+          page_settings: typeof r.page_settings === 'string' ? JSON.parse(r.page_settings) : (r.page_settings || {}),
+          owner_id: r.owner_id || '',
+          owner_email: r.owner_email || '',
+          created_by: r.created_by || '',
+          created_at: r.created_at,
+          updated_at: r.updated_at
+        };
       }
     } catch (err: any) {
       console.error('[DB] Error querying single page from DB:', err.message);
+      return res.status(500).json({ success: false, error: 'Could not load this page — please try again.' });
     }
+  } else {
+    inMemoryPages = readDataFile<any[]>('pages.json', inMemoryPages);
+    const matches = inMemoryPages.filter(p => {
+      const pBrand = normalize(p.brand_slug);
+      const pSlug = normalize(p.slug);
+      return (pBrand === normBrand || p.brand_slug === brandSlug) && (pSlug === normPage || p.slug === pageSlug);
+    });
+    page = matches.find(p => ['approved', 'published'].includes(p.status)) || matches[0] || null;
   }
 
-  inMemoryPages = readDataFile<any[]>('pages.json', inMemoryPages);
-  const page = inMemoryPages.find(p => {
-    const pBrand = normalize(p.brand_slug);
-    const pSlug = normalize(p.slug);
-    return (pBrand === normBrand || p.brand_slug === brandSlug) && (pSlug === normPage || p.slug === pageSlug);
-  });
-  if (page) {
-    return res.json({ success: true, data: page });
+  const claims = optionalClaims(req);
+  if (!page || !canViewPublicPage(claims, page)) {
+    return res.status(404).json({ success: false, error: 'Activation page not found' });
   }
-  return res.status(404).json({ success: false, error: 'Activation page not found' });
+
+  // Visitors get the page, not who on the team made it.
+  if (!claims || !canAccessProject(claims, page)) {
+    const { owner_id, owner_email, created_by, ...publicPage } = page;
+    return res.json({ success: true, data: publicPage });
+  }
+  return res.json({ success: true, data: page });
 });
 
 // POST /api/pages - Create or update a page draft

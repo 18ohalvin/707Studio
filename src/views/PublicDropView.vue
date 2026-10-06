@@ -44,6 +44,13 @@
         @touchstart="handleTouchStart"
         @touchend="handleTouchEnd"
       >
+        <div
+          v-if="isUnpublishedPreview"
+          class="sticky top-0 z-40 w-full px-4 py-2 bg-amber-50 border-b border-amber-200 text-amber-900 font-707 text-[11.5px] leading-[16px] text-center"
+          role="status"
+        >
+          Preview — this campaign is not published yet. Only you and the superadmin can open this link.
+        </div>
         <MobileArtboard 
           :key="currentPageData.id || activePageIndex"
           :page="currentPageData"
@@ -76,6 +83,7 @@ import { useRoute } from 'vue-router';
 import { AlertCircle } from 'lucide-vue-next';
 import MobileArtboard from '../components/editor/MobileArtboard.vue';
 import { LIVE_PASS_KEY, type LivePassState } from '../components/editor/livePass.ts';
+import { getToken } from '../services/apiClient.ts';
 import type { ActivationPage } from '../types/editor.ts';
 import { useEditorStore } from '../stores/editorStore.ts';
 
@@ -90,6 +98,14 @@ const singlePageData = ref<ActivationPage | null>(null);
 const collectedFormData = ref<Record<string, any>>({});
 const submissionPageId = ref<string>('');
 const campaignBrandSlug = ref<string>('');
+const campaignStatus = ref<string>('');
+/** Owner / superadmin looking at a campaign the public cannot see yet. */
+const isUnpublishedPreview = computed(() => Boolean(campaignStatus.value) && !['approved', 'published'].includes(campaignStatus.value));
+
+function staffAuthHeaders(): Record<string, string> {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 const currentPageData = computed<ActivationPage | null>(() => {
   if (projectPages.value.length > 0) {
@@ -110,6 +126,7 @@ async function loadPage() {
   livePass.status = 'idle';
   livePass.code = '';
   livePass.error = '';
+  campaignStatus.value = '';
 
   const brandSlug = String(route.params.brandSlug || '');
   const pageSlug = String(route.params.pageSlug || '');
@@ -122,12 +139,15 @@ async function loadPage() {
   }
 
   // 1. Check local editorStore first in case it's in memory or local projects
-  const localMatch = editorStore.projects.find(p => {
+  // Only the signed-in account's own projects — another account's cached copy
+  // must not reveal an unpublished campaign.
+  const localMatch = editorStore.userProjects.find(p => {
     return normalize(p.brand_slug) === normalize(brandSlug) && normalize(p.slug) === normalize(pageSlug);
   });
 
   if (localMatch) {
     submissionPageId.value = localMatch.id;
+    campaignStatus.value = localMatch.status || 'draft';
     if (localMatch.pages && localMatch.pages.length > 0) {
       projectPages.value = JSON.parse(JSON.stringify(localMatch.pages));
       activePageIndex.value = 0;
@@ -139,12 +159,15 @@ async function loadPage() {
 
   // 2. Fetch from backend public endpoint
   try {
-    const res = await fetch(`/api/pages/${encodeURIComponent(brandSlug)}/${encodeURIComponent(pageSlug)}`);
+    // The token lets an owner or superadmin open a campaign before it is
+    // published; visitors without one only ever see live campaigns.
+    const res = await fetch(`/api/pages/${encodeURIComponent(brandSlug)}/${encodeURIComponent(pageSlug)}`, { headers: staffAuthHeaders() });
     if (res.ok) {
       const json = await res.json();
       if (json && json.success && json.data) {
         const item = json.data;
         submissionPageId.value = item.id || '';
+        campaignStatus.value = item.status || 'published';
         campaignBrandSlug.value = item.brand_slug || brandSlug;
 
         if (Array.isArray(item.pages) && item.pages.length > 0) {
@@ -189,9 +212,11 @@ async function loadPage() {
   }
 
   // 3. Fallback: Check if current opened project in editorStore matches
-  if (editorStore.currentPage && 
+  if (editorStore.currentPage && editorStore.currentProjectId &&
       normalize(editorStore.currentPage.brand_slug) === normalize(brandSlug) && 
       normalize(editorStore.currentPage.slug) === normalize(pageSlug)) {
+    submissionPageId.value = editorStore.currentProjectId;
+    campaignStatus.value = editorStore.currentPage.status || 'draft';
     projectPages.value = JSON.parse(JSON.stringify(editorStore.pages));
     activePageIndex.value = editorStore.activePageIndex || 0;
     applySeo(editorStore.currentPage);
@@ -300,7 +325,7 @@ async function sendSubmission() {
     };
     const res = await fetch('/api/submissions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...staffAuthHeaders() },
       body: JSON.stringify(payload)
     });
     const json = await res.json().catch(() => null);

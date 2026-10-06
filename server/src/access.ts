@@ -33,6 +33,22 @@ export function canAccessProject(claims: SessionClaims, project: any): boolean {
   return brands.some(b => b && (b === slug || slug.includes(b) || b.includes(slug)));
 }
 
+/**
+ * Approved projects are published automatically, so both count as live.
+ * Anything else is visible only to its owner and the superadmin.
+ */
+export const LIVE_STATUSES = ['approved', 'published'];
+
+export function isLiveProject(project: any): boolean {
+  return LIVE_STATUSES.includes(String(project?.status || ''));
+}
+
+/** Who may open a project's public URL: everyone once live, otherwise only those who may edit it. */
+export function canViewPublicPage(claims: SessionClaims | null, project: any): boolean {
+  if (isLiveProject(project)) return true;
+  return Boolean(claims && canAccessProject(claims, project));
+}
+
 /** Every id a submission may carry for this project: the project id and each funnel page id. */
 export function projectPageIds(project: any): string[] {
   let pages = project?.pages;
