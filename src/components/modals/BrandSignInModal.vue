@@ -167,7 +167,7 @@
                   ref="superadminInputRef"
                   :type="showSuperadminPin ? 'text' : 'password'"
                   autocomplete="current-password"
-                  placeholder="Enter passkey PIN (e.g. 707admin)"
+                  placeholder="Enter superadmin passkey"
                   required
                   class="flex-1 min-w-0 bg-transparent font-707 text-[14px] text-black focus:outline-none placeholder:text-[#aaa] p-0 m-0 border-none"
                   @input="errorMessage = ''"
@@ -306,9 +306,9 @@ async function handleBrandSignIn() {
 
 async function handleSuperadminSignIn() {
   errorMessage.value = '';
-  const success = authStore.verifySuperAdmin(superadminPin.value);
+  const success = await authStore.verifySuperAdmin(superadminPin.value);
   if (!success) {
-    errorMessage.value = 'Invalid superadmin passkey PIN. Try "707admin".';
+    errorMessage.value = 'Invalid superadmin passkey.';
     return;
   }
   await editorStore.loadProjects();

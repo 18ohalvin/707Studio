@@ -1,0 +1,90 @@
+import { pool, getDbStatus } from './db.js';
+import { readDataFile } from './fileStorage.js';
+import { SessionClaims, isSuperAdminClaims } from './auth.js';
+
+/**
+ * Which projects an account may see — the server-side twin of `userProjects`
+ * in the editor store. The client filter only hides; this one is what actually
+ * keeps one brand's projects and guest lists away from another brand's team.
+ */
+
+const normalizeBrand = (s: string) => String(s || '').toLowerCase().replace(/_/g, '-').trim();
+
+export function canAccessProject(claims: SessionClaims, project: any): boolean {
+  if (!project) return false;
+  if (isSuperAdminClaims(claims)) return true;
+
+  const ownerId = String(project.owner_id || '');
+  const ownerEmail = String(project.owner_email || '').toLowerCase().trim();
+  const email = claims.email.toLowerCase().trim();
+
+  if (ownerId && ownerId === claims.sub) return true;
+  if (ownerEmail && email && ownerEmail === email) return true;
+
+  // Owned by someone else: theirs alone.
+  if (ownerId && ownerId !== claims.sub) return false;
+  if (ownerEmail && email && ownerEmail !== email) return false;
+
+  // Legacy / shared brand projects without an owner.
+  const brands = claims.brands.map(normalizeBrand);
+  if (brands.includes('all')) return true;
+  const slug = normalizeBrand(project.brand_slug);
+  if (!slug) return false;
+  return brands.some(b => b && (b === slug || slug.includes(b) || b.includes(slug)));
+}
+
+/** Every id a submission may carry for this project: the project id and each funnel page id. */
+export function projectPageIds(project: any): string[] {
+  let pages = project?.pages;
+  if (typeof pages === 'string') {
+    try { pages = JSON.parse(pages); } catch { pages = []; }
+  }
+  const ids = [project?.id, ...(Array.isArray(pages) ? pages.map((p: any) => p?.id) : [])];
+  return ids.filter(Boolean).map(String);
+}
+
+async function loadAllProjects(): Promise<any[]> {
+  if (getDbStatus().isConnected) {
+    try {
+      const result = await pool.query('SELECT id, brand_slug, owner_id, owner_email, pages FROM pages');
+      return result.rows;
+    } catch (err: any) {
+      console.error('[Access] Could not read projects:', err.message);
+    }
+  }
+  return readDataFile<any[]>('pages.json', []);
+}
+
+export async function findProject(id: string): Promise<any | null> {
+  if (getDbStatus().isConnected) {
+    try {
+      const result = await pool.query('SELECT * FROM pages WHERE id = $1 LIMIT 1', [id]);
+      if (result.rows[0]) return result.rows[0];
+      return null;
+    } catch (err: any) {
+      console.error('[Access] Could not read project:', err.message);
+    }
+  }
+  return readDataFile<any[]>('pages.json', []).find(p => p.id === id) || null;
+}
+
+/**
+ * Page ids whose submissions this account may read or change.
+ * null means unrestricted (superadmin).
+ */
+export async function accessiblePageIds(claims: SessionClaims): Promise<Set<string> | null> {
+  if (isSuperAdminClaims(claims)) return null;
+  const ids = new Set<string>();
+  (await loadAllProjects())
+    .filter(p => canAccessProject(claims, p))
+    .forEach(p => projectPageIds(p).forEach(id => ids.add(id)));
+  return ids;
+}
+
+/** Resolves a submission's page id (project id or funnel page id) to its project. */
+export async function findProjectForPageId(pageId: string): Promise<any | null> {
+  if (!pageId) return null;
+  const direct = await findProject(pageId);
+  if (direct) return direct;
+  return (await loadAllProjects()).find(p => projectPageIds(p).includes(pageId)) || null;
+}

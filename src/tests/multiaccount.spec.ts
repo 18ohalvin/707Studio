@@ -5,6 +5,21 @@ import { useEditorStore } from '../stores/editorStore.ts';
 import { useBrandStore } from '../stores/brandStore.ts';
 import type { ProjectItem, GlobalTemplate } from '../types/editor.ts';
 
+// The superadmin passkey is checked by the server only; tests stand in for a
+// successful server sign-in by setting the session directly.
+function signInAsSuperAdmin(authStore: ReturnType<typeof useAuthStore>) {
+  authStore.isSuperAdmin = true;
+  authStore.currentUser = {
+    id: 'superadmin_master',
+    name: 'Superadmin',
+    email: 'admin@707designstudio.internal',
+    role: 'superadmin',
+    assignedBrands: ['all'],
+    status: 'active',
+    createdAt: new Date().toISOString()
+  };
+}
+
 describe('Multiaccount & Data Isolation Logic', () => {
   beforeEach(() => {
     const store: Record<string, string> = {};
@@ -188,7 +203,7 @@ describe('Multiaccount & Data Isolation Logic', () => {
     expect(editorStore.userProjects.some(p => p.brand_slug === 'nike')).toBe(false);
 
     // Superadmin logs in and can see all brand projects
-    await authStore.verifySuperAdmin('707admin');
+    signInAsSuperAdmin(authStore);
     expect(authStore.isSuperAdmin).toBe(true);
     expect(editorStore.userProjects.length).toBe(2);
 
@@ -304,7 +319,7 @@ describe('Multiaccount & Data Isolation Logic', () => {
     expect(editorStore.userProjects[0].id).toBe('proj_rian_exclusive');
 
     // Superadmin signs in: can see both projects
-    await authStore.verifySuperAdmin('707admin');
+    signInAsSuperAdmin(authStore);
     expect(editorStore.userProjects.length).toBe(2);
   });
 

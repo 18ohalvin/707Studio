@@ -71,10 +71,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { ref, reactive, provide, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { AlertCircle } from 'lucide-vue-next';
 import MobileArtboard from '../components/editor/MobileArtboard.vue';
+import { LIVE_PASS_KEY, type LivePassState } from '../components/editor/livePass.ts';
 import type { ActivationPage } from '../types/editor.ts';
 import { useEditorStore } from '../stores/editorStore.ts';
 
@@ -106,6 +107,9 @@ async function loadPage() {
   errorMessage.value = '';
   activePageIndex.value = 0;
   collectedFormData.value = {};
+  livePass.status = 'idle';
+  livePass.code = '';
+  livePass.error = '';
 
   const brandSlug = String(route.params.brandSlug || '');
   const pageSlug = String(route.params.pageSlug || '');
@@ -125,7 +129,7 @@ async function loadPage() {
   if (localMatch) {
     submissionPageId.value = localMatch.id;
     if (localMatch.pages && localMatch.pages.length > 0) {
-      projectPages.value = localMatch.pages;
+      projectPages.value = JSON.parse(JSON.stringify(localMatch.pages));
       activePageIndex.value = 0;
       applySeo(localMatch.pages[0]);
       isLoading.value = false;
@@ -140,7 +144,7 @@ async function loadPage() {
       const json = await res.json();
       if (json && json.success && json.data) {
         const item = json.data;
-        submissionPageId.value = item.id || `proj_${Date.now()}`;
+        submissionPageId.value = item.id || '';
         campaignBrandSlug.value = item.brand_slug || brandSlug;
 
         if (Array.isArray(item.pages) && item.pages.length > 0) {
@@ -188,7 +192,7 @@ async function loadPage() {
   if (editorStore.currentPage && 
       normalize(editorStore.currentPage.brand_slug) === normalize(brandSlug) && 
       normalize(editorStore.currentPage.slug) === normalize(pageSlug)) {
-    projectPages.value = editorStore.pages;
+    projectPages.value = JSON.parse(JSON.stringify(editorStore.pages));
     activePageIndex.value = editorStore.activePageIndex || 0;
     applySeo(editorStore.currentPage);
     isLoading.value = false;
@@ -272,24 +276,45 @@ function handlePopState() {
   }
 }
 
+const livePass = reactive<LivePassState>({
+  status: 'idle',
+  code: '',
+  error: '',
+  retry: () => sendSubmission()
+});
+provide(LIVE_PASS_KEY, livePass);
+
 async function sendSubmission() {
+  // A funnel can reach "submit" twice (entering the pass page, then the final CTA) — record once.
+  if (livePass.status === 'pending' || livePass.status === 'ready') return;
+  livePass.status = 'pending';
+  livePass.error = '';
   try {
     const payload = {
-      page_id: submissionPageId.value || 'live-drop',
-      brand_slug: campaignBrandSlug.value || 'brand',
+      page_id: submissionPageId.value,
       submission_type: 'raffle',
       form_data: {
         ...collectedFormData.value,
         submittedAt: new Date().toISOString()
       }
     };
-    await fetch('/api/submissions', {
+    const res = await fetch('/api/submissions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
+    const json = await res.json().catch(() => null);
+    if (res.ok && json?.success && json.data?.ticket_code) {
+      livePass.code = json.data.ticket_code;
+      livePass.status = 'ready';
+      return;
+    }
+    livePass.error = json?.error || 'We could not register your entry.';
+    livePass.status = 'error';
   } catch (err) {
     console.warn('[PublicDropView] Error submitting entry:', err);
+    livePass.error = 'No connection — check your signal and try again.';
+    livePass.status = 'error';
   }
 }
 

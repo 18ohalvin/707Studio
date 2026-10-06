@@ -377,7 +377,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useEditorStore } from '../stores/editorStore.ts';
 import { useBrandStore } from '../stores/brandStore.ts';
@@ -447,12 +447,27 @@ onMounted(() => {
   }
 });
 
-function handleSignedIn(brandName: string) {
+// A session can expire while this page is already open; the query then
+// changes without a remount.
+watch(() => route.query.signin, (v) => {
+  if (v === '1') showSignInModal.value = true;
+});
+
+async function handleSignedIn(brandName: string) {
   triggerToast(`Welcome! Signed in as ${brandName}.`);
+  await editorStore.loadProjects();
+  // Back to where the expired session left off (e.g. the open project).
+  const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '';
+  if (redirect.startsWith('/') && !redirect.startsWith('//')) {
+    router.push(redirect);
+  } else if (route.query.signin) {
+    router.replace({ query: {} });
+  }
 }
 
 function handleAnalytics() {
-  triggerToast('707 Analytics: Campaign conversions, RSVP rate, and traffic analytics dashboard is up to date.');
+  showUserProfileModal.value = false;
+  router.push('/hub');
 }
 
 function handleSignOut() {

@@ -159,8 +159,10 @@ function handleLogoError() {
   logoFailed.value = true;
 }
 
-function handleAnalytics() {
-  editorStore.showToast('707 Analytics: Campaign conversions, RSVP rate, and traffic analytics dashboard is up to date.');
+async function handleAnalytics() {
+  // Open the hub on the project being edited.
+  await editorStore.flushPendingSave();
+  router.push({ path: '/hub', query: editorStore.currentProjectId ? { project: editorStore.currentProjectId } : {} });
 }
 
 function handleSettings() {

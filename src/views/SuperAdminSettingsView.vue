@@ -1330,6 +1330,7 @@ import { useAuthStore, type UserAccount, type UserRole } from '../stores/authSto
 import { useEditorStore } from '../stores/editorStore.ts';
 import { useBrandStore } from '../stores/brandStore.ts';
 import { FIGMA_ASSETS } from '../constants/figmaAssets.ts';
+import { isReservedSlug } from '../constants/reservedSlugs.ts';
 import type { Brand, GlobalTemplate, WidgetItem, ProjectItem } from '../types/editor.ts';
 
 const router = useRouter();
@@ -1497,13 +1498,22 @@ function generateRandomPassword() {
 async function handleAddBrandSubmit() {
   if (!newBrandName.value.trim()) return;
   const slug = newBrandSlug.value.trim() || newBrandName.value.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-  await brandStore.addBrand({
-    name: newBrandName.value.trim(),
-    slug,
-    primary_color: newBrandColor.value || '#000000',
-    logo_url: newBrandLogoUrl.value.trim(),
-    description: newBrandDesc.value.trim()
-  });
+  if (isReservedSlug(slug)) {
+    editorStore.showToast(`"${slug}" is used by the studio's own pages — choose another brand slug.`);
+    return;
+  }
+  try {
+    await brandStore.addBrand({
+      name: newBrandName.value.trim(),
+      slug,
+      primary_color: newBrandColor.value || '#000000',
+      logo_url: newBrandLogoUrl.value.trim(),
+      description: newBrandDesc.value.trim()
+    });
+  } catch (err: any) {
+    editorStore.showToast(err?.message || 'Could not add this brand.');
+    return;
+  }
   editorStore.showToast(`Brand "${newBrandName.value}" added successfully.`);
   newBrandName.value = '';
   newBrandSlug.value = '';

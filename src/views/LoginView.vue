@@ -171,7 +171,7 @@
               v-model="password"
               :type="showPassword ? 'text' : 'password'"
               autocomplete="current-password"
-              placeholder="Enter passkey PIN (e.g. 707admin)"
+              placeholder="Enter superadmin passkey"
               required
               class="w-full h-[46px] px-3.5 pr-10 bg-transparent text-black font-707 text-[14px] outline-none placeholder:text-neutral-400 border-none"
               :disabled="isLoading"

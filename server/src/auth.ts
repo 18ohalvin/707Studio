@@ -64,26 +64,78 @@ function safeEqual(a: string, b: string): boolean {
   return crypto.timingSafeEqual(ah, bh);
 }
 
-export function issueToken(): string {
+/**
+ * Who a token was issued to. Signed into the token itself so routes can scope
+ * data to the account (its brands, its own projects) without a session table.
+ */
+export interface SessionClaims {
+  sub: string;
+  email: string;
+  role: string;
+  brands: string[];
+}
+
+export const SUPERADMIN_CLAIMS: SessionClaims = {
+  sub: 'superadmin_master',
+  email: 'admin@707designstudio.internal',
+  role: 'superadmin',
+  brands: ['all']
+};
+
+function encodeClaims(claims: SessionClaims): string {
+  return Buffer.from(JSON.stringify(claims)).toString('base64url');
+}
+
+function decodeClaims(raw: string): SessionClaims | null {
+  try {
+    const parsed = JSON.parse(Buffer.from(raw, 'base64url').toString('utf8'));
+    if (!parsed || typeof parsed.sub !== 'string') return null;
+    return {
+      sub: parsed.sub,
+      email: String(parsed.email || ''),
+      role: String(parsed.role || 'editor'),
+      brands: Array.isArray(parsed.brands) ? parsed.brands.map(String) : []
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function issueToken(claims: SessionClaims): string {
   const issuedAt = Date.now().toString(36);
   const nonce = crypto.randomBytes(12).toString('hex');
-  const payload = `${issuedAt}.${nonce}`;
+  const payload = `${issuedAt}.${nonce}.${encodeClaims(claims)}`;
   return `${payload}.${sign(payload)}`;
 }
 
-export function verifyToken(token: string | undefined | null): boolean {
-  if (!token) return false;
+/**
+ * Returns the claims of a valid, unexpired token, or null. Tokens from before
+ * claims existed (three parts) are refused: they cannot be scoped to an
+ * account, so their holders sign in once more.
+ */
+export function verifyToken(token: string | undefined | null): SessionClaims | null {
+  if (!token) return null;
 
   const parts = token.split('.');
-  if (parts.length !== 3) return false;
+  if (parts.length !== 4) return null;
 
-  const [issuedAt, nonce, signature] = parts;
-  if (!safeEqual(signature, sign(`${issuedAt}.${nonce}`))) return false;
+  const [issuedAt, nonce, rawClaims, signature] = parts;
+  if (!safeEqual(signature, sign(`${issuedAt}.${nonce}.${rawClaims}`))) return null;
 
   const issuedAtMs = parseInt(issuedAt, 36);
-  if (Number.isNaN(issuedAtMs)) return false;
+  if (Number.isNaN(issuedAtMs)) return null;
+  if (Date.now() - issuedAtMs > SESSION_TTL_MS) return null;
 
-  return Date.now() - issuedAtMs <= SESSION_TTL_MS;
+  return decodeClaims(rawClaims);
+}
+
+export function isSuperAdminClaims(claims: SessionClaims | null | undefined): boolean {
+  return claims?.role === 'superadmin';
+}
+
+/** Claims set by requireAuth for the current request. */
+export function getClaims(res: Response): SessionClaims {
+  return res.locals.claims as SessionClaims;
 }
 
 function readBearer(req: Request): string | null {
@@ -92,9 +144,11 @@ function readBearer(req: Request): string | null {
 }
 
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
-  if (!verifyToken(readBearer(req))) {
+  const claims = verifyToken(readBearer(req));
+  if (!claims) {
     return res.status(401).json({ error: 'Unauthorized: studio sign-in required' });
   }
+  res.locals.claims = claims;
   next();
 }
 
@@ -107,7 +161,7 @@ authRouter.post('/login', (req: Request, res: Response) => {
     return res.status(401).json({ success: false, error: 'Incorrect studio password.' });
   }
 
-  res.json({ success: true, token: issueToken(), expiresInMs: SESSION_TTL_MS });
+  res.json({ success: true, token: issueToken(SUPERADMIN_CLAIMS), expiresInMs: SESSION_TTL_MS });
 });
 
 
@@ -207,7 +261,7 @@ authRouter.post('/signin', async (req: Request, res: Response) => {
   if (safeEqual(password, STUDIO_PASSWORD)) {
     return res.json({
       success: true,
-      token: issueToken(),
+      token: issueToken(SUPERADMIN_CLAIMS),
       user: SUPERADMIN_USER,
       isSuperAdmin: true,
       expiresInMs: SESSION_TTL_MS
@@ -245,10 +299,16 @@ authRouter.post('/signin', async (req: Request, res: Response) => {
     await upgradeStoredPassword(account, password);
   }
 
+  const clientUser = toClientUser(account);
   res.json({
     success: true,
-    token: issueToken(),
-    user: toClientUser(account),
+    token: issueToken({
+      sub: String(account.id),
+      email: String(account.email || ''),
+      role: String(account.role || 'editor'),
+      brands: Array.isArray(clientUser.assignedBrands) ? clientUser.assignedBrands.map(String) : []
+    }),
+    user: clientUser,
     isSuperAdmin: String(account.role) === 'superadmin',
     expiresInMs: SESSION_TTL_MS
   });
@@ -261,5 +321,5 @@ authRouter.post('/logout', (_req: Request, res: Response) => {
 });
 
 authRouter.get('/session', (req: Request, res: Response) => {
-  res.json({ authenticated: verifyToken(readBearer(req)) });
+  res.json({ authenticated: Boolean(verifyToken(readBearer(req))) });
 });

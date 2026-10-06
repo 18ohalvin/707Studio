@@ -10,8 +10,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { computed, onMounted, onUnmounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { SESSION_EXPIRED_EVENT } from './services/apiClient.ts';
 import DesktopOnlyGuard from './components/common/DesktopOnlyGuard.vue';
 import ProjectLoadingScreen from './components/common/ProjectLoadingScreen.vue';
 import { useAuthStore } from './stores/authStore.ts';
@@ -19,6 +20,7 @@ import { useBrandStore } from './stores/brandStore.ts';
 import { useEditorStore } from './stores/editorStore.ts';
 
 const route = useRoute();
+const router = useRouter();
 const authStore = useAuthStore();
 const brandStore = useBrandStore();
 const editorStore = useEditorStore();
@@ -27,7 +29,18 @@ const isPublicDrop = computed(() => {
   return route.name === 'PublicDrop' || (Boolean(route.meta?.public) && route.name !== 'Login');
 });
 
+function handleSessionExpired() {
+  if (!authStore.isAuthenticated) return;
+  authStore.signOut();
+  if (isPublicDrop.value) return;
+  editorStore.showToast('Your session expired — sign in again. Unsaved edits are kept on this device.', 6000);
+  router.push({ path: '/', query: { signin: '1', redirect: route.fullPath } });
+}
+
+onUnmounted(() => window.removeEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired));
+
 onMounted(async () => {
+  window.addEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired);
   authStore.initAuth();
 
   // Nothing to fetch until someone is signed in. Firing these on the login

@@ -60,7 +60,7 @@
             </span>
           </button>
 
-          <!-- 2. Analytics Report -->
+          <!-- 2. Campaign Hub (guests, door check-in, raffle) -->
           <button 
             type="button"
             @click="handleAnalytics"
@@ -68,7 +68,7 @@
           >
             <BarChart2 class="w-4 h-4 text-neutral-500" />
             <span class="font-707 text-[13px] font-normal">
-              Analytics Report
+              Campaign Hub
             </span>
           </button>
 

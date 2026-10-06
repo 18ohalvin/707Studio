@@ -99,6 +99,17 @@ describe('Cross-Device & Cross-Browser Cloud Synchronization Pipeline', () => {
       return new Response(JSON.stringify({ success: true }), { status: 200 });
     });
 
+    const authStore = useAuthStore();
+    authStore.currentUser = {
+      id: 'user_rian_1',
+      name: 'Rian Atmos PIC',
+      email: 'rian@atmos.co.id',
+      role: 'editor',
+      assignedBrands: ['atmos'],
+      status: 'active',
+      createdAt: '2026-10-05T09:00:00.000Z'
+    };
+
     const editorStore = useEditorStore();
     await editorStore.loadProjects();
 
@@ -106,6 +117,49 @@ describe('Cross-Device & Cross-Browser Cloud Synchronization Pipeline', () => {
     expect(postedToCloud.length).toBe(1);
     expect(postedToCloud[0].id).toBe('proj_offline_1');
     expect(postedToCloud[0].title).toBe('Offline Draft Drop');
+  });
+
+  it('2b. A cached copy of another brand\'s project is dropped, not re-uploaded over theirs', async () => {
+    const foreignCopy: ProjectItem = {
+      id: 'proj_other_brand',
+      title: 'Other Brand Drop',
+      slug: 'other-brand-drop',
+      brand_slug: 'nike',
+      status: 'draft',
+      current_version: 1,
+      widget_tree: [],
+      pages: [],
+      owner_id: 'user_nike_1',
+      created_at: '2026-10-05T09:10:00.000Z',
+      updated_at: '2026-10-05T09:10:00.000Z'
+    };
+    localStorage.setItem('707_cloud_projects', JSON.stringify([foreignCopy]));
+
+    const postedToCloud: any[] = [];
+    vi.spyOn(apiClient, 'apiFetch').mockImplementation(async (path: string, options: any = {}) => {
+      if (path === '/api/pages' && options.method === 'POST') postedToCloud.push(JSON.parse(options.body));
+      if (path === '/api/pages' && (!options.method || options.method === 'GET')) {
+        return new Response(JSON.stringify({ success: true, data: [] }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ success: true }), { status: 200 });
+    });
+
+    const authStore = useAuthStore();
+    authStore.currentUser = {
+      id: 'user_rian_1',
+      name: 'Rian Atmos PIC',
+      email: 'rian@atmos.co.id',
+      role: 'editor',
+      assignedBrands: ['atmos'],
+      status: 'active',
+      createdAt: '2026-10-05T09:00:00.000Z'
+    };
+
+    const editorStore = useEditorStore();
+    await editorStore.loadProjects();
+
+    expect(postedToCloud.length).toBe(0);
+    expect(editorStore.projects.find(p => p.id === 'proj_other_brand')).toBeUndefined();
   });
 
   it('3. saveCurrentProject updates both local cache and sends mutation with keepalive', async () => {

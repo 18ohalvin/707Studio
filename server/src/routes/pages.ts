@@ -2,12 +2,40 @@ import { Router, Request, Response } from 'express';
 import { pool, getDbStatus } from '../db.js';
 import { readDataFile, writeDataFile } from '../fileStorage.js';
 import { externalizeInlineImages } from '../inlineImages.js';
-import { requireAuth } from '../auth.js';
+import { requireAuth, getClaims, isSuperAdminClaims } from '../auth.js';
+import { canAccessProject, findProject } from '../access.js';
 
 export const pagesRouter = Router();
 
 // Persistent fallback pages storage (survives restarts and standalone sessions)
 let inMemoryPages: any[] = readDataFile<any[]>('pages.json', []);
+
+/**
+ * Refuses a write to a project this account cannot see. A missing project is
+ * allowed through — that is a create. Without this, a device holding a stale
+ * local copy of another team's project would overwrite it on its next sync.
+ */
+async function denyIfForeign(res: Response, id: string): Promise<boolean> {
+  const existing = await findProject(id);
+  if (existing && !canAccessProject(getClaims(res), existing)) {
+    res.status(403).json({ success: false, error: 'This project belongs to another account.' });
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Approving and publishing is the UI/UX division's call. A brand account may
+ * move its own project between draft, in-review and archived, and may keep
+ * whatever status the project already has while it edits — but cannot raise
+ * it to approved/published itself.
+ */
+const BRAND_SETTABLE_STATUSES = ['draft', 'pending_review', 'archived'];
+
+function brandMayHaveStatus(res: Response, requested: string | undefined, current: string | undefined): boolean {
+  if (requested === undefined || isSuperAdminClaims(getClaims(res))) return true;
+  return requested === current || BRAND_SETTABLE_STATUSES.includes(requested);
+}
 
 // GET /api/pages - list pages (optionally filter by brand_slug or status)
 pagesRouter.get('/', requireAuth, async (req: Request, res: Response) => {
@@ -48,7 +76,8 @@ pagesRouter.get('/', requireAuth, async (req: Request, res: Response) => {
       }));
       // Devices prune their local copies from this list; without it a stale
       // copy keeps reappearing in the project list after a delete.
-      return res.json({ success: true, data: rows, deleted: tombstones.rows.map(t => t.id) });
+      const claims = getClaims(res);
+      return res.json({ success: true, data: rows.filter(r => canAccessProject(claims, r)), deleted: tombstones.rows.map(t => t.id) });
     } catch (err: any) {
       console.error('[DB] Error querying pages from DB:', err.message);
     }
@@ -62,7 +91,8 @@ pagesRouter.get('/', requireAuth, async (req: Request, res: Response) => {
   if (status) {
     filtered = filtered.filter(p => p.status === status);
   }
-  return res.json({ success: true, data: filtered });
+  const claims = getClaims(res);
+  return res.json({ success: true, data: filtered.filter(p => canAccessProject(claims, p)) });
 });
 
 // GET /api/pages/:brandSlug/:pageSlug - Public live page endpoint
@@ -132,7 +162,11 @@ pagesRouter.post('/', requireAuth, async (req: Request, res: Response) => {
   const targetBrandSlug = brand_slug || 'atmos';
   const pageTitle = title || 'Untitled Activation Drop';
   const pageSlug = slug || pageTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-  const pageStatus = status || 'draft';
+  if (await denyIfForeign(res, pageId)) return;
+  const storedStatus = (await findProject(pageId))?.status;
+  // Autosave carries the status along; an escalation is ignored rather than
+  // failing the save, so the edit itself still lands.
+  const pageStatus = brandMayHaveStatus(res, status || 'draft', storedStatus) ? (status || 'draft') : (storedStatus || 'draft');
   // Refuse to resurrect a project someone deleted. An older client that does
   // not know about tombstones still cannot bring it back this way.
   if (getDbStatus().isConnected) {
@@ -244,6 +278,10 @@ pagesRouter.put('/:id', requireAuth, async (req: Request, res: Response) => {
   const { id } = req.params;
   const updates = req.body;
   const now = new Date().toISOString();
+  if (await denyIfForeign(res, String(id))) return;
+  if (!brandMayHaveStatus(res, updates?.status, (await findProject(String(id)))?.status)) {
+    return res.status(403).json({ success: false, error: 'Only the superadmin can approve or publish a project.' });
+  }
 
   inMemoryPages = readDataFile<any[]>('pages.json', inMemoryPages);
   const idx = inMemoryPages.findIndex(p => p.id === id);
@@ -287,6 +325,7 @@ pagesRouter.put('/:id', requireAuth, async (req: Request, res: Response) => {
 // DELETE /api/pages/:id - Delete page / project permanently from cloud DB
 pagesRouter.delete('/:id', requireAuth, async (req: Request, res: Response) => {
   const { id } = req.params;
+  if (await denyIfForeign(res, String(id))) return;
   inMemoryPages = readDataFile<any[]>('pages.json', inMemoryPages);
   inMemoryPages = inMemoryPages.filter(p => p.id !== id);
   writeDataFile('pages.json', inMemoryPages);
@@ -314,6 +353,10 @@ pagesRouter.patch('/:id/review', requireAuth, async (req: Request, res: Response
   const { id } = req.params;
   const { status, reviewed_by, review_notes } = req.body;
   const now = new Date().toISOString();
+  if (await denyIfForeign(res, String(id))) return;
+  if (!brandMayHaveStatus(res, status, (await findProject(String(id)))?.status)) {
+    return res.status(403).json({ success: false, error: 'Only the superadmin can approve or publish a project.' });
+  }
 
   inMemoryPages = readDataFile<any[]>('pages.json', inMemoryPages);
   const page = inMemoryPages.find(p => p.id === id);

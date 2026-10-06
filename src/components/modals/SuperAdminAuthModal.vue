@@ -38,7 +38,7 @@
               ref="passkeyInput"
               v-model="passkey"
               type="password"
-              placeholder="Enter passkey (e.g. 707admin)"
+              placeholder="Enter superadmin passkey"
               class="w-full h-[40px] px-3.5 rounded-[8px] bg-black/[0.04] border border-black/15 text-[13px] font-707 text-black focus:border-black focus:bg-white outline-none transition-all placeholder:text-neutral-400"
               autocomplete="current-password"
             />

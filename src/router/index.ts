@@ -17,6 +17,18 @@ const routes = [
     component: EditorView
   },
   {
+    // Each open project has its own address, scoped to the brand it belongs
+    // to, so a refresh or a shared link reopens the same project.
+    path: '/editor/:brandSlug/:projectId',
+    name: 'EditorProject',
+    component: EditorView
+  },
+  {
+    path: '/hub',
+    name: 'CampaignHub',
+    component: () => import('../views/CampaignHubView.vue')
+  },
+  {
     path: '/login',
     name: 'Login',
     component: LoginView,
@@ -56,9 +68,9 @@ router.beforeEach((to) => {
     }
   }
 
-  if (to.path === '/editor') {
+  if (to.path === '/editor' || to.path.startsWith('/editor/') || to.path === '/hub') {
     if (!authStore.isAuthenticated) {
-      return { path: '/', query: { signin: '1' } };
+      return { path: '/', query: { signin: '1', redirect: to.fullPath } };
     }
   }
 

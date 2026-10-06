@@ -53,7 +53,9 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       if (typeof localStorage !== 'undefined') {
         const isLoggedOut = localStorage.getItem('707_logged_out');
-        if (isLoggedOut === 'true') {
+        // An account without a token cannot reach the API, so showing it as
+        // signed in only produces saves that silently fail.
+        if (isLoggedOut === 'true' || !getToken()) {
           isSuperAdmin.value = false;
           currentUser.value = null;
           return;
@@ -144,7 +146,12 @@ export const useAuthStore = defineStore('auth', () => {
       await loadUsers();
       return { success: true };
     } catch {
-      // Offline fallback / unit test support when mock users are registered in store
+      // Unit tests only: they run without a server and register mock users in
+      // the store. Vite strips this branch from production builds, so the
+      // browser never decides on its own that a password is correct.
+      if ((import.meta as any).env?.MODE !== 'test') {
+        return { success: false, error: 'Cannot reach the server. Check your connection and try again.' };
+      }
       const matched = users.value.find(u => 
         (u.email.toLowerCase() === cleanId.toLowerCase() || 
          u.name.toLowerCase() === cleanId.toLowerCase() || 
@@ -163,18 +170,6 @@ export const useAuthStore = defineStore('auth', () => {
   /** Superadmin tab: no account id, only the studio passkey. */
   async function verifySuperAdmin(passkey: string): Promise<boolean> {
     const res = await signIn('', passkey);
-    if (!res.success && (passkey === '707admin' || passkey === 'superadmin_pass_2026')) {
-      applySession({
-        id: 'superadmin_master',
-        name: 'Alvin Decorous (Lead Admin)',
-        email: 'admin@707designstudio.internal',
-        role: 'superadmin',
-        assignedBrands: ['all'],
-        status: 'active',
-        createdAt: new Date().toISOString()
-      }, true, 'mock_token');
-      return true;
-    }
     return res.success && isSuperAdmin.value;
   }
 

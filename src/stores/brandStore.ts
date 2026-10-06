@@ -2,7 +2,7 @@ import { getToken } from '../services/apiClient.ts';
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import type { Brand, GlobalTemplate } from '../types/editor.ts';
-import { apiJson } from '../services/apiClient.ts';
+import { apiJson, ApiError } from '../services/apiClient.ts';
 
 export const useBrandStore = defineStore('brand', () => {
   // Pure live state - no static mock data
@@ -96,6 +96,9 @@ export const useBrandStore = defineStore('brand', () => {
         return res.data;
       }
     } catch (err) {
+      // The server refused (reserved slug, not superadmin…) — that is an answer
+      // for the form to show, not a dropped connection to paper over.
+      if (err instanceof ApiError && err.status >= 400 && err.status < 500) throw err;
       console.error('[BrandStore] Failed to create brand on cloud server:', err);
       // Optimistic local add
       const fallbackBrand: Brand = {

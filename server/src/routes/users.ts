@@ -2,8 +2,32 @@ import { Router, Request, Response } from 'express';
 import { pool, getDbStatus } from '../db.js';
 import { readDataFile, writeDataFile } from '../fileStorage.js';
 import { hashPassword, withoutPassword } from '../password.js';
+import { getClaims, isSuperAdminClaims } from '../auth.js';
 
 export const usersRouter = Router();
+
+/**
+ * Team accounts are managed by the superadmin. Anyone else may only edit their
+ * own profile, and never their own role, brands or status — before this any
+ * signed-in brand editor could create a superadmin account.
+ */
+const SELF_EDITABLE = new Set(['name', 'email', 'phone', 'password', 'avatarUrl']);
+
+usersRouter.use((req: Request, res: Response, next) => {
+  if (req.method === 'GET') return next();
+  const claims = getClaims(res);
+  if (isSuperAdminClaims(claims)) return next();
+
+  if (req.method === 'PUT') {
+    const target = String(req.params?.id || req.path.slice(1) || '');
+    const isSelf = decodeURIComponent(target) === claims.sub || decodeURIComponent(target).toLowerCase() === claims.email.toLowerCase();
+    if (isSelf) {
+      req.body = Object.fromEntries(Object.entries(req.body || {}).filter(([k]) => SELF_EDITABLE.has(k)));
+      return next();
+    }
+  }
+  return res.status(403).json({ success: false, error: 'Only the superadmin can manage team accounts.' });
+});
 
 // Persistent fallback storage for standalone mode
 let inMemoryUsers: any[] = readDataFile<any[]>('users.json', []);
@@ -108,7 +132,7 @@ usersRouter.post('/', async (req: Request, res: Response) => {
   inMemoryUsers = readDataFile<any[]>('users.json', inMemoryUsers);
   inMemoryUsers.unshift(newUser);
   writeDataFile('users.json', inMemoryUsers);
-  return res.status(201).json({ success: true, data: newUser });
+  return res.status(201).json({ success: true, data: withoutPassword(newUser) });
 });
 
 // PUT /api/users/:id - Update user / reset password
@@ -119,7 +143,9 @@ usersRouter.put('/:id', async (req: Request, res: Response) => {
   inMemoryUsers = readDataFile<any[]>('users.json', inMemoryUsers);
   const idx = inMemoryUsers.findIndex(u => u.id === id || u.email === id);
   if (idx !== -1) {
-    inMemoryUsers[idx] = { ...inMemoryUsers[idx], ...updates };
+    const fileUpdates = { ...updates };
+    if (fileUpdates.password) fileUpdates.password = hashPassword(fileUpdates.password);
+    inMemoryUsers[idx] = { ...inMemoryUsers[idx], ...fileUpdates };
     writeDataFile('users.json', inMemoryUsers);
   }
 
@@ -168,7 +194,7 @@ usersRouter.put('/:id', async (req: Request, res: Response) => {
   }
 
   const updated = inMemoryUsers.find(u => u.id === id || u.email === id);
-  return res.json({ success: true, data: updated || updates });
+  return res.json({ success: true, data: withoutPassword(updated || updates) });
 });
 
 // DELETE /api/users/:id - Delete user account

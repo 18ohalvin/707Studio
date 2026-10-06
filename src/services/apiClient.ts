@@ -45,8 +45,21 @@ export class ApiError extends Error {
   }
 }
 
+export const SESSION_EXPIRED_EVENT = 'studio:session-expired';
+
+/**
+ * The UI keeps the signed-in account in localStorage, separately from the
+ * token. Without telling the app, an expired token left the studio looking
+ * signed in while every save was refused with 401. Edits are already mirrored
+ * locally and re-synced after the next sign-in, so nothing is lost by this.
+ */
 function handleUnauthorized(): void {
   clearToken();
+  try {
+    window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
+  } catch {
+    /* non-browser environment */
+  }
 }
 
 function resolveUrl(path: string): string {
@@ -70,14 +83,30 @@ function resolveUrl(path: string): string {
   return path;
 }
 
+/**
+ * Browsers cap the combined body of in-flight keepalive requests at 64 KB and
+ * reject anything larger outright with a network error — no request is sent.
+ * Every image upload and any project holding a picture is far past that, so
+ * keepalive (which only matters for a save racing a tab close) is used only
+ * when the body is small enough to be accepted.
+ */
+const KEEPALIVE_BODY_LIMIT = 60 * 1024;
+
+function bodyFitsKeepalive(body: RequestInit['body']): boolean {
+  if (body === undefined || body === null) return true;
+  if (typeof body === 'string') return new Blob([body]).size <= KEEPALIVE_BODY_LIMIT;
+  return false;
+}
+
 export async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const token = getToken();
   const url = resolveUrl(path);
   const isMutation = !!options.method && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(options.method.toUpperCase());
+  const wantsKeepalive = options.keepalive !== undefined ? options.keepalive : isMutation;
 
   const res = await fetch(url, {
-    keepalive: options.keepalive !== undefined ? options.keepalive : isMutation,
     ...options,
+    keepalive: wantsKeepalive && bodyFitsKeepalive(options.body),
     headers: {
       ...(options.headers || {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {})

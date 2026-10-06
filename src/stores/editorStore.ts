@@ -25,55 +25,40 @@ export const useEditorStore = defineStore('editor', () => {
   const projects = ref<ProjectItem[]>(getStoredProjects());
 
   // Filtered Projects: Strictly visible ONLY to the signed-in account owner or Superadmin
-  const userProjects = computed<ProjectItem[]>(() => {
+  /** Mirrors canAccessProject on the server, which is the check that actually enforces this. */
+  function isVisibleToCurrentUser(p: ProjectItem): boolean {
     const authStore = useAuthStore();
 
     // 1. When not authenticated (signed out), nobody can see any projects
-    if (!authStore.isAuthenticated) {
-      return [];
-    }
+    if (!authStore.isAuthenticated) return false;
 
     // 2. Superadmin has oversight across all projects
-    if (authStore.isSuperAdmin) {
-      return projects.value;
-    }
+    if (authStore.isSuperAdmin) return true;
 
     // 3. Authenticated account / Brand editor
-    if (authStore.currentUser) {
-      const currentUserId = authStore.currentUser.id;
-      const currentUserEmail = (authStore.currentUser.email || '').toLowerCase().trim();
-      const userBrands = (authStore.currentUser.assignedBrands || []).map(b => b.toLowerCase().replace(/_/g, '-').trim());
+    if (!authStore.currentUser) return false;
+    const currentUserId = authStore.currentUser.id;
+    const currentUserEmail = (authStore.currentUser.email || '').toLowerCase().trim();
+    const userBrands = (authStore.currentUser.assignedBrands || []).map(b => b.toLowerCase().replace(/_/g, '-').trim());
 
-      return projects.value.filter(p => {
-        // Direct owner match: account ID or email matches
-        const matchesOwnerId = Boolean(p.owner_id && p.owner_id === currentUserId);
-        const matchesOwnerEmail = Boolean(p.owner_email && p.owner_email.toLowerCase().trim() === currentUserEmail);
+    // Direct owner match: account ID or email matches
+    const matchesOwnerId = Boolean(p.owner_id && p.owner_id === currentUserId);
+    const matchesOwnerEmail = Boolean(p.owner_email && p.owner_email.toLowerCase().trim() === currentUserEmail);
+    if (matchesOwnerId || matchesOwnerEmail) return true;
 
-        if (matchesOwnerId || matchesOwnerEmail) {
-          return true;
-        }
+    // If the project explicitly has an owner assigned that is NOT the current user,
+    // it belongs exclusively to that other owner - hide it from this account
+    if (p.owner_id && p.owner_id !== currentUserId) return false;
+    if (p.owner_email && currentUserEmail && p.owner_email.toLowerCase().trim() !== currentUserEmail) return false;
 
-        // If the project explicitly has an owner assigned that is NOT the current user,
-        // it belongs exclusively to that other owner - hide it from this account
-        if (p.owner_id && p.owner_id !== currentUserId) {
-          return false;
-        }
-        if (p.owner_email && currentUserEmail && p.owner_email.toLowerCase().trim() !== currentUserEmail) {
-          return false;
-        }
+    // Fallback for legacy or shared team brand projects without explicit owner_id:
+    if (userBrands.includes('all')) return true;
+    const slug = (p.brand_slug || '').toLowerCase().replace(/_/g, '-').trim();
+    if (!slug) return false;
+    return userBrands.some(ub => ub && (ub === slug || slug.includes(ub) || ub.includes(slug)));
+  }
 
-        // Fallback for legacy or shared team brand projects without explicit owner_id:
-        if (userBrands.includes('all')) {
-          return true;
-        }
-        const slug = (p.brand_slug || '').toLowerCase().replace(/_/g, '-').trim();
-        if (!slug) return false;
-        return userBrands.some(ub => ub && (ub === slug || slug.includes(ub) || ub.includes(slug)));
-      });
-    }
-
-    return [];
-  });
+  const userProjects = computed<ProjectItem[]>(() => projects.value.filter(isVisibleToCurrentUser));
 
   const currentProjectId = ref<string>('');
 
@@ -1169,6 +1154,10 @@ export const useEditorStore = defineStore('editor', () => {
           localList.forEach(localProj => {
             const existing = mergedMap.get(localProj.id);
             if (!existing) {
+              // The server only lists this account's projects, so a local copy
+              // of someone else's (cached before that was enforced) is stale,
+              // not an offline draft — drop it instead of re-uploading it.
+              if (!isVisibleToCurrentUser(localProj)) return;
               mergedMap.set(localProj.id, localProj);
               pendingSync.push(localProj);
             } else {

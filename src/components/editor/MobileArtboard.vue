@@ -1300,8 +1300,20 @@ more</span>
                 class="w-full flex items-start justify-start pt-[4px]"
               >
                 <div class="size-[132px] border-[0.5px] border-black bg-transparent rounded-[6px] p-[10px] flex items-center justify-center relative overflow-hidden shadow-xs">
-                  <!-- Sharp SVG Vector QR Code -->
-                  <svg class="size-full text-black" viewBox="0 0 100 100" fill="currentColor">
+                  <!-- Live page: the real, scannable pass for this guest -->
+                  <template v-if="isLivePass">
+                    <img v-if="livePass!.status === 'ready' && livePassQr" :src="livePassQr" :alt="`QR code for ${livePass!.code}`" class="size-full object-contain [image-rendering:pixelated]" />
+                    <div v-else-if="livePass!.status === 'error'" class="flex flex-col items-center justify-center text-center gap-1.5 px-1">
+                      <span class="font-707 text-[10px] leading-[13px] text-neutral-600">{{ livePass!.error }}</span>
+                      <button type="button" @click.stop="livePass!.retry()" class="font-707 text-[10px] font-medium underline underline-offset-2 cursor-pointer">Try again</button>
+                    </div>
+                    <div v-else class="flex flex-col items-center justify-center gap-2">
+                      <span class="size-5 rounded-full border-2 border-black/15 border-t-black animate-spin" />
+                      <span class="font-707 text-[10px] text-neutral-500 uppercase tracking-tight">Issuing pass…</span>
+                    </div>
+                  </template>
+                  <!-- Editor: decorative placeholder QR -->
+                  <svg v-else class="size-full text-black" viewBox="0 0 100 100" fill="currentColor">
                     <!-- Top-Left Position Marker -->
                     <rect x="6" y="6" width="28" height="28" fill="none" stroke="currentColor" stroke-width="5" />
                     <rect x="15" y="15" width="10" height="10" />
@@ -1815,7 +1827,9 @@ more</span>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, inject } from 'vue';
+import QRCode from 'qrcode';
+import { LIVE_PASS_KEY } from './livePass.ts';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { 
@@ -1858,6 +1872,24 @@ const emit = defineEmits<{
 }>();
 
 const editorStore = useEditorStore();
+
+// Real pass state on a published page (provided by PublicDropView); absent in the editor.
+const livePass = inject(LIVE_PASS_KEY, null);
+const isLivePass = computed(() => Boolean(props.isLivePage && livePass));
+const livePassQr = ref('');
+watch(
+  () => livePass?.code,
+  async (code) => {
+    livePassQr.value = '';
+    if (!code) return;
+    try {
+      livePassQr.value = await QRCode.toDataURL(code, { margin: 0, width: 264, errorCorrectionLevel: 'M' });
+    } catch (err) {
+      console.warn('[MobileArtboard] Could not render pass QR:', err);
+    }
+  },
+  { immediate: true }
+);
 const logoFailed = ref(false);
 
 const activePage = computed(() => {
@@ -3818,6 +3850,7 @@ async function handleChoiceImageDrop(e: DragEvent, widget: any, optId: string) {
 }
 
 function getGuestName(widget: any) {
+  if (props.isLivePage && widget.props?.guestNameFallback) return String(widget.props.guestNameFallback).toUpperCase();
   // 1. Check if any RegistrationForm has a filled name field
   const regWidgets = editorStore.pages.flatMap(p => p.widget_tree).filter(w => w.type === 'RegistrationForm');
   for (const rw of regWidgets) {
@@ -3968,6 +4001,9 @@ function getBrandLogoAlign(widget: any) {
 }
 
 function getEmail(widget: any) {
+  if (props.isLivePage && widget.props?.emailFallback && widget.props.emailFallback !== 'guest@activation.internal') {
+    return String(widget.props.emailFallback).toLowerCase();
+  }
   const regWidgets = editorStore.pages.flatMap(p => p.widget_tree).filter(w => w.type === 'RegistrationForm');
   for (const rw of regWidgets) {
     const fields = (rw.props?.fields || []) as any[];
@@ -3997,10 +4033,20 @@ function getEmail(widget: any) {
     }
   }
 
-  return widget.props?.emailFallback || widget.props?.email || 'alvin@sosco.id';
+  if (props.isLivePage) {
+    const email = String(widget.props?.emailFallback || '');
+    return email === 'guest@activation.internal' ? '' : email;
+  }
+  return widget.props?.emailFallback || widget.props?.email || 'guest@email.com';
 }
 
 function getAccessId(widget: any) {
+  // On a live page only the server-issued code is real; the widget's own value
+  // is the editor placeholder and must never be shown to a guest as theirs.
+  if (isLivePass.value) {
+    if (livePass!.status === 'ready') return livePass!.code;
+    return livePass!.status === 'error' ? '—' : 'ISSUING…';
+  }
   return widget.props?.accessIdFallback || widget.props?.accessId || '020305-1008-1245';
 }
 

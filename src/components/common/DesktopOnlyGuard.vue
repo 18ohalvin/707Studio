@@ -34,8 +34,10 @@ const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1200
 const isMobileViewport = ref(typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
 const isDismissed = ref(false);
 
+// The Campaign Hub is used on phones at the venue door (scanner, check-in),
+// so it is exempt from the desktop-only notice like public pages are.
 const isPublicRoute = computed(() => {
-  return route.meta?.public === true || route.name === 'PublicDrop';
+  return route.meta?.public === true || route.name === 'PublicDrop' || route.name === 'CampaignHub';
 });
 
 function handleResize() {
