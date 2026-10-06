@@ -21,12 +21,12 @@ describe('Ticket page rendering', () => {
     return store.pages[store.ticketPageIndex];
   }
 
-  it('renders as a fixed 9:16 canvas without the 707 header, with sample data in the editor', async () => {
+  it('renders as a fixed-width canvas that grows with its content without the 707 header, with sample data in the editor', async () => {
     const page = ticketPage();
     const wrapper = mount(MobileArtboard, { props: { page, pageIndex: 1, isSelected: true }, global: { plugins: [pinia] } });
     await flushPromises();
 
-    expect(wrapper.html()).toContain('h-[604px]');
+    expect(wrapper.html()).toContain('w-[340px] h-auto');
     expect(wrapper.find('img[alt="707 Logo"]').exists()).toBe(false);
     const text = wrapper.text();
     expect(text).toContain('GUEST NAME');
@@ -68,5 +68,16 @@ describe('Ticket page rendering', () => {
     expect(text).toContain('Day 2 — Raffle Draw');
     // No logo uploaded: the campaign title stands in
     expect(text).toContain('Atmos Drop');
+  });
+
+  it('shows every field picked for a block, not just one or two', async () => {
+    const store = useEditorStore();
+    store.ensureTicketPage();
+    const page = store.pages[store.ticketPageIndex];
+    page.widget_tree = [{ id: 'tf1', type: 'TicketField', props: { fields: ['guestName', 'accessId', 'guestType', 'email'], align: 'left' } }];
+    const wrapper = mount(MobileArtboard, { props: { page, pageIndex: 1, isSelected: true }, global: { plugins: [pinia] } });
+    await flushPromises();
+    const text = wrapper.text();
+    for (const caption of ['GUEST NAME', 'ACCESS ID', 'GUEST TYPE', 'EMAIL']) expect(text).toContain(caption);
   });
 });

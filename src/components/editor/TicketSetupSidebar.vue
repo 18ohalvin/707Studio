@@ -27,48 +27,25 @@
       </p>
     </div>
 
-    <!-- Field -->
+    <!-- Data in this block: pick any combination -->
     <div class="flex flex-col gap-[12px] items-start p-[24px] w-full border-b border-[#f0f0f0]">
-      <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Data shown</p>
+      <div class="flex flex-col">
+        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Data in this block</p>
+        <p class="font-707 text-[11px] text-neutral-500">
+          Pick as many as you like — they line up two per row. QR Code, Access Valid For and Brand Logo stand alone in their block.
+        </p>
+      </div>
       <div class="grid grid-cols-3 gap-1.5 w-full">
         <button
           v-for="f in TICKET_FIELDS"
           :key="f.key"
           type="button"
-          @click="setPrimary(f.key)"
-          :class="primary === f.key ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-          class="h-[34px] rounded-[8px] text-[11px] font-707 flex items-center justify-center text-center px-1 cursor-pointer transition-all"
+          @click="toggleField(f.key)"
+          :class="fields.includes(f.key) ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+          class="h-[34px] rounded-[8px] text-[11px] font-707 flex items-center justify-center gap-1 text-center px-1 cursor-pointer transition-all"
+          :aria-pressed="fields.includes(f.key)"
         >
-          {{ f.label }}
-        </button>
-      </div>
-    </div>
-
-    <!-- Second field side by side -->
-    <div class="flex flex-col gap-[12px] items-start p-[24px] w-full border-b border-[#f0f0f0]">
-      <div class="flex flex-col">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Beside it</p>
-        <p class="font-707 text-[11px] text-neutral-500">
-          {{ primaryIsSolo ? `${primaryMeta.label} takes the full width.` : 'Optional — a second field in the same row, like Name + Guest Type.' }}
-        </p>
-      </div>
-      <div v-if="!primaryIsSolo" class="grid grid-cols-3 gap-1.5 w-full">
-        <button
-          type="button"
-          @click="setSecondary('')"
-          :class="!secondary ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-          class="h-[34px] rounded-[8px] text-[11px] font-707 flex items-center justify-center cursor-pointer transition-all"
-        >
-          Nothing
-        </button>
-        <button
-          v-for="f in pairableFields"
-          :key="f.key"
-          type="button"
-          @click="setSecondary(f.key)"
-          :class="secondary === f.key ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-          class="h-[34px] rounded-[8px] text-[11px] font-707 flex items-center justify-center text-center px-1 cursor-pointer transition-all"
-        >
+          <Check v-if="fields.includes(f.key)" class="w-3 h-3 shrink-0" />
           {{ f.label }}
         </button>
       </div>
@@ -107,6 +84,18 @@
       </div>
     </div>
 
+    <!-- Remove this block -->
+    <div class="flex items-center justify-between gap-3 px-[24px] pt-[20px] w-full">
+      <p class="font-707 text-[11.5px] text-neutral-500">Don't need this block on the ticket?</p>
+      <button
+        type="button"
+        @click="removeBlock"
+        class="h-[32px] px-3 rounded-[8px] border border-red-200 text-red-700 hover:bg-red-50 text-[12px] font-707 font-medium flex items-center gap-1.5 cursor-pointer"
+      >
+        <Trash2 class="w-3.5 h-3.5" /> Remove block
+      </button>
+    </div>
+
     <!-- Add more -->
     <div class="flex flex-col gap-[12px] items-start p-[24px] w-full">
       <div class="flex flex-col">
@@ -137,7 +126,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Ticket, Plus, Image as ImageIcon } from 'lucide-vue-next';
+import { Ticket, Plus, Check, Trash2, Image as ImageIcon } from 'lucide-vue-next';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { TICKET_FIELDS, ticketFieldMeta, type TicketFieldKey } from './ticket/ticketFields.ts';
@@ -156,25 +145,39 @@ const fields = computed<TicketFieldKey[]>(() => {
   const raw = currentWidget.value?.props?.fields;
   return (Array.isArray(raw) && raw.length ? raw : ['guestName']) as TicketFieldKey[];
 });
-const primary = computed(() => fields.value[0]);
-const secondary = computed(() => fields.value[1] || '');
-const primaryMeta = computed(() => ticketFieldMeta(primary.value));
-const primaryIsSolo = computed(() => Boolean(primaryMeta.value.solo));
-const pairableFields = computed(() => TICKET_FIELDS.filter(f => !f.solo && f.key !== primary.value));
 const captionFields = computed(() => fields.value.filter(k => ticketFieldMeta(k).caption));
 
 function update(props: Record<string, any>) {
   if (currentWidget.value) editorStore.updateWidgetProps(currentWidget.value.id, props);
 }
 
-function setPrimary(key: TicketFieldKey) {
-  const solo = ticketFieldMeta(key).solo;
-  const keepSecond = !solo && secondary.value && secondary.value !== key ? [secondary.value] : [];
-  update({ fields: [key, ...keepSecond] });
+/**
+ * Text fields combine freely; QR, sessions and logo need the block to
+ * themselves. Turning off the last field removes nothing — use Remove block.
+ */
+function toggleField(key: TicketFieldKey) {
+  const solo = Boolean(ticketFieldMeta(key).solo);
+  const current = fields.value;
+  if (current.includes(key)) {
+    if (current.length === 1) {
+      editorStore.showToast('A block shows at least one item — use Remove block to take it off the ticket.');
+      return;
+    }
+    update({ fields: current.filter(k => k !== key) });
+    return;
+  }
+  if (solo) {
+    update({ fields: [key] });
+    return;
+  }
+  const textOnly = current.filter(k => !ticketFieldMeta(k).solo);
+  update({ fields: [...textOnly, key] });
 }
 
-function setSecondary(key: TicketFieldKey | '') {
-  update({ fields: key ? [primary.value, key] : [primary.value] });
+function removeBlock() {
+  if (!currentWidget.value) return;
+  editorStore.removeWidget(currentWidget.value.id);
+  editorStore.isTicketSidebarOpen = false;
 }
 
 function captionOf(key: string): string {

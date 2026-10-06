@@ -3,7 +3,7 @@
     class="relative select-none"
     :class="[
       isTicketPage
-        ? 'w-[340px] h-[604px] shrink-0'
+        ? 'w-[340px] h-auto shrink-0'
         : isLivePage 
         ? 'w-full h-full min-h-[100dvh] flex flex-col flex-1' 
         : (isPreviewModal
@@ -28,7 +28,7 @@
         <!-- View mode -->
         <div v-if="!isEditingPageName" class="flex items-center gap-[6px]">
           <p class="font-707 font-light text-caption text-black whitespace-nowrap">
-            <template v-if="isTicketPage">Ticket · PDF (9:16) — not shown as a page to guests</template>
+            <template v-if="isTicketPage">Ticket · PDF — height follows its content; not shown as a page to guests</template>
             <template v-else>Page {{ pageNumber }}: {{ currentPageName }}</template>
           </p>
           <Pencil class="w-2.5 h-2.5 text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -67,7 +67,7 @@
       :class="[
         (isPreviewModal || isLivePage || isTicketPage) ? 'bg-white' : 'bg-[#f5f5f5]',
         isTicketPage
-          ? ((isPreviewModal || isLivePage) ? 'w-[340px] h-[604px] border-none shadow-none' : 'border-[0.5px] w-[340px] h-[604px]')
+          ? ((isPreviewModal || isLivePage) ? 'w-[340px] h-auto border-none shadow-none' : 'border-[0.5px] w-[340px] h-auto min-h-[240px]')
           : isLivePage
           ? 'w-full h-full min-h-[100dvh] flex-1 border-none shadow-none'
           : (isPreviewModal
@@ -112,7 +112,7 @@
         :class="[
           (isPreviewModal || isLivePage || isTicketPage) ? 'bg-white' : 'bg-[#f5f5f5]',
           isDragOver ? 'bg-neutral-200/60' : '',
-          isTicketPage ? '!overflow-hidden pt-[20px]' : '',
+          isTicketPage ? '!overflow-visible flex-none pt-[20px] pb-[20px]' : '',
           isSingleFullScreenHero ? 'overflow-hidden cursor-default' : (isArtboardDragging ? 'cursor-grabbing' : (isContentScrollable ? 'cursor-grab' : 'cursor-default')),
           isSingleFullScreenHero ? 'overflow-hidden' : 'overflow-y-auto'
         ]"
@@ -1245,14 +1245,42 @@ more</span>
               </div>
             </div>
 
-            <!-- Ticket data block (Ticket page): one or two guest fields, filled in per guest -->
+            <!-- Ticket data block (Ticket page): guest fields, filled in per guest -->
             <div
               v-else-if="widget.type === 'TicketField'"
               class="relative w-full px-[20px] py-[6px] select-none text-black"
               @click.stop="handleWidgetClick(widget)"
             >
+              <!-- Floating Action Toolbar on Canvas -->
               <div
-                class="grid gap-x-[20px] w-full"
+                v-if="isDesignCanvas && (hoveredWidgetId === widget.id || editorStore.selectedWidgetId === widget.id)"
+                class="absolute z-40 apple-glass-modal flex gap-[4px] items-center p-[4px] rounded-[8px] shadow-[0px_4px_16px_rgba(0,0,0,0.18)] animate-in fade-in duration-150 select-none top-[2px] right-[8px]"
+              >
+                <button
+                  v-if="!isWidgetSetupModalOpen(widget)"
+                  @click.stop="handleAdjustWidget(widget)"
+                  class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black hover:bg-black/10 cursor-pointer"
+                  title="Choose the data in this block"
+                >
+                  <SlidersHorizontal class="w-3.5 h-3.5" />
+                </button>
+                <button
+                  @click.stop="editorStore.duplicateWidget(widget.id)"
+                  class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black hover:bg-black/10 cursor-pointer"
+                  title="Duplicate"
+                >
+                  <Copy class="w-3.5 h-3.5" />
+                </button>
+                <button
+                  @click.stop="editorStore.removeWidget(widget.id)"
+                  class="apple-glass-icon-btn size-[24px] hover:text-red-600 flex items-center justify-center rounded-[6px] text-black hover:bg-red-50 cursor-pointer"
+                  title="Remove block"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <div
+                class="grid gap-x-[20px] gap-y-[12px] w-full"
                 :class="ticketFieldsOf(widget).length > 1 ? 'grid-cols-2' : 'grid-cols-1'"
                 :style="{ textAlign: widget.props?.align || 'left' }"
               >
@@ -1992,7 +2020,7 @@ function ticketPassWidget(): any | null {
 
 function ticketFieldsOf(widget: any): TicketFieldKey[] {
   const fields = (Array.isArray(widget.props?.fields) ? widget.props.fields : [widget.props?.field || 'guestName']) as TicketFieldKey[];
-  return fields.slice(0, 2);
+  return fields;
 }
 
 function ticketCaption(widget: any, field: string): string {

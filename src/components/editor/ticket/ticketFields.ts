@@ -24,11 +24,12 @@ export function ticketFieldMeta(key: string) {
   return TICKET_FIELDS.find(f => f.key === key) || TICKET_FIELDS[1];
 }
 
-/** 9:16 — a phone screen, so the ticket reads well saved to a camera roll. */
-export const TICKET_CANVAS = { width: 340, height: 604 };
-
-/** PDF sheet in the same 9:16 proportion, in millimetres. */
-export const TICKET_PAPER = { width: 90, height: 160 };
+/**
+ * The ticket is a fixed width; its height follows what the designer put on
+ * it, and so does the PDF sheet (same proportions, 90 mm wide).
+ */
+export const TICKET_CANVAS = { width: 340 };
+export const TICKET_PAPER = { width: 90 };
 
 /**
  * What a Ticket page needs from the rest of the campaign when it is rendered
