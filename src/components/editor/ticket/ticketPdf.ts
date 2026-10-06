@@ -24,6 +24,28 @@ export interface TicketPdfOptions {
   isSample?: boolean;
 }
 
+/**
+ * html2canvas decides where to draw text by measuring a hidden probe: it adds
+ * a 1×1 <img> next to a piece of text and reads how far below the text's top
+ * the image sits (the font's baseline). Tailwind's preflight makes every <img>
+ * display:block, so the probe fell onto the next line and the "baseline"
+ * came back as the line height instead — every word on the ticket was drawn
+ * 3–4 px too low (more for bigger type), which cut the bottom off text in
+ * boxes that clip their content. While the capture runs, the probe is
+ * put back to the inline image html2canvas expects.
+ */
+export async function withProbeFix<T>(work: () => Promise<T>): Promise<T> {
+  const style = document.createElement('style');
+  style.setAttribute('data-html2canvas-probe-fix', '');
+  style.textContent = 'body > div[style*="visibility: hidden"] > img { display: inline !important; vertical-align: baseline !important; max-width: none !important; }';
+  document.head.appendChild(style);
+  try {
+    return await work();
+  } finally {
+    style.remove();
+  }
+}
+
 async function waitForImages(root: HTMLElement, timeoutMs: number): Promise<void> {
   const start = Date.now();
   // The QR is produced asynchronously after mount; give it a moment to appear.
@@ -77,22 +99,22 @@ export async function renderTicketPdf(opts: TicketPdfOptions): Promise<void> {
     const frame = (host.querySelector('[data-artboard-frame]') as HTMLElement) || host;
     // The design decides the height; the sheet keeps its proportions.
     const heightPx = Math.max(1, Math.ceil(frame.scrollHeight));
-    const canvas = await html2canvas(frame, {
+    const canvas = await withProbeFix(() => html2canvas(frame, {
       scale: 3,
       useCORS: true,
-      backgroundColor: '#ffffff',
+      backgroundColor: '#f5f5f5',
       logging: false,
       width: TICKET_CANVAS.width,
       height: heightPx,
       windowHeight: heightPx
-    });
+    }));
 
     const paperW = TICKET_PAPER.width;
     const paperH = Math.round((paperW * heightPx / TICKET_CANVAS.width) * 10) / 10;
     const doc = new jsPDF({ unit: 'mm', format: [paperW, paperH], orientation: paperH >= paperW ? 'portrait' : 'landscape', compress: true });
     doc.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, paperW, paperH);
     if (opts.isSample) {
-      doc.setFont('helvetica', 'bold').setFontSize(40).setTextColor(225);
+      doc.setFont('helvetica', 'bold').setFontSize(40).setTextColor(205);
       doc.text('SAMPLE', paperW / 2, paperH / 2, { align: 'center', angle: 35 });
     }
     doc.save(opts.fileName);

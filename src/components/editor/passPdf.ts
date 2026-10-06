@@ -61,6 +61,9 @@ export async function buildPassPdf(data: PassPdfData) {
   const contentW = PAGE_W - MARGIN * 2;
   let y = MARGIN;
 
+  // Soft grey page, like the designed ticket — not solid white.
+  doc.setFillColor(245, 245, 245).rect(0, 0, PAGE_W, PAGE_H, 'F');
+
   // Logo, or the campaign title when there is no logo to embed.
   const loadedLogo = data.logoUrl && !data.logoUrl.startsWith('data:image/svg') ? await loadImageAsDataUrl(data.logoUrl) : null;
   // Solid black, like the Ticket Summary. (Redrawn as a PNG, which also lets an SVG logo through.)
@@ -89,7 +92,7 @@ export async function buildPassPdf(data: PassPdfData) {
 
   // QR of the Access ID — what the door scanner reads.
   if (data.showQr && data.accessId) {
-    const qr = await QRCode.toDataURL(data.accessId, { margin: 0, width: 240, errorCorrectionLevel: 'M' });
+    const qr = await QRCode.toDataURL(data.accessId, { margin: 0, width: 240, errorCorrectionLevel: 'M', color: { dark: '#000000', light: '#f5f5f5' } });
     const size = 26;
     doc.setDrawColor(0).setLineWidth(0.2).roundedRect(MARGIN, y, size + 6, size + 6, 1.5, 1.5);
     doc.addImage(qr, 'PNG', MARGIN + 3, y + 3, size, size);
@@ -140,7 +143,7 @@ export async function buildPassPdf(data: PassPdfData) {
   if (data.pageUrl) doc.text(data.pageUrl.replace(/^https?:\/\//, ''), MARGIN, PAGE_H - 6.5);
 
   if (data.isSample) {
-    doc.setFont('helvetica', 'bold').setFontSize(40).setTextColor(235);
+    doc.setFont('helvetica', 'bold').setFontSize(40).setTextColor(205);
     doc.text('SAMPLE', PAGE_W / 2, PAGE_H / 2, { align: 'center', angle: 35 });
   }
 

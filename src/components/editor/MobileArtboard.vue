@@ -65,7 +65,7 @@
       @wheel="handleArtboardWheel"
       class="relative flex flex-col overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
       :class="[
-        (isPreviewModal || isLivePage || isTicketPage) ? 'bg-white' : 'bg-[#f5f5f5]',
+        (isPreviewModal || isLivePage) && !isTicketPage ? 'bg-white' : 'bg-[#f5f5f5]',
         isTicketPage
           ? ((isPreviewModal || isLivePage) ? 'w-[340px] h-auto border-none shadow-none' : 'border-[0.5px] w-[340px] h-auto min-h-[240px]')
           : isLivePage
@@ -110,7 +110,7 @@
         @mousedown="handleArtboardMouseDown"
         class="artboard-scroll-container flex-1 flex flex-col no-scrollbar px-0 pt-0 pb-0 relative overscroll-contain will-change-scroll select-none w-full"
         :class="[
-          (isPreviewModal || isLivePage || isTicketPage) ? 'bg-white' : 'bg-[#f5f5f5]',
+          (isPreviewModal || isLivePage) && !isTicketPage ? 'bg-white' : 'bg-[#f5f5f5]',
           isDragOver ? 'bg-neutral-200/60' : '',
           isTicketPage ? '!overflow-visible flex-none pt-[20px] pb-[20px]' : '',
           isSingleFullScreenHero ? 'overflow-hidden cursor-default' : (isArtboardDragging ? 'cursor-grabbing' : (isContentScrollable ? 'cursor-grab' : 'cursor-default')),
@@ -1300,9 +1300,10 @@ more</span>
                   <template v-else-if="field === 'sessions'">
                     <span class="font-707 text-[10px] leading-[13px] text-neutral-500 uppercase tracking-tight mb-[6px]">{{ ticketCaption(widget, field) }}</span>
                     <div class="flex flex-col gap-[6px] w-full">
-                      <div v-for="(sessionItem, sIdx) in ticketSessions" :key="sIdx" class="border-[0.5px] border-[#d4d4d4] h-[34px] px-[12px] flex items-center justify-between gap-2">
-                        <span class="font-707 font-medium text-[11px] truncate">{{ sessionItem.label }}</span>
-                        <span v-if="sessionItem.sublabel" class="font-707 text-[11px] text-neutral-500 shrink-0">{{ sessionItem.sublabel }}</span>
+                      <!-- Wraps and grows instead of truncating: clipped text is cut off in the PDF capture, and a long session name should be readable on a ticket -->
+                      <div v-for="(sessionItem, sIdx) in ticketSessions" :key="sIdx" class="border-[0.5px] border-[#d4d4d4] min-h-[34px] px-[12px] py-[9px] flex items-center justify-between gap-3">
+                        <span class="font-707 font-medium text-[11px] leading-[15px] min-w-0 break-words">{{ sessionItem.label }}</span>
+                        <span v-if="sessionItem.sublabel" class="font-707 text-[11px] leading-[15px] text-neutral-500 shrink-0">{{ sessionItem.sublabel }}</span>
                       </div>
                     </div>
                   </template>
@@ -2079,12 +2080,23 @@ const ticketSessions = computed<PassSession[]>(() => {
   return pass ? getValidForSessions(pass) : [];
 });
 
-// Sample QR in the editor (same format as a real code); the guest's own QR when live.
-const sampleQr = ref('');
-QRCode.toDataURL(sampleAccessId, { margin: 0, width: 264, errorCorrectionLevel: 'M' })
-  .then(url => (sampleQr.value = url))
-  .catch(() => {});
-const ticketQr = computed(() => (isLivePass.value ? livePassQr.value : sampleQr.value));
+// The QR on the ticket: a sample in the editor (same format as a real code), the guest's own when live.
+// Its light modules are the ticket's background colour, so it sits on the page instead of
+// showing as a white tile; black on #f5f5f5 stays well within what scanners need.
+const ticketQr = ref('');
+watch(
+  () => (isLivePass.value ? livePass?.code : sampleAccessId) as string | undefined,
+  async (code) => {
+    ticketQr.value = '';
+    if (!code) return;
+    try {
+      ticketQr.value = await QRCode.toDataURL(code, { margin: 0, width: 264, errorCorrectionLevel: 'M', color: { dark: '#000000', light: '#f5f5f5' } });
+    } catch (err) {
+      console.warn('[MobileArtboard] Could not render the ticket QR:', err);
+    }
+  },
+  { immediate: true }
+);
 
 const pageNumber = computed(() => {
   return typeof props.pageIndex === 'number' ? props.pageIndex + 1 : 1;
