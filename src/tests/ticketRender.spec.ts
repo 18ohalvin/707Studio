@@ -80,4 +80,15 @@ describe('Ticket page rendering', () => {
     const text = wrapper.text();
     for (const caption of ['GUEST NAME', 'ACCESS ID', 'GUEST TYPE', 'EMAIL']) expect(text).toContain(caption);
   });
+
+  it('draws an old full-screen banner on the Ticket at 16:9 instead of collapsing it', async () => {
+    const store = useEditorStore();
+    store.ensureTicketPage();
+    const page = store.pages[store.ticketPageIndex];
+    page.widget_tree = [{ id: 'h1', type: 'HeroDrop', props: { imageUrl: '/uploads/a.jpeg', isSolidSpace: false, ratio: 'Full screen landing page' } }];
+    const wrapper = mount(MobileArtboard, { props: { page, pageIndex: 1, isSelected: true }, global: { plugins: [pinia] } });
+    await flushPromises();
+    expect(wrapper.html()).toContain('aspect-video');
+    expect(wrapper.html()).not.toContain('min-h-[calc(100dvh-48px)]');
+  });
 });

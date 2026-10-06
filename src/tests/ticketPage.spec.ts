@@ -59,4 +59,17 @@ describe('Ticket page (PDF ticket design)', () => {
     expect(block?.props.fields).toEqual(['guestName', 'guestType']);
     expect(store.isTicketSidebarOpen).toBe(true);
   });
+
+  it('turns a gallery image dropped on the Ticket into a normal, removable 16:9 banner', () => {
+    const store = useEditorStore();
+    store.ensureTicketPage();
+    store.selectPage(store.ticketPageIndex);
+    const before = store.currentPage.widget_tree.length;
+    // What the Media Gallery adds on click / drag
+    const banner = store.addWidget('HeroDrop', undefined, { imageUrl: '/uploads/a.jpeg', isSolidSpace: false, ratio: 'Full screen landing page' })!;
+    expect(banner.props.ratio).toBe('16:9');
+    expect(store.currentPage.widget_tree.length).toBe(before + 1);
+    store.removeWidget(banner.id);
+    expect(store.currentPage.widget_tree.some(w => w.id === banner.id)).toBe(false);
+  });
 });

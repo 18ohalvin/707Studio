@@ -468,6 +468,16 @@ export const useEditorStore = defineStore('editor', () => {
     draggedWidget.value = { type, customProps, label };
   }
 
+  /** A banner added to the Ticket page gets a fixed ratio: screen-sized ones collapse on a page whose height follows its content. */
+  function ticketSafeProps(type: WidgetType, props: Record<string, any>): Record<string, any> {
+    if (type !== 'HeroDrop' || currentPage.value?.kind !== 'ticket') return props;
+    const screenRatios = ['Full screen landing page', 'Dynamic Fit', 'Buttons'];
+    if (!props.ratio || screenRatios.includes(props.ratio)) {
+      return { ...props, ratio: '16:9', isCtaEnabled: false, buttonText: '' };
+    }
+    return props;
+  }
+
   function addWidget(type: WidgetType, index?: number, customProps?: Record<string, any>) {
     const newId = `${type.toLowerCase()}_${Date.now()}`;
     let defaultProps: Record<string, any> = {};
@@ -657,7 +667,7 @@ export const useEditorStore = defineStore('editor', () => {
     const newWidget: WidgetItem = {
       id: newId,
       type,
-      props: { ...defaultProps, ...(customProps || {}) }
+      props: ticketSafeProps(type, { ...defaultProps, ...(customProps || {}) })
     };
 
     if (typeof index === 'number') {

@@ -85,7 +85,7 @@
       </p>
       <div class="flex flex-nowrap overflow-x-auto gap-[8px] items-center -mx-[24px] px-[24px] w-[calc(100%+48px)] pb-1 no-scrollbar">
         <button 
-          v-for="ratio in ratios" 
+          v-for="ratio in availableRatios" 
           :key="ratio"
           @click="selectedRatio = ratio"
           :class="selectedRatio === ratio ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
@@ -748,6 +748,10 @@ const currentImageUrl = ref('');
 const isCurrentSolidSpace = ref(true);
 
 const ratios = ['Full screen landing page', 'Dynamic Fit', '3:4', '4:5', '4:3', '16:9', '9:16', '1:1'];
+// The Ticket page's height follows its content, so screen-sized ratios do not apply there.
+const availableRatios = computed(() =>
+  editorStore.currentPage?.kind === 'ticket' ? ratios.filter(r => r !== 'Full screen landing page' && r !== 'Dynamic Fit') : ratios
+);
 const selectedRatio = ref(editorStore.selectedMediaRatio || 'Full screen landing page');
 
 function formatRatioLabel(ratio: string): string {

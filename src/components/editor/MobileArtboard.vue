@@ -205,7 +205,7 @@
               class="relative overflow-hidden w-full flex flex-col justify-between transition-all"
               :class="[
                 widget.props.isSolidSpace || !widget.props.imageUrl ? 'bg-[#ededed] text-black' : 'bg-black text-white',
-                getRatioClass(widget.props.ratio)
+                getRatioClass(heroRatio(widget))
               ]"
             >
               <!-- If image is provided and not in solid placeholder mode, display image background -->
@@ -2859,6 +2859,20 @@ function handleHeroImageError(widget: any) {
   }
 }
 
+/** Ratios that size a banner to the screen — meaningless on the Ticket, whose height follows its content. */
+const SCREEN_RATIOS = ['Full screen landing page', 'Dynamic Fit', 'Buttons'];
+
+/**
+ * On the Ticket page a screen-sized banner had no height to take, so it
+ * collapsed to nothing: it could not be hovered, selected or removed. There
+ * it is drawn as 16:9 instead (new ones are saved that way too).
+ */
+function heroRatio(widget: any): string | undefined {
+  const ratio = widget?.props?.ratio;
+  if (isTicketPage.value && (!ratio || SCREEN_RATIOS.includes(ratio))) return '16:9';
+  return ratio;
+}
+
 function getRatioClass(ratio?: string) {
   switch (ratio) {
     case 'Dynamic Fit':
@@ -3699,6 +3713,8 @@ function handleModalDoneClick() {
 const isHeroWithButtonOnly = computed(() => {
   const tree = inFlowWidgets.value;
   if (tree.length === 0) return false;
+  // The Ticket has no screen to fill: its blocks always stack at their own height.
+  if (isTicketPage.value) return false;
   
   // 1. Solo HeroDrop with 'Full screen landing page' or 'Dynamic Fit' (or default ratio)
   if (tree.length === 1 && tree[0].type === 'HeroDrop' && (tree[0].props.ratio === 'Full screen landing page' || tree[0].props.ratio === 'Dynamic Fit' || !tree[0].props.ratio)) {
