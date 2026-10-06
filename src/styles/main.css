@@ -120,14 +120,22 @@ html {
 }
 
 /* 707 Global Typography & Visual System (Figma Node 22:627) */
+/* Helvetica Neue only. The generic sans-serif is a last resort for devices
+   that do not have it installed (most Windows and Android); no other named
+   family is ever requested. */
 body, button, input, textarea, select {
-  font-family: 'Helvetica Neue', Helvetica, Arial, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, sans-serif;
   letter-spacing: 0;
 }
 
 .font-707 {
-  font-family: 'Helvetica Neue', Helvetica, Arial, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, sans-serif;
   letter-spacing: 0;
+}
+
+/* Codes (Access IDs, URLs) keep Helvetica Neue but line their digits up. */
+.font-mono {
+  font-variant-numeric: tabular-nums;
 }
 
 /* 707 Text Selection & Highlight for Editors and Textareas */

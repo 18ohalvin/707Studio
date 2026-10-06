@@ -29,6 +29,12 @@ const routes = [
     component: () => import('../views/CampaignHubView.vue')
   },
   {
+    // Full-screen door check-in for the entrance device (opened from the hub).
+    path: '/hub/scanner',
+    name: 'DoorScanner',
+    component: () => import('../views/DoorScannerView.vue')
+  },
+  {
     path: '/login',
     name: 'Login',
     component: LoginView,
@@ -68,7 +74,7 @@ router.beforeEach((to) => {
     }
   }
 
-  if (to.path === '/editor' || to.path.startsWith('/editor/') || to.path === '/hub') {
+  if (to.path === '/editor' || to.path.startsWith('/editor/') || to.path === '/hub' || to.path.startsWith('/hub/')) {
     if (!authStore.isAuthenticated) {
       return { path: '/', query: { signin: '1', redirect: to.fullPath } };
     }

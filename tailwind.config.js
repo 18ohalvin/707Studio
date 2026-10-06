@@ -27,10 +27,13 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['"Helvetica Neue"', 'Helvetica', 'Arial', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
-        '707': ['"Helvetica Neue"', 'Helvetica', 'Arial', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Menlo', 'monospace'],
-        display: ['"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif']
+        // One type family across the studio and every campaign: Helvetica Neue.
+        // "mono" is kept as a class name for codes (Access IDs, URLs) but is
+        // the same family with tabular figures (see main.css), not a monospace face.
+        sans: ['"Helvetica Neue"', 'Helvetica', 'sans-serif'],
+        '707': ['"Helvetica Neue"', 'Helvetica', 'sans-serif'],
+        mono: ['"Helvetica Neue"', 'Helvetica', 'sans-serif'],
+        display: ['"Helvetica Neue"', 'Helvetica', 'sans-serif']
       },
       fontSize: {
         'display-h1': ['28px', { lineHeight: '34px', letterSpacing: '0px' }],

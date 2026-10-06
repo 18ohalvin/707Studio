@@ -55,11 +55,29 @@
 
     <!-- Right: Test Your Form, Ask for Review & Avatar proportioned for 48px Header -->
     <div class="content-stretch flex gap-[10px] items-center shrink-0">
+      <!-- Review requests / publish notices -->
+      <NotificationsMenu />
+
+      <!-- Build history: a plain icon, like the bell beside it -->
+      <div class="relative flex items-center" ref="historyRef">
+        <button
+          type="button"
+          @click="showHistory = !showHistory"
+          class="relative size-[24px] flex items-center justify-center apple-press cursor-pointer hover:opacity-75 transition-opacity border-0 outline-none bg-transparent p-0 shrink-0 text-black group"
+          :class="showHistory ? 'opacity-100' : ''"
+          title="Project history — every submission and published version"
+          aria-label="Project history"
+        >
+          <History class="w-[18px] h-[18px] stroke-[1.35] transition-transform duration-200 group-hover:scale-105" />
+        </button>
+        <ProjectHistoryPanel v-if="showHistory" @close="showHistory = false" />
+      </div>
+
       <!-- Preview / Editor Mode Toggle Button -->
       <button 
         @click="editorStore.togglePreviewMode()"
-        class="apple-glass-btn text-black content-stretch flex items-center justify-center gap-1.5 overflow-clip px-[14px] h-[32px] rounded-[8px] apple-press cursor-pointer transition-all"
-        :title="editorStore.isPreviewMode ? 'Switch back to Editor Mode' : 'Live iPhone 17 Pro Preview'"
+        class="apple-glass-btn text-black content-stretch flex items-center justify-center gap-1.5 overflow-clip px-[14px] h-[32px] rounded-[8px] apple-press cursor-pointer transition-all ml-[6px]"
+        :title="editorStore.isPreviewMode ? 'Back to designing — test answers are cleared' : 'Test the campaign as a guest: fill in forms and pick options'"
       >
         <Edit3 v-if="editorStore.isPreviewMode" class="w-3.5 h-3.5 text-black" />
         <Eye v-else class="w-3.5 h-3.5 text-black" />
@@ -67,23 +85,6 @@
           {{ editorStore.isPreviewMode ? 'Editor Mode' : 'Preview' }}
         </span>
       </button>
-
-      <!-- Review requests / publish notices -->
-      <NotificationsMenu />
-
-      <!-- Build history -->
-      <div class="relative" ref="historyRef">
-        <button
-          type="button"
-          @click="showHistory = !showHistory"
-          class="apple-glass-btn text-black flex items-center justify-center gap-1.5 px-[12px] h-[32px] rounded-[8px] apple-press cursor-pointer"
-          title="Project history — every submission and published version"
-        >
-          <History class="w-3.5 h-3.5" />
-          <span class="font-707 font-medium text-[13px] whitespace-nowrap hidden lg:inline">History</span>
-        </button>
-        <ProjectHistoryPanel v-if="showHistory" @close="showHistory = false" />
-      </div>
 
       <!-- Superadmin: send a pending submission back -->
       <button
@@ -135,6 +136,7 @@
 </template>
 
 <script setup lang="ts">
+import { glassConfirm, glassPrompt } from '../../services/glassDialog.ts';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useEditorStore } from '../../stores/editorStore.ts';
@@ -204,9 +206,9 @@ async function handlePrimaryCtaClick() {
   }
   if (primaryCta.value.state === 'publish') {
     const question = isLive.value
-      ? 'Publish these changes? Visitors will see them immediately.'
-      : 'Approve and publish this campaign? It becomes public immediately.';
-    if (!confirm(question)) return;
+      ? 'Visitors will see these changes immediately.'
+      : 'The campaign becomes public immediately.';
+    if (!(await glassConfirm({ title: isLive.value ? 'Publish update?' : 'Approve & publish?', message: question, confirmLabel: 'Publish' }))) return;
     isTransitioning.value = true;
     const res = await editorStore.transitionProject(editorStore.currentProjectId, 'publish');
     isTransitioning.value = false;
@@ -215,10 +217,10 @@ async function handlePrimaryCtaClick() {
 }
 
 async function handleDecline() {
-  const note = prompt('What should the brand change? (sent with the request)', '');
+  const note = await glassPrompt({ title: 'Request changes', message: 'Tell the brand what to change. They get this note with the request.', placeholder: 'e.g. Use the high-res logo and fix the venue time', confirmLabel: 'Send back' });
   if (note === null) return;
   isTransitioning.value = true;
-  const res = await editorStore.transitionProject(editorStore.currentProjectId, 'decline', note.trim());
+  const res = await editorStore.transitionProject(editorStore.currentProjectId, 'decline', note);
   isTransitioning.value = false;
   editorStore.showToast(res.ok ? 'Sent back to the brand.' : `Could not send back: ${res.error}`);
 }

@@ -34,6 +34,14 @@
       </div>
       <div class="grid grid-cols-3 gap-1.5 w-full">
         <button
+          type="button"
+          @click="editorStore.addMediaBannerWidget('16:9')"
+          class="apple-glass-btn-dark h-[38px] rounded-[8px] text-[11.5px] font-707 font-medium flex items-center justify-center text-center px-1 cursor-pointer"
+          title="Add an image banner to the ticket (upload or pick from the gallery)"
+        >
+          + Banner
+        </button>
+        <button
           v-for="f in TICKET_FIELDS"
           :key="f.key"
           type="button"

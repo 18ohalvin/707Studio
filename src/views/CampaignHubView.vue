@@ -138,6 +138,16 @@
           {{ t.label }}
           <span v-if="t.badge !== undefined" class="px-1.5 py-0 rounded-full text-[10.5px] font-medium bg-black/5 text-neutral-700 no-underline tabular-nums">{{ t.badge }}</span>
         </button>
+        <a
+          id="hub-open-scanner"
+          :href="scannerHref"
+          target="_blank"
+          rel="noopener"
+          class="ml-auto shrink-0 flex items-center gap-1.5 h-[32px] px-3 rounded-[8px] bg-black text-white text-[12.5px] font-707 font-medium hover:bg-neutral-800 transition-colors"
+          title="Open the full-screen Door Scanner for the entrance (new tab)"
+        >
+          <ScanLine class="w-3.5 h-3.5" /> Door Scanner <ArrowUpRight class="w-3.5 h-3.5" />
+        </a>
       </nav>
 
       <!-- Content -->
@@ -169,14 +179,6 @@
             @removed="removeRows"
             @toast="toast"
           />
-          <DoorScanner
-            v-else-if="activeTab === 'scanner'"
-            :rows="rows"
-            :page-ids="pageIds"
-            :operator="operatorName"
-            @updated="mergeRows"
-            @toast="toast"
-          />
           <RaffleDraw
             v-else-if="activeTab === 'raffle'"
             :rows="rows"
@@ -205,41 +207,33 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, RefreshCw, ChevronDown, Layers, LayoutGrid, Check, Search, AlertTriangle } from 'lucide-vue-next';
+import { ArrowLeft, RefreshCw, ChevronDown, Layers, LayoutGrid, Check, Search, AlertTriangle, ScanLine, ArrowUpRight } from 'lucide-vue-next';
 import { FIGMA_ASSETS } from '../constants/figmaAssets.ts';
-import { useEditorStore } from '../stores/editorStore.ts';
-import { useAuthStore } from '../stores/authStore.ts';
 import type { ProjectItem } from '../types/editor.ts';
-import { fetchSubmissions, type Submission } from '../components/hub/hubUtils.ts';
+import { useCampaignGuests } from '../components/hub/useCampaignGuests.ts';
 import HubOverview from '../components/hub/HubOverview.vue';
 import GuestDatabaseTable from '../components/hub/GuestDatabaseTable.vue';
-import DoorScanner from '../components/hub/DoorScanner.vue';
 import RaffleDraw from '../components/hub/RaffleDraw.vue';
 
-type TabId = 'overview' | 'guests' | 'scanner' | 'raffle';
-const TAB_IDS: TabId[] = ['overview', 'guests', 'scanner', 'raffle'];
+type TabId = 'overview' | 'guests' | 'raffle';
+const TAB_IDS: TabId[] = ['overview', 'guests', 'raffle'];
 
 const route = useRoute();
 const router = useRouter();
-const editorStore = useEditorStore();
-const authStore = useAuthStore();
 
-const rows = ref<Submission[]>([]);
-const isLoading = ref(false);
-const isInitialLoad = ref(true);
-const loadError = ref('');
-const lastSyncedAt = ref<number | null>(null);
+const {
+  rows, isLoading, isInitialLoad, loadError, lastSyncedAt,
+  selectedProjectId, projects, selectedProject,
+  campaignTitle, refresh: reload, mergeRows, removeRows
+} = useCampaignGuests();
+
 const nowTick = ref(Date.now());
 
 const activeTab = ref<TabId>(TAB_IDS.includes(route.query.tab as TabId) ? (route.query.tab as TabId) : 'overview');
-const selectedProjectId = ref<string>(String(route.query.project || 'all'));
 
 const isPickerOpen = ref(false);
 const pickerQuery = ref('');
 const pickerRef = ref<HTMLElement | null>(null);
-
-const projects = computed<ProjectItem[]>(() => editorStore.userProjects);
-const selectedProject = computed(() => projects.value.find(p => p.id === selectedProjectId.value) || null);
 
 const pickerProjects = computed(() => {
   const q = pickerQuery.value.trim().toLowerCase();
@@ -247,38 +241,14 @@ const pickerProjects = computed(() => {
   return projects.value.filter(p => p.title.toLowerCase().includes(q) || (p.slug || '').toLowerCase().includes(q));
 });
 
-function idsForProject(p: ProjectItem): string[] {
-  return [p.id, ...(p.pages || []).map(pg => pg.id)].filter(Boolean);
-}
-
-/** null = no filter (superadmin, all campaigns). [] = nothing this account may see. */
-const pageIds = computed<string[] | null>(() => {
-  if (selectedProject.value) return idsForProject(selectedProject.value);
-  if (authStore.isSuperAdmin) return null;
-  return projects.value.flatMap(idsForProject);
-});
-
-const titleByPageId = computed(() => {
-  const map = new Map<string, string>();
-  projects.value.forEach(p => idsForProject(p).forEach(id => map.set(id, p.title)));
-  return map;
-});
-
-function campaignTitle(pageId: string): string {
-  return titleByPageId.value.get(pageId) || 'Unlinked campaign';
-}
-
 const exportBaseName = computed(() => {
   const base = selectedProject.value ? `${selectedProject.value.brand_slug}-${selectedProject.value.slug}` : 'all-campaigns';
   return base.replace(/[^a-z0-9-_]+/gi, '-').toLowerCase();
 });
 
-const operatorName = computed(() => authStore.currentUser?.name || 'Door staff');
-
 const tabs = computed(() => [
   { id: 'overview' as TabId, label: 'Overview', badge: undefined as number | undefined },
   { id: 'guests' as TabId, label: 'Guest Database', badge: rows.value.length },
-  { id: 'scanner' as TabId, label: 'Door Scanner', badge: undefined },
   { id: 'raffle' as TabId, label: 'Raffle Draw', badge: undefined }
 ]);
 
@@ -290,46 +260,23 @@ const lastSyncedLabel = computed(() => {
   return `${Math.round(secs / 60)}m ago`;
 });
 
-let requestSeq = 0;
 async function refresh(manual = false) {
-  if (pageIds.value && pageIds.value.length === 0) {
-    rows.value = [];
-    isInitialLoad.value = false;
-    lastSyncedAt.value = Date.now();
+  const count = await reload();
+  if (manual && count !== null) toast(`Synced ${count} guest record${count === 1 ? '' : 's'}.`);
+}
+
+/** The Door Scanner is its own full-screen page, made for a phone or tablet at the entrance. */
+const scannerHref = computed(() => router.resolve({ path: '/hub/scanner', query: selectedProjectId.value !== 'all' ? { project: selectedProjectId.value } : {} }).href);
+
+function openScanner() {
+  window.open(scannerHref.value, '_blank', 'noopener');
+}
+
+function setTab(id: TabId | 'scanner') {
+  if (id === 'scanner') {
+    openScanner();
     return;
   }
-  const seq = ++requestSeq;
-  isLoading.value = true;
-  try {
-    const data = await fetchSubmissions(pageIds.value);
-    if (seq !== requestSeq) return; // a newer campaign selection superseded this request
-    rows.value = data;
-    loadError.value = '';
-    lastSyncedAt.value = Date.now();
-    if (manual) toast(`Synced ${data.length} guest record${data.length === 1 ? '' : 's'}.`);
-  } catch (err: any) {
-    if (seq !== requestSeq) return;
-    loadError.value = err?.message ? `Couldn't reach the guest database (${err.message}).` : "Couldn't reach the guest database.";
-  } finally {
-    if (seq === requestSeq) {
-      isLoading.value = false;
-      isInitialLoad.value = false;
-    }
-  }
-}
-
-function mergeRows(updated: Submission[]) {
-  if (!updated.length) return;
-  const byId = new Map(updated.map(u => [u.id, u]));
-  rows.value = rows.value.map(r => byId.get(r.id) || r);
-}
-
-function removeRows(ids: string[]) {
-  const set = new Set(ids);
-  rows.value = rows.value.filter(r => !set.has(r.id));
-}
-
-function setTab(id: TabId) {
   activeTab.value = id;
 }
 
@@ -363,37 +310,27 @@ watch([activeTab, selectedProjectId], ([tab, project]) => {
   router.replace({ query });
 });
 
-watch(() => pageIds.value?.join(','), () => {
-  isInitialLoad.value = rows.value.length === 0;
-  refresh();
-});
-
 function handleOutsideClick(e: MouseEvent) {
   if (isPickerOpen.value && pickerRef.value && !pickerRef.value.contains(e.target as Node)) {
     isPickerOpen.value = false;
   }
 }
 
-let pollTimer: ReturnType<typeof setInterval> | null = null;
 let tickTimer: ReturnType<typeof setInterval> | null = null;
 
-onMounted(async () => {
+onMounted(() => {
+  // Older links pointed at the scanner as a hub tab.
+  if (route.query.tab === 'scanner') {
+    router.replace({ path: '/hub/scanner', query: route.query.project ? { project: String(route.query.project) } : {} });
+    return;
+  }
   document.title = 'Campaign Hub | 707 Design Studio';
   document.addEventListener('mousedown', handleOutsideClick);
-  if (!editorStore.userProjects.length) {
-    try { await editorStore.loadProjects(); } catch { /* falls back to cached projects */ }
-  }
-  refresh();
-  // Door staff and raffle hosts need near-live numbers from other devices.
-  pollTimer = setInterval(() => {
-    if (document.visibilityState === 'visible' && !isLoading.value) refresh();
-  }, 15000);
   tickTimer = setInterval(() => (nowTick.value = Date.now()), 5000);
 });
 
 onUnmounted(() => {
   document.removeEventListener('mousedown', handleOutsideClick);
-  if (pollTimer) clearInterval(pollTimer);
   if (tickTimer) clearInterval(tickTimer);
   if (toastTimer) clearTimeout(toastTimer);
 });

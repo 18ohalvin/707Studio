@@ -84,6 +84,7 @@ import { AlertCircle } from 'lucide-vue-next';
 import MobileArtboard from '../components/editor/MobileArtboard.vue';
 import { LIVE_PASS_KEY, SESSIONS_ANSWER_KEY, type LivePassState } from '../components/editor/livePass.ts';
 import { TICKET_SOURCE_KEY, type TicketSource } from '../components/editor/ticket/ticketFields.ts';
+import { stripTextAnswers } from '../components/editor/guestAnswers.ts';
 import { getToken } from '../services/apiClient.ts';
 import type { ActivationPage } from '../types/editor.ts';
 import { useEditorStore } from '../stores/editorStore.ts';
@@ -297,6 +298,8 @@ const ticketSource = reactive<TicketSource>({
 provide(TICKET_SOURCE_KEY, ticketSource);
 
 function setCampaignPages(pages: ActivationPage[], title?: string) {
+  // A guest's form always starts empty, whatever a project saved earlier holds.
+  stripTextAnswers(pages);
   projectPages.value = pages.filter(p => p.kind !== 'ticket');
   ticketSource.page = pages.find(p => p.kind === 'ticket') || null;
   const widgets = pages.flatMap(p => p.widget_tree || []);

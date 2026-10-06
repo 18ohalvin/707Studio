@@ -1,5 +1,5 @@
 /**
- * The downloadable e-pass: an A6 PDF that carries the same content as the
+ * The downloadable e-pass: a 9:16 PDF that carries the same content as the
  * on-screen Ticket Summary, so there is one place to design it — the Ticket
  * Summary setup — and the PDF follows. Generated in the browser from data the
  * page already has; jsPDF and the QR encoder load only when a guest taps
@@ -22,8 +22,8 @@ export interface PassPdfData {
   isSample?: boolean;
 }
 
-const PAGE_W = 105; // A6 portrait, mm
-const PAGE_H = 148;
+const PAGE_W = 90; // 9:16 portrait, mm — same sheet as a designed Ticket page
+const PAGE_H = 160;
 const MARGIN = 9;
 
 async function loadImageAsDataUrl(url: string): Promise<{ dataUrl: string; ratio: number } | null> {
@@ -56,7 +56,7 @@ function safeFileName(value: string): string {
 
 export async function buildPassPdf(data: PassPdfData) {
   const [{ jsPDF }, QRCode] = await Promise.all([import('jspdf'), import('qrcode')]);
-  const doc = new jsPDF({ unit: 'mm', format: 'a6', orientation: 'portrait', compress: true });
+  const doc = new jsPDF({ unit: 'mm', format: [PAGE_W, PAGE_H], orientation: 'portrait', compress: true });
   const contentW = PAGE_W - MARGIN * 2;
   let y = MARGIN;
 

@@ -422,6 +422,7 @@
 </template>
 
 <script setup lang="ts">
+import { glassConfirm } from '../../services/glassDialog.ts';
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import {
   Search, X, Download, Columns3, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, ChevronRight,
@@ -660,7 +661,7 @@ async function toggleCheckIn(s: Submission) {
 async function deleteRows(ids: string[]) {
   if (!ids.length) return;
   const label = ids.length === 1 ? guestName(props.rows.find(r => r.id === ids[0])!) : `${ids.length} guests`;
-  if (!confirm(`Permanently delete ${label}? This can't be undone.`)) return;
+  if (!(await glassConfirm({ title: `Delete ${label}?`, message: "This permanently removes them from the guest database. It can't be undone.", confirmLabel: 'Delete', danger: true }))) return;
   try {
     const removed = await bulkDelete(ids);
     emit('removed', removed);

@@ -2,13 +2,13 @@ import { createApp, h, nextTick } from 'vue';
 import { getActivePinia } from 'pinia';
 import type { ActivationPage } from '../../../types/editor.ts';
 import { LIVE_PASS_KEY, type LivePassState } from '../livePass.ts';
-import { TICKET_CONTEXT_KEY, TICKET_CANVAS, type TicketContext } from './ticketFields.ts';
+import { TICKET_CONTEXT_KEY, TICKET_CANVAS, TICKET_PAPER, type TicketContext } from './ticketFields.ts';
 
 /**
  * Turns the campaign's Ticket page into the guest's PDF.
  *
  * The page is rendered off screen by the same artboard the editor uses — with
- * this guest's data — then captured and placed on an A6 sheet. What the
+ * this guest's data — then captured and placed on a 9:16 sheet. What the
  * designer laid out is what the guest gets. The capture is an image, so text
  * in the PDF is not selectable; the QR is captured at 3× and stays scannable.
  */
@@ -20,8 +20,6 @@ export interface TicketPdfOptions {
   fileName: string;
   isSample?: boolean;
 }
-
-const A6 = { w: 105, h: 148 };
 
 async function waitForImages(root: HTMLElement, timeoutMs: number): Promise<void> {
   const start = Date.now();
@@ -75,11 +73,11 @@ export async function renderTicketPdf(opts: TicketPdfOptions): Promise<void> {
       height: TICKET_CANVAS.height
     });
 
-    const doc = new jsPDF({ unit: 'mm', format: 'a6', orientation: 'portrait', compress: true });
-    doc.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, A6.w, A6.h);
+    const doc = new jsPDF({ unit: 'mm', format: [TICKET_PAPER.width, TICKET_PAPER.height], orientation: 'portrait', compress: true });
+    doc.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, TICKET_PAPER.width, TICKET_PAPER.height);
     if (opts.isSample) {
       doc.setFont('helvetica', 'bold').setFontSize(40).setTextColor(225);
-      doc.text('SAMPLE', A6.w / 2, A6.h / 2, { align: 'center', angle: 35 });
+      doc.text('SAMPLE', TICKET_PAPER.width / 2, TICKET_PAPER.height / 2, { align: 'center', angle: 35 });
     }
     doc.save(opts.fileName);
   } finally {

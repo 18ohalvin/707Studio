@@ -5,6 +5,7 @@ import { ref, computed, watch } from 'vue';
 import type { WidgetItem, WidgetType, ActivationPage, ViewportMode, PageStatus, ProjectItem, ProjectHistoryEntry } from '../types/editor.ts';
 import { useAuthStore } from './authStore.ts';
 import { defaultTicketWidgets } from '../components/editor/ticket/ticketFields.ts';
+import { stripTextAnswers } from '../components/editor/guestAnswers.ts';
 import { useBrandStore } from './brandStore.ts';
 
 export type MediaGalleryTarget = 'bannerImage' | 'brandLogo' | 'replaceBannerImage' | 'addNewMedia' | 'choiceOptionImage';
@@ -1136,23 +1137,43 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
-  function togglePreviewMode() {
-    isPreviewMode.value = !isPreviewMode.value;
-    isTestFormModalOpen.value = isPreviewMode.value;
-    if (isPreviewMode.value) {
-      closeAllSidebars();
-    }
-  }
+  /**
+   * Preview is where the funnel is tested like a guest would: typing, picking
+   * options, submitting. None of that is design. The pages are snapshotted on
+   * the way in and restored on the way out, and autosave waits meanwhile, so
+   * a test run never changes the project (designers' pre-selected options
+   * included).
+   */
+  let previewSnapshot: string | null = null;
 
-  function openPreviewMode() {
+  function enterPreview() {
     closeAllSidebars();
+    if (previewSnapshot === null) previewSnapshot = JSON.stringify(pages.value);
     isPreviewMode.value = true;
     isTestFormModalOpen.value = true;
   }
 
-  function closePreviewMode() {
+  function exitPreview() {
     isPreviewMode.value = false;
     isTestFormModalOpen.value = false;
+    if (previewSnapshot !== null) {
+      const snapshot = previewSnapshot;
+      previewSnapshot = null;
+      pages.value = JSON.parse(snapshot);
+    }
+  }
+
+  function togglePreviewMode() {
+    if (isPreviewMode.value) exitPreview();
+    else enterPreview();
+  }
+
+  function openPreviewMode() {
+    enterPreview();
+  }
+
+  function closePreviewMode() {
+    exitPreview();
   }
 
   function closeAllSidebars() {
@@ -1522,7 +1543,10 @@ export const useEditorStore = defineStore('editor', () => {
     if (pages.value[0] && (!pages.value[0].slug || pages.value[0].slug.startsWith('page-'))) {
       pages.value[0].slug = masterSlug;
     }
-    const masterWidgets = pages.value[0]?.widget_tree || currentPage.value?.widget_tree || [];
+    // What is saved is the design: during preview that is the snapshot taken
+    // on entry, and text answers are never part of it.
+    const designPages: ActivationPage[] = stripTextAnswers(JSON.parse(previewSnapshot ?? JSON.stringify(pages.value)));
+    const masterWidgets = designPages[0]?.widget_tree || [];
     const masterStatus = existingProj?.status || pages.value[0]?.status || currentPage.value?.status || 'draft';
     
     const projectData: ProjectItem = {
@@ -1533,8 +1557,8 @@ export const useEditorStore = defineStore('editor', () => {
       status: masterStatus,
       current_version: currentPage.value?.current_version || 1,
       widget_tree: JSON.parse(JSON.stringify(masterWidgets)),
-      pages: JSON.parse(JSON.stringify(pages.value)),
-      page_settings: pages.value[0]?.page_settings || currentPage.value?.page_settings,
+      pages: designPages,
+      page_settings: designPages[0]?.page_settings || currentPage.value?.page_settings,
       owner_id: existingProj?.owner_id || authStore.currentUser?.id || (authStore.isSuperAdmin ? 'superadmin_master' : ''),
       owner_email: existingProj?.owner_email || authStore.currentUser?.email || (authStore.isSuperAdmin ? 'admin@707designstudio.internal' : ''),
       created_by: existingProj?.created_by || authStore.currentUser?.name || authStore.currentUser?.email || (authStore.isSuperAdmin ? 'Superadmin' : ''),
@@ -1736,6 +1760,8 @@ export const useEditorStore = defineStore('editor', () => {
   watch(
     [projectTitle, pages],
     () => {
+      // A preview test run is not an edit; exitPreview restores the design.
+      if (isPreviewMode.value) return;
       clearTimeout(saveDebounceTimer);
       saveDebounceTimer = setTimeout(() => {
         saveCurrentProject();

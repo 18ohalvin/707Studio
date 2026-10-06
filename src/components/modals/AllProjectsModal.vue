@@ -317,6 +317,7 @@
 </template>
 
 <script setup lang="ts">
+import { glassConfirm } from '../../services/glassDialog.ts';
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { 
@@ -473,7 +474,7 @@ async function handleDuplicate(project: ProjectItem) {
 }
 
 async function handleDelete(project: ProjectItem) {
-  if (confirm(`Permanently delete project "${project.title}"?`)) {
+  if (await glassConfirm({ title: 'Delete project?', message: `"${project.title}" is permanently deleted for everyone.`, confirmLabel: 'Delete', danger: true })) {
     await editorStore.deleteProject(project.id);
     editorStore.showToast(`Deleted "${project.title}".`);
   }

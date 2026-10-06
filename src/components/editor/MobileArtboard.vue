@@ -3,7 +3,7 @@
     class="relative select-none"
     :class="[
       isTicketPage
-        ? 'w-[340px] h-[480px] shrink-0'
+        ? 'w-[340px] h-[604px] shrink-0'
         : isLivePage 
         ? 'w-full h-full min-h-[100dvh] flex flex-col flex-1' 
         : (isPreviewModal
@@ -28,7 +28,7 @@
         <!-- View mode -->
         <div v-if="!isEditingPageName" class="flex items-center gap-[6px]">
           <p class="font-707 font-light text-caption text-black whitespace-nowrap">
-            <template v-if="isTicketPage">Ticket · PDF (A6) — not shown as a page to guests</template>
+            <template v-if="isTicketPage">Ticket · PDF (9:16) — not shown as a page to guests</template>
             <template v-else>Page {{ pageNumber }}: {{ currentPageName }}</template>
           </p>
           <Pencil class="w-2.5 h-2.5 text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -67,7 +67,7 @@
       :class="[
         (isPreviewModal || isLivePage || isTicketPage) ? 'bg-white' : 'bg-[#f5f5f5]',
         isTicketPage
-          ? ((isPreviewModal || isLivePage) ? 'w-[340px] h-[480px] border-none shadow-none' : 'border-[0.5px] w-[340px] h-[480px]')
+          ? ((isPreviewModal || isLivePage) ? 'w-[340px] h-[604px] border-none shadow-none' : 'border-[0.5px] w-[340px] h-[604px]')
           : isLivePage
           ? 'w-full h-full min-h-[100dvh] flex-1 border-none shadow-none'
           : (isPreviewModal
@@ -210,7 +210,14 @@
             >
               <!-- If image is provided and not in solid placeholder mode, display image background -->
               <template v-if="widget.props.imageUrl && !widget.props.isSolidSpace">
+                <!-- Ticket page: a background image, which the PDF capture reproduces faithfully (it ignores object-fit on <img>) -->
+                <div
+                  v-if="isTicketPage"
+                  class="w-full h-full absolute inset-0 bg-no-repeat bg-center"
+                  :style="{ backgroundImage: `url('${widget.props.imageUrl}')`, backgroundSize: ticketBannerSize(widget.props.mediaFit) }"
+                />
                 <img 
+                  v-else
                   :src="widget.props.imageUrl" 
                   alt="Drop Banner" 
                   class="w-full h-full absolute inset-0"
@@ -657,7 +664,9 @@
                     @input="handleFieldInputChange($event, widget)"
                     @focus="handleFieldFocus(widget)"
                     @blur="handleFieldBlur(widget)"
-                    :readonly="isMiniPreview"
+                    :readonly="isMiniPreview || isDesignCanvas"
+                    :tabindex="isDesignCanvas ? -1 : undefined"
+                    :style="isDesignCanvas ? { pointerEvents: 'none' } : undefined"
                     class="font-707 font-normal text-[14px] leading-[20px] w-full bg-transparent outline-none border-none p-0 m-0 transition-colors duration-300 relative z-10"
                     :class="[
                       widget.props.stateVariant === 'Wrong alert' ? 'text-[#9b0707]' : 'text-black'
@@ -814,7 +823,9 @@
                       @input="handleRegistrationFormItemInput($event, widget, field)"
                       @focus="handleRegistrationFormFieldFocus(widget.id, field.id)"
                       @blur="handleRegistrationFormFieldBlur(widget.id, field.id)"
-                      :readonly="isMiniPreview"
+                      :readonly="isMiniPreview || isDesignCanvas"
+                    :tabindex="isDesignCanvas ? -1 : undefined"
+                    :style="isDesignCanvas ? { pointerEvents: 'none' } : undefined"
                       class="font-707 font-normal text-[14px] leading-[20px] w-full bg-transparent outline-none border-none p-0 m-0 transition-colors duration-300 relative z-10"
                       :class="[
                         field.errorMessage ? 'text-[#9b0707]' : 'text-black'
@@ -1499,7 +1510,7 @@ more</span>
               <!-- 5. Footer Troubleshoot / Disclaimer Notice with Hyperlink and Modal Pop Up Support -->
               <div v-if="widget.props?.showFooterNotice ?? true" class="flex items-start gap-[10px] w-full pt-[6px]">
                 <div class="size-[18px] rounded-full bg-black text-white flex items-center justify-center shrink-0 mt-[1px]">
-                  <span class="font-bold text-[11px] leading-none font-serif italic">i</span>
+                  <span class="font-707 font-bold text-[11px] leading-none italic">i</span>
                 </div>
                 <div class="flex flex-col">
                   <span class="font-707 font-bold text-[11px] leading-[15px] text-black uppercase tracking-tight">
@@ -1673,6 +1684,8 @@ more</span>
 
                   <input 
                     v-model="modalInputValue"
+                    :readonly="isDesignCanvas"
+                    :style="isDesignCanvas ? { pointerEvents: 'none' } : undefined"
                     :placeholder="modalDisplayProps.fieldPlaceholder || '81234567890'"
                     type="tel"
                     inputmode="numeric"
@@ -1687,6 +1700,8 @@ more</span>
                 >
                   <input 
                     v-model="modalInputValue"
+                    :readonly="isDesignCanvas"
+                    :style="isDesignCanvas ? { pointerEvents: 'none' } : undefined"
                     :placeholder="modalDisplayProps.fieldPlaceholder || (modalDisplayProps.fieldType === 'text' ? 'Text*' : 'Email*')"
                     :type="modalDisplayProps.fieldType === 'text' ? 'text' : 'email'"
                     :inputmode="modalDisplayProps.fieldType === 'text' ? 'text' : 'email'"
@@ -1958,6 +1973,11 @@ const activePage = computed(() => {
 
 /* ---------- Ticket page ---------- */
 const isTicketPage = computed(() => activePage.value?.kind === 'ticket');
+/**
+ * The editor canvas is for design and layout only: fields cannot be typed in
+ * and options cannot be picked there. Testing as a guest happens in Preview.
+ */
+const isDesignCanvas = computed(() => !props.isPreviewModal && !props.isLivePage && !props.isMiniPreview);
 // Rendered on its own for the PDF: the campaign's pass, logo and title come in from outside.
 const ticketContext = inject(TICKET_CONTEXT_KEY, null);
 // On a live page: where the campaign's Ticket page is (it is not a funnel page).
@@ -2772,6 +2792,13 @@ function getOverlayStyle(props: any) {
   }
 }
 
+/** background-size equivalent of getMediaFitClass, for Ticket page banners. */
+function ticketBannerSize(fit?: string): string {
+  if (fit === 'Fit to screen' || fit === 'fit') return 'contain';
+  if (fit === 'Center' || fit === 'center') return 'auto';
+  return 'cover';
+}
+
 function getMediaFitClass(fit?: string) {
   switch (fit) {
     case 'Fit to screen':
@@ -2938,6 +2965,13 @@ function toggleChoiceOption(widget: any, optId: string) {
   if (props.isMiniPreview) return;
   handleSelectThisPage();
   editorStore.selectWidget(widget.id);
+
+  // The canvas is for layout: picking an option there only selects the block.
+  // Pre-selected options are set in the Choice setup; guests pick in Preview.
+  if (isDesignCanvas.value) {
+    handleAdjustWidget(widget);
+    return;
+  }
 
   const opt = (widget.props?.options || []).find((o: any) => o.id === optId);
   if (opt && isChoiceOptionDisabled(widget, opt)) {
@@ -3441,7 +3475,7 @@ function handleModalAddOption() {
 }
 
 function toggleModalOption(optIdOrIdx: any) {
-  if (wasDraggingRecently.value) return;
+  if (wasDraggingRecently.value || isDesignCanvas.value) return;
   const mProps = modalDisplayProps.value;
   if (!mProps.options) return;
   const isMulti = mProps.allowMultiple ?? (mProps.variant === 'choice-detailed');
@@ -3464,7 +3498,7 @@ function toggleModalOption(optIdOrIdx: any) {
 }
 
 function toggleModalSlot(slotIdOrIdx: any) {
-  if (wasDraggingRecently.value) return;
+  if (wasDraggingRecently.value || isDesignCanvas.value) return;
   const mProps = modalDisplayProps.value;
   if (!mProps.imageSlots) return;
   mProps.imageSlots.forEach((s: any, idx: number) => {

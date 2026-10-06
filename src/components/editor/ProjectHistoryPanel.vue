@@ -1,6 +1,6 @@
 <template>
   <div
-    class="absolute right-0 top-[40px] w-[360px] max-h-[70vh] flex flex-col backdrop-blur-2xl bg-white/90 border border-black/10 rounded-[12px] shadow-[0px_24px_60px_rgba(0,0,0,0.16)] z-50 font-707 overflow-hidden"
+    class="absolute right-0 top-[34px] w-[360px] max-h-[70vh] flex flex-col backdrop-blur-2xl bg-white/70 border border-white/60 rounded-[12px] shadow-[0px_16px_45px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] apple-popover-box z-50 font-707 overflow-hidden"
     role="dialog"
     aria-label="Project history"
     @click.stop
@@ -77,6 +77,7 @@
 </template>
 
 <script setup lang="ts">
+import { glassConfirm } from '../../services/glassDialog.ts';
 import { ref, computed, onMounted } from 'vue';
 import { X, ExternalLink, Undo2, Send, Rocket, CornerUpLeft, Trash2, History } from 'lucide-vue-next';
 import { useEditorStore } from '../../stores/editorStore.ts';
@@ -136,7 +137,7 @@ function formatWhen(iso?: string | null): string {
 }
 
 async function restore(entry: ProjectHistoryEntry) {
-  if (!confirm(`Load build #${entry.revision} into the editor?\n\nYour current edits stay in history, and visitors keep seeing the live version until it is published.`)) return;
+  if (!(await glassConfirm({ title: `Restore build #${entry.revision}?`, message: 'It loads into the editor. Your current edits stay in history, and visitors keep seeing the live version until it is published.', confirmLabel: 'Restore' }))) return;
   busy.value = true;
   const res = await editorStore.restoreProjectBuild(editorStore.currentProjectId, entry.id);
   busy.value = false;
@@ -145,7 +146,7 @@ async function restore(entry: ProjectHistoryEntry) {
 }
 
 async function discard() {
-  if (!confirm('Discard every edit made since the live version was published?\n\nThe discarded edits stay in history, so this can be undone with Restore.')) return;
+  if (!(await glassConfirm({ title: 'Discard unpublished changes?', message: 'Every edit since the live version was published is removed from the editor. They stay in history, so Restore can bring them back.', confirmLabel: 'Discard', danger: true }))) return;
   busy.value = true;
   const res = await editorStore.transitionProject(editorStore.currentProjectId, 'discard');
   busy.value = false;

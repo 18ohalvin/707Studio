@@ -24,8 +24,11 @@ export function ticketFieldMeta(key: string) {
   return TICKET_FIELDS.find(f => f.key === key) || TICKET_FIELDS[1];
 }
 
-/** A6 portrait proportions (105 × 148 mm) at the canvas width. */
-export const TICKET_CANVAS = { width: 340, height: 480 };
+/** 9:16 — a phone screen, so the ticket reads well saved to a camera roll. */
+export const TICKET_CANVAS = { width: 340, height: 604 };
+
+/** PDF sheet in the same 9:16 proportion, in millimetres. */
+export const TICKET_PAPER = { width: 90, height: 160 };
 
 /**
  * What a Ticket page needs from the rest of the campaign when it is rendered

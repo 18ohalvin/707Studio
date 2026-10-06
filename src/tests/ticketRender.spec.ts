@@ -21,12 +21,12 @@ describe('Ticket page rendering', () => {
     return store.pages[store.ticketPageIndex];
   }
 
-  it('renders as a fixed A6 canvas without the 707 header, with sample data in the editor', async () => {
+  it('renders as a fixed 9:16 canvas without the 707 header, with sample data in the editor', async () => {
     const page = ticketPage();
     const wrapper = mount(MobileArtboard, { props: { page, pageIndex: 1, isSelected: true }, global: { plugins: [pinia] } });
     await flushPromises();
 
-    expect(wrapper.html()).toContain('h-[480px]');
+    expect(wrapper.html()).toContain('h-[604px]');
     expect(wrapper.find('img[alt="707 Logo"]').exists()).toBe(false);
     const text = wrapper.text();
     expect(text).toContain('GUEST NAME');

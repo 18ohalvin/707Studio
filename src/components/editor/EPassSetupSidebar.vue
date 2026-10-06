@@ -38,7 +38,7 @@
         <p class="font-707 text-[11px] text-neutral-500">
           {{ editorStore.ticketPageIndex >= 0
             ? 'Designed on the Ticket page. Guests get it with their own details when they tap Download E-Pass.'
-            : 'Lay out the PDF guests download, on its own A6 page — with the same editing as any page.' }}
+            : 'Lay out the PDF guests download, on its own 9:16 page — with the same editing as any page.' }}
         </p>
       </div>
       <button

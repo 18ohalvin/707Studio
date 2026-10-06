@@ -5,7 +5,7 @@
     <Transition name="notif-pop">
       <div
         v-if="isOpen"
-        class="absolute right-0 top-[34px] w-[360px] max-h-[70vh] flex flex-col backdrop-blur-2xl bg-white/90 border border-black/10 rounded-[12px] shadow-[0px_24px_60px_rgba(0,0,0,0.16)] z-50 font-707 overflow-hidden"
+        class="absolute right-0 top-[34px] w-[360px] max-h-[70vh] flex flex-col backdrop-blur-2xl bg-white/70 border border-white/60 rounded-[12px] shadow-[0px_16px_45px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] apple-popover-box z-50 font-707 overflow-hidden"
         role="dialog"
         aria-label="Notifications"
       >

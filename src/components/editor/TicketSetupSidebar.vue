@@ -111,9 +111,16 @@
     <div class="flex flex-col gap-[12px] items-start p-[24px] w-full">
       <div class="flex flex-col">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Add another block</p>
-        <p class="font-707 text-[11px] text-neutral-500">Text and images can be added from the Widget menu as on any page.</p>
+        <p class="font-707 text-[11px] text-neutral-500">Banners are image blocks (upload or gallery); text comes from the Widget menu as on any page.</p>
       </div>
       <div class="flex flex-wrap gap-1.5 w-full">
+        <button
+          type="button"
+          @click="addBanner"
+          class="apple-glass-btn-dark h-[30px] px-2.5 rounded-[8px] text-[11px] font-707 font-medium flex items-center gap-1 cursor-pointer"
+        >
+          <ImageIcon class="w-3 h-3" /> Banner
+        </button>
         <button
           v-for="f in TICKET_FIELDS"
           :key="f.key"
@@ -130,7 +137,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Ticket, Plus } from 'lucide-vue-next';
+import { Ticket, Plus, Image as ImageIcon } from 'lucide-vue-next';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { TICKET_FIELDS, ticketFieldMeta, type TicketFieldKey } from './ticket/ticketFields.ts';
@@ -176,6 +183,13 @@ function captionOf(key: string): string {
 
 function setCaption(key: string, value: string) {
   update({ captions: { ...(currentWidget.value?.props?.captions || {}), [key]: value.toUpperCase() } });
+}
+
+function addBanner() {
+  const index = currentWidget.value
+    ? editorStore.currentPage.widget_tree.findIndex(w => w.id === currentWidget.value!.id) + 1
+    : undefined;
+  editorStore.addMediaBannerWidget('16:9', index);
 }
 
 function addBlock(key: TicketFieldKey) {

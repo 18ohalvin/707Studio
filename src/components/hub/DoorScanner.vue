@@ -1,5 +1,5 @@
 <template>
-  <div ref="rootRef" class="w-full grid grid-cols-1 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-5 font-707" :class="isFullscreen ? 'bg-white p-4 md:p-6 h-full overflow-y-auto' : ''">
+  <div ref="rootRef" class="w-full grid grid-cols-1 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-5 font-707" :class="isFullscreen && !standalone ? 'bg-white p-4 md:p-6 h-full overflow-y-auto' : ''">
     <!-- ============ Scanner Console (dark HUD) ============ -->
     <div class="rounded-[22px] bg-[#0c0d0e] text-white border border-[#2c2f35] shadow-[0_30px_80px_rgba(0,0,0,0.25)] overflow-hidden flex flex-col">
       <!-- Console bar -->
@@ -270,6 +270,8 @@ const props = defineProps<{
   rows: Submission[];
   pageIds: string[] | null;
   operator: string;
+  /** On its own page (/hub/scanner): fullscreen covers the whole page. */
+  standalone?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -542,10 +544,12 @@ function stopCamera() {
 /* ---------- Fullscreen door mode ---------- */
 async function toggleFullscreen() {
   try {
-    if (!document.fullscreenElement) await rootRef.value?.requestFullscreen();
+    const target = props.standalone ? document.documentElement : rootRef.value;
+    if (!document.fullscreenElement) await target?.requestFullscreen();
     else await document.exitFullscreen();
   } catch {
-    emit('toast', 'Fullscreen is not available in this browser.');
+    // iPhone browsers have no fullscreen API; "Add to Home Screen" opens the page without browser bars.
+    emit('toast', props.standalone ? 'Fullscreen is not available here — on iPhone, use Share → Add to Home Screen.' : 'Fullscreen is not available in this browser.');
   }
 }
 function onFullscreenChange() {

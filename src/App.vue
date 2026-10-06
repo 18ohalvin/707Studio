@@ -6,6 +6,7 @@
     <DesktopOnlyGuard v-if="!isPublicDrop" />
     <ProjectLoadingScreen v-if="!isPublicDrop" />
     <router-view />
+    <GlassDialog />
   </div>
 </template>
 
@@ -15,6 +16,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { SESSION_EXPIRED_EVENT } from './services/apiClient.ts';
 import DesktopOnlyGuard from './components/common/DesktopOnlyGuard.vue';
 import ProjectLoadingScreen from './components/common/ProjectLoadingScreen.vue';
+import GlassDialog from './components/common/GlassDialog.vue';
 import { useAuthStore } from './stores/authStore.ts';
 import { useBrandStore } from './stores/brandStore.ts';
 import { useEditorStore } from './stores/editorStore.ts';

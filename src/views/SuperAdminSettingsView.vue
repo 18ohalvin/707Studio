@@ -1312,6 +1312,7 @@
 </template>
 
 <script setup lang="ts">
+import { glassConfirm, glassPrompt } from '../services/glassDialog.ts';
 import { ref, computed, reactive, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { 
@@ -1604,7 +1605,7 @@ async function handleSaveEditUserSubmit() {
 }
 
 async function handleRemoveBrand(brand: Brand) {
-  if (confirm(`Are you sure you want to remove the "${brand.name}" brand account from the directory?`)) {
+  if (await glassConfirm({ title: 'Remove brand?', message: `"${brand.name}" is removed from the brand directory.`, confirmLabel: 'Remove', danger: true })) {
     await brandStore.removeBrand(brand.id);
     editorStore.showToast(`Brand "${brand.name}" removed from ecosystem.`);
   }
@@ -1680,21 +1681,21 @@ function handlePreviewProject(projectId: string) {
 
 async function handleApproveProject(projectId: string) {
   const p = editorStore.projects.find(proj => proj.id === projectId);
-  if (!p || !confirm(isLiveProject(p) ? `Publish the update to "${p.title}"? Visitors will see it immediately.` : `Approve and publish "${p.title}"?`)) return;
+  if (!p || !(await glassConfirm({ title: isLiveProject(p) ? 'Publish update?' : 'Approve & publish?', message: isLiveProject(p) ? `Visitors of "${p.title}" will see the update immediately.` : `"${p.title}" becomes public immediately.`, confirmLabel: 'Publish' }))) return;
   const res = await editorStore.transitionProject(projectId, 'publish');
   editorStore.showToast(res.ok ? `Published "${p.title}".` : `Could not publish: ${res.error}`);
 }
 
 async function handleDeclineProject(projectId: string) {
   const p = editorStore.projects.find(proj => proj.id === projectId);
-  const note = prompt(`What should the brand change in "${p?.title || 'this project'}"?`, '');
+  const note = await glassPrompt({ title: 'Request changes', message: `Tell the brand what to change in "${p?.title || 'this project'}". They get this note with the request.`, placeholder: 'e.g. Use the high-res logo and fix the venue time', confirmLabel: 'Send back' });
   if (note === null) return;
-  const res = await editorStore.transitionProject(projectId, 'decline', note.trim());
+  const res = await editorStore.transitionProject(projectId, 'decline', note);
   editorStore.showToast(res.ok ? `Sent "${p?.title || 'Drop'}" back to the brand.` : `Could not send back: ${res.error}`);
 }
 
 async function handleDeleteProject(project: ProjectItem) {
-  if (confirm(`Permanently delete project "${project.title}" from cloud database?`)) {
+  if (await glassConfirm({ title: 'Delete project?', message: `"${project.title}" is permanently deleted from the cloud database.`, confirmLabel: 'Delete', danger: true })) {
     await editorStore.deleteProject(project.id);
     editorStore.showToast(`Deleted "${project.title}".`);
   }
@@ -1809,8 +1810,8 @@ function handleEditTemplateSubmit() {
   }
 }
 
-function handleRemoveTemplate(tpl: GlobalTemplate) {
-  if (confirm(`Remove template "${tpl.name}" from presets?`)) {
+async function handleRemoveTemplate(tpl: GlobalTemplate) {
+  if (await glassConfirm({ title: 'Remove template?', message: `"${tpl.name}" is removed from presets.`, confirmLabel: 'Remove', danger: true })) {
     brandStore.removeTemplate(tpl.id);
     editorStore.showToast(`Template "${tpl.name}" removed.`);
   }
