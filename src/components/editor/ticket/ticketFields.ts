@@ -40,6 +40,8 @@ export interface TicketContext {
   passWidget: any | null;
   logoUrl: string;
   campaignTitle: string;
+  /** logoUrl is already the solid-black version (made for the PDF), so it is shown as is. */
+  logoIsBlack?: boolean;
 }
 
 export const TICKET_CONTEXT_KEY: InjectionKey<TicketContext> = Symbol('ticketContext');

@@ -3,6 +3,8 @@ import { getActivePinia } from 'pinia';
 import type { ActivationPage } from '../../../types/editor.ts';
 import { LIVE_PASS_KEY, type LivePassState } from '../livePass.ts';
 import { TICKET_CONTEXT_KEY, TICKET_CANVAS, TICKET_PAPER, type TicketContext } from './ticketFields.ts';
+import { blackenLogo } from './blackLogo.ts';
+import { sizedUrl } from '../../../services/responsiveImage.ts';
 
 /**
  * Turns the campaign's Ticket page into the guest's PDF.
@@ -40,6 +42,14 @@ export async function renderTicketPdf(opts: TicketPdfOptions): Promise<void> {
     import('jspdf')
   ]);
 
+  // The logo prints black, as in the Ticket Summary. Done before the page is drawn so the
+  // capture never catches the coloured original.
+  let context = opts.context;
+  if (context.logoUrl && !context.logoIsBlack) {
+    const black = await blackenLogo(sizedUrl(context.logoUrl, 1080));
+    if (black) context = { ...context, logoUrl: black, logoIsBlack: true };
+  }
+
   const host = document.createElement('div');
   host.setAttribute('aria-hidden', 'true');
   host.style.cssText = `position:fixed;left:-10000px;top:0;width:${TICKET_CANVAS.width}px;pointer-events:none;`;
@@ -56,7 +66,7 @@ export async function renderTicketPdf(opts: TicketPdfOptions): Promise<void> {
   });
   const pinia = getActivePinia();
   if (pinia) app.use(pinia);
-  app.provide(TICKET_CONTEXT_KEY, opts.context);
+  app.provide(TICKET_CONTEXT_KEY, context);
   if (opts.livePass) app.provide(LIVE_PASS_KEY, opts.livePass);
 
   try {

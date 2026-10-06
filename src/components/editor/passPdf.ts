@@ -5,6 +5,7 @@
  * page already has; jsPDF and the QR encoder load only when a guest taps
  * "Download E-Pass".
  */
+import { blackenLogo } from './ticket/blackLogo.ts';
 
 export interface PassPdfData {
   headline: string;
@@ -61,7 +62,10 @@ export async function buildPassPdf(data: PassPdfData) {
   let y = MARGIN;
 
   // Logo, or the campaign title when there is no logo to embed.
-  const logo = data.logoUrl && !data.logoUrl.startsWith('data:image/svg') ? await loadImageAsDataUrl(data.logoUrl) : null;
+  const loadedLogo = data.logoUrl && !data.logoUrl.startsWith('data:image/svg') ? await loadImageAsDataUrl(data.logoUrl) : null;
+  // Solid black, like the Ticket Summary. (Redrawn as a PNG, which also lets an SVG logo through.)
+  const blackLogo = loadedLogo ? await blackenLogo(loadedLogo.dataUrl) : null;
+  const logo = loadedLogo && blackLogo ? { ...loadedLogo, dataUrl: blackLogo } : loadedLogo;
   if (logo && !logo.dataUrl.startsWith('data:image/svg')) {
     const h = 7;
     const w = Math.min(contentW * 0.6, h * logo.ratio);

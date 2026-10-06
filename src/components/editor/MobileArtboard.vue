@@ -1293,7 +1293,7 @@ more</span>
                   </div>
                   <!-- Brand logo, or the campaign title when there is none -->
                   <template v-else-if="field === 'brandLogo'">
-                    <img v-if="ticketLogo" :src="sizedUrl(ticketLogo, logoImageWidth(ticketLogoHeight(widget)))" alt="Brand logo" class="w-auto max-w-full object-contain" :style="{ height: `${ticketLogoHeight(widget)}px` }" crossorigin="anonymous" />
+                    <img v-if="ticketLogo" :src="ticketLogoSrc || sizedUrl(ticketLogo, logoImageWidth(ticketLogoHeight(widget)))" alt="Brand logo" class="w-auto max-w-full object-contain" :style="{ height: `${ticketLogoHeight(widget)}px`, ...(ticketLogoSrc ? {} : { filter: 'brightness(0)' }) }" crossorigin="anonymous" />
                     <span v-else class="font-707 text-[10px] uppercase tracking-[0.12em] text-neutral-500">{{ ticketCampaignTitle }}</span>
                   </template>
                   <!-- Sessions the guest picked -->
@@ -1930,6 +1930,7 @@ import { LIVE_PASS_KEY, SESSIONS_ANSWER_KEY, type PassSession } from './livePass
 import { normalizeCtaAction } from './ctaActions.ts';
 import { responsiveImgAttrs, placeholderStyle, sizedUrl } from '../../services/responsiveImage.ts';
 import { TICKET_CONTEXT_KEY, TICKET_SOURCE_KEY, ticketFieldMeta, type TicketFieldKey } from './ticket/ticketFields.ts';
+import { blackenLogo } from './ticket/blackLogo.ts';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { 
@@ -2055,6 +2056,24 @@ const ticketLogo = computed(() => {
   const pass = ticketPassWidget();
   return pass ? getBrandLogo(pass) : '';
 });
+// The logo prints solid black, like the Ticket Summary. The CSS filter does that on screen but the
+// PDF capture ignores filters, so the logo's pixels are made black (until then the filter stands in).
+const ticketLogoSrc = ref('');
+watch(
+  () => [ticketLogo.value, ticketContext?.logoIsBlack] as const,
+  async ([url, alreadyBlack]) => {
+    ticketLogoSrc.value = '';
+    if (!url) return;
+    if (alreadyBlack) {
+      ticketLogoSrc.value = url;
+      return;
+    }
+    const black = await blackenLogo(sizedUrl(url, 1080));
+    if (url === ticketLogo.value) ticketLogoSrc.value = black || '';
+  },
+  { immediate: true }
+);
+
 const ticketSessions = computed<PassSession[]>(() => {
   const pass = ticketPassWidget();
   return pass ? getValidForSessions(pass) : [];
