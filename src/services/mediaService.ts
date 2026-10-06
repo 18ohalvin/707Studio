@@ -1,5 +1,4 @@
 import { apiFetch } from './apiClient.ts';
-import { FIGMA_ASSETS } from '../constants/figmaAssets.ts';
 
 export interface MediaItem {
   id: string;
@@ -8,70 +7,34 @@ export interface MediaItem {
   url: string;
 }
 
-export const INITIAL_CAMPAIGN_MEDIA: MediaItem[] = [
-  {
-    id: 'm1',
-    title: 'atmos x ASICS Gel Kayano 14 Hero',
-    category: 'Photos',
-    url: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 'm2',
-    title: 'Pandan Green Side Profile',
-    category: 'Product Catalog',
-    url: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 'm3',
-    title: '707 Official Monogram Logo',
-    category: 'Logo',
-    url: FIGMA_ASSETS.logo707
-  },
-  {
-    id: 'm4',
-    title: 'Urban Streetwear Lifestyle',
-    category: 'Editorial Photos',
-    url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 'm5',
-    title: 'Sole & Gel Cushioning Detail',
-    category: 'Product Catalog',
-    url: 'https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 'm6',
-    title: 'Lookbook Editorial Studio',
-    category: 'Editorial Photos',
-    url: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 'm7',
-    title: 'Sneaker Packaging Box Set',
-    category: 'Product Catalog',
-    url: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 'm8',
-    title: 'Night Street Editorial',
-    category: 'Photos',
-    url: 'https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&w=800&q=80'
-  }
-];
-
+/**
+ * This account's media library: the assets its brand team uploaded (the
+ * superadmin sees every brand's). Empty is a real answer — there are no demo
+ * pictures to fall back to.
+ */
 export async function fetchServerMedia(): Promise<MediaItem[]> {
   try {
     const res = await apiFetch('/api/media');
     if (res.ok) {
       const data = await res.json();
-      if (data?.success && Array.isArray(data.data) && data.data.length > 0) {
-        return data.data;
-      }
+      if (data?.success && Array.isArray(data.data)) return data.data;
     }
   } catch (err) {
-    console.warn('[Media Service] Server fetch failed, using local campaign media fallback:', err);
+    console.warn('[Media Service] Could not load the media library:', err);
   }
-  return INITIAL_CAMPAIGN_MEDIA;
+  return [];
+}
+
+/** The brand an upload belongs to: the brand of the project being edited. */
+async function currentBrandSlug(): Promise<string> {
+  try {
+    const { useEditorStore } = await import('../stores/editorStore.ts');
+    const store = useEditorStore();
+    const project = store.projects.find(p => p.id === store.currentProjectId);
+    return project?.brand_slug || store.currentPage?.brand_slug || '';
+  } catch {
+    return '';
+  }
 }
 
 export async function uploadMediaDirectly(params: {
@@ -83,6 +46,7 @@ export async function uploadMediaDirectly(params: {
   // Send the file's bytes, not base64 inside JSON: a photoshoot original is
   // a third smaller on the wire this way, which is most of an upload's time.
   // The server makes the screen-sized versions pages actually load.
+  const brandSlug = await currentBrandSlug();
   const send = async (): Promise<Response | null> => {
     let blob: Blob | null = null;
     try {
@@ -95,6 +59,7 @@ export async function uploadMediaDirectly(params: {
       if (params.title) query.set('title', params.title);
       if (params.category) query.set('category', params.category);
       if (params.filename) query.set('filename', params.filename);
+      if (brandSlug) query.set('brand_slug', brandSlug);
       return apiFetch(`/api/media/upload?${query.toString()}`, {
         method: 'POST',
         headers: { 'Content-Type': blob.type },
@@ -104,7 +69,7 @@ export async function uploadMediaDirectly(params: {
     return apiFetch('/api/media/upload', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params)
+      body: JSON.stringify({ ...params, brand_slug: brandSlug })
     }).catch(() => null);
   };
 
@@ -148,4 +113,38 @@ export async function deleteServerMedia(id: string): Promise<boolean> {
     console.warn('[Media Service] Server delete failed:', err);
     return false;
   }
+}
+
+/**
+ * Removes several assets. Files a project still uses are kept on the server
+ * (only the library entry goes), so campaigns never lose an image this way.
+ */
+export async function bulkDeleteServerMedia(ids: string[]): Promise<{ removed: string[]; keptInUse: string[] }> {
+  const res = await apiFetch('/api/media/bulk-delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids })
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok || !json?.success) throw new Error(json?.message || `HTTP ${res.status}`);
+  return { removed: json.removed || [], keptInUse: json.keptInUse || [] };
+}
+
+/** Ids of this account's assets that some project currently shows. */
+export async function fetchMediaUsage(): Promise<Set<string>> {
+  try {
+    const res = await apiFetch('/api/media/usage');
+    const json = await res.json();
+    return new Set(Array.isArray(json?.data) ? json.data : []);
+  } catch {
+    return new Set();
+  }
+}
+
+/** Superadmin: empty the whole media library, files included. */
+export async function purgeServerMedia(): Promise<number> {
+  const res = await apiFetch('/api/media/purge', { method: 'POST' });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok || !json?.success) throw new Error(json?.message || `HTTP ${res.status}`);
+  return Number(json.removed || 0);
 }

@@ -449,6 +449,27 @@
         </div>
       </div>
 
+      <!-- Media library maintenance (shown under Brands) -->
+      <div v-if="activeTab === 'brands'" class="px-[48px] w-full">
+        <div class="w-full rounded-[12px] border border-red-200 bg-red-50/40 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex flex-col gap-1 max-w-[640px]">
+            <p class="font-707 text-[14px] font-medium text-black">Media library</p>
+            <p class="font-707 text-[12.5px] leading-[19px] text-neutral-700">
+              Delete every asset in every brand's library, files included. Campaigns still showing one of these images lose it.
+              Brands manage their own library from the editor (Media Gallery → Select).
+            </p>
+          </div>
+          <button
+            type="button"
+            :disabled="isPurgingMedia"
+            @click="handlePurgeMedia"
+            class="shrink-0 h-[36px] px-4 rounded-[8px] bg-[#9b0707] hover:bg-[#7f0606] text-white text-[12.5px] font-707 font-medium cursor-pointer disabled:opacity-50"
+          >
+            {{ isPurgingMedia ? 'Deleting…' : 'Delete all media' }}
+          </button>
+        </div>
+      </div>
+
       <!-- TAB 4: TEMPLATES BUILD (Superadmin Template Governance) -->
       <div v-if="activeTab === 'templates'" class="flex flex-col gap-[20px] items-start px-[48px] w-full">
         <!-- Templates Header with Filter & Build Action -->
@@ -1312,6 +1333,7 @@
 </template>
 
 <script setup lang="ts">
+import { fetchServerMedia, fetchMediaUsage, purgeServerMedia } from '../services/mediaService.ts';
 import { sizedUrl } from '../services/responsiveImage.ts';
 import { glassConfirm, glassPrompt } from '../services/glassDialog.ts';
 import { ref, computed, reactive, onMounted, watch } from 'vue';
@@ -1808,6 +1830,35 @@ function handleEditTemplateSubmit() {
     });
     editorStore.showToast(`Updated "${editTemplateName.value}".`);
     showEditTemplateModal.value = false;
+  }
+}
+
+const isPurgingMedia = ref(false);
+
+async function handlePurgeMedia() {
+  const library = await fetchServerMedia();
+  const inUse = await fetchMediaUsage();
+  if (!library.length) {
+    editorStore.showToast('The media library is already empty.');
+    return;
+  }
+  const ok = await glassConfirm({
+    title: `Delete all ${library.length} assets?`,
+    message: inUse.size
+      ? `${inUse.size} of them are used in campaigns — those campaigns will show an empty space where the image was. This cannot be undone.`
+      : 'None of them is used in a campaign. This cannot be undone.',
+    confirmLabel: 'Delete everything',
+    danger: true
+  });
+  if (!ok) return;
+  isPurgingMedia.value = true;
+  try {
+    const removed = await purgeServerMedia();
+    editorStore.showToast(`Deleted ${removed} assets from the media library.`);
+  } catch (err: any) {
+    editorStore.showToast(`Could not delete: ${err?.message || 'network error'}`);
+  } finally {
+    isPurgingMedia.value = false;
   }
 }
 

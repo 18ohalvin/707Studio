@@ -48,13 +48,70 @@
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
           {{ activeCategory === 'All' ? 'All Campaign Assets' : activeCategory }}
         </p>
-        <span class="font-707 text-[11px] text-neutral-400">
-          {{ filteredMedia.length }} items (drag or click to use)
-        </span>
+        <div v-if="!selectMode" class="flex items-center gap-2">
+          <span class="font-707 text-[11px] text-neutral-400">{{ filteredMedia.length }} items</span>
+          <button
+            v-if="filteredMedia.length"
+            type="button"
+            @click="enterSelectMode"
+            class="apple-glass-btn h-[26px] px-2.5 rounded-[7px] text-[11px] font-707 font-medium cursor-pointer"
+            title="Select several assets to delete them together"
+          >
+            Select
+          </button>
+        </div>
+        <div v-else class="flex items-center gap-1.5">
+          <button type="button" @click="toggleSelectAll" class="h-[26px] px-2 rounded-[7px] text-[11px] font-707 text-neutral-600 hover:text-black hover:bg-black/5 cursor-pointer">
+            {{ allSelected ? 'Clear' : 'Select all' }}
+          </button>
+          <button
+            type="button"
+            :disabled="!selectedIds.size || isDeleting"
+            @click="deleteSelected"
+            class="h-[26px] px-2.5 rounded-[7px] text-[11px] font-707 font-medium text-white bg-[#9b0707] hover:bg-[#7f0606] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1"
+          >
+            <Trash2 class="size-3" /> {{ isDeleting ? 'Deleting…' : `Delete ${selectedIds.size || ''}` }}
+          </button>
+          <button type="button" @click="exitSelectMode" class="apple-glass-btn h-[26px] px-2.5 rounded-[7px] text-[11px] font-707 cursor-pointer">Done</button>
+        </div>
+      </div>
+
+      <!-- Select mode: every asset in one even grid, tap to select -->
+      <div v-if="selectMode && filteredMedia.length" class="grid grid-cols-3 gap-[10px] w-full">
+        <button
+          v-for="item in filteredMedia"
+          :key="item.id"
+          type="button"
+          @click="toggleSelected(item.id)"
+          class="group relative aspect-square rounded-[8px] overflow-hidden bg-[#d9d9d9] cursor-pointer border-2 transition-all"
+          :class="selectedIds.has(item.id) ? 'border-black' : 'border-transparent hover:border-black/30'"
+          :aria-pressed="selectedIds.has(item.id)"
+          :title="item.title"
+        >
+          <img :src="sizedUrl(item.url, 320)" loading="lazy" decoding="async" :alt="item.title" class="w-full h-full object-cover" :class="selectedIds.has(item.id) ? 'opacity-80' : ''" />
+          <span
+            class="absolute top-1.5 right-1.5 size-5 rounded-full border-2 flex items-center justify-center transition-colors"
+            :class="selectedIds.has(item.id) ? 'bg-black border-black' : 'bg-white/70 border-white'"
+          >
+            <Check v-if="selectedIds.has(item.id)" class="size-3 text-white stroke-[3]" />
+          </span>
+          <span v-if="usedIds.has(item.id)" class="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded-[5px] bg-black/75 text-white font-707 text-[9px] font-medium tracking-wide">
+            In use
+          </span>
+        </button>
+      </div>
+
+      <!-- Empty library: this brand has not uploaded anything yet -->
+      <div
+        v-if="!isLibraryLoading && !filteredMedia.length"
+        class="w-full flex flex-col items-center justify-center text-center gap-2 py-10 px-6 rounded-[10px] border border-dashed border-black/15"
+      >
+        <p class="font-707 text-[13px] font-medium text-black">{{ activeCategory === 'All' ? 'No assets yet' : `No ${activeCategory.toLowerCase()} yet` }}</p>
+        <p class="font-707 text-[11.5px] text-neutral-500 max-w-[300px]">Upload your brand's images below. They are shared with your brand team only.</p>
       </div>
 
       <!-- Bento Asymmetrical Layout Structure -->
-      <div class="w-full flex flex-col gap-[14px]">
+      <div v-else-if="!selectMode" class="w-full flex flex-col gap-[14px]">
         <!-- Top Bento Tier (Hero Tall + 2x2 Stack + Dual Slim) -->
         <div class="w-full flex gap-[10px] items-start justify-between min-h-[206px]">
           <!-- Bento 1: Large Tall Portrait Card (154px) -->
@@ -67,7 +124,7 @@
             :title="`Click or drag ${filteredMedia[0].title}`"
           >
             <img 
-              :src="filteredMedia[0].url" 
+              :src="sizedUrl(filteredMedia[0].url, 640)" 
               :alt="filteredMedia[0].title"
               class="w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-200"
             />
@@ -100,7 +157,7 @@
                 :title="`Click or drag ${filteredMedia[1].title}`"
               >
                 <img 
-                  :src="filteredMedia[1].url" 
+                  :src="sizedUrl(filteredMedia[1].url, 640)" 
                   :alt="filteredMedia[1].title"
                   class="w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-200"
                 />
@@ -128,7 +185,7 @@
                 :title="`Click or drag ${filteredMedia[2].title}`"
               >
                 <img 
-                  :src="filteredMedia[2].url" 
+                  :src="sizedUrl(filteredMedia[2].url, 640)" 
                   :alt="filteredMedia[2].title"
                   class="w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-200"
                 />
@@ -157,7 +214,7 @@
               :title="`Click or drag ${filteredMedia[3].title}`"
             >
               <img 
-                :src="filteredMedia[3].url" 
+                :src="sizedUrl(filteredMedia[3].url, 640)" 
                 :alt="filteredMedia[3].title"
                 class="w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-200"
               />
@@ -188,7 +245,7 @@
               :title="`Click or drag ${filteredMedia[4].title}`"
             >
               <img 
-                :src="filteredMedia[4].url" 
+                :src="sizedUrl(filteredMedia[4].url, 640)" 
                 :alt="filteredMedia[4].title"
                 class="w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-200"
               />
@@ -216,7 +273,7 @@
               :title="`Click or drag ${filteredMedia[5].title}`"
             >
               <img 
-                :src="filteredMedia[5].url" 
+                :src="sizedUrl(filteredMedia[5].url, 640)" 
                 :alt="filteredMedia[5].title"
                 class="w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-200"
               />
@@ -291,17 +348,19 @@
 </template>
 
 <script setup lang="ts">
+import { glassConfirm } from '../../services/glassDialog.ts';
 import { sizedUrl } from '../../services/responsiveImage.ts';
 import { ref, computed, watch, onMounted } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
-import { Plus, Trash2 } from 'lucide-vue-next';
+import { Plus, Trash2, Check } from 'lucide-vue-next';
 import { 
   type MediaItem, 
-  INITIAL_CAMPAIGN_MEDIA, 
   fetchServerMedia, 
   uploadMediaDirectly, 
-  deleteServerMedia 
+  deleteServerMedia,
+  bulkDeleteServerMedia,
+  fetchMediaUsage 
 } from '../../services/mediaService.ts';
 
 defineProps<{
@@ -329,13 +388,12 @@ watch(() => editorStore.mediaGalleryTarget, (target) => {
 }, { immediate: true });
 
 // Curated Media Gallery Library synchronized with server
-const mediaLibrary = ref<MediaItem[]>(INITIAL_CAMPAIGN_MEDIA);
+const mediaLibrary = ref<MediaItem[]>([]);
+const isLibraryLoading = ref(true);
 
 onMounted(async () => {
-  const items = await fetchServerMedia();
-  if (items && items.length > 0) {
-    mediaLibrary.value = items;
-  }
+  mediaLibrary.value = await fetchServerMedia();
+  isLibraryLoading.value = false;
 });
 
 const filteredMedia = computed(() => {
@@ -477,8 +535,73 @@ function applyMediaToArtboard(media: MediaItem) {
   editorStore.mediaGalleryTarget = 'bannerImage';
 }
 
+/* ---------- Select & delete several ---------- */
+const selectMode = ref(false);
+const selectedIds = ref<Set<string>>(new Set());
+const usedIds = ref<Set<string>>(new Set());
+const isDeleting = ref(false);
+
+const allSelected = computed(() => filteredMedia.value.length > 0 && filteredMedia.value.every(m => selectedIds.value.has(m.id)));
+
+async function enterSelectMode() {
+  selectMode.value = true;
+  selectedIds.value = new Set();
+  usedIds.value = await fetchMediaUsage();
+}
+
+function exitSelectMode() {
+  selectMode.value = false;
+  selectedIds.value = new Set();
+}
+
+function toggleSelected(id: string) {
+  const next = new Set(selectedIds.value);
+  if (next.has(id)) next.delete(id);
+  else next.add(id);
+  selectedIds.value = next;
+}
+
+function toggleSelectAll() {
+  selectedIds.value = allSelected.value ? new Set() : new Set(filteredMedia.value.map(m => m.id));
+}
+
+async function deleteSelected() {
+  const ids = [...selectedIds.value];
+  if (!ids.length) return;
+  const inUse = ids.filter(id => usedIds.value.has(id)).length;
+  const ok = await glassConfirm({
+    title: `Delete ${ids.length} asset${ids.length === 1 ? '' : 's'}?`,
+    message: inUse
+      ? `${inUse} of them ${inUse === 1 ? 'is' : 'are'} used in a campaign: ${inUse === 1 ? 'it' : 'they'} leave the library but the campaign keeps the image. The rest are deleted for good.`
+      : 'They are deleted for good and leave your brand library.',
+    confirmLabel: 'Delete',
+    danger: true
+  });
+  if (!ok) return;
+  isDeleting.value = true;
+  try {
+    const result = await bulkDeleteServerMedia(ids);
+    const removed = new Set(result.removed);
+    mediaLibrary.value = mediaLibrary.value.filter(m => !removed.has(m.id));
+    editorStore.showToast(`Deleted ${result.removed.length} asset${result.removed.length === 1 ? '' : 's'}.`);
+    exitSelectMode();
+  } catch (err: any) {
+    editorStore.showToast(`Could not delete: ${err?.message || 'network error'}`);
+  } finally {
+    isDeleting.value = false;
+  }
+}
+
 async function handleRemoveMedia(id: string) {
-  mediaLibrary.value = mediaLibrary.value.filter(item => item.id !== id);
+  const item = mediaLibrary.value.find(m => m.id === id);
+  const ok = await glassConfirm({
+    title: 'Delete this asset?',
+    message: `"${item?.title || 'This asset'}" leaves your brand library. If a campaign uses it, the campaign keeps the image; otherwise the file is deleted for good.`,
+    confirmLabel: 'Delete',
+    danger: true
+  });
+  if (!ok) return;
+  mediaLibrary.value = mediaLibrary.value.filter(m => m.id !== id);
   await deleteServerMedia(id);
 }
 

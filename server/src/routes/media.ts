@@ -3,6 +3,9 @@ import fs from 'fs';
 import path from 'path';
 import { resolveUploadDir } from '../uploads.js';
 import { warmVariants, removeVariants } from '../imageVariants.js';
+import { getClaims, isSuperAdminClaims, type SessionClaims } from '../auth.js';
+import { pool, getDbStatus } from '../db.js';
+import { readDataFile } from '../fileStorage.js';
 
 export const mediaRouter = Router();
 
@@ -51,74 +54,48 @@ export interface ServerMediaItem {
   url: string;
   filename?: string;
   createdAt: string;
+  /** Brand whose team shares this asset. */
+  brand_slug?: string;
+  owner_id?: string;
+  owner_email?: string;
 }
 
-// In-memory / persistent seed of media assets
-let mediaAssets: ServerMediaItem[] = [
-  {
-    id: 'm1',
-    title: 'atmos x ASICS Gel Kayano 14 Hero',
-    category: 'Photos',
-    url: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=800&q=80',
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: 'm2',
-    title: 'Pandan Green Side Profile',
-    category: 'Product Catalog',
-    url: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&q=80',
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: 'm3',
-    title: '707 Official Monogram Logo',
-    category: 'Logo',
-    url: '/assets/4167315cdf415e01405730dfafaea3aaf13ea2e9.png',
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: 'm4',
-    title: 'Urban Streetwear Lifestyle',
-    category: 'Editorial Photos',
-    url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80',
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: 'm5',
-    title: 'Sole & Gel Cushioning Detail',
-    category: 'Product Catalog',
-    url: 'https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?auto=format&fit=crop&w=800&q=80',
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: 'm6',
-    title: 'Lookbook Editorial Studio',
-    category: 'Editorial Photos',
-    url: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=800&q=80',
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: 'm7',
-    title: 'Sneaker Packaging Box Set',
-    category: 'Product Catalog',
-    url: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=800&q=80',
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: 'm8',
-    title: 'Night Street Editorial',
-    category: 'Photos',
-    url: 'https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&w=800&q=80',
-    createdAt: new Date().toISOString()
-  }
-];
+// Loaded from media-index.json; no demo items — a new brand starts with an empty library.
+let mediaAssets: ServerMediaItem[] = [];
+
+const normalizeBrand = (v: string) => String(v || '').toLowerCase().replace(/_/g, '-').trim();
+
+/**
+ * Media belongs to a brand: its team shares it, other brands never see it.
+ * Items from before ownership was recorded have no brand and are visible to
+ * the superadmin only.
+ */
+function canSeeMedia(claims: SessionClaims, item: ServerMediaItem): boolean {
+  if (isSuperAdminClaims(claims)) return true;
+  if (item.owner_id && item.owner_id === claims.sub) return true;
+  if (item.owner_email && claims.email && item.owner_email.toLowerCase() === claims.email.toLowerCase()) return true;
+  const brand = normalizeBrand(item.brand_slug || '');
+  if (!brand) return false;
+  const brands = claims.brands.map(normalizeBrand);
+  return brands.includes('all') || brands.includes(brand);
+}
+
+/** The brand a new upload belongs to: the one asked for, if this account works for it. */
+function brandForUpload(claims: SessionClaims, requested: string): string {
+  const wanted = normalizeBrand(requested);
+  const brands = claims.brands.map(normalizeBrand).filter(b => b && b !== 'all');
+  if (isSuperAdminClaims(claims) || claims.brands.map(normalizeBrand).includes('all')) return wanted || brands[0] || '';
+  if (wanted && brands.includes(wanted)) return wanted;
+  return brands[0] || '';
+}
 
 // 1. GET /api/media - Get all media assets
 mediaRouter.get('/', (req: Request, res: Response) => {
   ensureHydrated();
+  const claims = getClaims(res);
   res.json({
     success: true,
-    data: mediaAssets
+    data: mediaAssets.filter(item => canSeeMedia(claims, item))
   });
 });
 
@@ -139,6 +116,8 @@ mediaRouter.post('/upload', express.raw({ type: 'image/*', limit: '200mb' }), (r
     const title = meta.title ? String(meta.title) : undefined;
     const category = meta.category ? String(meta.category) : undefined;
     const filename = meta.filename ? String(meta.filename) : undefined;
+    const claims = getClaims(res);
+    const brandSlug = brandForUpload(claims, String(meta.brand_slug || ''));
 
     let fileUrl: string;
     let savedFilename: string | undefined;
@@ -179,7 +158,10 @@ mediaRouter.post('/upload', express.raw({ type: 'image/*', limit: '200mb' }), (r
       category: (category || (title?.toLowerCase().includes('logo') ? 'Logo' : 'Photos')) as ServerMediaItem['category'],
       url: fileUrl,
       filename: savedFilename,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      brand_slug: brandSlug,
+      owner_id: claims.sub,
+      owner_email: claims.email
     };
 
     // Prepend to top of assets list
@@ -197,35 +179,117 @@ mediaRouter.post('/upload', express.raw({ type: 'image/*', limit: '200mb' }), (r
   }
 });
 
-// 3. DELETE /api/media/:id - Remove media asset
-mediaRouter.delete('/:id', (req: Request, res: Response) => {
+/* ---------- Removal ---------- */
+
+/**
+ * Whether any project — the working copy or its live version — still shows
+ * this upload. Such a file is kept when its library entry is removed, so a
+ * campaign never loses its banner because someone tidied the library.
+ */
+async function isUploadInUse(filename: string): Promise<boolean> {
+  if (!filename) return false;
+  if (getDbStatus().isConnected) {
+    try {
+      const r = await pool.query(
+        `SELECT 1 FROM pages
+          WHERE widget_tree::text LIKE $1 OR pages::text LIKE $1 OR page_settings::text LIKE $1
+             OR COALESCE(live_snapshot::text, '') LIKE $1
+          LIMIT 1`,
+        [`%${filename}%`]
+      );
+      return r.rows.length > 0;
+    } catch (err: any) {
+      // When unsure, keep the file: a stray file costs disk, a missing one breaks a campaign.
+      console.warn('[Media] Could not check whether an upload is in use:', err.message);
+      return true;
+    }
+  }
+  return JSON.stringify(readDataFile<any[]>('pages.json', [])).includes(filename);
+}
+
+function deleteFile(filename: string) {
+  const filePath = path.join(rootUploadDir, filename);
+  try {
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    removeVariants(rootUploadDir, filename);
+  } catch (err) {
+    console.warn('[Media] Could not delete file:', err);
+  }
+}
+
+/**
+ * Removes library entries. Files go too, except those a project still uses
+ * (unless force: the superadmin's "delete everything").
+ */
+async function removeMedia(items: ServerMediaItem[], force = false) {
+  const ids = new Set(items.map(i => i.id));
+  mediaAssets = mediaAssets.filter(m => !ids.has(m.id));
+  persistMedia();
+
+  const keptInUse: string[] = [];
+  for (const item of items) {
+    if (!item.filename) continue;
+    // Another library entry pointing at the same file keeps it alive.
+    if (mediaAssets.some(m => m.filename === item.filename)) continue;
+    if (!force && await isUploadInUse(item.filename)) {
+      keptInUse.push(item.id);
+      continue;
+    }
+    deleteFile(item.filename);
+  }
+  return { removed: [...ids], keptInUse };
+}
+
+// GET /api/media/usage - Which of this account's assets are used in a project
+mediaRouter.get('/usage', async (_req: Request, res: Response) => {
+  ensureHydrated();
+  const claims = getClaims(res);
+  const inUse: string[] = [];
+  for (const item of mediaAssets.filter(m => canSeeMedia(claims, m))) {
+    if (item.filename && await isUploadInUse(item.filename)) inUse.push(item.id);
+  }
+  res.json({ success: true, data: inUse });
+});
+
+// POST /api/media/bulk-delete - Remove several assets at once ({ ids })
+mediaRouter.post('/bulk-delete', async (req: Request, res: Response) => {
+  ensureHydrated();
+  const ids: string[] = Array.isArray(req.body?.ids) ? req.body.ids.map(String) : [];
+  if (!ids.length) return res.status(400).json({ success: false, message: 'ids must be a non-empty array.' });
+  const claims = getClaims(res);
+  const items = mediaAssets.filter(m => ids.includes(m.id) && canSeeMedia(claims, m));
+  const result = await removeMedia(items);
+  return res.json({ success: true, ...result });
+});
+
+// POST /api/media/purge - Superadmin: empty the whole library, files included,
+// even those campaigns still show (they lose those images).
+mediaRouter.post('/purge', async (_req: Request, res: Response) => {
+  ensureHydrated();
+  if (!isSuperAdminClaims(getClaims(res))) {
+    return res.status(403).json({ success: false, message: 'Only the superadmin can empty the media library.' });
+  }
+  const items = [...mediaAssets];
+  const result = await removeMedia(items, true);
+  return res.json({ success: true, removed: result.removed.length });
+});
+
+// 3. DELETE /api/media/:id - Remove one asset (file kept if a project uses it)
+mediaRouter.delete('/:id', async (req: Request, res: Response) => {
   ensureHydrated();
   const { id } = req.params;
-  const index = mediaAssets.findIndex(m => m.id === id);
+  const item = mediaAssets.find(m => m.id === id);
 
-  if (index === -1) {
+  // Another brand's asset is reported as missing, not as forbidden.
+  if (!item || !canSeeMedia(getClaims(res), item)) {
     return res.status(404).json({ success: false, message: 'Media asset not found' });
   }
 
-  const [removedItem] = mediaAssets.splice(index, 1);
-  persistMedia();
-
-  // If local file exists, remove it
-  if (removedItem?.filename) {
-    const filePath = path.join(rootUploadDir, removedItem.filename);
-    if (fs.existsSync(filePath)) {
-      try {
-        fs.unlinkSync(filePath);
-        removeVariants(rootUploadDir, removedItem.filename);
-      } catch (err) {
-        console.warn('Could not delete physical file:', err);
-      }
-    }
-  }
-
+  const result = await removeMedia([item]);
   return res.json({
     success: true,
     message: 'Media asset deleted successfully',
-    data: removedItem
+    data: item,
+    fileKept: result.keptInUse.length > 0
   });
 });
