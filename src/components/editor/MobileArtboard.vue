@@ -210,11 +210,18 @@
             >
               <!-- If image is provided and not in solid placeholder mode, display image background -->
               <template v-if="widget.props.imageUrl && !widget.props.isSolidSpace">
-                <!-- Ticket page: a background image, which the PDF capture reproduces faithfully (it ignores object-fit on <img>) -->
-                <div
+                <!-- Ticket page: an <img> placed and sized by hand. The PDF capture draws an <img> from the
+                     picture's full resolution, but ignores object-fit, and shrinks a CSS background to
+                     screen pixels before stretching it back up (soft, blocky banners). -->
+                <img
                   v-if="isTicketPage"
-                  class="w-full h-full absolute inset-0 bg-no-repeat bg-center"
-                  :style="{ backgroundImage: `url('${sizedUrl(widget.props.imageUrl, 1080)}')`, backgroundSize: ticketBannerSize(widget.props.mediaFit) }"
+                  :src="sizedUrl(widget.props.imageUrl, TICKET_BANNER_WIDTH)"
+                  alt="Ticket banner"
+                  class="absolute max-w-none pointer-events-none select-none"
+                  :style="ticketBannerStyle(widget)"
+                  crossorigin="anonymous"
+                  draggable="false"
+                  @load="rememberTicketBannerSize(widget.props.imageUrl, $event)"
                 />
                 <!-- Screen-sized AVIF/WebP from the upload, not the photoshoot original; blurred preview until it lands -->
                 <img 
@@ -1925,12 +1932,12 @@ more</span>
 
 <script setup lang="ts">
 import { clampLogoHeight, logoImageWidth, TICKET_LOGO_HEIGHT } from './logoSize.ts';
-import { ref, computed, watch, nextTick, onMounted, inject } from 'vue';
+import { ref, reactive, computed, watch, nextTick, onMounted, inject } from 'vue';
 import QRCode from 'qrcode';
 import { LIVE_PASS_KEY, SESSIONS_ANSWER_KEY, type PassSession } from './livePass.ts';
 import { normalizeCtaAction } from './ctaActions.ts';
 import { responsiveImgAttrs, placeholderStyle, sizedUrl } from '../../services/responsiveImage.ts';
-import { TICKET_CONTEXT_KEY, TICKET_SOURCE_KEY, ticketFieldMeta, type TicketFieldKey } from './ticket/ticketFields.ts';
+import { TICKET_CONTEXT_KEY, TICKET_SOURCE_KEY, TICKET_CANVAS, ticketFieldMeta, type TicketFieldKey } from './ticket/ticketFields.ts';
 import { blackenLogo } from './ticket/blackLogo.ts';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
@@ -2857,11 +2864,40 @@ function getOverlayStyle(props: any) {
   }
 }
 
-/** background-size equivalent of getMediaFitClass, for Ticket page banners. */
-function ticketBannerSize(fit?: string): string {
-  if (fit === 'Fit to screen' || fit === 'fit') return 'contain';
-  if (fit === 'Center' || fit === 'center') return 'auto';
-  return 'cover';
+/** Width of the picture requested for a Ticket banner: more than the 3× capture of the 340 px ticket needs. */
+const TICKET_BANNER_WIDTH = 1600;
+const ticketBannerNatural = reactive<Record<string, { w: number; h: number }>>({});
+
+function rememberTicketBannerSize(url: string, event: Event) {
+  const img = event.target as HTMLImageElement;
+  if (img?.naturalWidth) ticketBannerNatural[url] = { w: img.naturalWidth, h: img.naturalHeight };
+}
+
+/** Width ÷ height of a banner ratio such as "16:9". */
+function ratioValue(ratio?: string): number {
+  const match = /^(\d+(?:\.\d+)?):(\d+(?:\.\d+)?)$/.exec(String(ratio || ''));
+  return match ? Number(match[1]) / Number(match[2]) : 16 / 9;
+}
+
+/**
+ * Where a Ticket banner's picture goes inside its box: what object-fit
+ * (cover / contain / none) would do, worked out by hand because the PDF
+ * capture does not support object-fit.
+ */
+function ticketBannerStyle(widget: any): Record<string, string> {
+  const natural = ticketBannerNatural[widget.props.imageUrl];
+  if (!natural) return { left: '0', top: '0', width: '100%', height: '100%', opacity: '0' }; // until its size is known
+  const boxW = TICKET_CANVAS.width;
+  const boxH = boxW / ratioValue(heroRatio(widget));
+  const fit = widget.props.mediaFit;
+  const scale = (fit === 'Fit to screen' || fit === 'fit')
+    ? Math.min(boxW / natural.w, boxH / natural.h)
+    : (fit === 'Center' || fit === 'center')
+      ? 1
+      : Math.max(boxW / natural.w, boxH / natural.h);
+  const w = natural.w * scale;
+  const h = natural.h * scale;
+  return { width: `${w}px`, height: `${h}px`, left: `${(boxW - w) / 2}px`, top: `${(boxH - h) / 2}px` };
 }
 
 /** The blurred preview only suits cover-fit banners; letterboxed ones would show it around the image. */
