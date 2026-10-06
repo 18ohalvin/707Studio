@@ -44,6 +44,10 @@ notificationsRouter.get('/', async (_req: Request, res: Response) => {
           project_id: e.page_id,
           project_title: p.title,
           brand_slug: p.brand_slug,
+          // Shareable public path while the campaign is live (its published slug).
+          live_path: p.live_version > 0 || ['approved', 'published'].includes(p.status)
+            ? `/${encodeURIComponent(String(p.brand_slug || '').toLowerCase())}/${encodeURIComponent(String(p.live_snapshot?.slug || p.slug || ''))}`
+            : null,
           revision: e.revision,
           live_version: e.live_version,
           // Submitted while a version was already live: an update, not a first publish.

@@ -73,3 +73,29 @@ describe('Ticket page (PDF ticket design)', () => {
     expect(store.currentPage.widget_tree.some(w => w.id === banner.id)).toBe(false);
   });
 });
+
+describe('Deleting the open project', () => {
+  beforeEach(() => {
+    const store: Record<string, string> = {};
+    (globalThis as any).localStorage = {
+      getItem: (k: string) => store[k] || null,
+      setItem: (k: string, v: string) => { store[k] = String(v); },
+      removeItem: (k: string) => { delete store[k]; }
+    };
+    setActivePinia(createPinia());
+  });
+
+  it('does not leave an "Untitled Activation Drop" ghost behind', async () => {
+    const store = useEditorStore();
+    const project = store.createNewProject('DNA Night 2026', 'dna-night-2026');
+    expect(store.currentProjectId).toBe(project.id);
+
+    await store.deleteProject(project.id);
+    // What the autosave watcher does after the editor is reset
+    const saved = await store.saveCurrentProject();
+
+    expect(saved).toBeNull();
+    expect(store.projects.some(p => p.title === 'Untitled Activation Drop')).toBe(false);
+    expect(store.projects.length).toBe(0);
+  });
+});

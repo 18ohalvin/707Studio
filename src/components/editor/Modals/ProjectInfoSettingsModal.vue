@@ -57,9 +57,27 @@
                 @input="handleSlugInput"
               />
             </div>
-            <p class="font-707 text-[11px] text-neutral-500">
-              Live link: <code class="text-neutral-707 font-mono font-medium">events.707.co.id/{{ brandSlug }}/{{ slug || 'your-slug' }}</code>
-            </p>
+            <!-- The real public link, copyable once the campaign is live -->
+            <div class="flex items-center gap-2 w-full rounded-[8px] bg-black/[0.04] border border-black/5 px-3 py-2">
+              <div class="flex flex-col min-w-0 flex-1">
+                <span class="font-707 text-[10.5px] uppercase tracking-wider" :class="projectIsLive ? 'text-emerald-700' : 'text-neutral-500'">
+                  {{ projectIsLive ? 'Live link' : 'Link — works once published' }}
+                </span>
+                <span class="font-707 text-[12px] text-black truncate font-mono" :title="publicLink">{{ publicLink }}</span>
+              </div>
+              <button
+                type="button"
+                :disabled="!projectIsLive"
+                @click="copy('settings', publicLink)"
+                class="shrink-0 h-[30px] px-3 rounded-[7px] text-[12px] font-707 font-medium flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed transition-colors"
+                :class="projectIsLive ? 'bg-black text-white hover:bg-neutral-800' : 'bg-black/5 text-neutral-400'"
+                :title="projectIsLive ? 'Copy the public link' : 'Only published campaigns have a public link'"
+              >
+                <Check v-if="copiedKey === 'settings'" class="w-3.5 h-3.5" />
+                <LinkIcon v-else class="w-3.5 h-3.5" />
+                {{ copiedKey === 'settings' ? 'Copied' : 'Copy' }}
+              </button>
+            </div>
           </div>
 
           <!-- Actions -->
@@ -86,7 +104,8 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
-import { Sliders } from 'lucide-vue-next';
+import { Sliders, Check, Link as LinkIcon } from 'lucide-vue-next';
+import { isProjectLive, liveLinkFor, absoluteLink, campaignPath, useCopiedFlag } from '../../../services/campaignLink.ts';
 import { useEditorStore } from '../../../stores/editorStore.ts';
 import { useBrandStore } from '../../../stores/brandStore.ts';
 import { useAuthStore } from '../../../stores/authStore.ts';
@@ -105,6 +124,16 @@ const authStore = useAuthStore();
 
 const title = ref('');
 const slug = ref('');
+
+const currentProject = computed(() => editorStore.projects.find(p => p.id === editorStore.currentProjectId) || null);
+const projectIsLive = computed(() => isProjectLive(currentProject.value));
+// Live: the address visitors use today. Not yet live: where it will be.
+const publicLink = computed(() =>
+  projectIsLive.value && currentProject.value
+    ? liveLinkFor(currentProject.value)
+    : absoluteLink(campaignPath(currentProject.value?.brand_slug || brandSlug.value, slug.value || 'your-slug'))
+);
+const { copiedKey, copy } = useCopiedFlag();
 
 const brandSlug = computed(() => {
   const userBrand = authStore.currentUser?.assignedBrands?.[0];

@@ -87,7 +87,7 @@
             <!-- Content Title & Subheadline -->
             <div class="flex flex-col gap-[2px] items-start text-black min-w-0" data-node-id="184:6179" data-name="Content">
               <p class="font-707 font-medium text-[14px] leading-[18px] truncate w-full" data-node-id="184:6176">
-                Widget {{ index + 1 }}: {{ getWidgetDisplayName(widget) }}
+                {{ isTicketPage ? 'Block' : 'Widget' }} {{ index + 1 }}: {{ getWidgetDisplayName(widget) }}
               </p>
               <p class="font-707 font-normal text-[12px] leading-[16px] text-neutral-500 uppercase tracking-wider truncate w-full" data-node-id="184:6177">
                 {{ getWidgetSummary(widget) }}
@@ -134,11 +134,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import type { WidgetItem } from '../../types/editor.ts';
 import { GripVertical, SlidersHorizontal, Copy, Trash2, Layers } from 'lucide-vue-next';
+import { ticketFieldMeta } from './ticket/ticketFields.ts';
 
 defineProps<{
   isOpen: boolean;
@@ -152,11 +153,35 @@ const editorStore = useEditorStore();
 const draggedItemIndex = ref<number | null>(null);
 const dragOverIndex = ref<number | null>(null);
 const hoveredIndex = ref<number | null>(null);
+const isTicketPage = computed(() => editorStore.currentPage?.kind === 'ticket');
+
+/** "Guest Name + Guest Type", "QR Code", "Access ID + 2 more" — what a ticket data block shows. */
+function ticketFieldsLabel(widget: WidgetItem): string {
+  const fields: string[] = Array.isArray(widget.props?.fields) ? widget.props.fields : [];
+  const labels = fields.map(f => ticketFieldMeta(f).label);
+  if (!labels.length) return 'Ticket Data';
+  if (labels.length <= 2) return labels.join(' + ');
+  return `${labels.slice(0, 2).join(' + ')} + ${labels.length - 2} more`;
+}
+
+function ratioLabel(ratio?: string): string {
+  if (!ratio || ratio === 'Full screen landing page') return 'Full screen';
+  return ratio;
+}
+
+/** File name of an image URL, for telling banners apart. */
+function imageName(url?: string): string {
+  if (!url || url.startsWith('data:')) return url ? 'UPLOADING IMAGE' : '';
+  const file = url.split('?')[0].split('/').pop() || '';
+  return file.replace(/^upload_\d+_/, '').replace(/^inline_/, '');
+}
 
 function getWidgetDisplayName(widget: WidgetItem): string {
   switch (widget.type) {
+    case 'TicketField':
+      return ticketFieldsLabel(widget);
     case 'TextBanner':
-      return 'Text Tool';
+      return widget.props.text ? 'Text' : 'Text (empty)';
     case 'ActionButton':
       return 'Action Button';
     case 'MultipleChoice':
@@ -168,7 +193,8 @@ function getWidgetDisplayName(widget: WidgetItem): string {
     case 'FieldInput':
       return widget.props.label ? `${widget.props.label} Field` : 'Form Input';
     case 'HeroDrop':
-      return widget.props.ratio === 'Buttons' ? 'Button CTA' : 'Hero Banner';
+      if (widget.props.ratio === 'Buttons') return 'Button CTA';
+      return isTicketPage.value ? `Banner ${ratioLabel(widget.props.ratio === 'Full screen landing page' || widget.props.ratio === 'Dynamic Fit' ? '16:9' : widget.props.ratio)}` : `Hero Banner ${ratioLabel(widget.props.ratio)}`;
     case 'RaffleForm':
       return 'Raffle Form';
     case 'RsvpForm':
@@ -192,10 +218,16 @@ function getWidgetDisplayName(widget: WidgetItem): string {
 
 function getWidgetSummary(widget: WidgetItem): string {
   switch (widget.type) {
+    case 'TicketField': {
+      const fields: string[] = Array.isArray(widget.props?.fields) ? widget.props.fields : [];
+      const kind = fields.length === 1 && ticketFieldMeta(fields[0]).solo ? 'TICKET BLOCK' : `TICKET DATA · ${fields.length} FIELD${fields.length === 1 ? '' : 'S'}`;
+      const align = widget.props?.align && widget.props.align !== 'left' ? ` · ${String(widget.props.align).toUpperCase()}` : '';
+      return kind + align;
+    }
     case 'GuestEPass':
       return widget.props.heading ? widget.props.heading.replace(/\n/g, ' ') : 'GUEST E-PASS SUMMARY';
     case 'TextBanner':
-      return widget.props.text || widget.props.placeholder || 'STANLEY FAVORITE BEST OF THE BEST';
+      return widget.props.text ? String(widget.props.text).replace(/\n/g, ' ') : 'NO TEXT YET';
     case 'ActionButton':
       return widget.props.label || 'BUTTON CTA';
     case 'MultipleChoice':
@@ -210,7 +242,8 @@ function getWidgetSummary(widget: WidgetItem): string {
       if (widget.props.ratio === 'Buttons') {
         return widget.props.buttonText || widget.props.ctaLabel || 'ACTION CTA';
       }
-      return widget.props.headline || widget.props.title || (widget.props.isSolidSpace ? 'SOLID SPACE BANNER' : 'STANLEY FAVORITE BEST OF THE BEST');
+      return widget.props.headline || widget.props.title
+        || (widget.props.isSolidSpace || !widget.props.imageUrl ? 'NO IMAGE YET' : imageName(widget.props.imageUrl).toUpperCase());
     case 'RaffleForm':
       return widget.props.heading || widget.props.title || 'REGISTRATION FORM';
     case 'RsvpForm':
@@ -238,6 +271,8 @@ function handleSelectLayer(widget: WidgetItem) {
     editorStore.openModalSidebar();
   } else if (widget.type === 'GuestEPass') {
     editorStore.openEPassSidebar();
+  } else if (widget.type === 'TicketField') {
+    editorStore.openTicketSidebar();
   }
 }
 
@@ -257,6 +292,8 @@ function handleAdjustLayer(widget: WidgetItem) {
     editorStore.openModalSidebar();
   } else if (widget.type === 'GuestEPass') {
     editorStore.openEPassSidebar();
+  } else if (widget.type === 'TicketField') {
+    editorStore.openTicketSidebar();
   }
 }
 

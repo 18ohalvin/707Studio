@@ -1337,6 +1337,11 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   async function deleteProject(projectId: string) {
+    // A save queued for the project being deleted must not run after it.
+    if (currentProjectId.value === projectId && saveDebounceTimer) {
+      clearTimeout(saveDebounceTimer);
+      saveDebounceTimer = null;
+    }
     projects.value = projects.value.filter(p => p.id !== projectId);
     persistProjectsLocally();
     broadcastProjectUpdate();
@@ -1516,6 +1521,12 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   async function saveCurrentProject(): Promise<ProjectItem | null> {
+    // Saving only ever updates the open project; projects are created by
+    // New Project / Duplicate / templates, which give them an id. Without
+    // this, deleting the open project reset the editor to a blank
+    // "Untitled Activation Drop", autosave saw no id and created a new
+    // project from it — the ghost that appeared after every delete.
+    if (!currentProjectId.value) return null;
     isSaving.value = true;
     await uploadInlineImages();
     const now = new Date().toISOString();

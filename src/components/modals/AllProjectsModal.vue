@@ -193,6 +193,15 @@
 
                 <div class="flex items-center gap-1" @click.stop>
                   <button 
+                    v-if="isProjectLive(project)"
+                    @click="copy(project.id, liveLinkFor(project))"
+                    class="p-1.5 rounded-[6px] hover:bg-black/5 text-neutral-600 hover:text-black transition-colors"
+                    :title="copiedKey === project.id ? 'Copied' : `Copy live link: ${liveLinkFor(project)}`"
+                  >
+                    <Check v-if="copiedKey === project.id" class="w-3.5 h-3.5 text-emerald-600" />
+                    <LinkIcon v-else class="w-3.5 h-3.5" />
+                  </button>
+                  <button 
                     @click="handleDuplicate(project)"
                     class="p-1.5 rounded-[6px] hover:bg-black/5 text-neutral-600 hover:text-black transition-colors"
                     title="Duplicate Project"
@@ -268,6 +277,15 @@
               <!-- Actions -->
               <div class="flex items-center gap-1 shrink-0 ml-4" @click.stop>
                 <button 
+                  v-if="isProjectLive(project)"
+                  @click="copy(project.id, liveLinkFor(project))"
+                  class="p-1.5 rounded-[6px] hover:bg-black/5 text-neutral-500 hover:text-black transition-colors"
+                  :title="copiedKey === project.id ? 'Copied' : `Copy live link: ${liveLinkFor(project)}`"
+                >
+                  <Check v-if="copiedKey === project.id" class="w-3.5 h-3.5 text-emerald-600" />
+                  <LinkIcon v-else class="w-3.5 h-3.5" />
+                </button>
+                <button 
                   @click="handleDuplicate(project)"
                   class="p-1.5 rounded-[6px] hover:bg-black/5 text-neutral-500 hover:text-black transition-colors"
                   title="Duplicate"
@@ -317,6 +335,8 @@
 </template>
 
 <script setup lang="ts">
+import { isProjectLive, liveLinkFor, useCopiedFlag } from '../../services/campaignLink.ts';
+import { Check, Link as LinkIcon } from 'lucide-vue-next';
 import { sizedUrl } from '../../services/responsiveImage.ts';
 import { glassConfirm } from '../../services/glassDialog.ts';
 import { ref, computed, watch, onMounted } from 'vue';
@@ -348,6 +368,8 @@ const emit = defineEmits<{
 
 const router = useRouter();
 const editorStore = useEditorStore();
+// Live projects get a one-click copy of their public link.
+const { copiedKey, copy } = useCopiedFlag();
 const authStore = useAuthStore();
 const brandStore = useBrandStore();
 

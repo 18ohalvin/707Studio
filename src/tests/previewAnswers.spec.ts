@@ -41,6 +41,7 @@ describe('Editor designs, Preview tests — answers never become the design', ()
       return new Response(JSON.stringify({ success: true }), { status: 200 });
     });
     const store = useEditorStore();
+    store.currentProjectId = 'proj_answers_test';
     const field = store.addWidget('FieldInput', undefined, { label: 'Name' })!;
     store.currentPage.widget_tree.find(w => w.id === field.id)!.props.value = 'Typed In Canvas';
 

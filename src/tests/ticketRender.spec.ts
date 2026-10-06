@@ -91,4 +91,21 @@ describe('Ticket page rendering', () => {
     expect(wrapper.html()).toContain('aspect-video');
     expect(wrapper.html()).not.toContain('min-h-[calc(100dvh-48px)]');
   });
+
+  it('names each Ticket layer by what it shows', async () => {
+    const { default: LayersSidebar } = await import('../components/editor/LayersSidebar.vue');
+    const store = useEditorStore();
+    store.ensureTicketPage();
+    store.selectPage(store.ticketPageIndex);
+    const wrapper = mount(LayersSidebar, { props: { isOpen: true }, global: { plugins: [pinia] } });
+    await flushPromises();
+    const text = wrapper.text();
+    expect(text).toContain('Brand Logo');
+    expect(text).toContain('QR Code');
+    expect(text).toContain('Guest Name + Guest Type');
+    expect(text).toContain('Access ID + Venue');
+    expect(text).toContain('Access Valid For');
+    expect(text).not.toContain('TicketField');
+    expect(text).not.toContain('CAMPAIGN BLOCK');
+  });
 });

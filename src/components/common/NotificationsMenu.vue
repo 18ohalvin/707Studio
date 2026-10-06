@@ -44,6 +44,19 @@
               v-if="item.still_pending"
               class="shrink-0 text-[10.5px] px-1.5 py-0.5 rounded-[5px] bg-black text-white mt-0.5"
             >Review</span>
+            <span
+              v-else-if="item.live_path"
+              role="button"
+              tabindex="0"
+              @click.stop="copy(item.id, absoluteLink(item.live_path))"
+              @keydown.enter.stop.prevent="copy(item.id, absoluteLink(item.live_path))"
+              class="shrink-0 h-[24px] px-2 rounded-[6px] border border-black/10 hover:bg-black/5 flex items-center gap-1 text-[10.5px] text-neutral-700 mt-0.5"
+              :title="`Copy live link: ${absoluteLink(item.live_path)}`"
+            >
+              <Check v-if="copiedKey === item.id" class="w-3 h-3 text-emerald-600" />
+              <LinkIcon v-else class="w-3 h-3" />
+              {{ copiedKey === item.id ? 'Copied' : 'Link' }}
+            </span>
           </button>
         </div>
       </div>
@@ -53,6 +66,8 @@
 </template>
 
 <script setup lang="ts">
+import { Check, Link as LinkIcon } from 'lucide-vue-next';
+import { useCopiedFlag, absoluteLink } from '../../services/campaignLink.ts';
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import NotificationBell from './NotificationBell.vue';
@@ -72,7 +87,11 @@ interface NotificationItem {
   created_by?: string;
   created_at: string;
   still_pending?: boolean;
+  /** Public path while the campaign is live, e.g. /atmos/drop. */
+  live_path?: string | null;
 }
+
+const { copiedKey, copy } = useCopiedFlag();
 
 const router = useRouter();
 const authStore = useAuthStore();
