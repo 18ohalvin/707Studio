@@ -156,8 +156,8 @@
 
     <!-- In-Editor Project Info Settings Modal (Title & Slug) -->
     <ProjectInfoSettingsModal
-      :is-open="showProjectSettingsModal"
-      @close="showProjectSettingsModal = false"
+      :is-open="showProjectSettingsModal || editorStore.isProjectSettingsOpen"
+      @close="showProjectSettingsModal = false; editorStore.isProjectSettingsOpen = false"
     />
 
     <!-- Media Gallery Side Drawer (Figma Node 171:5023) -->

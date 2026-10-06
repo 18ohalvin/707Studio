@@ -128,7 +128,8 @@ watch(
   (open) => {
     if (open) {
       title.value = editorStore.projectTitle;
-      slug.value = editorStore.currentPage?.slug || '';
+      const proj = editorStore.projects.find(p => p.id === editorStore.currentProjectId);
+      slug.value = proj?.slug || editorStore.pages[0]?.slug || editorStore.currentPage?.slug || '';
     }
   },
   { immediate: true }
@@ -142,11 +143,14 @@ function handleSlugInput(e: Event) {
 function handleSave() {
   if (!title.value.trim()) return;
 
+  const cleanSlug = slug.value.trim() || 'drop';
   editorStore.projectTitle = title.value.trim();
-  if (editorStore.currentPage) {
-    editorStore.currentPage.slug = slug.value.trim() || 'drop';
-    if (editorStore.currentPage.page_settings) {
-      editorStore.currentPage.page_settings.seoTitle = title.value.trim();
+
+  // Always keep master landing page slug aligned with project slug
+  if (editorStore.pages[0]) {
+    editorStore.pages[0].slug = cleanSlug;
+    if (editorStore.pages[0].page_settings) {
+      editorStore.pages[0].page_settings.seoTitle = title.value.trim();
     }
   }
 
@@ -154,12 +158,12 @@ function handleSave() {
   const proj = editorStore.projects.find(p => p.id === editorStore.currentProjectId);
   if (proj) {
     proj.title = title.value.trim();
-    proj.slug = slug.value.trim() || 'drop';
+    proj.slug = cleanSlug;
     proj.updated_at = new Date().toISOString();
   }
 
   editorStore.saveCurrentProject();
-  editorStore.showToast('Project title and slug saved.');
+  editorStore.showToast('Project title and campaign slug saved.');
   emit('close');
 }
 </script>

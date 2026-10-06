@@ -35,8 +35,9 @@ function openLivePreview() {
     raw = userBrand || 'events';
   }
   const brandSlug = raw.toLowerCase().replace(/[^a-z0-9_-]/g, '') || 'events';
-  const pageSlug = editorStore.currentPage?.slug || '';
-  const url = `https://events.707.co.id/${brandSlug}/${pageSlug}`;
+  const currentProj = editorStore.projects.find(p => p.id === editorStore.currentProjectId);
+  const campaignSlug = currentProj?.slug || editorStore.pages[0]?.slug || editorStore.currentPage?.slug || '';
+  const url = `https://events.707.co.id/${brandSlug}/${campaignSlug}`;
   window.open(url, '_blank');
 }
 </script>

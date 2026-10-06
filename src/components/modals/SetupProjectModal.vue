@@ -57,7 +57,7 @@
               data-node-id="224:9602"
             >
               <span class="font-707 text-[14px] text-[#aaa] shrink-0 select-none" data-node-id="224:9607">
-                events.707.co.id/
+                events.707.co.id/{{ targetBrandSlug }}/
               </span>
               <input 
                 v-model="campaignSlug"
@@ -88,7 +88,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { X } from 'lucide-vue-next';
 import { useEditorStore } from '../../stores/editorStore.ts';
@@ -107,6 +107,19 @@ const router = useRouter();
 const editorStore = useEditorStore();
 const authStore = useAuthStore();
 const brandStore = useBrandStore();
+
+const targetBrandSlug = computed(() => {
+  const userBrand = authStore.currentUser?.assignedBrands?.[0];
+  let raw = '';
+  if (!authStore.isSuperAdmin && userBrand && userBrand !== 'all') {
+    raw = userBrand;
+  } else if (brandStore.activeBrand?.slug) {
+    raw = brandStore.activeBrand.slug;
+  } else {
+    raw = userBrand || 'brand';
+  }
+  return raw.toLowerCase().replace(/[^a-z0-9_-]/g, '') || 'brand';
+});
 
 const campaignName = ref('');
 const campaignSlug = ref('');

@@ -41,6 +41,8 @@
       <main 
         class="w-full md:max-w-[440px] min-h-[100dvh] h-[100dvh] bg-white flex flex-col md:shadow-[0_24px_80px_rgba(0,0,0,0.4)] relative flex-1"
         style="-webkit-overflow-scrolling: touch;"
+        @touchstart="handleTouchStart"
+        @touchend="handleTouchEnd"
       >
         <MobileArtboard 
           :key="currentPageData.id || activePageIndex"
@@ -54,12 +56,22 @@
           @prev-page="handlePrevPage"
         />
       </main>
+
+      <!-- Floating Toast Notification for Live Drop -->
+      <Transition name="apple-toast-pop">
+        <div 
+          v-if="editorStore.activeToastMessage" 
+          class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-full bg-neutral-900/95 backdrop-blur-md text-white text-xs font-707 flex items-center shadow-2xl border border-white/10 select-none pointer-events-none tracking-wide"
+        >
+          <span>{{ editorStore.activeToastMessage }}</span>
+        </div>
+      </Transition>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { AlertCircle } from 'lucide-vue-next';
 import MobileArtboard from '../components/editor/MobileArtboard.vue';
@@ -187,6 +199,30 @@ async function loadPage() {
   isLoading.value = false;
 }
 
+// Touch swipe gesture detection for native iOS / Android back gesture
+let touchStartX = 0;
+let touchStartY = 0;
+
+function handleTouchStart(e: TouchEvent) {
+  if (e.touches && e.touches[0]) {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }
+}
+
+function handleTouchEnd(e: TouchEvent) {
+  if (e.changedTouches && e.changedTouches[0]) {
+    const deltaX = e.changedTouches[0].clientX - touchStartX;
+    const deltaY = e.changedTouches[0].clientY - touchStartY;
+    // Edge swipe right (from left edge: touchStartX < 120px, swipe distance > 65px with low vertical jitter)
+    if (deltaX > 65 && Math.abs(deltaY) < 50 && touchStartX < 120) {
+      if (activePageIndex.value > 0) {
+        handlePrevPage();
+      }
+    }
+  }
+}
+
 function handleNextPage(pageFormData?: Record<string, any>) {
   if (pageFormData && typeof pageFormData === 'object') {
     Object.assign(collectedFormData.value, pageFormData);
@@ -194,6 +230,10 @@ function handleNextPage(pageFormData?: Record<string, any>) {
 
   // Check if there are more steps in the activation funnel
   if (activePageIndex.value < projectPages.value.length - 1) {
+    // Push history state so Android hardware back button & iOS Safari swipe back gracefully decrement steps
+    if (typeof window !== 'undefined' && window.history) {
+      window.history.pushState({ stepIndex: activePageIndex.value + 1 }, '', window.location.href);
+    }
     activePageIndex.value++;
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -219,6 +259,13 @@ function handleNextPage(pageFormData?: Record<string, any>) {
 }
 
 function handlePrevPage() {
+  if (activePageIndex.value > 0) {
+    activePageIndex.value--;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function handlePopState() {
   if (activePageIndex.value > 0) {
     activePageIndex.value--;
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -257,6 +304,15 @@ function applySeo(page: ActivationPage) {
 
 onMounted(() => {
   loadPage();
+  if (typeof window !== 'undefined') {
+    window.addEventListener('popstate', handlePopState);
+  }
+});
+
+onUnmounted(() => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('popstate', handlePopState);
+  }
 });
 
 watch(

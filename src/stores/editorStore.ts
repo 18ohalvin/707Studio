@@ -188,6 +188,7 @@ export const useEditorStore = defineStore('editor', () => {
   const isReviewModalOpen = ref<boolean>(false);
   const isTestFormModalOpen = ref<boolean>(false);
   const isRequestWidgetModalOpen = ref<boolean>(false);
+  const isProjectSettingsOpen = ref<boolean>(false);
 
   // Floating Toast Notification
   const activeToastMessage = ref<string | null>(null);
@@ -1245,6 +1246,77 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
+  async function duplicateProject(projectId: string): Promise<ProjectItem | null> {
+    const sourceProj = projects.value.find(p => p.id === projectId);
+    if (!sourceProj) return null;
+
+    const authStore = useAuthStore();
+    const id = `proj-${Date.now()}`;
+    const now = new Date().toISOString();
+    const newTitle = `${sourceProj.title} (Copy)`;
+    const newSlug = `${sourceProj.slug || 'drop'}-copy`.replace(/-+/g, '-');
+
+    const sourcePages = (sourceProj.pages && sourceProj.pages.length > 0)
+      ? sourceProj.pages
+      : [
+          {
+            id: `page_${Date.now()}`,
+            brand_id: sourceProj.brand_id || '1',
+            brand_slug: sourceProj.brand_slug || 'atmos',
+            title: 'Landing Page',
+            page_name: 'Landing Page',
+            slug: newSlug,
+            description: sourceProj.description || '',
+            status: 'draft' as const,
+            current_version: 1,
+            widget_tree: sourceProj.widget_tree || [],
+            page_settings: sourceProj.page_settings,
+            created_at: now,
+            updated_at: now
+          }
+        ];
+
+    const clonedPages: ActivationPage[] = sourcePages.map((p, idx) => ({
+      ...JSON.parse(JSON.stringify(p)),
+      id: `page_${Date.now()}_${idx}`,
+      slug: idx === 0 ? newSlug : (p.slug || `page-${idx + 1}`),
+      status: 'draft' as const,
+      current_version: 1,
+      created_at: now,
+      updated_at: now
+    }));
+
+    const newProject: ProjectItem = {
+      id,
+      title: newTitle,
+      brand_slug: sourceProj.brand_slug,
+      slug: newSlug,
+      status: 'draft',
+      current_version: 1,
+      widget_tree: JSON.parse(JSON.stringify(clonedPages[0]?.widget_tree || [])),
+      pages: clonedPages,
+      page_settings: clonedPages[0]?.page_settings,
+      owner_id: authStore.currentUser?.id || sourceProj.owner_id || '',
+      owner_email: authStore.currentUser?.email || sourceProj.owner_email || '',
+      created_by: authStore.currentUser?.name || authStore.currentUser?.email || 'User',
+      created_at: now,
+      updated_at: now
+    };
+
+    projects.value.unshift(newProject);
+    persistProjectsLocally();
+    broadcastProjectUpdate();
+
+    apiFetch('/api/pages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newProject),
+      keepalive: true
+    }).catch(err => console.warn('Failed to sync duplicated project to API:', err));
+
+    return newProject;
+  }
+
   /**
    * Replaces any embedded base64 image in the live pages with an uploaded URL.
    *
@@ -1343,17 +1415,28 @@ export const useEditorStore = defineStore('editor', () => {
     if (currentPage.value) {
       currentPage.value.brand_slug = resolvedBrandSlug;
     }
+
+    const cleanProjectTitle = projectTitle.value.trim() || 'Untitled Activation Drop';
+    const cleanProjectSlug = cleanProjectTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    // Master campaign slug must ALWAYS represent the landing page (Page 0) or existing project slug,
+    // never an ephemeral sub-page slug like 'page-2' or 'page-3'.
+    const masterSlug = existingProj?.slug || pages.value[0]?.slug || cleanProjectSlug || 'untitled-drop';
+    if (pages.value[0] && (!pages.value[0].slug || pages.value[0].slug.startsWith('page-'))) {
+      pages.value[0].slug = masterSlug;
+    }
+    const masterWidgets = pages.value[0]?.widget_tree || currentPage.value?.widget_tree || [];
+    const masterStatus = existingProj?.status || pages.value[0]?.status || currentPage.value?.status || 'draft';
     
     const projectData: ProjectItem = {
       id: currentProjectId.value || `proj-${Date.now()}`,
-      title: projectTitle.value.trim() || 'Untitled Activation Drop',
+      title: cleanProjectTitle,
       brand_slug: resolvedBrandSlug,
-      slug: currentPage.value?.slug || 'untitled-drop',
-      status: currentPage.value?.status || 'draft',
+      slug: masterSlug,
+      status: masterStatus,
       current_version: currentPage.value?.current_version || 1,
-      widget_tree: JSON.parse(JSON.stringify(currentPage.value?.widget_tree || [])),
+      widget_tree: JSON.parse(JSON.stringify(masterWidgets)),
       pages: JSON.parse(JSON.stringify(pages.value)),
-      page_settings: currentPage.value?.page_settings,
+      page_settings: pages.value[0]?.page_settings || currentPage.value?.page_settings,
       owner_id: existingProj?.owner_id || authStore.currentUser?.id || (authStore.isSuperAdmin ? 'superadmin_master' : ''),
       owner_email: existingProj?.owner_email || authStore.currentUser?.email || (authStore.isSuperAdmin ? 'admin@707designstudio.internal' : ''),
       created_by: existingProj?.created_by || authStore.currentUser?.name || authStore.currentUser?.email || (authStore.isSuperAdmin ? 'Superadmin' : ''),
@@ -1596,6 +1679,7 @@ export const useEditorStore = defineStore('editor', () => {
     saveCurrentProject,
     flushPendingSave,
     deleteProject,
+    duplicateProject,
     createNewProject,
     openProjectById,
     formatRelativeTime,
@@ -1642,6 +1726,7 @@ export const useEditorStore = defineStore('editor', () => {
     isReviewModalOpen,
     isTestFormModalOpen,
     isRequestWidgetModalOpen,
+    isProjectSettingsOpen,
     isProjectLoading,
     triggerProjectLoading,
     canUndo,

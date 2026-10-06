@@ -164,8 +164,11 @@ function handleAnalytics() {
 }
 
 function handleSettings() {
-  editorStore.activeTab = 'settings';
-  editorStore.isReviewModalOpen = true;
+  if (authStore.isSuperAdmin) {
+    router.push('/settings');
+  } else {
+    editorStore.isProjectSettingsOpen = true;
+  }
 }
 
 async function handleSignOut() {

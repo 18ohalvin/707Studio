@@ -465,10 +465,11 @@ function handleCreateNew() {
   emit('open-setup-modal');
 }
 
-function handleDuplicate(project: ProjectItem) {
-  const newTitle = `${project.title} (Copy)`;
-  editorStore.createNewProject(newTitle, undefined, project.widget_tree, project.brand_slug);
-  editorStore.showToast(`Duplicated "${project.title}".`);
+async function handleDuplicate(project: ProjectItem) {
+  const duplicated = await editorStore.duplicateProject(project.id);
+  if (duplicated) {
+    editorStore.showToast(`Duplicated "${project.title}" with all campaign pages.`);
+  }
 }
 
 async function handleDelete(project: ProjectItem) {

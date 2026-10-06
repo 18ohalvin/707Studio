@@ -124,7 +124,8 @@ const campaignUrl = computed(() => {
   }
 
   const brandSlug = slugify(rawBrand) || 'events';
-  const projectSlug = slugify(editorStore.projectTitle) || editorStore.currentPage?.slug || 'campaign-activation';
+  const currentProj = editorStore.projects.find(p => p.id === editorStore.currentProjectId);
+  const projectSlug = currentProj?.slug || editorStore.pages[0]?.slug || slugify(editorStore.projectTitle) || 'campaign-activation';
   return `events.707.co.id/${brandSlug}/${projectSlug}`;
 });
 

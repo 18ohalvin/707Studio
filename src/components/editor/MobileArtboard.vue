@@ -2506,7 +2506,12 @@ function handleButtonClick(widget: any) {
       buttonVariant: 'black'
     };
   } else if (actionType === 'download-pass') {
-    editorStore.showToast('Downloading E-Pass...');
+    editorStore.showToast('Preparing your digital pass...');
+    if (typeof window !== 'undefined') {
+      setTimeout(() => {
+        window.print();
+      }, 350);
+    }
   }
 }
 
