@@ -46,12 +46,15 @@
       </div>
 
       <!-- Live Mobile Screen Viewport (Interactive & Realistic) -->
-      <div class="flex-1 w-full flex flex-col overflow-hidden relative bg-white">
+      <div class="flex-1 w-full h-full min-h-0 flex flex-col overflow-hidden relative bg-white">
         <MobileArtboard 
+          :key="editorStore.currentPage?.id || editorStore.activePageIndex"
           :page="editorStore.currentPage" 
           :page-index="editorStore.activePageIndex"
           :is-selected="false"
           :is-preview-modal="true"
+          :is-live-page="false"
+          class="w-full h-full min-h-0 flex-1"
         />
       </div>
 

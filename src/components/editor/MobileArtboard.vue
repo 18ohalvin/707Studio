@@ -2,9 +2,11 @@
   <div 
     class="relative select-none"
     :class="[
-      (isPreviewModal || isLivePage) 
+      isLivePage 
         ? 'w-full h-full min-h-[100dvh] flex flex-col flex-1' 
-        : 'w-[340px] h-[680px] shrink-0'
+        : (isPreviewModal
+            ? 'w-full h-full min-h-0 flex flex-col flex-1 overflow-hidden'
+            : 'w-[340px] h-[680px] shrink-0')
     ]"
     @click="handleSelectThisPage"
     @dblclick="handleDoubleClickThisPage"
@@ -61,11 +63,13 @@
       class="relative flex flex-col overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
       :class="[
         (isPreviewModal || isLivePage) ? 'bg-white' : 'bg-[#f5f5f5]',
-        (isPreviewModal || isLivePage)
+        isLivePage
           ? 'w-full h-full min-h-[100dvh] flex-1 border-none shadow-none'
-          : (isMiniPreview 
-              ? 'w-[340px] h-[680px] border-none shadow-none' 
-              : 'border-[0.5px] w-[340px] h-[680px]'),
+          : (isPreviewModal
+              ? 'w-full h-full min-h-0 flex-1 border-none shadow-none'
+              : (isMiniPreview 
+                  ? 'w-[340px] h-[680px] border-none shadow-none' 
+                  : 'border-[0.5px] w-[340px] h-[680px]')),
         !isMiniPreview && !isPreviewModal && !isLivePage && isSelected 
           ? 'border-black shadow-[0px_16px_48px_rgba(0,0,0,0.12)]' 
           : (!isMiniPreview && !isPreviewModal && !isLivePage ? 'border-neutral-300 opacity-80 shadow-[0px_0px_30px_rgba(0,0,0,0.04)] cursor-pointer' : '')
@@ -168,7 +172,7 @@
             :class="[
               (widget.type === 'TextBanner' || widget.type === 'MultipleChoice' || widget.type === 'FieldInput' || widget.type === 'RegistrationForm' || widget.type === 'ActionButton') ? 'overflow-visible' : 'overflow-hidden',
               getWidgetMarginTopClass(index),
-              (isHeroWithButtonOnly && widget.type === 'HeroDrop') ? 'h-full min-h-[calc(100dvh-48px)] flex-1' : '',
+              (isHeroWithButtonOnly && widget.type === 'HeroDrop') ? (isLivePage ? 'h-full min-h-[calc(100dvh-48px)] flex-1' : 'h-full min-h-0 flex-1') : '',
               (isHeroWithButtonOnly && (widget.type === 'ActionButton' || widget.type === 'TextBanner')) ? 'shrink-0' : '',
               'group relative cursor-pointer shrink-0 w-full'
             ]"
@@ -2566,7 +2570,9 @@ function handleHeroImageError(widget: any) {
 function getRatioClass(ratio?: string) {
   switch (ratio) {
     case 'Dynamic Fit':
-      return 'min-h-[calc(100dvh-48px)] h-full flex-1 w-full shrink-0';
+      return props.isLivePage
+        ? 'min-h-[calc(100dvh-48px)] h-full flex-1 w-full shrink-0'
+        : 'h-full min-h-0 flex-1 w-full shrink-0';
     case '4:5':
       return 'aspect-[4/5] w-full shrink-0';
     case '3:4':
@@ -2584,8 +2590,8 @@ function getRatioClass(ratio?: string) {
     case 'Full screen landing page':
     default:
       return isHeroWithButtonOnly.value
-        ? 'min-h-[calc(100dvh-48px)] h-full flex-1 w-full shrink-0'
-        : 'h-[580px] min-h-[580px] w-full shrink-0';
+        ? (props.isLivePage ? 'min-h-[calc(100dvh-48px)] h-full flex-1 w-full shrink-0' : (props.isPreviewModal ? 'h-full min-h-0 flex-1 w-full shrink-0' : 'h-[580px] min-h-[580px] w-full shrink-0'))
+        : (props.isPreviewModal ? 'h-[580px] min-h-[580px] w-full shrink-0' : 'h-[580px] min-h-[580px] w-full shrink-0');
   }
 }
 
