@@ -1,6 +1,7 @@
 import pg from 'pg';
 import dotenv from 'dotenv';
-import { ensureSubmissionColumns, installSubmissionGuards, importLegacySubmissions } from './submissionGuards.js';
+import { withClient } from './dbClient.js';
+import { ensureSubmissionColumns, installSubmissionGuards, importLegacySubmissions, backfillSlotPicks } from './submissionGuards.js';
 
 dotenv.config();
 
@@ -311,6 +312,8 @@ async function prepareSubmissionStore(): Promise<void> {
     try {
       await installSubmissionGuards(pool);
       await importLegacySubmissions(pool);
+      // After the import, so entries brought in from the file are counted too.
+      await backfillSlotPicks(pool);
     } catch (err: any) {
       console.error('[DB] Guest-entry duplicate protection is incomplete, retrying shortly:', err.message);
       scheduleSubmissionRetry(15000);
@@ -337,9 +340,7 @@ export function testDbConnection(): Promise<boolean> {
 
 async function runDbConnectionTest(): Promise<boolean> {
   try {
-    const client = await pool.connect();
-    const res = await client.query('SELECT NOW()');
-    client.release();
+    const res = await withClient(pool, client => client.query('SELECT NOW()'));
     isDbConnected = true;
     console.log('[DB] PostgreSQL connected successfully:', res.rows[0].now);
     await initDbSchema();

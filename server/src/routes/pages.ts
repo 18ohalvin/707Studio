@@ -4,6 +4,7 @@ import { readDataFile, writeDataFile } from '../fileStorage.js';
 import { externalizeInlineImages } from '../inlineImages.js';
 import { requireAuth, getClaims, isSuperAdminClaims, optionalClaims } from '../auth.js';
 import { canAccessProject, findProject } from '../access.js';
+import { clearSlotCache } from '../slots.js';
 import {
   rowToProject, forClient, liveView, isLive, listHistory,
   submitForReview, publishProject, declineProject, discardChanges, restoreFromHistory
@@ -158,6 +159,8 @@ function transition(handler: (id: string, req: Request, res: Response) => Promis
     if (await denyIfForeign(res, id)) return;
     try {
       const project = await handler(id, req, res);
+      // Publishing, discarding or restoring can change the places a campaign offers: apply them now, not in ten seconds.
+      clearSlotCache(id);
       if (res.headersSent) return;
       if (!project) return res.status(404).json({ success: false, error: 'Project not found.' });
       return res.json({ success: true, data: forClient(project) });

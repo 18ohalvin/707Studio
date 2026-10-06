@@ -1,6 +1,8 @@
 import type { Pool, PoolClient } from 'pg';
 import { readDataFile, archiveDataFile } from './fileStorage.js';
 import { PLACEHOLDER_EMAIL, emailKeyOf } from './submissionHelpers.js';
+import { withClient } from './dbClient.js';
+import { slotDefsFromDesign, picksFromLabels, type SlotDef } from './slotHelpers.js';
 
 /**
  * Database-level guarantees for guest entries, so that no number of
@@ -26,30 +28,38 @@ const TRIGGER = 'submissions_fill_email_key_trg';
 const COLUMNS = ['email_key', 'client_key', 'duplicate_of'];
 
 async function inTransaction<T>(pool: Pool, work: (client: PoolClient) => Promise<T>): Promise<T> {
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
-    // Never wait indefinitely on a busy table: fail, and let the caller retry shortly.
-    await client.query(`SET LOCAL lock_timeout = '8s'`);
-    const result = await work(client);
-    await client.query('COMMIT');
-    return result;
-  } catch (err) {
-    await client.query('ROLLBACK').catch(() => {});
-    throw err;
-  } finally {
-    client.release();
-  }
+  return withClient(pool, async (client) => {
+    try {
+      await client.query('BEGIN');
+      // Never wait indefinitely on a busy table: fail, and let the caller retry shortly.
+      await client.query(`SET LOCAL lock_timeout = '8s'`);
+      const result = await work(client);
+      await client.query('COMMIT');
+      return result;
+    } catch (err) {
+      await client.query('ROLLBACK').catch(() => {});
+      throw err;
+    }
+  });
 }
 
-/** Columns the entry endpoint writes. Without them a registration cannot be stored at all. */
+/**
+ * What the entry endpoint writes into: three columns on submissions and the
+ * table that records which place (option of a Multiple Choice block) each
+ * entry took. Without them a registration cannot be stored at all.
+ *
+ * submission_slots rows go away with their entry (ON DELETE CASCADE), which
+ * is what hands a place back when a guest is deleted. A guest who is
+ * declined or on the waitlist is left out when places are counted.
+ */
 export async function ensureSubmissionColumns(pool: Pool): Promise<void> {
   const have = await pool.query(
     `SELECT column_name FROM information_schema.columns
       WHERE table_schema = current_schema() AND table_name = 'submissions' AND column_name = ANY($1)`,
     [COLUMNS]
   );
-  if (have.rows.length === COLUMNS.length) return;
+  const slotTable = await pool.query(`SELECT to_regclass('submission_slots') AS t`);
+  if (have.rows.length === COLUMNS.length && slotTable.rows[0].t) return;
   await inTransaction(pool, async (client) => {
     await client.query(`
       ALTER TABLE submissions
@@ -57,7 +67,73 @@ export async function ensureSubmissionColumns(pool: Pool): Promise<void> {
         ADD COLUMN IF NOT EXISTS client_key VARCHAR(100),
         ADD COLUMN IF NOT EXISTS duplicate_of VARCHAR(100)
     `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS submission_slots (
+        submission_id VARCHAR(100) NOT NULL REFERENCES submissions(id) ON DELETE CASCADE,
+        page_id VARCHAR(100) NOT NULL,
+        widget_id VARCHAR(100) NOT NULL,
+        option_id VARCHAR(100) NOT NULL,
+        PRIMARY KEY (submission_id, widget_id, option_id)
+      )
+    `);
+    await client.query(`CREATE INDEX IF NOT EXISTS submission_slots_option_idx ON submission_slots (page_id, widget_id, option_id)`);
   });
+}
+
+const SLOT_BACKFILL_MARK = 'places-backfilled-v1';
+
+/**
+ * Entries made before places were recorded by option id have their sessions
+ * only as labels (the "Access Valid For" answer). Match those to the options of
+ * their campaign once, so the first count after this release is the true one
+ * and not "everyone's place is free again". Safe to run twice; a label that
+ * fits two options is skipped.
+ */
+export async function backfillSlotPicks(pool: Pool): Promise<{ entries: number; picks: number } | null> {
+  const mark = await pool.query(`SELECT obj_description('submission_slots'::regclass, 'pg_class') AS c`);
+  if (mark.rows[0].c === SLOT_BACKFILL_MARK) return null;
+
+  const stats = { entries: 0, picks: 0 };
+  await inTransaction(pool, async (client) => {
+    await client.query('LOCK TABLE submissions IN SHARE ROW EXCLUSIVE MODE');
+
+    const parse = (v: any, fallback: any) => (typeof v === 'string' ? safeJson(v) ?? fallback : v ?? fallback);
+    const projects = await client.query('SELECT id, pages, widget_tree, live_snapshot FROM pages');
+    const defsByProject = new Map<string, Map<string, SlotDef>>();
+    const projectOfPage = new Map<string, string>();
+    for (const row of projects.rows) {
+      const working = { pages: parse(row.pages, []), widget_tree: parse(row.widget_tree, []) };
+      const live = parse(row.live_snapshot, null);
+      // Both versions: entries were made against whichever was live at the time.
+      const defs = slotDefsFromDesign(working);
+      if (live) for (const [k, v] of slotDefsFromDesign(live)) defs.set(k, v);
+      defsByProject.set(String(row.id), defs);
+      projectOfPage.set(String(row.id), String(row.id));
+      if (Array.isArray(working.pages)) working.pages.forEach((pg: any) => pg?.id && projectOfPage.set(String(pg.id), String(row.id)));
+    }
+
+    const entries = await client.query(
+      `SELECT id, page_id, form_data->'Access Valid For' AS sessions FROM submissions WHERE jsonb_typeof(form_data->'Access Valid For') = 'array'`
+    );
+    for (const entry of entries.rows) {
+      const projectId = projectOfPage.get(String(entry.page_id));
+      const defs = projectId ? defsByProject.get(projectId) : undefined;
+      if (!projectId || !defs) continue;
+      const picks = picksFromLabels(entry.sessions, defs.values());
+      if (!picks.length) continue;
+      await client.query(
+        `INSERT INTO submission_slots (submission_id, page_id, widget_id, option_id)
+         SELECT $1, $2, w, o FROM unnest($3::text[], $4::text[]) AS t(w, o)
+         ON CONFLICT DO NOTHING`,
+        [entry.id, projectId, picks.map(p => p.widget), picks.map(p => p.option)]
+      );
+      stats.entries++;
+      stats.picks += picks.length;
+    }
+    await client.query(`COMMENT ON TABLE submission_slots IS '${SLOT_BACKFILL_MARK}'`);
+  });
+  console.log(`[DB] Matched ${stats.picks} earlier session choice${stats.picks === 1 ? '' : 's'} from ${stats.entries} entr${stats.entries === 1 ? 'y' : 'ies'} to their options, so places are counted from the start.`);
+  return stats;
 }
 
 /**

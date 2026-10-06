@@ -33,6 +33,17 @@ function check(name, cond, detail = '') {
 }
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+/* ---------------- Preflight ---------------- */
+// A server left over from an earlier run would answer the health check before the new one is up,
+// and the test would quietly run against the wrong database.
+for (const port of [PORT_API]) {
+  try {
+    await fetch(`http://localhost:${port}/api/health`);
+    console.error(`Port ${port} is already in use — stop whatever is listening there and run again.`);
+    process.exit(2);
+  } catch { /* free */ }
+}
+
 /* ---------------- Postgres ---------------- */
 fs.rmSync(path.join(SP, 'pgdata'), { recursive: true, force: true });
 fs.rmSync(DATA_DIR, { recursive: true, force: true });
@@ -247,16 +258,20 @@ check('no Access ID is held by two guests anywhere', (await q(`SELECT ticket_cod
 
 // Access ID collision handling
 await q(`INSERT INTO submissions (id,page_id,brand_slug,submission_type,form_data,ticket_code,status) VALUES ('collide-anchor','proj-live','atmos','raffle','{"fullName":"A","email":"anchor@guest.co"}','COLLIDE-1','registered')`);
-await q(`CREATE TABLE IF NOT EXISTS collide (n int)`); await q(`DELETE FROM collide`); await q(`INSERT INTO collide VALUES (2)`);
-await q(`CREATE OR REPLACE FUNCTION force_collision() RETURNS trigger AS $$ BEGIN IF (SELECT n FROM collide) > 0 AND NEW.id LIKE 'sub-%' THEN UPDATE collide SET n = n - 1; NEW.ticket_code := 'COLLIDE-1'; END IF; RETURN NEW; END $$ LANGUAGE plpgsql`);
+// A sequence, not a counter table: the registration is a transaction that is rolled back on a clash,
+// and a counter row would be rolled back with it.
+await q(`DROP SEQUENCE IF EXISTS collide_seq`); await q(`CREATE SEQUENCE collide_seq`);
+await q(`CREATE TABLE IF NOT EXISTS collide_limit (n int)`); await q(`DELETE FROM collide_limit`); await q(`INSERT INTO collide_limit VALUES (2)`);
+await q(`CREATE OR REPLACE FUNCTION force_collision() RETURNS trigger AS $$ BEGIN IF NEW.id LIKE 'sub-%' AND nextval('collide_seq') <= (SELECT n FROM collide_limit) THEN NEW.ticket_code := 'COLLIDE-1'; END IF; RETURN NEW; END $$ LANGUAGE plpgsql`);
 await q(`DROP TRIGGER IF EXISTS force_collision_trg ON submissions`);
 await q(`CREATE TRIGGER force_collision_trg BEFORE INSERT ON submissions FOR EACH ROW EXECUTE PROCEDURE force_collision()`);
 r = await post(entry('clash1@guest.co', { key: 'clash-key-0001' }));
 check('two Access ID clashes in a row → silently redrawn, guest still gets a pass', r.status === 201 && r.json.data.ticket_code !== 'COLLIDE-1', JSON.stringify(r.json));
-await q(`UPDATE collide SET n = 50`);
+await q(`ALTER SEQUENCE collide_seq RESTART`); await q(`UPDATE collide_limit SET n = 50`);
 r = await post(entry('clash2@guest.co', { key: 'clash-key-0002' }));
 check('a pass that keeps clashing → "try again", never a duplicate code', r.status === 503 && r.json?.retryable === true && (await q(`SELECT 1 FROM submissions WHERE ticket_code='COLLIDE-1'`)).rows.length === 1);
 await q(`DROP TRIGGER force_collision_trg ON submissions`);
+await q(`DELETE FROM submissions WHERE ticket_code = 'COLLIDE-1' AND id <> 'collide-anchor'`);
 
 // Rows from an older server still running during a deploy (no email_key supplied)
 await q(`INSERT INTO submissions (id,page_id,brand_slug,submission_type,form_data,ticket_code,status) VALUES ('oldcode-1','proj-live','atmos','raffle','{"fullName":"Old Code","email":"OldCode@Guest.co"}','OC-1','registered')`);
@@ -378,6 +393,160 @@ check('Nike team sees none of them', niaList.every(x => x.page_id !== 'proj-live
 r = await staff(nia, '/api/submissions/check-in', { method: 'POST', body: JSON.stringify({ code: firstCode }) });
 check('another brand cannot check a pass in', r.json?.result === 'invalid');
 
+await stopServer();
+
+/* =================================================================
+   8b. Places (slots) on a Multiple Choice block
+   ================================================================= */
+console.log('\n8b. Places');
+check('server starts', await startServer());
+token = await login();
+const design = (extra = {}) => [{ id: 'pg-places', slug: 'places', widget_tree: [
+  { id: 'mcL', type: 'MultipleChoice', props: { limitPlaces: true, globalSlotsCapacity: 20, waitlistEnabled: true, options: [
+    { id: 'optA', label: 'DNA NIGHT 2026' }, { id: 'optB', label: 'AFTER PARTY', slotsCapacity: 5 },
+    { id: 'optX', label: 'CLOSED NIGHT', disabled: true }
+  ], ...extra } },
+  { id: 'mcFree', type: 'MultipleChoice', props: { limitPlaces: false, globalSlotsCapacity: 25, options: [{ id: 'optF', label: 'WALK-IN' }] } },
+  { id: 'mcNoWait', type: 'MultipleChoice', props: { limitPlaces: true, globalSlotsCapacity: 1, waitlistEnabled: false, options: [{ id: 'optN', label: 'PRIVATE DINNER' }] } }
+] }];
+await q(`INSERT INTO pages (id, brand_slug, title, slug, status, live_version, widget_tree, pages, page_settings, owner_id, owner_email)
+         VALUES ('proj-places','atmos','Places Drop','places-drop','approved',1,'[]',$1,'{}','user-owner','owner@atmos.co')`, [JSON.stringify(design())]);
+const placeEntry = (n, picks, extra = {}) => ({ page_id: 'proj-places', submission_type: 'raffle', form_data: { fullName: `Guest ${n}`, email: `pl${n}@guest.co` }, slot_picks: picks, client_key: `places-key-${n}-xxxxx`, ...extra });
+const A = [{ widget: 'mcL', option: 'optA' }], B = [{ widget: 'mcL', option: 'optB' }], AB = [...A, ...B];
+const takenIn = async (w, o) => (await q(`SELECT COUNT(*)::int n FROM submission_slots ss JOIN submissions s ON s.id=ss.submission_id WHERE ss.page_id='proj-places' AND ss.widget_id=$1 AND ss.option_id=$2 AND s.status NOT IN ('waitlisted','declined')`, [w, o])).rows[0].n;
+const avail = async () => (await (await fetch(`${API}/api/submissions/availability/proj-places`)).json()).data;
+let n = 0;
+
+let av = await avail();
+check('availability: shared limit and own limit, live', av['mcL::optA']?.remaining === 20 && av['mcL::optB']?.remaining === 5 && av['mcL::optB']?.capacity === 5);
+check('availability: unlimited blocks say nothing (no invented number)', !('mcFree::optF' in av));
+check('availability: closed option is reported closed', av['mcL::optX']?.closed === true);
+check('availability is public, and cached no-store', (await fetch(`${API}/api/submissions/availability/proj-places`)).headers.get('cache-control') === 'no-store');
+check('availability: unknown campaign → 404', (await fetch(`${API}/api/submissions/availability/nope`)).status === 404);
+check('availability: draft campaign closed to the public', (await fetch(`${API}/api/submissions/availability/proj-draft`)).status === 404);
+
+r = await post(placeEntry(++n, B));
+check('first guest takes a place', r.status === 201 && r.json.data.status === 'registered');
+const firstPlacesCode = r.json.data.ticket_code;
+av = await avail();
+check('…and the next look shows one place fewer, at once', av['mcL::optB'].remaining === 4 && av['mcL::optB'].taken === 1, JSON.stringify(av['mcL::optB']));
+
+r = await post(placeEntry(1, B));
+check('the same guest retrying does not take a second place', r.status === 200 && r.json.duplicate === true && r.json.data.ticket_code === firstPlacesCode && (await takenIn('mcL', 'optB')) === 1);
+
+// 30 guests reach for the 4 remaining places at once
+results = await Promise.all(Array.from({ length: 30 }, () => post(placeEntry(++n, B))));
+check('30 guests for 4 remaining places → exactly 4 get one', results.filter(x => x.status === 201).length === 4, `${results.filter(x => x.status === 201).length}`);
+check('…the other 26 are told it is full (409 slots_full), with the numbers', results.filter(x => x.status === 409 && x.json?.code === 'slots_full' && x.json.availability?.['mcL::optB']?.remaining === 0).length === 26);
+check('…and the database holds exactly 5 — never one over', (await takenIn('mcL', 'optB')) === 5);
+check('a refused guest leaves nothing behind', (await rowsFor(`form_data->>'fullName' = $1`, [`Guest ${n}`])).length === (results[results.length - 1].status === 201 ? 1 : 0));
+
+// waitlist
+results = await Promise.all(Array.from({ length: 8 }, () => post(placeEntry(++n, B, { waitlist: true }))));
+check('guests who ask for the waitlist on a full option are waitlisted', results.every(x => x.status === 201 && x.json.data.status === 'waitlisted'));
+check('…without taking a place', (await takenIn('mcL', 'optB')) === 5 && (await avail())['mcL::optB'].remaining === 0);
+const waitlistedId = (await rowsFor(`status='waitlisted' AND page_id='proj-places'`))[0].id;
+
+// asking for the waitlist when places exist just registers
+r = await post(placeEntry(++n, A, { waitlist: true }));
+check('asking for the waitlist while places remain simply takes a place', r.status === 201 && r.json.data.status === 'registered' && (await takenIn('mcL', 'optA')) === 1);
+
+// multi-pick: all or nothing
+const beforeA = await takenIn('mcL', 'optA');
+r = await post(placeEntry(++n, AB));
+check('picking a free and a full option together, without the waitlist → refused', r.status === 409 && r.json.full.length === 1 && r.json.full[0].option === 'optB');
+check('…and the free option was not taken either', (await takenIn('mcL', 'optA')) === beforeA && (await rowsFor(`form_data->>'email' = $1`, [`pl${n}@guest.co`])).length === 0);
+r = await post(placeEntry(++n, AB, { waitlist: true }));
+check('…with the waitlist: waitlisted for both, taking neither', r.status === 201 && r.json.data.status === 'waitlisted' && (await takenIn('mcL', 'optA')) === beforeA);
+
+// no waitlist on this block
+await post(placeEntry(++n, [{ widget: 'mcNoWait', option: 'optN' }]));
+r = await post(placeEntry(++n, [{ widget: 'mcNoWait', option: 'optN' }], { waitlist: true }));
+check('a block with the waitlist switched off turns guests away even if they ask', r.status === 409 && r.json.full[0].waitlist === false);
+
+// closed / unlimited / unknown
+r = await post(placeEntry(++n, [{ widget: 'mcL', option: 'optX' }]));
+check('a closed option cannot be registered for', r.status === 409 && r.json.code === 'option_closed');
+for (let i = 0; i < 40; i++) await post(placeEntry(++n, [{ widget: 'mcFree', option: 'optF' }]));
+check('a block with places not limited never refuses (the old default of 25 is only a label)', (await takenIn('mcFree', 'optF')) === 40);
+r = await post(placeEntry(++n, [{ widget: 'ghost', option: 'nope' }, { widget: 'mcL', option: 'ghost' }]));
+check('picks that are not in the campaign are ignored, not trusted', r.status === 201 && (await q(`SELECT 1 FROM submission_slots WHERE submission_id=$1`, [r.json.data.id])).rows.length === 0);
+
+// places come back
+const confirmedB = (await q(`SELECT s.id FROM submissions s JOIN submission_slots ss ON ss.submission_id=s.id WHERE ss.page_id='proj-places' AND ss.option_id='optB' AND s.status NOT IN ('waitlisted','declined') ORDER BY s.created_at`)).rows.map(x => x.id);
+r = await staff(token, '/api/submissions/bulk-delete', { method: 'POST', body: JSON.stringify({ ids: [confirmedB[0]] }) });
+check('deleting a guest gives the place back', r.status === 200 && (await takenIn('mcL', 'optB')) === 4 && (await avail())['mcL::optB'].remaining === 1);
+check('…and their place rows went with them', (await q(`SELECT 1 FROM submission_slots WHERE submission_id=$1`, [confirmedB[0]])).rows.length === 0);
+r = await staff(token, '/api/submissions/bulk-status', { method: 'POST', body: JSON.stringify({ ids: [confirmedB[1]], status: 'declined' }) });
+check('declining a guest gives the place back', r.status === 200 && (await avail())['mcL::optB'].remaining === 2);
+r = await staff(token, '/api/submissions/bulk-status', { method: 'POST', body: JSON.stringify({ ids: [confirmedB[1]], status: 'confirmed' }) });
+check('…and undoing it takes it again', (await avail())['mcL::optB'].remaining === 1);
+r = await post(placeEntry(++n, B));
+check('the freed place goes to the next guest, no waitlist needed', r.status === 201 && r.json.data.status === 'registered' && (await avail())['mcL::optB'].remaining === 0);
+
+// staff promote a waitlisted guest although it is full: allowed, and never shows a negative
+r = await staff(token, '/api/submissions/bulk-status', { method: 'POST', body: JSON.stringify({ ids: [waitlistedId], status: 'confirmed' }) });
+check('staff may promote a waitlisted guest past the limit', r.status === 200 && (await takenIn('mcL', 'optB')) === 6);
+check('…and the page just shows no places left (never negative)', (await avail())['mcL::optB'].remaining === 0);
+
+// door
+const wl = (await rowsFor(`status='waitlisted' AND page_id='proj-places'`))[0];
+r = await staff(token, '/api/submissions/check-in', { method: 'POST', body: JSON.stringify({ code: wl.ticket_code }) });
+check('door: a waitlisted guest is not admitted', r.json?.success === false && r.json?.result === 'waitlisted');
+const dec = (await rowsFor(`id=$1`, [confirmedB[1]]))[0];
+await staff(token, '/api/submissions/bulk-status', { method: 'POST', body: JSON.stringify({ ids: [dec.id], status: 'declined' }) });
+r = await staff(token, '/api/submissions/check-in', { method: 'POST', body: JSON.stringify({ code: dec.ticket_code }) });
+check('door: a declined guest is not admitted', r.json?.success === false && r.json?.result === 'declined');
+await staff(token, '/api/submissions/bulk-status', { method: 'POST', body: JSON.stringify({ ids: [dec.id, wl.id], status: 'confirmed' }) });
+r = await staff(token, '/api/submissions/check-in', { method: 'POST', body: JSON.stringify({ code: wl.ticket_code }) });
+check('door: once promoted, the same pass is admitted', r.json?.success === true && r.json?.result === 'admitted');
+
+// no deadlocks, exact counts, with guests picking the same two options in different orders
+await q(`DELETE FROM submissions WHERE page_id='proj-places'`);
+results = await Promise.all(Array.from({ length: 80 }, (_, i) => post(placeEntry(1000 + i, i % 2 ? AB : [...B, ...A]))));
+const okCount = results.filter(x => x.status === 201).length;
+check('80 guests picking the same two options in opposite orders: no error, no deadlock', results.every(x => x.status === 201 || x.status === 409), [...new Set(results.map(x => x.status))].join());
+check('…exactly the 5 places of the smaller option were given out', okCount === 5 && (await takenIn('mcL', 'optB')) === 5 && (await takenIn('mcL', 'optA')) === 5, `${okCount}`);
+
+// retry idempotency with places
+await q(`DELETE FROM submissions WHERE page_id='proj-places'`);
+const same = await Promise.all(Array.from({ length: 12 }, () => post(placeEntry(2000, A))));
+check('12 taps by one guest for a place → one place taken', (await takenIn('mcL', 'optA')) === 1 && new Set(same.map(x => x.json?.data?.ticket_code)).size === 1);
+
+// design changes apply when published
+await q(`UPDATE pages SET pages=$1 WHERE id='proj-places'`, [JSON.stringify(design({ globalSlotsCapacity: 1 }))]);
+await staff(token, '/api/pages/proj-places/publish', { method: 'POST', body: '{}' });
+r = await post(placeEntry(3000, A));
+check('after publishing a smaller limit, the new limit is what counts at once', r.status === 409 && r.json.code === 'slots_full', `${r.status}`);
+await q(`UPDATE pages SET pages=$1 WHERE id='proj-places'`, [JSON.stringify(design())]);
+await staff(token, '/api/pages/proj-places/publish', { method: 'POST', body: '{}' });
+
+// outage with places
+await pgServer.stop(); await sleep(1000);
+r = await post(placeEntry(4000, B));
+check('during an outage a guest with places is told to retry, and nothing is kept', r.status === 503 && !fs.existsSync(path.join(DATA_DIR, 'submissions.json')));
+await pgServer.start();
+const t3 = Date.now(); let back = null;
+while (Date.now() - t3 < 30000) { const x = await post(placeEntry(4000, B)); if (x.status < 300) { back = x; break; } await sleep(700); }
+check('…and registers once the database is back', !!back && (await takenIn('mcL', 'optB')) === 1);
+token = await login();
+
+// older entries: matched by label once, idempotently
+await stopServer();
+await q(`DELETE FROM submissions WHERE page_id='proj-places'`);
+const oldSessions = [{ label: 'DNA NIGHT 2026' }, { label: 'After Party' }];
+for (let i = 0; i < 3; i++) await q(`INSERT INTO submissions (id,page_id,brand_slug,submission_type,form_data,ticket_code,status) VALUES ($1,'proj-places','atmos','raffle',$2,$3,'registered')`,
+  [`legacy-pl-${i}`, JSON.stringify({ fullName: `Legacy ${i}`, email: `legacy${i}@guest.co`, 'Access Valid For': oldSessions }), `LEGACY-PL-${i}`]);
+await q(`INSERT INTO submissions (id,page_id,brand_slug,submission_type,form_data,ticket_code,status) VALUES ('legacy-pl-x','proj-places','atmos','raffle',$1,'LEGACY-PL-X','registered')`, [JSON.stringify({ fullName: 'Legacy X', email: 'legacyx@guest.co', 'Access Valid For': [{ label: 'Nothing matching' }] })]);
+await q(`COMMENT ON TABLE submission_slots IS NULL`);
+check('server restarts', await startServer());
+token = await login();
+check('earlier entries are matched to their options by label', (await takenIn('mcL', 'optA')) === 3 && (await takenIn('mcL', 'optB')) === 3, `${await takenIn('mcL', 'optA')}/${await takenIn('mcL', 'optB')}`);
+check('…an entry whose label matches nothing is left alone', (await q(`SELECT 1 FROM submission_slots WHERE submission_id='legacy-pl-x'`)).rows.length === 0);
+check('…so the first count after the upgrade is already the true one', (await avail())['mcL::optB'].remaining === 2);
+const slotRows = (await q(`SELECT COUNT(*)::int n FROM submission_slots`)).rows[0].n;
+await stopServer(); check('restart again', await startServer()); token = await login();
+check('the match is done once: a restart changes nothing', (await q(`SELECT COUNT(*)::int n FROM submission_slots`)).rows[0].n === slotRows);
 await stopServer();
 
 /* =================================================================

@@ -63,8 +63,8 @@ function safeParse(text: string): Record<string, unknown> {
 }
 
 /** Columns that exist for the database's own bookkeeping and are not part of an entry. */
-export function stripInternal<T extends Record<string, any>>(row: T): Omit<T, 'email_key' | 'client_key'> {
-  const { email_key, client_key, ...rest } = row;
+export function stripInternal<T extends Record<string, any>>(row: T): Omit<T, 'email_key' | 'client_key' | 'slot_picks'> {
+  const { email_key, client_key, slot_picks, ...rest } = row;
   return rest;
 }
 
