@@ -56,3 +56,16 @@ export function writeDataFile<T>(filename: string, data: T): void {
   }
 }
 
+/**
+ * Moves a data file aside (never deletes it) once its contents have been
+ * imported elsewhere, so it is not imported twice and stays as a backup.
+ * Returns the new path, or null when there was no such file.
+ */
+export function archiveDataFile(filename: string, label: string): string | null {
+  const from = path.join(DATA_DIR, filename);
+  if (!fs.existsSync(from)) return null;
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const to = path.join(DATA_DIR, `${path.parse(filename).name}.${label}-${stamp}${path.extname(filename)}`);
+  fs.renameSync(from, to);
+  return to;
+}

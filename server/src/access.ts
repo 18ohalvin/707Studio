@@ -59,8 +59,14 @@ export function projectPageIds(project: any): string[] {
   return ids.filter(Boolean).map(String);
 }
 
-async function loadAllProjects(): Promise<any[]> {
-  if (getDbStatus().isConnected) {
+/**
+ * strict: the caller is deciding about guest data and must not be handed
+ * stale or empty results. When the database is in use and a query fails, the
+ * error is thrown (the route answers "try again") instead of quietly reading
+ * pages.json, which would make an existing campaign look missing.
+ */
+async function loadAllProjects(strict = false): Promise<any[]> {
+  if (getDbStatus().isConnected || strict) {
     try {
       // status / live_version are needed by callers that decide whether a
       // campaign is public (findProjectForPageId → canViewPublicPage).
@@ -68,6 +74,7 @@ async function loadAllProjects(): Promise<any[]> {
       return result.rows;
     } catch (err: any) {
       console.error('[Access] Could not read projects:', err.message);
+      if (strict) throw err;
     }
   }
   return readDataFile<any[]>('pages.json', []);
@@ -90,10 +97,10 @@ export async function findProject(id: string): Promise<any | null> {
  * Page ids whose submissions this account may read or change.
  * null means unrestricted (superadmin).
  */
-export async function accessiblePageIds(claims: SessionClaims): Promise<Set<string> | null> {
+export async function accessiblePageIds(claims: SessionClaims, opts: { strict?: boolean } = {}): Promise<Set<string> | null> {
   if (isSuperAdminClaims(claims)) return null;
   const ids = new Set<string>();
-  (await loadAllProjects())
+  (await loadAllProjects(opts.strict))
     .filter(p => canAccessProject(claims, p))
     .forEach(p => projectPageIds(p).forEach(id => ids.add(id)));
   return ids;
@@ -105,4 +112,25 @@ export async function findProjectForPageId(pageId: string): Promise<any | null> 
   const direct = await findProject(pageId);
   if (direct) return direct;
   return (await loadAllProjects()).find(p => projectPageIds(p).includes(pageId)) || null;
+}
+
+/**
+ * The campaign a guest's entry belongs to, for the public endpoint that runs
+ * on every registration. It reads only the few columns that decide access (a
+ * project row can carry hundreds of KB of design) and finds a funnel page id
+ * with an index-friendly JSON containment query rather than loading every
+ * project. Throws on a database error so the guest is told to retry — a
+ * lookup that quietly returned "not found" would reject a real campaign.
+ */
+export async function findProjectForEntry(pageId: string, useDb: boolean): Promise<any | null> {
+  if (!pageId) return null;
+  if (useDb) {
+    const columns = 'id, brand_slug, owner_id, owner_email, status, live_version';
+    const direct = await pool.query(`SELECT ${columns} FROM pages WHERE id = $1 LIMIT 1`, [pageId]);
+    if (direct.rows[0]) return direct.rows[0];
+    const viaFunnelPage = await pool.query(`SELECT ${columns} FROM pages WHERE pages @> $1::jsonb LIMIT 1`, [JSON.stringify([{ id: pageId }])]);
+    return viaFunnelPage.rows[0] || null;
+  }
+  const all = readDataFile<any[]>('pages.json', []);
+  return all.find(p => p.id === pageId) || all.find(p => projectPageIds(p).includes(pageId)) || null;
 }

@@ -86,6 +86,7 @@ import { LIVE_PASS_KEY, SESSIONS_ANSWER_KEY, type LivePassState } from '../compo
 import { TICKET_SOURCE_KEY, type TicketSource } from '../components/editor/ticket/ticketFields.ts';
 import { stripTextAnswers } from '../components/editor/guestAnswers.ts';
 import { getToken } from '../services/apiClient.ts';
+import { postEntry, createEntryKeyring } from '../services/submitEntry.ts';
 import type { ActivationPage } from '../types/editor.ts';
 import { useEditorStore } from '../stores/editorStore.ts';
 
@@ -133,6 +134,7 @@ async function loadPage() {
   livePass.sessions = [];
   livePass.error = '';
   campaignStatus.value = '';
+  entryKeyring.reset();
 
   const brandSlug = String(route.params.brandSlug || '');
   const pageSlug = String(route.params.pageSlug || '');
@@ -355,49 +357,45 @@ const livePass = reactive<LivePassState>({
 });
 provide(LIVE_PASS_KEY, livePass);
 
+// One key per set of answers: a retry or a second tap is the same registration, never a second one.
+const entryKeyring = createEntryKeyring();
+
 async function sendSubmission() {
   // A funnel can reach "submit" twice (entering the pass page, then the final CTA) — record once.
   if (livePass.status === 'pending' || livePass.status === 'ready') return;
   livePass.status = 'pending';
   livePass.error = '';
-  try {
-    const payload = {
-      page_id: submissionPageId.value,
-      submission_type: 'raffle',
-      form_data: {
-        ...collectedFormData.value,
-        // The server needs a name and email; a funnel that never asked for
-        // them still issues a pass, under placeholders the hub hides.
-        fullName: collectedFormData.value.fullName || collectedFormData.value.name || 'Guest Participant',
-        email: collectedFormData.value.email || 'guest@activation.internal',
-        ...(campaignGuestType() ? { 'Guest Type': campaignGuestType() } : {}),
-        submittedAt: new Date().toISOString()
-      }
-    };
-    const res = await fetch('/api/submissions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...staffAuthHeaders() },
-      body: JSON.stringify(payload)
-    });
-    const json = await res.json().catch(() => null);
-    if (res.ok && json?.success && json.data?.ticket_code) {
-      const recorded = json.data.form_data || {};
-      livePass.code = json.data.ticket_code;
-      livePass.guestName = recorded.fullName === 'Guest Participant' ? '' : String(recorded.fullName || '');
-      livePass.email = recorded.email === 'guest@activation.internal' ? '' : String(recorded.email || '');
-      livePass.guestType = String(recorded['Guest Type'] || campaignGuestType() || '');
-      const sessions = recorded[SESSIONS_ANSWER_KEY];
-      livePass.sessions = Array.isArray(sessions) ? sessions.filter((x: any) => x && typeof x === 'object' && x.label) : [];
-      livePass.status = 'ready';
-      return;
-    }
-    livePass.error = json?.error || 'We could not register your entry.';
-    livePass.status = 'error';
-  } catch (err) {
-    console.warn('[PublicDropView] Error submitting entry:', err);
-    livePass.error = 'No connection — check your signal and try again.';
-    livePass.status = 'error';
+
+  const answers = {
+    ...collectedFormData.value,
+    // The server needs a name and email; a funnel that never asked for
+    // them still issues a pass, under placeholders the hub hides.
+    fullName: collectedFormData.value.fullName || collectedFormData.value.name || 'Guest Participant',
+    email: collectedFormData.value.email || 'guest@activation.internal',
+    ...(campaignGuestType() ? { 'Guest Type': campaignGuestType() } : {})
+  };
+
+  // Transient failures (signal drop, server briefly without its database) are retried
+  // here, with the pass still showing "Issuing…", before the guest sees an error.
+  const outcome = await postEntry(
+    { page_id: submissionPageId.value, submission_type: 'raffle', form_data: { ...answers, submittedAt: new Date().toISOString() } },
+    entryKeyring.keyFor(answers),
+    { headers: staffAuthHeaders() }
+  );
+
+  if (outcome.ok) {
+    const recorded = outcome.entry.form_data || {};
+    livePass.code = outcome.entry.ticket_code;
+    livePass.guestName = recorded.fullName === 'Guest Participant' ? '' : String(recorded.fullName || '');
+    livePass.email = recorded.email === 'guest@activation.internal' ? '' : String(recorded.email || '');
+    livePass.guestType = String(recorded['Guest Type'] || campaignGuestType() || '');
+    const sessions = recorded[SESSIONS_ANSWER_KEY];
+    livePass.sessions = Array.isArray(sessions) ? sessions.filter((x: any) => x && typeof x === 'object' && x.label) : [];
+    livePass.status = 'ready';
+    return;
   }
+  livePass.error = outcome.message;
+  livePass.status = 'error';
 }
 
 function applySeo(page: ActivationPage) {

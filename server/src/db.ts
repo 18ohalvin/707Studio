@@ -1,5 +1,6 @@
 import pg from 'pg';
 import dotenv from 'dotenv';
+import { ensureSubmissionColumns, installSubmissionGuards, importLegacySubmissions } from './submissionGuards.js';
 
 dotenv.config();
 
@@ -254,10 +255,25 @@ export async function initDbSchema(): Promise<void> {
 
 let reconnectTimer: NodeJS.Timeout | null = null;
 
+/**
+ * Whether this deployment has a database it is supposed to be using. True in
+ * production and whenever a connection string is given. When true, a request
+ * that needs the database while it is unreachable is answered "try again"
+ * instead of being written to a local file that the Campaign Hub and the door
+ * scanner never read — those entries looked saved and were not.
+ */
+export function dbRequired(): boolean {
+  return process.env.NODE_ENV === 'production' || Boolean(process.env.DATABASE_URL) || process.env.REQUIRE_DB === 'true';
+}
+
+// Connected, and the tables/columns the guest-entry endpoint writes exist.
+let schemaReady = false;
+
 // Handle idle client errors without crashing the process
 pool.on('error', (err) => {
   console.warn('[DB Pool] Unexpected error on idle client:', err.message);
   isDbConnected = false;
+  schemaReady = false;
   scheduleReconnect(5000);
 });
 
@@ -269,7 +285,57 @@ export function scheduleReconnect(delayMs = 5000) {
   }, delayMs);
 }
 
-export async function testDbConnection(): Promise<boolean> {
+let preparing: Promise<void> | null = null;
+let prepareRetryTimer: NodeJS.Timeout | null = null;
+
+/**
+ * Makes the guest-entry tables safe to use: columns first (a registration
+ * cannot be stored without them), then the duplicate-proofing rules and the
+ * one-time import of entries an older version wrote to a file. A failure in
+ * the second part is logged and retried, and does not stop registrations —
+ * the endpoint still checks for repeats in code, the database rules are the
+ * backstop for simultaneous ones.
+ */
+async function prepareSubmissionStore(): Promise<void> {
+  if (preparing) return preparing;
+  preparing = (async () => {
+    try {
+      await ensureSubmissionColumns(pool);
+      schemaReady = true;
+    } catch (err: any) {
+      schemaReady = false;
+      console.error('[DB] Guest-entry columns are not ready, registrations are paused:', err.message);
+      scheduleSubmissionRetry(10000);
+      return;
+    }
+    try {
+      await installSubmissionGuards(pool);
+      await importLegacySubmissions(pool);
+    } catch (err: any) {
+      console.error('[DB] Guest-entry duplicate protection is incomplete, retrying shortly:', err.message);
+      scheduleSubmissionRetry(15000);
+    }
+  })().finally(() => { preparing = null; });
+  return preparing;
+}
+
+function scheduleSubmissionRetry(delayMs: number) {
+  if (prepareRetryTimer) return;
+  prepareRetryTimer = setTimeout(async () => {
+    prepareRetryTimer = null;
+    if (isDbConnected) await prepareSubmissionStore();
+  }, delayMs);
+}
+
+let testing: Promise<boolean> | null = null;
+
+/** One connection check at a time, however many requests and timers ask. */
+export function testDbConnection(): Promise<boolean> {
+  if (!testing) testing = runDbConnectionTest().finally(() => { testing = null; });
+  return testing;
+}
+
+async function runDbConnectionTest(): Promise<boolean> {
   try {
     const client = await pool.connect();
     const res = await client.query('SELECT NOW()');
@@ -277,9 +343,11 @@ export async function testDbConnection(): Promise<boolean> {
     isDbConnected = true;
     console.log('[DB] PostgreSQL connected successfully:', res.rows[0].now);
     await initDbSchema();
+    await prepareSubmissionStore();
     return true;
   } catch (err: any) {
     isDbConnected = false;
+    schemaReady = false;
     console.warn('[DB] PostgreSQL connection notice:', err.message || err.code || 'Unreachable');
     console.log('[DB] Running with standalone memory mode (clean fresh state). Auto-retry scheduled...');
     scheduleReconnect(5000);
@@ -289,4 +357,28 @@ export async function testDbConnection(): Promise<boolean> {
 
 export function getDbStatus() {
   return { isConnected: isDbConnected };
+}
+
+let recovering: Promise<boolean> | null = null;
+let lastRecoveryAt = 0;
+
+/**
+ * True when guest entries can safely be stored in the database right now.
+ * When the database is expected but was lost, the request itself tries to
+ * reconnect (at most once a second, shared by every waiting request) instead
+ * of waiting for the background timer, so an outage of a few seconds is over
+ * for guests as soon as the database is back.
+ */
+export async function ensureDbReady(): Promise<boolean> {
+  if (isDbConnected && schemaReady) return true;
+  if (!dbRequired()) return false;
+  if (recovering) return recovering;
+  if (Date.now() - lastRecoveryAt < 1000) return false;
+  lastRecoveryAt = Date.now();
+  recovering = (async () => {
+    if (!isDbConnected) await testDbConnection();
+    else await prepareSubmissionStore();
+    return isDbConnected && schemaReady;
+  })().finally(() => { recovering = null; });
+  return recovering;
 }

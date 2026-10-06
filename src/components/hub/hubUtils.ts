@@ -17,6 +17,8 @@ export interface Submission {
   ip_address?: string;
   status: string;
   created_at: string;
+  /** Set on an entry that was registered twice before duplicates were prevented: the id of the original. */
+  duplicate_of?: string | null;
 }
 
 export type GuestStatus = 'registered' | 'confirmed' | 'waitlisted' | 'winner' | 'declined';

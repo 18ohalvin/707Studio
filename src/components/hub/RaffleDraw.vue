@@ -4,7 +4,7 @@
     <div class="rounded-[12px] border border-black/10 bg-white p-4 flex flex-col gap-4 h-fit">
       <div class="flex flex-col gap-1">
         <p class="text-[13px] font-medium">Draw settings</p>
-        <p class="text-[11.5px] text-neutral-500">Winners are picked with the browser's cryptographic random generator. Nothing is saved until you confirm.</p>
+        <p class="text-[11.5px] text-neutral-500">Winners are picked with the browser's cryptographic random generator. Nothing is saved until you confirm. Guests who registered twice count once.</p>
       </div>
 
       <div class="flex flex-col gap-2">
@@ -154,6 +154,8 @@ const shuffleName = ref('');
 const eligible = computed(() =>
   props.rows.filter(s => {
     const status = normalizeStatus(s.status);
+    // One chance per person: an entry flagged as a repeat registration does not enter twice.
+    if (s.duplicate_of) return false;
     if (status === 'declined') return false;
     if (excludePastWinners.value && status === 'winner') return false;
     if (poolRule.value === 'confirmed') return status === 'confirmed' || (!excludePastWinners.value && status === 'winner');

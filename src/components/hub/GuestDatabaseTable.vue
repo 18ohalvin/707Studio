@@ -50,6 +50,18 @@
           </button>
         </div>
 
+        <!-- Entries registered twice (only when there are any) -->
+        <button
+          v-if="duplicateCount > 0"
+          type="button"
+          @click="duplicatesOnly = !duplicatesOnly"
+          class="h-[32px] px-2.5 rounded-[8px] border text-[11px] font-medium cursor-pointer whitespace-nowrap transition-colors"
+          :class="duplicatesOnly ? 'bg-amber-100 border-amber-300 text-amber-900' : 'bg-white border-black/12 text-neutral-700 hover:bg-black/5'"
+          title="Guests who registered more than once"
+        >
+          Duplicates {{ duplicateCount }}
+        </button>
+
         <!-- Columns menu -->
         <div class="relative" ref="columnsMenuRef">
           <button
@@ -165,6 +177,11 @@
                     </div>
                     <div class="flex flex-col min-w-0">
                       <span class="text-[12.5px] font-medium text-black truncate max-w-[220px]">{{ guestName(s) }}</span>
+                      <span
+                        v-if="s.duplicate_of"
+                        class="shrink-0 px-1.5 py-0.5 rounded-[5px] border border-amber-300 bg-amber-50 text-amber-800 text-[9.5px] font-medium tracking-wide"
+                        title="This guest registered more than once. Their pass still works at the door — review and delete the extra entry if it is a repeat."
+                      >Duplicate</span>
                       <span v-if="!compact" class="text-[11px] text-neutral-500 truncate max-w-[220px]">{{ guestEmail(s) || 'No email' }}</span>
                     </div>
                   </div>
@@ -336,6 +353,9 @@
               </div>
               <div class="min-w-0">
                 <h3 class="text-[19px] leading-[24px] font-medium truncate">{{ guestName(drawerRow) }}</h3>
+                <p v-if="drawerRow.duplicate_of" class="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-[6px] px-2 py-1 mt-1 w-fit">
+                  Registered more than once — this is an extra entry. Its pass still works at the door.
+                </p>
                 <p class="text-[12px] text-neutral-500 truncate">{{ guestEmail(drawerRow) || 'No email provided' }}</p>
               </div>
             </div>
@@ -451,6 +471,8 @@ const emit = defineEmits<{
 const search = ref('');
 const statusFilter = ref<'all' | GuestStatus>('all');
 const checkFilter = ref<'any' | 'in' | 'out'>('any');
+const duplicatesOnly = ref(false);
+const duplicateCount = computed(() => props.rows.filter(r => r.duplicate_of).length);
 const searchRef = ref<HTMLInputElement | null>(null);
 
 const statusFilters = computed(() => [
@@ -464,12 +486,13 @@ const checkFilters = [
   { value: 'out' as const, label: 'Not in' }
 ];
 
-const hasActiveFilters = computed(() => !!search.value.trim() || statusFilter.value !== 'all' || checkFilter.value !== 'any');
+const hasActiveFilters = computed(() => !!search.value.trim() || statusFilter.value !== 'all' || checkFilter.value !== 'any' || duplicatesOnly.value);
 
 function clearFilters() {
   search.value = '';
   statusFilter.value = 'all';
   checkFilter.value = 'any';
+  duplicatesOnly.value = false;
 }
 
 const filteredRows = computed(() => {
@@ -478,6 +501,7 @@ const filteredRows = computed(() => {
     if (statusFilter.value !== 'all' && normalizeStatus(s.status) !== statusFilter.value) return false;
     if (checkFilter.value === 'in' && !s.checked_in_at) return false;
     if (checkFilter.value === 'out' && s.checked_in_at) return false;
+    if (duplicatesOnly.value && !s.duplicate_of) return false;
     if (!q) return true;
     const hay = [guestName(s), guestEmail(s), guestPhone(s), accessId(s), ...Object.values(s.form_data || {}).map(formatValue)]
       .join(' ')
@@ -573,7 +597,7 @@ const sortedRows = computed(() => {
 
 const renderLimit = ref(150);
 const pagedRows = computed(() => sortedRows.value.slice(0, renderLimit.value));
-watch([search, statusFilter, checkFilter], () => (renderLimit.value = 150));
+watch([search, statusFilter, checkFilter, duplicatesOnly], () => (renderLimit.value = 150));
 
 /* ---------- Selection ---------- */
 const selected = ref<Set<string>>(new Set());
