@@ -138,7 +138,7 @@ const emit = defineEmits<{
 
 type PoolRule = 'registered' | 'confirmed' | 'checked_in';
 const poolOptions: { value: PoolRule; label: string; hint: string }[] = [
-  { value: 'registered', label: 'Every registered guest', hint: 'Excludes declined guests' },
+  { value: 'registered', label: 'Every registered guest', hint: 'Excludes declined and waitlisted guests' },
   { value: 'confirmed', label: 'Confirmed guests only', hint: 'Status set to Confirmed' },
   { value: 'checked_in', label: 'Guests at the venue', hint: 'Checked in at the door' }
 ];
@@ -156,7 +156,7 @@ const eligible = computed(() =>
     const status = normalizeStatus(s.status);
     // One chance per person: an entry flagged as a repeat registration does not enter twice.
     if (s.duplicate_of) return false;
-    if (status === 'declined') return false;
+    if (status === 'declined' || status === 'waitlisted') return false;
     if (excludePastWinners.value && status === 'winner') return false;
     if (poolRule.value === 'confirmed') return status === 'confirmed' || (!excludePastWinners.value && status === 'winner');
     if (poolRule.value === 'checked_in') return Boolean(s.checked_in_at);

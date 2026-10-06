@@ -300,7 +300,7 @@ interface LogEntry { key: string; code: string; name: string; result: CheckInRes
 const log = ref<LogEntry[]>([]);
 
 /* ---------- Stats ---------- */
-const expectedRows = computed(() => props.rows.filter(r => normalizeStatus(r.status) !== 'declined'));
+const expectedRows = computed(() => props.rows.filter(r => !['declined', 'waitlisted'].includes(normalizeStatus(r.status))));
 const expectedCount = computed(() => expectedRows.value.length);
 const insideCount = computed(() => props.rows.filter(r => r.checked_in_at).length);
 const arrivalRate = computed(() => (expectedCount.value ? Math.min(1, insideCount.value / expectedCount.value) : 0));
