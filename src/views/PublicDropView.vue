@@ -82,7 +82,8 @@ import { ref, reactive, provide, computed, onMounted, onUnmounted, watch } from 
 import { useRoute } from 'vue-router';
 import { AlertCircle } from 'lucide-vue-next';
 import MobileArtboard from '../components/editor/MobileArtboard.vue';
-import { LIVE_PASS_KEY, type LivePassState } from '../components/editor/livePass.ts';
+import { LIVE_PASS_KEY, SESSIONS_ANSWER_KEY, type LivePassState } from '../components/editor/livePass.ts';
+import { TICKET_SOURCE_KEY, type TicketSource } from '../components/editor/ticket/ticketFields.ts';
 import { getToken } from '../services/apiClient.ts';
 import type { ActivationPage } from '../types/editor.ts';
 import { useEditorStore } from '../stores/editorStore.ts';
@@ -125,6 +126,10 @@ async function loadPage() {
   collectedFormData.value = {};
   livePass.status = 'idle';
   livePass.code = '';
+  livePass.guestName = '';
+  livePass.email = '';
+  livePass.guestType = '';
+  livePass.sessions = [];
   livePass.error = '';
   campaignStatus.value = '';
 
@@ -138,26 +143,7 @@ async function loadPage() {
     return;
   }
 
-  // 1. Check local editorStore first in case it's in memory or local projects
-  // Only the signed-in account's own projects — another account's cached copy
-  // must not reveal an unpublished campaign.
-  const localMatch = editorStore.userProjects.find(p => {
-    return normalize(p.brand_slug) === normalize(brandSlug) && normalize(p.slug) === normalize(pageSlug);
-  });
-
-  if (localMatch) {
-    submissionPageId.value = localMatch.id;
-    campaignStatus.value = localMatch.status || 'draft';
-    if (localMatch.pages && localMatch.pages.length > 0) {
-      projectPages.value = JSON.parse(JSON.stringify(localMatch.pages));
-      activePageIndex.value = 0;
-      applySeo(localMatch.pages[0]);
-      isLoading.value = false;
-      return;
-    }
-  }
-
-  // 2. Fetch from backend public endpoint
+  // 1. The server: live version for visitors, working copy only for the owner / superadmin of an unpublished campaign
   try {
     // The token lets an owner or superadmin open a campaign before it is
     // published; visitors without one only ever see live campaigns.
@@ -171,8 +157,8 @@ async function loadPage() {
         campaignBrandSlug.value = item.brand_slug || brandSlug;
 
         if (Array.isArray(item.pages) && item.pages.length > 0) {
-          projectPages.value = item.pages;
-          const matchIdx = item.pages.findIndex((p: any) => normalize(p.slug) === normalize(pageSlug));
+          setCampaignPages(item.pages, item.title);
+          const matchIdx = projectPages.value.findIndex((p: any) => normalize(p.slug) === normalize(pageSlug));
           activePageIndex.value = matchIdx >= 0 ? matchIdx : 0;
           applySeo(projectPages.value[activePageIndex.value] || projectPages.value[0]);
           isLoading.value = false;
@@ -211,13 +197,33 @@ async function loadPage() {
     console.warn('[PublicDropView] Error loading page from server:', err);
   }
 
+  // 2b. Server unreachable: the signed-in account's own cached copy, so an
+  // owner can still preview offline. Never first — the server decides which
+  // version visitors get (the live one, not the working copy being edited),
+  // and never another account's copy.
+  const localMatch = editorStore.userProjects.find(p => {
+    return normalize(p.brand_slug) === normalize(brandSlug) && normalize(p.slug) === normalize(pageSlug);
+  });
+
+  if (localMatch) {
+    submissionPageId.value = localMatch.id;
+    campaignStatus.value = localMatch.status || 'draft';
+    if (localMatch.pages && localMatch.pages.length > 0) {
+      setCampaignPages(JSON.parse(JSON.stringify(localMatch.pages)), localMatch.title);
+      activePageIndex.value = 0;
+      applySeo(localMatch.pages[0]);
+      isLoading.value = false;
+      return;
+    }
+  }
+
   // 3. Fallback: Check if current opened project in editorStore matches
   if (editorStore.currentPage && editorStore.currentProjectId &&
       normalize(editorStore.currentPage.brand_slug) === normalize(brandSlug) && 
       normalize(editorStore.currentPage.slug) === normalize(pageSlug)) {
     submissionPageId.value = editorStore.currentProjectId;
     campaignStatus.value = editorStore.currentPage.status || 'draft';
-    projectPages.value = JSON.parse(JSON.stringify(editorStore.pages));
+    setCampaignPages(JSON.parse(JSON.stringify(editorStore.pages)), editorStore.projectTitle);
     activePageIndex.value = editorStore.activePageIndex || 0;
     applySeo(editorStore.currentPage);
     isLoading.value = false;
@@ -266,25 +272,58 @@ function handleNextPage(pageFormData?: Record<string, any>) {
     activePageIndex.value++;
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // Populate downstream GuestEPass fallback values with gathered guest credentials
+    // Advancing onto the pass needs the entry recorded first (the pass shows its
+    // server-issued Access ID); so does reaching the end of a funnel that asked
+    // the guest anything.
     const targetPage = projectPages.value[activePageIndex.value];
-    if (targetPage && Array.isArray(targetPage.widget_tree)) {
-      targetPage.widget_tree.forEach(w => {
-        if (w.type === 'GuestEPass' && w.props) {
-          if (collectedFormData.value.fullName) w.props.guestNameFallback = collectedFormData.value.fullName;
-          if (collectedFormData.value.email) w.props.emailFallback = collectedFormData.value.email;
-        }
-      });
-    }
-
-    // If advancing to the final confirmation page / pass, automatically post RSVP entry to backend
-    if (activePageIndex.value === projectPages.value.length - 1 || targetPage?.widget_tree?.some(w => w.type === 'GuestEPass')) {
+    const isLastPage = activePageIndex.value === projectPages.value.length - 1;
+    if (pageHasPass(targetPage) || (isLastPage && hasAnswers())) {
       sendSubmission();
     }
-  } else {
+  } else if (hasAnswers() || projectPages.value.some(pageHasPass)) {
     // Already on the final page: execute final submission
     sendSubmission();
   }
+}
+
+/**
+ * The guest walks through the funnel pages only. The Ticket page is the
+ * design of the downloadable PDF; it is kept aside for the pass to render.
+ */
+const ticketSource = reactive<TicketSource>({
+  page: null,
+  context: { passWidget: null, logoUrl: '', campaignTitle: '' }
+});
+provide(TICKET_SOURCE_KEY, ticketSource);
+
+function setCampaignPages(pages: ActivationPage[], title?: string) {
+  projectPages.value = pages.filter(p => p.kind !== 'ticket');
+  ticketSource.page = pages.find(p => p.kind === 'ticket') || null;
+  const widgets = pages.flatMap(p => p.widget_tree || []);
+  const pass = widgets.find(w => w.type === 'GuestEPass') || null;
+  const hero = widgets.find(w => w.type === 'HeroDrop' && w.props?.brandLogoUrl);
+  ticketSource.context = {
+    passWidget: pass,
+    logoUrl: pass?.props?.brandLogoUrl || hero?.props?.brandLogoUrl || '',
+    campaignTitle: title || ''
+  };
+}
+
+function pageHasPass(page?: ActivationPage | null): boolean {
+  return Boolean(page?.widget_tree?.some(w => w.type === 'GuestEPass'));
+}
+
+function hasAnswers(): boolean {
+  return Object.values(collectedFormData.value).some(v => (Array.isArray(v) ? v.length > 0 : String(v ?? '').trim() !== ''));
+}
+
+/** The pass type (VIP / Public) the campaign's Ticket Summary issues. */
+function campaignGuestType(): string {
+  for (const page of projectPages.value) {
+    const pass = page.widget_tree?.find(w => w.type === 'GuestEPass');
+    if (pass) return String(pass.props?.guestType || 'Public');
+  }
+  return '';
 }
 
 function handlePrevPage() {
@@ -304,6 +343,10 @@ function handlePopState() {
 const livePass = reactive<LivePassState>({
   status: 'idle',
   code: '',
+  guestName: '',
+  email: '',
+  guestType: '',
+  sessions: [],
   error: '',
   retry: () => sendSubmission()
 });
@@ -320,6 +363,11 @@ async function sendSubmission() {
       submission_type: 'raffle',
       form_data: {
         ...collectedFormData.value,
+        // The server needs a name and email; a funnel that never asked for
+        // them still issues a pass, under placeholders the hub hides.
+        fullName: collectedFormData.value.fullName || collectedFormData.value.name || 'Guest Participant',
+        email: collectedFormData.value.email || 'guest@activation.internal',
+        ...(campaignGuestType() ? { 'Guest Type': campaignGuestType() } : {}),
         submittedAt: new Date().toISOString()
       }
     };
@@ -330,7 +378,13 @@ async function sendSubmission() {
     });
     const json = await res.json().catch(() => null);
     if (res.ok && json?.success && json.data?.ticket_code) {
+      const recorded = json.data.form_data || {};
       livePass.code = json.data.ticket_code;
+      livePass.guestName = recorded.fullName === 'Guest Participant' ? '' : String(recorded.fullName || '');
+      livePass.email = recorded.email === 'guest@activation.internal' ? '' : String(recorded.email || '');
+      livePass.guestType = String(recorded['Guest Type'] || campaignGuestType() || '');
+      const sessions = recorded[SESSIONS_ANSWER_KEY];
+      livePass.sessions = Array.isArray(sessions) ? sessions.filter((x: any) => x && typeof x === 'object' && x.label) : [];
       livePass.status = 'ready';
       return;
     }

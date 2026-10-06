@@ -16,6 +16,8 @@ export type WidgetType =
   | 'MultipleChoice'
   | 'ModalOverlay'
   | 'GuestEPass'
+  /* A guest-data block on the Ticket page (name, Access ID, QR, sessions…). */
+  | 'TicketField'
   /* Used by the ticket landing page. No renderer case exists for it yet, so a
      PassCTA widget currently displays nothing — needs a display built before
      it is used on a live page. */
@@ -94,6 +96,11 @@ export interface PageSettings {
 
 export interface ActivationPage {
   id: string;
+  /**
+   * 'ticket' marks the page that designs the downloadable PDF ticket. It is
+   * never part of the guest funnel; unset means a normal funnel page.
+   */
+  kind?: 'ticket';
   brand_id: string;
   brand_slug: string;
   title: string;
@@ -143,6 +150,26 @@ export interface ProjectItem {
   created_by?: string;
   created_at: string;
   updated_at: string;
+  /** Live version number; 0 = never published. Set by the server. */
+  live_version?: number;
+  published_at?: string | null;
+  published_by?: string;
+  /** Set while a submission waits for the superadmin. */
+  pending_update_at?: string | null;
+  /** The working copy differs from what visitors see. */
+  has_unpublished_changes?: boolean;
+}
+
+/** One entry in a project's build history. */
+export interface ProjectHistoryEntry {
+  id: string;
+  page_id: string;
+  revision: number;
+  kind: 'submitted' | 'published' | 'declined' | 'discarded' | 'restored';
+  live_version?: number | null;
+  note?: string;
+  created_by?: string;
+  created_at: string;
 }
 
 export type ViewportMode = 'iphone-16-pro' | 'iphone-17-pro' | 'android-standard' | 'responsive';

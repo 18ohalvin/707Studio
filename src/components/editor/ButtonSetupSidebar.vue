@@ -304,6 +304,7 @@
 </template>
 
 <script setup lang="ts">
+import { CTA_ACTION_OPTIONS, normalizeCtaAction } from './ctaActions.ts';
 import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
@@ -495,13 +496,7 @@ const currentStickyScope = computed(() => {
 
 const isLinkToDropdownOpen = ref(false);
 
-const allLinkToOptions = [
-  { label: 'Download E-Pass', value: 'download-pass' },
-  { label: 'Next Page', value: 'next_page' },
-  { label: 'Submit Form', value: 'submit' },
-  { label: 'External URL', value: 'link' },
-  { label: 'Popup Modal', value: 'modal' }
-] as const;
+const allLinkToOptions = CTA_ACTION_OPTIONS;
 
 const isModalDisallowed = computed(() => {
   return currentPositionMode.value === 'sticky-bottom' && currentStickyScope.value === 'all';
@@ -525,25 +520,19 @@ const hasEPassInProject = computed(() => {
 });
 
 const linkToOptions = computed(() => {
-  const filtered = allLinkToOptions.filter(opt => {
+  return allLinkToOptions.filter(opt => {
     if (opt.value === 'download-pass') return hasEPassInProject.value;
-    if (opt.value === 'next_page') return true; // Next Page is included by default
-    if (opt.value === 'submit') return hasFormFields.value;
     if (opt.value === 'modal') return !isModalDisallowed.value;
-    if (opt.value === 'link') return true;
     return true;
   });
-  return filtered.length > 0 ? filtered : [allLinkToOptions.find(o => o.value === 'next_page')!];
 });
 
 const actionType = computed({
   get: () => {
-    const current = targetWidget.value?.props?.actionType;
-    const availableValues = linkToOptions.value.map(o => o.value);
-    if (current && availableValues.includes(current as any)) {
-      return current;
-    }
-    return availableValues[0] || 'link';
+    const current = normalizeCtaAction(targetWidget.value?.props?.actionType);
+    const availableValues = linkToOptions.value.map(o => o.value as string);
+    if (current && availableValues.includes(current)) return current;
+    return 'submit';
   },
   set: (val: string) => {
     if (targetWidget.value) {
@@ -609,7 +598,7 @@ function setPositionMode(mode: 'in-flow' | 'sticky-bottom') {
       stickyPageIds: targetWidget.value.props.stickyPageIds || [editorStore.currentPage.id]
     };
     if (isStickyAll && targetWidget.value.props.actionType === 'modal') {
-      updates.actionType = 'next_page';
+      updates.actionType = 'submit';
     }
     editorStore.updateWidgetProps(targetWidget.value.id, updates);
   }
@@ -625,7 +614,7 @@ function setStickyScope(scope: 'current' | 'all' | 'custom') {
       stickyPageIds: targetWidget.value.props.stickyPageIds || defaultPageIds
     };
     if (scope === 'all' && currentPositionMode.value === 'sticky-bottom' && targetWidget.value.props.actionType === 'modal') {
-      updates.actionType = 'next_page';
+      updates.actionType = 'submit';
     }
     editorStore.updateWidgetProps(targetWidget.value.id, updates);
   }

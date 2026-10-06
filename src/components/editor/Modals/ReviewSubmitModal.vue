@@ -16,7 +16,7 @@
           <!-- Header (Figma Node 212:8957) -->
           <div class="flex items-center justify-between w-full" data-node-id="212:8957" data-name="Widget Header">
             <h2 class="font-707 text-[22px] font-normal leading-[28px] text-black whitespace-nowrap" data-node-id="212:8958">
-              Submit for Review?
+              {{ isUpdate ? 'Submit Update?' : 'Submit for Review?' }}
             </h2>
             <!-- Close Button (Figma Node 212:8959) -->
             <button 
@@ -32,7 +32,12 @@
 
           <!-- Description Text (Figma Node 212:8961) -->
           <p class="font-707 text-[14px] font-normal leading-[24px] text-black w-full" data-node-id="212:8961">
-            Your campaign will be sent to the UI/UX Division for final approval. Once approved, it will be published automatically to the public at this URL:
+            <template v-if="isUpdate">
+              Your changes go to the UI/UX Division for review. Visitors keep seeing the current live version (v{{ liveVersion }}) until the update is published at:
+            </template>
+            <template v-else>
+              Your campaign will be sent to the UI/UX Division for final approval. Once approved, it will be published automatically to the public at this URL:
+            </template>
           </p>
 
           <!-- Campaign URL Bar with Copy Button (Figma Node 224:8977) -->
@@ -53,6 +58,18 @@
             </button>
           </div>
         </div>
+
+        <!-- Optional note for the reviewer (shown in history and the notification) -->
+        <label class="flex flex-col gap-1.5 w-full mb-[20px]">
+          <span class="font-707 text-[12px] text-neutral-600">{{ isUpdate ? 'What changed?' : 'Note for the reviewer' }} <span class="text-neutral-400">(optional)</span></span>
+          <textarea
+            v-model="note"
+            rows="2"
+            maxlength="500"
+            :placeholder="isUpdate ? 'e.g. New banner and updated venue time' : 'Anything the UI/UX team should know'"
+            class="w-full rounded-[8px] border border-black/15 focus:border-black bg-white/80 px-3 py-2 text-[13px] font-707 outline-none resize-none"
+          />
+        </label>
 
         <!-- Action Buttons Container (Figma Node 212:8974) -->
         <div class="flex gap-[8px] items-center w-full" data-node-id="212:8974" data-name="Button Container">
@@ -125,6 +142,7 @@ const campaignUrl = computed(() => {
 
   const brandSlug = slugify(rawBrand) || 'events';
   const currentProj = editorStore.projects.find(p => p.id === editorStore.currentProjectId);
+  if (currentProj?.brand_slug) rawBrand = currentProj.brand_slug;
   const projectSlug = currentProj?.slug || editorStore.pages[0]?.slug || slugify(editorStore.projectTitle) || 'campaign-activation';
   return `events.707.co.id/${brandSlug}/${projectSlug}`;
 });
@@ -141,11 +159,26 @@ async function copyUrl() {
   }
 }
 
-function handleSubmit() {
-  editorStore.setPageStatus('pending_review', 'Brand Team', 'Submitted for UI/UX Division final approval');
-  editorStore.saveCurrentProject();
+const note = ref('');
+const isSubmitting = ref(false);
+const currentProject = computed(() => editorStore.projects.find(p => p.id === editorStore.currentProjectId));
+const liveVersion = computed(() => Number(currentProject.value?.live_version || 0));
+const isUpdate = computed(() => liveVersion.value > 0);
+
+async function handleSubmit() {
+  if (isSubmitting.value) return;
+  isSubmitting.value = true;
+  const res = await editorStore.transitionProject(editorStore.currentProjectId, 'submit', note.value.trim());
+  isSubmitting.value = false;
+  if (!res.ok) {
+    editorStore.showToast(`Could not submit: ${res.error}`);
+    return;
+  }
+  note.value = '';
   editorStore.isReviewModalOpen = false;
-  editorStore.showToast('Design successfully submitted to the UI/UX Division for final approval!');
+  editorStore.showToast(isUpdate.value
+    ? 'Update sent — the UI/UX Division has been notified.'
+    : 'Submitted — the UI/UX Division has been notified for final approval.');
 }
 </script>
 

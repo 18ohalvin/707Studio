@@ -2,7 +2,9 @@
   <div 
     class="relative select-none"
     :class="[
-      isLivePage 
+      isTicketPage
+        ? 'w-[340px] h-[480px] shrink-0'
+        : isLivePage 
         ? 'w-full h-full min-h-[100dvh] flex flex-col flex-1' 
         : (isPreviewModal
             ? 'w-full h-full min-h-0 flex flex-col flex-1 overflow-hidden'
@@ -20,13 +22,14 @@
           transform: `scale(${100 / editorStore.zoomLevel})`,
           transformOrigin: 'bottom left'
         }"
-        @click.stop="startEditingPageName"
-        :title="isEditingPageName ? '' : 'Click to rename page'"
+        @click.stop="!isTicketPage && startEditingPageName()"
+        :title="isTicketPage ? 'Design the downloadable ticket. Guest data blocks are filled in per guest.' : (isEditingPageName ? '' : 'Click to rename page')"
       >
         <!-- View mode -->
         <div v-if="!isEditingPageName" class="flex items-center gap-[6px]">
           <p class="font-707 font-light text-caption text-black whitespace-nowrap">
-            Page {{ pageNumber }}: {{ currentPageName }}
+            <template v-if="isTicketPage">Ticket · PDF (A6) — not shown as a page to guests</template>
+            <template v-else>Page {{ pageNumber }}: {{ currentPageName }}</template>
           </p>
           <Pencil class="w-2.5 h-2.5 text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
@@ -62,8 +65,10 @@
       @wheel="handleArtboardWheel"
       class="relative flex flex-col overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
       :class="[
-        (isPreviewModal || isLivePage) ? 'bg-white' : 'bg-[#f5f5f5]',
-        isLivePage
+        (isPreviewModal || isLivePage || isTicketPage) ? 'bg-white' : 'bg-[#f5f5f5]',
+        isTicketPage
+          ? ((isPreviewModal || isLivePage) ? 'w-[340px] h-[480px] border-none shadow-none' : 'border-[0.5px] w-[340px] h-[480px]')
+          : isLivePage
           ? 'w-full h-full min-h-[100dvh] flex-1 border-none shadow-none'
           : (isPreviewModal
               ? 'w-full h-full min-h-0 flex-1 border-none shadow-none'
@@ -78,8 +83,9 @@
       <!-- Persistent Thin 0.5px Black Selected Page Outline Overlay (Only on selected artboard) -->
       <div v-if="!isMiniPreview && !isPreviewModal && !isLivePage && isSelected" class="pointer-events-none absolute inset-0 z-50 border-[0.5px] border-black border-solid" />
 
-      <!-- Fixed 48px Header with Right 707 Logo (Figma Node 107:3820) -->
+      <!-- Fixed 48px Header with Right 707 Logo (Figma Node 107:3820). Not on the Ticket: it is printed as designed. -->
       <div 
+        v-if="!isTicketPage"
         @click="handleArtboardClick"
         class="sticky top-0 left-0 right-0 h-[48px] w-full z-30 flex items-center justify-end px-[16px] shrink-0 cursor-default"
         :class="(isPreviewModal || isLivePage) ? 'bg-white' : 'bg-[#f5f5f5]'"
@@ -104,8 +110,9 @@
         @mousedown="handleArtboardMouseDown"
         class="artboard-scroll-container flex-1 flex flex-col no-scrollbar px-0 pt-0 pb-0 relative overscroll-contain will-change-scroll select-none w-full"
         :class="[
-          (isPreviewModal || isLivePage) ? 'bg-white' : 'bg-[#f5f5f5]',
+          (isPreviewModal || isLivePage || isTicketPage) ? 'bg-white' : 'bg-[#f5f5f5]',
           isDragOver ? 'bg-neutral-200/60' : '',
+          isTicketPage ? '!overflow-hidden pt-[20px]' : '',
           isSingleFullScreenHero ? 'overflow-hidden cursor-default' : (isArtboardDragging ? 'cursor-grabbing' : (isContentScrollable ? 'cursor-grab' : 'cursor-default')),
           isSingleFullScreenHero ? 'overflow-hidden' : 'overflow-y-auto'
         ]"
@@ -1225,7 +1232,49 @@ more</span>
               </div>
             </div>
 
-            <!-- 10. GuestEPass Widget (Figma Node 222:4188) -->
+            <!-- Ticket data block (Ticket page): one or two guest fields, filled in per guest -->
+            <div
+              v-else-if="widget.type === 'TicketField'"
+              class="relative w-full px-[20px] py-[6px] select-none text-black"
+              @click.stop="handleWidgetClick(widget)"
+            >
+              <div
+                class="grid gap-x-[20px] w-full"
+                :class="ticketFieldsOf(widget).length > 1 ? 'grid-cols-2' : 'grid-cols-1'"
+                :style="{ textAlign: widget.props?.align || 'left' }"
+              >
+                <div v-for="field in ticketFieldsOf(widget)" :key="field" class="flex flex-col min-w-0" :class="ticketAlignClass(widget)">
+                  <!-- QR of the guest's Access ID -->
+                  <div v-if="field === 'qr'" class="size-[120px] border-[0.5px] border-black rounded-[6px] p-[9px] flex items-center justify-center">
+                    <img v-if="ticketQr" :src="ticketQr" alt="Pass QR code" class="size-full object-contain [image-rendering:pixelated]" />
+                  </div>
+                  <!-- Brand logo, or the campaign title when there is none -->
+                  <template v-else-if="field === 'brandLogo'">
+                    <img v-if="ticketLogo" :src="ticketLogo" alt="Brand logo" class="h-[22px] w-auto max-w-[160px] object-contain" crossorigin="anonymous" />
+                    <span v-else class="font-707 text-[10px] uppercase tracking-[0.12em] text-neutral-500">{{ ticketCampaignTitle }}</span>
+                  </template>
+                  <!-- Sessions the guest picked -->
+                  <template v-else-if="field === 'sessions'">
+                    <span class="font-707 text-[10px] leading-[13px] text-neutral-500 uppercase tracking-tight mb-[6px]">{{ ticketCaption(widget, field) }}</span>
+                    <div class="flex flex-col gap-[6px] w-full">
+                      <div v-for="(sessionItem, sIdx) in ticketSessions" :key="sIdx" class="border-[0.5px] border-[#d4d4d4] h-[34px] px-[12px] flex items-center justify-between gap-2">
+                        <span class="font-707 font-medium text-[11px] truncate">{{ sessionItem.label }}</span>
+                        <span v-if="sessionItem.sublabel" class="font-707 text-[11px] text-neutral-500 shrink-0">{{ sessionItem.sublabel }}</span>
+                      </div>
+                    </div>
+                  </template>
+                  <!-- Text fields -->
+                  <template v-else>
+                    <span class="font-707 text-[10px] leading-[13px] text-neutral-500 uppercase tracking-tight">{{ ticketCaption(widget, field) }}</span>
+                    <span
+                      class="font-707 font-medium text-[13px] leading-[18px] tracking-tight break-words mt-[2px]"
+                      :class="[field === 'email' ? 'lowercase' : 'uppercase', field === 'accessId' ? 'font-mono' : '']"
+                    >{{ ticketValue(widget, field) || '—' }}</span>
+                  </template>
+                </div>
+              </div>
+            </div>
+
             <!-- 10. GuestEPass Widget (Figma Node 222:4188) -->
             <div 
               v-else-if="widget.type === 'GuestEPass'" 
@@ -1829,7 +1878,9 @@ more</span>
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, inject } from 'vue';
 import QRCode from 'qrcode';
-import { LIVE_PASS_KEY } from './livePass.ts';
+import { LIVE_PASS_KEY, SESSIONS_ANSWER_KEY, type PassSession } from './livePass.ts';
+import { normalizeCtaAction } from './ctaActions.ts';
+import { TICKET_CONTEXT_KEY, TICKET_SOURCE_KEY, ticketFieldMeta, type TicketFieldKey } from './ticket/ticketFields.ts';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { 
@@ -1877,6 +1928,15 @@ const editorStore = useEditorStore();
 const livePass = inject(LIVE_PASS_KEY, null);
 const isLivePass = computed(() => Boolean(props.isLivePage && livePass));
 const livePassQr = ref('');
+
+/** Same shape as the server's ticket codes (DDMMYY-HHMM-XXXX); preview only. */
+const sampleAccessId = (() => {
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const suffix = Array.from({ length: 4 }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join('');
+  return `${pad(now.getDate())}${pad(now.getMonth() + 1)}${String(now.getFullYear()).slice(-2)}-${pad(now.getHours())}${pad(now.getMinutes())}-${suffix}`;
+})();
 watch(
   () => livePass?.code,
   async (code) => {
@@ -1895,6 +1955,63 @@ const logoFailed = ref(false);
 const activePage = computed(() => {
   return props.page || editorStore.currentPage;
 });
+
+/* ---------- Ticket page ---------- */
+const isTicketPage = computed(() => activePage.value?.kind === 'ticket');
+// Rendered on its own for the PDF: the campaign's pass, logo and title come in from outside.
+const ticketContext = inject(TICKET_CONTEXT_KEY, null);
+// On a live page: where the campaign's Ticket page is (it is not a funnel page).
+const ticketSource = inject(TICKET_SOURCE_KEY, null);
+
+function ticketPassWidget(): any | null {
+  return ticketContext?.passWidget || findPassWidget(null);
+}
+
+function ticketFieldsOf(widget: any): TicketFieldKey[] {
+  const fields = (Array.isArray(widget.props?.fields) ? widget.props.fields : [widget.props?.field || 'guestName']) as TicketFieldKey[];
+  return fields.slice(0, 2);
+}
+
+function ticketCaption(widget: any, field: string): string {
+  const custom = widget.props?.captions?.[field];
+  return custom !== undefined && custom !== '' ? custom : ticketFieldMeta(field).caption;
+}
+
+function ticketAlignClass(widget: any): string {
+  const align = widget.props?.align || 'left';
+  return align === 'center' ? 'items-center' : align === 'right' ? 'items-end' : 'items-start';
+}
+
+function ticketValue(_widget: any, field: TicketFieldKey): string {
+  const pass = ticketPassWidget();
+  switch (field) {
+    case 'guestName': return pass ? getGuestName(pass) : '[GUEST NAME]';
+    case 'accessId': return pass ? getAccessId(pass) : sampleAccessId;
+    case 'guestType': return pass ? getGuestType(pass) : 'PUBLIC';
+    case 'email': return pass ? getEmail(pass) : 'guest@email.com';
+    case 'venue': return pass ? getVenue(pass) : '[EVENT VENUE LOCATION]';
+    case 'eventTitle': return ticketCampaignTitle.value;
+    default: return '';
+  }
+}
+
+const ticketCampaignTitle = computed(() => ticketContext?.campaignTitle || editorStore.projectTitle || 'Campaign');
+const ticketLogo = computed(() => {
+  if (ticketContext) return ticketContext.logoUrl;
+  const pass = ticketPassWidget();
+  return pass ? getBrandLogo(pass) : '';
+});
+const ticketSessions = computed<PassSession[]>(() => {
+  const pass = ticketPassWidget();
+  return pass ? getValidForSessions(pass) : [];
+});
+
+// Sample QR in the editor (same format as a real code); the guest's own QR when live.
+const sampleQr = ref('');
+QRCode.toDataURL(sampleAccessId, { margin: 0, width: 264, errorCorrectionLevel: 'M' })
+  .then(url => (sampleQr.value = url))
+  .catch(() => {});
+const ticketQr = computed(() => (isLivePass.value ? livePassQr.value : sampleQr.value));
 
 const pageNumber = computed(() => {
   return typeof props.pageIndex === 'number' ? props.pageIndex + 1 : 1;
@@ -2383,6 +2500,9 @@ function isWidgetSetupModalOpen(widget: any): boolean {
   if (widget.type === 'GuestEPass') {
     return editorStore.isEPassSidebarOpen;
   }
+  if (widget.type === 'TicketField') {
+    return editorStore.isTicketSidebarOpen;
+  }
   return editorStore.isWidgetSidebarOpen;
 }
 
@@ -2403,6 +2523,8 @@ function handleAdjustWidget(widget: any) {
     editorStore.openModalSidebar();
   } else if (widget.type === 'GuestEPass') {
     editorStore.openEPassSidebar();
+  } else if (widget.type === 'TicketField') {
+    editorStore.openTicketSidebar();
   } else {
     editorStore.openWidgetSidebar();
   }
@@ -2444,9 +2566,70 @@ function getButtonIcon(widget: any) {
   }
 }
 
+/**
+ * Moves the guest to the next step. On a published page the step lives in
+ * PublicDropView, so it has to be told (with this page's answers); calling the
+ * editor's selectPage there did nothing, which left "Next Page" buttons dead
+ * on live campaigns.
+ */
+function goToNextPage(formData?: Record<string, any>) {
+  if (props.isLivePage) {
+    emit('next-page', formData);
+    return;
+  }
+  const currentIdx = typeof props.pageIndex === 'number' ? props.pageIndex : editorStore.activePageIndex;
+  // The Ticket page is the PDF design, not a step: the funnel ends before it.
+  const next = editorStore.pages[currentIdx + 1];
+  if (next && next.kind !== 'ticket') {
+    editorStore.selectPage(currentIdx + 1);
+  } else {
+    editorStore.isTestFormModalOpen = true;
+  }
+}
+
+/** The guest's answers on this page, keyed by field label. Empty when the page has no fields. */
+function collectPageAnswers(): Record<string, any> {
+  const formData: Record<string, any> = {};
+  let userEmail = '';
+  let userName = '';
+
+  activePage.value.widget_tree.forEach((w) => {
+    if (w.type === 'FieldInput') {
+      const key = w.props?.label || w.props?.placeholder || w.id;
+      formData[key] = w.props?.value || '';
+      if (w.props?.inputType === 'email' || /email/i.test(key)) userEmail = w.props?.value;
+      if (/name/i.test(key)) userName = w.props?.value;
+    } else if (w.type === 'RegistrationForm') {
+      const fields = (w.props?.fields || []) as any[];
+      fields.forEach((f: any) => {
+        const key = f.name || f.label || 'field';
+        formData[key] = f.value || '';
+        if (f.type === 'email' || /email/i.test(key)) userEmail = f.value;
+        if (/name/i.test(key)) userName = f.value;
+      });
+    } else if (w.type === 'MultipleChoice') {
+      const key = w.props?.question || w.id;
+      // Store what the guest saw (labels), not internal option ids.
+      const selected = (w.props?.selectedValues || []) as string[];
+      formData[key] = (w.props?.options || [])
+        .filter((opt: any) => selected.includes(opt.id))
+        .map((opt: any) => opt.label || opt.id);
+    }
+  });
+
+  const sessions = selectedSessionsIn(activePage.value.widget_tree);
+  if (sessions.length) formData[SESSIONS_ANSWER_KEY] = sessions;
+
+  // Only real answers: placeholders are added once, at submission, so a later
+  // page without a name field cannot overwrite the name given earlier.
+  if (!formData.email && userEmail) formData.email = userEmail;
+  if (!formData.fullName && userName) formData.fullName = userName;
+  return formData;
+}
+
 function handleButtonClick(widget: any) {
   if (widget.props?.disabled) return;
-  const actionType = widget.props?.actionType || 'submit';
+  const actionType = normalizeCtaAction(widget.props?.actionType) || 'submit';
 
   if (actionType === 'submit') {
     let allValid = true;
@@ -2479,54 +2662,7 @@ function handleButtonClick(widget: any) {
       scrollToWidget(firstInvalidWidget.id);
       return;
     }
-    if (props.isLivePage) {
-      const formData: Record<string, any> = {};
-      let userEmail = '';
-      let userName = '';
-
-      activePage.value.widget_tree.forEach((w) => {
-        if (w.type === 'FieldInput') {
-          const key = w.props?.label || w.props?.placeholder || w.id;
-          formData[key] = w.props?.value || '';
-          if (w.props?.inputType === 'email' || /email/i.test(key)) userEmail = w.props?.value;
-          if (/name/i.test(key)) userName = w.props?.value;
-        } else if (w.type === 'RegistrationForm') {
-          const fields = (w.props?.fields || []) as any[];
-          fields.forEach((f: any) => {
-            const key = f.name || f.label || 'field';
-            formData[key] = f.value || '';
-            if (f.type === 'email' || /email/i.test(key)) userEmail = f.value;
-            if (/name/i.test(key)) userName = f.value;
-          });
-        } else if (w.type === 'MultipleChoice') {
-          const key = w.props?.question || w.id;
-          formData[key] = w.props?.selectedValues || [];
-        }
-      });
-
-      if (!formData.email && userEmail) formData.email = userEmail;
-      if (!formData.fullName && userName) formData.fullName = userName;
-      if (!formData.fullName) formData.fullName = formData.name || 'Guest Participant';
-      if (!formData.email) formData.email = 'guest@activation.internal';
-
-      // Emit next page navigation event with accumulated form data
-      emit('next-page', formData);
-      return;
-    }
-
-    const currentIdx = typeof props.pageIndex === 'number' ? props.pageIndex : editorStore.activePageIndex;
-    if (currentIdx < editorStore.pages.length - 1) {
-      editorStore.selectPage(currentIdx + 1);
-    } else {
-      editorStore.isTestFormModalOpen = true;
-    }
-  } else if (actionType === 'next_page') {
-    const currentIdx = typeof props.pageIndex === 'number' ? props.pageIndex : editorStore.activePageIndex;
-    if (currentIdx < editorStore.pages.length - 1) {
-      editorStore.selectPage(currentIdx + 1);
-    } else {
-      editorStore.isTestFormModalOpen = true;
-    }
+    goToNextPage(props.isLivePage ? collectPageAnswers() : undefined);
   } else if (actionType === 'link' && widget.props?.url) {
     if (widget.props?.openInNewTab) {
       window.open(widget.props.url, '_blank');
@@ -2542,12 +2678,73 @@ function handleButtonClick(widget: any) {
       buttonVariant: 'black'
     };
   } else if (actionType === 'download-pass') {
-    editorStore.showToast('Preparing your digital pass...');
-    if (typeof window !== 'undefined') {
-      setTimeout(() => {
-        window.print();
-      }, 350);
+    downloadPass(widget);
+  }
+}
+
+/** The pass a download button belongs to: itself, or the Ticket Summary on this page. */
+function findPassWidget(trigger: any): any | null {
+  if (trigger?.type === 'GuestEPass') return trigger;
+  return activePage.value.widget_tree.find((w: any) => w.type === 'GuestEPass')
+    || editorStore.pages.flatMap(p => p.widget_tree).find(w => w.type === 'GuestEPass')
+    || null;
+}
+
+async function downloadPass(trigger: any) {
+  const pass = findPassWidget(trigger);
+  if (isLivePass.value && livePass!.status !== 'ready') {
+    editorStore.showToast(livePass!.status === 'error' ? 'Your pass was not issued yet — tap "Try again" on the pass first.' : 'Your pass is still being issued — one moment.');
+    return;
+  }
+
+  // The campaign's own Ticket page, when it has one: the PDF is that design.
+  const ticketPage = props.isLivePage ? ticketSource?.page : editorStore.pages.find(p => p.kind === 'ticket');
+  if (ticketPage) {
+    editorStore.showToast('Preparing your ticket PDF…');
+    try {
+      const context = props.isLivePage && ticketSource
+        ? ticketSource.context
+        : { passWidget: pass, logoUrl: pass ? getBrandLogo(pass) : '', campaignTitle: editorStore.projectTitle };
+      const title = (context.campaignTitle || 'ticket').replace(/[^a-z0-9]+/gi, '-').replace(/(^-|-$)/g, '').toLowerCase() || 'ticket';
+      const { renderTicketPdf } = await import('./ticket/ticketPdf.ts');
+      await renderTicketPdf({
+        page: ticketPage,
+        context,
+        livePass: isLivePass.value ? livePass : null,
+        fileName: `${title}-${isLivePass.value ? livePass!.code : 'sample'}.pdf`,
+        isSample: !isLivePass.value
+      });
+    } catch (err) {
+      console.warn('[MobileArtboard] Could not render the ticket PDF:', err);
+      editorStore.showToast('Could not create the PDF. Please take a screenshot of your pass instead.');
     }
+    return;
+  }
+
+  if (!pass) {
+    editorStore.showToast('Add a Ticket Summary to this campaign to offer a downloadable pass.');
+    return;
+  }
+  editorStore.showToast('Preparing your e-pass PDF…');
+  try {
+    const { downloadPassPdf } = await import('./passPdf.ts');
+    await downloadPassPdf({
+      headline: String(pass.props?.heading || 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.'),
+      guestName: getGuestName(pass),
+      venue: getVenue(pass),
+      accessId: getAccessId(pass),
+      guestType: getGuestType(pass),
+      email: getEmail(pass),
+      sessions: getValidForSessions(pass),
+      logoUrl: getBrandLogo(pass) || undefined,
+      campaignTitle: activePage.value.page_settings?.seoTitle || editorStore.projectTitle,
+      pageUrl: typeof window !== 'undefined' && props.isLivePage ? window.location.href : undefined,
+      showQr: pass.props?.showQrCode !== false,
+      isSample: !isLivePass.value
+    });
+  } catch (err) {
+    console.warn('[MobileArtboard] Could not build the pass PDF:', err);
+    editorStore.showToast('Could not create the PDF. Please take a screenshot of your pass instead.');
   }
 }
 
@@ -3419,12 +3616,7 @@ function handleModalDoneClick() {
 
   // 4. Handle navigation or external URL
   if (btnAction === 'next_page') {
-    const currentIdx = typeof props.pageIndex === 'number' ? props.pageIndex : editorStore.activePageIndex;
-    if (currentIdx < editorStore.pages.length - 1) {
-      editorStore.selectPage(currentIdx + 1);
-    } else {
-      editorStore.isTestFormModalOpen = true;
-    }
+    goToNextPage(props.isLivePage ? collectPageAnswers() : undefined);
   } else if (btnAction === 'link' && btnUrl) {
     if (openInNewTab) {
       window.open(btnUrl, '_blank');
@@ -3850,7 +4042,7 @@ async function handleChoiceImageDrop(e: DragEvent, widget: any, optId: string) {
 }
 
 function getGuestName(widget: any) {
-  if (props.isLivePage && widget.props?.guestNameFallback) return String(widget.props.guestNameFallback).toUpperCase();
+  if (isLivePass.value) return (livePass!.guestName || 'GUEST').toUpperCase();
   // 1. Check if any RegistrationForm has a filled name field
   const regWidgets = editorStore.pages.flatMap(p => p.widget_tree).filter(w => w.type === 'RegistrationForm');
   for (const rw of regWidgets) {
@@ -3895,7 +4087,35 @@ function getVenue(widget: any) {
   return widget.props?.venue || '[EVENT VENUE LOCATION]';
 }
 
+/** The options a guest picked in these widgets (choice blocks first, then choice pop-ups). */
+function selectedSessionsIn(widgets: any[]): PassSession[] {
+  const toSession = (opt: any, idx: number): PassSession => ({
+    label: opt.label || `Pass Option ${idx + 1}`,
+    sublabel: opt.sublabel || '',
+    description: opt.description || ''
+  });
+  for (const cw of widgets.filter(w => w.type === 'MultipleChoice')) {
+    const selected = (cw.props?.selectedValues || []) as string[];
+    const picked = (cw.props?.options || []).filter((opt: any) => selected.includes(opt.id));
+    if (picked.length) return picked.map(toSession);
+  }
+  for (const w of widgets) {
+    const mProps = w.props?.modalProps || (w.type === 'ModalOverlay' ? w.props : null);
+    const picked = (mProps?.options || []).filter((opt: any) => opt.selected);
+    if (picked.length) return picked.map(toSession);
+  }
+  return [];
+}
+
 function getValidForSessions(widget: any) {
+  // Live: exactly what this guest picked, as the server recorded it — the same
+  // list the PDF and the door staff see. If the campaign offered no choice,
+  // the pass lists the sessions the designer set on the Ticket Summary.
+  if (isLivePass.value) {
+    if (livePass!.sessions.length) return livePass!.sessions;
+    return (widget.props?.validForFallback || []) as PassSession[];
+  }
+
   // 1. Check if user selected any options in MultipleChoice widgets across pages
   const choiceWidgets = editorStore.pages.flatMap(p => p.widget_tree).filter(w => w.type === 'MultipleChoice');
   
@@ -3977,6 +4197,12 @@ function getValidForSessions(widget: any) {
 
 function getBrandLogo(widget: any) {
   if (widget?.props?.brandLogoUrl) return widget.props.brandLogoUrl;
+  const heroHere = activePage.value.widget_tree.find((w: any) => w.type === 'HeroDrop' && w.props?.brandLogoUrl);
+  if (heroHere) return heroHere.props.brandLogoUrl;
+  // editorStore.pages is the project open in the editor — on a live page it is
+  // someone else's (or nothing), so never borrow a logo from it there; the
+  // campaign's own logo comes from the page (PublicDropView) instead.
+  if (props.isLivePage) return ticketSource?.context.logoUrl || '';
   // Inherit brand logo from any HeroDrop banner in the project
   for (const page of editorStore.pages) {
     for (const w of page.widget_tree) {
@@ -4001,9 +4227,7 @@ function getBrandLogoAlign(widget: any) {
 }
 
 function getEmail(widget: any) {
-  if (props.isLivePage && widget.props?.emailFallback && widget.props.emailFallback !== 'guest@activation.internal') {
-    return String(widget.props.emailFallback).toLowerCase();
-  }
+  if (isLivePass.value) return livePass!.email.toLowerCase();
   const regWidgets = editorStore.pages.flatMap(p => p.widget_tree).filter(w => w.type === 'RegistrationForm');
   for (const rw of regWidgets) {
     const fields = (rw.props?.fields || []) as any[];
@@ -4033,11 +4257,7 @@ function getEmail(widget: any) {
     }
   }
 
-  if (props.isLivePage) {
-    const email = String(widget.props?.emailFallback || '');
-    return email === 'guest@activation.internal' ? '' : email;
-  }
-  return widget.props?.emailFallback || widget.props?.email || 'guest@email.com';
+  return 'guest@email.com';
 }
 
 function getAccessId(widget: any) {
@@ -4047,11 +4267,14 @@ function getAccessId(widget: any) {
     if (livePass!.status === 'ready') return livePass!.code;
     return livePass!.status === 'error' ? '—' : 'ISSUING…';
   }
-  return widget.props?.accessIdFallback || widget.props?.accessId || '020305-1008-1245';
+  // Editor: the system issues a fresh ID per guest at submission. Show one in
+  // the same format so the design reads like a real pass, never a fixed code.
+  return sampleAccessId;
 }
 
 function getGuestType(widget: any) {
-  return widget.props?.guestType || 'VIP';
+  if (isLivePass.value && livePass!.guestType) return livePass!.guestType.toUpperCase();
+  return String(widget.props?.guestType || 'Public').toUpperCase();
 }
 
 interface NoticeToken {

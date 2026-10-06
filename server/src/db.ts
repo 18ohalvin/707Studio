@@ -200,9 +200,51 @@ export async function initDbSchema(): Promise<void> {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
 
+      -- Databases created from server/db/schema.sql (docker-compose initdb)
+      -- have no brand_slug on submissions, so every guest entry was rejected
+      -- by the database — and, before failures were surfaced, quietly written
+      -- to the JSON fallback instead.
+      ALTER TABLE submissions ADD COLUMN IF NOT EXISTS brand_slug VARCHAR(100);
       ALTER TABLE submissions ADD COLUMN IF NOT EXISTS ticket_code VARCHAR(100);
       ALTER TABLE submissions ADD COLUMN IF NOT EXISTS checked_in_at TIMESTAMP WITH TIME ZONE;
       ALTER TABLE submissions ADD COLUMN IF NOT EXISTS checked_in_by VARCHAR(100);
+
+      -- Two versions per project: the working copy (the columns above, saved
+      -- by the editor as people work) and the live copy the public sees,
+      -- frozen when the superadmin publishes. Edits to a live campaign wait in
+      -- the working copy until the next publish.
+      ALTER TABLE pages ADD COLUMN IF NOT EXISTS live_snapshot JSONB;
+      ALTER TABLE pages ADD COLUMN IF NOT EXISTS live_version INT NOT NULL DEFAULT 0;
+      ALTER TABLE pages ADD COLUMN IF NOT EXISTS pending_update_at TIMESTAMP WITH TIME ZONE;
+      ALTER TABLE pages ADD COLUMN IF NOT EXISTS published_by VARCHAR(150);
+
+      -- Campaigns that were live before versioning existed: what is online now
+      -- becomes version 1, so nothing changes for their visitors.
+      UPDATE pages
+         SET live_snapshot = jsonb_build_object(
+               'title', title, 'slug', slug, 'description', description,
+               'widget_tree', widget_tree, 'pages', pages, 'page_settings', page_settings),
+             live_version = 1,
+             published_at = COALESCE(published_at, updated_at)
+       WHERE status IN ('approved', 'published') AND live_snapshot IS NULL;
+
+      -- Project history: every submission, publish, discard and restore, with
+      -- the content as it was at that moment. (A separate name from the unused
+      -- page_revisions table of the first schema, whose NOT NULL enum columns
+      -- would reject these rows.)
+      CREATE TABLE IF NOT EXISTS project_history (
+        id VARCHAR(100) PRIMARY KEY,
+        page_id VARCHAR(100) NOT NULL,
+        revision INT NOT NULL,
+        kind VARCHAR(30) NOT NULL,
+        live_version INT,
+        snapshot JSONB NOT NULL,
+        note TEXT DEFAULT '',
+        created_by VARCHAR(150),
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS project_history_page_idx ON project_history (page_id, revision DESC);
+      CREATE INDEX IF NOT EXISTS project_history_created_idx ON project_history (created_at DESC);
     `);
     console.log('[DB] Database schema initialized and verified successfully.');
   } catch (err: any) {

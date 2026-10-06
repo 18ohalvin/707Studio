@@ -203,7 +203,10 @@
           <div class="flex items-center gap-3">
             <div class="size-11 rounded-full bg-neutral-100 border border-black/5 flex items-center justify-center text-[13px] font-medium">{{ initials(guestName(lastGuest)) }}</div>
             <div class="min-w-0">
-              <p class="text-[15px] font-medium truncate">{{ guestName(lastGuest) }}</p>
+              <p class="text-[15px] font-medium truncate flex items-center gap-2">
+                {{ guestName(lastGuest) }}
+                <span v-if="guestType(lastGuest).toLowerCase() === 'vip'" class="shrink-0 px-1.5 py-0.5 rounded-[5px] bg-black text-white text-[10px] font-medium tracking-[0.08em]">VIP</span>
+              </p>
               <p class="text-[11.5px] text-neutral-500 font-mono truncate">{{ accessId(lastGuest) }}</p>
             </div>
           </div>
@@ -259,7 +262,7 @@ import {
   CircleCheck, TriangleAlert, OctagonX, DoorOpen, Undo2
 } from 'lucide-vue-next';
 import {
-  type Submission, type CheckInResult, checkInCode, patchSubmission, guestName, accessId, initials, customFieldKeys,
+  type Submission, type CheckInResult, checkInCode, patchSubmission, guestName, guestType, accessId, initials, customFieldKeys,
   formatValue, formatTime, statusBadgeClass, statusDotClass, statusLabel, normalizeStatus
 } from './hubUtils.ts';
 

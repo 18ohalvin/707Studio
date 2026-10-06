@@ -656,6 +656,7 @@
 </template>
 
 <script setup lang="ts">
+import { CTA_ACTION_OPTIONS, normalizeCtaAction } from './ctaActions.ts';
 import { ref, computed, watch, nextTick } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
@@ -824,13 +825,7 @@ const ctaStickyScope = ref<'current' | 'all' | 'custom'>('current');
 const ctaStickyPageIds = ref<string[]>([]);
 const isLinkToDropdownOpen = ref(false);
 
-const allLinkToOptions = [
-  { label: 'Download E-Pass', value: 'download-pass' },
-  { label: 'Next Page', value: 'next_page' },
-  { label: 'Submit Form', value: 'submit' },
-  { label: 'External URL', value: 'link' },
-  { label: 'Popup Modal', value: 'modal' }
-] as const;
+const allLinkToOptions = CTA_ACTION_OPTIONS;
 
 const isCtaModalDisallowed = computed(() => {
   return ctaPositionMode.value === 'sticky-bottom' && ctaStickyScope.value === 'all';
@@ -854,18 +849,14 @@ const hasEPassInProject = computed(() => {
 });
 
 const linkToOptions = computed(() => {
-  const filtered = allLinkToOptions.filter(opt => {
+  return allLinkToOptions.filter(opt => {
     if (opt.value === 'download-pass') return hasEPassInProject.value;
-    if (opt.value === 'next_page') return true; // Next Page is included by default
-    if (opt.value === 'submit') return hasFormFields.value;
     if (opt.value === 'modal') return !isCtaModalDisallowed.value;
-    if (opt.value === 'link') return true;
     return true;
   });
-  return filtered.length > 0 ? filtered : [allLinkToOptions.find(o => o.value === 'next_page')!];
 });
 
-const ctaActionType = ref('next_page');
+const ctaActionType = ref<string>('submit');
 const ctaUrl = ref('');
 
 const selectedActionLabel = computed(() => {
@@ -934,7 +925,7 @@ function setCtaPositionMode(mode: 'in-flow' | 'sticky-bottom') {
 function setCtaStickyScope(scope: 'current' | 'all' | 'custom') {
   ctaStickyScope.value = scope;
   if (scope === 'all' && ctaActionType.value === 'modal') {
-    ctaActionType.value = 'next_page';
+    ctaActionType.value = 'submit';
   }
   const defaultPageIds = scope === 'all' 
     ? editorStore.pages.map(p => p.id) 
@@ -1213,7 +1204,7 @@ watch(targetWidget, (widget) => {
     ctaPositionMode.value = widget.props.ctaPositionMode || widget.props.positionMode || 'in-flow';
     ctaStickyScope.value = widget.props.ctaStickyScope || widget.props.stickyScope || 'current';
     ctaStickyPageIds.value = widget.props.ctaStickyPageIds || widget.props.stickyPageIds || [editorStore.currentPage.id];
-    ctaActionType.value = widget.props.ctaActionType || widget.props.actionType || 'next_page';
+    ctaActionType.value = normalizeCtaAction(widget.props.ctaActionType || widget.props.actionType) || 'submit';
     ctaUrl.value = widget.props.ctaUrl || widget.props.url || '';
 
     if (typeof widget.props.showBannerText === 'boolean') {

@@ -1,5 +1,15 @@
 import type { InjectionKey } from 'vue';
 
+/** A session/option the guest picked, as printed under "Access valid for". */
+export interface PassSession {
+  label: string;
+  sublabel?: string;
+  description?: string;
+}
+
+/** Answer key that carries the guest's picked sessions in the submission. */
+export const SESSIONS_ANSWER_KEY = 'Access Valid For';
+
 /**
  * The guest's real e-pass on a published page, provided by PublicDropView and
  * read by the GuestEPass widget. Kept apart from the widget props so the pass
@@ -8,7 +18,14 @@ import type { InjectionKey } from 'vue';
  */
 export interface LivePassState {
   status: 'idle' | 'pending' | 'ready' | 'error';
+  /** Server-issued Access ID. */
   code: string;
+  /** The guest as recorded by the server — what the door staff will see too. */
+  guestName: string;
+  email: string;
+  guestType: string;
+  /** Sessions the guest picked, as recorded — the pass and its PDF print exactly these. */
+  sessions: PassSession[];
   error: string;
   retry: () => void;
 }

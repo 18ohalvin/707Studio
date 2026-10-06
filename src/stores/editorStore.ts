@@ -1,9 +1,10 @@
 import { uploadMediaDirectly } from '../services/mediaService.ts';
-import { apiFetch } from '../services/apiClient.ts';
+import { apiFetch, apiJson } from '../services/apiClient.ts';
 import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
-import type { WidgetItem, WidgetType, ActivationPage, ViewportMode, PageStatus, ProjectItem } from '../types/editor.ts';
+import type { WidgetItem, WidgetType, ActivationPage, ViewportMode, PageStatus, ProjectItem, ProjectHistoryEntry } from '../types/editor.ts';
 import { useAuthStore } from './authStore.ts';
+import { defaultTicketWidgets } from '../components/editor/ticket/ticketFields.ts';
 import { useBrandStore } from './brandStore.ts';
 
 export type MediaGalleryTarget = 'bannerImage' | 'brandLogo' | 'replaceBannerImage' | 'addNewMedia' | 'choiceOptionImage';
@@ -152,6 +153,7 @@ export const useEditorStore = defineStore('editor', () => {
   const isFormSidebarOpen = ref<boolean>(false);
   const isModalSidebarOpen = ref<boolean>(false);
   const isEPassSidebarOpen = ref<boolean>(false);
+  const isTicketSidebarOpen = ref<boolean>(false);
   const isLayersOpen = ref<boolean>(false);
   const isPagesOpen = ref<boolean>(false);
   const selectedMediaRatio = ref<string>('Full screen landing page');
@@ -194,6 +196,14 @@ export const useEditorStore = defineStore('editor', () => {
   });
 
   function canAddWidget(type: WidgetType): { allowed: boolean; reason?: string } {
+    // The Ticket page holds only what can be printed on a pass.
+    if (currentPage.value?.kind === 'ticket') {
+      if (['TicketField', 'TextBanner', 'HeroDrop'].includes(type)) return { allowed: true };
+      return { allowed: false, reason: 'The Ticket page takes text, images and ticket data blocks only.' };
+    }
+    if (type === 'TicketField') {
+      return { allowed: false, reason: 'Ticket data blocks go on the Ticket page.' };
+    }
     const tree = currentPage.value?.widget_tree || [];
     const hero = tree.find(w => w.type === 'HeroDrop');
     if (hero?.props?.ratio === 'Dynamic Fit') {
@@ -321,8 +331,39 @@ export const useEditorStore = defineStore('editor', () => {
     panY.value = 0;
   }
 
+  /** Index of the Ticket page (always last), or -1. */
+  const ticketPageIndex = computed(() => pages.value.findIndex(p => p.kind === 'ticket'));
+
+  /**
+   * Adds the Ticket page when the campaign gets a Ticket Summary. It sits after
+   * every funnel page and is never shown to guests as a step.
+   * Returns true when a page was created.
+   */
+  function ensureTicketPage(): boolean {
+    if (ticketPageIndex.value >= 0) return false;
+    const now = new Date().toISOString();
+    const base = pages.value[0];
+    pages.value.push({
+      id: `page_ticket_${Date.now()}`,
+      kind: 'ticket',
+      brand_id: base?.brand_id || '1',
+      brand_slug: base?.brand_slug || 'atmos',
+      title: 'Ticket',
+      page_name: 'Ticket (PDF)',
+      slug: 'ticket',
+      description: 'Design of the downloadable PDF ticket',
+      status: 'draft',
+      current_version: 1,
+      widget_tree: defaultTicketWidgets().map((w, i) => ({ id: `${w.type.toLowerCase()}_${Date.now()}_${i}`, type: w.type, props: w.props })),
+      page_settings: { seoTitle: 'Ticket', seoDescription: '', theme: 'the-707-standard' },
+      created_at: now,
+      updated_at: now
+    });
+    return true;
+  }
+
   function addPage() {
-    const pageNumber = pages.value.length + 1;
+    const pageNumber = (ticketPageIndex.value >= 0 ? ticketPageIndex.value : pages.value.length) + 1;
     const newPage: ActivationPage = {
       id: `page_${Date.now()}`,
       brand_id: currentPage.value?.brand_id || '1',
@@ -342,8 +383,10 @@ export const useEditorStore = defineStore('editor', () => {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
-    pages.value.push(newPage);
-    activePageIndex.value = pages.value.length - 1;
+    // New funnel pages go before the Ticket page, which stays last.
+    const insertAt = ticketPageIndex.value >= 0 ? ticketPageIndex.value : pages.value.length;
+    pages.value.splice(insertAt, 0, newPage);
+    activePageIndex.value = insertAt;
     if (!isPagesOpen.value) {
       panX.value = getPageCenterOffsetX(activePageIndex.value);
       panY.value = 0;
@@ -368,6 +411,10 @@ export const useEditorStore = defineStore('editor', () => {
   function duplicatePage(index: number) {
     const source = pages.value[index];
     if (!source) return;
+    if (source.kind === 'ticket') {
+      showToast('A campaign has one Ticket page.');
+      return;
+    }
     const newPageNumber = pages.value.length + 1;
     const clonedPage: ActivationPage = {
       id: `page_${Date.now()}`,
@@ -395,6 +442,8 @@ export const useEditorStore = defineStore('editor', () => {
 
   function movePage(fromIndex: number, toIndex: number) {
     if (toIndex < 0 || toIndex >= pages.value.length) return;
+    // The Ticket page is not a funnel step: it stays last.
+    if (pages.value[fromIndex]?.kind === 'ticket' || pages.value[toIndex]?.kind === 'ticket') return;
     const item = pages.value.splice(fromIndex, 1)[0];
     pages.value.splice(toIndex, 0, item);
     activePageIndex.value = toIndex;
@@ -562,15 +611,15 @@ export const useEditorStore = defineStore('editor', () => {
           ]
         };
         break;
+      case 'TicketField':
+        defaultProps = { fields: ['guestName'], align: 'left' };
+        break;
       case 'GuestEPass':
         defaultProps = {
           showQrCode: true,
           heading: 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.',
           venue: 'PLAZA SENAYAN 4th FLOOR',
-          accessIdFallback: '020305-1008-1245',
-          guestType: 'VIP',
-          guestNameFallback: 'MR. ALVIN DECOROUS',
-          emailFallback: 'alvin@sosco.id',
+          guestType: 'Public',
           showFooterNotice: true,
           footerNoticeTitle: "DIDN'T RECEIVE THE EMAIL?",
           footerNoticeText: 'Check your spam folder or contact support',
@@ -588,7 +637,6 @@ export const useEditorStore = defineStore('editor', () => {
           ctaPositionMode: 'sticky-bottom',
           showIcon: false,
           iconName: 'ticket',
-          accessId: '020305-1008-1245',
           validForFallback: [
             { id: 'opt_1', label: 'Pass Option 1', sublabel: '2 September 2026', description: 'Access to main floor & VIP lounge' },
             { id: 'opt_2', label: 'Pass Option 2', sublabel: '3 September 2026', description: 'Access to main floor & VIP lounge' }
@@ -635,6 +683,9 @@ export const useEditorStore = defineStore('editor', () => {
       openModalSidebar();
     } else if (type === 'GuestEPass') {
       openEPassSidebar();
+      if (ensureTicketPage()) showToast('A Ticket page was added at the end — design the downloadable PDF ticket there.', 5000);
+    } else if (type === 'TicketField') {
+      openTicketSidebar();
     } else {
       openWidgetSidebar();
     }
@@ -713,37 +764,79 @@ export const useEditorStore = defineStore('editor', () => {
     currentPage.value.updated_at = new Date().toISOString();
   }
 
-  function updateProjectStatus(projectId: string, status: PageStatus, reviewedBy = 'Alvin Decorous (Superadmin)') {
-    const proj = projects.value.find(p => p.id === projectId);
-    if (proj) {
-      proj.status = status;
-      proj.updated_at = new Date().toISOString();
-      if (proj.pages) {
-        proj.pages.forEach(pg => {
-          pg.status = status;
-          pg.reviewed_by = reviewedBy;
-          pg.updated_at = new Date().toISOString();
-        });
-      }
-      if (currentProjectId.value === projectId) {
-        pages.value.forEach(pg => {
-          pg.status = status;
-          pg.reviewed_by = reviewedBy;
-          pg.updated_at = new Date().toISOString();
-        });
-      }
-      // Async sync to cloud database
-      apiFetch(`/api/pages/${projectId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status,
-          reviewed_by: reviewedBy,
-          updated_at: proj.updated_at,
-          pages: proj.pages
-        })
-      }).catch(err => console.warn('[EditorStore] Failed to update project status on cloud:', err));
+  /**
+   * Takes a project as the server returned it (after a save or a status
+   * transition). Versioning fields always come from the server; with
+   * loadContent the editor also switches to the returned content, e.g. after
+   * a discard or a restore from history.
+   */
+  function applyServerProject(serverProj: ProjectItem, opts: { loadContent?: boolean } = {}) {
+    const idx = projects.value.findIndex(p => p.id === serverProj.id);
+    if (idx >= 0) {
+      projects.value[idx] = { ...projects.value[idx], ...serverProj };
+    } else {
+      projects.value.unshift(serverProj);
     }
+    if (opts.loadContent && currentProjectId.value === serverProj.id) {
+      projectTitle.value = serverProj.title;
+      if (serverProj.pages && serverProj.pages.length > 0) {
+        pages.value = JSON.parse(JSON.stringify(serverProj.pages));
+        activePageIndex.value = Math.min(activePageIndex.value, pages.value.length - 1);
+      }
+    }
+    persistProjectsLocally();
+    broadcastProjectUpdate();
+  }
+
+  type ProjectTransition = 'submit' | 'publish' | 'decline' | 'discard';
+
+  /**
+   * Moves a project through review: submit (owner), publish / decline
+   * (superadmin), discard unpublished edits. The server records each step in
+   * the project's history and notifies the other side.
+   */
+  async function transitionProject(projectId: string, action: ProjectTransition, note = ''): Promise<{ ok: boolean; error?: string }> {
+    const authStore = useAuthStore();
+    // Whatever is on screen is what gets submitted or published.
+    if (currentProjectId.value === projectId) await flushPendingSave();
+    try {
+      const json = await apiJson<{ success: boolean; data: ProjectItem }>(`/api/pages/${encodeURIComponent(projectId)}/${action}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ note, actor: authStore.currentUser?.name || (authStore.isSuperAdmin ? 'Superadmin' : '') })
+      });
+      applyServerProject(json.data, { loadContent: action === 'discard' });
+      return { ok: true };
+    } catch (err: any) {
+      return { ok: false, error: err?.message || 'Could not reach the server.' };
+    }
+  }
+
+  async function fetchProjectHistory(projectId: string): Promise<ProjectHistoryEntry[]> {
+    const json = await apiJson<{ success: boolean; data: ProjectHistoryEntry[] }>(`/api/pages/${encodeURIComponent(projectId)}/history/entries`);
+    return Array.isArray(json?.data) ? json.data : [];
+  }
+
+  /** Loads an older build into the editor. Visitors keep seeing the live version until it is published. */
+  async function restoreProjectBuild(projectId: string, entryId: string): Promise<{ ok: boolean; error?: string }> {
+    const authStore = useAuthStore();
+    if (currentProjectId.value === projectId) await flushPendingSave();
+    try {
+      const json = await apiJson<{ success: boolean; data: ProjectItem }>(
+        `/api/pages/${encodeURIComponent(projectId)}/history/${encodeURIComponent(entryId)}/restore`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ actor: authStore.currentUser?.name || '' }) }
+      );
+      applyServerProject(json.data, { loadContent: true });
+      return { ok: true };
+    } catch (err: any) {
+      return { ok: false, error: err?.message || 'Could not reach the server.' };
+    }
+  }
+
+  /** Older call sites (superadmin review list): status names mapped onto transitions. */
+  function updateProjectStatus(projectId: string, status: PageStatus) {
+    const action: ProjectTransition = status === 'approved' || status === 'published' ? 'publish' : status === 'pending_review' ? 'submit' : 'decline';
+    return transitionProject(projectId, action);
   }
 
   function openAddMenu() {
@@ -941,6 +1034,21 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
+  // Other sidebars open by setting their own flag; whichever opens, the
+  // Ticket setup sidebar gives way so the two never overlap.
+  watch(
+    () => [isWidgetSidebarOpen.value, isMediaSidebarOpen.value, isTextSidebarOpen.value, isButtonSidebarOpen.value,
+      isChoiceSidebarOpen.value, isFormSidebarOpen.value, isModalSidebarOpen.value, isEPassSidebarOpen.value, isLayersOpen.value],
+    (open) => {
+      if (open.some(Boolean)) isTicketSidebarOpen.value = false;
+    }
+  );
+
+  function openTicketSidebar() {
+    closeAllSidebars();
+    isTicketSidebarOpen.value = true;
+  }
+
   function openEPassSidebar() {
     isAddMenuOpen.value = false;
     isWidgetSidebarOpen.value = false;
@@ -1059,6 +1167,7 @@ export const useEditorStore = defineStore('editor', () => {
     isFormSidebarOpen.value = false;
     isModalSidebarOpen.value = false;
     isEPassSidebarOpen.value = false;
+    isTicketSidebarOpen.value = false;
     isLayersOpen.value = false;
   }
 
@@ -1430,7 +1539,13 @@ export const useEditorStore = defineStore('editor', () => {
       owner_email: existingProj?.owner_email || authStore.currentUser?.email || (authStore.isSuperAdmin ? 'admin@707designstudio.internal' : ''),
       created_by: existingProj?.created_by || authStore.currentUser?.name || authStore.currentUser?.email || (authStore.isSuperAdmin ? 'Superadmin' : ''),
       created_at: existingProj ? existingProj.created_at : now,
-      updated_at: now
+      updated_at: now,
+      // Owned by the server; carried along so the header keeps its state between saves.
+      live_version: existingProj?.live_version,
+      published_at: existingProj?.published_at,
+      published_by: existingProj?.published_by,
+      pending_update_at: existingProj?.pending_update_at,
+      has_unpublished_changes: existingProj?.has_unpublished_changes
     };
 
     if (existingIndex >= 0) {
@@ -1460,6 +1575,18 @@ export const useEditorStore = defineStore('editor', () => {
       } else {
         saveFailed.value = false;
         lastSavedAt.value = new Date();
+        // The server says whether this save now differs from the live version.
+        const saved = await res.json().catch(() => null);
+        if (saved?.data?.id === projectData.id) {
+          const target = projects.value.find(p => p.id === projectData.id);
+          if (target) {
+            target.status = saved.data.status;
+            target.live_version = saved.data.live_version;
+            target.published_at = saved.data.published_at;
+            target.pending_update_at = saved.data.pending_update_at;
+            target.has_unpublished_changes = saved.data.has_unpublished_changes;
+          }
+        }
       }
       return projectData;
     } catch (err) {
@@ -1770,6 +1897,14 @@ export const useEditorStore = defineStore('editor', () => {
     loadTemplate,
     setPageStatus,
     updateProjectStatus,
+    transitionProject,
+    ensureTicketPage,
+    ticketPageIndex,
+    isTicketSidebarOpen,
+    openTicketSidebar,
+    fetchProjectHistory,
+    restoreProjectBuild,
+    applyServerProject,
     setDraggedWidget,
     cleanupEmptyTextWidgets
   };

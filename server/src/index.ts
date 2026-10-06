@@ -11,6 +11,7 @@ import { pagesRouter } from './routes/pages.js';
 import { templatesRouter } from './routes/templates.js';
 import { submissionsRouter } from './routes/submissions.js';
 import { mediaRouter } from './routes/media.js';
+import { notificationsRouter } from './routes/notifications.js';
 import { resolveUploadDir } from './uploads.js';
 
 dotenv.config();
@@ -58,6 +59,7 @@ app.use('/api/pages', pagesRouter);
 app.use('/api/templates', requireAuth, templatesRouter);
 app.use('/api/submissions', submissionsRouter);
 app.use('/api/media', requireAuth, mediaRouter);
+app.use('/api/notifications', requireAuth, notificationsRouter);
 
 // Any unmatched /api path must fail as JSON. Letting it fall through to the SPA
 // would answer an API call with HTML and turn a plain 404 into a confusing

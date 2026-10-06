@@ -387,10 +387,10 @@
             <div class="w-[130px] shrink-0 flex items-center justify-center text-center">
               <span 
                 class="inline-flex items-center justify-center gap-1.5 px-2.5 py-0.5 rounded-[100px] text-[10px] font-medium border whitespace-nowrap"
-                :class="getStatusBadgeClass(project.status)"
+                :class="getStatusBadgeClass(reviewState(project))"
               >
-                <span class="size-1.5 rounded-full" :class="getStatusDotClass(project.status)" />
-                {{ formatStatusLabel(project.status) }}
+                <span class="size-1.5 rounded-full" :class="getStatusDotClass(reviewState(project))" />
+                {{ formatProjectStatus(project) }}
               </span>
             </div>
 
@@ -414,18 +414,19 @@
               <button 
                 @click="handleApproveProject(project.id)"
                 class="bg-black text-white px-3 py-1 rounded-[6px] text-[11px] font-707 font-medium hover:bg-neutral-800 transition-all cursor-pointer flex items-center gap-1"
-                :class="project.status === 'approved' ? 'opacity-40 cursor-default hover:bg-black' : ''"
-                :disabled="project.status === 'approved'"
-                :title="project.status === 'approved' ? 'Already approved' : 'Approve and unlock live distribution'"
+                :class="!canPublish(project) ? 'opacity-40 cursor-default hover:bg-black' : ''"
+                :disabled="!canPublish(project)"
+                :title="!canPublish(project) ? 'Live — nothing new to publish' : (isLiveProject(project) ? 'Publish the submitted update' : 'Approve and publish')"
               >
                 <CheckCircle class="w-3 h-3" />
-                <span>{{ project.status === 'approved' ? 'Approved' : 'Approve' }}</span>
+                <span>{{ !canPublish(project) ? 'Live' : (isLiveProject(project) ? 'Publish Update' : 'Approve') }}</span>
               </button>
 
               <button 
+                v-if="isAwaitingReview(project)"
                 @click="handleDeclineProject(project.id)"
                 class="border-[0.5px] border-black/20 text-neutral-700 hover:text-neutral-900 hover:border-black/40 hover:bg-neutral-100 px-2.5 py-1 rounded-[6px] text-[11px] font-707 font-medium transition-colors cursor-pointer flex items-center gap-1"
-                title="Decline submission request and return to draft"
+                title="Send the submission back to the brand with a note"
               >
                 <XCircle class="w-3 h-3" />
                 <span>Decline</span>
@@ -1423,8 +1424,33 @@ const editTemplateDesc = ref('');
 
 const visiblePasswords = reactive<Record<string, boolean>>({});
 
+/** Waiting for the superadmin: a first submission, or an update to a live campaign. */
+function isAwaitingReview(p: ProjectItem): boolean {
+  return p.status === 'pending_review' || Boolean(p.pending_update_at);
+}
+
+function isLiveProject(p: ProjectItem): boolean {
+  return Number(p.live_version || 0) > 0 || p.status === 'approved' || p.status === 'published';
+}
+
+function canPublish(p: ProjectItem): boolean {
+  return !isLiveProject(p) || Boolean(p.has_unpublished_changes);
+}
+
+function reviewState(p: ProjectItem): string {
+  return isAwaitingReview(p) ? 'pending_review' : p.status;
+}
+
+function formatProjectStatus(p: ProjectItem): string {
+  const version = p.live_version ? ` v${p.live_version}` : '';
+  if (isLiveProject(p) && p.pending_update_at) return `Live${version} · Update Pending`;
+  if (isLiveProject(p) && p.has_unpublished_changes) return `Live${version} · Unsubmitted Edits`;
+  if (isLiveProject(p)) return `Live${version}`;
+  return formatStatusLabel(p.status);
+}
+
 const pendingSubmissionsCount = computed(() => {
-  return editorStore.projects.filter(p => p.status === 'pending_review').length;
+  return editorStore.projects.filter(isAwaitingReview).length;
 });
 
 const approvedProjectsCount = computed(() => {
@@ -1437,7 +1463,7 @@ const draftProjectsCount = computed(() => {
 
 const filteredProjects = computed(() => {
   if (projectFilter.value === 'pending_review') {
-    return editorStore.projects.filter(p => p.status === 'pending_review');
+    return editorStore.projects.filter(isAwaitingReview);
   }
   if (projectFilter.value === 'approved') {
     return editorStore.projects.filter(p => p.status === 'approved');
@@ -1651,15 +1677,20 @@ function handlePreviewProject(projectId: string) {
   router.push('/editor');
 }
 
-function handleApproveProject(projectId: string) {
-  editorStore.updateProjectStatus(projectId, 'approved');
-  editorStore.showToast('Project approved and unlocked for live distribution.');
+
+async function handleApproveProject(projectId: string) {
+  const p = editorStore.projects.find(proj => proj.id === projectId);
+  if (!p || !confirm(isLiveProject(p) ? `Publish the update to "${p.title}"? Visitors will see it immediately.` : `Approve and publish "${p.title}"?`)) return;
+  const res = await editorStore.transitionProject(projectId, 'publish');
+  editorStore.showToast(res.ok ? `Published "${p.title}".` : `Could not publish: ${res.error}`);
 }
 
-function handleDeclineProject(projectId: string) {
+async function handleDeclineProject(projectId: string) {
   const p = editorStore.projects.find(proj => proj.id === projectId);
-  editorStore.updateProjectStatus(projectId, 'draft');
-  editorStore.showToast(`Declined project "${p?.title || 'Drop'}". Status returned to draft.`);
+  const note = prompt(`What should the brand change in "${p?.title || 'this project'}"?`, '');
+  if (note === null) return;
+  const res = await editorStore.transitionProject(projectId, 'decline', note.trim());
+  editorStore.showToast(res.ok ? `Sent "${p?.title || 'Drop'}" back to the brand.` : `Could not send back: ${res.error}`);
 }
 
 async function handleDeleteProject(project: ProjectItem) {
@@ -1670,8 +1701,7 @@ async function handleDeleteProject(project: ProjectItem) {
 }
 
 function handleRejectProject(projectId: string) {
-  editorStore.updateProjectStatus(projectId, 'draft');
-  editorStore.showToast('Revision request sent to designer.');
+  return handleDeclineProject(projectId);
 }
 
 function handleUseTemplate(template: GlobalTemplate) {

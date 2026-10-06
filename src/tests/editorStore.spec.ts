@@ -359,8 +359,10 @@ describe('707 Activation Builder Stores', () => {
     expect(defaultEPass.type).toBe('GuestEPass');
     expect(defaultEPass.props.showQrCode).toBe(true);
     expect(defaultEPass.props.heading).toContain('SUCCESS.');
-    expect(defaultEPass.props.guestType).toBe('VIP');
-    expect(defaultEPass.props.accessIdFallback).toBe('020305-1008-1245');
+    expect(defaultEPass.props.guestType).toBe('Public');
+    // Access ID is issued by the server per guest — no static code on the widget.
+    expect(defaultEPass.props.accessIdFallback).toBeUndefined();
+    expect(defaultEPass.props.accessId).toBeUndefined();
     expect(defaultEPass.props.actionType).toBe('download-pass');
     expect(defaultEPass.props.validForFallback[0].label).toBe('Pass Option 1');
     expect(defaultEPass.props.footerNoticeLinkWords).toBe('contact support');

@@ -81,9 +81,17 @@ export function guestPhone(s: Submission): string {
   return key ? String(fd[key]) : '';
 }
 
+/** Pass type the guest was issued (VIP / Public), from the campaign's Ticket Summary preset. */
+export function guestType(s: Submission): string {
+  return String(s.form_data?.['Guest Type'] || '').trim();
+}
+
 export function formatValue(value: any): string {
   if (value === null || value === undefined) return '';
-  if (Array.isArray(value)) return value.join(', ');
+  if (Array.isArray(value)) {
+    // Picked sessions are stored as { label, sublabel } so the pass can print them.
+    return value.map(v => (v && typeof v === 'object' ? [v.label, v.sublabel].filter(Boolean).join(' · ') : String(v))).join(', ');
+  }
   if (typeof value === 'object') return JSON.stringify(value);
   return String(value);
 }

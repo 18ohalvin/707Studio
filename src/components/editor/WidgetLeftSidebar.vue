@@ -26,6 +26,28 @@
       </p>
     </div>
 
+    <!-- Ticket page: guest data blocks for the PDF ticket -->
+    <div v-if="isTicketPage" class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+      <div class="flex flex-col">
+        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Ticket data</p>
+        <p class="font-707 text-[11px] text-neutral-500">Filled in with each guest's details on their PDF ticket. Text and banners below work here too.</p>
+      </div>
+      <div class="grid grid-cols-3 gap-1.5 w-full">
+        <button
+          v-for="f in TICKET_FIELDS"
+          :key="f.key"
+          type="button"
+          draggable="true"
+          @dragstart="handleDragStart($event, { type: 'TicketField', label: f.label, customProps: { fields: [f.key], align: 'left' } })"
+          @dragend="handleDragEnd"
+          @click="editorStore.addWidget('TicketField', undefined, { fields: [f.key], align: 'left' })"
+          class="apple-glass-btn h-[38px] rounded-[8px] text-[11.5px] font-707 flex items-center justify-center text-center px-1 cursor-pointer"
+        >
+          {{ f.label }}
+        </button>
+      </div>
+    </div>
+
     <!-- Section 1: Media/Banners -->
     <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
@@ -638,7 +660,7 @@
         <!-- Interactive Card 1: Guest E-Pass Ticketing (Figma Node 222:4188) -->
         <div 
           draggable="true"
-          @dragstart="handleDragStart($event, { type: 'GuestEPass', label: 'Guest E-Pass', customProps: { venue: 'LA MODA PLAZA INDONESIA', guestNameFallback: 'MR. ALVIN DECOROUS' } })"
+          @dragstart="handleDragStart($event, { type: 'GuestEPass', label: 'Guest E-Pass', customProps: { venue: 'LA MODA PLAZA INDONESIA' } })"
           @dragend="handleDragEnd"
           @click="addEPassWidget"
           class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group"
@@ -711,6 +733,7 @@
 </template>
 
 <script setup lang="ts">
+import { TICKET_FIELDS } from './ticket/ticketFields.ts';
 import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
@@ -787,6 +810,8 @@ const currentTabFields = computed(() => {
       ];
   }
 });
+
+const isTicketPage = computed(() => editorStore.currentPage?.kind === 'ticket');
 
 function handleDragStart(event: DragEvent, item: { type: WidgetType; label?: string; customProps?: Record<string, any> }) {
   if (event.dataTransfer) {

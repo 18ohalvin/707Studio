@@ -40,6 +40,16 @@
             {{ saveStatusText }}
           </p>
         </div>
+
+        <!-- Publish state: what visitors see vs what is being edited -->
+        <div
+          class="flex h-[20px] items-center gap-1.5 px-[7px] rounded-[10px] shrink-0 border-[0.5px] border-solid"
+          :class="publishBadge.class"
+          :title="publishBadge.title"
+        >
+          <span class="size-1.5 rounded-full" :class="publishBadge.dot" />
+          <p class="font-707 text-legal-micro whitespace-nowrap">{{ publishBadge.label }}</p>
+        </div>
       </div>
     </div>
 
@@ -58,14 +68,46 @@
         </span>
       </button>
 
-      <!-- Submit for Review / Save Project CTA Button -->
+      <!-- Review requests / publish notices -->
+      <NotificationsMenu />
+
+      <!-- Build history -->
+      <div class="relative" ref="historyRef">
+        <button
+          type="button"
+          @click="showHistory = !showHistory"
+          class="apple-glass-btn text-black flex items-center justify-center gap-1.5 px-[12px] h-[32px] rounded-[8px] apple-press cursor-pointer"
+          title="Project history — every submission and published version"
+        >
+          <History class="w-3.5 h-3.5" />
+          <span class="font-707 font-medium text-[13px] whitespace-nowrap hidden lg:inline">History</span>
+        </button>
+        <ProjectHistoryPanel v-if="showHistory" @close="showHistory = false" />
+      </div>
+
+      <!-- Superadmin: send a pending submission back -->
+      <button
+        v-if="authStore.isSuperAdmin && isPending"
+        type="button"
+        :disabled="isTransitioning"
+        @click="handleDecline"
+        class="apple-glass-btn text-black flex items-center justify-center px-[12px] h-[32px] rounded-[8px] apple-press cursor-pointer disabled:opacity-50"
+        title="Send back to the brand with a note"
+      >
+        <span class="font-707 font-medium text-[13px] whitespace-nowrap">Request Changes</span>
+      </button>
+
+      <!-- Primary CTA: depends on whether the project is live and what changed -->
       <button 
         @click="handlePrimaryCtaClick"
-        class="apple-glass-btn-dark content-stretch flex items-center justify-center overflow-clip px-[14px] h-[32px] rounded-[8px] apple-press cursor-pointer"
-        :title="authStore.isSuperAdmin ? 'Save Project & Changes' : 'Submit for UI/UX Team Review'"
+        :disabled="primaryCta.disabled || isTransitioning"
+        class="content-stretch flex items-center justify-center gap-1.5 overflow-clip px-[14px] h-[32px] rounded-[8px] apple-press"
+        :class="primaryCta.disabled ? 'apple-glass-btn cursor-default' : 'apple-glass-btn-dark cursor-pointer'"
+        :title="primaryCta.title"
       >
-        <span class="font-707 font-medium text-white text-[13px] whitespace-nowrap">
-          {{ primaryCtaLabel }}
+        <Check v-if="primaryCta.state === 'live'" class="w-3.5 h-3.5 text-emerald-600" />
+        <span class="font-707 font-medium text-[13px] whitespace-nowrap" :class="primaryCta.disabled ? 'text-neutral-600' : 'text-white'">
+          {{ isTransitioning ? 'Working…' : primaryCta.label }}
         </span>
       </button>
 
@@ -98,7 +140,9 @@ import { useRouter } from 'vue-router';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { useAuthStore } from '../../stores/authStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
-import { Eye, Edit3, User } from 'lucide-vue-next';
+import { Eye, Edit3, User, History, Check } from 'lucide-vue-next';
+import ProjectHistoryPanel from './ProjectHistoryPanel.vue';
+import NotificationsMenu from '../common/NotificationsMenu.vue';
 import UserProfileModal from '../modals/UserProfileModal.vue';
 import { logout } from '../../services/apiClient.ts';
 
@@ -109,29 +153,78 @@ const logoFailed = ref(false);
 const showUserProfileModal = ref(false);
 const nowTicker = ref(Date.now());
 
-const primaryCtaLabel = computed(() => {
-  if (authStore.isSuperAdmin) {
-    if (editorStore.currentPage?.status === 'pending_review') {
-      return 'Approve & Save';
-    }
-    return 'Save Project';
+/* ---------- Publish state ---------- */
+const project = computed(() => editorStore.userProjects.find(p => p.id === editorStore.currentProjectId) || null);
+const isLive = computed(() => Number(project.value?.live_version || 0) > 0 || ['approved', 'published'].includes(String(project.value?.status)));
+const hasChanges = computed(() => Boolean(project.value?.has_unpublished_changes));
+const isPending = computed(() => Boolean(project.value?.pending_update_at) || project.value?.status === 'pending_review');
+const liveVersion = computed(() => Number(project.value?.live_version || 0));
+
+const publishBadge = computed(() => {
+  if (!isLive.value) {
+    return isPending.value
+      ? { label: 'In review', dot: 'bg-amber-500', class: 'border-amber-300 bg-amber-50 text-amber-900', title: 'Waiting for the superadmin to publish' }
+      : { label: 'Draft', dot: 'bg-neutral-400', class: 'border-black/10 bg-white/60 text-neutral-700', title: 'Not published — only you and the superadmin can open the link' };
   }
-  return 'Submit for Review';
+  const version = liveVersion.value ? ` v${liveVersion.value}` : '';
+  if (isPending.value) {
+    return { label: `Live${version} · update in review`, dot: 'bg-amber-500', class: 'border-amber-300 bg-amber-50 text-amber-900', title: 'Visitors see the live version until the update is published' };
+  }
+  if (hasChanges.value) {
+    return { label: `Live${version} · unpublished changes`, dot: 'bg-amber-500', class: 'border-emerald-300 bg-emerald-50 text-emerald-900', title: 'Visitors still see the live version. Submit your update to publish these edits.' };
+  }
+  return { label: `Live${version}`, dot: 'bg-emerald-500', class: 'border-emerald-300 bg-emerald-50 text-emerald-900', title: 'Visitors see exactly what is in the editor' };
 });
 
-function handlePrimaryCtaClick() {
+const primaryCta = computed(() => {
   if (authStore.isSuperAdmin) {
-    if (editorStore.currentPage?.status === 'pending_review') {
-      editorStore.setPageStatus('approved', authStore.currentUser?.name || 'Alvin Decorous (Superadmin)');
-      editorStore.saveCurrentProject();
-      editorStore.showToast('Project approved & changes saved by Superadmin.');
-    } else {
-      editorStore.saveCurrentProject();
-      editorStore.showToast('Project saved successfully.');
-    }
-  } else {
-    editorStore.isReviewModalOpen = true;
+    if (!isLive.value) return { state: 'publish', label: 'Approve & Publish', disabled: false, title: 'Publish this campaign — visitors will see it right away' };
+    if (hasChanges.value) return { state: 'publish', label: `Publish Update${liveVersion.value ? ` (v${liveVersion.value + 1})` : ''}`, disabled: false, title: 'Replace the live version with what is in the editor' };
+    return { state: 'live', label: 'Live', disabled: true, title: 'Nothing to publish — the editor matches the live version' };
   }
+  if (!isLive.value) {
+    return isPending.value
+      ? { state: 'pending', label: 'In Review', disabled: true, title: 'The superadmin has been notified. Edits you keep making are included in the review.' }
+      : { state: 'submit', label: 'Submit for Review', disabled: false, title: 'Send to the UI/UX team to publish' };
+  }
+  if (isPending.value) return { state: 'pending', label: 'Update in Review', disabled: true, title: 'The superadmin has been notified. Edits you keep making are included in the review.' };
+  if (hasChanges.value) return { state: 'submit', label: 'Submit Update', disabled: false, title: 'Ask the UI/UX team to publish your changes' };
+  return { state: 'live', label: 'Live', disabled: true, title: 'Nothing to submit — the editor matches the live version' };
+});
+
+const isTransitioning = ref(false);
+const showHistory = ref(false);
+const historyRef = ref<HTMLElement | null>(null);
+
+async function handlePrimaryCtaClick() {
+  if (primaryCta.value.disabled || !editorStore.currentProjectId) return;
+  if (primaryCta.value.state === 'submit') {
+    editorStore.isReviewModalOpen = true;
+    return;
+  }
+  if (primaryCta.value.state === 'publish') {
+    const question = isLive.value
+      ? 'Publish these changes? Visitors will see them immediately.'
+      : 'Approve and publish this campaign? It becomes public immediately.';
+    if (!confirm(question)) return;
+    isTransitioning.value = true;
+    const res = await editorStore.transitionProject(editorStore.currentProjectId, 'publish');
+    isTransitioning.value = false;
+    editorStore.showToast(res.ok ? `Published — live v${liveVersion.value}.` : `Could not publish: ${res.error}`);
+  }
+}
+
+async function handleDecline() {
+  const note = prompt('What should the brand change? (sent with the request)', '');
+  if (note === null) return;
+  isTransitioning.value = true;
+  const res = await editorStore.transitionProject(editorStore.currentProjectId, 'decline', note.trim());
+  isTransitioning.value = false;
+  editorStore.showToast(res.ok ? 'Sent back to the brand.' : `Could not send back: ${res.error}`);
+}
+
+function handleOutsideHistoryClick(e: MouseEvent) {
+  if (showHistory.value && historyRef.value && !historyRef.value.contains(e.target as Node)) showHistory.value = false;
 }
 
 async function handleReturnHome() {
@@ -145,12 +238,14 @@ async function navigateHome() {
 
 let tickerTimer: any = null;
 onMounted(() => {
+  document.addEventListener('mousedown', handleOutsideHistoryClick);
   tickerTimer = setInterval(() => {
     nowTicker.value = Date.now();
   }, 10000);
 });
 
 onUnmounted(() => {
+  document.removeEventListener('mousedown', handleOutsideHistoryClick);
   if (tickerTimer) clearInterval(tickerTimer);
   editorStore.flushPendingSave();
 });

@@ -271,7 +271,7 @@
             v-model="editorStore.selectedWidget.props.actionType"
             class="w-full bg-[#181a1f] border border-[#2c303a] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-white transition-colors"
           >
-            <option value="submit">Submit Form</option>
+            <option value="submit">Submit &amp; Next Page</option>
             <option value="link">Open Link (URL)</option>
             <option value="modal">Open Modal / Popup</option>
             <option value="scroll">Scroll to Block</option>

@@ -40,7 +40,7 @@ export function canAccessProject(claims: SessionClaims, project: any): boolean {
 export const LIVE_STATUSES = ['approved', 'published'];
 
 export function isLiveProject(project: any): boolean {
-  return LIVE_STATUSES.includes(String(project?.status || ''));
+  return LIVE_STATUSES.includes(String(project?.status || '')) || Number(project?.live_version || 0) > 0;
 }
 
 /** Who may open a project's public URL: everyone once live, otherwise only those who may edit it. */
@@ -62,7 +62,9 @@ export function projectPageIds(project: any): string[] {
 async function loadAllProjects(): Promise<any[]> {
   if (getDbStatus().isConnected) {
     try {
-      const result = await pool.query('SELECT id, brand_slug, owner_id, owner_email, pages FROM pages');
+      // status / live_version are needed by callers that decide whether a
+      // campaign is public (findProjectForPageId → canViewPublicPage).
+      const result = await pool.query('SELECT id, brand_slug, owner_id, owner_email, pages, status, live_version FROM pages');
       return result.rows;
     } catch (err: any) {
       console.error('[Access] Could not read projects:', err.message);

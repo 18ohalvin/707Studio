@@ -26,10 +26,7 @@
       <!-- Right: Notification, User Info Container, Contact Button (Figma Node 198:6798) -->
       <div class="flex items-center gap-[32px]" data-node-id="198:6798" data-name="Icons Container">
         <!-- Notification Icon with Minimal Outline Style & State Modes (Figma Node 210:6959) -->
-        <NotificationBell 
-          :has-unread="hasUnreadNotifications"
-          @click="handleNotificationClick"
-        />
+        <NotificationsMenu v-if="authStore.isAuthenticated" />
 
         <!-- State 1: When Authenticated -> User Info Container (Avatar + Brand ID Pill) (Figma Node 210:6972) -->
         <div v-if="authStore.isAuthenticated" class="relative flex items-center">
@@ -384,7 +381,7 @@ import { useBrandStore } from '../stores/brandStore.ts';
 import { useAuthStore } from '../stores/authStore.ts';
 import { FIGMA_ASSETS } from '../constants/figmaAssets.ts';
 import { User } from 'lucide-vue-next';
-import NotificationBell from '../components/common/NotificationBell.vue';
+import NotificationsMenu from '../components/common/NotificationsMenu.vue';
 import SetupProjectModal from '../components/modals/SetupProjectModal.vue';
 import BrandSignInModal from '../components/modals/BrandSignInModal.vue';
 import UserProfileModal from '../components/modals/UserProfileModal.vue';
@@ -409,15 +406,10 @@ const showSettingsModal = ref(false);
 const showSuperAdminModal = ref(false);
 const showAllProjectsModal = ref(false);
 const showNotificationToast = ref(false);
-const hasUnreadNotifications = ref(true);
 const toastMessage = ref('All design systems and cloud sync are up to date.');
 let toastTimer: any = null;
 const projectsSectionRef = ref<HTMLElement | null>(null);
 
-function handleNotificationClick() {
-  triggerToast(hasUnreadNotifications.value ? 'New updates: Cloud synchronization active & templates updated.' : 'No new notifications. Everything is up to date.');
-  hasUnreadNotifications.value = false;
-}
 
 function handleOpenSettings() {
   if (authStore.isSuperAdmin) {

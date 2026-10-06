@@ -216,6 +216,13 @@
       @close="editorStore.isEPassSidebarOpen = false"
     />
 
+    <!-- Ticket data block setup (Ticket page) -->
+    <TicketSetupSidebar 
+      @click.stop
+      :is-open="editorStore.isTicketSidebarOpen"
+      @close="editorStore.isTicketSidebarOpen = false"
+    />
+
     <!-- Global Apple-Glass Floating Toast Notification -->
     <Transition name="apple-dock-fade">
       <div 
@@ -256,6 +263,7 @@ import ChoiceSetupSidebar from './ChoiceSetupSidebar.vue';
 import FormSetupSidebar from './FormSetupSidebar.vue';
 import ModalSetupSidebar from './ModalSetupSidebar.vue';
 import EPassSetupSidebar from './EPassSetupSidebar.vue';
+import TicketSetupSidebar from './TicketSetupSidebar.vue';
 import LayersSidebar from './LayersSidebar.vue';
 import ProjectInfoSettingsModal from './Modals/ProjectInfoSettingsModal.vue';
 

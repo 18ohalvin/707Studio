@@ -31,6 +31,26 @@
       </p>
     </div>
 
+    <!-- PDF ticket design (Ticket page) -->
+    <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+      <div class="flex flex-col">
+        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Downloadable PDF ticket</p>
+        <p class="font-707 text-[11px] text-neutral-500">
+          {{ editorStore.ticketPageIndex >= 0
+            ? 'Designed on the Ticket page. Guests get it with their own details when they tap Download E-Pass.'
+            : 'Lay out the PDF guests download, on its own A6 page — with the same editing as any page.' }}
+        </p>
+      </div>
+      <button
+        type="button"
+        @click="openTicketDesign"
+        class="apple-glass-btn-dark w-full h-[38px] rounded-[8px] flex items-center justify-between px-3.5 font-707 font-medium text-[12px] cursor-pointer transition-all shadow-sm"
+      >
+        <span>{{ editorStore.ticketPageIndex >= 0 ? 'Open Ticket page' : 'Design PDF Ticket' }}</span>
+        <ChevronRight class="w-3.5 h-3.5" />
+      </button>
+    </div>
+
     <!-- Section 0: Brand Logo (Inherited from Hero Banner) -->
     <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="flex flex-col gap-[6px] w-full">
@@ -123,11 +143,37 @@
         </div>
       </div>
 
+      <!-- Guest Type Preset -->
+      <div class="flex flex-col gap-[6px] w-full">
+        <div class="flex items-center justify-between">
+          <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
+            Guest Type
+          </p>
+          <span class="text-[10px] font-707 text-neutral-400">Printed on every pass</span>
+        </div>
+        <div class="grid grid-cols-2 gap-1.5 w-full">
+          <button
+            v-for="preset in GUEST_TYPE_PRESETS"
+            :key="preset.value"
+            type="button"
+            @click="guestType = preset.value"
+            :class="guestType === preset.value ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+            class="h-[38px] rounded-[8px] text-[12px] font-707 flex flex-col items-center justify-center cursor-pointer transition-all"
+          >
+            {{ preset.label }}
+          </button>
+        </div>
+        <p class="font-707 text-[11px] leading-[16px] text-neutral-500">
+          {{ guestType === 'VIP' ? 'VIP pass — door staff see a VIP guest when they scan it.' : 'Public pass — general admission.' }}
+          Use a separate campaign for each guest type.
+        </p>
+      </div>
+
       <!-- Dynamic Info Notice -->
       <div class="bg-neutral-50 border border-neutral-200 p-3 rounded-[8px] w-full flex items-start gap-2">
         <div class="size-1.5 rounded-full bg-neutral-400 mt-1.5 shrink-0" />
         <p class="font-707 text-[11px] leading-[16px] text-neutral-600">
-          Guest Name, Email, and Guest Type are dynamically populated from your form registration data. Access ID is generated automatically by the system.
+          Guest Name and Email come from the guest's form answers. The Access ID is issued by the system for each guest when they register — the one shown here is a sample in the same format.
         </p>
       </div>
     </div>
@@ -494,6 +540,7 @@
 </template>
 
 <script setup lang="ts">
+import { CTA_ACTION_OPTIONS, normalizeCtaAction } from './ctaActions.ts';
 import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
@@ -507,7 +554,8 @@ import {
   SlidersHorizontal,
   LayoutGrid, 
   Phone, 
-  Instagram 
+  Instagram,
+  ChevronRight
 } from 'lucide-vue-next';
 
 defineProps<{
@@ -540,6 +588,28 @@ const showQrCode = computed({
 function toggleQrCode() {
   showQrCode.value = !showQrCode.value;
 }
+
+function openTicketDesign() {
+  editorStore.ensureTicketPage();
+  editorStore.closeAllSidebars();
+  editorStore.focusPage(editorStore.ticketPageIndex);
+}
+
+// Guest type preset (VIP / Public). Passes saved earlier already carry
+// guestType 'VIP' explicitly; an unset value means Public, as on the live pass.
+const GUEST_TYPE_PRESETS = [
+  { label: 'VIP', value: 'VIP' },
+  { label: 'Public', value: 'Public' }
+] as const;
+
+const guestType = computed({
+  get: () => (String(currentWidget.value?.props?.guestType || '').toLowerCase() === 'vip' ? 'VIP' : 'Public'),
+  set: (val: string) => {
+    if (currentWidget.value) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { guestType: val });
+    }
+  }
+});
 
 // 2. Headline & Venue Metadata
 const heading = computed({
@@ -612,12 +682,7 @@ function setButtonVariant(variant: 'black' | 'white') {
 
 const isLinkToDropdownOpen = ref(false);
 
-const allLinkToOptions = [
-  { label: 'Download E-Pass', value: 'download-pass' },
-  { label: 'Next Page', value: 'next_page' },
-  { label: 'External URL', value: 'link' },
-  { label: 'Popup Modal', value: 'modal' }
-] as const;
+const allLinkToOptions = CTA_ACTION_OPTIONS;
 
 const hasNextPage = computed(() => {
   return editorStore.activePageIndex < editorStore.pages.length - 1;
@@ -629,7 +694,7 @@ const linkToOptions = computed(() => {
 
 const ctaActionType = computed({
   get: () => {
-    const current = currentWidget.value?.props?.actionType || 'download-pass';
+    const current = normalizeCtaAction(currentWidget.value?.props?.actionType) || 'download-pass';
     const availableValues = linkToOptions.value.map(o => o.value);
     if (availableValues.includes(current as any)) {
       return current;
