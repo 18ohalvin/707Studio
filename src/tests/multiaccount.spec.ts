@@ -304,26 +304,28 @@ describe('Multiaccount & Data Isolation Logic', () => {
 
     editorStore.projects = [sarahProject, rianProject];
 
-    // Sarah signs in: can only see Sarah's project
+    // Same-brand editors share the brand's projects
     await authStore.signIn('sarah.chen@atmos.co.id', 'atmos_pass_2026');
-    expect(editorStore.userProjects.length).toBe(1);
-    expect(editorStore.userProjects[0].id).toBe('proj_sarah_exclusive');
+    expect(editorStore.userProjects.map(p => p.id).sort()).toEqual(['proj_rian_exclusive', 'proj_sarah_exclusive']);
 
     // Sarah signs out: 0 projects visible
     authStore.signOut();
     expect(editorStore.userProjects.length).toBe(0);
 
-    // Rian signs in: can only see Rian's project, NOT Sarah's project
     await authStore.signIn('rian@atmos.co.id', 'rian_atmos_pass');
-    expect(editorStore.userProjects.length).toBe(1);
-    expect(editorStore.userProjects[0].id).toBe('proj_rian_exclusive');
+    expect(editorStore.userProjects.map(p => p.id).sort()).toEqual(['proj_rian_exclusive', 'proj_sarah_exclusive']);
+
+    // Other brand's project is hidden; his own stays his
+    editorStore.projects = editorStore.projects.map(p => ({ ...p, brand_slug: 'fredperry' }));
+    expect(editorStore.userProjects.map(p => p.id)).toEqual(['proj_rian_exclusive']);
+    editorStore.projects = [sarahProject, rianProject];
 
     // Superadmin signs in: can see both projects
     signInAsSuperAdmin(authStore);
     expect(editorStore.userProjects.length).toBe(2);
   });
 
-  it('8. openProjectById prevents opening projects owned by another account', async () => {
+  it('8. openProjectById opens same-brand projects but not other brands\'', async () => {
     const authStore = useAuthStore();
     const editorStore = useEditorStore();
 
@@ -350,12 +352,27 @@ describe('Multiaccount & Data Isolation Logic', () => {
     editorStore.openProjectById('proj_sarah_secret');
     expect(editorStore.currentProjectId).toBe('');
 
-    // Different user attempts to open project
+    // Teammate of the same brand can open it
+    authStore.addUser({
+      name: 'Rian Atmos PIC',
+      email: 'rian@atmos.co.id',
+      password: 'rian_atmos_pass',
+      role: 'editor',
+      assignedBrands: ['atmos'],
+      status: 'active'
+    });
     await authStore.signIn('rian@atmos.co.id', 'rian_atmos_pass');
+    editorStore.openProjectById('proj_sarah_secret');
+    expect(editorStore.currentProjectId).toBe('proj_sarah_secret');
+
+    // Another brand's project stays closed
+    editorStore.currentProjectId = '';
+    editorStore.projects[0].brand_slug = 'fredperry';
     editorStore.openProjectById('proj_sarah_secret');
     expect(editorStore.currentProjectId).toBe('');
 
     // Owner opens project
+    editorStore.projects[0].brand_slug = 'atmos';
     await authStore.signIn('sarah.chen@atmos.co.id', 'atmos_pass_2026');
     editorStore.openProjectById('proj_sarah_secret');
     expect(editorStore.currentProjectId).toBe('proj_sarah_secret');

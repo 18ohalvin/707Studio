@@ -48,16 +48,11 @@ export const useEditorStore = defineStore('editor', () => {
     const matchesOwnerEmail = Boolean(p.owner_email && p.owner_email.toLowerCase().trim() === currentUserEmail);
     if (matchesOwnerId || matchesOwnerEmail) return true;
 
-    // If the project explicitly has an owner assigned that is NOT the current user,
-    // it belongs exclusively to that other owner - hide it from this account
-    if (p.owner_id && p.owner_id !== currentUserId) return false;
-    if (p.owner_email && currentUserEmail && p.owner_email.toLowerCase().trim() !== currentUserEmail) return false;
-
-    // Fallback for legacy or shared team brand projects without explicit owner_id:
+    // Everyone assigned to a brand shares its projects (owner = who made it).
     if (userBrands.includes('all')) return true;
     const slug = (p.brand_slug || '').toLowerCase().replace(/_/g, '-').trim();
     if (!slug) return false;
-    return userBrands.some(ub => ub && (ub === slug || slug.includes(ub) || ub.includes(slug)));
+    return userBrands.includes(slug);
   }
 
   const userProjects = computed<ProjectItem[]>(() => projects.value.filter(isVisibleToCurrentUser));

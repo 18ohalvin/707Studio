@@ -21,16 +21,14 @@ export function canAccessProject(claims: SessionClaims, project: any): boolean {
   if (ownerId && ownerId === claims.sub) return true;
   if (ownerEmail && email && ownerEmail === email) return true;
 
-  // Owned by someone else: theirs alone.
-  if (ownerId && ownerId !== claims.sub) return false;
-  if (ownerEmail && email && ownerEmail !== email) return false;
-
-  // Legacy / shared brand projects without an owner.
+  // Everyone assigned to a brand shares its projects: an owner is who made
+  // it, not the only person who may see it. Exact match, so "atmos" never
+  // reaches a brand that merely contains the word.
   const brands = claims.brands.map(normalizeBrand);
   if (brands.includes('all')) return true;
   const slug = normalizeBrand(project.brand_slug);
   if (!slug) return false;
-  return brands.some(b => b && (b === slug || slug.includes(b) || b.includes(slug)));
+  return brands.includes(slug);
 }
 
 /**
