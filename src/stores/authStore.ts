@@ -260,7 +260,18 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function updateUserPassword(id: string, newPassword: string): Promise<boolean> {
-    return updateUser(id, { password: newPassword.trim() });
+    // Sent straight to the server; the clear-text value must not sit in the local user list.
+    try {
+      await apiJson(`/api/users/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: newPassword.trim() })
+      });
+      return true;
+    } catch (e) {
+      console.error('[AuthStore] Failed to reset password on cloud server:', e);
+      return false;
+    }
   }
 
   async function assignBrandPic(brandSlug: string, userId: string): Promise<boolean> {

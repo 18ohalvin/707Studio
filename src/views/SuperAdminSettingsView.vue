@@ -260,17 +260,12 @@
 
             <!-- Sign-in Password Management -->
             <div class="flex items-center gap-2 w-[220px]">
-              <code class="px-2 py-0.5 rounded bg-black/5 text-[11px] font-mono text-black">
-                {{ visiblePasswords[user.id] ? (user.password || '707studio') : '••••••••••••' }}
-              </code>
-              <button 
-                @click="togglePasswordVisibility(user.id)"
-                class="text-neutral-500 hover:text-black p-1 cursor-pointer bg-transparent border-none"
-                :title="visiblePasswords[user.id] ? 'Hide password' : 'Show password'"
+              <span
+                class="px-2 py-0.5 rounded bg-black/5 text-[11px] font-mono text-neutral-500"
+                title="Passwords are stored hashed and can't be viewed. Use Reset to issue a new one."
               >
-                <Eye v-if="!visiblePasswords[user.id]" class="w-3.5 h-3.5" />
-                <EyeOff v-else class="w-3.5 h-3.5" />
-              </button>
+                ••••••••••••
+              </span>
               <button 
                 @click="openPasswordModal(user)"
                 class="font-707 text-[11px] text-black underline font-medium hover:opacity-75 cursor-pointer bg-transparent border-none ml-1"
@@ -992,7 +987,7 @@
               <input 
                 v-model="editUserPassword" 
                 type="text" 
-                placeholder="Leave blank or edit password" 
+                placeholder="Leave blank to keep the current password" 
                 class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black font-mono"
               />
             </div>
@@ -1059,19 +1054,19 @@
       <div 
         v-if="showPasswordModal" 
         class="fixed inset-0 z-50 apple-frost-backdrop flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
-        @click.self="showPasswordModal = false"
+        @click.self="closePasswordModal"
       >
         <div class="apple-frost rounded-[16px] border border-white/60 p-6 w-full max-w-[400px] shadow-xl flex flex-col gap-4 animate-apple-pop font-707">
           <div class="flex items-center justify-between">
             <h3 class="font-707 font-medium text-[16px] text-black">Reset Sign-in Password</h3>
-            <button @click="showPasswordModal = false" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
+            <button @click="closePasswordModal" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
           </div>
 
           <p class="font-707 text-[12px] text-neutral-600">
             Resetting password for <strong>{{ targetUserForPassword?.name }}</strong> ({{ targetUserForPassword?.email }}).
           </p>
 
-          <form @submit.prevent="handlePasswordUpdateSubmit" class="flex flex-col gap-3">
+          <form v-if="!passwordResetDone" @submit.prevent="handlePasswordUpdateSubmit" class="flex flex-col gap-3">
             <div class="flex flex-col gap-1">
               <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">New Password</label>
               <div class="flex items-center gap-2">
@@ -1079,23 +1074,25 @@
                   v-model="updatedPasswordValue" 
                   type="text" 
                   required 
+                  minlength="8"
                   placeholder="Enter new password" 
                   class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black font-mono"
                 />
                 <button 
                   type="button" 
-                  @click="updatedPasswordValue = '707_' + Math.random().toString(36).substring(2, 8)"
+                  @click="updatedPasswordValue = secureRandomPassword()"
                   class="px-3 h-[38px] rounded-[8px] border border-black/15 text-[11px] font-707 font-medium hover:bg-black/5 whitespace-nowrap cursor-pointer"
                 >
                   Generate
                 </button>
               </div>
+              <p class="font-707 text-[11px] text-neutral-500">Passwords are stored hashed. After you confirm, this is the only time it is shown.</p>
             </div>
 
             <div class="flex items-center justify-end gap-2 mt-2">
               <button 
                 type="button" 
-                @click="showPasswordModal = false" 
+                @click="closePasswordModal" 
                 class="px-4 h-[36px] rounded-[8px] border border-black/15 text-neutral-600 font-707 text-[12px] font-medium"
               >
                 Cancel
@@ -1108,6 +1105,31 @@
               </button>
             </div>
           </form>
+
+          <div v-else class="flex flex-col gap-3">
+            <p class="font-707 text-[12px] text-neutral-700">
+              Password updated. Share it with {{ targetUserForPassword?.name }} now — it can't be viewed again, only reset.
+            </p>
+            <div class="flex items-center gap-2">
+              <code class="flex-1 h-[38px] px-3 flex items-center rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-mono text-black select-text">{{ updatedPasswordValue }}</code>
+              <button 
+                type="button" 
+                @click="copyResetPassword"
+                class="px-3 h-[38px] rounded-[8px] border border-black/15 text-[11px] font-707 font-medium hover:bg-black/5 whitespace-nowrap cursor-pointer"
+              >
+                Copy
+              </button>
+            </div>
+            <div class="flex justify-end mt-2">
+              <button 
+                type="button" 
+                @click="closePasswordModal" 
+                class="apple-glass-btn-dark bg-black text-white px-5 h-[36px] rounded-[8px] font-707 text-[12px] font-medium"
+              >
+                Done
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </Transition>
@@ -1344,8 +1366,6 @@ import {
   RefreshCw, 
   CheckCircle, 
   XCircle,
-  Eye, 
-  EyeOff,
   Plus,
   Trash2,
   ExternalLink,
@@ -1428,6 +1448,7 @@ const editUserStatus = ref<'active' | 'pending' | 'suspended'>('active');
 
 const targetUserForPassword = ref<UserAccount | null>(null);
 const updatedPasswordValue = ref('');
+const passwordResetDone = ref(false);
 
 const targetBrandSlug = ref('');
 const targetBrandName = ref('');
@@ -1446,7 +1467,6 @@ const editTemplateCategory = ref<'raffle' | 'rsvp' | 'hype_drop' | 'lookbook' | 
 const editTemplateStatus = ref<'published' | 'draft'>('published');
 const editTemplateDesc = ref('');
 
-const visiblePasswords = reactive<Record<string, boolean>>({});
 
 /** Waiting for the superadmin: a first submission, or an update to a live campaign. */
 function isAwaitingReview(p: ProjectItem): boolean {
@@ -1537,12 +1557,15 @@ function getBrandLastActivity(brandSlug: string): string {
   return '2 days ago';
 }
 
-function togglePasswordVisibility(userId: string) {
-  visiblePasswords[userId] = !visiblePasswords[userId];
+/** 12 characters from a crypto source; no look-alikes (0/O, 1/l/I) so it survives being read out loud. */
+function secureRandomPassword(): string {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  const bytes = crypto.getRandomValues(new Uint8Array(12));
+  return Array.from(bytes, b => alphabet[b % alphabet.length]).join('');
 }
 
 function generateRandomPassword() {
-  newUserPassword.value = '707_' + Math.random().toString(36).substring(2, 9);
+  newUserPassword.value = secureRandomPassword();
 }
 
 async function handleAddBrandSubmit() {
@@ -1598,7 +1621,7 @@ function openEditUserModal(user: UserAccount) {
   editUserName.value = user.name;
   editUserEmail.value = user.email;
   editUserPhone.value = user.phone || '';
-  editUserPassword.value = user.password || '';
+  editUserPassword.value = '';
   editUserRole.value = user.role;
   editUserBrand.value = user.assignedBrands?.[0] || 'all';
   editUserStatus.value = user.status || 'active';
@@ -1636,16 +1659,35 @@ async function handleRemoveBrand(brand: Brand) {
 
 function openPasswordModal(user: UserAccount) {
   targetUserForPassword.value = user;
-  updatedPasswordValue.value = user.password || '';
+  updatedPasswordValue.value = secureRandomPassword();
+  passwordResetDone.value = false;
   showPasswordModal.value = true;
 }
 
-function handlePasswordUpdateSubmit() {
-  if (targetUserForPassword.value && updatedPasswordValue.value) {
-    authStore.updateUserPassword(targetUserForPassword.value.id, updatedPasswordValue.value);
-    editorStore.showToast(`Password updated for ${targetUserForPassword.value.name}.`);
-    showPasswordModal.value = false;
+async function handlePasswordUpdateSubmit() {
+  if (!targetUserForPassword.value || !updatedPasswordValue.value) return;
+  const ok = await authStore.updateUserPassword(targetUserForPassword.value.id, updatedPasswordValue.value);
+  if (!ok) {
+    editorStore.showToast(`Could not reset the password for ${targetUserForPassword.value.name}. Try again.`);
+    return;
   }
+  // The new password is shown once, here; it is stored hashed and can't be looked up later.
+  passwordResetDone.value = true;
+}
+
+async function copyResetPassword() {
+  try {
+    await navigator.clipboard.writeText(updatedPasswordValue.value);
+    editorStore.showToast('Password copied.');
+  } catch {
+    editorStore.showToast('Could not copy — select the password and copy it manually.');
+  }
+}
+
+function closePasswordModal() {
+  showPasswordModal.value = false;
+  passwordResetDone.value = false;
+  updatedPasswordValue.value = '';
 }
 
 
