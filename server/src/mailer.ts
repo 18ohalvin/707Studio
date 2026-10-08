@@ -1,5 +1,7 @@
 import nodemailer, { Transporter } from 'nodemailer';
 
+interface Attachment { filename: string; content: Buffer; contentType: string }
+
 /**
  * Guest email.
  *
@@ -99,7 +101,7 @@ function queued<T>(task: () => Promise<T>): Promise<T> {
   return result;
 }
 
-async function send(to: string, subject: string, html: string, label: string) {
+async function send(to: string, subject: string, html: string, label: string, attachments: Attachment[] = []) {
   if (!ENABLED) {
     console.log(`[Mailer] Disabled (ENABLE_EMAIL_DISPATCH is not "true") — would have sent "${label}" to ${to}`);
     return { success: false, skipped: true };
@@ -112,7 +114,7 @@ async function send(to: string, subject: string, html: string, label: string) {
   }
 
   try {
-    await queued(() => tx.sendMail({ from: `"${FROM_NAME}" <${FROM_EMAIL}>`, to, subject, html }));
+    await queued(() => tx.sendMail({ from: `"${FROM_NAME}" <${FROM_EMAIL}>`, to, subject, html, attachments }));
     console.log(`[Mailer] Sent "${label}" to ${to}`);
     return { success: true };
   } catch (err: any) {
@@ -129,26 +131,57 @@ interface GuestMail {
   ticketCode?: string;
   campaign?: string;
   liveUrl?: string;
+  /** The guest's e-ticket, the same PDF they can download. */
+  ticketPdf?: Buffer | null;
 }
+
+const eventLabel = (guest: GuestMail) => guest.campaign || '707 event';
+
+/** File name of the ticket, matching the one the guest's own download gets. */
+function ticketFileName(guest: GuestMail): string {
+  const title = (guest.campaign || 'ticket').replace(/[^a-z0-9]+/gi, '-').replace(/(^-|-$)/g, '').toLowerCase() || 'ticket';
+  return `${title}-${guest.ticketCode || 'ticket'}.pdf`;
+}
+
+function ticketAttachment(guest: GuestMail): Attachment[] {
+  return guest.ticketPdf
+    ? [{ filename: ticketFileName(guest), content: guest.ticketPdf, contentType: 'application/pdf' }]
+    : [];
+}
+
+/**
+ * The ticket email. With the PDF attached it only says "this is your ticket";
+ * without it (the PDF never reached us) the access code is in the email itself,
+ * so the guest still holds something that gets them in.
+ */
+function ticketMail(guest: GuestMail, title: string, intro: string) {
+  const withPdf = Boolean(guest.ticketPdf);
+  return shell(
+    title,
+    `Hi ${guest.fullName || 'there'}, ${intro}`,
+    withPdf
+      ? [['Name', guest.fullName || ''], ['Event', guest.campaign || '']]
+      : [['Access code', guest.ticketCode || ''], ['Name', guest.fullName || ''], ['Event', guest.campaign || '']],
+    withPdf
+      ? 'Keep this email. Your ticket is the attached PDF.'
+      : 'Keep this email. Your access code is your entry.'
+  );
+}
+
+const TICKET_INTRO = (guest: GuestMail) => guest.ticketPdf
+  ? 'this is your ticket. Your e-ticket is attached to this email as a PDF. Show it at the door.'
+  : 'this is your ticket. Show the access code below at the door.';
 
 /** Sent when a guest registers and has a place. */
 export function sendPassEmail(guest: GuestMail) {
   if (!guest.email) return Promise.resolve({ success: false, skipped: true });
-
-  const html = shell(
-    'You are on the list',
-    `Hi ${guest.fullName || 'there'}, your place is confirmed. Show the access code below at the door.`,
-    [
-      ['Access code', guest.ticketCode || ''],
-      ['Name', guest.fullName || ''],
-      ['Event', guest.campaign || '']
-    ],
-    guest.liveUrl
-      ? `Keep this email — your code is your entry. Campaign page: ${guest.liveUrl}`
-      : 'Keep this email — your code is your entry.'
+  return send(
+    guest.email,
+    `Your 707 ticket for ${eventLabel(guest)}`,
+    ticketMail(guest, 'Your ticket', TICKET_INTRO(guest)),
+    'ticket',
+    ticketAttachment(guest)
   );
-
-  return send(guest.email, 'CONFIRMED: Your 707 Access Pass', html, 'access pass');
 }
 
 /** Sent when a guest registers but every place is taken. */
@@ -157,34 +190,27 @@ export function sendWaitlistEmail(guest: GuestMail) {
 
   const html = shell(
     'You are on the waitlist',
-    `Hi ${guest.fullName || 'there'}, this one is full right now. You are on the waitlist, and we will email you the moment a place opens.`,
+    `Hi ${guest.fullName || 'there'}, ${eventLabel(guest)} is full right now. You are on the waitlist, and we will email you your ticket the moment a place opens.`,
     [
-      ['Reference', guest.ticketCode || ''],
       ['Name', guest.fullName || ''],
       ['Event', guest.campaign || '']
     ],
-    'No action needed. This is not an entry pass yet — wait for the confirmation email.'
+    'No action needed. This is not a ticket yet. Wait for the confirmation email.'
   );
 
-  return send(guest.email, 'WAITLISTED: Your 707 Request', html, 'waitlist notice');
+  return send(guest.email, `You're on the waitlist for ${eventLabel(guest)}`, html, 'waitlist notice');
 }
 
 /** Sent when a waitlisted guest is moved up and now has a place. */
 export function sendPromotedEmail(guest: GuestMail) {
   if (!guest.email) return Promise.resolve({ success: false, skipped: true });
-
-  const html = shell(
-    'A place opened up',
-    `Hi ${guest.fullName || 'there'}, good news — you are off the waitlist and your place is confirmed. Show the access code below at the door.`,
-    [
-      ['Access code', guest.ticketCode || ''],
-      ['Name', guest.fullName || ''],
-      ['Event', guest.campaign || '']
-    ],
-    'Keep this email — your code is your entry.'
+  return send(
+    guest.email,
+    `A place opened up: your 707 ticket for ${eventLabel(guest)}`,
+    ticketMail(guest, 'A place opened up', `good news, you are off the waitlist. ${TICKET_INTRO(guest).replace(/^this is your ticket\. /, 'This is your ticket. ')}`),
+    'waitlist promotion',
+    ticketAttachment(guest)
   );
-
-  return send(guest.email, 'CONFIRMED: Your 707 Access Pass', html, 'waitlist promotion');
 }
 
 export default { sendPassEmail, sendWaitlistEmail, sendPromotedEmail, mailerStatus };

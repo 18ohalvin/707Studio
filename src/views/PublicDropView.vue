@@ -387,6 +387,32 @@ provide(LIVE_PASS_KEY, livePass);
 // One key per set of answers: a retry or a second tap is the same registration, never a second one.
 const entryKeyring = createEntryKeyring();
 
+/**
+ * Right after registering, makes the guest's e-ticket (the same file as their download)
+ * and hands it to the server, which attaches it to their ticket email. It runs in the
+ * background: a failure here only means the email goes out without the PDF attached.
+ * A waitlisted guest's ticket is made as if confirmed and kept for the day a place opens.
+ */
+async function sendTicketCopy(entryId: string, entryKey: string) {
+  if (!entryId || !ticketSource.page) return;
+  try {
+    const { renderTicketPdfBlob } = await import('../components/editor/ticket/ticketPdf.ts');
+    const blob = await renderTicketPdfBlob({
+      page: ticketSource.page,
+      context: ticketSource.context,
+      livePass: { ...livePass, waitlisted: false },
+      fileName: 'ticket.pdf'
+    });
+    await fetch(`/api/submissions/${encodeURIComponent(entryId)}/ticket-pdf`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/pdf', 'x-entry-key': entryKey },
+      body: blob
+    });
+  } catch (err) {
+    console.warn('[PublicDrop] Could not send the ticket copy for email:', err);
+  }
+}
+
 async function sendSubmission() {
   // A funnel can reach "submit" twice (entering the pass page, then the final CTA) — record once.
   if (livePass.status === 'pending' || livePass.status === 'ready') return;
@@ -429,6 +455,7 @@ async function sendSubmission() {
     livePass.status = 'ready';
     joinWaitlist = false;
     void refreshPlaces();
+    void sendTicketCopy(String(outcome.entry.id || ''), entryKeyring.keyFor(answers));
     return;
   }
   if (outcome.code === 'slots_full' || outcome.code === 'option_closed') {

@@ -57,7 +57,7 @@ async function waitForImages(root: HTMLElement, timeoutMs: number): Promise<void
   }
 }
 
-export async function renderTicketPdf(opts: TicketPdfOptions): Promise<void> {
+async function drawTicketPdf(opts: TicketPdfOptions) {
   const [{ default: MobileArtboard }, { default: html2canvas }, { jsPDF }] = await Promise.all([
     import('../MobileArtboard.vue'),
     import('html2canvas'),
@@ -117,9 +117,19 @@ export async function renderTicketPdf(opts: TicketPdfOptions): Promise<void> {
       doc.setFont('helvetica', 'bold').setFontSize(40).setTextColor(205);
       doc.text('SAMPLE', paperW / 2, paperH / 2, { align: 'center', angle: 35 });
     }
-    doc.save(opts.fileName);
+    return doc;
   } finally {
     app.unmount();
     host.remove();
   }
+}
+
+/** Makes the guest's ticket and hands it to the browser as a download. */
+export async function renderTicketPdf(opts: TicketPdfOptions): Promise<void> {
+  (await drawTicketPdf(opts)).save(opts.fileName);
+}
+
+/** The same ticket as a file in memory, for the copy that is emailed to the guest. */
+export async function renderTicketPdfBlob(opts: TicketPdfOptions): Promise<Blob> {
+  return (await drawTicketPdf(opts)).output('blob');
 }

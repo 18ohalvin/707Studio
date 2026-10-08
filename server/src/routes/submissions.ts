@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { Router, Request, Response } from 'express';
+import express, { Router, Request, Response } from 'express';
 import { pool, getDbStatus } from '../db.js';
 import { readDataFile, writeDataFile } from '../fileStorage.js';
 import { requireAuth, getClaims, optionalClaims } from '../auth.js';
@@ -200,14 +200,18 @@ async function placesRefusal(res: Response, pageId: string, useDb: boolean, full
   });
 }
 
-// POST /api/submissions - Submit raffle or RSVP entry (public)
-
 /**
  * Emails the guest about their entry. Fire-and-forget on purpose: the entry is
  * already stored, so a mail problem must never fail a registration or hold up
  * the response the guest is waiting on.
+ *
+ * The ticket email carries the guest's e-ticket PDF — the file their own
+ * browser makes right after they register. A guest with a place therefore
+ * waits briefly for that file (see awaitingTicket); one who is waitlisted is
+ * told so at once, and the PDF, already stored by then, goes out when they
+ * come off the waitlist.
  */
-async function notifyGuest(row: any, kind: 'new' | 'promoted') {
+async function notifyGuest(row: any, kind: 'new' | 'promoted', ticketPdf?: Buffer | null) {
   try {
     const form = typeof row?.form_data === 'string' ? JSON.parse(row.form_data) : (row?.form_data || {});
     const email = String(form.email || '').trim();
@@ -221,11 +225,15 @@ async function notifyGuest(row: any, kind: 'new' | 'promoted') {
       }
     } catch { /* the title is a nicety, not a reason to skip the mail */ }
 
+    let pdf = ticketPdf ?? null;
+    if (!pdf && kind === 'promoted') pdf = await storedTicket(String(row.id));
+
     const guest = {
       email,
       fullName: String(form.fullName || '').trim(),
       ticketCode: row.ticket_code || '',
-      campaign
+      campaign,
+      ticketPdf: pdf
     };
 
     if (kind === 'promoted') await sendPromotedEmail(guest);
@@ -236,6 +244,74 @@ async function notifyGuest(row: any, kind: 'new' | 'promoted') {
   }
 }
 
+/** How long a new registration waits for its ticket PDF before the email goes out without it. */
+const TICKET_WAIT_MS = 30_000;
+/** Registrations holding a place whose email is waiting for the PDF, by entry id. */
+const awaitingTicket = new Map<string, { row: any; timer: NodeJS.Timeout }>();
+
+/** Entry point for a fresh registration: waitlist notice now, ticket email once the PDF is in (or after the wait). */
+function notifyNewEntry(row: any) {
+  if (row.status === 'waitlisted' || !getDbStatus().isConnected) {
+    void notifyGuest(row, 'new');
+    return;
+  }
+  const id = String(row.id);
+  const timer = setTimeout(() => {
+    awaitingTicket.delete(id);
+    void notifyGuest(row, 'new');
+  }, TICKET_WAIT_MS);
+  awaitingTicket.set(id, { row, timer });
+}
+
+async function storedTicket(id: string): Promise<Buffer | null> {
+  try {
+    const r = await pool.query('SELECT pdf FROM submission_tickets WHERE submission_id = $1', [id]);
+    return r.rows[0]?.pdf || null;
+  } catch {
+    return null;
+  }
+}
+
+const MAX_TICKET_PDF_BYTES = 3 * 1024 * 1024;
+
+/**
+ * PUT /api/submissions/:id/ticket-pdf - the guest's browser hands in the e-ticket it just made.
+ * Only the browser that registered may do it (it alone holds the visit key), only
+ * once, and only a real PDF of reasonable size is kept. If the guest's email is
+ * waiting for it, the email goes out now with the file attached.
+ */
+submissionsRouter.put('/:id/ticket-pdf', express.raw({ type: 'application/pdf', limit: MAX_TICKET_PDF_BYTES }), route('store your ticket', async (req, res) => {
+  const { id } = req.params;
+  const key = clientKeyOf(req.get('x-entry-key'));
+  const pdf: Buffer | undefined = Buffer.isBuffer(req.body) ? req.body : undefined;
+
+  if (!pdf || pdf.length < 100 || pdf.subarray(0, 5).toString('latin1') !== '%PDF-') {
+    return res.status(400).json({ success: false, error: 'That is not a PDF.' });
+  }
+  const store = await storeFor(res);
+  if (!store) return;
+  if (store !== 'db') return res.status(204).end(); // development without a database keeps no tickets
+
+  const found = await pool.query('SELECT * FROM submissions WHERE id = $1', [id]);
+  const row = found.rows[0];
+  if (!row || !key || row.client_key !== key) {
+    return res.status(403).json({ success: false, error: 'This ticket does not belong to you.' });
+  }
+
+  const saved = await pool.query(
+    'INSERT INTO submission_tickets (submission_id, pdf) VALUES ($1, $2) ON CONFLICT (submission_id) DO NOTHING',
+    [id, pdf]
+  );
+  const waiting = awaitingTicket.get(String(id));
+  if (saved.rowCount && waiting) {
+    clearTimeout(waiting.timer);
+    awaitingTicket.delete(String(id));
+    void notifyGuest(waiting.row, 'new', pdf);
+  }
+  return res.status(204).end();
+}));
+
+// POST /api/submissions - Submit raffle or RSVP entry (public)
 submissionsRouter.post('/', route('record your entry', async (req, res) => {
   const { page_id, submission_type, form_data } = req.body || {};
 
@@ -312,7 +388,7 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
       const outcome = await insertWithPlaces(draft(), chosen, wantsWaitlist);
       if (outcome.kind === 'inserted') {
         touchAvailability(pageId);
-        void notifyGuest(outcome.row, 'new');
+        notifyNewEntry(outcome.row);
         return res.status(201).json({ success: true, data: publicEntry(outcome.row), message: 'Entry recorded successfully' });
       }
       if (outcome.kind === 'full') return placesRefusal(res, pageId, true, outcome.full);
@@ -459,6 +535,7 @@ submissionsRouter.post('/bulk-delete', requireAuth, route('delete these guests',
       ? await pool.query('DELETE FROM submissions WHERE id = ANY($1) AND page_id = ANY($2) RETURNING id, page_id', [ids, scope])
       : await pool.query('DELETE FROM submissions WHERE id = ANY($1) RETURNING id, page_id', [ids]);
     new Set(result.rows.map((r: any) => String(r.page_id))).forEach(touchAvailability);
+    await pool.query('DELETE FROM submission_tickets WHERE submission_id = ANY($1)', [result.rows.map((r: any) => r.id)]);
     return res.json({ success: true, deleted: result.rowCount, ids: result.rows.map(r => r.id) });
   }
 
@@ -641,6 +718,7 @@ submissionsRouter.delete('/:id', requireAuth, route('remove this guest', async (
       : await pool.query('DELETE FROM submissions WHERE id = $1 RETURNING page_id', [id]);
     if (!result.rowCount) return res.status(404).json({ success: false, error: 'Submission not found.' });
     touchAvailability(String(result.rows[0].page_id));
+    await pool.query('DELETE FROM submission_tickets WHERE submission_id = $1', [id]);
     return res.json({ success: true, message: 'Submission removed successfully' });
   }
 

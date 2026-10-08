@@ -211,6 +211,16 @@ export async function initDbSchema(): Promise<void> {
       ALTER TABLE submissions ADD COLUMN IF NOT EXISTS checked_in_at TIMESTAMP WITH TIME ZONE;
       ALTER TABLE submissions ADD COLUMN IF NOT EXISTS checked_in_by VARCHAR(100);
 
+      -- The guest's e-ticket PDF, made by their own browser right after they
+      -- register (the same file as their download). Kept apart from submissions
+      -- so the guest lists never carry it; it is attached to their ticket email,
+      -- including later when they come off the waitlist.
+      CREATE TABLE IF NOT EXISTS submission_tickets (
+        submission_id VARCHAR(100) PRIMARY KEY,
+        pdf BYTEA NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+
       -- Two versions per project: the working copy (the columns above, saved
       -- by the editor as people work) and the live copy the public sees,
       -- frozen when the superadmin publishes. Edits to a live campaign wait in
