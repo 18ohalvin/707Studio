@@ -287,6 +287,30 @@
       </Transition>
     </Teleport>
 
+    <!-- Ticket email progress -->
+    <Teleport to="body">
+      <div v-if="ticketSender.progress.value" class="fixed top-[16px] inset-x-0 z-[80] flex justify-center pointer-events-none px-4 font-707">
+        <div class="pointer-events-auto flex flex-col gap-1.5 px-4 py-3 rounded-[14px] bg-[#0c0d0e]/92 backdrop-blur-2xl border border-white/10 text-white shadow-[0_24px_60px_rgba(0,0,0,0.35)] w-full max-w-[420px]">
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-[12px] font-medium tabular-nums">
+              {{ ticketSender.progress.value.finished ? 'Tickets finished' : 'Sending tickets' }} · {{ ticketSender.progress.value.done }} / {{ ticketSender.progress.value.total }}
+            </span>
+            <button v-if="!ticketSender.progress.value.finished" type="button" @click="ticketSender.cancel()" class="px-2.5 h-[26px] rounded-[8px] text-[11.5px] hover:bg-white/10 cursor-pointer">Stop</button>
+            <button v-else type="button" @click="ticketSender.dismiss()" class="px-2.5 h-[26px] rounded-[8px] text-[11.5px] hover:bg-white/10 cursor-pointer">Close</button>
+          </div>
+          <div class="h-1 rounded-full bg-white/15 overflow-hidden">
+            <div class="h-full bg-white transition-all" :style="{ width: `${ticketSender.progress.value.total ? (ticketSender.progress.value.done / ticketSender.progress.value.total) * 100 : 0}%` }" />
+          </div>
+          <p class="text-[11px] text-white/70 tabular-nums">
+            {{ ticketSender.progress.value.sent }} sent · {{ ticketSender.progress.value.skipped }} skipped · {{ ticketSender.progress.value.failed }} failed
+            <span v-if="ticketSender.progress.value.current"> · {{ ticketSender.progress.value.current }}</span>
+          </p>
+          <p v-if="!ticketSender.progress.value.finished" class="text-[11px] text-white/60">Keep this tab open until it finishes.</p>
+          <p v-if="ticketSender.progress.value.stopReason" class="text-[11px] text-amber-300">{{ ticketSender.progress.value.stopReason }}</p>
+        </div>
+      </div>
+    </Teleport>
+
     <!-- Floating bulk action bar (editor-style dark glass) -->
     <Teleport to="body">
       <Transition name="hub-bar">
@@ -304,6 +328,9 @@
               {{ o.label }}
             </button>
             <div class="w-px h-5 bg-white/15 mx-1" />
+            <button type="button" @click="sendTickets(selectedRows)" :disabled="!!ticketSender.progress.value && !ticketSender.progress.value.finished" class="px-2.5 h-[30px] rounded-[8px] text-[11.5px] hover:bg-white/10 cursor-pointer flex items-center gap-1.5 whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed" title="Email each selected guest their e-ticket PDF">
+              <Mail class="w-3.5 h-3.5" /> Send ticket
+            </button>
             <button type="button" @click="exportCsv(selectedRows)" class="px-2.5 h-[30px] rounded-[8px] text-[11.5px] hover:bg-white/10 cursor-pointer flex items-center gap-1.5 whitespace-nowrap">
               <Download class="w-3.5 h-3.5" /> Export
             </button>
@@ -446,8 +473,9 @@ import { glassConfirm } from '../../services/glassDialog.ts';
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import {
   Search, X, Download, Columns3, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, ChevronRight,
-  Check, Circle, CircleCheck, Users, Trash2, Copy, LogIn, LogOut
+  Check, Circle, CircleCheck, Users, Trash2, Copy, LogIn, LogOut, Mail
 } from 'lucide-vue-next';
+import { useTicketSender } from './useTicketSender.ts';
 import {
   type Submission, type GuestStatus, STATUS_OPTIONS, normalizeStatus, statusLabel, statusBadgeClass, statusDotClass,
   guestName, guestEmail, guestPhone, customFieldKeys, formatValue, initials, accessId, formatDateTime, formatTime,
@@ -667,6 +695,39 @@ async function applyStatus(ids: string[], status: GuestStatus) {
     emit('updated', previous);
     emit('toast', `Couldn't update status: ${err?.message || 'network error'}`);
   }
+}
+
+/* ---------- Ticket emails ---------- */
+const ticketSender = useTicketSender();
+
+async function sendTickets(rows: Submission[]) {
+  if (!rows.length) return;
+  const checks = rows.map(r => ticketSender.eligibility(r));
+  const eligible = rows.filter((_, i) => checks[i].ok);
+  const count = (why: string) => checks.filter(c => !c.ok && (c as any).why === why).length;
+  if (!eligible.length) {
+    emit('toast', `Nobody to send to: ${count('sent')} already got their ticket, ${count('status')} have no place, ${count('email')} have no email.`);
+    return;
+  }
+  const notes = [
+    count('sent') ? `${count('sent')} already received their ticket by email and are skipped.` : '',
+    count('status') ? `${count('status')} are waitlisted or declined and are skipped.` : '',
+    count('email') ? `${count('email')} have no email and are skipped.` : '',
+    count('design') ? `${count('design')} belong to a campaign without a Ticket page and are skipped.` : ''
+  ].filter(Boolean).join(' ');
+  const ok = await glassConfirm({
+    title: `Email the ticket to ${eligible.length} ${eligible.length === 1 ? 'guest' : 'guests'}?`,
+    message: `Each guest gets an email with their e-ticket PDF — the same ticket, details and QR as at registration. The PDFs are made one by one in this browser, so keep this tab open until it finishes (a few seconds per guest). ${notes}`.trim(),
+    confirmLabel: 'Send tickets'
+  });
+  if (!ok) return;
+  selected.value = new Set();
+  const stamp = new Date().toISOString();
+  const result = await ticketSender.run(eligible, id => {
+    const row = props.rows.find(r => r.id === id);
+    if (row) emit('updated', [{ ...row, ticket_emailed_at: stamp }]);
+  });
+  emit('toast', `Tickets: ${result.sent} sent${result.failed ? `, ${result.failed} failed` : ''}${result.skipped ? `, ${result.skipped} skipped` : ''}.`);
 }
 
 async function toggleCheckIn(s: Submission) {

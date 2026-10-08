@@ -210,6 +210,8 @@ export async function initDbSchema(): Promise<void> {
       ALTER TABLE submissions ADD COLUMN IF NOT EXISTS ticket_code VARCHAR(100);
       ALTER TABLE submissions ADD COLUMN IF NOT EXISTS checked_in_at TIMESTAMP WITH TIME ZONE;
       ALTER TABLE submissions ADD COLUMN IF NOT EXISTS checked_in_by VARCHAR(100);
+      -- When the guest's ticket email last went out (so a bulk send never mails anyone twice).
+      ALTER TABLE submissions ADD COLUMN IF NOT EXISTS ticket_emailed_at TIMESTAMP WITH TIME ZONE;
 
       -- The guest's e-ticket PDF, made by their own browser right after they
       -- register (the same file as their download). Kept apart from submissions

@@ -236,11 +236,21 @@ async function notifyGuest(row: any, kind: 'new' | 'promoted', ticketPdf?: Buffe
       ticketPdf: pdf
     };
 
-    if (kind === 'promoted') await sendPromotedEmail(guest);
+    if (kind === 'promoted') await sendPromotedEmail(guest).then(r => markTicketEmailed(row.id, r));
     else if (row.status === 'waitlisted') await sendWaitlistEmail(guest);
-    else await sendPassEmail(guest);
+    else await sendPassEmail(guest).then(r => markTicketEmailed(row.id, r));
   } catch (err: any) {
     console.warn('[Submissions] Could not notify guest:', err?.message || err);
+  }
+}
+
+/** Remembers that a ticket email went out, so a bulk send skips this guest. */
+async function markTicketEmailed(id: string, result: { success?: boolean }) {
+  if (!result?.success) return;
+  try {
+    await pool.query('UPDATE submissions SET ticket_emailed_at = NOW() WHERE id = $1', [id]);
+  } catch (err: any) {
+    console.warn('[Submissions] Could not record the ticket email:', err?.message || err);
   }
 }
 
@@ -258,9 +268,24 @@ function notifyNewEntry(row: any) {
   const id = String(row.id);
   const timer = setTimeout(() => {
     awaitingTicket.delete(id);
-    void notifyGuest(row, 'new');
+    void sendIfStillDue(id, null);
   }, TICKET_WAIT_MS);
   awaitingTicket.set(id, { row, timer });
+}
+
+/**
+ * The guest's ticket email, sent when its wait is over — unless things changed meanwhile:
+ * staff may have emailed the ticket themselves, moved the guest to the waitlist, or removed them.
+ */
+async function sendIfStillDue(id: string, pdf: Buffer | null) {
+  try {
+    const r = await pool.query('SELECT * FROM submissions WHERE id = $1', [id]);
+    const row = r.rows[0];
+    if (!row || row.ticket_emailed_at || !HAS_PLACE.includes(String(row.status))) return;
+    await notifyGuest(row, 'new', pdf);
+  } catch (err: any) {
+    console.warn('[Submissions] Could not send the ticket email:', err?.message || err);
+  }
 }
 
 async function storedTicket(id: string): Promise<Buffer | null> {
@@ -306,9 +331,64 @@ submissionsRouter.put('/:id/ticket-pdf', express.raw({ type: 'application/pdf', 
   if (saved.rowCount && waiting) {
     clearTimeout(waiting.timer);
     awaitingTicket.delete(String(id));
-    void notifyGuest(waiting.row, 'new', pdf);
+    void sendIfStillDue(String(id), pdf);
   }
   return res.status(204).end();
+}));
+
+
+/**
+ * PUT /api/submissions/:id/send-ticket - staff re-send a guest's e-ticket.
+ * The body is the PDF the staff's browser just made from the guest's own entry
+ * (same design, details and QR as the one on their screen at registration).
+ * Only guests who hold a place, only within this account's campaigns, and
+ * never twice: someone who already got a ticket email is skipped.
+ */
+submissionsRouter.put('/:id/send-ticket', requireAuth, express.raw({ type: 'application/pdf', limit: MAX_TICKET_PDF_BYTES }), route('send this ticket', async (req, res) => {
+  const id = String(req.params.id);
+  const pdf: Buffer | undefined = Buffer.isBuffer(req.body) ? req.body : undefined;
+  if (!pdf || pdf.length < 100 || pdf.subarray(0, 5).toString('latin1') !== '%PDF-') {
+    return res.status(400).json({ success: false, error: 'That is not a PDF.' });
+  }
+  const store = await storeFor(res);
+  if (!store) return;
+  if (store !== 'db') return res.status(409).json({ success: false, error: 'Sending tickets needs the database.' });
+
+  const scope = await scopedPageIds(req, res, true);
+  const found = await pool.query('SELECT * FROM submissions WHERE id = $1', [id]);
+  const row = found.rows[0];
+  if (!row || !inScope(scope, row.page_id)) return res.status(404).json({ success: false, error: 'Submission not found.' });
+  if (!HAS_PLACE.includes(String(row.status))) return res.json({ success: true, result: 'no_place' });
+  if (row.ticket_emailed_at) return res.json({ success: true, result: 'already_sent' });
+
+  const form = typeof row.form_data === 'string' ? JSON.parse(row.form_data) : (row.form_data || {});
+  const email = String(form.email || '').trim();
+  if (!email || email === PLACEHOLDER_EMAIL) return res.json({ success: true, result: 'no_email' });
+
+  await pool.query(
+    `INSERT INTO submission_tickets (submission_id, pdf) VALUES ($1, $2)
+     ON CONFLICT (submission_id) DO UPDATE SET pdf = EXCLUDED.pdf, created_at = NOW()`,
+    [id, pdf]
+  );
+
+  let campaign = '';
+  try {
+    const r = await pool.query('SELECT title FROM pages WHERE id = $1', [row.page_id]);
+    campaign = r.rows[0]?.title || '';
+  } catch { /* the title is a nicety */ }
+
+  const outcome: any = await sendPassEmail({
+    email,
+    fullName: String(form.fullName || '').trim(),
+    ticketCode: row.ticket_code || '',
+    campaign,
+    ticketPdf: pdf,
+    resend: true
+  });
+  if (outcome.skipped) return res.json({ success: true, result: 'mail_off' });
+  if (!outcome.success) return res.json({ success: true, result: 'failed', error: outcome.error || 'The mail server refused it.' });
+  await markTicketEmailed(id, outcome);
+  return res.json({ success: true, result: 'sent' });
 }));
 
 // POST /api/submissions - Submit raffle or RSVP entry (public)

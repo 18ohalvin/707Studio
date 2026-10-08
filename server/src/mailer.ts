@@ -133,6 +133,8 @@ interface GuestMail {
   liveUrl?: string;
   /** The guest's e-ticket, the same PDF they can download. */
   ticketPdf?: Buffer | null;
+  /** The guest already had a ticket email (or a download that did not work); this is a second copy. */
+  resend?: boolean;
 }
 
 const eventLabel = (guest: GuestMail) => guest.campaign || '707 event';
@@ -168,9 +170,11 @@ function ticketMail(guest: GuestMail, title: string, intro: string) {
   );
 }
 
-const TICKET_INTRO = (guest: GuestMail) => guest.ticketPdf
-  ? 'this is your ticket. Your e-ticket is attached to this email as a PDF. Show it at the door.'
-  : 'this is your ticket. Show the access code below at the door.';
+const TICKET_INTRO = (guest: GuestMail) => guest.resend
+  ? 'here is your ticket again, in case the download did not work. Your e-ticket is attached to this email as a PDF, with the same details and QR code. Show it at the door.'
+  : guest.ticketPdf
+    ? 'this is your ticket. Your e-ticket is attached to this email as a PDF. Show it at the door.'
+    : 'this is your ticket. Show the access code below at the door.';
 
 /** Sent when a guest registers and has a place. */
 export function sendPassEmail(guest: GuestMail) {

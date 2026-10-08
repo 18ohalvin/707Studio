@@ -19,6 +19,8 @@ export interface Submission {
   created_at: string;
   /** Set on an entry that was registered twice before duplicates were prevented: the id of the original. */
   duplicate_of?: string | null;
+  /** When the guest's ticket email last went out; absent if they never got one. */
+  ticket_emailed_at?: string | null;
 }
 
 export type GuestStatus = 'registered' | 'confirmed' | 'waitlisted' | 'winner' | 'declined';
