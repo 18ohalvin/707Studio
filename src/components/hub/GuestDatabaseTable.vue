@@ -290,7 +290,7 @@
     <!-- Ticket email progress -->
     <Teleport to="body">
       <div v-if="ticketSender.progress.value" class="fixed top-[16px] inset-x-0 z-[80] flex justify-center pointer-events-none px-4 font-707">
-        <div class="pointer-events-auto flex flex-col gap-1.5 px-4 py-3 rounded-[14px] bg-[#0c0d0e]/92 backdrop-blur-2xl border border-white/10 text-white shadow-[0_24px_60px_rgba(0,0,0,0.35)] w-full max-w-[420px]">
+        <div class="pointer-events-auto flex flex-col gap-1.5 px-4 py-3 rounded-[14px] bg-[#0c0d0e]/[0.92] backdrop-blur-2xl border border-white/10 text-white shadow-[0_24px_60px_rgba(0,0,0,0.35)] w-full max-w-[420px]">
           <div class="flex items-center justify-between gap-3">
             <span class="text-[12px] font-medium tabular-nums">
               {{ ticketSender.progress.value.finished ? 'Tickets finished' : 'Sending tickets' }} · {{ ticketSender.progress.value.done }} / {{ ticketSender.progress.value.total }}
@@ -315,7 +315,7 @@
     <Teleport to="body">
       <Transition name="hub-bar">
         <div v-if="selected.size" class="fixed bottom-[24px] inset-x-0 z-[70] flex justify-center pointer-events-none px-4 font-707">
-          <div class="pointer-events-auto flex items-center gap-1 pl-4 pr-1.5 py-1.5 rounded-[14px] bg-[#0c0d0e]/92 backdrop-blur-2xl border border-white/10 text-white shadow-[0_24px_60px_rgba(0,0,0,0.35)] max-w-full overflow-x-auto no-scrollbar">
+          <div class="pointer-events-auto flex items-center gap-1 pl-4 pr-1.5 py-1.5 rounded-[14px] bg-[#0c0d0e]/[0.92] backdrop-blur-2xl border border-white/10 text-white shadow-[0_24px_60px_rgba(0,0,0,0.35)] max-w-full overflow-x-auto no-scrollbar">
             <span class="text-[12px] font-medium whitespace-nowrap tabular-nums pr-2">{{ selected.size }} selected</span>
             <div class="w-px h-5 bg-white/15 mx-1" />
             <button
