@@ -1,10 +1,11 @@
 import crypto from 'crypto';
 import { Router, Request, Response } from 'express';
-import { pool } from '../db.js';
+import { pool, getDbStatus } from '../db.js';
 import { readDataFile, writeDataFile } from '../fileStorage.js';
 import { requireAuth, getClaims, optionalClaims } from '../auth.js';
 import { accessiblePageIds, canViewPublicPage, findProjectForEntry } from '../access.js';
 import { PLACEHOLDER_EMAIL, emailKeyOf, clientKeyOf, publicEntry, stripInternal } from '../submissionHelpers.js';
+import { sendPassEmail, sendWaitlistEmail, sendPromotedEmail } from '../mailer.js';
 import { route, storeFor, unavailable } from '../routeSupport.js';
 import { slotKey, normalizePicks, decidePlaces, type SlotDef, type SlotPick } from '../slotHelpers.js';
 import { getSlotDefs, getAvailability, touchAvailability } from '../slots.js';
@@ -26,6 +27,8 @@ let inMemorySubmissions: any[] = readDataFile<any[]>('submissions.json', []);
 
 /** Statuses a studio operator may assign. Check-in state lives in checked_in_at, not here. */
 const ALLOWED_STATUSES = ['registered', 'submitted', 'confirmed', 'waitlisted', 'winner', 'declined'];
+/** Statuses that mean the guest now holds a place. */
+const HAS_PLACE = ['registered', 'confirmed', 'winner'];
 
 /** Guest answers are a handful of short fields; anything this big is not a form entry. */
 const MAX_FORM_DATA_BYTES = 32 * 1024;
@@ -198,6 +201,41 @@ async function placesRefusal(res: Response, pageId: string, useDb: boolean, full
 }
 
 // POST /api/submissions - Submit raffle or RSVP entry (public)
+
+/**
+ * Emails the guest about their entry. Fire-and-forget on purpose: the entry is
+ * already stored, so a mail problem must never fail a registration or hold up
+ * the response the guest is waiting on.
+ */
+async function notifyGuest(row: any, kind: 'new' | 'promoted') {
+  try {
+    const form = typeof row?.form_data === 'string' ? JSON.parse(row.form_data) : (row?.form_data || {});
+    const email = String(form.email || '').trim();
+    if (!email || email === PLACEHOLDER_EMAIL) return;
+
+    let campaign = '';
+    try {
+      if (getDbStatus().isConnected && row.page_id) {
+        const r = await pool.query('SELECT title FROM pages WHERE id = $1', [row.page_id]);
+        campaign = r.rows[0]?.title || '';
+      }
+    } catch { /* the title is a nicety, not a reason to skip the mail */ }
+
+    const guest = {
+      email,
+      fullName: String(form.fullName || '').trim(),
+      ticketCode: row.ticket_code || '',
+      campaign
+    };
+
+    if (kind === 'promoted') await sendPromotedEmail(guest);
+    else if (row.status === 'waitlisted') await sendWaitlistEmail(guest);
+    else await sendPassEmail(guest);
+  } catch (err: any) {
+    console.warn('[Submissions] Could not notify guest:', err?.message || err);
+  }
+}
+
 submissionsRouter.post('/', route('record your entry', async (req, res) => {
   const { page_id, submission_type, form_data } = req.body || {};
 
@@ -274,6 +312,7 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
       const outcome = await insertWithPlaces(draft(), chosen, wantsWaitlist);
       if (outcome.kind === 'inserted') {
         touchAvailability(pageId);
+        void notifyGuest(outcome.row, 'new');
         return res.status(201).json({ success: true, data: publicEntry(outcome.row), message: 'Entry recorded successfully' });
       }
       if (outcome.kind === 'full') return placesRefusal(res, pageId, true, outcome.full);
@@ -304,6 +343,7 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
   const entry = { ...draft(), status: decision.waitlisted ? 'waitlisted' : 'registered', slot_picks: fileChosen.map(d => ({ widget: d.widget, option: d.option })) };
   inMemorySubmissions.unshift(entry);
   persistMemory();
+  void notifyGuest(entry, 'new');
   return res.status(201).json({ success: true, data: publicEntry(entry), message: 'Entry recorded successfully' });
 }));
 
@@ -368,11 +408,25 @@ submissionsRouter.post('/bulk-status', requireAuth, route('update these guests',
   const scope = await scopedPageIds(req, res, store === 'db');
 
   if (store === 'db') {
+    // Who was waiting before this change, so we can tell the ones who just got
+    // a place. Read first: the update overwrites the old status.
+    const before = await pool.query('SELECT id, status FROM submissions WHERE id = ANY($1)', [ids]);
+    const wasWaiting = new Set(
+      before.rows.filter((r: any) => r.status === 'waitlisted').map((r: any) => String(r.id))
+    );
+
     const result = scope
       ? await pool.query('UPDATE submissions SET status = $1 WHERE id = ANY($2) AND page_id = ANY($3) RETURNING *', [status, ids, scope])
       : await pool.query('UPDATE submissions SET status = $1 WHERE id = ANY($2) RETURNING *', [status, ids]);
     // A guest declined or reinstated changes how many places are left: show it on the next look.
     new Set(result.rows.map((r: any) => String(r.page_id))).forEach(touchAvailability);
+
+    if (HAS_PLACE.includes(status)) {
+      for (const row of result.rows) {
+        if (wasWaiting.has(String(row.id))) void notifyGuest(row, 'promoted');
+      }
+    }
+
     return res.json({ success: true, data: result.rows.map(normalizeRow), updated: result.rowCount });
   }
 
@@ -380,8 +434,10 @@ submissionsRouter.post('/bulk-status', requireAuth, route('update these guests',
   const updated: any[] = [];
   inMemorySubmissions = inMemorySubmissions.map(s => {
     if (!ids.includes(s.id) || !inScope(scope, s.page_id)) return s;
+    const wasWaiting = s.status === 'waitlisted';
     const next = { ...s, status };
     updated.push(next);
+    if (wasWaiting && HAS_PLACE.includes(status)) void notifyGuest(next, 'promoted');
     return next;
   });
   persistMemory();
@@ -536,9 +592,20 @@ submissionsRouter.patch('/:id', requireAuth, route('update this guest', async (r
       params.push(scope);
       where += ` AND page_id = ANY($${params.length})`;
     }
+    // Read the old status first so we can tell a guest who just came off the
+    // waitlist; the update is about to overwrite it.
+    const prior = status !== undefined
+      ? await pool.query('SELECT status FROM submissions WHERE id = $1', [id])
+      : null;
+
     const result = await pool.query(`UPDATE submissions SET ${sets.join(', ')} WHERE ${where} RETURNING *`, params);
     if (!result.rows[0]) return res.status(404).json({ success: false, error: 'Submission not found.' });
     touchAvailability(String(result.rows[0].page_id));
+
+    if (prior?.rows[0]?.status === 'waitlisted' && HAS_PLACE.includes(status)) {
+      void notifyGuest(result.rows[0], 'promoted');
+    }
+
     return res.json({ success: true, data: normalizeRow(result.rows[0]) });
   }
 
@@ -546,7 +613,9 @@ submissionsRouter.patch('/:id', requireAuth, route('update this guest', async (r
   const idx = inMemorySubmissions.findIndex(s => s.id === id && inScope(scope, s.page_id));
   if (idx < 0) return res.status(404).json({ success: false, error: 'Submission not found.' });
   const next = { ...inMemorySubmissions[idx] };
+  const wasWaiting = next.status === 'waitlisted';
   if (status !== undefined) next.status = status;
+  if (wasWaiting && status !== undefined && HAS_PLACE.includes(status)) void notifyGuest(next, 'promoted');
   if (checked_in === true) {
     next.checked_in_at = next.checked_in_at || new Date().toISOString();
     next.checked_in_by = String(operator || 'studio').slice(0, 100);
