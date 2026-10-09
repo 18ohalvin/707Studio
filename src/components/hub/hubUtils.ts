@@ -124,6 +124,58 @@ export function accessId(s: Submission): string {
   return s.ticket_code || s.id;
 }
 
+/** Upper-case letters and digits only, so "061026-1103-487t" and "0610261103487T" are the same code. */
+const alnum = (v: string) => String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+/** The part of an Access ID door staff read out and type: its last four characters. */
+export function codeTail(s: Submission): string {
+  return alnum(accessId(s)).slice(-4);
+}
+
+/** The last four digits of the guest's WhatsApp / phone number, or '' if they gave none. */
+export function phoneTail(s: Submission): string {
+  return guestPhone(s).replace(/\D/g, '').slice(-4);
+}
+
+export interface GuestMatch {
+  guest: Submission;
+  /** What the typed text matched: the end of the Access ID, the end of the phone number, or the name. */
+  via: 'code' | 'phone' | 'name';
+}
+
+/**
+ * Finds guests from what door staff can type quickly: the last characters of the
+ * Access ID (4 is enough), the last digits of the WhatsApp number, or part of the
+ * name. Four characters are not unique — in a list of ~1,800 a few guests share
+ * the same ending — so this returns every match, best first, and the door picks
+ * the right person. A whole Access ID typed or scanned matches exactly one.
+ * A guest registered twice appears once (the original).
+ */
+export function findGuestsByShortCode(rows: Submission[], query: string, limit = 8): GuestMatch[] {
+  const text = String(query || '').trim();
+  const key = alnum(text);
+  if (key.length < 3) return [];
+  const digitsOnly = /^\d+$/.test(key);
+  const lower = text.toLowerCase();
+  const order = { code: 0, phone: 1, name: 2 } as const;
+
+  const found: GuestMatch[] = [];
+  for (const guest of rows) {
+    if (guest.duplicate_of) continue;
+    let via: GuestMatch['via'] | null = null;
+    if (alnum(guest.ticket_code || '').endsWith(key)) via = 'code';
+    else if (digitsOnly && guestPhone(guest).replace(/\D/g, '').endsWith(key)) via = 'phone';
+    else if (/[a-z]/i.test(text) && guestName(guest).toLowerCase().includes(lower)) via = 'name';
+    if (via) found.push({ guest, via });
+  }
+  found.sort((a, b) =>
+    order[a.via] - order[b.via] ||
+    Number(Boolean(a.guest.checked_in_at)) - Number(Boolean(b.guest.checked_in_at)) ||
+    guestName(a.guest).localeCompare(guestName(b.guest))
+  );
+  return found.slice(0, limit);
+}
+
 export function maskEmail(email: string): string {
   if (!email.includes('@')) return email;
   const [user, domain] = email.split('@');

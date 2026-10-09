@@ -1,17 +1,17 @@
 <template>
-  <div class="h-full w-full min-h-[100dvh] bg-[#f4f4f5] text-black font-707 flex flex-col overflow-y-auto overflow-x-hidden" data-name="Door Scanner">
-    <!-- Slim header: campaign, operator, back to the hub -->
-    <header class="w-full h-[52px] px-[16px] md:px-[20px] flex items-center justify-between gap-3 border-b border-black/10 bg-white/80 backdrop-blur-md shrink-0 sticky top-0 z-30 select-none">
-      <div class="flex items-center gap-3 min-w-0">
-        <router-link :to="hubLink" class="size-[32px] rounded-[8px] hover:bg-black/5 flex items-center justify-center shrink-0" title="Back to Campaign Hub">
-          <ArrowLeft class="w-4 h-4" />
+  <!-- A fixed one-screen layout: nothing on this page scrolls, so the door never loses its place. -->
+  <div class="h-[100dvh] w-full bg-[#f4f4f5] text-black font-707 flex flex-col overflow-hidden overscroll-none select-none" data-name="Door Scanner">
+    <header class="w-full h-[48px] px-3 flex items-center justify-between gap-3 border-b border-black/10 bg-white shrink-0 z-30">
+      <div class="flex items-center gap-2 min-w-0">
+        <router-link :to="hubLink" class="size-[40px] rounded-[10px] active:bg-black/10 flex items-center justify-center shrink-0" title="Back to Campaign Hub">
+          <ArrowLeft class="w-5 h-5" />
         </router-link>
-        <div class="flex flex-col min-w-0">
-          <span class="text-[10.5px] uppercase tracking-[0.16em] text-neutral-500 leading-none">Door Scanner</span>
+        <div class="flex items-baseline gap-2.5 min-w-0">
+          <span class="text-[11px] uppercase tracking-[0.16em] text-neutral-500 shrink-0">Door Scanner</span>
           <select
             id="scanner-campaign"
             v-model="selectedProjectId"
-            class="mt-1 max-w-[56vw] md:max-w-[420px] bg-transparent text-[14px] font-medium leading-[18px] outline-none cursor-pointer truncate"
+            class="max-w-[46vw] bg-transparent text-[15px] font-medium outline-none cursor-pointer truncate"
             title="Campaign being checked in"
           >
             <option value="all">All campaigns</option>
@@ -21,21 +21,18 @@
       </div>
 
       <div class="flex items-center gap-3 shrink-0">
-        <span class="hidden sm:flex items-center gap-1.5 text-[11.5px] text-neutral-600 tabular-nums">
-          <span class="size-2 rounded-full" :class="loadError ? 'bg-red-500' : 'bg-emerald-500'" />
-          {{ loadError ? 'Offline' : `${checkedInCount} / ${rows.length} in` }}
+        <button v-if="loadError" type="button" @click="refresh()" class="flex items-center gap-1.5 px-2.5 h-[32px] rounded-[8px] bg-red-50 border border-red-200 text-[12px] text-red-700 font-medium cursor-pointer" title="The guest list could not be refreshed. Scans still go straight to the server.">
+          <AlertTriangle class="w-4 h-4" /> Offline · Retry
+        </button>
+        <span v-else class="flex items-center gap-1.5 text-[13px] text-neutral-600 tabular-nums">
+          <span class="size-2 rounded-full bg-emerald-500" />
+          {{ checkedInCount }} / {{ rows.length }} in
         </span>
-        <span class="hidden md:inline text-[11.5px] text-neutral-500 truncate max-w-[180px]" title="Shown on each check-in">{{ operatorName }}</span>
+        <span class="hidden md:inline text-[12px] text-neutral-500 truncate max-w-[160px]" title="Shown on each check-in">{{ operatorName }}</span>
       </div>
     </header>
 
-    <main class="flex-1 w-full px-[16px] md:px-[20px] py-[16px] md:py-[20px]">
-      <div v-if="loadError" class="mb-4 flex items-center gap-3 px-4 py-3 rounded-[10px] border border-red-200 bg-red-50 text-[12px] text-red-700">
-        <AlertTriangle class="w-4 h-4 shrink-0" />
-        <span class="flex-1">{{ loadError }} Scans still go straight to the server.</span>
-        <button type="button" @click="refresh()" class="px-2.5 py-1 rounded-[6px] bg-white border border-red-200 font-medium cursor-pointer hover:bg-red-100">Retry</button>
-      </div>
-
+    <main class="flex-1 min-h-0 w-full p-3">
       <DoorScanner
         :rows="rows"
         :page-ids="pageIds"
@@ -46,15 +43,15 @@
       />
     </main>
 
-    <!-- Toast (Studio glass toast) -->
+    <!-- Toast -->
     <Transition name="scanner-pop">
       <div
         v-if="toastMessage"
-        class="fixed bottom-[24px] left-1/2 -translate-x-1/2 z-[60] apple-frost border border-white/60 rounded-2xl px-4 py-3 shadow-[0px_12px_40px_rgba(0,0,0,0.14),0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-3 select-none max-w-[92vw]"
+        class="fixed top-[60px] left-1/2 -translate-x-1/2 z-[60] bg-black text-white rounded-2xl px-4 py-3 shadow-[0px_12px_40px_rgba(0,0,0,0.25)] flex items-center gap-3 select-none max-w-[92vw]"
         role="status"
       >
-        <div class="size-2 rounded-full bg-emerald-500 shrink-0" />
-        <p class="font-707 text-[12px] text-black font-medium">{{ toastMessage }}</p>
+        <div class="size-2 rounded-full bg-emerald-400 shrink-0" />
+        <p class="font-707 text-[13px] font-medium">{{ toastMessage }}</p>
       </div>
     </Transition>
   </div>
@@ -69,8 +66,8 @@ import { useCampaignGuests } from '../components/hub/useCampaignGuests.ts';
 import DoorScanner from '../components/hub/DoorScanner.vue';
 
 /**
- * The Door Scanner on its own page, for the phone or tablet at the entrance:
- * nothing else on screen, the campaign remembered in the URL
+ * The Door Scanner on its own page, for the tablet (10", landscape) or phone at the entrance:
+ * one screen with nothing to scroll, nothing else on it, the campaign remembered in the URL
  * (/hub/scanner?project=…), and a fast poll so counts from other doors show up.
  */
 const router = useRouter();
