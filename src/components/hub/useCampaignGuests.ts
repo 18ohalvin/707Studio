@@ -10,7 +10,7 @@ import { fetchSubmissions, type Submission } from './hubUtils.ts';
  * see), kept near-live by polling. Shared by the Campaign Hub and the
  * stand-alone Door Scanner page, which both pick the campaign from ?project=.
  */
-export function useCampaignGuests(opts: { pollMs?: number } = {}) {
+export function useCampaignGuests(opts: { pollMs?: number; requireProject?: boolean } = {}) {
   const route = useRoute();
   const editorStore = useEditorStore();
   const authStore = useAuthStore();
@@ -32,6 +32,8 @@ export function useCampaignGuests(opts: { pollMs?: number } = {}) {
   /** null = no filter (superadmin, all campaigns). [] = nothing this account may see. */
   const pageIds = computed<string[] | null>(() => {
     if (selectedProject.value) return idsForProject(selectedProject.value);
+    // The door scanner works on exactly one campaign: with none chosen it loads and scans nothing.
+    if (opts.requireProject) return [];
     if (authStore.isSuperAdmin) return null;
     return projects.value.flatMap(idsForProject);
   });
