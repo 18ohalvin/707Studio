@@ -75,14 +75,17 @@
       <form v-if="activeTab === 'brand'" class="flex flex-col gap-3.5" @submit.prevent="handleBrandSubmit">
         <div class="flex flex-col gap-1">
           <label class="font-707 text-[11px] font-medium text-neutral-700 tracking-wider uppercase">
-            Brand Email / Account ID
+            Email or Username
           </label>
           <input
             ref="brandIdInput"
             v-model="brandId"
             type="text"
             autocomplete="username"
-            placeholder="e.g. sarah.chen@atmos.co.id"
+            autocapitalize="none"
+            autocorrect="off"
+            spellcheck="false"
+            placeholder="e.g. sarah.chen@atmos.co.id or gate-a"
             required
             :class="[
               'w-full h-[46px] px-3.5 rounded-[10px] font-707 text-[14px] outline-none transition-all placeholder:text-neutral-400 focus:bg-white',

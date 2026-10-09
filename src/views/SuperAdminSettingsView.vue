@@ -217,7 +217,7 @@
         <!-- Team Header -->
         <div class="flex items-center justify-between w-full">
           <p class="font-707 text-[16px] leading-[22px] text-black font-normal">
-            Team Accounts [{{ authStore.users.length }}]
+            Team Accounts [{{ teamUsers.length }}]
           </p>
 
           <div class="flex items-center gap-2.5">
@@ -234,7 +234,7 @@
         <!-- Users Table -->
         <div class="flex flex-col items-start w-full border-[#d9d9d9] border-[0.5px] border-solid rounded-[8px] overflow-hidden divide-y divide-[#d9d9d9]">
           <div 
-            v-for="user in authStore.users" 
+            v-for="user in teamUsers" 
             :key="user.id"
             class="flex items-center justify-between px-[36px] md:px-[43px] py-[16px] w-full bg-white hover:bg-neutral-50/75 transition-colors"
           >
@@ -253,7 +253,7 @@
             <div class="w-[140px]">
               <div class="border border-black border-solid inline-flex items-center justify-center px-[8px] py-[1px] rounded-[100px]">
                 <span class="font-707 text-[10px] text-black capitalize">
-                  {{ user.role === 'superadmin' ? 'Superadmin' : user.role === 'editor' ? 'Brand Designer' : user.role === 'gate' ? 'Gate security' : 'Viewer' }}
+                  {{ user.role === 'superadmin' ? 'Superadmin' : user.role === 'editor' ? 'Brand Designer' : 'Viewer' }}
                 </span>
               </div>
             </div>
@@ -275,11 +275,7 @@
             </div>
 
             <!-- Assigned Brands -->
-            <div v-if="user.role === 'gate'" class="flex flex-col gap-0.5 w-[180px] min-w-0">
-              <span class="font-707 text-[11px] text-black truncate" :title="gateCampaignTitle(user)">{{ gateCampaignTitle(user) }}</span>
-              <span class="font-707 text-[10.5px] font-mono" :class="gateExpired(user) ? 'text-oxblood-600' : 'text-neutral-500'">{{ gateExpired(user) ? 'Expired ' : 'Until ' }}{{ formatGateExpiry(user.expiresAt) }}</span>
-            </div>
-            <div v-else class="flex items-center gap-1.5 flex-wrap w-[180px]">
+            <div class="flex items-center gap-1.5 flex-wrap w-[180px]">
               <span 
                 v-for="b in user.assignedBrands" 
                 :key="b"
@@ -903,12 +899,11 @@
                 >
                   <option value="editor">Brand Designer / Editor</option>
                   <option value="viewer">Viewer / Reviewer</option>
-                  <option value="gate">Gate security (door scanner only)</option>
                   <option value="superadmin">Superadmin</option>
                 </select>
               </div>
 
-              <div v-if="newUserRole !== 'gate'" class="flex flex-col gap-1">
+              <div class="flex flex-col gap-1">
                 <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Primary Assigned Brand</label>
                 <select 
                   v-model="newUserBrand" 
@@ -918,26 +913,6 @@
                   <option value="all">All Brands (Master)</option>
                 </select>
               </div>
-              <div v-else class="flex flex-col gap-1">
-                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Campaign they can scan</label>
-                <select 
-                  v-model="newUserProject" 
-                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
-                >
-                  <option value="" disabled>Choose a campaign…</option>
-                  <option v-for="p in editorStore.projects" :key="p.id" :value="p.id">{{ p.title }}</option>
-                </select>
-              </div>
-            </div>
-
-            <div v-if="newUserRole === 'gate'" class="flex flex-col gap-1">
-              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Account valid until</label>
-              <input 
-                v-model="newUserExpires" 
-                type="datetime-local" 
-                class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
-              />
-              <p class="font-707 text-[11px] text-neutral-500">Door security can only open the scanner for that campaign. The account stops working at this time, and can be suspended any moment before.</p>
             </div>
 
             <div class="flex items-center justify-end gap-2 mt-2">
@@ -1026,12 +1001,11 @@
                 >
                   <option value="editor">Brand Designer / Editor</option>
                   <option value="viewer">Viewer / Reviewer</option>
-                  <option value="gate">Gate security (door scanner only)</option>
                   <option value="superadmin">Superadmin</option>
                 </select>
               </div>
 
-              <div v-if="editUserRole !== 'gate'" class="flex flex-col gap-1">
+              <div class="flex flex-col gap-1">
                 <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Primary Assigned Brand</label>
                 <select 
                   v-model="editUserBrand" 
@@ -1041,26 +1015,6 @@
                   <option value="all">All Brands (Master)</option>
                 </select>
               </div>
-              <div v-else class="flex flex-col gap-1">
-                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Campaign they can scan</label>
-                <select 
-                  v-model="editUserProject" 
-                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
-                >
-                  <option value="" disabled>Choose a campaign…</option>
-                  <option v-for="p in editorStore.projects" :key="p.id" :value="p.id">{{ p.title }}</option>
-                </select>
-              </div>
-            </div>
-
-            <div v-if="editUserRole === 'gate'" class="flex flex-col gap-1">
-              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Account valid until</label>
-              <input 
-                v-model="editUserExpires" 
-                type="datetime-local" 
-                class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
-              />
-              <p class="font-707 text-[11px] text-neutral-500">Door security can only open the scanner for that campaign. The account stops working at this time, and can be suspended any moment before.</p>
             </div>
 
             <div class="flex flex-col gap-1">
@@ -1482,12 +1436,9 @@ const newUserPhone = ref('');
 const newUserPassword = ref('atmos_pass_2026');
 const newUserRole = ref<UserRole>('editor');
 const newUserBrand = ref('atmos');
-const newUserProject = ref('');
-// A gate account is for outside staff: never leave it on the shared default password.
-watch(newUserRole, (role) => {
-  if (role === 'gate') newUserPassword.value = secureRandomPassword();
-});
-const newUserExpires = ref(defaultGateExpiry());
+
+/** Door-security accounts belong to a campaign and are managed in its Campaign Hub, so they are not listed here. */
+const teamUsers = computed(() => authStore.users.filter(u => u.role !== 'gate'));
 
 const targetUserForEdit = ref<UserAccount | null>(null);
 const editUserName = ref('');
@@ -1496,8 +1447,6 @@ const editUserPhone = ref('');
 const editUserPassword = ref('');
 const editUserRole = ref<UserRole>('editor');
 const editUserBrand = ref('all');
-const editUserProject = ref('');
-const editUserExpires = ref('');
 const editUserStatus = ref<'active' | 'pending' | 'suspended'>('active');
 
 const targetUserForPassword = ref<UserAccount | null>(null);
@@ -1670,29 +1619,6 @@ async function handleSaveBrandDetails() {
   }
 }
 
-/** Tomorrow 23:59 local, as a datetime-local value: a gate account covers the event day and a little after. */
-function defaultGateExpiry(): string {
-  const d = new Date();
-  d.setDate(d.getDate() + 1);
-  d.setHours(23, 59, 0, 0);
-  return toLocalInput(d);
-}
-function toLocalInput(d: Date): string {
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-function formatGateExpiry(value?: string | null): string {
-  if (!value) return '—';
-  const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? '—' : d.toLocaleString([], { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
-}
-function gateExpired(user: UserAccount): boolean {
-  return Boolean(user.expiresAt) && new Date(user.expiresAt as string).getTime() <= Date.now();
-}
-function gateCampaignTitle(user: UserAccount): string {
-  return editorStore.projects.find(p => p.id === user.assignedProject)?.title || 'Campaign not found';
-}
-
 function openEditUserModal(user: UserAccount) {
   targetUserForEdit.value = user;
   editUserName.value = user.name;
@@ -1701,8 +1627,6 @@ function openEditUserModal(user: UserAccount) {
   editUserPassword.value = '';
   editUserRole.value = user.role;
   editUserBrand.value = user.assignedBrands?.[0] || 'all';
-  editUserProject.value = user.assignedProject || '';
-  editUserExpires.value = user.expiresAt ? toLocalInput(new Date(user.expiresAt)) : defaultGateExpiry();
   editUserStatus.value = user.status || 'active';
   showEditUserModal.value = true;
 }
@@ -1711,19 +1635,13 @@ async function handleSaveEditUserSubmit() {
   if (!targetUserForEdit.value) return;
   if (!editUserName.value.trim() || !editUserEmail.value.trim()) return;
 
-  const isGateEdit = editUserRole.value === 'gate';
-  if (isGateEdit && !gateFieldsOk(editUserProject.value, editUserExpires.value)) return;
-
   const updates: Partial<UserAccount> = {
     name: editUserName.value.trim(),
     email: editUserEmail.value.trim(),
     phone: editUserPhone.value.trim(),
     role: editUserRole.value,
-    assignedBrands: isGateEdit ? [] : [editUserBrand.value],
-    status: editUserStatus.value,
-    ...(isGateEdit
-      ? { assignedProject: editUserProject.value, expiresAt: new Date(editUserExpires.value).toISOString() }
-      : { assignedProject: '', expiresAt: null })
+    assignedBrands: [editUserBrand.value],
+    status: editUserStatus.value
   };
 
   if (editUserPassword.value.trim()) {
@@ -2002,24 +1920,8 @@ function handleEditInStudio(tpl: GlobalTemplate) {
   router.push('/editor');
 }
 
-/** A gate account needs a campaign and an expiry in the future; says what is missing. */
-function gateFieldsOk(project: string, expires: string): boolean {
-  if (!project) {
-    editorStore.showToast('Choose the campaign this gate account can scan.');
-    return false;
-  }
-  const at = new Date(expires).getTime();
-  if (!expires || Number.isNaN(at) || at <= Date.now()) {
-    editorStore.showToast('Set an expiry date and time in the future.');
-    return false;
-  }
-  return true;
-}
-
 function handleAddUserSubmit() {
   if (!newUserName.value || !newUserEmail.value) return;
-  const isGateNew = newUserRole.value === 'gate';
-  if (isGateNew && !gateFieldsOk(newUserProject.value, newUserExpires.value)) return;
 
   authStore.addUser({
     name: newUserName.value,
@@ -2027,9 +1929,8 @@ function handleAddUserSubmit() {
     phone: newUserPhone.value,
     password: newUserPassword.value,
     role: newUserRole.value,
-    assignedBrands: isGateNew ? [] : [newUserBrand.value],
-    status: 'active',
-    ...(isGateNew ? { assignedProject: newUserProject.value, expiresAt: new Date(newUserExpires.value).toISOString() } : {})
+    assignedBrands: [newUserBrand.value],
+    status: 'active'
   });
 
   newUserName.value = '';

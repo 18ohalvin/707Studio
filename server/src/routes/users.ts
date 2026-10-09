@@ -89,6 +89,16 @@ usersRouter.post('/', async (req: Request, res: Response) => {
   const problem = gateProblem(role, assignedProject, expiresAt);
   if (problem) return res.status(400).json({ success: false, error: problem });
 
+  // The name can be used to sign in, so two accounts must not share one.
+  if (getDbStatus().isConnected) {
+    try {
+      const clash = await pool.query('SELECT 1 FROM users WHERE LOWER(name) = LOWER($1) AND LOWER(email) <> $2 LIMIT 1', [String(name).trim(), String(email).trim().toLowerCase()]);
+      if (clash.rows.length) return res.status(409).json({ success: false, error: 'Another account already uses that name. Use a different name so sign-in by name stays unambiguous.' });
+    } catch (err: any) {
+      console.warn('[DB] Could not check for a duplicate name:', err.message);
+    }
+  }
+
   const newUser = {
     id: `user_${Date.now()}`,
     name,

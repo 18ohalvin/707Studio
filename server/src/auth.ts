@@ -183,32 +183,53 @@ authRouter.post('/login', (req: Request, res: Response) => {
 
 type Account = Record<string, any>;
 
-async function findAccount(identifier: string): Promise<Account | null> {
+/**
+ * Every account the identifier could mean, best match first: an email beats an id beats a name.
+ * Names are not guaranteed unique (older accounts were never checked), so sign-in tries each
+ * candidate's password rather than trusting whichever row the database returned first.
+ */
+async function findAccounts(identifier: string): Promise<Account[]> {
   const needle = identifier.trim().toLowerCase();
-  if (!needle) return null;
+  if (!needle) return [];
 
   if (getDbStatus().isConnected) {
     try {
       const result = await pool.query(
-        'SELECT * FROM users WHERE LOWER(email) = $1 OR LOWER(name) = $1 OR LOWER(id) = $1 LIMIT 1',
+        `SELECT * FROM users
+          WHERE LOWER(email) = $1 OR LOWER(name) = $1 OR LOWER(id) = $1
+          ORDER BY (LOWER(email) = $1) DESC, (LOWER(id) = $1) DESC, created_at ASC
+          LIMIT 20`,
         [needle]
       );
-      if (result.rows.length > 0) return result.rows[0];
-      return null;
+      return result.rows;
     } catch (err: any) {
       console.warn('[Auth] Could not query users:', err.message);
     }
   }
 
-  const stored = readDataFile<any[]>('users.json', []);
-  return (
-    stored.find(
+  const rank = (u: any) =>
+    String(u.email || '').toLowerCase() === needle ? 0 : String(u.id || '').toLowerCase() === needle ? 1 : 2;
+  return readDataFile<any[]>('users.json', [])
+    .filter(
       (u) =>
         String(u.email || '').toLowerCase() === needle ||
         String(u.name || '').toLowerCase() === needle ||
         String(u.id || '').toLowerCase() === needle
-    ) || null
-  );
+    )
+    .sort((x, y) => rank(x) - rank(y));
+}
+
+/** One account by its exact id. */
+async function findAccountById(id: string): Promise<Account | null> {
+  if (getDbStatus().isConnected) {
+    try {
+      const result = await pool.query('SELECT * FROM users WHERE id = $1 LIMIT 1', [id]);
+      return result.rows[0] || null;
+    } catch (err: any) {
+      console.warn('[Auth] Could not query users:', err.message);
+    }
+  }
+  return readDataFile<any[]>('users.json', []).find((u) => String(u.id) === id) || null;
 }
 
 /** Replaces a legacy clear-text password with a hash, once, on a good sign-in. */
@@ -263,10 +284,14 @@ export function accountExpired(account: Account): boolean {
  * scanner's polling is not a database read each time.
  */
 const activeCache = new Map<string, { ok: boolean; at: number }>();
+/** Called when an account is suspended, removed or its expiry changes, so the change bites at once. */
+export function forgetAccountCache(id: string) {
+  activeCache.delete(id);
+}
 export async function accountStillActive(id: string): Promise<boolean> {
   const hit = activeCache.get(id);
   if (hit && Date.now() - hit.at < 10_000) return hit.ok;
-  const account = await findAccount(id);
+  const account = await findAccountById(id);
   const ok = Boolean(account) && String(account!.status || 'active') !== 'suspended' && !accountExpired(account!);
   activeCache.set(id, { ok, at: Date.now() });
   return ok;
@@ -306,11 +331,23 @@ authRouter.post('/signin', async (req: Request, res: Response) => {
     return res.status(401).json({ success: false, error: 'Incorrect master passkey PIN for Superadmin.' });
   }
 
-  const account = await findAccount(identifier);
-  if (!account) {
+  const candidates = await findAccounts(identifier);
+  if (!candidates.length) {
     return res.status(401).json({
       success: false,
       error: 'Account not found. Access is restricted to team accounts registered by Superadmin.'
+    });
+  }
+
+  // The account is the first candidate whose password matches (usually there is only one).
+  const account = candidates.find((c) => {
+    const hash = String(c.password || '');
+    return hash && verifyPassword(password, hash);
+  });
+  if (!account) {
+    return res.status(401).json({
+      success: false,
+      error: 'Incorrect password. Please verify your credentials and try again.'
     });
   }
 
@@ -324,25 +361,18 @@ authRouter.post('/signin', async (req: Request, res: Response) => {
   if (String(account.role) === 'gate' && !String(account.assigned_project ?? account.assignedProject ?? '').trim()) {
     return res.status(403).json({
       success: false,
-      error: 'This gate account has no campaign assigned. Please contact Superadmin.'
+      error: 'This gate account has no campaign assigned. Please contact the campaign owner.'
     });
   }
 
   if (accountExpired(account)) {
     return res.status(403).json({
       success: false,
-      error: 'This account has expired. Please contact Superadmin.'
+      error: 'This account has expired. Please contact the campaign owner.'
     });
   }
 
   const stored = String(account.password || '');
-  if (!stored || !verifyPassword(password, stored)) {
-    return res.status(401).json({
-      success: false,
-      error: 'Incorrect password. Please verify your credentials and try again.'
-    });
-  }
-
   if (!isHashed(stored)) {
     await upgradeStoredPassword(account, password);
   }

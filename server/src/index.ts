@@ -11,6 +11,7 @@ import { pagesRouter } from './routes/pages.js';
 import { templatesRouter } from './routes/templates.js';
 import { submissionsRouter } from './routes/submissions.js';
 import { gateGuard } from './gateGuard.js';
+import { gateAccountsRouter } from './routes/gateAccounts.js';
 import { mediaRouter } from './routes/media.js';
 import { notificationsRouter } from './routes/notifications.js';
 import { resolveUploadDir } from './uploads.js';
@@ -68,6 +69,7 @@ app.use('/api/auth', authRouter);
 // raffle entries (POST /api/submissions) are open to public mobile visitors.
 app.use('/api/brands', brandsRouter);
 app.use('/api/users', requireAuth, usersRouter);
+app.use('/api/gate-accounts', requireAuth, gateAccountsRouter);
 app.use('/api/pages', pagesRouter);
 app.use('/api/templates', requireAuth, templatesRouter);
 app.use('/api/submissions', submissionsRouter);

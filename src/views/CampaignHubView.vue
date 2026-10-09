@@ -138,16 +138,28 @@
           {{ t.label }}
           <span v-if="t.badge !== undefined" class="px-1.5 py-0 rounded-full text-[10.5px] font-medium bg-black/5 text-neutral-700 no-underline tabular-nums">{{ t.badge }}</span>
         </button>
+        <div class="ml-auto shrink-0 flex items-center gap-2">
+          <button
+            v-if="selectedProject"
+            id="hub-gate-access"
+            type="button"
+            @click="gateOpen = true"
+            class="flex items-center gap-1.5 h-[32px] px-3 rounded-[8px] border border-black/20 bg-white text-black text-[12.5px] font-707 font-medium hover:bg-black/5 transition-colors cursor-pointer"
+            title="Create door-security accounts for this campaign"
+          >
+            <ShieldCheck class="w-3.5 h-3.5" /> Gate access
+          </button>
         <a
-          id="hub-open-scanner"
-          :href="scannerHref"
-          target="_blank"
-          rel="noopener"
-          class="ml-auto shrink-0 flex items-center gap-1.5 h-[32px] px-3 rounded-[8px] bg-black text-white text-[12.5px] font-707 font-medium hover:bg-neutral-800 transition-colors"
-          title="Open the full-screen Door Scanner for the entrance (new tab)"
-        >
-          <ScanLine class="w-3.5 h-3.5" /> Door Scanner <ArrowUpRight class="w-3.5 h-3.5" />
-        </a>
+            id="hub-open-scanner"
+            :href="scannerHref"
+            target="_blank"
+            rel="noopener"
+            class="shrink-0 flex items-center gap-1.5 h-[32px] px-3 rounded-[8px] bg-black text-white text-[12.5px] font-707 font-medium hover:bg-neutral-800 transition-colors"
+            title="Open the full-screen Door Scanner for the entrance (new tab)"
+          >
+            <ScanLine class="w-3.5 h-3.5" /> Door Scanner <ArrowUpRight class="w-3.5 h-3.5" />
+          </a>
+        </div>
       </nav>
 
       <!-- Content -->
@@ -214,11 +226,19 @@
       </section>
     </main>
 
+    <GateAccessPanel
+      v-if="gateOpen && selectedProject"
+      :project-id="selectedProject.id"
+      :project-title="selectedProject.title"
+      @close="gateOpen = false"
+      @toast="toast"
+    />
+
     <!-- Toast (Studio glass toast) -->
     <Transition name="hub-pop">
       <div
         v-if="toastMessage"
-        class="fixed bottom-[24px] left-1/2 -translate-x-1/2 z-[60] apple-frost border border-white/60 rounded-2xl px-4 py-3 shadow-[0px_12px_40px_rgba(0,0,0,0.14),0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-3 select-none max-w-[92vw]"
+        class="fixed bottom-[24px] left-1/2 -translate-x-1/2 z-[90] apple-frost border border-white/60 rounded-2xl px-4 py-3 shadow-[0px_12px_40px_rgba(0,0,0,0.14),0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-3 select-none max-w-[92vw]"
         role="status"
       >
         <div class="size-2 rounded-full bg-moss-500 shrink-0" />
@@ -232,7 +252,8 @@
 import { sizedUrl } from '../services/responsiveImage.ts';
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, RefreshCw, ChevronDown, Layers, LayoutGrid, Check, Search, AlertTriangle, ScanLine, ArrowUpRight } from 'lucide-vue-next';
+import { ArrowLeft, RefreshCw, ChevronDown, Layers, LayoutGrid, Check, Search, AlertTriangle, ScanLine, ArrowUpRight, ShieldCheck } from 'lucide-vue-next';
+import GateAccessPanel from '../components/hub/GateAccessPanel.vue';
 import { FIGMA_ASSETS } from '../constants/figmaAssets.ts';
 import type { ProjectItem } from '../types/editor.ts';
 import { useCampaignGuests } from '../components/hub/useCampaignGuests.ts';
@@ -289,6 +310,8 @@ async function refresh(manual = false) {
   const count = await reload();
   if (manual && count !== null) toast(`Synced ${count} guest record${count === 1 ? '' : 's'}.`);
 }
+
+const gateOpen = ref(false);
 
 /** Guests and the raffle need one campaign; Overview may show them all. */
 const needsCampaign = computed(() => (activeTab.value === 'guests' || activeTab.value === 'raffle') && !selectedProject.value);
