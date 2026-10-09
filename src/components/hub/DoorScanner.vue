@@ -123,6 +123,16 @@
                 <X class="w-5 h-5" />
               </button>
             </div>
+            <button
+              type="button"
+              @click="view = 'log'"
+              class="h-[52px] px-4 rounded-[12px] border border-black/15 bg-white text-[15px] font-medium flex items-center gap-2.5 cursor-pointer active:bg-black/10 transition-colors shrink-0"
+              title="Who is inside, and cancel a wrong admit"
+            >
+              <ListChecks class="w-5 h-5" />
+              Log
+              <span class="tabular-nums text-[12px] px-1.5 py-0.5 rounded-full bg-black/10">{{ insideCount }}</span>
+            </button>
           </form>
 
           <!-- Matches -->
@@ -184,6 +194,9 @@
     <!-- ============ LOG ============ -->
     <section v-if="view === 'log'" class="h-full w-full min-h-0 rounded-[16px] border border-black/10 bg-white flex flex-col overflow-hidden">
       <div class="flex items-center gap-3 px-4 h-[64px] shrink-0 border-b border-black/10">
+        <button type="button" @click="view = 'scan'" class="h-[44px] px-4 rounded-[10px] bg-black text-white text-[15px] font-medium flex items-center gap-2 cursor-pointer active:bg-neutral-700 shrink-0">
+          <ArrowLeft class="w-5 h-5" /> Scan
+        </button>
         <div class="min-w-0">
           <p class="text-[10.5px] uppercase tracking-[0.12em] text-neutral-500 leading-none">Check-in log</p>
           <p class="text-[20px] font-medium leading-tight tabular-nums">{{ loggedIn.length }} <span class="text-[13px] text-neutral-500 font-normal">guests inside</span></p>
@@ -302,7 +315,7 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import {
   LogIn, LogOut, Volume2, VolumeX, Maximize2, Minimize2, ScanLine, KeyRound, Camera,
-  CircleCheck, TriangleAlert, OctagonX, DoorOpen, Undo2, X, Delete, Hourglass, Search
+  CircleCheck, TriangleAlert, OctagonX, DoorOpen, Undo2, X, Delete, Hourglass, Search, ListChecks, ArrowLeft
 } from 'lucide-vue-next';
 import {
   type Submission, type CheckInResult, checkInCode, patchSubmission, guestName, guestType, guestEmail, accessId, initials,
@@ -313,8 +326,6 @@ const props = defineProps<{
   rows: Submission[];
   pageIds: string[] | null;
   operator: string;
-  /** 'scan' is the door; 'log' lists who is inside, with a way to cancel a wrong admit. */
-  view: 'scan' | 'log';
   /** On its own page (/hub/scanner): fullscreen covers the whole page. */
   standalone?: boolean;
 }>();
@@ -342,6 +353,8 @@ const rootRef = ref<HTMLElement | null>(null);
 const inputRef = ref<HTMLInputElement | null>(null);
 const videoRef = ref<HTMLVideoElement | null>(null);
 
+/** 'scan' is the door; 'log' lists who is inside, with a way to cancel a wrong admit. */
+const view = ref<'scan' | 'log'>('scan');
 const mode = ref<'in' | 'out'>('in');
 const codeInput = ref('');
 const isChecking = ref(false);
@@ -415,8 +428,12 @@ function toggleKeyboard() {
  * the Access ID, or 4 or more digits of the WhatsApp number) belongs to exactly one guest.
  * If several share the ending the list stays so the door picks one.
  */
+watch(view, (v) => {
+  if (v === 'scan') nextTick(() => inputRef.value?.focus());
+});
+
 watch(candidates, (list) => {
-  if (props.view !== 'scan' || pending.value || result.value || isChecking.value) return;
+  if (view.value !== 'scan' || pending.value || result.value || isChecking.value) return;
   const typed = query.value.replace(/[^A-Za-z0-9]/g, '');
   if (typed.length >= 4 && list.length === 1 && list[0].via !== 'name') openConfirm(list[0].guest);
 });
@@ -744,7 +761,7 @@ function onFullscreenChange() {
 
 /* ---------- Keyboard: Enter confirms, Escape backs out ---------- */
 function onKeydown(e: KeyboardEvent) {
-  if (props.view !== 'scan') return;
+  if (view.value !== 'scan') return;
   if (e.key === 'Escape') {
     if (pending.value) cancelConfirm();
     else if (result.value) dismissResult();

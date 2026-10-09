@@ -14,6 +14,9 @@ export function canAccessProject(claims: SessionClaims, project: any): boolean {
   if (!project) return false;
   if (isSuperAdminClaims(claims)) return true;
 
+  // Gate security sees the one campaign they were assigned, whoever owns it or whatever brand it is.
+  if (claims.role === 'gate') return Boolean(claims.project) && String(project.id) === claims.project;
+
   const ownerId = String(project.owner_id || '');
   const ownerEmail = String(project.owner_email || '').toLowerCase().trim();
   const email = claims.email.toLowerCase().trim();

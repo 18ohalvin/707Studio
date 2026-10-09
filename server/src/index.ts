@@ -10,6 +10,7 @@ import { usersRouter } from './routes/users.js';
 import { pagesRouter } from './routes/pages.js';
 import { templatesRouter } from './routes/templates.js';
 import { submissionsRouter } from './routes/submissions.js';
+import { gateGuard } from './gateGuard.js';
 import { mediaRouter } from './routes/media.js';
 import { notificationsRouter } from './routes/notifications.js';
 import { resolveUploadDir } from './uploads.js';
@@ -54,6 +55,9 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+// Gate-security accounts reach the door scanner and nothing else (checked before any route).
+app.use('/api', gateGuard);
 
 // Superadmin verification endpoint
 app.use('/api/auth', authRouter);

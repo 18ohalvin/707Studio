@@ -67,6 +67,12 @@ export const router = createRouter({
 // /editor requires authenticated Brand or Superadmin session.
 router.beforeEach((to) => {
   const authStore = useAuthStore();
+
+  // Door security signs in to the scanner and nothing else: every other page sends them back to it.
+  const me = authStore.currentUser;
+  if (authStore.isAuthenticated && me?.role === 'gate' && to.path !== '/hub/scanner' && to.path !== '/login') {
+    return { path: '/hub/scanner', query: me.assignedProject ? { project: me.assignedProject } : {} };
+  }
   
   if (to.path === '/settings' || to.path === '/admin') {
     if (!authStore.isSuperAdmin) {

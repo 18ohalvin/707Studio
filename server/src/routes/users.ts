@@ -7,6 +7,37 @@ import { getClaims, isSuperAdminClaims } from '../auth.js';
 export const usersRouter = Router();
 
 /**
+ * Gate-security accounts (door scanner only) must name the one campaign they may scan and
+ * the moment they stop working. Returns an error message, or null when the fields are fine.
+ */
+function gateProblem(role: unknown, assignedProject: unknown, expiresAt: unknown): string | null {
+  if (role !== 'gate') return null;
+  if (!String(assignedProject || '').trim()) return 'A gate account needs the campaign it may scan.';
+  const at = new Date(String(expiresAt || '')).getTime();
+  if (!expiresAt || Number.isNaN(at)) return 'A gate account needs an expiry date and time.';
+  if (at <= Date.now()) return 'The expiry must be in the future.';
+  return null;
+}
+
+/** The account as the studio UI sees it (never the password). */
+function clientUser(r: any) {
+  return {
+    id: r.id,
+    name: r.name,
+    email: r.email,
+    phone: r.phone || '',
+    role: r.role || 'editor',
+    assignedBrands: typeof r.assigned_brands === 'string' ? JSON.parse(r.assigned_brands) : (r.assigned_brands || ['all']),
+    assignedProject: r.assigned_project || '',
+    expiresAt: r.expires_at || null,
+    avatarUrl: r.avatar_url || '',
+    status: r.status || 'active',
+    createdAt: r.created_at,
+    lastActiveAt: r.last_active_at || 'Recently'
+  };
+}
+
+/**
  * Team accounts are managed by the superadmin. Anyone else may only edit their
  * own profile, and never their own role, brands or status — before this any
  * signed-in brand editor could create a superadmin account.
@@ -37,18 +68,7 @@ usersRouter.get('/', async (req: Request, res: Response) => {
   if (getDbStatus().isConnected) {
     try {
       const result = await pool.query('SELECT * FROM users ORDER BY created_at DESC');
-      const formatted = result.rows.map(r => ({
-        id: r.id,
-        name: r.name,
-        email: r.email,
-        phone: r.phone || '',
-        role: r.role || 'editor',
-        assignedBrands: typeof r.assigned_brands === 'string' ? JSON.parse(r.assigned_brands) : (r.assigned_brands || ['all']),
-        avatarUrl: r.avatar_url || '',
-        status: r.status || 'active',
-        createdAt: r.created_at,
-        lastActiveAt: r.last_active_at || 'Recently'
-      }));
+      const formatted = result.rows.map(clientUser);
       return res.json({ success: true, data: formatted });
     } catch (err: any) {
       console.error('[DB] Error fetching users from DB:', err.message);
@@ -61,11 +81,13 @@ usersRouter.get('/', async (req: Request, res: Response) => {
 
 // POST /api/users - Create new team user
 usersRouter.post('/', async (req: Request, res: Response) => {
-  const { name, email, phone, password, role, assignedBrands, avatarUrl, status } = req.body;
+  const { name, email, phone, password, role, assignedBrands, avatarUrl, status, assignedProject, expiresAt } = req.body;
 
   if (!name || !email) {
     return res.status(400).json({ success: false, error: 'Name and email are required.' });
   }
+  const problem = gateProblem(role, assignedProject, expiresAt);
+  if (problem) return res.status(400).json({ success: false, error: problem });
 
   const newUser = {
     id: `user_${Date.now()}`,
@@ -74,7 +96,10 @@ usersRouter.post('/', async (req: Request, res: Response) => {
     phone: phone || '',
     password: password ? hashPassword(password) : '',
     role: role || 'editor',
-    assignedBrands: Array.isArray(assignedBrands) ? assignedBrands : [assignedBrands || 'all'],
+    // A gate account is tied to one campaign, not to brands.
+    assignedBrands: role === 'gate' ? [] : (Array.isArray(assignedBrands) ? assignedBrands : [assignedBrands || 'all']),
+    assignedProject: role === 'gate' ? String(assignedProject) : '',
+    expiresAt: role === 'gate' ? new Date(String(expiresAt)).toISOString() : null,
     avatarUrl: avatarUrl || '',
     status: status || 'active',
     createdAt: new Date().toISOString(),
@@ -84,15 +109,17 @@ usersRouter.post('/', async (req: Request, res: Response) => {
   if (getDbStatus().isConnected) {
     try {
       const result = await pool.query(
-        `INSERT INTO users (id, name, email, phone, password, role, assigned_brands, avatar_url, status, created_at, last_active_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        `INSERT INTO users (id, name, email, phone, password, role, assigned_brands, avatar_url, status, created_at, last_active_at, assigned_project, expires_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
          ON CONFLICT (email) DO UPDATE SET
            name = EXCLUDED.name,
            phone = EXCLUDED.phone,
            password = EXCLUDED.password,
            role = EXCLUDED.role,
            assigned_brands = EXCLUDED.assigned_brands,
-           status = EXCLUDED.status
+           status = EXCLUDED.status,
+           assigned_project = EXCLUDED.assigned_project,
+           expires_at = EXCLUDED.expires_at
          RETURNING *`,
         [
           newUser.id,
@@ -105,25 +132,12 @@ usersRouter.post('/', async (req: Request, res: Response) => {
           newUser.avatarUrl,
           newUser.status,
           newUser.createdAt,
-          newUser.lastActiveAt
+          newUser.lastActiveAt,
+          newUser.assignedProject || null,
+          newUser.expiresAt
         ]
       );
-      const r = result.rows[0];
-      return res.status(201).json({
-        success: true,
-        data: {
-          id: r.id,
-          name: r.name,
-          email: r.email,
-          phone: r.phone,
-          role: r.role,
-          assignedBrands: typeof r.assigned_brands === 'string' ? JSON.parse(r.assigned_brands) : r.assigned_brands,
-          avatarUrl: r.avatar_url,
-          status: r.status,
-          createdAt: r.created_at,
-          lastActiveAt: r.last_active_at
-        }
-      });
+      return res.status(201).json({ success: true, data: clientUser(result.rows[0]) });
     } catch (err: any) {
       console.error('[DB] Error saving user to DB:', err.message);
     }
@@ -139,6 +153,14 @@ usersRouter.post('/', async (req: Request, res: Response) => {
 usersRouter.put('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
   const updates = req.body;
+
+  // Moving an account to (or keeping it on) the gate role needs the gate fields.
+  if (updates.role === 'gate') {
+    const problem = gateProblem('gate', updates.assignedProject, updates.expiresAt);
+    if (problem) return res.status(400).json({ success: false, error: problem });
+    updates.assignedBrands = [];
+    updates.expiresAt = new Date(String(updates.expiresAt)).toISOString();
+  }
 
   inMemoryUsers = readDataFile<any[]>('users.json', inMemoryUsers);
   const idx = inMemoryUsers.findIndex(u => u.id === id || u.email === id);
@@ -159,6 +181,13 @@ usersRouter.put('/:id', async (req: Request, res: Response) => {
       if (updates.role !== undefined) dbUpdates.role = updates.role;
       if (updates.assignedBrands !== undefined) dbUpdates.assigned_brands = JSON.stringify(updates.assignedBrands);
       if (updates.status !== undefined) dbUpdates.status = updates.status;
+      if (updates.assignedProject !== undefined) dbUpdates.assigned_project = updates.assignedProject || null;
+      if (updates.expiresAt !== undefined) dbUpdates.expires_at = updates.expiresAt || null;
+      // Leaving the gate role drops the gate scope.
+      if (updates.role !== undefined && updates.role !== 'gate' && updates.assignedProject === undefined) {
+        dbUpdates.assigned_project = null;
+        dbUpdates.expires_at = null;
+      }
 
       const fields = Object.keys(dbUpdates);
       if (fields.length > 0) {
@@ -170,22 +199,7 @@ usersRouter.put('/:id', async (req: Request, res: Response) => {
           values
         );
         if (result.rows.length > 0) {
-          const r = result.rows[0];
-          return res.json({
-            success: true,
-            data: {
-              id: r.id,
-              name: r.name,
-              email: r.email,
-              phone: r.phone,
-                  role: r.role,
-              assignedBrands: typeof r.assigned_brands === 'string' ? JSON.parse(r.assigned_brands) : r.assigned_brands,
-              avatarUrl: r.avatar_url,
-              status: r.status,
-              createdAt: r.created_at,
-              lastActiveAt: r.last_active_at
-            }
-          });
+          return res.json({ success: true, data: clientUser(result.rows[0]) });
         }
       }
     } catch (err: any) {

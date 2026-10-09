@@ -169,6 +169,30 @@
             :campaign-title="campaignTitle"
             @go="setTab"
           />
+          <!-- Guest Database and Raffle Draw act on guests, so they work on exactly one campaign. -->
+          <div v-else-if="needsCampaign" class="rounded-[16px] border border-black/10 bg-white p-6 max-w-[640px] flex flex-col gap-4">
+            <div>
+              <p class="text-[10.5px] uppercase tracking-[0.12em] text-neutral-500">{{ activeTab === 'raffle' ? 'Raffle Draw' : 'Guest Database' }}</p>
+              <p class="text-[22px] font-medium leading-tight">Choose a campaign to work on</p>
+              <p class="text-[13px] text-neutral-500 mt-1">Guests, emails, check-in and draws are always done for one campaign at a time, so nothing is ever mixed between events. Overview can still show all campaigns together.</p>
+            </div>
+            <div class="flex flex-col gap-2">
+              <button
+                v-for="p in projects"
+                :key="p.id"
+                type="button"
+                @click="selectProject(p.id)"
+                class="w-full flex items-center gap-3 px-4 h-[56px] rounded-[12px] border border-black/15 hover:border-black/40 text-left cursor-pointer transition-colors"
+              >
+                <div class="min-w-0 flex-1">
+                  <p class="text-[14px] font-medium leading-tight truncate">{{ p.title }}</p>
+                  <p class="text-[11px] text-neutral-500 font-mono truncate">/{{ p.brand_slug }}/{{ p.slug }}</p>
+                </div>
+                <span v-if="p.status === 'approved' || p.status === 'published'" class="text-[9.5px] px-1.5 py-0.5 rounded-full bg-moss-50 text-moss-700 border border-moss-200">Live</span>
+              </button>
+              <p v-if="!projects.length" class="text-[13px] text-neutral-500">No campaign is available to this account yet.</p>
+            </div>
+          </div>
           <GuestDatabaseTable
             v-else-if="activeTab === 'guests'"
             :rows="rows"
@@ -265,6 +289,9 @@ async function refresh(manual = false) {
   const count = await reload();
   if (manual && count !== null) toast(`Synced ${count} guest record${count === 1 ? '' : 's'}.`);
 }
+
+/** Guests and the raffle need one campaign; Overview may show them all. */
+const needsCampaign = computed(() => (activeTab.value === 'guests' || activeTab.value === 'raffle') && !selectedProject.value);
 
 /** The Door Scanner is its own full-screen page, made for a phone or tablet at the entrance. */
 const scannerHref = computed(() => router.resolve({ path: '/hub/scanner', query: selectedProjectId.value !== 'all' ? { project: selectedProjectId.value } : {} }).href);

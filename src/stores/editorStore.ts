@@ -39,6 +39,8 @@ export const useEditorStore = defineStore('editor', () => {
 
     // 3. Authenticated account / Brand editor
     if (!authStore.currentUser) return false;
+    // Door security sees the one campaign it was assigned.
+    if (authStore.currentUser.role === 'gate') return Boolean(authStore.currentUser.assignedProject) && p.id === authStore.currentUser.assignedProject;
     const currentUserId = authStore.currentUser.id;
     const currentUserEmail = (authStore.currentUser.email || '').toLowerCase().trim();
     const userBrands = (authStore.currentUser.assignedBrands || []).map(b => b.toLowerCase().replace(/_/g, '-').trim());

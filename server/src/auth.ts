@@ -73,6 +73,8 @@ export interface SessionClaims {
   email: string;
   role: string;
   brands: string[];
+  /** Gate-security accounts only: the one campaign (project id) they may scan. */
+  project?: string;
 }
 
 export const SUPERADMIN_CLAIMS: SessionClaims = {
@@ -94,7 +96,8 @@ function decodeClaims(raw: string): SessionClaims | null {
       sub: parsed.sub,
       email: String(parsed.email || ''),
       role: String(parsed.role || 'editor'),
-      brands: Array.isArray(parsed.brands) ? parsed.brands.map(String) : []
+      brands: Array.isArray(parsed.brands) ? parsed.brands.map(String) : [],
+      ...(parsed.project ? { project: String(parsed.project) } : {})
     };
   } catch {
     return null;
@@ -239,8 +242,34 @@ function toClientUser(account: Account) {
     avatarUrl: account.avatar_url ?? account.avatarUrl ?? '',
     status: account.status || 'active',
     createdAt: account.created_at ?? account.createdAt,
-    lastActiveAt: account.last_active_at ?? account.lastActiveAt ?? 'Recently'
+    lastActiveAt: account.last_active_at ?? account.lastActiveAt ?? 'Recently',
+    assignedProject: account.assigned_project ?? account.assignedProject ?? '',
+    expiresAt: account.expires_at ?? account.expiresAt ?? null
   });
+}
+
+/** A gate account stops working at its expiry time, whatever token it still holds. */
+export function accountExpired(account: Account): boolean {
+  const raw = account.expires_at ?? account.expiresAt;
+  if (!raw) return false;
+  const at = new Date(raw).getTime();
+  return !Number.isNaN(at) && at <= Date.now();
+}
+
+/**
+ * Whether this account may still act right now — checked on every request of a gate
+ * account, because tokens are stateless: suspending an account or reaching its expiry
+ * must cut off a tablet that is already signed in. Cached for a few seconds so the
+ * scanner's polling is not a database read each time.
+ */
+const activeCache = new Map<string, { ok: boolean; at: number }>();
+export async function accountStillActive(id: string): Promise<boolean> {
+  const hit = activeCache.get(id);
+  if (hit && Date.now() - hit.at < 10_000) return hit.ok;
+  const account = await findAccount(id);
+  const ok = Boolean(account) && String(account!.status || 'active') !== 'suspended' && !accountExpired(account!);
+  activeCache.set(id, { ok, at: Date.now() });
+  return ok;
 }
 
 const SUPERADMIN_USER = {
@@ -292,6 +321,20 @@ authRouter.post('/signin', async (req: Request, res: Response) => {
     });
   }
 
+  if (String(account.role) === 'gate' && !String(account.assigned_project ?? account.assignedProject ?? '').trim()) {
+    return res.status(403).json({
+      success: false,
+      error: 'This gate account has no campaign assigned. Please contact Superadmin.'
+    });
+  }
+
+  if (accountExpired(account)) {
+    return res.status(403).json({
+      success: false,
+      error: 'This account has expired. Please contact Superadmin.'
+    });
+  }
+
   const stored = String(account.password || '');
   if (!stored || !verifyPassword(password, stored)) {
     return res.status(401).json({
@@ -311,7 +354,8 @@ authRouter.post('/signin', async (req: Request, res: Response) => {
       sub: String(account.id),
       email: String(account.email || ''),
       role: String(account.role || 'editor'),
-      brands: Array.isArray(clientUser.assignedBrands) ? clientUser.assignedBrands.map(String) : []
+      brands: Array.isArray(clientUser.assignedBrands) ? clientUser.assignedBrands.map(String) : [],
+      ...(String(account.role) === 'gate' ? { project: String(clientUser.assignedProject || '') } : {})
     }),
     user: clientUser,
     isSuperAdmin: String(account.role) === 'superadmin',

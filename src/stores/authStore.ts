@@ -3,7 +3,8 @@ import { ref, computed } from 'vue';
 import { apiJson, setToken, clearToken, getToken } from '../services/apiClient.ts';
 import { useBrandStore } from './brandStore.ts';
 
-export type UserRole = 'superadmin' | 'editor' | 'viewer';
+/** 'gate' is door security: the door scanner for one campaign, nothing else. */
+export type UserRole = 'superadmin' | 'editor' | 'viewer' | 'gate';
 
 export interface UserAccount {
   id: string;
@@ -13,6 +14,9 @@ export interface UserAccount {
   phone?: string;
   role: UserRole;
   assignedBrands: string[];
+  /** Gate accounts: the one campaign (project id) they may scan, and when the account stops working. */
+  assignedProject?: string;
+  expiresAt?: string | null;
   avatarUrl?: string;
   status: 'active' | 'pending' | 'suspended';
   createdAt: string;
