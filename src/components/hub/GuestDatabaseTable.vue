@@ -56,7 +56,7 @@
           type="button"
           @click="duplicatesOnly = !duplicatesOnly"
           class="h-[32px] px-2.5 rounded-[8px] border text-[11px] font-medium cursor-pointer whitespace-nowrap transition-colors"
-          :class="duplicatesOnly ? 'bg-amber-100 border-amber-300 text-amber-900' : 'bg-white border-black/12 text-neutral-700 hover:bg-black/5'"
+          :class="duplicatesOnly ? 'bg-bronze-100 border-bronze-300 text-bronze-800' : 'bg-white border-black/12 text-neutral-700 hover:bg-black/5'"
           title="Guests who registered more than once"
         >
           Duplicates {{ duplicateCount }}
@@ -179,7 +179,7 @@
                       <span class="text-[12.5px] font-medium text-black truncate max-w-[220px]">{{ guestName(s) }}</span>
                       <span
                         v-if="s.duplicate_of"
-                        class="shrink-0 px-1.5 py-0.5 rounded-[5px] border border-amber-300 bg-amber-50 text-amber-800 text-[9.5px] font-medium tracking-wide"
+                        class="shrink-0 px-1.5 py-0.5 rounded-[5px] border border-bronze-300 bg-bronze-50 text-bronze-800 text-[9.5px] font-medium tracking-wide"
                         title="This guest registered more than once. Their pass still works at the door — review and delete the extra entry if it is a repeat."
                       >Duplicate</span>
                       <span v-if="!compact" class="text-[11px] text-neutral-500 truncate max-w-[220px]">{{ guestEmail(s) || 'No email' }}</span>
@@ -218,7 +218,7 @@
                     type="button"
                     @click="toggleCheckIn(s)"
                     class="inline-flex items-center gap-1.5 text-[11.5px] px-2 py-1 rounded-[6px] cursor-pointer transition-colors"
-                    :class="s.checked_in_at ? 'text-emerald-700 hover:bg-emerald-50' : 'text-neutral-400 hover:text-black hover:bg-black/5'"
+                    :class="s.checked_in_at ? 'text-moss-700 hover:bg-moss-50' : 'text-neutral-400 hover:text-black hover:bg-black/5'"
                     :title="s.checked_in_at ? 'Undo check-in' : 'Mark as checked in'"
                   >
                     <CircleCheck v-if="s.checked_in_at" class="w-3.5 h-3.5" />
@@ -306,7 +306,7 @@
             <span v-if="ticketSender.progress.value.current"> · {{ ticketSender.progress.value.current }}</span>
           </p>
           <p v-if="!ticketSender.progress.value.finished" class="text-[11px] text-white/60">Keep this tab open until it finishes.</p>
-          <p v-if="ticketSender.progress.value.stopReason" class="text-[11px] text-amber-300">{{ ticketSender.progress.value.stopReason }}</p>
+          <p v-if="ticketSender.progress.value.stopReason" class="text-[11px] text-bronze-300">{{ ticketSender.progress.value.stopReason }}</p>
         </div>
       </div>
     </Teleport>
@@ -334,7 +334,7 @@
             <button type="button" @click="exportCsv(selectedRows)" class="px-2.5 h-[30px] rounded-[8px] text-[11.5px] hover:bg-white/10 cursor-pointer flex items-center gap-1.5 whitespace-nowrap">
               <Download class="w-3.5 h-3.5" /> Export
             </button>
-            <button type="button" @click="deleteRows([...selected])" class="px-2.5 h-[30px] rounded-[8px] text-[11.5px] text-red-300 hover:bg-red-500/20 hover:text-red-200 cursor-pointer flex items-center gap-1.5 whitespace-nowrap">
+            <button type="button" @click="deleteRows([...selected])" class="px-2.5 h-[30px] rounded-[8px] text-[11.5px] text-oxblood-200 hover:bg-oxblood-600/20 hover:text-oxblood-200 cursor-pointer flex items-center gap-1.5 whitespace-nowrap">
               <Trash2 class="w-3.5 h-3.5" /> Delete
             </button>
             <button type="button" @click="selected = new Set()" class="size-[30px] rounded-[8px] hover:bg-white/10 flex items-center justify-center cursor-pointer shrink-0" title="Clear selection (Esc)">
@@ -380,7 +380,7 @@
               </div>
               <div class="min-w-0">
                 <h3 class="text-[19px] leading-[24px] font-medium truncate">{{ guestName(drawerRow) }}</h3>
-                <p v-if="drawerRow.duplicate_of" class="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-[6px] px-2 py-1 mt-1 w-fit">
+                <p v-if="drawerRow.duplicate_of" class="text-[11px] text-bronze-800 bg-bronze-50 border border-bronze-200 rounded-[6px] px-2 py-1 mt-1 w-fit">
                   Registered more than once — this is an extra entry. Its pass still works at the door.
                 </p>
                 <p class="text-[12px] text-neutral-500 truncate">{{ guestEmail(drawerRow) || 'No email provided' }}</p>
@@ -397,8 +397,8 @@
                   <Copy class="w-3.5 h-3.5" /> Copy
                 </button>
               </div>
-              <div class="flex items-center gap-2 mt-3 text-[11px] relative" :class="drawerRow.checked_in_at ? 'text-emerald-300' : 'text-white/50'">
-                <span class="size-1.5 rounded-full" :class="drawerRow.checked_in_at ? 'bg-emerald-400' : 'bg-white/30'" />
+              <div class="flex items-center gap-2 mt-3 text-[11px] relative" :class="drawerRow.checked_in_at ? 'text-moss-300' : 'text-white/50'">
+                <span class="size-1.5 rounded-full" :class="drawerRow.checked_in_at ? 'bg-moss-300' : 'bg-white/30'" />
                 {{ drawerRow.checked_in_at ? `Checked in ${formatDateTime(drawerRow.checked_in_at)}${drawerRow.checked_in_by ? ` · by ${drawerRow.checked_in_by}` : ''}` : 'Not checked in yet' }}
               </div>
             </div>
@@ -458,7 +458,7 @@
               <component :is="drawerRow.checked_in_at ? LogOut : LogIn" class="w-4 h-4" />
               {{ drawerRow.checked_in_at ? 'Undo check-in' : 'Check in guest' }}
             </button>
-            <button type="button" @click="deleteRows([drawerRow.id])" class="size-[40px] rounded-[10px] border border-red-200 text-red-600 hover:bg-red-600 hover:text-white flex items-center justify-center cursor-pointer transition-colors" title="Delete guest">
+            <button type="button" @click="deleteRows([drawerRow.id])" class="size-[40px] rounded-[10px] border border-oxblood-200 text-oxblood-600 hover:bg-oxblood-600 hover:text-white flex items-center justify-center cursor-pointer transition-colors" title="Delete guest">
               <Trash2 class="w-4 h-4" />
             </button>
           </div>

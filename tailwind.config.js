@@ -15,6 +15,10 @@ export default {
           surface: '#fafafa',
           accent: '#ffffff',
         },
+        // Status colours for a premium brand: pale moss, deep oxblood, muted bronze. No neon green, no loud red.
+        moss: { 50: '#eff1ea', 100: '#e2e6d8', 200: '#cbd3bb', 300: '#aebb9a', 500: '#7b8b67', 600: '#667557', 700: '#55633f', 800: '#444f33' },
+        oxblood: { 50: '#f6eeed', 100: '#ecdcda', 200: '#dcbebb', 300: '#c69a96', 500: '#7e2c32', 600: '#64212a', 700: '#4a161b', 800: '#3a1115' },
+        bronze: { 50: '#f5f1e7', 100: '#eae3d1', 200: '#d9cfb3', 300: '#c4b690', 500: '#8f7c50', 600: '#766443', 700: '#5e4f33', 800: '#4a3e29' },
         editor: {
           bg: '#0c0d0e',
           canvas: '#16181a',

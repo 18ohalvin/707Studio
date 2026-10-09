@@ -22,8 +22,8 @@
           :title="lastSyncedAt ? `Last synced ${lastSyncedLabel}` : 'Sync now'"
         >
           <span class="relative flex size-2">
-            <span v-if="!loadError" class="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60 animate-ping" />
-            <span class="relative inline-flex rounded-full size-2" :class="loadError ? 'bg-red-500' : 'bg-emerald-500'" />
+            <span v-if="!loadError" class="absolute inline-flex h-full w-full rounded-full bg-moss-300 opacity-60 animate-ping" />
+            <span class="relative inline-flex rounded-full size-2" :class="loadError ? 'bg-oxblood-600' : 'bg-moss-500'" />
           </span>
           <span class="hidden md:inline tabular-nums">{{ loadError ? 'Offline' : (isLoading ? 'Syncing…' : `Live · ${lastSyncedLabel}`) }}</span>
           <RefreshCw class="w-3.5 h-3.5" :class="isLoading ? 'animate-spin' : ''" />
@@ -115,7 +115,7 @@
                   <span class="text-[12.5px] font-medium truncate">{{ p.title }}</span>
                   <span class="text-[10.5px] text-neutral-500 font-mono truncate">/{{ p.brand_slug }}/{{ p.slug }}</span>
                 </div>
-                <span v-if="p.status === 'approved' || p.status === 'published'" class="text-[9.5px] px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Live</span>
+                <span v-if="p.status === 'approved' || p.status === 'published'" class="text-[9.5px] px-1.5 py-0.5 rounded-full bg-moss-50 text-moss-700 border border-moss-200">Live</span>
                 <Check v-if="selectedProjectId === p.id" class="w-4 h-4" />
               </button>
               <p v-if="!pickerProjects.length" class="text-[12px] text-neutral-400 text-center py-4">No campaigns match.</p>
@@ -157,10 +157,10 @@
         </div>
 
         <template v-else>
-          <div v-if="loadError" class="mb-5 flex items-center gap-3 px-4 py-3 rounded-[10px] border border-red-200 bg-red-50 text-[12px] text-red-700">
+          <div v-if="loadError" class="mb-5 flex items-center gap-3 px-4 py-3 rounded-[10px] border border-oxblood-200 bg-oxblood-50 text-[12px] text-oxblood-700">
             <AlertTriangle class="w-4 h-4 shrink-0" />
             <span class="flex-1">{{ loadError }}</span>
-            <button type="button" @click="refresh(true)" class="px-2.5 py-1 rounded-[6px] bg-white border border-red-200 font-medium cursor-pointer hover:bg-red-100">Retry</button>
+            <button type="button" @click="refresh(true)" class="px-2.5 py-1 rounded-[6px] bg-white border border-oxblood-200 font-medium cursor-pointer hover:bg-oxblood-100">Retry</button>
           </div>
 
           <HubOverview
@@ -197,7 +197,7 @@
         class="fixed bottom-[24px] left-1/2 -translate-x-1/2 z-[60] apple-frost border border-white/60 rounded-2xl px-4 py-3 shadow-[0px_12px_40px_rgba(0,0,0,0.14),0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-3 select-none max-w-[92vw]"
         role="status"
       >
-        <div class="size-2 rounded-full bg-emerald-500 shrink-0" />
+        <div class="size-2 rounded-full bg-moss-500 shrink-0" />
         <p class="font-707 text-[12px] text-black font-medium">{{ toastMessage }}</p>
       </div>
     </Transition>

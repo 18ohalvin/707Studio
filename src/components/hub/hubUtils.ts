@@ -46,20 +46,20 @@ export function statusLabel(status?: string): string {
 
 export function statusBadgeClass(status?: string): string {
   switch (normalizeStatus(status)) {
-    case 'confirmed': return 'bg-emerald-50 text-emerald-800 border-emerald-300';
-    case 'waitlisted': return 'bg-amber-50 text-amber-800 border-amber-300';
+    case 'confirmed': return 'bg-moss-50 text-moss-800 border-moss-300';
+    case 'waitlisted': return 'bg-bronze-50 text-bronze-800 border-bronze-300';
     case 'winner': return 'bg-black text-white border-black';
-    case 'declined': return 'bg-red-50 text-red-700 border-red-200';
+    case 'declined': return 'bg-oxblood-50 text-oxblood-700 border-oxblood-200';
     default: return 'bg-neutral-100 text-neutral-600 border-neutral-300';
   }
 }
 
 export function statusDotClass(status?: string): string {
   switch (normalizeStatus(status)) {
-    case 'confirmed': return 'bg-emerald-500';
-    case 'waitlisted': return 'bg-amber-500';
+    case 'confirmed': return 'bg-moss-500';
+    case 'waitlisted': return 'bg-bronze-500';
     case 'winner': return 'bg-white';
-    case 'declined': return 'bg-red-500';
+    case 'declined': return 'bg-oxblood-600';
     default: return 'bg-neutral-400';
   }
 }

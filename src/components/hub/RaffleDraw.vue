@@ -112,7 +112,7 @@
           <div class="size-7 rounded-full bg-neutral-100 border border-black/5 flex items-center justify-center text-[10.5px] font-medium shrink-0">{{ initials(guestName(s)) }}</div>
           <span class="text-[12.5px] flex-1 truncate">{{ guestName(s) }}</span>
           <span class="text-[11px] font-mono text-neutral-500">{{ accessId(s) }}</span>
-          <span v-if="s.checked_in_at" class="text-[10.5px] px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">At venue</span>
+          <span v-if="s.checked_in_at" class="text-[10.5px] px-1.5 py-0.5 rounded-full bg-moss-50 text-moss-700 border border-moss-200">At venue</span>
         </div>
       </div>
     </div>

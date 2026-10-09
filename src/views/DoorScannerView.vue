@@ -20,14 +20,19 @@
         </div>
       </div>
 
-      <div class="flex items-center gap-3 shrink-0">
-        <button v-if="loadError" type="button" @click="refresh()" class="flex items-center gap-1.5 px-2.5 h-[32px] rounded-[8px] bg-red-50 border border-red-200 text-[12px] text-red-700 font-medium cursor-pointer" title="The guest list could not be refreshed. Scans still go straight to the server.">
+      <!-- Scan / Log -->
+      <div class="flex items-center p-0.5 rounded-[10px] bg-black/[0.05] border border-black/10 text-[14px] shrink-0">
+        <button type="button" @click="view = 'scan'" class="px-4 h-[36px] rounded-[8px] cursor-pointer transition-all" :class="view === 'scan' ? 'bg-black text-white font-medium' : 'text-neutral-600'">Scan</button>
+        <button type="button" @click="view = 'log'" class="px-4 h-[36px] rounded-[8px] cursor-pointer transition-all flex items-center gap-2" :class="view === 'log' ? 'bg-black text-white font-medium' : 'text-neutral-600'">
+          Log <span class="tabular-nums text-[12px] px-1.5 rounded-full" :class="view === 'log' ? 'bg-white/20' : 'bg-black/10'">{{ checkedInCount }}</span>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-3 shrink-0 min-w-0">
+        <button v-if="loadError" type="button" @click="refresh()" class="flex items-center gap-1.5 px-2.5 h-[32px] rounded-[8px] bg-oxblood-50 border border-oxblood-200 text-[12px] text-oxblood-700 font-medium cursor-pointer" title="The guest list could not be refreshed. Scans still go straight to the server.">
           <AlertTriangle class="w-4 h-4" /> Offline · Retry
         </button>
-        <span v-else class="flex items-center gap-1.5 text-[13px] text-neutral-600 tabular-nums">
-          <span class="size-2 rounded-full bg-emerald-500" />
-          {{ checkedInCount }} / {{ rows.length }} in
-        </span>
+        <span v-else class="size-2 rounded-full bg-moss-500 shrink-0" title="Connected" />
         <span class="hidden md:inline text-[12px] text-neutral-500 truncate max-w-[160px]" title="Shown on each check-in">{{ operatorName }}</span>
       </div>
     </header>
@@ -37,6 +42,7 @@
         :rows="rows"
         :page-ids="pageIds"
         :operator="operatorName"
+        :view="view"
         standalone
         @updated="mergeRows"
         @toast="toast"
@@ -50,7 +56,7 @@
         class="fixed top-[60px] left-1/2 -translate-x-1/2 z-[60] bg-black text-white rounded-2xl px-4 py-3 shadow-[0px_12px_40px_rgba(0,0,0,0.25)] flex items-center gap-3 select-none max-w-[92vw]"
         role="status"
       >
-        <div class="size-2 rounded-full bg-emerald-400 shrink-0" />
+        <div class="size-2 rounded-full bg-moss-300 shrink-0" />
         <p class="font-707 text-[13px] font-medium">{{ toastMessage }}</p>
       </div>
     </Transition>
@@ -75,6 +81,7 @@ const authStore = useAuthStore();
 
 const { rows, loadError, selectedProjectId, projects, pageIds, refresh, mergeRows } = useCampaignGuests({ pollMs: 10000 });
 
+const view = ref<'scan' | 'log'>('scan');
 const operatorName = computed(() => authStore.currentUser?.name || 'Door staff');
 const checkedInCount = computed(() => rows.value.filter(r => r.checked_in_at).length);
 const hubLink = computed(() => ({ path: '/hub', query: selectedProjectId.value !== 'all' ? { project: selectedProjectId.value } : {} }));
