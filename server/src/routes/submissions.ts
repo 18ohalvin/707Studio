@@ -343,6 +343,7 @@ submissionsRouter.put('/:id/ticket-pdf', express.raw({ type: 'application/pdf', 
  * (same design, details and QR as the one on their screen at registration).
  * Only guests who hold a place, only within this account's campaigns, and
  * never twice: someone who already got a ticket email is skipped.
+ * With ?store_only=1 the PDF is only kept (any status), and nothing is sent.
  */
 submissionsRouter.put('/:id/send-ticket', requireAuth, express.raw({ type: 'application/pdf', limit: MAX_TICKET_PDF_BYTES }), route('send this ticket', async (req, res) => {
   const id = String(req.params.id);
@@ -358,6 +359,18 @@ submissionsRouter.put('/:id/send-ticket', requireAuth, express.raw({ type: 'appl
   const found = await pool.query('SELECT * FROM submissions WHERE id = $1', [id]);
   const row = found.rows[0];
   if (!row || !inScope(scope, row.page_id)) return res.status(404).json({ success: false, error: 'Submission not found.' });
+
+  // store_only: keep the ticket for later, send nothing. Used before guests are taken off the
+  // waitlist, so the email that goes out when they are promoted already has their PDF.
+  if (req.query.store_only === '1') {
+    await pool.query(
+      `INSERT INTO submission_tickets (submission_id, pdf) VALUES ($1, $2)
+       ON CONFLICT (submission_id) DO UPDATE SET pdf = EXCLUDED.pdf, created_at = NOW()`,
+      [id, pdf]
+    );
+    return res.json({ success: true, result: 'stored' });
+  }
+
   if (!HAS_PLACE.includes(String(row.status))) return res.json({ success: true, result: 'no_place' });
   if (row.ticket_emailed_at) return res.json({ success: true, result: 'already_sent' });
 

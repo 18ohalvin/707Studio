@@ -16,14 +16,14 @@
             <span class="text-[11px] text-neutral-500">{{ opt.hint }}</span>
           </span>
         </label>
-        <label class="flex items-center gap-2.5 cursor-pointer mt-1">
+        <label v-if="!isWaitlistDraw" class="flex items-center gap-2.5 cursor-pointer mt-1">
           <input v-model="excludePastWinners" type="checkbox" class="accent-black" />
           <span class="text-[12.5px]">Exclude guests who already won</span>
         </label>
       </div>
 
       <div class="flex flex-col gap-1.5">
-        <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500">Number of winners</span>
+        <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500">{{ isWaitlistDraw ? 'Number of guests' : 'Number of winners' }}</span>
         <div class="flex items-center gap-2">
           <button type="button" @click="winnerCount = Math.max(1, winnerCount - 1)" class="size-9 rounded-[8px] border border-black/15 hover:bg-black/5 cursor-pointer flex items-center justify-center"><Minus class="w-3.5 h-3.5" /></button>
           <input
@@ -46,7 +46,7 @@
         class="h-[42px] rounded-[10px] bg-black text-white text-[13px] font-medium flex items-center justify-center gap-2 cursor-pointer hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
         <Shuffle class="w-4 h-4" :class="isDrawing ? 'animate-spin' : ''" />
-        {{ isDrawing ? 'Drawing…' : (drawn.length ? 'Draw again' : 'Draw winners') }}
+        {{ isDrawing ? 'Drawing…' : (drawn.length ? 'Draw again' : (isWaitlistDraw ? 'Draw from waitlist' : 'Draw winners')) }}
       </button>
       <p v-if="!eligible.length" class="text-[11.5px] text-neutral-500 -mt-2">No guest matches these rules yet.</p>
     </div>
@@ -55,9 +55,10 @@
     <div class="flex flex-col gap-4 min-w-0">
       <div class="rounded-[12px] border border-black/10 bg-white p-4 flex flex-col gap-3 min-h-[220px]">
         <div class="flex items-center justify-between gap-3">
-          <p class="text-[13px] font-medium">{{ drawn.length ? 'Drawn — not saved yet' : 'Result' }}</p>
+          <p class="text-[13px] font-medium">{{ drawn.length ? (isWaitlistDraw ? 'Drawn — still on the waitlist until you confirm' : 'Drawn — not saved yet') : 'Result' }}</p>
           <div v-if="drawn.length && !isDrawing" class="flex items-center gap-2">
-            <button type="button" @click="drawn = []" class="h-[30px] px-3 rounded-[8px] border border-black/15 text-[12px] hover:bg-black/5 cursor-pointer">Discard</button>
+            <button v-if="isSaving && prepStep" type="button" @click="ticketSender.cancel()" class="h-[30px] px-3 rounded-[8px] border border-black/15 text-[12px] hover:bg-black/5 cursor-pointer">Stop</button>
+            <button v-else type="button" :disabled="isSaving" @click="drawn = []" class="h-[30px] px-3 rounded-[8px] border border-black/15 text-[12px] hover:bg-black/5 cursor-pointer disabled:opacity-40">Discard</button>
             <button
               id="raffle-confirm-btn"
               type="button"
@@ -65,7 +66,7 @@
               @click="confirmWinners"
               class="h-[30px] px-3 rounded-[8px] bg-black text-white text-[12px] font-medium hover:bg-neutral-800 cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
             >
-              <Check class="w-3.5 h-3.5" /> {{ isSaving ? 'Saving…' : `Mark ${drawn.length} as winner${drawn.length === 1 ? '' : 's'}` }}
+              <Check class="w-3.5 h-3.5" /> {{ isSaving ? (prepStep ? `Preparing tickets ${prepStep.done}/${prepStep.total}…` : 'Saving…') : (isWaitlistDraw ? `Move ${drawn.length} off the waitlist` : `Mark ${drawn.length} as winner${drawn.length === 1 ? '' : 's'}`) }}
             </button>
           </div>
         </div>
@@ -121,6 +122,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue';
 import { Shuffle, Check, Gift, Download, Plus, Minus } from 'lucide-vue-next';
+import { glassConfirm } from '../../services/glassDialog.ts';
+import { useTicketSender } from './useTicketSender.ts';
 import {
   type Submission, normalizeStatus, guestName, guestEmail, guestPhone, initials, accessId, maskEmail,
   secureSample, secureRandomInt, bulkSetStatus, buildCsv, customFieldKeys, downloadText
@@ -136,11 +139,12 @@ const emit = defineEmits<{
   (e: 'toast', msg: string): void;
 }>();
 
-type PoolRule = 'registered' | 'confirmed' | 'checked_in';
+type PoolRule = 'registered' | 'confirmed' | 'checked_in' | 'waitlisted';
 const poolOptions: { value: PoolRule; label: string; hint: string }[] = [
   { value: 'registered', label: 'Every registered guest', hint: 'Excludes declined and waitlisted guests' },
   { value: 'confirmed', label: 'Confirmed guests only', hint: 'Status set to Confirmed' },
-  { value: 'checked_in', label: 'Guests at the venue', hint: 'Checked in at the door' }
+  { value: 'checked_in', label: 'Guests at the venue', hint: 'Checked in at the door' },
+  { value: 'waitlisted', label: 'Waitlisted guests', hint: 'Takes guests off the waitlist: they get a place and an email with their ticket' }
 ];
 
 const poolRule = ref<PoolRule>('registered');
@@ -156,6 +160,7 @@ const eligible = computed(() =>
     const status = normalizeStatus(s.status);
     // One chance per person: an entry flagged as a repeat registration does not enter twice.
     if (s.duplicate_of) return false;
+    if (poolRule.value === 'waitlisted') return status === 'waitlisted';
     if (status === 'declined' || status === 'waitlisted') return false;
     if (excludePastWinners.value && status === 'winner') return false;
     if (poolRule.value === 'confirmed') return status === 'confirmed' || (!excludePastWinners.value && status === 'winner');
@@ -192,10 +197,18 @@ function draw() {
   }, 1600);
 }
 
+const isWaitlistDraw = computed(() => poolRule.value === 'waitlisted');
+const ticketSender = useTicketSender();
+const prepStep = ref<{ done: number; total: number } | null>(null);
+
 async function confirmWinners() {
   if (!drawn.value.length) return;
   isSaving.value = true;
   try {
+    if (isWaitlistDraw.value) {
+      await promoteFromWaitlist();
+      return;
+    }
     const updated = await bulkSetStatus(drawn.value.map(s => s.id), 'winner');
     emit('updated', updated);
     emit('toast', `${updated.length} winner${updated.length === 1 ? '' : 's'} saved.`);
@@ -204,7 +217,37 @@ async function confirmWinners() {
     emit('toast', `Couldn't save winners: ${err?.message || 'network error'}`);
   } finally {
     isSaving.value = false;
+    prepStep.value = null;
   }
+}
+
+/**
+ * Takes the drawn guests off the waitlist. Their ticket PDFs are made first (in this browser,
+ * one by one) so the email that goes out the moment they get a place has the PDF attached;
+ * the status change is what sends those emails.
+ */
+async function promoteFromWaitlist() {
+  const guests = [...drawn.value];
+  const prep = await ticketSender.storeTickets(guests, (done, total) => (prepStep.value = { done, total }));
+  if (prep.cancelled) {
+    emit('toast', 'Stopped. Nobody was moved off the waitlist.');
+    return;
+  }
+  if (prep.failed.length) {
+    const go = await glassConfirm({
+      title: `${prep.failed.length} ticket${prep.failed.length === 1 ? '' : 's'} could not be prepared`,
+      message: `Move all ${guests.length} guests off the waitlist anyway? Those ${prep.failed.length} get the email with their access code instead of the PDF attached.`,
+      confirmLabel: 'Move them anyway'
+    });
+    if (!go) {
+      emit('toast', 'Nobody was moved off the waitlist.');
+      return;
+    }
+  }
+  const updated = await bulkSetStatus(guests.map(s => s.id), 'confirmed');
+  emit('updated', updated);
+  emit('toast', `${updated.length} guest${updated.length === 1 ? '' : 's'} moved off the waitlist. Their ticket emails are going out now.`);
+  drawn.value = [];
 }
 
 function exportWinners() {

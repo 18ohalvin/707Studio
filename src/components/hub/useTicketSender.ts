@@ -170,10 +170,54 @@ export function useTicketSender() {
     return state;
   }
 
+  /**
+   * Makes and stores the ticket PDFs of guests who are about to be taken off the waitlist, without
+   * emailing anyone, so the email that goes out when their status changes already carries the PDF.
+   * Guests whose PDF could not be made are returned in `failed`; the caller decides what to do.
+   */
+  async function storeTickets(rows: Submission[], onStep?: (done: number, total: number) => void): Promise<{ failed: string[]; cancelled: boolean }> {
+    cancelled = false;
+    const failed: string[] = [];
+    window.addEventListener('beforeunload', warnOnLeave);
+    try {
+      const { renderTicketPdfBlob } = await import('../editor/ticket/ticketPdf.ts');
+      for (const [i, row] of rows.entries()) {
+        if (cancelled) return { failed, cancelled: true };
+        onStep?.(i, rows.length);
+        try {
+          const project = projectOf(row.page_id);
+          const design = project ? await loadDesign(project) : null;
+          if (!design) throw new Error('no ticket design');
+          const blob = await renderTicketPdfBlob({
+            page: design.page,
+            context: design.context,
+            livePass: livePassFor(row, design),
+            fileName: 'ticket.pdf'
+          });
+          const res = await apiFetch(`/api/submissions/${encodeURIComponent(row.id)}/send-ticket?store_only=1`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/pdf' },
+            body: blob
+          });
+          const json = await res.json().catch(() => null);
+          if (!res.ok || json?.result !== 'stored') throw new Error(json?.error || `HTTP ${res.status}`);
+        } catch (err: any) {
+          console.warn(`[TicketSender] Could not prepare the ticket of ${row.id}:`, err?.message || err);
+          failed.push(row.id);
+        }
+      }
+      onStep?.(rows.length, rows.length);
+      return { failed, cancelled: false };
+    } finally {
+      window.removeEventListener('beforeunload', warnOnLeave);
+    }
+  }
+
   return {
     progress,
     eligibility,
     run,
+    storeTickets,
     cancel: () => { cancelled = true; },
     dismiss: () => { progress.value = null; }
   };
