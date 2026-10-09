@@ -344,6 +344,7 @@ submissionsRouter.put('/:id/ticket-pdf', express.raw({ type: 'application/pdf', 
  * Only guests who hold a place, only within this account's campaigns, and
  * never twice: someone who already got a ticket email is skipped.
  * With ?store_only=1 the PDF is only kept (any status), and nothing is sent.
+ * With ?force=1 a guest who already got the email gets it again.
  */
 submissionsRouter.put('/:id/send-ticket', requireAuth, express.raw({ type: 'application/pdf', limit: MAX_TICKET_PDF_BYTES }), route('send this ticket', async (req, res) => {
   const id = String(req.params.id);
@@ -372,7 +373,8 @@ submissionsRouter.put('/:id/send-ticket', requireAuth, express.raw({ type: 'appl
   }
 
   if (!HAS_PLACE.includes(String(row.status))) return res.json({ success: true, result: 'no_place' });
-  if (row.ticket_emailed_at) return res.json({ success: true, result: 'already_sent' });
+  // force: staff asked to send it again (the guest lost it or never saw it).
+  if (row.ticket_emailed_at && req.query.force !== '1') return res.json({ success: true, result: 'already_sent' });
 
   const form = typeof row.form_data === 'string' ? JSON.parse(row.form_data) : (row.form_data || {});
   const email = String(form.email || '').trim();

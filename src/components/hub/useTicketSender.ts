@@ -78,11 +78,11 @@ export function useTicketSender() {
     return pending;
   }
 
-  function eligibility(row: Submission): Eligibility {
+  function eligibility(row: Submission, force = false): Eligibility {
     if (!HAS_PLACE.includes(normalizeStatus(row.status))) return { ok: false, why: 'status' };
     const email = guestEmail(row);
     if (!email || email === PLACEHOLDER_EMAIL) return { ok: false, why: 'email' };
-    if (row.ticket_emailed_at) return { ok: false, why: 'sent' };
+    if (row.ticket_emailed_at && !force) return { ok: false, why: 'sent' };
     const project = projectOf(row.page_id);
     return project ? { ok: true, project } : { ok: false, why: 'design' };
   }
@@ -108,7 +108,7 @@ export function useTicketSender() {
     e.returnValue = '';
   }
 
-  async function run(rows: Submission[], onSent: (id: string) => void): Promise<SendProgress> {
+  async function run(rows: Submission[], onSent: (id: string) => void, opts: { force?: boolean } = {}): Promise<SendProgress> {
     cancelled = false;
     const state: SendProgress = { total: rows.length, done: 0, sent: 0, skipped: 0, failed: 0, current: '', stopReason: '', finished: false };
     progress.value = state;
@@ -120,7 +120,7 @@ export function useTicketSender() {
       for (const row of rows) {
         if (cancelled) { state.stopReason = 'Stopped.'; break; }
         state.current = guestName(row) || accessId(row);
-        const check = eligibility(row);
+        const check = eligibility(row, opts.force);
         if (!check.ok) { state.skipped++; state.done++; continue; }
         const design = await loadDesign(check.project);
         if (!design) { state.skipped++; state.done++; continue; }
@@ -132,7 +132,7 @@ export function useTicketSender() {
             livePass: livePassFor(row, design),
             fileName: 'ticket.pdf'
           });
-          const res = await apiFetch(`/api/submissions/${encodeURIComponent(row.id)}/send-ticket`, {
+          const res = await apiFetch(`/api/submissions/${encodeURIComponent(row.id)}/send-ticket${opts.force ? '?force=1' : ''}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/pdf' },
             body: blob

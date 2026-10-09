@@ -331,6 +331,9 @@
             <button type="button" @click="sendTickets(selectedRows)" :disabled="!!ticketSender.progress.value && !ticketSender.progress.value.finished" class="px-2.5 h-[30px] rounded-[8px] text-[11.5px] hover:bg-white/10 cursor-pointer flex items-center gap-1.5 whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed" title="Email each selected guest their e-ticket PDF">
               <Mail class="w-3.5 h-3.5" /> Send ticket
             </button>
+            <button type="button" @click="sendTickets(selectedRows, true)" :disabled="!!ticketSender.progress.value && !ticketSender.progress.value.finished" class="px-2.5 h-[30px] rounded-[8px] text-[11.5px] hover:bg-white/10 cursor-pointer flex items-center gap-1.5 whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed" title="Send the ticket again, also to guests who already received it">
+              <RotateCw class="w-3.5 h-3.5" /> Resend ticket
+            </button>
             <button type="button" @click="exportCsv(selectedRows)" class="px-2.5 h-[30px] rounded-[8px] text-[11.5px] hover:bg-white/10 cursor-pointer flex items-center gap-1.5 whitespace-nowrap">
               <Download class="w-3.5 h-3.5" /> Export
             </button>
@@ -400,6 +403,17 @@
               <div class="flex items-center gap-2 mt-3 text-[11px] relative" :class="drawerRow.checked_in_at ? 'text-moss-300' : 'text-white/50'">
                 <span class="size-1.5 rounded-full" :class="drawerRow.checked_in_at ? 'bg-moss-300' : 'bg-white/30'" />
                 {{ drawerRow.checked_in_at ? `Checked in ${formatDateTime(drawerRow.checked_in_at)}${drawerRow.checked_in_by ? ` · by ${drawerRow.checked_in_by}` : ''}` : 'Not checked in yet' }}
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-2 text-[11px] text-white/50 relative">
+                <span class="truncate">{{ drawerRow.ticket_emailed_at ? `Ticket emailed ${formatDateTime(drawerRow.ticket_emailed_at)}` : 'Ticket not emailed yet' }}</span>
+                <button
+                  type="button"
+                  @click="sendTickets([drawerRow], true)"
+                  :disabled="!!ticketSender.progress.value && !ticketSender.progress.value.finished"
+                  class="h-[26px] px-2.5 rounded-[7px] bg-white/10 hover:bg-white/20 text-white text-[11px] flex items-center gap-1.5 cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <Mail class="w-3 h-3" /> {{ drawerRow.ticket_emailed_at ? 'Resend ticket' : 'Send ticket' }}
+                </button>
               </div>
             </div>
 
@@ -473,7 +487,7 @@ import { glassConfirm } from '../../services/glassDialog.ts';
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import {
   Search, X, Download, Columns3, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, ChevronRight,
-  Check, Circle, CircleCheck, Users, Trash2, Copy, LogIn, LogOut, Mail
+  Check, Circle, CircleCheck, Users, Trash2, Copy, LogIn, LogOut, Mail, RotateCw
 } from 'lucide-vue-next';
 import { useTicketSender } from './useTicketSender.ts';
 import {
@@ -700,25 +714,29 @@ async function applyStatus(ids: string[], status: GuestStatus) {
 /* ---------- Ticket emails ---------- */
 const ticketSender = useTicketSender();
 
-async function sendTickets(rows: Submission[]) {
+async function sendTickets(rows: Submission[], resend = false) {
   if (!rows.length) return;
-  const checks = rows.map(r => ticketSender.eligibility(r));
+  // Resend: the guest asked for it again (lost it, never saw it), so "already sent" no longer skips them.
+  const checks = rows.map(r => ticketSender.eligibility(r, resend));
   const eligible = rows.filter((_, i) => checks[i].ok);
   const count = (why: string) => checks.filter(c => !c.ok && (c as any).why === why).length;
   if (!eligible.length) {
     emit('toast', `Nobody to send to: ${count('sent')} already got their ticket, ${count('status')} have no place, ${count('email')} have no email.`);
     return;
   }
+  const again = resend ? eligible.filter(r => r.ticket_emailed_at).length : 0;
   const notes = [
-    count('sent') ? `${count('sent')} already received their ticket by email and are skipped.` : '',
+    again ? `${again} of them already received it and will get it again.` : '',
+    count('sent') ? `${count('sent')} already received their ticket and are skipped.` : '',
     count('status') ? `${count('status')} are waitlisted or declined and are skipped.` : '',
     count('email') ? `${count('email')} have no email and are skipped.` : '',
     count('design') ? `${count('design')} belong to a campaign without a Ticket page and are skipped.` : ''
   ].filter(Boolean).join(' ');
+  const who = `${eligible.length} ${eligible.length === 1 ? 'guest' : 'guests'}`;
   const ok = await glassConfirm({
-    title: `Email the ticket to ${eligible.length} ${eligible.length === 1 ? 'guest' : 'guests'}?`,
+    title: resend ? `Resend the ticket to ${who}?` : `Email the ticket to ${who}?`,
     message: `Each guest gets an email with their e-ticket PDF — the same ticket, details and QR as at registration. The PDFs are made one by one in this browser, so keep this tab open until it finishes (a few seconds per guest). ${notes}`.trim(),
-    confirmLabel: 'Send tickets'
+    confirmLabel: resend ? 'Resend tickets' : 'Send tickets'
   });
   if (!ok) return;
   selected.value = new Set();
@@ -726,7 +744,7 @@ async function sendTickets(rows: Submission[]) {
   const result = await ticketSender.run(eligible, id => {
     const row = props.rows.find(r => r.id === id);
     if (row) emit('updated', [{ ...row, ticket_emailed_at: stamp }]);
-  });
+  }, { force: resend });
   emit('toast', `Tickets: ${result.sent} sent${result.failed ? `, ${result.failed} failed` : ''}${result.skipped ? `, ${result.skipped} skipped` : ''}.`);
 }
 
