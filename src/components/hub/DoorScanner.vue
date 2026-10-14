@@ -22,16 +22,16 @@
           <div class="flex items-center gap-2 p-1 rounded-[10px] bg-white/[0.08] border border-white/10 text-[13px]">
             <span class="flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] font-medium uppercase tracking-[0.06em] text-[11px]" :class="mode === 'in' ? 'bg-moss-600 text-white' : 'bg-neutral-800 text-white'">
               <component :is="mode === 'in' ? LogIn : LogOut" class="w-3.5 h-3.5" />
-              {{ mode === 'in' ? 'Gate Masuk' : 'Gate Keluar' }}
+              {{ mode === 'in' ? 'Entrance Gate' : 'Exit Gate' }}
             </span>
             <button
               id="scanner-switch-station"
               type="button"
               @click="showStationModal = true"
               class="px-2 py-1 text-[11px] text-white/60 hover:text-white cursor-pointer underline underline-offset-2 transition-colors"
-              title="Ganti pos gate masuk / keluar"
+              title="Switch between Entrance and Exit gate"
             >
-              Ganti Pos
+              Switch Gate
             </button>
           </div>
           <div class="flex items-center gap-1">
@@ -292,11 +292,11 @@
             </div>
           </dl>
 
-          <!-- Party Size Stepper (Gate Masuk only) -->
+          <!-- Party Size Stepper (Entrance Gate only) -->
           <div v-if="mode === 'in'" class="mt-2 flex items-center justify-between p-3.5 rounded-[12px] bg-black/[0.03] border border-black/10 max-w-[640px] w-full">
             <div class="text-left">
-              <p class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Party Size (Total Masuk)</p>
-              <p class="text-[12.5px] text-neutral-500">Termasuk guest utama & tamu pendamping</p>
+              <p class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Party Size (Headcount)</p>
+              <p class="text-[12.5px] text-neutral-500">Primary guest and accompanying party</p>
             </div>
             <div class="flex items-center gap-3">
               <button
@@ -319,7 +319,7 @@
             class="mt-2 px-4 py-3 rounded-[10px] bg-oxblood-50 border border-oxblood-200 text-oxblood-800 text-[13px] font-medium flex items-center gap-2.5 max-w-[640px] w-full text-left"
           >
             <TriangleAlert class="w-5 h-5 text-oxblood-600 shrink-0" />
-            <span>Kapasitas Booth Penuh ({{ insideCount }}/{{ maxCapacity }} orang di dalam). Menambah {{ pendingPartySize }} orang akan melebihi kapasitas booth.</span>
+            <span>Venue at Maximum Capacity ({{ insideCount }}/{{ maxCapacity }} inside). Admitting {{ pendingPartySize }} guest{{ pendingPartySize > 1 ? 's' : '' }} will exceed safe capacity.</span>
           </div>
 
           <p v-if="pendingProblem" class="mt-3 px-4 py-2.5 rounded-[10px] text-[14px] font-medium max-w-[640px] w-full" :class="pendingProblem.class">{{ pendingProblem.text }}</p>
@@ -368,10 +368,10 @@
             <ArrowRightLeft class="w-7 h-7" />
           </div>
           <div>
-            <p class="text-[11px] uppercase tracking-[0.2em] text-neutral-500 font-medium">Peran Perangkat Scanner</p>
-            <h2 class="text-[26px] font-medium text-black mt-1">Pilih Posisi Gate Scanner</h2>
+            <p class="text-[11px] uppercase tracking-[0.2em] text-neutral-500 font-medium">Scanner Station Role</p>
+            <h2 class="text-[26px] font-medium text-black mt-1">Select Scanner Station</h2>
             <p class="text-[13.5px] text-neutral-500 mt-1.5 max-w-[440px]">
-              Tentukan apakah tablet ini bertugas di pintu masuk atau pintu keluar untuk sinkronisasi kapasitas realtime.
+              Configure whether this device operates at the Entrance or Exit for live venue capacity synchronization.
             </p>
           </div>
 
@@ -386,12 +386,12 @@
                 <div class="size-10 rounded-[10px] bg-moss-600 text-white flex items-center justify-center shadow-sm">
                   <LogIn class="w-5 h-5" />
                 </div>
-                <span v-if="mode === 'in'" class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-black text-white">Aktif</span>
+                <span v-if="mode === 'in'" class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-black text-white">Active</span>
               </div>
               <div>
-                <p class="text-[17px] font-medium text-black">Gate Masuk</p>
+                <p class="text-[17px] font-medium text-black">Entrance Gate</p>
                 <p class="text-[12px] text-neutral-500 mt-1 leading-snug">
-                  Check-in pengunjung, atur jumlah rombongan (party size), dan pantau live kuota booth.
+                  Check in incoming guests, adjust group party size, and monitor live venue capacity.
                 </p>
               </div>
             </button>
@@ -406,12 +406,12 @@
                 <div class="size-10 rounded-[10px] bg-neutral-800 text-white flex items-center justify-center shadow-sm">
                   <LogOut class="w-5 h-5" />
                 </div>
-                <span v-if="mode === 'out'" class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-black text-white">Aktif</span>
+                <span v-if="mode === 'out'" class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-black text-white">Active</span>
               </div>
               <div>
-                <p class="text-[17px] font-medium text-black">Gate Keluar</p>
+                <p class="text-[17px] font-medium text-black">Exit Gate</p>
                 <p class="text-[12px] text-neutral-500 mt-1 leading-snug">
-                  Check-out pengunjung meninggalkan booth untuk melepas kuota kapasitas secara realtime.
+                  Check out departing guests to automatically release capacity spots in real-time.
                 </p>
               </div>
             </button>
@@ -423,7 +423,7 @@
             @click="showStationModal = false"
             class="text-[13px] text-neutral-500 hover:text-black cursor-pointer underline underline-offset-4 mt-1"
           >
-            Tutup tanpa mengubah
+            Close without changing
           </button>
         </div>
       </div>
@@ -704,7 +704,7 @@ async function submitCode(raw: string, partySize: number = 1) {
     const kind = res.result as ScanKind;
     let detail = '';
     if (kind === 'admitted') {
-      const pCount = guest?.party_size && Number(guest.party_size) > 1 ? ` (${guest.party_size} orang)` : '';
+      const pCount = guest?.party_size && Number(guest.party_size) > 1 ? ` (${guest.party_size} guests)` : '';
       detail = `Checked in at ${formatTime(guest?.checked_in_at)}${pCount}`;
     }
     else if (kind === 'already') detail = `First entry at ${formatTime(guest?.checked_in_at)}${guest?.checked_in_by ? ` · by ${guest.checked_in_by}` : ''}`;

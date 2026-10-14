@@ -218,6 +218,7 @@
           <QueueSettingsPanel
             v-else-if="activeTab === 'queue'"
             :page-id="selectedProjectId"
+            :rows="rows"
             @toast="toast"
           />
           <RaffleDraw
