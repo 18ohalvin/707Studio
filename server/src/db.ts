@@ -214,6 +214,11 @@ export async function initDbSchema(): Promise<void> {
       ALTER TABLE submissions ADD COLUMN IF NOT EXISTS ticket_code VARCHAR(100);
       ALTER TABLE submissions ADD COLUMN IF NOT EXISTS checked_in_at TIMESTAMP WITH TIME ZONE;
       ALTER TABLE submissions ADD COLUMN IF NOT EXISTS checked_in_by VARCHAR(100);
+      ALTER TABLE submissions ADD COLUMN IF NOT EXISTS checked_out_at TIMESTAMP WITH TIME ZONE;
+      ALTER TABLE submissions ADD COLUMN IF NOT EXISTS party_size INT DEFAULT 1;
+      ALTER TABLE submissions ADD COLUMN IF NOT EXISTS queue_number INT;
+      ALTER TABLE submissions ADD COLUMN IF NOT EXISTS queue_status VARCHAR(50) DEFAULT 'waiting';
+      ALTER TABLE submissions ADD COLUMN IF NOT EXISTS wa_notified_states JSONB DEFAULT '[]'::jsonb;
       -- When the guest's ticket email last went out (so a bulk send never mails anyone twice).
       ALTER TABLE submissions ADD COLUMN IF NOT EXISTS ticket_emailed_at TIMESTAMP WITH TIME ZONE;
 

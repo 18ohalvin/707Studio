@@ -10,6 +10,14 @@ import { route, storeFor, unavailable } from '../routeSupport.js';
 import { slotKey, normalizePicks, decidePlaces, type SlotDef, type SlotPick } from '../slotHelpers.js';
 import { getSlotDefs, getAvailability, touchAvailability } from '../slots.js';
 import { withClient } from '../dbClient.js';
+import {
+  getQueueSettings,
+  saveQueueSettings,
+  getNextQueueNumber,
+  processQueueProgression,
+  renderTemplate,
+  sendWhatsAppNotification
+} from '../queueManager.js';
 
 export const submissionsRouter = Router();
 
@@ -147,12 +155,13 @@ async function insertWithPlaces(entry: any, chosen: SlotDef[], wantsWaitlist: bo
 
     const inserted = await client.query(
       `INSERT INTO submissions
-         (id, page_id, brand_slug, submission_type, form_data, ticket_code, ip_address, user_agent, status, created_at, email_key, client_key)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+         (id, page_id, brand_slug, submission_type, form_data, ticket_code, ip_address, user_agent, status, created_at, email_key, client_key, party_size, queue_number, queue_status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
        ON CONFLICT DO NOTHING
        RETURNING *`,
       [entry.id, entry.page_id, entry.brand_slug, entry.submission_type, JSON.stringify(entry.form_data), entry.ticket_code,
-        entry.ip_address, entry.user_agent, status, entry.created_at, entry.email_key, entry.client_key]
+        entry.ip_address, entry.user_agent, status, entry.created_at, entry.email_key, entry.client_key,
+        entry.party_size || 1, entry.queue_number || null, entry.queue_status || 'waiting']
     );
     if (!inserted.rows[0]) {
       await client.query('ROLLBACK');
@@ -442,6 +451,9 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
   const picks: SlotPick[] = normalizePicks(req.body?.slot_picks);
   const wantsWaitlist = req.body?.waitlist === true;
 
+  const partySize = Math.max(1, Math.min(10, Number(answers.party_size || answers['Jumlah Tamu'] || answers['Party Size'] || answers.guests) || 1));
+  const queueNumber = await getNextQueueNumber(pageId, store === 'db');
+
   const draft = () => ({
     id: `sub-${Date.now()}-${crypto.randomBytes(5).toString('hex')}`,
     page_id: pageId,
@@ -454,7 +466,10 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
     status: 'registered',
     created_at: new Date().toISOString(),
     email_key: emailKey,
-    client_key: clientKey
+    client_key: clientKey,
+    party_size: partySize,
+    queue_number: queueNumber,
+    queue_status: 'waiting'
   });
 
   const alreadyRecorded = (row: any) =>
@@ -484,6 +499,24 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
       if (outcome.kind === 'inserted') {
         touchAvailability(pageId);
         notifyNewEntry(outcome.row);
+
+        // Send Welcome WhatsApp Notification if phone provided
+        const phone = answers.phone || answers.whatsapp || answers['WhatsApp'] || answers['Phone'] || answers['No WhatsApp'];
+        if (phone) {
+          void getQueueSettings(pageId).then(qs => {
+            if (qs.enabled) {
+              const text = renderTemplate(qs.waTemplates.welcome, {
+                name: fullName || 'Visitor',
+                queue_number: queueNumber,
+                party_size: partySize,
+                access_id: outcome.row?.ticket_code || '',
+                link: `${req.protocol}://${req.get('host')}/${project.brand_slug}/${project.slug}`
+              });
+              void sendWhatsAppNotification(phone, text, { submissionId: outcome.row?.id, event: 'welcome' });
+            }
+          });
+        }
+
         return res.status(201).json({ success: true, data: publicEntry(outcome.row), message: 'Entry recorded successfully' });
       }
       if (outcome.kind === 'full') return placesRefusal(res, pageId, true, outcome.full);
@@ -659,6 +692,7 @@ submissionsRouter.post('/check-in', requireAuth, route('check this pass', async 
   const code = String(req.body?.code || '').trim();
   const mode: 'in' | 'out' = req.body?.mode === 'out' ? 'out' : 'in';
   const operator = String(req.body?.operator || 'door').slice(0, 100);
+  const partySizeInput = req.body?.party_size ? Math.max(1, Math.min(10, Number(req.body.party_size) || 1)) : undefined;
 
   if (!code) {
     return res.status(400).json({ success: false, result: 'invalid', error: 'Scan or enter an Access ID.' });
@@ -699,15 +733,31 @@ submissionsRouter.post('/check-in', requireAuth, route('check this pass', async 
       return res.json({ success: false, result: row.status, data: normalizeRow(row) });
     }
     if (mode === 'in') {
+      const isCurrentlyInside = row.checked_in_at && (!row.checked_out_at || new Date(row.checked_out_at) < new Date(row.checked_in_at));
+      if (isCurrentlyInside) return res.json({ success: false, result: 'already', data: normalizeRow(row) });
+
+      const partySize = partySizeInput ?? (row.party_size || 1);
       const upd = await pool.query(
-        `UPDATE submissions SET checked_in_at = NOW(), checked_in_by = $2 WHERE id = $1 AND checked_in_at IS NULL RETURNING *`,
-        [row.id, operator]
+        `UPDATE submissions
+            SET checked_in_at = COALESCE(checked_in_at, NOW()),
+                checked_in_by = $2,
+                checked_out_at = NULL,
+                party_size = $3,
+                queue_status = 'admitted'
+          WHERE id = $1
+          RETURNING *`,
+        [row.id, operator, partySize]
       );
       if (!upd.rows[0]) return res.json({ success: false, result: 'already', data: normalizeRow(row) });
       return res.json({ success: true, result: 'admitted', data: normalizeRow(upd.rows[0]) });
     }
+    // mode === 'out' - Preserve checked_in_at timestamp, record checked_out_at!
     const upd = await pool.query(
-      `UPDATE submissions SET checked_in_at = NULL, checked_in_by = NULL WHERE id = $1 RETURNING *`,
+      `UPDATE submissions
+          SET checked_out_at = NOW(),
+              queue_status = 'completed'
+        WHERE id = $1
+        RETURNING *`,
       [row.id]
     );
     return res.json({ success: true, result: 'checked_out', data: normalizeRow(upd.rows[0]) });
@@ -722,14 +772,51 @@ submissionsRouter.post('/check-in', requireAuth, route('check this pass', async 
     return res.json({ success: false, result: current.status, data: normalizeRow(current) });
   }
   if (mode === 'in') {
-    if (current.checked_in_at) return res.json({ success: false, result: 'already', data: normalizeRow(current) });
-    inMemorySubmissions[idx] = { ...current, checked_in_at: new Date().toISOString(), checked_in_by: operator };
+    const isCurrentlyInside = current.checked_in_at && (!current.checked_out_at || new Date(current.checked_out_at) < new Date(current.checked_in_at));
+    if (isCurrentlyInside) return res.json({ success: false, result: 'already', data: normalizeRow(current) });
+    inMemorySubmissions[idx] = {
+      ...current,
+      checked_in_at: current.checked_in_at || new Date().toISOString(),
+      checked_in_by: operator,
+      checked_out_at: null,
+      party_size: partySizeInput ?? current.party_size ?? 1,
+      queue_status: 'admitted'
+    };
     persistMemory();
     return res.json({ success: true, result: 'admitted', data: normalizeRow(inMemorySubmissions[idx]) });
   }
-  inMemorySubmissions[idx] = { ...current, checked_in_at: null, checked_in_by: null };
+  inMemorySubmissions[idx] = {
+    ...current,
+    checked_out_at: new Date().toISOString(),
+    queue_status: 'completed'
+  };
   persistMemory();
   return res.json({ success: true, result: 'checked_out', data: normalizeRow(inMemorySubmissions[idx]) });
+}));
+
+// GET /api/submissions/queue-settings
+submissionsRouter.get('/queue-settings', requireAuth, route('get queue settings', async (req, res) => {
+  const pageId = String(req.query.page_id || '');
+  if (!pageId) return res.status(400).json({ success: false, error: 'page_id is required' });
+  const settings = await getQueueSettings(pageId);
+  return res.json({ success: true, data: settings });
+}));
+
+// POST /api/submissions/queue-settings
+submissionsRouter.post('/queue-settings', requireAuth, route('update queue settings', async (req, res) => {
+  const pageId = String(req.body?.page_id || '');
+  if (!pageId) return res.status(400).json({ success: false, error: 'page_id is required' });
+  const saved = await saveQueueSettings(pageId, req.body?.settings || {});
+  return res.json({ success: true, data: saved });
+}));
+
+// POST /api/submissions/call-next
+submissionsRouter.post('/call-next', requireAuth, route('advance queue called number', async (req, res) => {
+  const pageId = String(req.body?.page_id || '');
+  const calledNumber = Number(req.body?.called_number);
+  if (!pageId || isNaN(calledNumber)) return res.status(400).json({ success: false, error: 'page_id and called_number are required' });
+  const result = await processQueueProgression(pageId, calledNumber);
+  return res.json({ success: true, data: result });
 }));
 
 // PATCH /api/submissions/:id - Update status and/or check-in state of one entry

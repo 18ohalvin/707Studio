@@ -14,6 +14,10 @@ export interface Submission {
   ticket_code?: string | null;
   checked_in_at?: string | null;
   checked_in_by?: string | null;
+  checked_out_at?: string | null;
+  party_size?: number;
+  queue_number?: number;
+  queue_status?: 'waiting' | 'called' | 'admitted' | 'completed' | 'expired';
   ip_address?: string;
   status: string;
   created_at: string;
@@ -270,12 +274,64 @@ export async function bulkDelete(ids: string[]): Promise<string[]> {
 
 export type CheckInResult = 'admitted' | 'already' | 'invalid' | 'checked_out';
 
-export async function checkInCode(code: string, pageIds: string[] | null, mode: 'in' | 'out', operator: string): Promise<{ result: CheckInResult; data?: Submission; error?: string }> {
+export function isGuestInside(g: Submission): boolean {
+  if (!g.checked_in_at) return false;
+  if (!g.checked_out_at) return true;
+  return new Date(g.checked_out_at).getTime() < new Date(g.checked_in_at).getTime();
+}
+
+export function totalInsideGuests(rows: Submission[]): number {
+  return rows.reduce((total, g) => {
+    if (isGuestInside(g) && !g.duplicate_of) {
+      return total + (Number(g.party_size) || 1);
+    }
+    return total;
+  }, 0);
+}
+
+export async function checkInCode(code: string, pageIds: string[] | null, mode: 'in' | 'out', operator: string, partySize?: number): Promise<{ result: CheckInResult; data?: Submission; error?: string }> {
   return apiJson('/api/submissions/check-in', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code, page_ids: pageIds || undefined, mode, operator })
+    body: JSON.stringify({ code, page_ids: pageIds || undefined, mode, operator, party_size: partySize })
   });
+}
+
+export interface QueueSettingsData {
+  enabled: boolean;
+  maxCapacity: number;
+  notifyThreshold: number;
+  skippedTolerance: number;
+  currentCalledNumber: number;
+  waTemplates: {
+    welcome: string;
+    approaching: string;
+    ready: string;
+    expired: string;
+  };
+}
+
+export async function fetchQueueSettings(pageId: string): Promise<QueueSettingsData | null> {
+  const json = await apiJson<{ success: boolean; data: QueueSettingsData }>(`/api/submissions/queue-settings?page_id=${encodeURIComponent(pageId)}`);
+  return json?.data || null;
+}
+
+export async function saveQueueSettingsApi(pageId: string, settings: Partial<QueueSettingsData>): Promise<QueueSettingsData | null> {
+  const json = await apiJson<{ success: boolean; data: QueueSettingsData }>('/api/submissions/queue-settings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page_id: pageId, settings })
+  });
+  return json?.data || null;
+}
+
+export async function callNextQueue(pageId: string, calledNumber: number): Promise<{ calledNumber: number; approachingCount: number; expiredCount: number } | null> {
+  const json = await apiJson<{ success: boolean; data: any }>('/api/submissions/call-next', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page_id: pageId, called_number: calledNumber })
+  });
+  return json?.data || null;
 }
 
 /** Unbiased random int in [0, max) using the platform CSPRNG — raffle fairness matters. */

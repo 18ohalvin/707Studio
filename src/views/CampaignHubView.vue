@@ -215,6 +215,11 @@
             @removed="removeRows"
             @toast="toast"
           />
+          <QueueSettingsPanel
+            v-else-if="activeTab === 'queue'"
+            :page-id="selectedProjectId"
+            @toast="toast"
+          />
           <RaffleDraw
             v-else-if="activeTab === 'raffle'"
             :rows="rows"
@@ -260,9 +265,10 @@ import { useCampaignGuests } from '../components/hub/useCampaignGuests.ts';
 import HubOverview from '../components/hub/HubOverview.vue';
 import GuestDatabaseTable from '../components/hub/GuestDatabaseTable.vue';
 import RaffleDraw from '../components/hub/RaffleDraw.vue';
+import QueueSettingsPanel from '../components/hub/QueueSettingsPanel.vue';
 
-type TabId = 'overview' | 'guests' | 'raffle';
-const TAB_IDS: TabId[] = ['overview', 'guests', 'raffle'];
+type TabId = 'overview' | 'guests' | 'queue' | 'raffle';
+const TAB_IDS: TabId[] = ['overview', 'guests', 'queue', 'raffle'];
 
 const route = useRoute();
 const router = useRouter();
@@ -295,6 +301,7 @@ const exportBaseName = computed(() => {
 const tabs = computed(() => [
   { id: 'overview' as TabId, label: 'Overview', badge: undefined as number | undefined },
   { id: 'guests' as TabId, label: 'Guest Database', badge: rows.value.length },
+  { id: 'queue' as TabId, label: 'Queue & WA', badge: undefined },
   { id: 'raffle' as TabId, label: 'Raffle Draw', badge: undefined }
 ]);
 
@@ -313,8 +320,8 @@ async function refresh(manual = false) {
 
 const gateOpen = ref(false);
 
-/** Guests and the raffle need one campaign; Overview may show them all. */
-const needsCampaign = computed(() => (activeTab.value === 'guests' || activeTab.value === 'raffle') && !selectedProject.value);
+/** Guests, queue and the raffle need one campaign; Overview may show them all. */
+const needsCampaign = computed(() => (activeTab.value === 'guests' || activeTab.value === 'raffle' || activeTab.value === 'queue') && !selectedProject.value);
 
 /** The Door Scanner is its own full-screen page, made for a phone or tablet at the entrance. */
 const scannerHref = computed(() => router.resolve({ path: '/hub/scanner', query: selectedProjectId.value !== 'all' ? { project: selectedProjectId.value } : {} }).href);

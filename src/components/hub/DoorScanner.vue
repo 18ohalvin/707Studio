@@ -19,24 +19,19 @@
       <!-- Camera panel -->
       <section class="min-h-0 rounded-[16px] bg-editor-bg text-white border border-editor-border overflow-hidden flex flex-col">
         <div class="flex items-center justify-between gap-2 px-3 h-[48px] shrink-0 border-b border-white/10">
-          <div class="flex items-center p-0.5 rounded-[10px] bg-white/[0.06] border border-white/10 text-[13px]">
+          <div class="flex items-center gap-2 p-1 rounded-[10px] bg-white/[0.08] border border-white/10 text-[13px]">
+            <span class="flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] font-medium uppercase tracking-[0.06em] text-[11px]" :class="mode === 'in' ? 'bg-moss-600 text-white' : 'bg-neutral-800 text-white'">
+              <component :is="mode === 'in' ? LogIn : LogOut" class="w-3.5 h-3.5" />
+              {{ mode === 'in' ? 'Gate Masuk' : 'Gate Keluar' }}
+            </span>
             <button
-              id="scanner-mode-in"
+              id="scanner-switch-station"
               type="button"
-              @click="mode = 'in'"
-              class="px-3 h-[34px] rounded-[8px] cursor-pointer transition-all flex items-center gap-1.5"
-              :class="mode === 'in' ? 'bg-white text-black font-medium' : 'text-white/60'"
+              @click="showStationModal = true"
+              class="px-2 py-1 text-[11px] text-white/60 hover:text-white cursor-pointer underline underline-offset-2 transition-colors"
+              title="Ganti pos gate masuk / keluar"
             >
-              <LogIn class="w-4 h-4" /> Check-in
-            </button>
-            <button
-              id="scanner-mode-out"
-              type="button"
-              @click="mode = 'out'"
-              class="px-3 h-[34px] rounded-[8px] cursor-pointer transition-all flex items-center gap-1.5"
-              :class="mode === 'out' ? 'bg-white text-black font-medium' : 'text-white/60'"
-            >
-              <LogOut class="w-4 h-4" /> Check-out
+              Ganti Pos
             </button>
           </div>
           <div class="flex items-center gap-1">
@@ -95,11 +90,32 @@
 
       <!-- Counts, lookup, matches, keypad -->
       <section class="min-h-0 flex flex-col gap-2">
+        <!-- 707 UI Horizontal Progress Bar & Live Capacity -->
+        <div class="shrink-0 flex flex-col gap-1.5 px-1 pt-0.5">
+          <div class="flex items-center justify-between text-[11px] uppercase tracking-[0.1em] text-neutral-500 font-medium">
+            <span class="flex items-center gap-1.5">
+              <span class="size-2 rounded-full transition-colors duration-300" :style="{ backgroundColor: barColor }" />
+              Live Booth Capacity
+            </span>
+            <span class="tabular-nums font-mono text-[13px] text-black font-semibold">
+              {{ insideCount }} <span class="text-neutral-400 font-normal">/ {{ maxCapacity }}</span>
+              <span class="ml-1.5 text-[11px] font-normal" :style="{ color: barColor }">({{ capacityPercent }}%)</span>
+            </span>
+          </div>
+          <!-- 3px Left-to-Right Progress Bar with 707 direction colors -->
+          <div class="w-full h-[4px] bg-black/[0.08] rounded-full overflow-hidden">
+            <div
+              class="h-full rounded-full transition-all duration-500 ease-out"
+              :style="{ width: `${capacityPercent}%`, backgroundColor: barColor }"
+            />
+          </div>
+        </div>
+
         <!-- Counts: small, one line, nothing else -->
-        <div class="shrink-0 flex items-baseline justify-between gap-4 px-1 h-[28px]">
+        <div class="shrink-0 flex items-baseline justify-between gap-4 px-1 h-[26px]">
           <p v-for="stat in stats" :key="stat.label" class="flex items-baseline gap-1.5 min-w-0">
             <span class="text-[10.5px] uppercase tracking-[0.1em] text-neutral-500 whitespace-nowrap">{{ stat.label }}</span>
-            <span class="text-[17px] leading-none font-medium tabular-nums" :class="stat.muted ? 'text-neutral-400' : 'text-black'">{{ stat.value }}</span>
+            <span class="text-[16px] leading-none font-medium tabular-nums" :class="stat.muted ? 'text-neutral-400' : 'text-black'">{{ stat.value }}</span>
           </p>
         </div>
 
@@ -242,48 +258,83 @@
 
     <!-- ============ Confirm the guest (nobody is admitted before this) ============ -->
     <Transition name="hud-result">
-      <div v-if="pending" class="absolute inset-0 z-20 rounded-[16px] bg-white border border-black/10 flex flex-col">
-        <div class="flex-1 min-h-0 flex flex-col items-center justify-center text-center px-8 gap-1.5">
-          <p class="text-[12px] uppercase tracking-[0.22em] text-neutral-500">{{ mode === 'in' ? 'Is this the guest?' : 'Check this guest out?' }}</p>
-          <p class="text-[clamp(32px,7vh,60px)] font-medium leading-tight max-w-full truncate">{{ guestName(pending) }}</p>
+      <div v-if="pending" class="absolute inset-0 z-20 rounded-[16px] bg-white border border-black/10 flex flex-col overflow-hidden">
+        <div class="flex-1 min-h-0 flex flex-col items-center justify-center text-center px-8 py-6 gap-2 overflow-y-auto">
+          <div class="flex items-center gap-2">
+            <span class="text-[12px] uppercase tracking-[0.22em] text-neutral-500">{{ mode === 'in' ? 'Is this the guest?' : 'Check this guest out?' }}</span>
+            <span v-if="pending.queue_number" class="px-2 py-0.5 rounded-[6px] bg-black/5 border border-black/10 font-mono text-[12px] font-semibold text-black tabular-nums">
+              Antrian #{{ pending.queue_number }}
+            </span>
+          </div>
+          <p class="text-[clamp(28px,6vh,54px)] font-medium leading-tight max-w-full truncate">{{ guestName(pending) }}</p>
           <p v-if="isVip(pending)" class="px-3 py-1 rounded-[8px] bg-black text-white text-[13px] font-medium tracking-[0.12em]">VIP</p>
 
-          <dl class="mt-3 grid grid-cols-2 gap-x-10 gap-y-3 text-left max-w-[640px] w-full">
+          <dl class="mt-2 grid grid-cols-2 gap-x-10 gap-y-2.5 text-left max-w-[640px] w-full">
             <div>
               <dt class="text-[10.5px] uppercase tracking-[0.12em] text-neutral-500">Access ID</dt>
-              <dd class="text-[20px] font-medium font-mono tracking-[0.06em]">···{{ codeTail(pending) }}</dd>
+              <dd class="text-[19px] font-medium font-mono tracking-[0.06em]">···{{ codeTail(pending) }}</dd>
             </div>
             <div v-if="phoneTail(pending)">
               <dt class="text-[10.5px] uppercase tracking-[0.12em] text-neutral-500">WhatsApp</dt>
-              <dd class="text-[20px] font-medium font-mono tracking-[0.06em]">···{{ phoneTail(pending) }}</dd>
+              <dd class="text-[19px] font-medium font-mono tracking-[0.06em]">···{{ phoneTail(pending) }}</dd>
             </div>
             <div v-if="guestEmail(pending)">
               <dt class="text-[10.5px] uppercase tracking-[0.12em] text-neutral-500">Email</dt>
-              <dd class="text-[16px] truncate">{{ maskEmail(guestEmail(pending)) }}</dd>
+              <dd class="text-[15px] truncate">{{ maskEmail(guestEmail(pending)) }}</dd>
             </div>
             <div v-if="guestType(pending)">
               <dt class="text-[10.5px] uppercase tracking-[0.12em] text-neutral-500">Pass</dt>
-              <dd class="text-[16px]">{{ guestType(pending) }}</dd>
+              <dd class="text-[15px]">{{ guestType(pending) }}</dd>
             </div>
             <div v-if="pendingSessions" class="col-span-2">
               <dt class="text-[10.5px] uppercase tracking-[0.12em] text-neutral-500">Access valid for</dt>
-              <dd class="text-[16px]">{{ pendingSessions }}</dd>
+              <dd class="text-[15px]">{{ pendingSessions }}</dd>
             </div>
           </dl>
 
-          <p v-if="pendingProblem" class="mt-4 px-4 py-2.5 rounded-[10px] text-[14px] font-medium max-w-[640px] w-full" :class="pendingProblem.class">{{ pendingProblem.text }}</p>
+          <!-- Party Size Stepper (Gate Masuk only) -->
+          <div v-if="mode === 'in'" class="mt-2 flex items-center justify-between p-3.5 rounded-[12px] bg-black/[0.03] border border-black/10 max-w-[640px] w-full">
+            <div class="text-left">
+              <p class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Party Size (Total Masuk)</p>
+              <p class="text-[12.5px] text-neutral-500">Termasuk guest utama & tamu pendamping</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <button
+                type="button"
+                @click="pendingPartySize = Math.max(1, pendingPartySize - 1)"
+                class="size-10 rounded-[8px] bg-white border border-black/15 text-[20px] font-medium flex items-center justify-center cursor-pointer active:bg-black/10 transition-colors shadow-sm select-none"
+              >-</button>
+              <span class="text-[22px] font-medium tabular-nums min-w-[32px] text-center font-mono">{{ pendingPartySize }}</span>
+              <button
+                type="button"
+                @click="pendingPartySize = Math.min(10, pendingPartySize + 1)"
+                class="size-10 rounded-[8px] bg-white border border-black/15 text-[20px] font-medium flex items-center justify-center cursor-pointer active:bg-black/10 transition-colors shadow-sm select-none"
+              >+</button>
+            </div>
+          </div>
+
+          <!-- Capacity Warning if full (Deep Oxblood) -->
+          <div
+            v-if="mode === 'in' && (insideCount + pendingPartySize > maxCapacity)"
+            class="mt-2 px-4 py-3 rounded-[10px] bg-oxblood-50 border border-oxblood-200 text-oxblood-800 text-[13px] font-medium flex items-center gap-2.5 max-w-[640px] w-full text-left"
+          >
+            <TriangleAlert class="w-5 h-5 text-oxblood-600 shrink-0" />
+            <span>Kapasitas Booth Penuh ({{ insideCount }}/{{ maxCapacity }} orang di dalam). Menambah {{ pendingPartySize }} orang akan melebihi kapasitas booth.</span>
+          </div>
+
+          <p v-if="pendingProblem" class="mt-3 px-4 py-2.5 rounded-[10px] text-[14px] font-medium max-w-[640px] w-full" :class="pendingProblem.class">{{ pendingProblem.text }}</p>
         </div>
 
         <div class="shrink-0 flex items-stretch gap-3 p-4 border-t border-black/10">
-          <button type="button" @click="cancelConfirm" class="flex-1 h-[68px] rounded-[14px] border border-black/20 text-[18px] font-medium active:bg-black/10 cursor-pointer">Not this guest</button>
+          <button type="button" @click="cancelConfirm" class="flex-1 h-[64px] rounded-[14px] border border-black/20 text-[17px] font-medium active:bg-black/10 cursor-pointer">Not this guest</button>
           <button
             type="button"
             :disabled="Boolean(pendingProblem) || isChecking"
             @click="confirmPending"
-            class="flex-[1.6] h-[68px] rounded-[14px] bg-black text-white text-[20px] font-medium active:bg-neutral-700 cursor-pointer disabled:opacity-30 disabled:cursor-default flex items-center justify-center gap-2.5"
+            class="flex-[1.6] h-[64px] rounded-[14px] bg-black text-white text-[19px] font-medium active:bg-neutral-700 cursor-pointer disabled:opacity-30 disabled:cursor-default flex items-center justify-center gap-2.5"
           >
             <component :is="mode === 'in' ? LogIn : LogOut" class="w-6 h-6" />
-            {{ mode === 'in' ? 'Admit' : 'Check out' }}
+            {{ mode === 'in' ? (pendingPartySize > 1 ? `Admit (${pendingPartySize} people)` : 'Admit') : 'Check out' }}
           </button>
         </div>
       </div>
@@ -308,6 +359,75 @@
         <div class="absolute bottom-0 left-0 h-[4px] bg-white/70 hud-countdown" :style="{ animationDuration: `${result.hold}ms` }" />
       </div>
     </Transition>
+
+    <!-- ============ Station Selector Modal (Prompted on Entry) ============ -->
+    <Transition name="hud-result">
+      <div v-if="showStationModal" class="absolute inset-0 z-50 rounded-[16px] bg-white/95 backdrop-blur-md border border-black/10 flex flex-col items-center justify-center p-6 text-center select-none">
+        <div class="max-w-[540px] w-full flex flex-col items-center gap-5">
+          <div class="size-14 rounded-full bg-black text-white flex items-center justify-center shadow-md">
+            <ArrowRightLeft class="w-7 h-7" />
+          </div>
+          <div>
+            <p class="text-[11px] uppercase tracking-[0.2em] text-neutral-500 font-medium">Peran Perangkat Scanner</p>
+            <h2 class="text-[26px] font-medium text-black mt-1">Pilih Posisi Gate Scanner</h2>
+            <p class="text-[13.5px] text-neutral-500 mt-1.5 max-w-[440px]">
+              Tentukan apakah tablet ini bertugas di pintu masuk atau pintu keluar untuk sinkronisasi kapasitas realtime.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 w-full mt-1">
+            <button
+              type="button"
+              @click="selectStation('in')"
+              class="p-5 rounded-[14px] border-2 text-left cursor-pointer transition-all flex flex-col justify-between gap-4 group"
+              :class="mode === 'in' ? 'border-black bg-black/[0.04]' : 'border-black/15 hover:border-black/40 bg-white'"
+            >
+              <div class="flex items-center justify-between">
+                <div class="size-10 rounded-[10px] bg-moss-600 text-white flex items-center justify-center shadow-sm">
+                  <LogIn class="w-5 h-5" />
+                </div>
+                <span v-if="mode === 'in'" class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-black text-white">Aktif</span>
+              </div>
+              <div>
+                <p class="text-[17px] font-medium text-black">Gate Masuk</p>
+                <p class="text-[12px] text-neutral-500 mt-1 leading-snug">
+                  Check-in pengunjung, atur jumlah rombongan (party size), dan pantau live kuota booth.
+                </p>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              @click="selectStation('out')"
+              class="p-5 rounded-[14px] border-2 text-left cursor-pointer transition-all flex flex-col justify-between gap-4 group"
+              :class="mode === 'out' ? 'border-black bg-black/[0.04]' : 'border-black/15 hover:border-black/40 bg-white'"
+            >
+              <div class="flex items-center justify-between">
+                <div class="size-10 rounded-[10px] bg-neutral-800 text-white flex items-center justify-center shadow-sm">
+                  <LogOut class="w-5 h-5" />
+                </div>
+                <span v-if="mode === 'out'" class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-black text-white">Aktif</span>
+              </div>
+              <div>
+                <p class="text-[17px] font-medium text-black">Gate Keluar</p>
+                <p class="text-[12px] text-neutral-500 mt-1 leading-snug">
+                  Check-out pengunjung meninggalkan booth untuk melepas kuota kapasitas secara realtime.
+                </p>
+              </div>
+            </button>
+          </div>
+
+          <button
+            v-if="hasSavedStation"
+            type="button"
+            @click="showStationModal = false"
+            class="text-[13px] text-neutral-500 hover:text-black cursor-pointer underline underline-offset-4 mt-1"
+          >
+            Tutup tanpa mengubah
+          </button>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -315,11 +435,13 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import {
   LogIn, LogOut, Volume2, VolumeX, Maximize2, Minimize2, ScanLine, KeyRound, Camera,
-  CircleCheck, TriangleAlert, OctagonX, DoorOpen, Undo2, X, Delete, Hourglass, Search, ListChecks, ArrowLeft
+  CircleCheck, TriangleAlert, OctagonX, DoorOpen, Undo2, X, Delete, Hourglass, Search, ListChecks, ArrowLeft,
+  ArrowRightLeft
 } from 'lucide-vue-next';
 import {
   type Submission, type CheckInResult, checkInCode, patchSubmission, guestName, guestType, guestEmail, accessId, initials,
-  formatTime, formatValue, normalizeStatus, findGuestsByShortCode, codeTail, phoneTail, maskEmail
+  formatTime, formatValue, normalizeStatus, findGuestsByShortCode, codeTail, phoneTail, maskEmail,
+  totalInsideGuests, isGuestInside, fetchQueueSettings
 } from './hubUtils.ts';
 
 const props = defineProps<{
@@ -362,6 +484,34 @@ const soundOn = ref(true);
 const isFullscreen = ref(false);
 const systemKeyboard = ref(false);
 
+/* ---------- Station Selection (Gate Masuk vs Gate Keluar) ---------- */
+const showStationModal = ref(false);
+const hasSavedStation = ref(false);
+
+function selectStation(st: 'in' | 'out') {
+  mode.value = st;
+  try {
+    localStorage.setItem('707_scanner_station', st);
+  } catch { /* quota/incognito */ }
+  hasSavedStation.value = true;
+  showStationModal.value = false;
+  nextTick(() => inputRef.value?.focus());
+}
+
+/* ---------- Capacity & Party Size ---------- */
+const maxCapacity = ref(50);
+const pendingPartySize = ref(1);
+
+async function loadCapacitySettings() {
+  const pageId = props.pageIds?.[0];
+  if (!pageId) return;
+  try {
+    const s = await fetchQueueSettings(pageId);
+    if (s?.maxCapacity) maxCapacity.value = Number(s.maxCapacity) || 50;
+  } catch { /* keep 50 default */ }
+}
+watch(() => props.pageIds, () => { void loadCapacitySettings(); }, { deep: true });
+
 type ScanKind = CheckInResult | 'waitlisted' | 'declined' | 'error';
 interface ScanResult { kind: ScanKind; name: string; detail: string; vip: boolean; tail: string; hold: number }
 const result = ref<ScanResult | null>(null);
@@ -369,17 +519,20 @@ const result = ref<ScanResult | null>(null);
 /** The guest the door is looking at, before anyone is admitted. */
 const pending = ref<Submission | null>(null);
 
-/* ---------- Stats ---------- */
+/* ---------- Stats & 707 Direction Progress Bar ---------- */
 const expectedCount = computed(() => props.rows.filter(r => !['declined', 'waitlisted'].includes(normalizeStatus(r.status))).length);
-const insideCount = computed(() => props.rows.filter(r => r.checked_in_at).length);
+const insideCount = computed(() => totalInsideGuests(props.rows));
+const capacityPercent = computed(() => Math.min(100, Math.round((insideCount.value / Math.max(1, maxCapacity.value)) * 100)));
+const barColor = computed(() => capacityPercent.value >= 100 ? '#7e2c32' : capacityPercent.value >= 80 ? '#8f7c50' : '#7b8b67');
+
 const recentArrivals = computed(() => {
   const cutoff = Date.now() - 15 * 60 * 1000;
-  return props.rows.filter(r => r.checked_in_at && new Date(r.checked_in_at).getTime() >= cutoff).length;
+  return props.rows.filter(r => isGuestInside(r) && r.checked_in_at && new Date(r.checked_in_at).getTime() >= cutoff).length;
 });
 const stats = computed(() => [
-  { label: 'Inside', value: insideCount.value, muted: false },
+  { label: 'Inside', value: `${insideCount.value}/${maxCapacity.value}`, muted: false },
+  { label: 'Available', value: Math.max(0, maxCapacity.value - insideCount.value), muted: false },
   { label: 'Expected', value: expectedCount.value, muted: true },
-  { label: 'Remaining', value: Math.max(0, expectedCount.value - insideCount.value), muted: false },
   { label: 'Last 15 min', value: `+${recentArrivals.value}`, muted: false }
 ]);
 
@@ -393,13 +546,13 @@ function matchChipLabel(g: Submission): string {
   const status = normalizeStatus(g.status);
   if (status === 'waitlisted') return 'Waitlisted';
   if (status === 'declined') return 'Declined';
-  if (g.checked_in_at) return `In ${formatTime(g.checked_in_at)}`;
+  if (isGuestInside(g)) return `In ${formatTime(g.checked_in_at)}`;
   return 'Not in';
 }
 function matchChipClass(g: Submission): string {
   const status = normalizeStatus(g.status);
   if (status === 'waitlisted' || status === 'declined') return 'bg-oxblood-50 text-oxblood-700 border-oxblood-200';
-  if (g.checked_in_at) return 'bg-bronze-50 text-bronze-800 border-bronze-300';
+  if (isGuestInside(g)) return 'bg-bronze-50 text-bronze-800 border-bronze-300';
   return 'bg-moss-50 text-moss-800 border-moss-200';
 }
 
@@ -440,6 +593,7 @@ watch(candidates, (list) => {
 
 function openConfirm(guest: Submission) {
   pending.value = guest;
+  pendingPartySize.value = Number(guest.party_size) || 1;
 }
 
 function cancelConfirm() {
@@ -455,10 +609,11 @@ const pendingProblem = computed<{ text: string; class: string } | null>(() => {
   const status = normalizeStatus(g.status);
   if (status === 'waitlisted') return { text: 'On the waitlist: no place yet. Send them to the event team.', class: 'bg-oxblood-50 text-oxblood-700' };
   if (status === 'declined') return { text: 'This registration was declined.', class: 'bg-oxblood-50 text-oxblood-700' };
-  if (mode.value === 'in' && g.checked_in_at) {
+  const inside = isGuestInside(g);
+  if (mode.value === 'in' && inside) {
     return { text: `Already inside since ${formatTime(g.checked_in_at)}${g.checked_in_by ? ` (by ${g.checked_in_by})` : ''}.`, class: 'bg-bronze-50 text-bronze-800' };
   }
-  if (mode.value === 'out' && !g.checked_in_at) return { text: 'This guest is not inside.', class: 'bg-bronze-50 text-bronze-800' };
+  if (mode.value === 'out' && !inside) return { text: 'This guest is not inside.', class: 'bg-bronze-50 text-bronze-800' };
   return null;
 });
 
@@ -471,8 +626,9 @@ const pendingSessions = computed(() => {
 function confirmPending() {
   const g = pending.value;
   if (!g || pendingProblem.value || isChecking.value) return;
+  const pSize = pendingPartySize.value;
   pending.value = null;
-  void submitCode(accessId(g));
+  void submitCode(accessId(g), pSize);
 }
 
 /**
@@ -531,7 +687,7 @@ let resultTimer: ReturnType<typeof setTimeout> | null = null;
 let lastScannedCode = '';
 let lastScannedAt = 0;
 
-async function submitCode(raw: string) {
+async function submitCode(raw: string, partySize: number = 1) {
   const code = raw.trim();
   if (!code || isChecking.value) return;
   // Cameras re-detect the same code many times per second — ignore repeats briefly.
@@ -542,12 +698,15 @@ async function submitCode(raw: string) {
   isChecking.value = true;
   codeInput.value = '';
   try {
-    const res = await checkInCode(code, props.pageIds, mode.value, props.operator);
+    const res = await checkInCode(code, props.pageIds, mode.value, props.operator, partySize);
     const guest = res.data || null;
     if (guest) emit('updated', [guest]);
     const kind = res.result as ScanKind;
     let detail = '';
-    if (kind === 'admitted') detail = `Checked in at ${formatTime(guest?.checked_in_at)}`;
+    if (kind === 'admitted') {
+      const pCount = guest?.party_size && Number(guest.party_size) > 1 ? ` (${guest.party_size} orang)` : '';
+      detail = `Checked in at ${formatTime(guest?.checked_in_at)}${pCount}`;
+    }
     else if (kind === 'already') detail = `First entry at ${formatTime(guest?.checked_in_at)}${guest?.checked_in_by ? ` · by ${guest.checked_in_by}` : ''}`;
     else if (kind === 'checked_out') detail = 'Guest has left the venue';
     else if (kind === 'waitlisted') detail = 'No place yet. Send them to the event team.';
@@ -589,7 +748,7 @@ let armTimer: ReturnType<typeof setTimeout> | null = null;
 
 const loggedIn = computed(() =>
   props.rows
-    .filter(r => r.checked_in_at && !r.duplicate_of)
+    .filter(r => isGuestInside(r) && !r.duplicate_of)
     .sort((a, b) => new Date(b.checked_in_at!).getTime() - new Date(a.checked_in_at!).getTime())
 );
 const visibleLog = computed(() => {
@@ -771,6 +930,18 @@ function onKeydown(e: KeyboardEvent) {
 }
 
 onMounted(() => {
+  try {
+    const saved = localStorage.getItem('707_scanner_station');
+    if (saved === 'in' || saved === 'out') {
+      mode.value = saved;
+      hasSavedStation.value = true;
+    } else {
+      showStationModal.value = true;
+    }
+  } catch {
+    showStationModal.value = true;
+  }
+  void loadCapacitySettings();
   document.addEventListener('fullscreenchange', onFullscreenChange);
   document.addEventListener('keydown', onKeydown);
   nextTick(() => inputRef.value?.focus());
