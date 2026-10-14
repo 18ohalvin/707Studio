@@ -3,6 +3,7 @@ import { readDataFile, writeDataFile } from './fileStorage.js';
 
 export interface QueueSettings {
   enabled: boolean;
+  waEnabled: boolean;
   maxCapacity: number;
   notifyThreshold: number;
   skippedTolerance: number;
@@ -17,15 +18,16 @@ export interface QueueSettings {
 
 export const DEFAULT_QUEUE_SETTINGS: QueueSettings = {
   enabled: true,
+  waEnabled: false,
   maxCapacity: 50,
   notifyThreshold: 10,
   skippedTolerance: 5,
   currentCalledNumber: 1,
   waTemplates: {
-    welcome: 'Halo {{name}}! Kamu terdaftar di antrean Stanley Pop-Up Senayan City dengan Nomor Antrean #{{queue_number}} (Party: {{party_size}} orang). Pantau status antreanmu di: {{link}}',
-    approaching: 'Halo {{name}}! Nomor antreanmu (#{{queue_number}}) sudah dekat! Panggilan saat ini sudah di sekitar nomormu. Mohon segera merapat ke area antrean Stanley Senayan City.',
-    ready: 'Halo {{name}}! Giliranmu untuk masuk telah tiba. Silakan tunjukkan QR Pass / Access ID {{access_id}} kepada usher di pintu masuk.',
-    expired: 'Mohon maaf {{name}}, nomor antreanmu (#{{queue_number}}) telah terlewat lebih dari {{skipped_tolerance}} nomor dan dinyatakan hangus. Silakan scan QR kembali untuk mengambil nomor antrean baru jika masih ingin berkunjung.'
+    welcome: 'Hello {{name}}! You are registered in the queue with Queue Number #{{queue_number}} (Party: {{party_size}} guests). Track your live status here: {{link}}',
+    approaching: 'Hello {{name}}! Your turn is approaching. The queue is currently serving near your number (#{{queue_number}}). Please proceed to the entrance area now.',
+    ready: 'Hello {{name}}! It is your turn to enter. Please present your Access ID {{access_id}} to the door staff at the entrance.',
+    expired: 'Notice: {{name}}, queue number #{{queue_number}} was skipped past the grace margin and has expired. Please check in with event staff or register again to rejoin.'
   }
 };
 
@@ -164,38 +166,40 @@ export async function processQueueProgression(pageId: string, newCalledNumber: n
   let expiredCount = 0;
 
   if (storeIsDb) {
-    // 1. Approaching notification: within notifyThreshold
-    const approachLimit = newCalledNumber + settings.notifyThreshold;
-    const approachingSubs = await pool.query(
-      `SELECT * FROM submissions
-        WHERE page_id = $1
-          AND queue_number > $2
-          AND queue_number <= $3
-          AND status NOT IN ('declined', 'waitlisted')
-          AND NOT (COALESCE(wa_notified_states, '[]'::jsonb) ? 'approaching')`,
-      [pageId, newCalledNumber, approachLimit]
-    );
+    // 1. Approaching notification: within notifyThreshold (only if WA notifications enabled)
+    if (settings.waEnabled) {
+      const approachLimit = newCalledNumber + settings.notifyThreshold;
+      const approachingSubs = await pool.query(
+        `SELECT * FROM submissions
+          WHERE page_id = $1
+            AND queue_number > $2
+            AND queue_number <= $3
+            AND status NOT IN ('declined', 'waitlisted')
+            AND NOT (COALESCE(wa_notified_states, '[]'::jsonb) ? 'approaching')`,
+        [pageId, newCalledNumber, approachLimit]
+      );
 
-    for (const sub of approachingSubs.rows) {
-      const form = typeof sub.form_data === 'string' ? JSON.parse(sub.form_data) : (sub.form_data || {});
-      const phone = form.phone || form.whatsapp || form['WhatsApp'] || form['Phone'] || form['No WhatsApp'] || '';
-      const name = form.fullName || form.name || 'Visitor';
-      if (phone) {
-        const text = renderTemplate(settings.waTemplates.approaching, {
-          name,
-          queue_number: sub.queue_number,
-          party_size: sub.party_size || 1,
-          access_id: sub.ticket_code,
-          current_called: newCalledNumber
-        });
-        await sendWhatsAppNotification(phone, text, { submissionId: sub.id, event: 'approaching' });
-        await pool.query(
-          `UPDATE submissions
-              SET wa_notified_states = COALESCE(wa_notified_states, '[]'::jsonb) || '["approaching"]'::jsonb
-            WHERE id = $1`,
-          [sub.id]
-        );
-        approachingCount++;
+      for (const sub of approachingSubs.rows) {
+        const form = typeof sub.form_data === 'string' ? JSON.parse(sub.form_data) : (sub.form_data || {});
+        const phone = form.phone || form.whatsapp || form['WhatsApp'] || form['Phone'] || form['No WhatsApp'] || '';
+        const name = form.fullName || form.name || 'Visitor';
+        if (phone) {
+          const text = renderTemplate(settings.waTemplates.approaching, {
+            name,
+            queue_number: sub.queue_number,
+            party_size: sub.party_size || 1,
+            access_id: sub.ticket_code,
+            current_called: newCalledNumber
+          });
+          await sendWhatsAppNotification(phone, text, { submissionId: sub.id, event: 'approaching' });
+          await pool.query(
+            `UPDATE submissions
+                SET wa_notified_states = COALESCE(wa_notified_states, '[]'::jsonb) || '["approaching"]'::jsonb
+              WHERE id = $1`,
+            [sub.id]
+          );
+          approachingCount++;
+        }
       }
     }
 
@@ -222,7 +226,7 @@ export async function processQueueProgression(pageId: string, newCalledNumber: n
           WHERE id = $1`,
         [sub.id]
       );
-      if (phone) {
+      if (phone && settings.waEnabled) {
         const text = renderTemplate(settings.waTemplates.expired, {
           name,
           queue_number: sub.queue_number,

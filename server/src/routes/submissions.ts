@@ -500,11 +500,11 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
         touchAvailability(pageId);
         notifyNewEntry(outcome.row);
 
-        // Send Welcome WhatsApp Notification if phone provided
+        // Send Welcome WhatsApp Notification if phone provided and WA notifications enabled
         const phone = answers.phone || answers.whatsapp || answers['WhatsApp'] || answers['Phone'] || answers['No WhatsApp'];
         if (phone) {
           void getQueueSettings(pageId).then(qs => {
-            if (qs.enabled) {
+            if (qs.enabled && qs.waEnabled) {
               const text = renderTemplate(qs.waTemplates.welcome, {
                 name: fullName || 'Visitor',
                 queue_number: queueNumber,
@@ -737,6 +737,28 @@ submissionsRouter.post('/check-in', requireAuth, route('check this pass', async 
       if (isCurrentlyInside) return res.json({ success: false, result: 'already', data: normalizeRow(row) });
 
       const partySize = partySizeInput ?? (row.party_size || 1);
+      const qSettings = await getQueueSettings(row.page_id);
+      if (qSettings?.enabled && qSettings.maxCapacity) {
+        const insideRes = await pool.query(
+          `SELECT COALESCE(SUM(party_size), 0) AS total_inside
+             FROM submissions
+            WHERE page_id = $1
+              AND checked_in_at IS NOT NULL
+              AND (checked_out_at IS NULL OR checked_out_at < checked_in_at)
+              AND id != $2`,
+          [row.page_id, row.id]
+        );
+        const totalInside = Number(insideRes.rows[0]?.total_inside) || 0;
+        if (totalInside + partySize > qSettings.maxCapacity) {
+          return res.json({
+            success: false,
+            result: 'capacity_exceeded',
+            error: `Venue is at maximum capacity (${totalInside}/${qSettings.maxCapacity} inside). Cannot admit ${partySize} guest(s).`,
+            data: normalizeRow(row)
+          });
+        }
+      }
+
       const upd = await pool.query(
         `UPDATE submissions
             SET checked_in_at = COALESCE(checked_in_at, NOW()),
@@ -774,12 +796,29 @@ submissionsRouter.post('/check-in', requireAuth, route('check this pass', async 
   if (mode === 'in') {
     const isCurrentlyInside = current.checked_in_at && (!current.checked_out_at || new Date(current.checked_out_at) < new Date(current.checked_in_at));
     if (isCurrentlyInside) return res.json({ success: false, result: 'already', data: normalizeRow(current) });
+
+    const partySize = partySizeInput ?? current.party_size ?? 1;
+    const qSettings = await getQueueSettings(current.page_id);
+    if (qSettings?.enabled && qSettings.maxCapacity) {
+      const totalInside = inMemorySubmissions
+        .filter(s => s.page_id === current.page_id && s.checked_in_at && (!s.checked_out_at || new Date(s.checked_out_at) < new Date(s.checked_in_at)) && s.id !== current.id)
+        .reduce((sum, s) => sum + (Number(s.party_size) || 1), 0);
+      if (totalInside + partySize > qSettings.maxCapacity) {
+        return res.json({
+          success: false,
+          result: 'capacity_exceeded',
+          error: `Venue is at maximum capacity (${totalInside}/${qSettings.maxCapacity} inside). Cannot admit ${partySize} guest(s).`,
+          data: normalizeRow(current)
+        });
+      }
+    }
+
     inMemorySubmissions[idx] = {
       ...current,
       checked_in_at: current.checked_in_at || new Date().toISOString(),
       checked_in_by: operator,
       checked_out_at: null,
-      party_size: partySizeInput ?? current.party_size ?? 1,
+      party_size: partySize,
       queue_status: 'admitted'
     };
     persistMemory();

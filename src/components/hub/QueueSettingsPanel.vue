@@ -9,9 +9,9 @@
             Queue System Active
           </span>
         </div>
-        <h2 class="text-[24px] font-medium tracking-tight mt-1">Live Capacity & WhatsApp Queue Settings</h2>
+        <h2 class="text-[24px] font-medium tracking-tight mt-1">Live Capacity & Queue Settings</h2>
         <p class="text-[13.5px] text-neutral-500 max-w-[640px] mt-1 leading-relaxed">
-          Manage real-time venue capacity limits, advance queue progression, and customize automated WhatsApp customer notifications.
+          Manage real-time venue capacity limits, advance queue progression, and configure automated WhatsApp messaging.
         </p>
       </div>
 
@@ -57,7 +57,7 @@
                 <span class="text-[13px] text-neutral-500 font-medium">Serving Now</span>
               </div>
               <p class="text-[12.5px] text-neutral-400 mt-1.5 leading-snug">
-                Advancing the caller triggers approaching notifications and automatically expires bypassed tickets.
+                Advancing the caller triggers approaching alerts and automatically expires bypassed tickets.
               </p>
             </div>
 
@@ -81,7 +81,7 @@
             </div>
             <div class="flex items-center justify-between text-[11.5px] text-neutral-500">
               <span>{{ waitingCount }} guests waiting in line</span>
-              <span v-if="capacityPercent >= 100" class="text-oxblood-600 font-medium">Booth at maximum capacity</span>
+              <span v-if="capacityPercent >= 100" class="text-oxblood-600 font-medium">Venue full (Locked)</span>
               <span v-else>{{ Math.max(0, form.maxCapacity - insideCount) }} capacity spots left</span>
             </div>
           </div>
@@ -115,7 +115,7 @@
         <div>
           <div class="flex items-center justify-between mb-4">
             <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Queue & Capacity Rules</span>
-            <span class="text-[11px] text-neutral-400">Venue Parameters</span>
+            <span class="text-[11px] text-neutral-400">Venue Limits</span>
           </div>
 
           <div class="flex flex-col gap-4">
@@ -128,7 +128,7 @@
                 <div>
                   <label for="queue-max-capacity" class="text-[13px] font-medium text-black block">Maximum Venue Capacity</label>
                   <p class="text-[12px] text-neutral-500 leading-snug mt-0.5">
-                    Threshold of visitors inside. Door scanner signals warning when capacity is reached.
+                    Safe ceiling of visitors inside. Scanner strictly locks admission when full.
                   </p>
                 </div>
               </div>
@@ -154,7 +154,7 @@
                 <div>
                   <label for="queue-notify-threshold" class="text-[13px] font-medium text-black block">Approaching Alert Window</label>
                   <p class="text-[12px] text-neutral-500 leading-snug mt-0.5">
-                    Notifies upcoming visitors via WhatsApp this many numbers before their turn arrives.
+                    Triggers approaching alerts this many numbers before a guest's turn.
                   </p>
                 </div>
               </div>
@@ -180,7 +180,7 @@
                 <div>
                   <label for="queue-skipped-tolerance" class="text-[13px] font-medium text-black block">Missed Turn Grace Limit</label>
                   <p class="text-[12px] text-neutral-500 leading-snug mt-0.5">
-                    Tickets skipped past this margin are expired to prevent stalled entrance lines.
+                    Tickets skipped past this margin are expired to prevent stalled lines.
                   </p>
                 </div>
               </div>
@@ -205,145 +205,195 @@
       </div>
     </div>
 
-    <!-- 2. Bottom Section: WhatsApp Customer Journey (Clean Stepper + Live Chat Preview) -->
+    <!-- 2. Option 1: WhatsApp Notification Section with Dedicated Apple-Style Toggle Switch -->
     <div class="p-6 rounded-[16px] border border-black/10 bg-white flex flex-col gap-6">
-      <!-- Section Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <div class="flex items-center gap-2">
-            <span class="text-[11px] uppercase tracking-[0.14em] text-neutral-500 font-medium">Customer Lifecycle Messaging</span>
-            <span class="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-              <MessageSquare class="w-3 h-3" /> WhatsApp Gateway Connected
-            </span>
+      <!-- Master Toggle Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4" :class="form.waEnabled ? 'border-b border-black/10' : ''">
+        <div class="flex items-start gap-3.5">
+          <div
+            class="size-10 rounded-[10px] flex items-center justify-center shrink-0 mt-0.5 transition-colors"
+            :class="form.waEnabled ? 'bg-emerald-600 text-white shadow-sm' : 'bg-black/5 text-neutral-400'"
+          >
+            <MessageSquare class="w-5 h-5" />
           </div>
-          <h3 class="text-[18px] font-medium tracking-tight mt-0.5">WhatsApp Notification Journey</h3>
-          <p class="text-[13px] text-neutral-500 mt-0.5">
-            Select a stage below to preview and customize the message sent to guests.
-          </p>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-[17px] font-medium tracking-tight text-black">Automated WhatsApp Notifications</h3>
+              <span
+                class="text-[10.5px] uppercase tracking-[0.1em] font-mono px-2 py-0.5 rounded-full border transition-colors"
+                :class="form.waEnabled ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-neutral-100 text-neutral-500 border-neutral-200'"
+              >
+                {{ form.waEnabled ? 'Active' : 'Disabled' }}
+              </span>
+            </div>
+            <p class="text-[13px] text-neutral-500 mt-0.5 leading-relaxed max-w-[620px]">
+              Dispatch automated WhatsApp messages to customer phones for queue confirmation, approaching turn alerts, and ticket passes.
+            </p>
+          </div>
+        </div>
+
+        <!-- Apple-style Toggle Switch -->
+        <div class="flex items-center gap-3 shrink-0 self-start sm:self-center">
+          <span class="text-[12.5px] font-medium" :class="form.waEnabled ? 'text-black' : 'text-neutral-400'">
+            {{ form.waEnabled ? 'Enabled' : 'Off' }}
+          </span>
+          <button
+            type="button"
+            role="switch"
+            :aria-checked="form.waEnabled"
+            @click="form.waEnabled = !form.waEnabled"
+            class="relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+            :class="form.waEnabled ? 'bg-black' : 'bg-neutral-200'"
+            title="Toggle WhatsApp Notifications on or off"
+          >
+            <span
+              aria-hidden="true"
+              class="pointer-events-none inline-block size-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out"
+              :class="form.waEnabled ? 'translate-x-5' : 'translate-x-0'"
+            />
+          </button>
         </div>
       </div>
 
-      <!-- Lifecycle Stepper Tabs -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+      <!-- State A: Disabled (Clean, zero cognitive overload) -->
+      <div v-if="!form.waEnabled" class="p-4 rounded-[12px] bg-neutral-50 border border-black/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[12.5px] text-neutral-500">
+        <div class="flex items-center gap-2.5">
+          <BellOff class="w-4 h-4 text-neutral-400 shrink-0" />
+          <span>WhatsApp notifications are turned off for this campaign. The queue operates strictly on-screen and at the door without sending outbound messages.</span>
+        </div>
         <button
-          v-for="(stage, idx) in STAGES"
-          :key="stage.id"
           type="button"
-          @click="activeStageId = stage.id"
-          class="p-3.5 rounded-[12px] border text-left transition-all cursor-pointer flex flex-col gap-1 relative"
-          :class="activeStageId === stage.id ? 'bg-black text-white border-black shadow-sm' : 'bg-neutral-50 hover:bg-neutral-100 border-black/10 text-neutral-800'"
+          @click="form.waEnabled = true"
+          class="text-[12px] font-medium text-black underline underline-offset-2 hover:opacity-70 cursor-pointer shrink-0"
         >
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] font-mono uppercase tracking-[0.1em]" :class="activeStageId === stage.id ? 'text-white/70' : 'text-neutral-400'">
-              Stage {{ idx + 1 }}
-            </span>
-            <component :is="stage.icon" class="w-3.5 h-3.5" :class="activeStageId === stage.id ? 'text-white' : 'text-neutral-500'" />
-          </div>
-          <span class="text-[13px] font-medium leading-snug">{{ stage.title }}</span>
-          <span class="text-[11px] truncate" :class="activeStageId === stage.id ? 'text-white/60' : 'text-neutral-500'">
-            {{ stage.triggerSummary }}
-          </span>
+          Enable Notifications
         </button>
       </div>
 
-      <!-- Stage Editor + Live Smartphone Preview -->
-      <div class="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-6 items-start pt-2">
-        <!-- Left: Template Textarea Editor -->
-        <div class="flex flex-col gap-4">
-          <div class="p-4 rounded-[12px] bg-black/[0.02] border border-black/5 flex flex-col gap-1">
+      <!-- State B: Enabled (Full Journey Stepper & 100% English Template Editor + Live Preview) -->
+      <template v-else>
+        <!-- Lifecycle Stepper Tabs -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+          <button
+            v-for="(stage, idx) in STAGES"
+            :key="stage.id"
+            type="button"
+            @click="activeStageId = stage.id"
+            class="p-3.5 rounded-[12px] border text-left transition-all cursor-pointer flex flex-col gap-1 relative"
+            :class="activeStageId === stage.id ? 'bg-black text-white border-black shadow-sm' : 'bg-neutral-50 hover:bg-neutral-100 border-black/10 text-neutral-800'"
+          >
             <div class="flex items-center justify-between">
-              <span class="text-[13px] font-medium text-black">{{ currentStage.title }}</span>
-              <span class="text-[11px] font-mono text-neutral-500 bg-black/5 px-2 py-0.5 rounded-[6px]">{{ currentStage.triggerBadge }}</span>
-            </div>
-            <p class="text-[12.5px] text-neutral-500 leading-snug mt-0.5">
-              {{ currentStage.description }}
-            </p>
-          </div>
-
-          <div class="flex flex-col gap-2">
-            <div class="flex items-center justify-between">
-              <label for="template-editor" class="text-[12px] font-medium uppercase tracking-[0.08em] text-neutral-500">
-                Message Content (Indonesian Visitor Template)
-              </label>
-              <span class="text-[11px] text-neutral-400 font-mono">
-                {{ form.waTemplates[activeStageId]?.length || 0 }} characters
+              <span class="text-[10px] font-mono uppercase tracking-[0.1em]" :class="activeStageId === stage.id ? 'text-white/70' : 'text-neutral-400'">
+                Stage {{ idx + 1 }}
               </span>
+              <component :is="stage.icon" class="w-3.5 h-3.5" :class="activeStageId === stage.id ? 'text-white' : 'text-neutral-500'" />
             </div>
-
-            <textarea
-              id="template-editor"
-              v-model="form.waTemplates[activeStageId]"
-              rows="6"
-              class="w-full p-3.5 rounded-[12px] bg-black/[0.02] border border-black/15 text-[13.5px] leading-relaxed font-707 outline-none focus:border-black focus:bg-white transition-all resize-y text-black placeholder:text-neutral-400"
-              placeholder="Enter WhatsApp template message..."
-            />
-          </div>
-
-          <!-- Dynamic Tag Pills -->
-          <div class="flex flex-col gap-1.5">
-            <span class="text-[11px] uppercase tracking-[0.08em] text-neutral-500 font-medium">Insert Dynamic Variables:</span>
-            <div class="flex flex-wrap gap-1.5">
-              <button
-                v-for="tag in currentStage.tags"
-                :key="tag.key"
-                type="button"
-                @click="insertTag(tag.key)"
-                class="px-2.5 py-1 rounded-[8px] bg-black/5 hover:bg-black/10 border border-black/5 text-[11.5px] font-medium text-neutral-800 cursor-pointer flex items-center gap-1 transition-colors"
-                :title="tag.description"
-              >
-                <span>+ {{ tag.label }}</span>
-                <span class="text-[10px] text-neutral-400 font-mono">&#123;&#123;{{ tag.key }}&#125;&#125;</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Right: Elegant Smartphone WhatsApp Chat Bubble Preview -->
-        <div class="rounded-[16px] border border-black/10 bg-[#f4f2ec] overflow-hidden shadow-sm flex flex-col">
-          <!-- Chat Header -->
-          <div class="bg-[#0b5c49] text-white px-4 py-3 flex items-center gap-3">
-            <div class="size-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-[12px] text-white shrink-0">
-              707
-            </div>
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-1.5">
-                <span class="text-[13px] font-medium truncate">Stanley Pop-Up Senayan City</span>
-                <ShieldCheck class="w-3.5 h-3.5 text-emerald-300 shrink-0" />
-              </div>
-              <span class="text-[10.5px] text-white/70 block truncate">Official Verified Account</span>
-            </div>
-          </div>
-
-          <!-- Chat Body Wallpaper -->
-          <div class="p-4 min-h-[220px] flex flex-col justify-end gap-2 bg-[#efeae2]/60">
-            <div class="text-center my-1">
-              <span class="px-2 py-0.5 rounded-[6px] bg-white/80 text-[10px] font-medium text-neutral-500 shadow-2xs">
-                Today
-              </span>
-            </div>
-
-            <!-- WhatsApp Message Bubble -->
-            <div class="max-w-[92%] self-start bg-white rounded-[12px] rounded-tl-[4px] p-3 shadow-2xs border border-black/5 flex flex-col gap-1.5 text-left">
-              <p class="text-[12.5px] leading-relaxed text-neutral-800 whitespace-pre-wrap select-text">
-                {{ renderedPreviewText }}
-              </p>
-              <div class="flex items-center justify-end gap-1 text-[10px] text-neutral-400 mt-0.5">
-                <span>{{ previewTime }}</span>
-                <span class="text-sky-500 font-bold">✓✓</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Chat Footer Info -->
-          <div class="px-3.5 py-2 bg-white/70 border-t border-black/5 text-[11px] text-neutral-500 flex items-center justify-between">
-            <span class="flex items-center gap-1">
-              <Smartphone class="w-3.5 h-3.5 text-neutral-400" />
-              Live Visitor Preview
+            <span class="text-[13px] font-medium leading-snug">{{ stage.title }}</span>
+            <span class="text-[11px] truncate" :class="activeStageId === stage.id ? 'text-white/60' : 'text-neutral-500'">
+              {{ stage.triggerSummary }}
             </span>
-            <span class="text-[10.5px] text-neutral-400">Sample: Sarah (Party: 2)</span>
+          </button>
+        </div>
+
+        <!-- Stage Editor + Live Smartphone Preview -->
+        <div class="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-6 items-start pt-2">
+          <!-- Left: Template Textarea Editor -->
+          <div class="flex flex-col gap-4">
+            <div class="p-4 rounded-[12px] bg-black/[0.02] border border-black/5 flex flex-col gap-1">
+              <div class="flex items-center justify-between">
+                <span class="text-[13px] font-medium text-black">{{ currentStage.title }}</span>
+                <span class="text-[11px] font-mono text-neutral-500 bg-black/5 px-2 py-0.5 rounded-[6px]">{{ currentStage.triggerBadge }}</span>
+              </div>
+              <p class="text-[12.5px] text-neutral-500 leading-snug mt-0.5">
+                {{ currentStage.description }}
+              </p>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <div class="flex items-center justify-between">
+                <label for="template-editor" class="text-[12px] font-medium uppercase tracking-[0.08em] text-neutral-500">
+                  English Template Copy
+                </label>
+                <span class="text-[11px] text-neutral-400 font-mono">
+                  {{ form.waTemplates[activeStageId]?.length || 0 }} characters
+                </span>
+              </div>
+
+              <textarea
+                id="template-editor"
+                v-model="form.waTemplates[activeStageId]"
+                rows="5"
+                class="w-full p-3.5 rounded-[12px] bg-black/[0.02] border border-black/15 text-[13.5px] leading-relaxed font-707 outline-none focus:border-black focus:bg-white transition-all resize-y text-black placeholder:text-neutral-400"
+                placeholder="Enter English WhatsApp message template..."
+              />
+            </div>
+
+            <!-- Dynamic Tag Pills -->
+            <div class="flex flex-col gap-1.5">
+              <span class="text-[11px] uppercase tracking-[0.08em] text-neutral-500 font-medium">Insert Dynamic Variables:</span>
+              <div class="flex flex-wrap gap-1.5">
+                <button
+                  v-for="tag in currentStage.tags"
+                  :key="tag.key"
+                  type="button"
+                  @click="insertTag(tag.key)"
+                  class="px-2.5 py-1 rounded-[8px] bg-black/5 hover:bg-black/10 border border-black/5 text-[11.5px] font-medium text-neutral-800 cursor-pointer flex items-center gap-1 transition-colors"
+                  :title="tag.description"
+                >
+                  <span>+ {{ tag.label }}</span>
+                  <span class="text-[10px] text-neutral-400 font-mono">&#123;&#123;{{ tag.key }}&#125;&#125;</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Elegant Smartphone WhatsApp Chat Bubble Preview -->
+          <div class="rounded-[16px] border border-black/10 bg-[#f4f2ec] overflow-hidden shadow-sm flex flex-col">
+            <!-- Chat Header -->
+            <div class="bg-[#0b5c49] text-white px-4 py-3 flex items-center gap-3">
+              <div class="size-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-[12px] text-white shrink-0">
+                707
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[13px] font-medium truncate">707 Activation Hub</span>
+                  <ShieldCheck class="w-3.5 h-3.5 text-emerald-300 shrink-0" />
+                </div>
+                <span class="text-[10.5px] text-white/70 block truncate">Official Verified Account</span>
+              </div>
+            </div>
+
+            <!-- Chat Body Wallpaper -->
+            <div class="p-4 min-h-[200px] flex flex-col justify-end gap-2 bg-[#efeae2]/60">
+              <div class="text-center my-1">
+                <span class="px-2 py-0.5 rounded-[6px] bg-white/80 text-[10px] font-medium text-neutral-500 shadow-2xs">
+                  Today
+                </span>
+              </div>
+
+              <!-- WhatsApp Message Bubble (English) -->
+              <div class="max-w-[92%] self-start bg-white rounded-[12px] rounded-tl-[4px] p-3 shadow-2xs border border-black/5 flex flex-col gap-1.5 text-left">
+                <p class="text-[12.5px] leading-relaxed text-neutral-800 whitespace-pre-wrap select-text">
+                  {{ renderedPreviewText }}
+                </p>
+                <div class="flex items-center justify-end gap-1 text-[10px] text-neutral-400 mt-0.5">
+                  <span>{{ previewTime }}</span>
+                  <span class="text-sky-500 font-bold">✓✓</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chat Footer Info -->
+            <div class="px-3.5 py-2 bg-white/70 border-t border-black/5 text-[11px] text-neutral-500 flex items-center justify-between">
+              <span class="flex items-center gap-1">
+                <Smartphone class="w-3.5 h-3.5 text-neutral-400" />
+                English Guest Preview
+              </span>
+              <span class="text-[10.5px] text-neutral-400">Sample: Sarah (Party: 2)</span>
+            </div>
           </div>
         </div>
-      </div>
+      </template>
     </div>
   </div>
 </template>
@@ -355,12 +405,12 @@ import {
   Check,
   Users,
   BellRing,
+  BellOff,
   Clock,
   Volume2,
   MessageSquare,
   Smartphone,
   ShieldCheck,
-  Sparkles,
   QrCode,
   UserCheck,
   Ban
@@ -402,15 +452,16 @@ const activeStageId = ref<StageId>('approaching');
 
 const form = reactive<QueueSettingsData>({
   enabled: true,
+  waEnabled: false,
   maxCapacity: 50,
   notifyThreshold: 10,
   skippedTolerance: 5,
   currentCalledNumber: 1,
   waTemplates: {
-    welcome: 'Halo {{name}}! Kamu terdaftar di antrean Stanley Pop-Up Senayan City dengan Nomor Antrean #{{queue_number}} (Party: {{party_size}} orang). Pantau status antreanmu di: {{link}}',
-    approaching: 'Halo {{name}}! Nomor antreanmu (#{{queue_number}}) sudah dekat! Panggilan saat ini sudah di sekitar nomormu. Mohon segera merapat ke area antrean Stanley Senayan City.',
-    ready: 'Halo {{name}}! Giliranmu untuk masuk telah tiba. Silakan tunjukkan QR Pass / Access ID {{access_id}} kepada usher di pintu masuk.',
-    expired: 'Mohon maaf {{name}}, nomor antreanmu (#{{queue_number}}) telah terlewat lebih dari {{skipped_tolerance}} nomor dan dinyatakan hangus. Silakan scan QR kembali untuk mengambil nomor antrean baru jika masih ingin berkunjung.'
+    welcome: 'Hello {{name}}! You are registered in the queue with Queue Number #{{queue_number}} (Party: {{party_size}} guests). Track your live status here: {{link}}',
+    approaching: 'Hello {{name}}! Your turn is approaching. The queue is currently serving near your number (#{{queue_number}}). Please proceed to the entrance area now.',
+    ready: 'Hello {{name}}! It is your turn to enter. Please present your Access ID {{access_id}} to the door staff at the entrance.',
+    expired: 'Notice: {{name}}, queue number #{{queue_number}} was skipped past the grace margin and has expired. Please check in with event staff or register again to rejoin.'
   }
 });
 
@@ -516,7 +567,7 @@ const renderedPreviewText = computed(() => {
     party_size: 2,
     access_id: 'STAN-8842',
     skipped_tolerance: form.skippedTolerance || 5,
-    link: 'https://707.studio/stanley/popup/pass/STAN-8842'
+    link: 'https://707.studio/pass/STAN-8842'
   };
 
   let rendered = raw;
@@ -539,6 +590,7 @@ async function loadSettings() {
     const data = await fetchQueueSettings(props.pageId);
     if (data) {
       Object.assign(form, data);
+      form.waEnabled = Boolean(data.waEnabled);
       if (data.waTemplates) Object.assign(form.waTemplates, data.waTemplates);
     }
   } catch (err: any) {
@@ -555,7 +607,7 @@ async function saveSettings() {
     const res = await saveQueueSettingsApi(props.pageId, form);
     if (res) {
       Object.assign(form, res);
-      emit('toast', 'Queue settings and WhatsApp templates saved successfully.');
+      emit('toast', 'Queue settings and WhatsApp preferences saved successfully.');
     }
   } catch (err: any) {
     emit('toast', err?.message || 'Failed to save settings');
@@ -571,7 +623,11 @@ async function stepCaller(delta: number) {
   try {
     const res = await callNextQueue(props.pageId, target);
     if (res) {
-      emit('toast', `Calling queue #${target}. ${res.approachingCount} WhatsApp notifications dispatched.`);
+      if (form.waEnabled) {
+        emit('toast', `Calling queue #${target}. ${res.approachingCount} WhatsApp notifications dispatched.`);
+      } else {
+        emit('toast', `Calling queue #${target}. WhatsApp notifications are disabled.`);
+      }
     }
   } catch (err: any) {
     emit('toast', err?.message || 'Failed to advance queue number');

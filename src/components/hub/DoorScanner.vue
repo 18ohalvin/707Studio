@@ -313,16 +313,7 @@
             </div>
           </div>
 
-          <!-- Capacity Warning if full (Deep Oxblood) -->
-          <div
-            v-if="mode === 'in' && (insideCount + pendingPartySize > maxCapacity)"
-            class="mt-2 px-4 py-3 rounded-[10px] bg-oxblood-50 border border-oxblood-200 text-oxblood-800 text-[13px] font-medium flex items-center gap-2.5 max-w-[640px] w-full text-left"
-          >
-            <TriangleAlert class="w-5 h-5 text-oxblood-600 shrink-0" />
-            <span>Venue at Maximum Capacity ({{ insideCount }}/{{ maxCapacity }} inside). Admitting {{ pendingPartySize }} guest{{ pendingPartySize > 1 ? 's' : '' }} will exceed safe capacity.</span>
-          </div>
-
-          <p v-if="pendingProblem" class="mt-3 px-4 py-2.5 rounded-[10px] text-[14px] font-medium max-w-[640px] w-full" :class="pendingProblem.class">{{ pendingProblem.text }}</p>
+          <p v-if="pendingProblem" class="mt-3 px-4 py-3 rounded-[12px] text-[14px] font-medium max-w-[640px] w-full" :class="pendingProblem.class">{{ pendingProblem.text }}</p>
         </div>
 
         <div class="shrink-0 flex items-stretch gap-3 p-4 border-t border-black/10">
@@ -331,10 +322,10 @@
             type="button"
             :disabled="Boolean(pendingProblem) || isChecking"
             @click="confirmPending"
-            class="flex-[1.6] h-[64px] rounded-[14px] bg-black text-white text-[19px] font-medium active:bg-neutral-700 cursor-pointer disabled:opacity-30 disabled:cursor-default flex items-center justify-center gap-2.5"
+            class="flex-[1.6] h-[64px] rounded-[14px] bg-black text-white text-[19px] font-medium active:bg-neutral-700 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 transition-colors"
           >
             <component :is="mode === 'in' ? LogIn : LogOut" class="w-6 h-6" />
-            {{ mode === 'in' ? (pendingPartySize > 1 ? `Admit (${pendingPartySize} people)` : 'Admit') : 'Check out' }}
+            {{ mode === 'in' ? (insideCount + pendingPartySize > maxCapacity ? 'Capacity Exceeded (Blocked)' : (pendingPartySize > 1 ? `Admit (${pendingPartySize} people)` : 'Admit')) : 'Check out' }}
           </button>
         </div>
       </div>
@@ -610,8 +601,17 @@ const pendingProblem = computed<{ text: string; class: string } | null>(() => {
   if (status === 'waitlisted') return { text: 'On the waitlist: no place yet. Send them to the event team.', class: 'bg-oxblood-50 text-oxblood-700' };
   if (status === 'declined') return { text: 'This registration was declined.', class: 'bg-oxblood-50 text-oxblood-700' };
   const inside = isGuestInside(g);
-  if (mode.value === 'in' && inside) {
-    return { text: `Already inside since ${formatTime(g.checked_in_at)}${g.checked_in_by ? ` (by ${g.checked_in_by})` : ''}.`, class: 'bg-bronze-50 text-bronze-800' };
+  if (mode.value === 'in') {
+    if (inside) {
+      return { text: `Already inside since ${formatTime(g.checked_in_at)}${g.checked_in_by ? ` (by ${g.checked_in_by})` : ''}.`, class: 'bg-bronze-50 text-bronze-800' };
+    }
+    if (insideCount.value + pendingPartySize.value > maxCapacity.value) {
+      const over = insideCount.value + pendingPartySize.value - maxCapacity.value;
+      return {
+        text: `Venue at maximum capacity (${insideCount.value}/${maxCapacity.value} inside). Admitting ${pendingPartySize.value} guest${pendingPartySize.value > 1 ? 's' : ''} exceeds limit by ${over}. Admittance is strictly locked until guests check out.`,
+        class: 'bg-oxblood-50 text-oxblood-700 border border-oxblood-200'
+      };
+    }
   }
   if (mode.value === 'out' && !inside) return { text: 'This guest is not inside.', class: 'bg-bronze-50 text-bronze-800' };
   return null;
@@ -661,6 +661,8 @@ const resultTheme = computed(() => {
       return { bg: 'bg-neutral-800 text-white', iconWrap: 'bg-white text-black', icon: DoorOpen, kicker: 'Checked out', title: 'Goodbye' };
     case 'already':
       return { bg: 'bg-bronze-700 text-white', iconWrap: 'bg-white text-bronze-700', icon: TriangleAlert, kicker: 'Already inside', title: 'Pass already used' };
+    case 'capacity_exceeded':
+      return { bg: 'bg-oxblood-800 text-white', iconWrap: 'bg-white text-oxblood-800', icon: TriangleAlert, kicker: 'Capacity Full', title: 'Admit Blocked' };
     case 'waitlisted':
       return { bg: 'bg-oxblood-700 text-white', iconWrap: 'bg-white text-oxblood-700', icon: Hourglass, kicker: 'Not admitted', title: 'On the waitlist' };
     case 'declined':
@@ -674,6 +676,7 @@ const frameColor = computed(() => {
   switch (result.value?.kind) {
     case 'admitted': return 'border-moss-300';
     case 'already': return 'border-bronze-300';
+    case 'capacity_exceeded':
     case 'invalid':
     case 'waitlisted':
     case 'declined':
@@ -707,6 +710,7 @@ async function submitCode(raw: string, partySize: number = 1) {
       const pCount = guest?.party_size && Number(guest.party_size) > 1 ? ` (${guest.party_size} guests)` : '';
       detail = `Checked in at ${formatTime(guest?.checked_in_at)}${pCount}`;
     }
+    else if (kind === 'capacity_exceeded') detail = res.error || 'Venue is at maximum capacity. Admittance blocked.';
     else if (kind === 'already') detail = `First entry at ${formatTime(guest?.checked_in_at)}${guest?.checked_in_by ? ` · by ${guest.checked_in_by}` : ''}`;
     else if (kind === 'checked_out') detail = 'Guest has left the venue';
     else if (kind === 'waitlisted') detail = 'No place yet. Send them to the event team.';

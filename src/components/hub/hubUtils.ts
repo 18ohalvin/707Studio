@@ -272,7 +272,7 @@ export async function bulkDelete(ids: string[]): Promise<string[]> {
   return Array.isArray(json?.ids) ? json.ids : ids;
 }
 
-export type CheckInResult = 'admitted' | 'already' | 'invalid' | 'checked_out';
+export type CheckInResult = 'admitted' | 'already' | 'invalid' | 'checked_out' | 'capacity_exceeded';
 
 export function isGuestInside(g: Submission): boolean {
   if (!g.checked_in_at) return false;
@@ -299,6 +299,7 @@ export async function checkInCode(code: string, pageIds: string[] | null, mode: 
 
 export interface QueueSettingsData {
   enabled: boolean;
+  waEnabled: boolean;
   maxCapacity: number;
   notifyThreshold: number;
   skippedTolerance: number;
