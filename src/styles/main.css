@@ -1013,3 +1013,46 @@ button:active,
   .apple-frost-strong { background: rgba(255, 255, 255, 0.98); }
   .apple-frost-backdrop { background: rgba(255, 255, 255, 0.85); }
 }
+
+/* ------------------------------------------------------------------
+   PREMIUM LIVE QUEUE STATUS BULLET ANIMATION
+   Concentric radar wave ripple + subtle luminous breathing core
+   ------------------------------------------------------------------ */
+@keyframes bulletRadarPing {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.85;
+  }
+  60% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+@keyframes bulletCoreBreathe {
+  0%, 100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.15);
+    filter: brightness(1.25);
+  }
+}
+
+.bullet-radar-ping {
+  animation: bulletRadarPing 2.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.bullet-radar-ping-fast {
+  animation: bulletRadarPing 1.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.bullet-core-breathe {
+  animation: bulletCoreBreathe 2.4s ease-in-out infinite;
+}
+

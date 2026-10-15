@@ -173,73 +173,6 @@
           <span>{{ editorStore.isHeroFreeDragActive ? 'Done Repositioning (Canvas Active)' : 'Free Drag on Mobile Artboard' }}</span>
         </button>
       </div>
-
-      <!-- Alignment Presets: Top / Center / Bottom -->
-      <div class="flex flex-col gap-[8px] w-full">
-        <span class="font-707 text-[12px] text-neutral-500">Vertical Alignment</span>
-        <div class="flex gap-[8px] items-center w-full">
-          <button
-            type="button"
-            @click="setImagePreset('top')"
-            :class="activePositionPreset === 'top' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[12px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
-          >
-            Top
-          </button>
-          <button
-            type="button"
-            @click="setImagePreset('center')"
-            :class="activePositionPreset === 'center' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[12px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
-          >
-            Center
-          </button>
-          <button
-            type="button"
-            @click="setImagePreset('bottom')"
-            :class="activePositionPreset === 'bottom' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[12px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
-          >
-            Bottom
-          </button>
-        </div>
-      </div>
-
-      <!-- Fine-tune Vertical Focal Point Slider -->
-      <div class="flex flex-col gap-[8px] w-full pt-1">
-        <div class="flex items-center justify-between w-full">
-          <span class="font-707 text-[12px] text-neutral-500">Vertical Position (Focal Point)</span>
-          <span class="font-707 text-[12px] font-medium text-black bg-neutral-100 px-2 py-0.5 rounded-[4px]">{{ imagePositionY }}%</span>
-        </div>
-        <div class="flex items-center w-full">
-          <input 
-            type="range"
-            min="0"
-            max="100"
-            step="1"
-            v-model.number="imagePositionY"
-            class="w-full h-1.5 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-black"
-          />
-        </div>
-      </div>
-
-      <!-- Crop & Zoom Scale Slider -->
-      <div class="flex flex-col gap-[8px] w-full pt-1">
-        <div class="flex items-center justify-between w-full">
-          <span class="font-707 text-[12px] text-neutral-500">Crop & Zoom Scale</span>
-          <span class="font-707 text-[12px] font-medium text-black bg-neutral-100 px-2 py-0.5 rounded-[4px]">{{ imageZoom }}%</span>
-        </div>
-        <div class="flex items-center w-full">
-          <input 
-            type="range"
-            min="100"
-            max="200"
-            step="1"
-            v-model.number="imageZoom"
-            class="w-full h-1.5 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-black"
-          />
-        </div>
-      </div>
     </div>
 
     <!-- Add Brand Logo Section (Maximum height 32px, Select from media gallery / drag) -->
@@ -466,6 +399,40 @@
               placeholder="Headline"
               class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 resize-none bg-transparent leading-[20px] overflow-hidden p-0 m-0"
             />
+          </div>
+
+          <!-- Head Title Font Style Option (H1 Display / H2 Heading / H3 Sub-heading) -->
+          <div class="flex items-center justify-between w-full pt-0.5">
+            <span class="font-707 text-[12px] text-neutral-500">Title Font Style</span>
+            <div class="flex gap-[6px] items-center">
+              <button 
+                type="button"
+                @click="setHeadlineStyle('h1')"
+                :class="currentHeadlineStyle === 'h1' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                class="px-3 h-[30px] rounded-[6px] flex items-center justify-center font-707 text-[11.5px] cursor-pointer transition-all"
+                title="H1 Display Headline (32px)"
+              >
+                H1
+              </button>
+              <button 
+                type="button"
+                @click="setHeadlineStyle('h2')"
+                :class="currentHeadlineStyle === 'h2' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                class="px-3 h-[30px] rounded-[6px] flex items-center justify-center font-707 text-[11.5px] cursor-pointer transition-all"
+                title="H2 Section Header (22px)"
+              >
+                H2
+              </button>
+              <button 
+                type="button"
+                @click="setHeadlineStyle('h3')"
+                :class="currentHeadlineStyle === 'h3' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                class="px-3 h-[30px] rounded-[6px] flex items-center justify-center font-707 text-[11.5px] cursor-pointer transition-all"
+                title="H3 Sub-section Heading (18px)"
+              >
+                H3
+              </button>
+            </div>
           </div>
 
           <!-- Subheadline (Single line default, auto-expands if multiline) -->
@@ -926,24 +893,30 @@ const imagePositionY = ref<number>(50);
 const imagePositionX = ref<number>(50);
 const imageZoom = ref<number>(100);
 
-const activePositionPreset = computed(() => {
-  if (imagePositionY.value === 0) return 'top';
-  if (imagePositionY.value === 50) return 'center';
-  if (imagePositionY.value === 100) return 'bottom';
-  return 'custom';
-});
-
 const isCustomPositionOrZoom = computed(() => {
   return imagePositionY.value !== 50 || imageZoom.value !== 100;
 });
 
-function setImagePreset(preset: 'top' | 'center' | 'bottom') {
-  if (preset === 'top') imagePositionY.value = 0;
-  if (preset === 'center') imagePositionY.value = 50;
-  if (preset === 'bottom') imagePositionY.value = 100;
+const headlineStyle = ref<'h1' | 'h2' | 'h3'>('h1');
+
+const currentHeadlineStyle = computed<'h1' | 'h2' | 'h3'>({
+  get: () => {
+    const s: string = (targetWidget.value?.props?.headlineStyle || targetWidget.value?.props?.headTitleStyle || targetWidget.value?.props?.titleTypographyStyle || headlineStyle.value || 'h1') as string;
+    if (s === 'h2' || s === 'heading-2') return 'h2';
+    if (s === 'h3' || s === 'heading-3') return 'h3';
+    return 'h1';
+  },
+  set: (val: 'h1' | 'h2' | 'h3') => {
+    setHeadlineStyle(val);
+  }
+});
+
+function setHeadlineStyle(style: 'h1' | 'h2' | 'h3') {
+  headlineStyle.value = style;
   updateHeroProps({
-    imagePosition: preset,
-    imagePositionY: imagePositionY.value
+    headlineStyle: style,
+    headTitleStyle: style,
+    titleTypographyStyle: style === 'h2' ? 'heading-2' : (style === 'h3' ? 'heading-3' : 'headline-1')
   });
 }
 
@@ -1376,6 +1349,14 @@ watch(targetWidget, (widget) => {
     isBadgeOptionOpen.value = !!widget.props.badge;
     headline.value = widget.props.headline || widget.props.title || '';
     subheadline.value = widget.props.subheadline || widget.props.subtitle || '';
+    const rawHeadlineStyle = widget.props.headlineStyle || widget.props.headTitleStyle || widget.props.titleTypographyStyle;
+    if (rawHeadlineStyle === 'h2' || rawHeadlineStyle === 'heading-2') {
+      headlineStyle.value = 'h2';
+    } else if (rawHeadlineStyle === 'h3' || rawHeadlineStyle === 'heading-3') {
+      headlineStyle.value = 'h3';
+    } else {
+      headlineStyle.value = 'h1';
+    }
     buttonText.value = widget.props.buttonText || widget.props.ctaLabel || '';
     buttonVariant.value = widget.props.buttonVariant || widget.props.variant || 'black';
     textAlign.value = widget.props.textAlign || 'left';

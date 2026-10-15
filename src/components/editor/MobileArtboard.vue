@@ -369,14 +369,18 @@
                   </span>
                 </div>
 
-                <!-- 2. Headline (H1) -->
-                <h1 
+                <!-- 2. Headline (H1 / H2 / H3 Font Style Options) -->
+                <component 
+                  :is="getHeroHeadlineTag(widget)"
                   v-if="(widget.props.showBannerText ?? true) && (widget.props.title || widget.props.headline)" 
-                  class="font-707 font-medium text-display-h1 tracking-tight leading-[34px] whitespace-pre-line" 
-                  :class="widget.props.isSolidSpace ? 'text-black' : 'text-white'"
+                  class="font-707 whitespace-pre-line" 
+                  :class="[
+                    getHeroHeadlineClass(widget),
+                    widget.props.isSolidSpace ? 'text-black' : 'text-white'
+                  ]"
                 >
                   {{ widget.props.title || widget.props.headline }}
-                </h1>
+                </component>
 
                 <!-- 3. Sub Headline -->
                 <p 
@@ -1461,9 +1465,6 @@ more</span>
                     <span class="font-707 font-medium text-[54px] sm:text-[62px] leading-none text-black tracking-tight font-mono">
                       #{{ String(getQueueStatus(widget).myNumber).padStart(3, '0') }}
                     </span>
-                    <span v-if="getQueueStatus(widget).partySize > 1" class="text-[12px] font-mono text-neutral-500 mt-1 uppercase tracking-wider">
-                      Party of {{ getQueueStatus(widget).partySize }}
-                    </span>
                   </div>
                 </div>
 
@@ -1472,13 +1473,27 @@ more</span>
                   class="w-full rounded-[8px] border-[0.5px] border-solid p-[16px] sm:p-[18px] flex flex-col gap-[14px] bg-transparent transition-colors"
                   :style="{ borderColor: getQueueStatus(widget).accentColor }"
                 >
-                  <!-- Top Row: Indicator Dot + Short status and vibing text (16px font, bullet anchored to first line) -->
+                  <!-- Top Row: Premium Animated Indicator Dot + Short status and vibing text (16px font, bullet anchored to first line) -->
                   <div class="flex items-start gap-[10px]">
-                    <span 
-                      class="size-[10px] rounded-full shrink-0 transition-colors mt-[6px]"
-                      :class="{ 'animate-pulse': getQueueStatus(widget).kind === 'calling' }"
-                      :style="{ backgroundColor: getQueueStatus(widget).accentColor }"
-                    />
+                    <!-- Premium Animated Status Bullet Indicator (Radar ripple + breathing luminous core) -->
+                    <div class="relative flex items-center justify-center size-[12px] shrink-0 mt-[5px]">
+                      <!-- Concentric expanding radar wave ring -->
+                      <span 
+                        class="absolute inline-flex size-full rounded-full opacity-75 pointer-events-none"
+                        :class="getQueueStatus(widget).kind === 'calling' ? 'bullet-radar-ping-fast' : 'bullet-radar-ping'"
+                        :style="{ backgroundColor: getQueueStatus(widget).accentColor }"
+                      />
+                      <!-- Ambient soft glow aura -->
+                      <span 
+                        class="absolute inline-flex size-[14px] rounded-full opacity-30 blur-[2px] pointer-events-none transition-all"
+                        :style="{ backgroundColor: getQueueStatus(widget).accentColor }"
+                      />
+                      <!-- Solid vibrant bullet core -->
+                      <span 
+                        class="relative inline-flex size-[8px] rounded-full shadow-xs bullet-core-breathe transition-colors"
+                        :style="{ backgroundColor: getQueueStatus(widget).accentColor }"
+                      />
+                    </div>
                     <span class="font-707 text-[16px] leading-[22px] font-normal text-black tracking-tight">
                       {{ getQueueStatus(widget).vibingText }}
                     </span>
@@ -1523,21 +1538,21 @@ more</span>
                     v-if="getQueueStatus(widget).kind === 'black'"
                     type="button"
                     @click.stop="isLivePass ? livePass!.retry() : null"
-                    class="mt-1 h-[48px] w-full rounded-[8px] bg-black text-white text-[13px] font-medium font-707 uppercase apple-cta-btn apple-cta-btn-dark flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-sm"
+                    class="mt-1 h-[48px] w-full rounded-none bg-black text-white text-[14px] font-medium font-707 uppercase apple-cta-btn apple-cta-btn-dark flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-none"
                   >
                     <RefreshCw class="w-4 h-4" />
                     <span>Re-Generate Queue Number</span>
                   </button>
                 </div>
 
-                <!-- E-PASS DETAIL Action Button (Figma Node 328:4042, 707 UI Button Style) -->
+                <!-- E-PASS DETAIL Action Button (Figma Node 328:4042, 707 Design Token Button Style) -->
                 <button
                   type="button"
                   @click="showEPassDetail = !showEPassDetail"
-                  class="w-full h-[48px] rounded-[8px] border border-black bg-white hover:bg-neutral-50 active:bg-neutral-100 text-black text-[14px] font-medium uppercase font-707 apple-cta-btn flex items-center justify-center gap-2 cursor-pointer select-none transition-colors"
+                  class="w-full h-[48px] px-[16px] py-[12px] rounded-none border border-black bg-white text-black font-707 font-medium text-[14px] leading-[18px] tracking-normal uppercase apple-cta-btn apple-cta-btn-white flex items-center justify-center gap-[10px] cursor-pointer select-none outline-none shadow-none transition-all"
                 >
-                  <span>{{ showEPassDetail ? 'HIDE E-PASS DETAIL' : 'E-PASS DETAIL' }}</span>
-                  <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': showEPassDetail }" />
+                  <span class="whitespace-nowrap uppercase">{{ showEPassDetail ? 'HIDE E-PASS DETAIL' : 'E-PASS DETAIL' }}</span>
+                  <ChevronDown class="size-[16px] shrink-0 transition-transform duration-200" :class="{ 'rotate-180': showEPassDetail }" />
                 </button>
               </div>
 
@@ -2625,6 +2640,25 @@ function getTitleTypographyClass(styleInput: any) {
     default:
       return 'text-[18px] font-medium leading-[24px] text-black tracking-normal';
   }
+}
+
+function getHeroHeadlineTag(widget: any): string {
+  const s = widget.props?.headlineStyle || widget.props?.headTitleStyle || widget.props?.titleTypographyStyle;
+  if (s === 'h2' || s === 'heading-2') return 'h2';
+  if (s === 'h3' || s === 'heading-3') return 'h3';
+  return 'h1';
+}
+
+function getHeroHeadlineClass(widget: any): string {
+  const s = widget.props?.headlineStyle || widget.props?.headTitleStyle || widget.props?.titleTypographyStyle;
+  if (s === 'h2' || s === 'heading-2') {
+    return 'font-medium text-[22px] md:text-[24px] tracking-tight leading-[28px]';
+  }
+  if (s === 'h3' || s === 'heading-3') {
+    return 'font-medium text-[18px] md:text-[20px] tracking-normal leading-[24px]';
+  }
+  // Default H1 display headline
+  return 'font-medium text-display-h1 tracking-tight leading-[34px]';
 }
 
 function getChoiceTitleTypographyClass(widget: any) {
