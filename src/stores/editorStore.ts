@@ -2,7 +2,7 @@ import { uploadMediaDirectly } from '../services/mediaService.ts';
 import { apiFetch, apiJson } from '../services/apiClient.ts';
 import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
-import type { WidgetItem, WidgetType, ActivationPage, ViewportMode, PageStatus, ProjectItem, ProjectHistoryEntry } from '../types/editor.ts';
+import type { WidgetItem, WidgetType, ActivationPage, ViewportMode, PageStatus, ProjectItem, ProjectHistoryEntry, GlobalTemplate } from '../types/editor.ts';
 import { useAuthStore } from './authStore.ts';
 import { defaultTicketWidgets } from '../components/editor/ticket/ticketFields.ts';
 import { stripTextAnswers } from '../components/editor/guestAnswers.ts';
@@ -60,6 +60,11 @@ export const useEditorStore = defineStore('editor', () => {
   const userProjects = computed<ProjectItem[]>(() => projects.value.filter(isVisibleToCurrentUser));
 
   const currentProjectId = ref<string>('');
+
+  // Template Studio Mode (Superadmin only: editing master system templates)
+  const isTemplateMode = ref<boolean>(false);
+  const activeTemplateId = ref<string | null>(null);
+  const activeTemplateData = ref<GlobalTemplate | null>(null);
 
   // Global Project Campaign Title (Applies to entire project, independent of page switching)
   const projectTitle = ref<string>('Untitled Project');
@@ -1525,6 +1530,30 @@ export const useEditorStore = defineStore('editor', () => {
     // "Untitled Activation Drop", autosave saw no id and created a new
     // project from it — the ghost that appeared after every delete.
     if (!currentProjectId.value) return null;
+
+    if (isTemplateMode.value && activeTemplateId.value) {
+      isSaving.value = true;
+      try {
+        await uploadInlineImages();
+        const brandStore = useBrandStore();
+        const designPages: ActivationPage[] = stripTextAnswers(JSON.parse(previewSnapshot ?? JSON.stringify(pages.value)));
+        const masterWidgets = designPages[0]?.widget_tree || [];
+        const cleanTitle = projectTitle.value.trim() || 'Untitled Template';
+        await brandStore.updateTemplate(activeTemplateId.value, {
+          name: cleanTitle,
+          widget_tree: masterWidgets
+        });
+        saveFailed.value = false;
+        lastSavedAt.value = new Date();
+      } catch (err) {
+        console.warn('[EditorStore] Failed to sync template to API:', err);
+        saveFailed.value = true;
+      } finally {
+        isSaving.value = false;
+      }
+      return null;
+    }
+
     isSaving.value = true;
     await uploadInlineImages();
     const now = new Date().toISOString();
@@ -1652,6 +1681,7 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   function createNewProject(title: string, slug?: string, widgets?: WidgetItem[], brandSlug?: string): ProjectItem {
+    exitTemplateMode();
     const id = `proj-${Date.now()}`;
     const now = new Date().toISOString();
     const cleanTitle = title.trim() || 'Untitled Activation Drop';
@@ -1729,6 +1759,7 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   function openProjectById(projectId: string) {
+    exitTemplateMode();
     const authStore = useAuthStore();
     if (!authStore.isAuthenticated) return;
 
@@ -1772,6 +1803,49 @@ export const useEditorStore = defineStore('editor', () => {
     panY.value = 0;
     selectedWidgetId.value = pages.value[0]?.widget_tree?.length ? pages.value[0].widget_tree[0].id : null;
     closeAllSidebars();
+  }
+
+  function openTemplateInStudio(tpl: GlobalTemplate) {
+    isTemplateMode.value = true;
+    activeTemplateId.value = tpl.id;
+    activeTemplateData.value = JSON.parse(JSON.stringify(tpl));
+    currentProjectId.value = `tpl_studio_${tpl.id}`;
+    projectTitle.value = tpl.name;
+
+    const initialWidgets = tpl.widget_tree ? JSON.parse(JSON.stringify(tpl.widget_tree)) : [];
+
+    const templatePage: ActivationPage = {
+      id: `tpl_page_${tpl.id}`,
+      brand_id: 'global',
+      brand_slug: 'atmos',
+      title: tpl.name,
+      page_name: 'Template Layout',
+      slug: tpl.slug || tpl.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      description: tpl.description || '',
+      status: tpl.status || 'published',
+      current_version: 1,
+      widget_tree: initialWidgets,
+      page_settings: {
+        seoTitle: tpl.name,
+        seoDescription: tpl.description || `Template preset for ${tpl.name}`,
+        theme: 'the-707-standard'
+      },
+      created_at: tpl.created_at || new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    pages.value = [templatePage];
+    activePageIndex.value = 0;
+    panX.value = getPageCenterOffsetX(0);
+    panY.value = 0;
+    selectedWidgetId.value = initialWidgets.length > 0 ? initialWidgets[0].id : null;
+    closeAllSidebars();
+  }
+
+  function exitTemplateMode() {
+    isTemplateMode.value = false;
+    activeTemplateId.value = null;
+    activeTemplateData.value = null;
   }
 
   // Auto-sync project updates when editing
@@ -1829,6 +1903,11 @@ export const useEditorStore = defineStore('editor', () => {
   pushHistory();
 
   return {
+    isTemplateMode,
+    activeTemplateId,
+    activeTemplateData,
+    openTemplateInStudio,
+    exitTemplateMode,
     projects,
     userProjects,
     currentProjectId,

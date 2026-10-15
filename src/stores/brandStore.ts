@@ -188,6 +188,7 @@ export const useBrandStore = defineStore('brand', () => {
       });
     } catch (err) {
       console.error('[BrandStore] Failed to update template on cloud server:', err);
+      throw err;
     }
   }
 

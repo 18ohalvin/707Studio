@@ -6,12 +6,12 @@
     <div class="absolute inset-0 -z-10 pointer-events-none bg-white/20 [backdrop-filter:blur(4px)] [-webkit-backdrop-filter:blur(4px)]" aria-hidden="true" />
     <!-- Left: 707 Logo, Dynamic-Width Title, and Save Status Pill -->
     <div class="content-stretch flex gap-[16px] md:gap-[20px] items-center flex-1 min-w-0 mr-4">
-      <!-- 707 Official Logo from Figma (Click to return to Landing Page) -->
+      <!-- 707 Official Logo from Figma (Click to return to Landing Page or Superadmin Templates) -->
       <a 
         href="/"
         @click.prevent="navigateHome" 
         class="h-[15px] w-[48px] relative shrink-0 flex items-center cursor-pointer hover:opacity-80 transition-opacity" 
-        title="Back to Design Studio"
+        :title="editorStore.isTemplateMode ? 'Back to Superadmin Templates' : 'Back to Design Studio'"
       >
         <img 
           :src="FIGMA_ASSETS.logo707" 
@@ -38,6 +38,16 @@
           />
         </div>
 
+        <!-- Template Studio Indicator Pill -->
+        <div 
+          v-if="editorStore.isTemplateMode" 
+          class="flex h-[20px] items-center gap-1.5 px-[8px] rounded-[10px] shrink-0 border-[0.5px] border-purple-300 bg-purple-50 text-purple-900 shadow-xs"
+          title="Master system template being designed for global brand presets"
+        >
+          <span class="size-1.5 rounded-full bg-purple-600 animate-pulse" />
+          <p class="font-707 text-legal-micro font-medium whitespace-nowrap">Template Studio</p>
+        </div>
+
         <!-- Save Info Pill right beside dynamic title -->
         <div class="border-black/10 border-[0.5px] border-solid content-stretch flex h-[20px] items-center justify-center px-[7px] rounded-[10px] shrink-0 bg-[#ececec]/20 backdrop-blur-[4px] shadow-sm">
           <p class="font-707 text-legal-micro font-light text-black whitespace-nowrap">
@@ -47,6 +57,7 @@
 
         <!-- Publish state: what visitors see vs what is being edited -->
         <div
+          v-if="!editorStore.isTemplateMode"
           class="flex h-[20px] items-center gap-1.5 px-[7px] rounded-[10px] shrink-0 border-[0.5px] border-solid"
           :class="publishBadge.class"
           :title="publishBadge.title"
@@ -60,10 +71,10 @@
     <!-- Right: Test Your Form, Ask for Review & Avatar proportioned for 48px Header -->
     <div class="content-stretch flex gap-[10px] items-center shrink-0">
       <!-- Review requests / publish notices -->
-      <NotificationsMenu />
+      <NotificationsMenu v-if="!editorStore.isTemplateMode" />
 
       <!-- Build history: a plain icon, like the bell beside it -->
-      <div class="relative flex items-center" ref="historyRef">
+      <div v-if="!editorStore.isTemplateMode" class="relative flex items-center" ref="historyRef">
         <button
           type="button"
           @click="showHistory = !showHistory"
@@ -183,6 +194,14 @@ const publishBadge = computed(() => {
 });
 
 const primaryCta = computed(() => {
+  if (editorStore.isTemplateMode) {
+    return {
+      state: 'save_template',
+      label: 'Save Template',
+      disabled: false,
+      title: 'Save all edits to this master template preset'
+    };
+  }
   if (authStore.isSuperAdmin) {
     if (!isLive.value) return { state: 'publish', label: 'Approve & Publish', disabled: false, title: 'Publish this campaign — visitors will see it right away' };
     if (hasChanges.value) return { state: 'publish', label: `Publish Update${liveVersion.value ? ` (v${liveVersion.value + 1})` : ''}`, disabled: false, title: 'Replace the live version with what is in the editor' };
@@ -203,6 +222,18 @@ const showHistory = ref(false);
 const historyRef = ref<HTMLElement | null>(null);
 
 async function handlePrimaryCtaClick() {
+  if (editorStore.isTemplateMode) {
+    isTransitioning.value = true;
+    try {
+      await editorStore.flushPendingSave();
+      editorStore.showToast('Master template saved successfully.');
+    } catch (err: any) {
+      editorStore.showToast(`Failed to save template: ${err?.message || 'network error'}`);
+    } finally {
+      isTransitioning.value = false;
+    }
+    return;
+  }
   if (primaryCta.value.disabled || !editorStore.currentProjectId) return;
   if (primaryCta.value.state === 'submit') {
     editorStore.isReviewModalOpen = true;
@@ -236,7 +267,12 @@ async function handleReturnHome() {
 
 async function navigateHome() {
   await editorStore.flushPendingSave();
-  router.push('/');
+  if (editorStore.isTemplateMode) {
+    editorStore.exitTemplateMode();
+    router.push('/settings?tab=templates');
+  } else {
+    router.push('/');
+  }
 }
 
 let tickerTimer: any = null;

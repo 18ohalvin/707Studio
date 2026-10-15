@@ -2138,9 +2138,9 @@ async function handleRemoveTemplate(tpl: GlobalTemplate) {
 }
 
 function handleEditInStudio(tpl: GlobalTemplate) {
-  editorStore.createNewProject(`Template: ${tpl.name}`, undefined, tpl.widget_tree);
-  editorStore.showToast(`Loaded "${tpl.name}" in Builder mode.`);
-  router.push('/editor');
+  editorStore.openTemplateInStudio(tpl);
+  editorStore.showToast(`Loaded "${tpl.name}" in Template Studio.`);
+  router.push(`/editor/template/${encodeURIComponent(tpl.id)}`);
 }
 
 function handleAddUserSubmit() {
