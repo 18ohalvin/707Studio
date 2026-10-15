@@ -1390,67 +1390,102 @@ more</span>
               </div>
 
               <!-- 1. Big Headline Display (H2 - responsive multiline without double line restriction) -->
-              <h2 class="font-707 font-medium text-heading-h2 text-[22px] leading-[28px] tracking-tight uppercase text-black whitespace-pre-line break-words mt-[2px]">
-                {{ isLivePass && livePass!.waitlisted ? 'YOU ARE ON\nTHE WAITLIST.' : (widget.props?.heading || (widget.props?.passMode === 'queue' ? 'YOU ARE IN LINE.\nPLEASE WAIT FOR\nYOUR NUMBER.' : 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.')) }}
+              <h2 class="font-707 font-medium text-heading-h2 text-[24px] sm:text-[28px] leading-[28px] sm:leading-[32px] tracking-tight uppercase text-black whitespace-pre-line break-words mt-[2px]">
+                {{ getPassHeadline(widget) }}
               </h2>
               <p v-if="isLivePass && livePass!.waitlisted" class="font-707 text-[13px] leading-[19px] text-neutral-600 -mt-[6px]">
                 Your details are held. We will write to you the moment a place opens — this code does not admit you until then.
               </p>
 
-              <!-- 2a. Live Queue Pass Presentation (Replaces QR Code with Big #XX Number + 5-Color Progression System) -->
+              <!-- 2a. Live Queue Pass Presentation (Matches Figma Node 328:3545) -->
               <div 
                 v-if="widget.props?.passMode === 'queue' && !(isLivePass && livePass!.waitlisted)" 
-                class="w-full flex flex-col gap-3 pt-[2px]"
+                class="w-full flex flex-col gap-[18px] pt-[2px]"
               >
-                <!-- Large Queue Card with 5-Color Progression -->
-                <div 
-                  class="w-full rounded-[16px] p-5 sm:p-6 border flex flex-col items-center justify-center text-center gap-2.5 transition-all shadow-xs relative overflow-hidden font-707"
-                  :class="getQueueStatus(widget).cardClass"
-                >
-                  <!-- Status Pill -->
-                  <div class="flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] uppercase tracking-[0.1em] font-medium border" :class="getQueueStatus(widget).badgeClass">
-                    <span class="size-1.5 rounded-full" :class="getQueueStatus(widget).kind === 'calling' ? 'bg-white animate-ping' : 'bg-current'" />
-                    <span>{{ getQueueStatus(widget).badgeText }}</span>
-                  </div>
-
-                  <!-- Big #XX Number Display -->
-                  <div class="flex flex-col items-center my-1">
-                    <span class="text-[11px] uppercase tracking-[0.12em] opacity-75 font-mono">Your Queue Number</span>
-                    <span class="text-[48px] sm:text-[54px] font-bold font-mono tracking-tight leading-none" :class="getQueueStatus(widget).numClass">
-                      #{{ getQueueStatus(widget).myNumber }}
+                <!-- Standalone Queue Number on canvas background -->
+                <div class="flex items-baseline justify-between w-full">
+                  <div class="flex flex-col">
+                    <span class="font-707 font-medium text-[54px] sm:text-[62px] leading-none text-black tracking-tight font-mono">
+                      #{{ String(getQueueStatus(widget).myNumber).padStart(3, '0') }}
                     </span>
-                    <span class="text-[12px] font-mono opacity-80 mt-1">
+                    <span v-if="getQueueStatus(widget).partySize > 1" class="text-[12px] font-mono text-neutral-500 mt-1 uppercase tracking-wider">
                       Party of {{ getQueueStatus(widget).partySize }}
                     </span>
                   </div>
+                </div>
 
-                  <!-- Subcopy guidance -->
-                  <p class="text-[12.5px] leading-snug max-w-[280px] opacity-90">
-                    {{ getQueueStatus(widget).subcopy }}
-                  </p>
+                <!-- Message Info / Live Status Card with agreed color status border -->
+                <div 
+                  class="w-full rounded-[8px] border-[0.5px] border-solid p-[18px] sm:p-[20px] flex flex-col gap-[16px] bg-transparent transition-colors"
+                  :style="{ borderColor: getQueueStatus(widget).accentColor }"
+                >
+                  <!-- Top Row: Indicator Dot + Short status and vibing text -->
+                  <div class="flex items-center gap-[10px]">
+                    <span 
+                      class="size-[11px] rounded-full shrink-0 transition-colors"
+                      :class="{ 'animate-pulse': getQueueStatus(widget).kind === 'calling' }"
+                      :style="{ backgroundColor: getQueueStatus(widget).accentColor }"
+                    />
+                    <span class="font-707 text-[20px] sm:text-[22px] font-normal text-black leading-none tracking-tight">
+                      {{ getQueueStatus(widget).vibingText }}
+                    </span>
+                  </div>
 
-                  <!-- Re-generate action button for Black / Expired state -->
+                  <!-- Remaining Queue Progress Bar with agreed status color -->
+                  <div class="h-[7px] w-full bg-[#d9d9d9] rounded-full overflow-hidden">
+                    <div 
+                      class="h-full rounded-full transition-all duration-500 ease-out"
+                      :style="{ 
+                        backgroundColor: getQueueStatus(widget).accentColor, 
+                        width: `${getQueueStatus(widget).progressPercent}%` 
+                      }"
+                    />
+                  </div>
+
+                  <!-- Bottom 2-Column Stats: Now Calling and Remaining Guest Ahead -->
+                  <div class="flex items-center justify-between w-full pt-1">
+                    <!-- Col 1: Now Calling at Gate -->
+                    <div class="flex flex-col gap-[4px] items-start">
+                      <span class="font-mono text-[11px] uppercase tracking-wider text-black/70">
+                        NOW CALLING AT GATE
+                      </span>
+                      <span class="font-mono font-medium text-[22px] sm:text-[24px] text-black leading-none">
+                        #{{ String(getQueueStatus(widget).serving).padStart(3, '0') }}
+                      </span>
+                    </div>
+
+                    <!-- Col 2: Remaining Guest Ahead of You -->
+                    <div class="flex flex-col gap-[4px] items-end text-right">
+                      <span class="font-mono text-[11px] uppercase tracking-wider text-black/70">
+                        GUEST AHEAD OF YOU
+                      </span>
+                      <span class="font-mono font-medium text-[22px] sm:text-[24px] text-black leading-none">
+                        {{ getQueueStatus(widget).aheadDisplay }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Re-generate Queue Number Action (shown only for Black / Expired state) -->
                   <button
                     v-if="getQueueStatus(widget).kind === 'black'"
                     type="button"
                     @click.stop="isLivePass ? livePass!.retry() : null"
-                    class="mt-2 h-[34px] px-4 rounded-[8px] bg-white text-black text-[12px] font-medium hover:bg-neutral-100 transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
+                    class="mt-1 h-[40px] w-full rounded-[8px] bg-black text-white text-[12.5px] font-medium hover:bg-neutral-800 active:bg-neutral-900 transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-sm font-707 uppercase tracking-wider"
                   >
-                    <RefreshCw class="w-3.5 h-3.5" />
+                    <RefreshCw class="w-4 h-4" />
                     <span>Re-Generate Queue Number</span>
                   </button>
                 </div>
 
-                <!-- Now Calling at Gate Bar (Estimate wait removed per user request) -->
-                <div class="w-full p-3 rounded-[12px] bg-black/[0.03] border border-black/8 flex items-center justify-between font-707 text-[12px]">
-                  <div class="flex items-center gap-2">
-                    <Volume2 class="w-4 h-4 text-neutral-600" />
-                    <span class="uppercase tracking-wider text-neutral-500 font-mono text-[10.5px]">Now Calling at Gate:</span>
-                  </div>
-                  <span class="font-mono font-bold text-[14px] text-black bg-white px-2.5 py-0.5 rounded-[6px] border border-black/10 shadow-2xs">
-                    #{{ getQueueStatus(widget).serving }}
-                  </span>
-                </div>
+                <!-- [ E-PASS DETAIL ] Toggle Button (for cleaner live status look per user feedback) -->
+                <button
+                  type="button"
+                  @click="showEPassDetail = !showEPassDetail"
+                  class="w-full h-[48px] rounded-[8px] border border-black bg-transparent text-black text-[13px] font-medium tracking-wider uppercase font-707 flex items-center justify-center gap-2 hover:bg-black/5 active:bg-black/10 transition-colors cursor-pointer select-none"
+                >
+                  <span>{{ showEPassDetail ? '[ HIDE E-PASS DETAIL ]' : '[ E-PASS DETAIL ]' }}</span>
+                  <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': showEPassDetail }" />
+                </button>
               </div>
 
               <!-- 2b. QR Code Section (Positioned directly under Headline in Standard E-Pass mode) -->
@@ -1508,126 +1543,132 @@ more</span>
                 </div>
               </div>
 
-              <!-- 3. Pass Information Fields Grid (Positioned below QR Code, medium font weight for data values only, no bold) -->
-              <div class="grid grid-cols-2 gap-x-[20px] gap-y-[16px] w-full pt-[2px]">
-                <!-- Guest Name -->
-                <div class="flex flex-col">
-                  <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
-                    GUEST NAME
-                  </span>
-                  <span class="font-707 font-medium text-[13px] leading-[18px] text-black uppercase tracking-tight break-words mt-[2px]">
-                    {{ getGuestName(widget) }}
-                  </span>
+              <!-- Collapsible Pass Details (Always visible for Standard Pass; toggleable via [ E-PASS DETAIL ] for Live Queue Pass) -->
+              <div 
+                v-if="widget.props?.passMode !== 'queue' || showEPassDetail"
+                class="w-full flex flex-col gap-[20px] pt-1 transition-all"
+              >
+                <!-- 3. Pass Information Fields Grid (Positioned below QR Code, medium font weight for data values only, no bold) -->
+                <div class="grid grid-cols-2 gap-x-[20px] gap-y-[16px] w-full pt-[2px]">
+                  <!-- Guest Name -->
+                  <div class="flex flex-col">
+                    <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
+                      GUEST NAME
+                    </span>
+                    <span class="font-707 font-medium text-[13px] leading-[18px] text-black uppercase tracking-tight break-words mt-[2px]">
+                      {{ getGuestName(widget) }}
+                    </span>
+                  </div>
+
+                  <!-- Venue -->
+                  <div class="flex flex-col">
+                    <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
+                      VENUE
+                    </span>
+                    <span class="font-707 font-medium text-[13px] leading-[18px] text-black uppercase tracking-tight break-words mt-[2px]">
+                      {{ getVenue(widget) }}
+                    </span>
+                  </div>
+
+                  <!-- Access ID -->
+                  <div class="flex flex-col">
+                    <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
+                      ACCESS ID
+                    </span>
+                    <span class="font-707 font-medium text-[13px] leading-[18px] text-black uppercase tracking-tight break-words mt-[2px] font-mono">
+                      {{ getAccessId(widget) }}
+                    </span>
+                  </div>
+
+                  <!-- Guest Type -->
+                  <div class="flex flex-col">
+                    <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
+                      GUEST TYPE
+                    </span>
+                    <span class="font-707 font-medium text-[13px] leading-[18px] text-black uppercase tracking-tight break-words mt-[2px]">
+                      {{ getGuestType(widget) }}
+                    </span>
+                  </div>
+
+                  <!-- Email -->
+                  <div class="flex flex-col col-span-2">
+                    <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
+                      EMAIL
+                    </span>
+                    <span class="font-707 font-medium text-[13px] leading-[18px] text-black lowercase tracking-tight break-words mt-[2px]">
+                      {{ getEmail(widget) }}
+                    </span>
+                  </div>
                 </div>
 
-                <!-- Venue -->
-                <div class="flex flex-col">
-                  <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
-                    VENUE
+                <!-- 4. ACCESS VALID FOR Section (Strictly matching choice form font size [12px], font weight [medium], line height [18px], and natural casing) -->
+                <div class="flex flex-col gap-[8px] w-full pt-[4px]">
+                  <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-black uppercase tracking-tight">
+                    ACCESS VALID FOR:
                   </span>
-                  <span class="font-707 font-medium text-[13px] leading-[18px] text-black uppercase tracking-tight break-words mt-[2px]">
-                    {{ getVenue(widget) }}
-                  </span>
-                </div>
 
-                <!-- Access ID -->
-                <div class="flex flex-col">
-                  <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
-                    ACCESS ID
-                  </span>
-                  <span class="font-707 font-medium text-[13px] leading-[18px] text-black uppercase tracking-tight break-words mt-[2px] font-mono">
-                    {{ getAccessId(widget) }}
-                  </span>
-                </div>
+                  <div class="flex flex-col gap-[8px] w-full">
+                    <div 
+                      v-for="(sessionItem, sIdx) in getValidForSessions(widget)" 
+                      :key="sessionItem.id || sIdx"
+                      class="border-[0.5px] border-solid border-[#d4d4d4] bg-transparent w-full select-none rounded-none"
+                      :class="[
+                        sessionItem.description && sessionItem.description.trim()
+                          ? 'p-[16px] flex flex-col gap-[8px] items-start'
+                          : 'min-h-[48px] h-[48px] px-[16px] py-[12px] flex items-center justify-between'
+                      ]"
+                    >
+                      <!-- Layout A: With Description -->
+                      <div v-if="sessionItem.description && sessionItem.description.trim()" class="w-full flex flex-col gap-[8px]">
+                        <div class="flex items-baseline justify-between w-full font-707 gap-3">
+                          <span class="font-707 font-medium text-[12px] leading-[18px] text-black truncate">
+                            {{ sessionItem.label }}
+                          </span>
+                          <span v-if="sessionItem.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[18px] text-neutral-500">
+                            {{ sessionItem.sublabel }}
+                          </span>
+                        </div>
+                        <div class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-600 whitespace-pre-line">
+                          {{ sessionItem.description }}
+                        </div>
+                      </div>
 
-                <!-- Guest Type -->
-                <div class="flex flex-col">
-                  <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
-                    GUEST TYPE
-                  </span>
-                  <span class="font-707 font-medium text-[13px] leading-[18px] text-black uppercase tracking-tight break-words mt-[2px]">
-                    {{ getGuestType(widget) }}
-                  </span>
-                </div>
-
-                <!-- Email -->
-                <div class="flex flex-col col-span-2">
-                  <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-neutral-500 uppercase tracking-tight">
-                    EMAIL
-                  </span>
-                  <span class="font-707 font-medium text-[13px] leading-[18px] text-black lowercase tracking-tight break-words mt-[2px]">
-                    {{ getEmail(widget) }}
-                  </span>
-                </div>
-              </div>
-
-              <!-- 4. ACCESS VALID FOR Section (Strictly matching choice form font size [12px], font weight [medium], line height [18px], and natural casing) -->
-              <div class="flex flex-col gap-[8px] w-full pt-[4px]">
-                <span class="font-707 font-normal text-caption text-[11px] leading-[14px] text-black uppercase tracking-tight">
-                  ACCESS VALID FOR:
-                </span>
-
-                <div class="flex flex-col gap-[8px] w-full">
-                  <div 
-                    v-for="(sessionItem, sIdx) in getValidForSessions(widget)" 
-                    :key="sessionItem.id || sIdx"
-                    class="border-[0.5px] border-solid border-[#d4d4d4] bg-transparent w-full select-none rounded-none"
-                    :class="[
-                      sessionItem.description && sessionItem.description.trim()
-                        ? 'p-[16px] flex flex-col gap-[8px] items-start'
-                        : 'min-h-[48px] h-[48px] px-[16px] py-[12px] flex items-center justify-between'
-                    ]"
-                  >
-                    <!-- Layout A: With Description -->
-                    <div v-if="sessionItem.description && sessionItem.description.trim()" class="w-full flex flex-col gap-[8px]">
-                      <div class="flex items-baseline justify-between w-full font-707 gap-3">
+                      <!-- Layout B: Without Description -->
+                      <div v-else class="flex items-center justify-between w-full font-707 gap-3">
                         <span class="font-707 font-medium text-[12px] leading-[18px] text-black truncate">
                           {{ sessionItem.label }}
                         </span>
-                        <span v-if="sessionItem.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[18px] text-neutral-500">
+                        <span v-if="sessionItem.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[16px] text-neutral-500">
                           {{ sessionItem.sublabel }}
                         </span>
                       </div>
-                      <div class="font-707 font-normal text-bodytext text-[12px] leading-[18px] text-neutral-600 whitespace-pre-line">
-                        {{ sessionItem.description }}
-                      </div>
-                    </div>
-
-                    <!-- Layout B: Without Description -->
-                    <div v-else class="flex items-center justify-between w-full font-707 gap-3">
-                      <span class="font-707 font-medium text-[12px] leading-[18px] text-black truncate">
-                        {{ sessionItem.label }}
-                      </span>
-                      <span v-if="sessionItem.sublabel" class="shrink-0 font-707 font-normal text-[12px] leading-[16px] text-neutral-500">
-                        {{ sessionItem.sublabel }}
-                      </span>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <!-- 5. Footer Troubleshoot / Disclaimer Notice with Hyperlink and Modal Pop Up Support -->
-              <div v-if="widget.props?.showFooterNotice ?? true" class="flex items-start gap-[10px] w-full pt-[6px]">
-                <div class="size-[18px] rounded-full bg-black text-white flex items-center justify-center shrink-0 mt-[1px]">
-                  <span class="font-707 font-bold text-[11px] leading-none italic">i</span>
-                </div>
-                <div class="flex flex-col">
-                  <span class="font-707 font-bold text-[11px] leading-[15px] text-black uppercase tracking-tight">
-                    {{ widget.props?.footerNoticeTitle || "DIDN'T RECEIVE THE EMAIL?" }}
-                  </span>
-                  <p class="font-707 font-normal text-[11px] leading-[15px] text-black mt-[1px]">
-                    <template v-for="(token, tkIdx) in parseNoticeTokens(widget)" :key="tkIdx">
-                      <span v-if="token.type === 'text'">{{ token.text }}</span>
-                      <a 
-                        v-else-if="token.type === 'link'"
-                        :href="token.url || '#'"
-                        @click.stop.prevent="handleNoticeLinkClick(token, widget)"
-                        class="underline underline-offset-2 cursor-pointer font-medium hover:text-neutral-600 transition-colors inline"
-                      >
-                        {{ token.text }}
-                      </a>
-                    </template>
-                  </p>
+                <!-- 5. Footer Troubleshoot / Disclaimer Notice with Hyperlink and Modal Pop Up Support -->
+                <div v-if="widget.props?.showFooterNotice ?? true" class="flex items-start gap-[10px] w-full pt-[6px]">
+                  <div class="size-[18px] rounded-full bg-black text-white flex items-center justify-center shrink-0 mt-[1px]">
+                    <span class="font-707 font-bold text-[11px] leading-none italic">i</span>
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="font-707 font-bold text-[11px] leading-[15px] text-black uppercase tracking-tight">
+                      {{ widget.props?.footerNoticeTitle || "DIDN'T RECEIVE THE EMAIL?" }}
+                    </span>
+                    <p class="font-707 font-normal text-[11px] leading-[15px] text-black mt-[1px]">
+                      <template v-for="(token, tkIdx) in parseNoticeTokens(widget)" :key="tkIdx">
+                        <span v-if="token.type === 'text'">{{ token.text }}</span>
+                        <a 
+                          v-else-if="token.type === 'link'"
+                          :href="token.url || '#'"
+                          @click.stop.prevent="handleNoticeLinkClick(token, widget)"
+                          class="underline underline-offset-2 cursor-pointer font-medium hover:text-neutral-600 transition-colors inline"
+                        >
+                          {{ token.text }}
+                        </a>
+                      </template>
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -4282,49 +4323,90 @@ onUnmounted(() => {
   queuePollingTimer = null;
 });
 
+const showEPassDetail = ref(false);
+
+function getPassHeadline(widget: any): string {
+  if (isLivePass.value && livePass?.waitlisted) {
+    return 'YOU ARE ON\nTHE WAITLIST.';
+  }
+  if (widget.props?.passMode === 'queue') {
+    if (!widget.props?.heading || widget.props.heading === 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.' || widget.props.heading === 'YOU ARE IN LINE.\nPLEASE WAIT FOR\nYOUR NUMBER.') {
+      return 'SUCCESS.\nYOU ARE IN QUEUE.';
+    }
+    return widget.props.heading;
+  }
+  return widget.props?.heading || 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.';
+}
+
 function getQueueStatus(widget: any) {
-  const myNumber = isLivePass.value && livePass?.queueNumber 
+  let myNumber = isLivePass.value && livePass?.queueNumber 
     ? Number(livePass.queueNumber) 
     : (Number(widget.props?.sampleQueueNumber) || 42);
-  const serving = isLivePass.value 
+  let serving = isLivePass.value 
     ? liveQueueNowServing.value 
-    : (Number(widget.props?.sampleCalledNumber) || 28);
-  const pSize = isLivePass.value && livePass?.partySize 
+    : (Number(widget.props?.sampleCalledNumber) || 23);
+  let pSize = isLivePass.value && livePass?.partySize 
     ? Number(livePass.partySize) 
     : (Number(widget.props?.samplePartySize) || 2);
+
+  // If in Editor Preview mode, respect previewState override if chosen by brand editor
+  if (!isLivePass.value && widget.props?.previewState) {
+    const st = widget.props.previewState;
+    if (st === 'green') {
+      myNumber = 42;
+      serving = 23;
+    } else if (st === 'yellow') {
+      myNumber = 42;
+      serving = 36;
+    } else if (st === 'calling') {
+      myNumber = 42;
+      serving = 42;
+    } else if (st === 'red') {
+      myNumber = 42;
+      serving = 45;
+    } else if (st === 'black') {
+      myNumber = 42;
+      serving = 52;
+    }
+  }
+
   const ahead = myNumber - serving;
 
-  // 1. Green (> 10 ahead): Explore freely
+  // 1. Green (> 10 ahead) - Matches Figma 328:4027
   if (ahead > 10) {
+    const span = Math.max(myNumber, 42);
+    const progressPercent = Math.min(95, Math.max(12, Math.round(((span - ahead) / span) * 100)));
     return {
       kind: 'green',
       myNumber,
       serving,
       partySize: pSize,
       ahead,
-      badgeText: 'IN LINE · RELAX & EXPLORE',
-      subcopy: `You have ${ahead} parties ahead of you. You have plenty of time to explore the venue.`,
-      cardClass: 'border-[#7b8b67]/40 bg-[#f4f7f2] text-[#2d4a22]',
-      badgeClass: 'bg-[#e2edd9] text-[#2d4a22] border-[#c2d6b8]',
-      numClass: 'text-[#2d4a22]'
+      accentColor: '#6f8c75', // Figma green
+      vibingText: 'Relax and explore.',
+      aheadDisplay: String(ahead),
+      progressPercent
     };
   }
-  // 2. Yellow (1 to 10 ahead): Proximity alert to stay close
+
+  // 2. Yellow (1 to 10 ahead) - Stay close
   if (ahead > 0 && ahead <= 10) {
+    const span = Math.max(myNumber, 42);
+    const progressPercent = Math.min(96, Math.max(75, Math.round(((span - ahead) / span) * 100)));
     return {
       kind: 'yellow',
       myNumber,
       serving,
       partySize: pSize,
       ahead,
-      badgeText: 'APPROACHING · STAY CLOSE',
-      subcopy: `Only ${ahead} ${ahead === 1 ? 'party' : 'parties'} ahead of you. Please stay close to the venue gate.`,
-      cardClass: 'border-[#8f7c50]/40 bg-[#fdfaf2] text-[#6b5522]',
-      badgeClass: 'bg-[#faeed0] text-[#6b5522] border-[#e8d7a7]',
-      numClass: 'text-[#6b5522]'
+      accentColor: '#8f7c50', // 707 Bronze / Amber
+      vibingText: 'Please stay close to the gate.',
+      aheadDisplay: String(ahead),
+      progressPercent
     };
   }
-  // 3. Emerald Solid (ahead === 0): Calling now
+
+  // 3. Emerald Solid / Pulse (ahead === 0) - Active Turn
   if (ahead === 0) {
     return {
       kind: 'calling',
@@ -4332,14 +4414,14 @@ function getQueueStatus(widget: any) {
       serving,
       partySize: pSize,
       ahead,
-      badgeText: 'NOW SERVING YOUR NUMBER',
-      subcopy: 'Your number is being called right now! Proceed to the gate marshal to enter.',
-      cardClass: 'border-emerald-600 bg-emerald-600 text-white shadow-md animate-pulse',
-      badgeClass: 'bg-white text-emerald-800 border-white font-bold',
-      numClass: 'text-white'
+      accentColor: '#059669', // Emerald
+      vibingText: "It's your turn! Proceed to gate.",
+      aheadDisplay: 'Now Calling',
+      progressPercent: 100
     };
   }
-  // 4. Red (Missed within grace margin of 5)
+
+  // 4. Red (Missed within 1 to 5 turns grace margin)
   if (ahead < 0 && Math.abs(ahead) <= 5) {
     const skipped = Math.abs(ahead);
     return {
@@ -4348,26 +4430,24 @@ function getQueueStatus(widget: any) {
       serving,
       partySize: pSize,
       ahead,
-      badgeText: 'CALL MISSED (GRACE PERIOD)',
-      subcopy: `Your number was called ${skipped} turns ago. You still have a chance — report to the gate marshal immediately.`,
-      cardClass: 'border-[#7e2c32]/40 bg-[#fdf3f3] text-[#7e2c32]',
-      badgeClass: 'bg-[#fbe4e5] text-[#7e2c32] border-[#e8b5b8]',
-      numClass: 'text-[#7e2c32]'
+      accentColor: '#7e2c32', // 707 Oxblood
+      vibingText: 'Number missed. Report to marshal.',
+      aheadDisplay: `${skipped} past`,
+      progressPercent: 100
     };
   }
+
   // 5. Black (Missed past tolerance > 5 - Expired)
-  const skipped = Math.abs(ahead);
   return {
     kind: 'black',
     myNumber,
     serving,
     partySize: pSize,
     ahead,
-    badgeText: 'QUEUE NUMBER EXPIRED',
-    subcopy: `Missed past the grace margin (${skipped} numbers ago). Please re-generate your queue number to get a new spot.`,
-    cardClass: 'border-black bg-black text-white shadow-sm',
-    badgeClass: 'bg-white/20 text-white border-white/30',
-    numClass: 'text-white'
+    accentColor: '#000000', // Pure Black
+    vibingText: 'Number expired. Re-queue needed.',
+    aheadDisplay: 'Expired',
+    progressPercent: 100
   };
 }
 

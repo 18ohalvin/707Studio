@@ -83,8 +83,59 @@
         </button>
       </div>
 
-      <div v-if="passMode === 'queue'" class="p-3 rounded-[8px] bg-emerald-50 border border-emerald-200 text-[11.5px] text-emerald-800 leading-snug w-full">
-        ⚡ <strong>Live Queue Pass:</strong> Replaces QR code with a large <strong>#XX</strong> queue card, dynamic 5-color status, gate caller banner, and venue occupancy.
+      <!-- State Simulator for Brand Editor -->
+      <div v-if="passMode === 'queue'" class="flex flex-col gap-2 w-full pt-1">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-707 font-medium text-neutral-600 uppercase tracking-wider">Preview Real-Time State</span>
+          <span class="text-[10.5px] text-neutral-400 font-mono">5 Color States</span>
+        </div>
+        <div class="grid grid-cols-5 gap-1 w-full p-1 rounded-[8px] bg-black/[0.03] border border-black/5">
+          <button
+            type="button"
+            @click="queuePreviewState = 'green'"
+            class="h-[30px] rounded-[6px] text-[10.5px] font-707 font-medium flex items-center justify-center cursor-pointer transition-colors"
+            :class="queuePreviewState === 'green' ? 'bg-[#6f8c75] text-white font-semibold shadow-2xs' : 'text-neutral-600 hover:text-black'"
+            title="Green: Relax & Explore (> 10 ahead)"
+          >
+            Line
+          </button>
+          <button
+            type="button"
+            @click="queuePreviewState = 'yellow'"
+            class="h-[30px] rounded-[6px] text-[10.5px] font-707 font-medium flex items-center justify-center cursor-pointer transition-colors"
+            :class="queuePreviewState === 'yellow' ? 'bg-[#8f7c50] text-white font-semibold shadow-2xs' : 'text-neutral-600 hover:text-black'"
+            title="Yellow: Stay Close (≤ 10 ahead)"
+          >
+            Close
+          </button>
+          <button
+            type="button"
+            @click="queuePreviewState = 'calling'"
+            class="h-[30px] rounded-[6px] text-[10.5px] font-707 font-medium flex items-center justify-center cursor-pointer transition-colors"
+            :class="queuePreviewState === 'calling' ? 'bg-[#059669] text-white font-semibold shadow-2xs' : 'text-neutral-600 hover:text-black'"
+            title="Emerald: Your Turn (0 ahead)"
+          >
+            Turn
+          </button>
+          <button
+            type="button"
+            @click="queuePreviewState = 'red'"
+            class="h-[30px] rounded-[6px] text-[10.5px] font-707 font-medium flex items-center justify-center cursor-pointer transition-colors"
+            :class="queuePreviewState === 'red' ? 'bg-[#7e2c32] text-white font-semibold shadow-2xs' : 'text-neutral-600 hover:text-black'"
+            title="Red: Missed (1 to 5 turns grace)"
+          >
+            Missed
+          </button>
+          <button
+            type="button"
+            @click="queuePreviewState = 'black'"
+            class="h-[30px] rounded-[6px] text-[10.5px] font-707 font-medium flex items-center justify-center cursor-pointer transition-colors"
+            :class="queuePreviewState === 'black' ? 'bg-black text-white font-semibold shadow-2xs' : 'text-neutral-600 hover:text-black'"
+            title="Black: Expired (> 5 skipped)"
+          >
+            Expired
+          </button>
+        </div>
       </div>
     </div>
 
@@ -160,7 +211,7 @@
           <textarea 
             v-model="heading"
             rows="3"
-            placeholder="SUCCESS.&#10;YOUR PASS HAS&#10;BEEN SENT."
+            :placeholder="passMode === 'queue' ? 'SUCCESS.\nYOU ARE IN QUEUE.' : 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.'"
             class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase tracking-tight resize-y leading-[18px]"
           />
         </div>
@@ -620,6 +671,16 @@ const passMode = computed<'ticket' | 'queue'>({
   set: (val: 'ticket' | 'queue') => {
     if (currentWidget.value) {
       editorStore.updateWidgetProps(currentWidget.value.id, { passMode: val });
+    }
+  }
+});
+
+// Queue State Simulator for Live Preview in Studio
+const queuePreviewState = computed<'green' | 'yellow' | 'calling' | 'red' | 'black'>({
+  get: () => currentWidget.value?.props?.previewState ?? 'green',
+  set: (val: 'green' | 'yellow' | 'calling' | 'red' | 'black') => {
+    if (currentWidget.value) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { previewState: val });
     }
   }
 });
