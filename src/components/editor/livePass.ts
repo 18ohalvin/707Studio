@@ -28,6 +28,9 @@ export interface LivePassState {
   waitlisted: boolean;
   /** Sessions the guest picked, as recorded — the pass and its PDF print exactly these. */
   sessions: PassSession[];
+  queueNumber?: number;
+  partySize?: number;
+  pageId?: string;
   error: string;
   retry: () => void;
 }

@@ -51,6 +51,43 @@
       </button>
     </div>
 
+    <!-- Section: Presentation Mode (Standard E-Pass vs Live Queue Pass) -->
+    <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+      <div class="flex flex-col gap-[4px] w-full">
+        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+          Pass Presentation Mode
+        </p>
+        <p class="font-707 text-[11px] text-neutral-500">
+          Choose whether guests view a standard admission e-pass or an on-site live queue position with real-time status.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 w-full p-1 rounded-[10px] bg-black/[0.04] border border-black/5">
+        <button
+          type="button"
+          @click="passMode = 'ticket'"
+          class="h-[34px] rounded-[7px] text-[12px] font-707 font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+          :class="passMode === 'ticket' ? 'bg-white text-black shadow-xs font-semibold' : 'text-neutral-500 hover:text-black'"
+        >
+          <Ticket class="w-3.5 h-3.5" />
+          <span>Standard E-Pass</span>
+        </button>
+        <button
+          type="button"
+          @click="passMode = 'queue'"
+          class="h-[34px] rounded-[7px] text-[12px] font-707 font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+          :class="passMode === 'queue' ? 'bg-white text-black shadow-xs font-semibold' : 'text-neutral-500 hover:text-black'"
+        >
+          <Users class="w-3.5 h-3.5" />
+          <span>Live Queue Pass</span>
+        </button>
+      </div>
+
+      <div v-if="passMode === 'queue'" class="p-3 rounded-[8px] bg-emerald-50 border border-emerald-200 text-[11.5px] text-emerald-800 leading-snug w-full">
+        ⚡ <strong>Live Queue Pass:</strong> Replaces QR code with a large <strong>#XX</strong> queue card, dynamic 5-color status, gate caller banner, and venue occupancy.
+      </div>
+    </div>
+
     <!-- Section 0: Brand Logo (Inherited from Hero Banner) -->
     <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="flex flex-col gap-[6px] w-full">
@@ -547,6 +584,7 @@ import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { 
   Ticket, 
+  Users,
   Plus, 
   Trash2, 
   ChevronDown, 
@@ -574,6 +612,16 @@ const currentWidget = computed(() => {
   const selected = editorStore.currentPage.widget_tree.find(w => w.id === editorStore.selectedWidgetId);
   if (selected && selected.type === 'GuestEPass') return selected;
   return editorStore.currentPage.widget_tree.find(w => w.type === 'GuestEPass') || null;
+});
+
+// Pass Presentation Mode
+const passMode = computed<'ticket' | 'queue'>({
+  get: () => currentWidget.value?.props?.passMode ?? 'ticket',
+  set: (val: 'ticket' | 'queue') => {
+    if (currentWidget.value) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { passMode: val });
+    }
+  }
 });
 
 // 1. QR Code Toggle

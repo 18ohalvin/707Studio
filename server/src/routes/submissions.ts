@@ -15,6 +15,7 @@ import {
   saveQueueSettings,
   getNextQueueNumber,
   processQueueProgression,
+  processQueueBatch,
   renderTemplate,
   sendWhatsAppNotification,
   getWaLogs,
@@ -857,6 +858,15 @@ submissionsRouter.post('/call-next', requireAuth, route('advance queue called nu
   const calledNumber = Number(req.body?.called_number);
   if (!pageId || isNaN(calledNumber)) return res.status(400).json({ success: false, error: 'page_id and called_number are required' });
   const result = await processQueueProgression(pageId, calledNumber);
+  return res.json({ success: true, data: result });
+}));
+
+// POST /api/submissions/call-batch
+submissionsRouter.post('/call-batch', requireAuth, route('call batch of waiting queue guests', async (req, res) => {
+  const pageId = String(req.body?.page_id || '');
+  const spots = Number(req.body?.spots) || 1;
+  if (!pageId) return res.status(400).json({ success: false, error: 'page_id is required' });
+  const result = await processQueueBatch(pageId, spots);
   return res.json({ success: true, data: result });
 }));
 

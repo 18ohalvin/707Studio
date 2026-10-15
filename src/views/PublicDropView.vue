@@ -452,6 +452,9 @@ async function sendSubmission() {
     const sessions = recorded[SESSIONS_ANSWER_KEY];
     livePass.sessions = Array.isArray(sessions) ? sessions.filter((x: any) => x && typeof x === 'object' && x.label) : [];
     livePass.waitlisted = outcome.entry.status === 'waitlisted';
+    livePass.queueNumber = Number(outcome.entry.queue_number) || Number(recorded.queue_number) || 0;
+    livePass.partySize = Number(outcome.entry.party_size) || Number(recorded.party_size) || 1;
+    livePass.pageId = String(submissionPageId.value || outcome.entry.page_id || '');
     livePass.status = 'ready';
     joinWaitlist = false;
     void refreshPlaces();

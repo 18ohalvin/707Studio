@@ -37,76 +37,61 @@
       </div>
     </div>
 
-    <!-- 1. Top Section: 2 Ergonomic Cards (Live Calling Station vs Queue Rules) -->
+    <!-- 1. Top Section: 2 Ergonomic Cards (Venue Capacity Status vs Queue Rules) -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <!-- Card A: Live Calling Station (Operations) -->
-      <div class="p-6 rounded-[16px] border border-black/10 bg-white flex flex-col justify-between gap-6">
+      <!-- Card A: Live Venue Status & Gate Hand-off -->
+      <div class="p-6 md:p-7 rounded-[18px] border border-black/10 bg-white flex flex-col justify-between gap-6 shadow-xs">
         <div>
           <div class="flex items-center justify-between">
-            <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Live Queue Caller</span>
-            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-black/5 text-neutral-700 border border-black/10">
-              <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Live Calling Station
+            <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Venue Capacity & Real-Time Headcount</span>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-black/5 text-neutral-700 border border-black/10">
+              <span class="size-1.5 rounded-full" :style="{ backgroundColor: barColor }" />
+              {{ capacityPercent >= 100 ? 'Venue Full' : 'Accepting Entry' }}
             </span>
           </div>
 
-          <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mt-3">
+          <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mt-4">
             <div>
               <div class="flex items-baseline gap-2">
-                <span class="text-[42px] leading-none font-medium font-mono tabular-nums text-black">#{{ form.currentCalledNumber }}</span>
-                <span class="text-[13px] text-neutral-500 font-medium">Serving Now</span>
+                <span class="text-[38px] leading-none font-medium font-mono tabular-nums text-black">{{ insideCount }}</span>
+                <span class="text-[14px] text-neutral-400 font-normal">/ {{ form.maxCapacity }} Pax Inside</span>
               </div>
-              <p class="text-[12.5px] text-neutral-400 mt-1.5 leading-snug">
-                Advancing the caller triggers approaching alerts and automatically expires bypassed tickets.
+              <p class="text-[12.5px] text-neutral-400 mt-2 leading-relaxed">
+                Currently Serving: <strong class="text-black font-mono">#{{ form.currentCalledNumber }}</strong> · {{ waitingCount }} guest{{ waitingCount === 1 ? '' : 's' }} waiting in queue
               </p>
             </div>
 
-            <!-- Headcount & Capacity Progress -->
             <div class="sm:text-right flex flex-col gap-1 sm:items-end">
-              <span class="text-[11px] uppercase tracking-[0.1em] text-neutral-500 font-medium">Inside Headcount</span>
-              <span class="text-[18px] font-semibold font-mono tabular-nums text-black">
-                {{ insideCount }} <span class="text-neutral-400 font-normal text-[14px]">/ {{ form.maxCapacity }}</span>
-                <span class="ml-1.5 text-[12px] font-medium" :style="{ color: barColor }">({{ capacityPercent }}%)</span>
+              <span class="text-[11px] uppercase tracking-[0.1em] text-neutral-500 font-medium">Available Spots</span>
+              <span class="text-[22px] font-bold font-mono tabular-nums" :style="{ color: barColor }">
+                {{ Math.max(0, form.maxCapacity - insideCount) }}
               </span>
             </div>
           </div>
 
           <!-- Capacity Bar -->
-          <div class="w-full mt-4 flex flex-col gap-1.5">
-            <div class="w-full h-[6px] bg-black/[0.06] rounded-full overflow-hidden">
+          <div class="w-full mt-4 flex flex-col gap-2">
+            <div class="w-full h-[7px] bg-black/[0.06] rounded-full overflow-hidden">
               <div
                 class="h-full rounded-full transition-all duration-500 ease-out"
                 :style="{ width: `${capacityPercent}%`, backgroundColor: barColor }"
               />
             </div>
             <div class="flex items-center justify-between text-[11.5px] text-neutral-500">
-              <span>{{ waitingCount }} guests waiting in line</span>
-              <span v-if="capacityPercent >= 100" class="text-oxblood-600 font-medium">Venue full (Locked)</span>
-              <span v-else>{{ Math.max(0, form.maxCapacity - insideCount) }} capacity spots left</span>
+              <span>{{ capacityPercent }}% Venue Occupancy</span>
+              <span v-if="capacityPercent >= 100" class="text-oxblood-600 font-medium">Venue at capacity limit</span>
+              <span v-else>{{ Math.max(0, form.maxCapacity - insideCount) }} spots open for admission</span>
             </div>
           </div>
         </div>
 
-        <!-- Calling Action Buttons -->
-        <div class="flex items-center gap-2.5 pt-4 border-t border-black/5">
-          <button
-            type="button"
-            @click="stepCaller(-1)"
-            :disabled="form.currentCalledNumber <= 1"
-            class="h-[44px] px-4 rounded-[10px] border border-black/15 bg-white text-[13.5px] font-medium hover:bg-black/5 disabled:opacity-30 transition-colors cursor-pointer"
-            title="Step back to previous number"
-          >
-            -1 Step Back
-          </button>
-
-          <button
-            type="button"
-            @click="stepCaller(1)"
-            class="apple-cta-btn flex-1 h-[44px] px-5 rounded-[10px] bg-black text-white text-[13.5px] font-medium cursor-pointer hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2"
-          >
-            <Volume2 class="w-4 h-4" />
-            <span>Call Next (#{{ form.currentCalledNumber + 1 }})</span>
-          </button>
+        <!-- Hand-off notice to Door Scanner -->
+        <div class="p-3.5 rounded-[12px] bg-black/[0.02] border border-black/5 flex items-center justify-between gap-3 text-[12.5px] text-neutral-600">
+          <div class="flex items-center gap-2.5">
+            <ScanLine class="w-4 h-4 text-neutral-500 shrink-0" />
+            <span>Multi-person batch calling and live guest admissions are managed directly at the <strong>Gate Scanner</strong>.</span>
+          </div>
+          <span class="text-[11px] uppercase tracking-wider font-mono text-neutral-400 shrink-0">Live at Gate</span>
         </div>
       </div>
 
@@ -212,27 +197,27 @@
     </div>
 
     <!-- 2. Option 1: WhatsApp Notification Section with Dedicated Apple-Style Toggle Switch -->
-    <div class="p-6 rounded-[16px] border border-black/10 bg-white flex flex-col gap-6">
+    <div class="p-7 sm:p-8 md:p-10 rounded-[22px] border border-black/10 bg-white flex flex-col gap-8 shadow-xs">
       <!-- Master Toggle Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4" :class="form.waEnabled ? 'border-b border-black/10' : ''">
-        <div class="flex items-start gap-3.5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-5 pb-6" :class="form.waEnabled ? 'border-b border-black/10' : ''">
+        <div class="flex items-start gap-4">
           <div
-            class="size-10 rounded-[10px] flex items-center justify-center shrink-0 mt-0.5 transition-colors"
+            class="size-11 rounded-[12px] flex items-center justify-center shrink-0 mt-0.5 transition-colors"
             :class="form.waEnabled ? 'bg-emerald-600 text-white shadow-sm' : 'bg-black/5 text-neutral-400'"
           >
             <MessageSquare class="w-5 h-5" />
           </div>
           <div>
-            <div class="flex items-center gap-2">
-              <h3 class="text-[17px] font-medium tracking-tight text-black">Automated WhatsApp Notifications</h3>
+            <div class="flex items-center gap-2.5">
+              <h3 class="text-[18px] font-medium tracking-tight text-black">Automated WhatsApp Notifications</h3>
               <span
-                class="text-[10.5px] uppercase tracking-[0.1em] font-mono px-2 py-0.5 rounded-full border transition-colors"
+                class="text-[10.5px] uppercase tracking-[0.1em] font-mono px-2.5 py-0.5 rounded-full border transition-colors"
                 :class="form.waEnabled ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-neutral-100 text-neutral-500 border-neutral-200'"
               >
                 {{ form.waEnabled ? 'Active' : 'Disabled' }}
               </span>
             </div>
-            <p class="text-[13px] text-neutral-500 mt-0.5 leading-relaxed max-w-[620px]">
+            <p class="text-[13.5px] text-neutral-500 mt-1 leading-relaxed max-w-[640px]">
               Dispatch automated WhatsApp messages to customer phones for queue confirmation, approaching turn alerts, and ticket passes.
             </p>
           </div>
@@ -240,7 +225,7 @@
 
         <!-- Apple-style Toggle Switch -->
         <div class="flex items-center gap-3 shrink-0 self-start sm:self-center">
-          <span class="text-[12.5px] font-medium" :class="form.waEnabled ? 'text-black' : 'text-neutral-400'">
+          <span class="text-[13px] font-medium" :class="form.waEnabled ? 'text-black' : 'text-neutral-400'">
             {{ form.waEnabled ? 'Enabled' : 'Off' }}
           </span>
           <button
@@ -262,15 +247,15 @@
       </div>
 
       <!-- State A: Disabled (Clean, zero cognitive overload) -->
-      <div v-if="!form.waEnabled" class="p-4 rounded-[12px] bg-neutral-50 border border-black/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[12.5px] text-neutral-500">
-        <div class="flex items-center gap-2.5">
+      <div v-if="!form.waEnabled" class="p-5 rounded-[14px] bg-neutral-50 border border-black/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-[13px] text-neutral-500">
+        <div class="flex items-center gap-3">
           <BellOff class="w-4 h-4 text-neutral-400 shrink-0" />
           <span>WhatsApp notifications are turned off for this campaign. The queue operates strictly on-screen and at the door without sending outbound messages.</span>
         </div>
         <button
           type="button"
           @click="form.waEnabled = true"
-          class="text-[12px] font-medium text-black underline underline-offset-2 hover:opacity-70 cursor-pointer shrink-0"
+          class="text-[12.5px] font-medium text-black underline underline-offset-2 hover:opacity-70 cursor-pointer shrink-0"
         >
           Enable Notifications
         </button>
@@ -280,23 +265,23 @@
       <template v-else>
         <!-- WhatsApp Device Linking Station -->
         <div
-          class="p-4.5 rounded-[14px] border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
-          :class="form.waConnection?.connected ? 'border-emerald-200 bg-emerald-500/[0.03]' : 'border-black/10 bg-black/[0.015]'"
+          class="p-7 sm:p-8 md:p-9 rounded-[22px] border transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-xs"
+          :class="form.waConnection?.connected ? 'border-emerald-200/80 bg-emerald-500/[0.04]' : 'border-black/10 bg-neutral-50/70'"
         >
-          <div class="flex items-start gap-3.5">
+          <div class="flex items-start gap-4">
             <div
-              class="size-10 rounded-[10px] flex items-center justify-center shrink-0 mt-0.5 shadow-2xs transition-colors"
-              :class="form.waConnection?.connected ? 'bg-emerald-600 text-white' : 'bg-neutral-100 text-neutral-600 border border-black/5'"
+              class="size-12 rounded-[14px] flex items-center justify-center shrink-0 mt-0.5 shadow-2xs transition-colors"
+              :class="form.waConnection?.connected ? 'bg-emerald-600 text-white' : 'bg-white text-neutral-600 border border-black/10'"
             >
-              <Smartphone class="w-5 h-5" />
+              <Smartphone class="w-6 h-6" />
             </div>
             <div>
-              <div class="flex items-center gap-2">
-                <h4 class="text-[14px] font-medium text-black">
+              <div class="flex flex-wrap items-center gap-2.5">
+                <h4 class="text-[15.5px] font-medium text-black">
                   {{ form.waConnection?.connected ? `Sender: ${form.waConnection?.phoneNumber || 'Linked Phone'}` : 'Business WhatsApp Sender Device' }}
                 </h4>
                 <span
-                  class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10.5px] font-medium border transition-colors"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium border transition-colors"
                   :class="form.waConnection?.connected ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-50 text-amber-800 border-amber-200'"
                 >
                   <span
@@ -306,7 +291,7 @@
                   {{ form.waConnection?.connected ? 'Linked & Active' : 'Not Linked (Offline)' }}
                 </span>
               </div>
-              <p class="text-[12.5px] text-neutral-500 mt-0.5 leading-snug">
+              <p class="text-[13px] text-neutral-500 mt-1 leading-relaxed max-w-[560px]">
                 <template v-if="form.waConnection?.connected">
                   {{ form.waConnection?.sessionName || '707 Studio Primary WhatsApp' }} ·
                   <span class="text-neutral-400">Linked {{ formatLinkedTime(form.waConnection?.linkedAt) }} via {{ formatProvider(form.waConnection?.provider) }}</span>
@@ -318,35 +303,35 @@
             </div>
           </div>
 
-          <div class="flex items-center gap-2 shrink-0">
+          <div class="flex flex-wrap items-center gap-2.5 shrink-0">
             <template v-if="form.waConnection?.connected">
               <button
                 type="button"
                 @click="openTestModal"
-                class="h-[36px] px-3.5 rounded-[8px] border border-black/15 bg-white text-[12px] font-medium hover:bg-black/5 flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs text-black"
+                class="h-[38px] px-4 rounded-[10px] border border-black/15 bg-white text-[12.5px] font-medium hover:bg-black/5 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs text-black"
                 title="Send a quick test WhatsApp notification"
               >
-                <Send class="w-3.5 h-3.5 text-emerald-600" />
+                <Send class="w-4 h-4 text-emerald-600" />
                 <span>Send Test</span>
               </button>
 
               <button
                 type="button"
                 @click="openLogsModal"
-                class="h-[36px] px-3.5 rounded-[8px] border border-black/15 bg-white text-[12px] font-medium hover:bg-black/5 flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs text-black"
+                class="h-[38px] px-4 rounded-[10px] border border-black/15 bg-white text-[12.5px] font-medium hover:bg-black/5 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs text-black"
                 title="View recent outgoing WhatsApp audit log"
               >
-                <History class="w-3.5 h-3.5 text-neutral-500" />
+                <History class="w-4 h-4 text-neutral-500" />
                 <span>Logs</span>
               </button>
 
               <button
                 type="button"
                 @click="handleUnlinkDevice"
-                class="h-[36px] px-3 rounded-[8px] border border-red-200 text-red-600 hover:bg-red-50 text-[12px] font-medium flex items-center gap-1.5 cursor-pointer transition-colors"
+                class="h-[38px] px-3.5 rounded-[10px] border border-red-200 text-red-600 hover:bg-red-50 text-[12.5px] font-medium flex items-center gap-1.5 cursor-pointer transition-colors"
                 title="Disconnect linked WhatsApp device"
               >
-                <Unlink class="w-3.5 h-3.5" />
+                <Unlink class="w-4 h-4" />
                 <span>Unlink</span>
               </button>
             </template>
@@ -354,7 +339,7 @@
               <button
                 type="button"
                 @click="openLinkModal"
-                class="h-[38px] px-4 rounded-[10px] bg-black text-white text-[12.5px] font-medium hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
+                class="h-[42px] px-5 rounded-[12px] bg-black text-white text-[13px] font-medium hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
               >
                 <QrCode class="w-4 h-4" />
                 <span>Link WhatsApp Device</span>
@@ -529,16 +514,16 @@
       class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
       @click.self="showLinkModal = false"
     >
-      <div class="w-full max-w-[540px] bg-white rounded-[20px] shadow-2xl border border-black/10 overflow-hidden flex flex-col font-707">
+      <div class="w-full max-w-[580px] bg-white rounded-[24px] shadow-2xl border border-black/10 overflow-hidden flex flex-col font-707">
         <!-- Header -->
-        <div class="p-5 border-b border-black/10 flex items-center justify-between bg-neutral-50/50">
-          <div class="flex items-center gap-3">
-            <div class="size-9 rounded-[10px] bg-emerald-600 text-white flex items-center justify-center shadow-2xs">
+        <div class="p-6 sm:p-7 border-b border-black/10 flex items-center justify-between bg-neutral-50/50">
+          <div class="flex items-center gap-3.5">
+            <div class="size-10 rounded-[12px] bg-emerald-600 text-white flex items-center justify-center shadow-2xs">
               <QrCode class="w-5 h-5" />
             </div>
             <div>
-              <h3 class="text-[16px] font-medium text-black">Link WhatsApp Device</h3>
-              <p class="text-[12px] text-neutral-500">Connect your business number to dispatch automated notifications.</p>
+              <h3 class="text-[17px] font-medium text-black">Link WhatsApp Device</h3>
+              <p class="text-[12.5px] text-neutral-500 mt-0.5">Connect your business number to dispatch automated notifications.</p>
             </div>
           </div>
           <button
@@ -551,11 +536,11 @@
         </div>
 
         <!-- Mode Tabs -->
-        <div class="flex items-center border-b border-black/10 px-5 pt-3 gap-2 bg-white">
+        <div class="flex items-center border-b border-black/10 px-6 sm:px-7 pt-4 gap-3 bg-white">
           <button
             type="button"
             @click="linkTab = 'qr'"
-            class="pb-2.5 px-3 text-[12.5px] font-medium border-b-2 transition-colors cursor-pointer flex items-center gap-1.5"
+            class="pb-3 px-3.5 text-[13px] font-medium border-b-2 transition-colors cursor-pointer flex items-center gap-2"
             :class="linkTab === 'qr' ? 'border-black text-black' : 'border-transparent text-neutral-400 hover:text-neutral-700'"
           >
             <QrCode class="w-3.5 h-3.5" />
@@ -564,7 +549,7 @@
           <button
             type="button"
             @click="linkTab = 'code'"
-            class="pb-2.5 px-3 text-[12.5px] font-medium border-b-2 transition-colors cursor-pointer flex items-center gap-1.5"
+            class="pb-3 px-3.5 text-[13px] font-medium border-b-2 transition-colors cursor-pointer flex items-center gap-2"
             :class="linkTab === 'code' ? 'border-black text-black' : 'border-transparent text-neutral-400 hover:text-neutral-700'"
           >
             <Smartphone class="w-3.5 h-3.5" />
@@ -573,7 +558,7 @@
           <button
             type="button"
             @click="linkTab = 'gateway'"
-            class="pb-2.5 px-3 text-[12.5px] font-medium border-b-2 transition-colors cursor-pointer flex items-center gap-1.5"
+            class="pb-3 px-3.5 text-[13px] font-medium border-b-2 transition-colors cursor-pointer flex items-center gap-2"
             :class="linkTab === 'gateway' ? 'border-black text-black' : 'border-transparent text-neutral-400 hover:text-neutral-700'"
           >
             <Link2 class="w-3.5 h-3.5" />
@@ -582,14 +567,14 @@
         </div>
 
         <!-- Body -->
-        <div class="p-6 flex flex-col gap-5 overflow-y-auto max-h-[70vh]">
+        <div class="p-6 sm:p-8 flex flex-col gap-6 overflow-y-auto max-h-[70vh]">
           <!-- TAB 1: SCAN QR CODE -->
-          <div v-if="linkTab === 'qr'" class="flex flex-col items-center gap-5">
+          <div v-if="linkTab === 'qr'" class="flex flex-col items-center gap-6">
             <!-- QR Card -->
-            <div class="p-4 rounded-[16px] bg-white border border-black/15 shadow-sm flex flex-col items-center relative">
+            <div class="p-6 rounded-[20px] bg-white border border-black/15 shadow-sm flex flex-col items-center relative">
               <div v-if="isGeneratingSession" class="size-[200px] flex flex-col items-center justify-center gap-2 text-neutral-400">
                 <RefreshCw class="w-6 h-6 animate-spin text-emerald-600" />
-                <span class="text-[11.5px]">Generating session…</span>
+                <span class="text-[12px]">Generating session…</span>
               </div>
               <img
                 v-else-if="qrDataUrl"
@@ -601,24 +586,24 @@
                 Failed to generate QR
               </div>
 
-              <div class="mt-2 flex items-center gap-1.5 text-[11px] text-neutral-400">
+              <div class="mt-3 flex items-center gap-1.5 text-[11.5px] text-neutral-400">
                 <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span>Live WhatsApp Multi-Device Session</span>
               </div>
             </div>
 
             <!-- Steps -->
-            <div class="w-full p-3.5 rounded-[12px] bg-black/[0.02] border border-black/5 flex flex-col gap-2 text-[12.5px] text-neutral-600">
-              <div class="flex items-start gap-2.5">
-                <span class="size-4.5 rounded-full bg-black text-white text-[10.5px] font-mono flex items-center justify-center shrink-0 mt-0.5">1</span>
+            <div class="w-full p-4 sm:p-5 rounded-[16px] bg-black/[0.02] border border-black/5 flex flex-col gap-3 text-[13px] text-neutral-600">
+              <div class="flex items-start gap-3">
+                <span class="size-5 rounded-full bg-black text-white text-[11px] font-mono flex items-center justify-center shrink-0 mt-0.5">1</span>
                 <span>Open <strong>WhatsApp</strong> on your phone</span>
               </div>
-              <div class="flex items-start gap-2.5">
-                <span class="size-4.5 rounded-full bg-black text-white text-[10.5px] font-mono flex items-center justify-center shrink-0 mt-0.5">2</span>
+              <div class="flex items-start gap-3">
+                <span class="size-5 rounded-full bg-black text-white text-[11px] font-mono flex items-center justify-center shrink-0 mt-0.5">2</span>
                 <span>Tap <strong>Settings</strong> (iOS) or <strong>⋮ More options</strong> (Android) &gt; <strong>Linked Devices</strong></span>
               </div>
-              <div class="flex items-start gap-2.5">
-                <span class="size-4.5 rounded-full bg-black text-white text-[10.5px] font-mono flex items-center justify-center shrink-0 mt-0.5">3</span>
+              <div class="flex items-start gap-3">
+                <span class="size-5 rounded-full bg-black text-white text-[11px] font-mono flex items-center justify-center shrink-0 mt-0.5">3</span>
                 <span>Tap <strong>Link a Device</strong> and point your phone's camera at the QR code</span>
               </div>
             </div>
@@ -949,6 +934,7 @@ import {
   Send,
   History,
   Copy,
+  ScanLine,
   X
 } from 'lucide-vue-next';
 import QRCode from 'qrcode';

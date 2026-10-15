@@ -1391,15 +1391,71 @@ more</span>
 
               <!-- 1. Big Headline Display (H2 - responsive multiline without double line restriction) -->
               <h2 class="font-707 font-medium text-heading-h2 text-[22px] leading-[28px] tracking-tight uppercase text-black whitespace-pre-line break-words mt-[2px]">
-                {{ isLivePass && livePass!.waitlisted ? 'YOU ARE ON\nTHE WAITLIST.' : (widget.props?.heading || 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.') }}
+                {{ isLivePass && livePass!.waitlisted ? 'YOU ARE ON\nTHE WAITLIST.' : (widget.props?.heading || (widget.props?.passMode === 'queue' ? 'YOU ARE IN LINE.\nPLEASE WAIT FOR\nYOUR NUMBER.' : 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.')) }}
               </h2>
               <p v-if="isLivePass && livePass!.waitlisted" class="font-707 text-[13px] leading-[19px] text-neutral-600 -mt-[6px]">
                 Your details are held. We will write to you the moment a place opens — this code does not admit you until then.
               </p>
 
-              <!-- 2. QR Code Section (Positioned directly under Headline and ABOVE Pass Information fields, Left Aligned with transparent canvas bg) -->
+              <!-- 2a. Live Queue Pass Presentation (Replaces QR Code with Big #XX Number + 5-Color Progression System) -->
               <div 
-                v-if="widget.props?.showQrCode !== false && !(isLivePass && livePass!.waitlisted)" 
+                v-if="widget.props?.passMode === 'queue' && !(isLivePass && livePass!.waitlisted)" 
+                class="w-full flex flex-col gap-3 pt-[2px]"
+              >
+                <!-- Large Queue Card with 5-Color Progression -->
+                <div 
+                  class="w-full rounded-[16px] p-5 sm:p-6 border flex flex-col items-center justify-center text-center gap-2.5 transition-all shadow-xs relative overflow-hidden font-707"
+                  :class="getQueueStatus(widget).cardClass"
+                >
+                  <!-- Status Pill -->
+                  <div class="flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] uppercase tracking-[0.1em] font-medium border" :class="getQueueStatus(widget).badgeClass">
+                    <span class="size-1.5 rounded-full" :class="getQueueStatus(widget).kind === 'calling' ? 'bg-white animate-ping' : 'bg-current'" />
+                    <span>{{ getQueueStatus(widget).badgeText }}</span>
+                  </div>
+
+                  <!-- Big #XX Number Display -->
+                  <div class="flex flex-col items-center my-1">
+                    <span class="text-[11px] uppercase tracking-[0.12em] opacity-75 font-mono">Your Queue Number</span>
+                    <span class="text-[48px] sm:text-[54px] font-bold font-mono tracking-tight leading-none" :class="getQueueStatus(widget).numClass">
+                      #{{ getQueueStatus(widget).myNumber }}
+                    </span>
+                    <span class="text-[12px] font-mono opacity-80 mt-1">
+                      Party of {{ getQueueStatus(widget).partySize }}
+                    </span>
+                  </div>
+
+                  <!-- Subcopy guidance -->
+                  <p class="text-[12.5px] leading-snug max-w-[280px] opacity-90">
+                    {{ getQueueStatus(widget).subcopy }}
+                  </p>
+
+                  <!-- Re-generate action button for Black / Expired state -->
+                  <button
+                    v-if="getQueueStatus(widget).kind === 'black'"
+                    type="button"
+                    @click.stop="isLivePass ? livePass!.retry() : null"
+                    class="mt-2 h-[34px] px-4 rounded-[8px] bg-white text-black text-[12px] font-medium hover:bg-neutral-100 transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
+                  >
+                    <RefreshCw class="w-3.5 h-3.5" />
+                    <span>Re-Generate Queue Number</span>
+                  </button>
+                </div>
+
+                <!-- Now Calling at Gate Bar (Estimate wait removed per user request) -->
+                <div class="w-full p-3 rounded-[12px] bg-black/[0.03] border border-black/8 flex items-center justify-between font-707 text-[12px]">
+                  <div class="flex items-center gap-2">
+                    <Volume2 class="w-4 h-4 text-neutral-600" />
+                    <span class="uppercase tracking-wider text-neutral-500 font-mono text-[10.5px]">Now Calling at Gate:</span>
+                  </div>
+                  <span class="font-mono font-bold text-[14px] text-black bg-white px-2.5 py-0.5 rounded-[6px] border border-black/10 shadow-2xs">
+                    #{{ getQueueStatus(widget).serving }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- 2b. QR Code Section (Positioned directly under Headline in Standard E-Pass mode) -->
+              <div 
+                v-else-if="widget.props?.showQrCode !== false && !(isLivePass && livePass!.waitlisted)" 
                 class="w-full flex items-start justify-start pt-[4px]"
               >
                 <div class="size-[132px] border-[0.5px] border-black bg-transparent rounded-[6px] p-[10px] flex items-center justify-center relative overflow-hidden shadow-xs">
@@ -1935,7 +1991,7 @@ more</span>
 
 <script setup lang="ts">
 import { clampLogoHeight, logoImageWidth, TICKET_LOGO_HEIGHT } from './logoSize.ts';
-import { ref, reactive, computed, watch, nextTick, onMounted, inject } from 'vue';
+import { ref, reactive, computed, watch, nextTick, onMounted, onUnmounted, inject } from 'vue';
 import QRCode from 'qrcode';
 import { PLACES_KEY, placeStatus, placeKey, configuredLimit, type PlaceStatus } from '../../services/places.ts';
 import { LIVE_PASS_KEY, SESSIONS_ANSWER_KEY, type PassSession } from './livePass.ts';
@@ -1957,10 +2013,14 @@ import {
   LayoutGrid,
   ArrowRight,
   Ticket,
+  Users,
+  Volume2,
+  RefreshCw,
   Phone,
   Instagram,
   Image as ImageIcon
 } from 'lucide-vue-next';
+import { fetchQueueSettings } from '../hub/hubUtils.ts';
 import { uploadMediaDirectly } from '../../services/mediaService.ts';
 import type { ActivationPage } from '../../types/editor.ts';
 
@@ -4193,6 +4253,122 @@ async function handleChoiceImageDrop(e: DragEvent, widget: any, optId: string) {
     };
     reader.readAsDataURL(file);
   }
+}
+
+/* ---------- Live Queue Pass Polling & Status Progression System ---------- */
+const liveQueueNowServing = ref<number>(28);
+let queuePollingTimer: ReturnType<typeof setInterval> | null = null;
+
+async function pollQueueStatus() {
+  const pageId = livePass?.pageId || activePage.value?.id;
+  if (!pageId) return;
+  try {
+    const s = await fetchQueueSettings(pageId);
+    if (s && typeof s.currentCalledNumber === 'number') {
+      liveQueueNowServing.value = s.currentCalledNumber;
+    }
+  } catch { /* ignore network glitch in background polling */ }
+}
+
+onMounted(() => {
+  if (isLivePass.value) {
+    void pollQueueStatus();
+    queuePollingTimer = setInterval(pollQueueStatus, 4000);
+  }
+});
+
+onUnmounted(() => {
+  if (queuePollingTimer) clearInterval(queuePollingTimer);
+  queuePollingTimer = null;
+});
+
+function getQueueStatus(widget: any) {
+  const myNumber = isLivePass.value && livePass?.queueNumber 
+    ? Number(livePass.queueNumber) 
+    : (Number(widget.props?.sampleQueueNumber) || 42);
+  const serving = isLivePass.value 
+    ? liveQueueNowServing.value 
+    : (Number(widget.props?.sampleCalledNumber) || 28);
+  const pSize = isLivePass.value && livePass?.partySize 
+    ? Number(livePass.partySize) 
+    : (Number(widget.props?.samplePartySize) || 2);
+  const ahead = myNumber - serving;
+
+  // 1. Green (> 10 ahead): Explore freely
+  if (ahead > 10) {
+    return {
+      kind: 'green',
+      myNumber,
+      serving,
+      partySize: pSize,
+      ahead,
+      badgeText: 'IN LINE · RELAX & EXPLORE',
+      subcopy: `You have ${ahead} parties ahead of you. You have plenty of time to explore the venue.`,
+      cardClass: 'border-[#7b8b67]/40 bg-[#f4f7f2] text-[#2d4a22]',
+      badgeClass: 'bg-[#e2edd9] text-[#2d4a22] border-[#c2d6b8]',
+      numClass: 'text-[#2d4a22]'
+    };
+  }
+  // 2. Yellow (1 to 10 ahead): Proximity alert to stay close
+  if (ahead > 0 && ahead <= 10) {
+    return {
+      kind: 'yellow',
+      myNumber,
+      serving,
+      partySize: pSize,
+      ahead,
+      badgeText: 'APPROACHING · STAY CLOSE',
+      subcopy: `Only ${ahead} ${ahead === 1 ? 'party' : 'parties'} ahead of you. Please stay close to the venue gate.`,
+      cardClass: 'border-[#8f7c50]/40 bg-[#fdfaf2] text-[#6b5522]',
+      badgeClass: 'bg-[#faeed0] text-[#6b5522] border-[#e8d7a7]',
+      numClass: 'text-[#6b5522]'
+    };
+  }
+  // 3. Emerald Solid (ahead === 0): Calling now
+  if (ahead === 0) {
+    return {
+      kind: 'calling',
+      myNumber,
+      serving,
+      partySize: pSize,
+      ahead,
+      badgeText: 'NOW SERVING YOUR NUMBER',
+      subcopy: 'Your number is being called right now! Proceed to the gate marshal to enter.',
+      cardClass: 'border-emerald-600 bg-emerald-600 text-white shadow-md animate-pulse',
+      badgeClass: 'bg-white text-emerald-800 border-white font-bold',
+      numClass: 'text-white'
+    };
+  }
+  // 4. Red (Missed within grace margin of 5)
+  if (ahead < 0 && Math.abs(ahead) <= 5) {
+    const skipped = Math.abs(ahead);
+    return {
+      kind: 'red',
+      myNumber,
+      serving,
+      partySize: pSize,
+      ahead,
+      badgeText: 'CALL MISSED (GRACE PERIOD)',
+      subcopy: `Your number was called ${skipped} turns ago. You still have a chance — report to the gate marshal immediately.`,
+      cardClass: 'border-[#7e2c32]/40 bg-[#fdf3f3] text-[#7e2c32]',
+      badgeClass: 'bg-[#fbe4e5] text-[#7e2c32] border-[#e8b5b8]',
+      numClass: 'text-[#7e2c32]'
+    };
+  }
+  // 5. Black (Missed past tolerance > 5 - Expired)
+  const skipped = Math.abs(ahead);
+  return {
+    kind: 'black',
+    myNumber,
+    serving,
+    partySize: pSize,
+    ahead,
+    badgeText: 'QUEUE NUMBER EXPIRED',
+    subcopy: `Missed past the grace margin (${skipped} numbers ago). Please re-generate your queue number to get a new spot.`,
+    cardClass: 'border-black bg-black text-white shadow-sm',
+    badgeClass: 'bg-white/20 text-white border-white/30',
+    numClass: 'text-white'
+  };
 }
 
 function getGuestName(widget: any) {

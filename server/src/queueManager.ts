@@ -207,3 +207,133 @@ export async function processQueueProgression(pageId: string, newCalledNumber: n
 
   return { calledNumber: newCalledNumber, approachingCount, expiredCount };
 }
+
+/**
+ * Call the next batch of guests automatically based on available venue spots
+ */
+export async function processQueueBatch(pageId: string, requestedSpots: number) {
+  const settings = await getQueueSettings(pageId);
+  const spots = Math.max(1, requestedSpots || 1);
+  const storeIsDb = getDbStatus().isConnected;
+
+  let calledGuests: any[] = [];
+  let newCalledNumber = settings.currentCalledNumber || 1;
+  let approachingCount = 0;
+  let expiredCount = 0;
+
+  if (storeIsDb) {
+    // 1. Fetch unadmitted, waiting guests in queue order
+    const waitingRes = await pool.query(
+      `SELECT * FROM submissions
+        WHERE page_id = $1
+          AND checked_in_at IS NULL
+          AND (queue_status = 'waiting' OR queue_status IS NULL)
+          AND status NOT IN ('declined', 'waitlisted')
+        ORDER BY queue_number ASC
+        LIMIT 20`,
+      [pageId]
+    );
+
+    let accumulatedParty = 0;
+    for (const sub of waitingRes.rows) {
+      const pSize = Number(sub.party_size) || 1;
+      // If we haven't picked anyone yet, or if adding this party fits within available spots
+      if (calledGuests.length === 0 || accumulatedParty + pSize <= spots) {
+        accumulatedParty += pSize;
+        calledGuests.push(sub);
+        newCalledNumber = Math.max(newCalledNumber, Number(sub.queue_number) || 0);
+
+        // Mark as called
+        await pool.query(
+          `UPDATE submissions
+              SET queue_status = 'called',
+                  wa_notified_states = COALESCE(wa_notified_states, '[]'::jsonb) || '["ready"]'::jsonb
+            WHERE id = $1`,
+          [sub.id]
+        );
+
+        // Send ready WhatsApp notification
+        if (settings.waEnabled) {
+          const form = typeof sub.form_data === 'string' ? JSON.parse(sub.form_data) : (sub.form_data || {});
+          const phone = form.phone || form.whatsapp || form['WhatsApp'] || form['Phone'] || form['No WhatsApp'] || '';
+          const name = form.fullName || form.name || 'Visitor';
+          if (phone) {
+            const text = renderTemplate(settings.waTemplates.ready, {
+              name,
+              queue_number: sub.queue_number,
+              party_size: pSize,
+              access_id: sub.ticket_code
+            });
+            await sendWhatsAppNotification(phone, text, {
+              pageId,
+              submissionId: sub.id,
+              event: 'ready',
+              gatewayUrl: settings.waConnection?.gatewayUrl
+            });
+          }
+        }
+      } else {
+        // Spots filled
+        break;
+      }
+    }
+  } else {
+    // Standalone memory / fileStorage
+    const subs = readDataFile<any[]>('submissions.json', []);
+    const matching = subs
+      .filter(s => s.page_id === pageId && !s.checked_in_at && (!s.queue_status || s.queue_status === 'waiting') && !['declined', 'waitlisted'].includes(s.status))
+      .sort((a, b) => (Number(a.queue_number) || 0) - (Number(b.queue_number) || 0));
+
+    let accumulatedParty = 0;
+    for (const sub of matching) {
+      const pSize = Number(sub.party_size) || 1;
+      if (calledGuests.length === 0 || accumulatedParty + pSize <= spots) {
+        accumulatedParty += pSize;
+        calledGuests.push(sub);
+        newCalledNumber = Math.max(newCalledNumber, Number(sub.queue_number) || 0);
+        sub.queue_status = 'called';
+        sub.wa_notified_states = [...(sub.wa_notified_states || []), 'ready'];
+
+        if (settings.waEnabled) {
+          const form = sub.form_data || {};
+          const phone = form.phone || form.whatsapp || form['WhatsApp'] || form['Phone'] || form['No WhatsApp'] || '';
+          const name = form.fullName || form.name || 'Visitor';
+          if (phone) {
+            const text = renderTemplate(settings.waTemplates.ready, {
+              name,
+              queue_number: sub.queue_number,
+              party_size: pSize,
+              access_id: sub.ticket_code
+            });
+            await sendWhatsAppNotification(phone, text, {
+              pageId,
+              submissionId: sub.id,
+              event: 'ready',
+              gatewayUrl: settings.waConnection?.gatewayUrl
+            });
+          }
+        }
+      } else {
+        break;
+      }
+    }
+    writeDataFile('submissions.json', subs);
+  }
+
+  // Update currentCalledNumber and trigger approaching & expired logic
+  if (calledGuests.length > 0) {
+    await saveQueueSettings(pageId, { currentCalledNumber: newCalledNumber });
+    const prog = await processQueueProgression(pageId, newCalledNumber);
+    approachingCount = prog.approachingCount;
+    expiredCount = prog.expiredCount;
+  }
+
+  return {
+    calledGuests,
+    calledCount: calledGuests.length,
+    newCalledNumber,
+    approachingCount,
+    expiredCount
+  };
+}
+

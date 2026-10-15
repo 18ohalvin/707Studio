@@ -366,6 +366,15 @@ export async function callNextQueue(pageId: string, calledNumber: number): Promi
   return json?.data || null;
 }
 
+export async function callBatchQueue(pageId: string, spots: number): Promise<{ calledGuests: any[]; calledCount: number; newCalledNumber: number; approachingCount: number; expiredCount: number } | null> {
+  const json = await apiJson<{ success: boolean; data: any }>('/api/submissions/call-batch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page_id: pageId, spots })
+  });
+  return json?.data || null;
+}
+
 export async function fetchWaLinkSession(pageId: string, phone?: string): Promise<WaLinkSessionData | null> {
   const q = new URLSearchParams({ page_id: pageId });
   if (phone) q.set('phone', phone);

@@ -19,7 +19,7 @@
       <!-- Camera panel -->
       <section class="min-h-0 rounded-[16px] bg-editor-bg text-white border border-editor-border overflow-hidden flex flex-col">
         <div class="flex items-center justify-between gap-2 px-3 h-[48px] shrink-0 border-b border-white/10">
-          <div class="flex items-center gap-2 p-1 rounded-[10px] bg-white/[0.08] border border-white/10 text-[13px]">
+          <div v-if="queueEnabled" class="flex items-center gap-2 p-1 rounded-[10px] bg-white/[0.08] border border-white/10 text-[13px]">
             <span class="flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] font-medium uppercase tracking-[0.06em] text-[11px]" :class="mode === 'in' ? 'bg-moss-600 text-white' : 'bg-neutral-800 text-white'">
               <component :is="mode === 'in' ? LogIn : LogOut" class="w-3.5 h-3.5" />
               {{ mode === 'in' ? 'Entrance Gate' : 'Exit Gate' }}
@@ -33,6 +33,10 @@
             >
               Switch Gate
             </button>
+          </div>
+          <div v-else class="flex items-center gap-2 px-3 py-1.5 rounded-[10px] bg-white/[0.08] border border-white/10 text-[11.5px] uppercase tracking-[0.08em] font-medium text-white/80">
+            <ScanLine class="w-3.5 h-3.5 text-emerald-400" />
+            <span>Gate Scanner</span>
           </div>
           <div class="flex items-center gap-1">
             <button type="button" @click="soundOn = !soundOn" class="size-[40px] rounded-[10px] active:bg-white/15 flex items-center justify-center cursor-pointer text-white/70" :title="soundOn ? 'Mute scan sounds' : 'Enable scan sounds'">
@@ -90,8 +94,8 @@
 
       <!-- Counts, lookup, matches, keypad -->
       <section class="min-h-0 flex flex-col gap-2">
-        <!-- 707 UI Horizontal Progress Bar & Live Capacity -->
-        <div class="shrink-0 flex flex-col gap-1.5 px-1 pt-0.5">
+        <!-- 707 UI Horizontal Progress Bar & Live Capacity (shown when queueEnabled) -->
+        <div v-if="queueEnabled" class="shrink-0 flex flex-col gap-1.5 px-1 pt-0.5">
           <div class="flex items-center justify-between text-[11px] uppercase tracking-[0.1em] text-neutral-500 font-medium">
             <span class="flex items-center gap-1.5">
               <span class="size-2 rounded-full transition-colors duration-300" :style="{ backgroundColor: barColor }" />
@@ -177,91 +181,177 @@
               <p v-if="!candidates.length" class="text-[14px] text-neutral-500 px-1 pt-1">No guest ends with “{{ query }}”. Check the characters, or try the WhatsApp number.</p>
               <p v-else-if="candidates.length > 1" class="text-[12.5px] text-neutral-500 px-1">{{ candidates.length }} guests share this ending. Tap the right one, or type more.</p>
             </template>
-            <div v-else-if="upcomingQueueGuests.length || queueEnabled" class="flex-1 min-h-0 flex flex-col gap-1.5 overflow-hidden">
-              <!-- Quick Stepper for Door Marshal -->
-              <div class="flex items-center justify-between px-2 py-1.5 rounded-[10px] bg-black/[0.03] border border-black/5 shrink-0">
-                <div class="flex items-center gap-2">
-                  <Volume2 class="w-3.5 h-3.5 text-neutral-600" />
-                  <span class="text-[11px] font-mono uppercase tracking-[0.08em] text-neutral-500">Serving</span>
-                  <span class="px-2 py-0.5 rounded-[6px] bg-black text-white font-mono text-[13px] font-bold">#{{ currentCalledNumber }}</span>
+            <div v-else-if="queueEnabled" class="flex-1 min-h-0 flex flex-col gap-2 overflow-hidden">
+              <!-- Multi-person Auto-Batch & Serving Dispatch Header -->
+              <div class="p-2 sm:p-2.5 rounded-[12px] bg-black/[0.03] border border-black/5 flex flex-col gap-2 shrink-0">
+                <div class="flex items-center justify-between gap-2">
+                  <!-- Left: Serving #XX with quick -1 / +1 step -->
+                  <div class="flex items-center gap-2">
+                    <Volume2 class="w-3.5 h-3.5 text-neutral-600 shrink-0" />
+                    <span class="text-[11px] font-mono uppercase tracking-[0.08em] text-neutral-500">Serving</span>
+                    <span class="px-2 py-0.5 rounded-[6px] bg-black text-white font-mono text-[13px] font-bold">#{{ currentCalledNumber }}</span>
+                    <div class="flex items-center gap-1 ml-0.5">
+                      <button
+                        type="button"
+                        @click="stepQueueCaller(-1)"
+                        :disabled="currentCalledNumber <= 1"
+                        class="size-6 rounded-[5px] border border-black/15 bg-white text-[11px] font-mono font-bold hover:bg-black/5 disabled:opacity-30 cursor-pointer flex items-center justify-center transition-colors"
+                        title="Step back to previous number"
+                      >
+                        -
+                      </button>
+                      <button
+                        type="button"
+                        @click="stepQueueCaller(1)"
+                        class="size-6 rounded-[5px] border border-black/15 bg-white text-[11px] font-mono font-bold hover:bg-black/5 cursor-pointer flex items-center justify-center transition-colors"
+                        title="Step to next number"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Right: Auto-Call Toggle & Batch Dispatch Button -->
+                  <div class="flex items-center gap-2 shrink-0">
+                    <!-- Auto Call Toggle Switch -->
+                    <button
+                      type="button"
+                      @click="autoCallQueue = !autoCallQueue"
+                      class="h-[28px] px-2.5 rounded-[7px] text-[11px] font-medium border flex items-center gap-1.5 cursor-pointer transition-colors"
+                      :class="autoCallQueue ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-white text-neutral-500 border-black/15 hover:bg-black/5'"
+                      title="When visitors exit, automatically batch-call waiting guests to fill open spots"
+                    >
+                      <span class="size-1.5 rounded-full" :class="autoCallQueue ? 'bg-emerald-500 animate-pulse' : 'bg-neutral-300'" />
+                      <span>Auto-Call: <strong>{{ autoCallQueue ? 'ON' : 'OFF' }}</strong></span>
+                    </button>
+
+                    <!-- Batch Call Button -->
+                    <button
+                      type="button"
+                      @click="triggerBatchCall(availableSpots > 0 ? availableSpots : 1)"
+                      :disabled="isBatchCalling || !waitingQueueGuests.length"
+                      class="h-[28px] px-3 rounded-[7px] bg-black text-white text-[11.5px] font-medium hover:bg-neutral-800 cursor-pointer flex items-center gap-1.5 active:bg-neutral-700 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs transition-colors"
+                      title="Dispatch WhatsApp notification to next guest(s) in line"
+                    >
+                      <RefreshCw v-if="isBatchCalling" class="w-3.5 h-3.5 animate-spin" />
+                      <BellRing v-else class="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Call Next ({{ availableSpots > 0 ? `${availableSpots} Spots` : '1 Pax' }})</span>
+                    </button>
+                  </div>
                 </div>
-                <div class="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    @click="stepQueueCaller(-1)"
-                    :disabled="currentCalledNumber <= 1"
-                    class="h-[28px] px-2 rounded-[6px] border border-black/15 bg-white text-[11.5px] font-medium hover:bg-black/5 disabled:opacity-30 cursor-pointer active:bg-black/10"
-                    title="Step back to previous number"
+              </div>
+
+              <!-- Currently Called Guests Shelf -->
+              <div v-if="currentlyCalledGuests.length" class="flex flex-col gap-1 shrink-0">
+                <div class="flex items-center justify-between px-1 text-[10.5px] uppercase tracking-[0.1em] text-emerald-800 font-medium">
+                  <span class="flex items-center gap-1.5">
+                    <span class="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                    Currently Calling ({{ currentlyCalledGuests.length }})
+                  </span>
+                  <span class="text-[10px] text-neutral-400 font-normal">Ready for admission</span>
+                </div>
+                <div class="flex flex-col gap-1 max-h-[130px] overflow-y-auto pr-0.5">
+                  <div
+                    v-for="guest in currentlyCalledGuests"
+                    :key="guest.id"
+                    class="w-full flex items-center justify-between p-2 rounded-[10px] border border-emerald-300 bg-emerald-50/70 transition-colors"
                   >
-                    -1
-                  </button>
-                  <button
-                    type="button"
-                    @click="stepQueueCaller(1)"
-                    class="h-[28px] px-3 rounded-[6px] bg-black text-white text-[11.5px] font-medium hover:bg-neutral-800 cursor-pointer flex items-center gap-1.5 active:bg-neutral-700 shadow-2xs"
-                    title="Call next queue number"
-                  >
-                    <span>Call Next (#{{ currentCalledNumber + 1 }})</span>
-                  </button>
+                    <div class="flex items-center gap-2.5 min-w-0">
+                      <span class="size-7 rounded-[7px] bg-emerald-600 text-white font-mono font-bold text-[12px] flex items-center justify-center shrink-0 shadow-2xs animate-pulse">
+                        #{{ getGuestQueueNumber(guest) }}
+                      </span>
+                      <div class="min-w-0">
+                        <p class="text-[13px] font-medium text-black truncate flex items-center gap-1.5">
+                          {{ guestName(guest) }}
+                          <span v-if="isVip(guest)" class="px-1 py-0.2 rounded bg-black text-white text-[9px] font-medium tracking-wider">VIP</span>
+                          <span v-if="getPartySize(guest) > 1" class="px-1.5 py-0.2 rounded bg-black/10 text-neutral-700 text-[10px] font-mono font-medium">
+                            {{ getPartySize(guest) }} pax
+                          </span>
+                        </p>
+                        <p class="text-[11px] text-neutral-500 font-mono">
+                          ID ···{{ codeTail(guest) }} <template v-if="phoneTail(guest)"> · WA ···{{ phoneTail(guest) }}</template>
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      @click="openConfirm(guest)"
+                      class="h-[28px] px-3 rounded-[6px] bg-moss-600 hover:bg-moss-700 text-white text-[11.5px] font-medium flex items-center gap-1 cursor-pointer shadow-2xs transition-colors shrink-0"
+                    >
+                      <span>Admit</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
               <!-- Upcoming Queue Stream List -->
-              <div class="flex-1 min-h-0 overflow-y-auto flex flex-col gap-1 pr-0.5">
-                <button
-                  v-for="guest in upcomingQueueGuests"
-                  :key="guest.id"
-                  type="button"
-                  @click="openConfirm(guest)"
-                  class="w-full flex items-center justify-between p-2 rounded-[10px] border text-left transition-colors cursor-pointer"
-                  :class="getGuestQueueNumber(guest) === currentCalledNumber
-                    ? 'border-emerald-500 bg-emerald-50/50 shadow-2xs'
-                    : (isGuestInside(guest) ? 'border-black/5 bg-neutral-100 opacity-60' : 'border-black/10 bg-white hover:bg-black/5 active:bg-black/10')"
-                >
-                  <div class="flex items-center gap-2.5 min-w-0">
-                    <span
-                      class="size-7 rounded-[7px] flex items-center justify-center font-mono font-bold text-[12px] shrink-0"
-                      :class="getGuestQueueNumber(guest) === currentCalledNumber
-                        ? 'bg-emerald-600 text-white shadow-2xs animate-pulse'
-                        : (isGuestInside(guest) ? 'bg-neutral-300 text-neutral-600' : 'bg-black/10 text-neutral-800')"
-                    >
-                      #{{ getGuestQueueNumber(guest) }}
-                    </span>
-                    <div class="min-w-0">
-                      <p class="text-[13px] font-medium text-black truncate flex items-center gap-1.5">
-                        {{ guestName(guest) }}
-                        <span v-if="isVip(guest)" class="px-1 py-0.2 rounded bg-black text-white text-[9px] font-medium tracking-wider">VIP</span>
-                      </p>
-                      <p class="text-[11px] text-neutral-500 font-mono">
-                        ID ···{{ codeTail(guest) }} <template v-if="phoneTail(guest)"> · WA ···{{ phoneTail(guest) }}</template>
-                      </p>
+              <div class="flex-1 min-h-0 flex flex-col gap-1 overflow-hidden">
+                <div class="flex items-center justify-between px-1 text-[10.5px] uppercase tracking-[0.1em] text-neutral-400 font-medium shrink-0">
+                  <span>Line Queue</span>
+                  <span>{{ waitingQueueGuests.length }} in line</span>
+                </div>
+                <div class="flex-1 min-h-0 overflow-y-auto flex flex-col gap-1 pr-0.5">
+                  <button
+                    v-for="guest in upcomingQueueGuests"
+                    :key="guest.id"
+                    type="button"
+                    @click="openConfirm(guest)"
+                    class="w-full flex items-center justify-between p-2 rounded-[10px] border text-left transition-colors cursor-pointer"
+                    :class="getGuestQueueNumber(guest) === currentCalledNumber
+                      ? 'border-emerald-500 bg-emerald-50/50 shadow-2xs'
+                      : (isGuestInside(guest) ? 'border-black/5 bg-neutral-100 opacity-60' : 'border-black/10 bg-white hover:bg-black/5 active:bg-black/10')"
+                  >
+                    <div class="flex items-center gap-2.5 min-w-0">
+                      <span
+                        class="size-7 rounded-[7px] flex items-center justify-center font-mono font-bold text-[12px] shrink-0"
+                        :class="getGuestQueueNumber(guest) === currentCalledNumber
+                          ? 'bg-emerald-600 text-white shadow-2xs animate-pulse'
+                          : (isGuestInside(guest) ? 'bg-neutral-300 text-neutral-600' : 'bg-black/10 text-neutral-800')"
+                      >
+                        #{{ getGuestQueueNumber(guest) }}
+                      </span>
+                      <div class="min-w-0">
+                        <p class="text-[13px] font-medium text-black truncate flex items-center gap-1.5">
+                          {{ guestName(guest) }}
+                          <span v-if="isVip(guest)" class="px-1 py-0.2 rounded bg-black text-white text-[9px] font-medium tracking-wider">VIP</span>
+                          <span v-if="getPartySize(guest) > 1" class="px-1.5 py-0.2 rounded bg-black/10 text-neutral-700 text-[10px] font-mono font-medium">
+                            {{ getPartySize(guest) }} pax
+                          </span>
+                        </p>
+                        <p class="text-[11px] text-neutral-500 font-mono">
+                          ID ···{{ codeTail(guest) }} <template v-if="phoneTail(guest)"> · WA ···{{ phoneTail(guest) }}</template>
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div class="flex items-center gap-2 shrink-0">
-                    <span
-                      v-if="isGuestInside(guest)"
-                      class="text-[10.5px] font-medium px-2 py-0.5 rounded-full bg-neutral-200 text-neutral-700 border border-neutral-300"
-                    >
-                      Inside
-                    </span>
-                    <span
-                      v-else-if="getGuestQueueNumber(guest) === currentCalledNumber"
-                      class="text-[10.5px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 animate-pulse"
-                    >
-                      Now Serving
-                    </span>
-                    <span
-                      v-else
-                      class="text-[10.5px] font-medium px-2 py-0.5 rounded-full bg-black/5 text-neutral-600 border border-black/5"
-                    >
-                      In Line
-                    </span>
-                    <span class="text-[11px] font-medium text-black bg-white px-2 py-1 rounded-[6px] border border-black/15 shadow-2xs">
-                      {{ isGuestInside(guest) ? 'View' : 'Admit' }}
-                    </span>
-                  </div>
-                </button>
+                    <div class="flex items-center gap-2 shrink-0">
+                      <span
+                        v-if="isGuestInside(guest)"
+                        class="text-[10.5px] font-medium px-2 py-0.5 rounded-full bg-neutral-200 text-neutral-700 border border-neutral-300"
+                      >
+                        Inside
+                      </span>
+                      <span
+                        v-else-if="getGuestQueueNumber(guest) === currentCalledNumber"
+                        class="text-[10.5px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 animate-pulse"
+                      >
+                        Now Serving
+                      </span>
+                      <span
+                        v-else
+                        class="text-[10.5px] font-medium px-2 py-0.5 rounded-full bg-black/5 text-neutral-600 border border-black/5"
+                      >
+                        In Line
+                      </span>
+                      <span class="text-[11px] font-medium text-black bg-white px-2 py-1 rounded-[6px] border border-black/15 shadow-2xs">
+                        {{ isGuestInside(guest) ? 'View' : 'Admit' }}
+                      </span>
+                    </div>
+                  </button>
+                  <p v-if="!upcomingQueueGuests.length" class="text-[12.5px] text-neutral-400 p-2 text-center">
+                    No active guests in queue.
+                  </p>
+                </div>
               </div>
             </div>
             <p v-else class="text-[14px] text-neutral-400 px-1 pt-1 leading-snug">Type the last 4 characters of the Access ID, or the last 4 digits of the WhatsApp number. The guest opens on their own.</p>
@@ -514,12 +604,12 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import {
   LogIn, LogOut, Volume2, VolumeX, Maximize2, Minimize2, ScanLine, KeyRound, Camera,
   CircleCheck, TriangleAlert, OctagonX, DoorOpen, Undo2, X, Delete, Hourglass, Search, ListChecks, ArrowLeft,
-  ArrowRightLeft
+  ArrowRightLeft, ChevronRight
 } from 'lucide-vue-next';
 import {
   type Submission, type CheckInResult, checkInCode, patchSubmission, guestName, guestType, guestEmail, accessId, initials,
   formatTime, formatValue, normalizeStatus, findGuestsByShortCode, codeTail, phoneTail, maskEmail,
-  totalInsideGuests, isGuestInside, fetchQueueSettings, callNextQueue
+  totalInsideGuests, isGuestInside, fetchQueueSettings, callNextQueue, callBatchQueue
 } from './hubUtils.ts';
 
 const props = defineProps<{
@@ -576,11 +666,26 @@ function selectStation(st: 'in' | 'out') {
   nextTick(() => inputRef.value?.focus());
 }
 
-/* ---------- Capacity & Party Size & Queue Caller ---------- */
+/* ---------- Capacity & Party Size & Batch Queue Caller ---------- */
 const maxCapacity = ref(50);
 const pendingPartySize = ref(1);
 const queueEnabled = ref(false);
 const currentCalledNumber = ref(1);
+const isBatchCalling = ref(false);
+
+const autoCallQueue = ref<boolean>((() => {
+  try {
+    return localStorage.getItem('707_scanner_autocall') !== 'false';
+  } catch {
+    return true;
+  }
+})());
+
+watch(autoCallQueue, (val) => {
+  try {
+    localStorage.setItem('707_scanner_autocall', String(val));
+  } catch { /* ignore */ }
+});
 
 async function loadCapacitySettings() {
   const pageId = props.pageIds?.[0];
@@ -593,6 +698,8 @@ async function loadCapacitySettings() {
   } catch { /* keep 50 default */ }
 }
 watch(() => props.pageIds, () => { void loadCapacitySettings(); }, { deep: true });
+
+const availableSpots = computed(() => Math.max(0, maxCapacity.value - insideCount.value));
 
 async function stepQueueCaller(delta: number) {
   const pageId = props.pageIds?.[0];
@@ -609,9 +716,69 @@ async function stepQueueCaller(delta: number) {
   }
 }
 
+async function triggerBatchCall(spotsToCall?: number) {
+  const pageId = props.pageIds?.[0];
+  if (!pageId || isBatchCalling.value) return;
+  const spots = spotsToCall ?? availableSpots.value;
+  if (spots <= 0) {
+    emit('toast', 'Venue is at capacity. Wait for guests to exit.');
+    return;
+  }
+  isBatchCalling.value = true;
+  try {
+    const res = await callBatchQueue(pageId, spots);
+    if (res && res.calledCount > 0) {
+      currentCalledNumber.value = res.newCalledNumber;
+      emit('toast', `Auto-called ${res.calledCount} guest(s) for ${spots} open spot(s).`);
+      if (res.calledGuests) {
+        for (const cg of res.calledGuests) {
+          const row = props.rows.find(r => r.id === cg.id);
+          if (row) (row as any).queue_status = 'called';
+        }
+      }
+    } else {
+      emit('toast', 'No waiting guests in line to call.');
+    }
+  } catch (err: any) {
+    emit('toast', `Batch call failed: ${err?.message || 'network error'}`);
+  } finally {
+    isBatchCalling.value = false;
+  }
+}
+
 function getGuestQueueNumber(guest: Submission): number {
   return Number(guest.queue_number) || Number((guest as any).answers?.queue_number) || 0;
 }
+
+const getPartySize = (guest: Submission): number => {
+  return Number(guest.party_size) || Number((guest as any).answers?.party_size) || 1;
+};
+
+/** Guests who are actively called and ready to enter right now */
+const currentlyCalledGuests = computed(() => {
+  if (!props.rows) return [];
+  return props.rows
+    .filter(r => {
+      const q = getGuestQueueNumber(r);
+      const isInside = isGuestInside(r);
+      const st = normalizeStatus(r.status);
+      return q > 0 && !isInside && !['declined', 'waitlisted'].includes(st) && (r.queue_status === 'called' || q === currentCalledNumber.value);
+    })
+    .sort((a, b) => getGuestQueueNumber(a) - getGuestQueueNumber(b));
+});
+
+/** Guests waiting in line after the currently called number */
+const waitingQueueGuests = computed(() => {
+  if (!props.rows) return [];
+  return props.rows
+    .filter(r => {
+      const q = getGuestQueueNumber(r);
+      const isInside = isGuestInside(r);
+      const st = normalizeStatus(r.status);
+      return q > 0 && !isInside && !['declined', 'waitlisted'].includes(st) && r.queue_status !== 'called' && q > currentCalledNumber.value;
+    })
+    .sort((a, b) => getGuestQueueNumber(a) - getGuestQueueNumber(b));
+});
 
 const upcomingQueueGuests = computed(() => {
   if (!props.rows) return [];
@@ -621,11 +788,7 @@ const upcomingQueueGuests = computed(() => {
       const st = normalizeStatus(r.status);
       return q > 0 && !['declined', 'waitlisted'].includes(st);
     })
-    .sort((a, b) => {
-      const qA = getGuestQueueNumber(a);
-      const qB = getGuestQueueNumber(b);
-      return qA - qB;
-    })
+    .sort((a, b) => getGuestQueueNumber(a) - getGuestQueueNumber(b))
     .filter(r => {
       const q = getGuestQueueNumber(r);
       return q >= Math.max(1, currentCalledNumber.value - 1) && q <= currentCalledNumber.value + 6;
@@ -649,12 +812,21 @@ const recentArrivals = computed(() => {
   const cutoff = Date.now() - 15 * 60 * 1000;
   return props.rows.filter(r => isGuestInside(r) && r.checked_in_at && new Date(r.checked_in_at).getTime() >= cutoff).length;
 });
-const stats = computed(() => [
-  { label: 'Inside', value: `${insideCount.value}/${maxCapacity.value}`, muted: false },
-  { label: 'Available', value: Math.max(0, maxCapacity.value - insideCount.value), muted: false },
-  { label: 'Expected', value: expectedCount.value, muted: true },
-  { label: 'Last 15 min', value: `+${recentArrivals.value}`, muted: false }
-]);
+const stats = computed(() => {
+  if (queueEnabled.value) {
+    return [
+      { label: 'Inside', value: `${insideCount.value}/${maxCapacity.value}`, muted: false },
+      { label: 'Available', value: Math.max(0, maxCapacity.value - insideCount.value), muted: false },
+      { label: 'Expected', value: expectedCount.value, muted: true },
+      { label: 'Last 15 min', value: `+${recentArrivals.value}`, muted: false }
+    ];
+  }
+  return [
+    { label: 'Admitted', value: insideCount.value, muted: false },
+    { label: 'Expected', value: expectedCount.value, muted: true },
+    { label: 'Last 15 min', value: `+${recentArrivals.value}`, muted: false }
+  ];
+});
 
 const isVip = (g: Submission) => guestType(g).toLowerCase() === 'vip';
 
@@ -841,7 +1013,12 @@ async function submitCode(raw: string, partySize: number = 1) {
     }
     else if (kind === 'capacity_exceeded') detail = res.error || 'Venue is at maximum capacity. Admittance blocked.';
     else if (kind === 'already') detail = `First entry at ${formatTime(guest?.checked_in_at)}${guest?.checked_in_by ? ` · by ${guest.checked_in_by}` : ''}`;
-    else if (kind === 'checked_out') detail = 'Guest has left the venue';
+    else if (kind === 'checked_out') {
+      detail = 'Guest has left the venue';
+      if (autoCallQueue.value && queueEnabled.value) {
+        void triggerBatchCall();
+      }
+    }
     else if (kind === 'waitlisted') detail = 'No place yet. Send them to the event team.';
     else if (kind === 'declined') detail = 'This registration was declined.';
     else detail = res.error || 'No pass matches this Access ID';
