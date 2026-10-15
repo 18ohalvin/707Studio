@@ -1326,9 +1326,9 @@ more</span>
               </div>
             </div>
 
-            <!-- 10. GuestEPass Widget (Figma Node 222:4188) -->
+            <!-- 10. GuestEPass / LiveQueuePass Widget (Figma Node 222:4188 & 328:3545) -->
             <div 
-              v-else-if="widget.type === 'GuestEPass'" 
+              v-else-if="widget.type === 'GuestEPass' || widget.type === 'LiveQueuePass'" 
               class="relative w-full px-[16px] pb-[16px] pt-0 select-none group/epass text-black bg-transparent flex flex-col gap-[20px]"
               @click.stop="handleWidgetClick(widget)"
               data-node-id="222:4188"
@@ -1399,7 +1399,7 @@ more</span>
 
               <!-- 2a. Live Queue Pass Presentation (Matches Figma Node 328:3545) -->
               <div 
-                v-if="widget.props?.passMode === 'queue' && !(isLivePass && livePass!.waitlisted)" 
+                v-if="(widget.type === 'LiveQueuePass' || widget.props?.passMode === 'queue') && !(isLivePass && livePass!.waitlisted)" 
                 class="w-full flex flex-col gap-[18px] pt-[2px]"
               >
                 <!-- Standalone Queue Number on canvas background -->
@@ -1416,17 +1416,17 @@ more</span>
 
                 <!-- Message Info / Live Status Card with agreed color status border -->
                 <div 
-                  class="w-full rounded-[8px] border-[0.5px] border-solid p-[18px] sm:p-[20px] flex flex-col gap-[16px] bg-transparent transition-colors"
+                  class="w-full rounded-[8px] border-[0.5px] border-solid p-[16px] sm:p-[18px] flex flex-col gap-[14px] bg-transparent transition-colors"
                   :style="{ borderColor: getQueueStatus(widget).accentColor }"
                 >
-                  <!-- Top Row: Indicator Dot + Short status and vibing text -->
-                  <div class="flex items-center gap-[10px]">
+                  <!-- Top Row: Indicator Dot + Short status and vibing text (16px font, bullet anchored to first line) -->
+                  <div class="flex items-start gap-[10px]">
                     <span 
-                      class="size-[11px] rounded-full shrink-0 transition-colors"
+                      class="size-[10px] rounded-full shrink-0 transition-colors mt-[6px]"
                       :class="{ 'animate-pulse': getQueueStatus(widget).kind === 'calling' }"
                       :style="{ backgroundColor: getQueueStatus(widget).accentColor }"
                     />
-                    <span class="font-707 text-[20px] sm:text-[22px] font-normal text-black leading-none tracking-tight">
+                    <span class="font-707 text-[16px] leading-[22px] font-normal text-black tracking-tight">
                       {{ getQueueStatus(widget).vibingText }}
                     </span>
                   </div>
@@ -1442,24 +1442,24 @@ more</span>
                     />
                   </div>
 
-                  <!-- Bottom 2-Column Stats: Now Calling and Remaining Guest Ahead -->
-                  <div class="flex items-center justify-between w-full pt-1">
+                  <!-- Bottom 2-Column Stats: Now Calling and Remaining Guest Ahead (Grid 2-col prevents overlapping) -->
+                  <div class="grid grid-cols-2 gap-3 w-full pt-1 border-t border-black/5">
                     <!-- Col 1: Now Calling at Gate -->
-                    <div class="flex flex-col gap-[4px] items-start">
-                      <span class="font-mono text-[11px] uppercase tracking-wider text-black/70">
+                    <div class="flex flex-col gap-[2px] items-start min-w-0">
+                      <span class="font-mono text-[10px] sm:text-[10.5px] uppercase tracking-wider text-black/60 truncate w-full">
                         NOW CALLING AT GATE
                       </span>
-                      <span class="font-mono font-medium text-[22px] sm:text-[24px] text-black leading-none">
+                      <span class="font-mono font-medium text-[18px] sm:text-[20px] text-black leading-tight">
                         #{{ String(getQueueStatus(widget).serving).padStart(3, '0') }}
                       </span>
                     </div>
 
                     <!-- Col 2: Remaining Guest Ahead of You -->
-                    <div class="flex flex-col gap-[4px] items-end text-right">
-                      <span class="font-mono text-[11px] uppercase tracking-wider text-black/70">
+                    <div class="flex flex-col gap-[2px] items-end text-right min-w-0">
+                      <span class="font-mono text-[10px] sm:text-[10.5px] uppercase tracking-wider text-black/60 truncate w-full">
                         GUEST AHEAD OF YOU
                       </span>
-                      <span class="font-mono font-medium text-[22px] sm:text-[24px] text-black leading-none">
+                      <span class="font-mono font-medium text-[18px] sm:text-[20px] text-black leading-tight">
                         {{ getQueueStatus(widget).aheadDisplay }}
                       </span>
                     </div>
@@ -1545,7 +1545,7 @@ more</span>
 
               <!-- Collapsible Pass Details (Always visible for Standard Pass; toggleable via [ E-PASS DETAIL ] for Live Queue Pass) -->
               <div 
-                v-if="widget.props?.passMode !== 'queue' || showEPassDetail"
+                v-if="(widget.type !== 'LiveQueuePass' && widget.props?.passMode !== 'queue') || showEPassDetail"
                 class="w-full flex flex-col gap-[20px] pt-1 transition-all"
               >
                 <!-- 3. Pass Information Fields Grid (Positioned below QR Code, medium font weight for data values only, no bold) -->
@@ -2674,7 +2674,7 @@ function isWidgetSetupModalOpen(widget: any): boolean {
   if (widget.type === 'ModalOverlay') {
     return editorStore.isModalSidebarOpen;
   }
-  if (widget.type === 'GuestEPass') {
+  if (widget.type === 'GuestEPass' || widget.type === 'LiveQueuePass') {
     return editorStore.isEPassSidebarOpen;
   }
   if (widget.type === 'TicketField') {
@@ -2698,7 +2698,7 @@ function handleAdjustWidget(widget: any) {
     editorStore.openFormSidebar();
   } else if (widget.type === 'ModalOverlay') {
     editorStore.openModalSidebar();
-  } else if (widget.type === 'GuestEPass') {
+  } else if (widget.type === 'GuestEPass' || widget.type === 'LiveQueuePass') {
     editorStore.openEPassSidebar();
   } else if (widget.type === 'TicketField') {
     editorStore.openTicketSidebar();
@@ -2861,9 +2861,9 @@ function handleButtonClick(widget: any) {
 
 /** The pass a download button belongs to: itself, or the Ticket Summary on this page. */
 function findPassWidget(trigger: any): any | null {
-  if (trigger?.type === 'GuestEPass') return trigger;
-  return activePage.value.widget_tree.find((w: any) => w.type === 'GuestEPass')
-    || editorStore.pages.flatMap(p => p.widget_tree).find(w => w.type === 'GuestEPass')
+  if (trigger?.type === 'GuestEPass' || trigger?.type === 'LiveQueuePass') return trigger;
+  return activePage.value.widget_tree.find((w: any) => w.type === 'GuestEPass' || w.type === 'LiveQueuePass')
+    || editorStore.pages.flatMap(p => p.widget_tree).find(w => w.type === 'GuestEPass' || w.type === 'LiveQueuePass')
     || null;
 }
 
@@ -3065,8 +3065,8 @@ function getWidgetMarginTopClass(index: number) {
   const currentWidget = tree[index];
 
   if (index === 0) {
-    // If GuestEPass is the first top widget, place it exactly 8px under the header
-    if (currentWidget?.type === 'GuestEPass') {
+    // If GuestEPass or LiveQueuePass is the first top widget, place it exactly 8px under the header
+    if (currentWidget?.type === 'GuestEPass' || currentWidget?.type === 'LiveQueuePass') {
       return 'mt-[8px]';
     }
     // If text widget, MultipleChoice, FieldInput, or RegistrationForm is the first top widget, apply exclusive 24px top margin for clean breathing room from header
@@ -3945,7 +3945,7 @@ function handleRemoveStickyButton(widget: any) {
       positionMode: 'in-flow',
       ctaPositionMode: 'in-flow'
     });
-  } else if (widget.type === 'GuestEPass') {
+  } else if (widget.type === 'GuestEPass' || widget.type === 'LiveQueuePass') {
     editorStore.updateWidgetProps(widget.id, {
       isCtaEnabled: false,
       showButton: false,
@@ -3966,9 +3966,9 @@ const stickyButtonForThisPage = computed(() => {
   );
   if (heroWithStickyCta) return heroWithStickyCta;
 
-  // 1b. Check if active page has a GuestEPass with sticky CTA (part of E-Pass setup)
+  // 1b. Check if active page has a GuestEPass or LiveQueuePass with sticky CTA (part of E-Pass setup)
   const epassWithStickyCta = activePage.value.widget_tree.find(w => 
-    w.type === 'GuestEPass' && 
+    (w.type === 'GuestEPass' || w.type === 'LiveQueuePass') && 
     (w.props?.isCtaEnabled ?? (!!w.props?.buttonText || !!w.props?.ctaLabel || !!w.props?.showButton || !!w.props?.showStickyButton)) && 
     (w.props?.buttonText || w.props?.ctaLabel || w.props?.showButton || w.props?.showStickyButton)
   );
@@ -4329,7 +4329,7 @@ function getPassHeadline(widget: any): string {
   if (isLivePass.value && livePass?.waitlisted) {
     return 'YOU ARE ON\nTHE WAITLIST.';
   }
-  if (widget.props?.passMode === 'queue') {
+  if (widget.type === 'LiveQueuePass' || widget.props?.passMode === 'queue') {
     if (!widget.props?.heading || widget.props.heading === 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.' || widget.props.heading === 'YOU ARE IN LINE.\nPLEASE WAIT FOR\nYOUR NUMBER.') {
       return 'SUCCESS.\nYOU ARE IN QUEUE.';
     }

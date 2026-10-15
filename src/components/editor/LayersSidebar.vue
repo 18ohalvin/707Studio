@@ -211,6 +211,8 @@ function getWidgetDisplayName(widget: WidgetItem): string {
       return 'Location Card';
     case 'GuestEPass':
       return 'Guest E-Pass';
+    case 'LiveQueuePass':
+      return 'Live Queue Pass';
     default:
       return widget.type;
   }
@@ -226,6 +228,8 @@ function getWidgetSummary(widget: WidgetItem): string {
     }
     case 'GuestEPass':
       return widget.props.heading ? widget.props.heading.replace(/\n/g, ' ') : 'GUEST E-PASS SUMMARY';
+    case 'LiveQueuePass':
+      return widget.props.heading ? widget.props.heading.replace(/\n/g, ' ') : 'LIVE QUEUE PASS';
     case 'TextBanner':
       return widget.props.text ? String(widget.props.text).replace(/\n/g, ' ') : 'NO TEXT YET';
     case 'ActionButton':
@@ -269,7 +273,7 @@ function handleSelectLayer(widget: WidgetItem) {
     editorStore.openFormSidebar();
   } else if (widget.type === 'ModalOverlay') {
     editorStore.openModalSidebar();
-  } else if (widget.type === 'GuestEPass') {
+  } else if (widget.type === 'GuestEPass' || widget.type === 'LiveQueuePass') {
     editorStore.openEPassSidebar();
   } else if (widget.type === 'TicketField') {
     editorStore.openTicketSidebar();
@@ -290,7 +294,7 @@ function handleAdjustLayer(widget: WidgetItem) {
     editorStore.openFormSidebar();
   } else if (widget.type === 'ModalOverlay') {
     editorStore.openModalSidebar();
-  } else if (widget.type === 'GuestEPass') {
+  } else if (widget.type === 'GuestEPass' || widget.type === 'LiveQueuePass') {
     editorStore.openEPassSidebar();
   } else if (widget.type === 'TicketField') {
     editorStore.openTicketSidebar();

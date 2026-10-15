@@ -233,7 +233,7 @@ export const useEditorStore = defineStore('editor', () => {
       };
     }
 
-    if (type === 'GuestEPass') {
+    if (type === 'GuestEPass' || type === 'LiveQueuePass') {
       const allWidgets = pages.value.flatMap(p => p.widget_tree);
       const hasFormInput = allWidgets.some(w => 
         w.type === 'FieldInput' || 
@@ -630,8 +630,42 @@ export const useEditorStore = defineStore('editor', () => {
         break;
       case 'GuestEPass':
         defaultProps = {
+          passMode: 'ticket',
           showQrCode: true,
           heading: 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.',
+          venue: 'PLAZA SENAYAN 4th FLOOR',
+          guestType: 'Public',
+          showFooterNotice: true,
+          footerNoticeTitle: "DIDN'T RECEIVE THE EMAIL?",
+          footerNoticeText: 'Check your spam folder or contact support',
+          footerNoticeLinkWords: 'contact support',
+          footerNoticeLinkUrl: '',
+          isCtaEnabled: false,
+          showButton: false,
+          showStickyButton: false,
+          buttonText: 'DOWNLOAD E-PASS',
+          ctaLabel: 'DOWNLOAD E-PASS',
+          buttonVariant: 'black',
+          variant: 'black',
+          actionType: 'download-pass',
+          positionMode: 'sticky-bottom',
+          ctaPositionMode: 'sticky-bottom',
+          showIcon: false,
+          iconName: 'ticket',
+          validForFallback: [
+            { id: 'opt_1', label: 'Pass Option 1', sublabel: '2 September 2026', description: 'Access to main floor & VIP lounge' },
+            { id: 'opt_2', label: 'Pass Option 2', sublabel: '3 September 2026', description: 'Access to main floor & VIP lounge' }
+          ]
+        };
+        break;
+      case 'LiveQueuePass':
+        defaultProps = {
+          passMode: 'queue',
+          heading: 'SUCCESS.\nYOU ARE IN QUEUE.',
+          sampleQueueNumber: 42,
+          sampleCalledNumber: 23,
+          samplePartySize: 2,
+          previewState: 'green',
           venue: 'PLAZA SENAYAN 4th FLOOR',
           guestType: 'Public',
           showFooterNotice: true,
@@ -695,7 +729,7 @@ export const useEditorStore = defineStore('editor', () => {
       openFormSidebar();
     } else if (type === 'ModalOverlay') {
       openModalSidebar();
-    } else if (type === 'GuestEPass') {
+    } else if (type === 'GuestEPass' || type === 'LiveQueuePass') {
       openEPassSidebar();
       if (ensureTicketPage()) showToast('A Ticket page was added at the end — design the downloadable PDF ticket there.', 5000);
     } else if (type === 'TicketField') {

@@ -712,7 +712,53 @@
           </p>
         </div>
 
-        <!-- Interactive Card 2: Tennis Court / Sneaker Sizing Grid -->
+        <!-- Interactive Card 2: Live Queue Pass Ticketing (Figma Node 328:3545) -->
+        <div 
+          draggable="true"
+          @dragstart="handleDragStart($event, { type: 'LiveQueuePass', label: 'Live Queue Pass', customProps: { venue: 'LA MODA PLAZA INDONESIA', passMode: 'queue' } })"
+          @dragend="handleDragEnd"
+          @click="addLiveQueuePassWidget"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group"
+          title="Drag to canvas or click to add (Live Queue Pass with real-time status & progress bar)"
+        >
+          <div class="border border-[#c9c9c9] flex flex-col gap-[5px] h-[130px] items-center justify-between p-2 rounded-[8px] shrink-0 w-[84px] bg-white group-hover:border-black transition-colors relative overflow-hidden shadow-sm">
+            <!-- Mini Queue Display Header -->
+            <div class="w-full flex flex-col items-center gap-1 pt-0.5">
+              <span class="font-mono font-bold text-[13px] text-black leading-none">#042</span>
+              <!-- Mini Status Box with dot -->
+              <div class="w-full border-[0.5px] border-[#6f8c75] rounded-[3px] p-1 flex flex-col gap-1 bg-[#6f8c75]/5">
+                <div class="flex items-center gap-1">
+                  <span class="size-1 rounded-full bg-[#6f8c75] shrink-0" />
+                  <div class="w-3/4 h-1 bg-[#6f8c75]/70 rounded-full" />
+                </div>
+                <!-- Mini Progress Bar -->
+                <div class="w-full h-1 bg-[#d9d9d9] rounded-full overflow-hidden">
+                  <div class="w-1/2 h-full bg-[#6f8c75]" />
+                </div>
+              </div>
+            </div>
+            <!-- Mini Calling & Ahead Grid -->
+            <div class="w-full grid grid-cols-2 gap-1 pt-0.5 border-t border-black/5">
+              <div class="flex flex-col gap-0.5">
+                <div class="w-full h-0.5 bg-black/40 rounded-full" />
+                <div class="w-2/3 h-1 bg-black/70 rounded-full" />
+              </div>
+              <div class="flex flex-col gap-0.5 items-end">
+                <div class="w-full h-0.5 bg-black/40 rounded-full" />
+                <div class="w-2/3 h-1 bg-black/70 rounded-full" />
+              </div>
+            </div>
+            <!-- Mini [E-PASS DETAIL] button -->
+            <div class="w-full h-3 border border-black/30 rounded-[2px] flex items-center justify-center">
+              <div class="w-1/2 h-0.5 bg-black/40 rounded-full" />
+            </div>
+          </div>
+          <p class="font-707 font-normal text-[11px] text-black text-center leading-tight">
+            Live Queue Pass
+          </p>
+        </div>
+
+        <!-- Interactive Card 3: Tennis Court / Sneaker Sizing Grid -->
         <div 
           draggable="true"
           @dragstart="handleDragStart($event, { type: 'RsvpForm', label: 'Sneaker Sizing & Court Selector', customProps: { heading: 'TENNIS COURT RSVP & SIZING' } })"
@@ -1053,6 +1099,35 @@ function addEPassWidget() {
     return;
   }
   const widget = editorStore.addWidget('GuestEPass', undefined, getEPassDefaultProps());
+  if (widget) {
+    editorStore.openEPassSidebar();
+  }
+}
+
+function getLiveQueuePassDefaultProps() {
+  return {
+    passMode: 'queue',
+    heading: 'SUCCESS.\nYOU ARE IN QUEUE.',
+    sampleQueueNumber: 42,
+    sampleCalledNumber: 23,
+    samplePartySize: 2,
+    previewState: 'green',
+    venue: '',
+    guestNameFallback: '',
+    validForFallback: [
+      { id: 'opt_1', label: '[PASS OPTION 1]', sublabel: '[DATE FORMAT]', description: '[EVENT DESCRIPTION OR SESSION DETAILS]' },
+      { id: 'opt_2', label: '[PASS OPTION 2]', sublabel: '[DATE FORMAT]', description: '[EVENT DESCRIPTION OR SESSION DETAILS]' }
+    ]
+  };
+}
+
+function addLiveQueuePassWidget() {
+  const check = editorStore.canAddWidget('LiveQueuePass');
+  if (!check.allowed) {
+    if (check.reason) editorStore.showToast(check.reason);
+    return;
+  }
+  const widget = editorStore.addWidget('LiveQueuePass', undefined, getLiveQueuePassDefaultProps());
   if (widget) {
     editorStore.openEPassSidebar();
   }

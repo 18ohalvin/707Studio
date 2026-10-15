@@ -546,7 +546,7 @@ const sidebarRef = ref<HTMLElement | null>(null);
 
 const currentWidget = computed(() => {
   const selected = editorStore.currentPage.widget_tree.find(w => w.id === editorStore.selectedWidgetId);
-  if (selected && (selected.type === 'ActionButton' || selected.type === 'HeroDrop' || selected.type === 'ModalOverlay' || selected.type === 'GuestEPass')) {
+  if (selected && (selected.type === 'ActionButton' || selected.type === 'HeroDrop' || selected.type === 'ModalOverlay' || selected.type === 'GuestEPass' || selected.type === 'LiveQueuePass')) {
     return selected;
   }
   return editorStore.currentPage.widget_tree.find(w => w.type === 'ActionButton' && w.props?.actionType === 'modal') || selected || null;
@@ -570,7 +570,7 @@ function updateModalData(propsToUpdate: Record<string, any>) {
     editorStore.updateWidgetProps(currentWidget.value.id, {
       modalProps: { ...existing, ...propsToUpdate }
     });
-  } else if (currentWidget.value.type === 'GuestEPass') {
+  } else if (currentWidget.value.type === 'GuestEPass' || currentWidget.value.type === 'LiveQueuePass') {
     if (currentWidget.value.props.noticeModalProps) {
       const existing = currentWidget.value.props.noticeModalProps || {};
       editorStore.updateWidgetProps(currentWidget.value.id, {

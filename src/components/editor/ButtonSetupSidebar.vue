@@ -516,7 +516,7 @@ const hasFormFields = computed(() => {
 });
 
 const hasEPassInProject = computed(() => {
-  return editorStore.pages.flatMap(p => p.widget_tree).some(w => w.type === 'GuestEPass');
+  return editorStore.pages.flatMap(p => p.widget_tree).some(w => w.type === 'GuestEPass' || w.type === 'LiveQueuePass');
 });
 
 const linkToOptions = computed(() => {

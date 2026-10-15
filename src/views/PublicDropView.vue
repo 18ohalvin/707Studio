@@ -307,7 +307,7 @@ function setCampaignPages(pages: ActivationPage[], title?: string) {
   projectPages.value = pages.filter(p => p.kind !== 'ticket');
   ticketSource.page = pages.find(p => p.kind === 'ticket') || null;
   const widgets = pages.flatMap(p => p.widget_tree || []);
-  const pass = widgets.find(w => w.type === 'GuestEPass') || null;
+  const pass = widgets.find(w => w.type === 'GuestEPass' || w.type === 'LiveQueuePass') || null;
   const hero = widgets.find(w => w.type === 'HeroDrop' && w.props?.brandLogoUrl);
   ticketSource.context = {
     passWidget: pass,
@@ -317,7 +317,7 @@ function setCampaignPages(pages: ActivationPage[], title?: string) {
 }
 
 function pageHasPass(page?: ActivationPage | null): boolean {
-  return Boolean(page?.widget_tree?.some(w => w.type === 'GuestEPass'));
+  return Boolean(page?.widget_tree?.some(w => w.type === 'GuestEPass' || w.type === 'LiveQueuePass'));
 }
 
 function hasAnswers(): boolean {
@@ -327,7 +327,7 @@ function hasAnswers(): boolean {
 /** The pass type (VIP / Public) the campaign's Ticket Summary issues. */
 function campaignGuestType(): string {
   for (const page of projectPages.value) {
-    const pass = page.widget_tree?.find(w => w.type === 'GuestEPass');
+    const pass = page.widget_tree?.find(w => w.type === 'GuestEPass' || w.type === 'LiveQueuePass');
     if (pass) return String(pass.props?.guestType || 'Public');
   }
   return '';

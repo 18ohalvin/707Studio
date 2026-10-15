@@ -16,6 +16,7 @@ export type WidgetType =
   | 'MultipleChoice'
   | 'ModalOverlay'
   | 'GuestEPass'
+  | 'LiveQueuePass'
   /* A guest-data block on the Ticket page (name, Access ID, QR, sessions…). */
   | 'TicketField'
   /* Used by the ticket landing page. No renderer case exists for it yet, so a
