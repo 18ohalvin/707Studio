@@ -96,8 +96,10 @@ export interface PageSettings {
   eventConfig?: EventConfig;
 }
 
+export type EventType = 'single' | 'daily_rolling' | 'multiday';
+
 export interface EventConfig {
-  eventType?: 'single' | 'daily_rolling' | 'multiday';
+  eventType?: EventType;
   eventDate?: string;
   startDate?: string;
   endDate?: string;

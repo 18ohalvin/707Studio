@@ -5,7 +5,7 @@
       class="fixed inset-0 z-50 apple-frost-backdrop flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
       @click.self="emit('close')"
     >
-      <div class="apple-frost rounded-[16px] border border-white/60 p-6 w-full max-w-[440px] shadow-[0px_20px_50px_rgba(0,0,0,0.15),0_1px_3px_rgba(0,0,0,0.06)] flex flex-col gap-4 animate-apple-pop">
+      <div class="apple-frost rounded-[16px] border border-white/60 p-6 w-full max-w-[480px] shadow-[0px_20px_50px_rgba(0,0,0,0.15),0_1px_3px_rgba(0,0,0,0.06)] flex flex-col gap-4 animate-apple-pop">
         <!-- Header -->
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2.5">
@@ -41,7 +41,108 @@
             />
           </div>
 
-          <!-- 2. Project Slug -->
+          <!-- 2. Event Activation Mode Presets -->
+          <div class="flex flex-col gap-1.5 w-full">
+            <label class="font-707 text-[11px] font-semibold text-neutral-700 tracking-wider uppercase">
+              Event Activation Mode
+            </label>
+            
+            <div class="grid grid-cols-3 gap-1.5 w-full">
+              <button
+                type="button"
+                @click="eventType = 'daily_rolling'"
+                class="h-[44px] rounded-[8px] border text-[12px] font-707 flex flex-col items-center justify-center cursor-pointer transition-all px-1"
+                :class="eventType === 'daily_rolling' 
+                  ? 'bg-black text-white border-black font-medium shadow-2xs' 
+                  : 'bg-white/70 hover:bg-white text-neutral-700 border-neutral-300 hover:border-black/50'"
+              >
+                <span class="flex items-center gap-1.5 leading-none">
+                  <Repeat class="w-3.5 h-3.5 shrink-0" :class="eventType === 'daily_rolling' ? 'text-white' : 'text-neutral-500'" />
+                  <span>Daily Rolling</span>
+                </span>
+                <span class="text-[9.5px] mt-0.5 opacity-75 font-normal">Stanley Style</span>
+              </button>
+              <button
+                type="button"
+                @click="eventType = 'single'"
+                class="h-[44px] rounded-[8px] border text-[12px] font-707 flex flex-col items-center justify-center cursor-pointer transition-all px-1"
+                :class="eventType === 'single' 
+                  ? 'bg-black text-white border-black font-medium shadow-2xs' 
+                  : 'bg-white/70 hover:bg-white text-neutral-700 border-neutral-300 hover:border-black/50'"
+              >
+                <span class="flex items-center gap-1.5 leading-none">
+                  <Calendar class="w-3.5 h-3.5 shrink-0" :class="eventType === 'single' ? 'text-white' : 'text-neutral-500'" />
+                  <span>Single Day</span>
+                </span>
+                <span class="text-[9.5px] mt-0.5 opacity-75 font-normal">1 Specific Date</span>
+              </button>
+              <button
+                type="button"
+                @click="eventType = 'multiday'"
+                class="h-[44px] rounded-[8px] border text-[12px] font-707 flex flex-col items-center justify-center cursor-pointer transition-all px-1"
+                :class="eventType === 'multiday' 
+                  ? 'bg-black text-white border-black font-medium shadow-2xs' 
+                  : 'bg-white/70 hover:bg-white text-neutral-700 border-neutral-300 hover:border-black/50'"
+              >
+                <span class="flex items-center gap-1.5 leading-none">
+                  <CalendarRange class="w-3.5 h-3.5 shrink-0" :class="eventType === 'multiday' ? 'text-white' : 'text-neutral-500'" />
+                  <span>Multi-Day</span>
+                </span>
+                <span class="text-[9.5px] mt-0.5 opacity-75 font-normal">Form Picker</span>
+              </button>
+            </div>
+
+            <!-- Daily Rolling Date Range Inputs -->
+            <div v-if="eventType === 'daily_rolling'" class="flex flex-col gap-1.5 w-full pt-1 animate-apple-pop">
+              <div class="grid grid-cols-2 gap-2 w-full">
+                <div class="border border-black/15 focus-within:border-black rounded-[8px] h-[40px] px-[12px] py-[6px] flex items-center gap-[6px] bg-black/[0.03] focus-within:bg-white transition-all">
+                  <Calendar class="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                  <input 
+                    v-model="startDate"
+                    type="text"
+                    placeholder="Start (16 Oct 2026)"
+                    class="flex-1 min-w-0 bg-transparent font-707 text-[12px] text-black focus:outline-none placeholder:text-neutral-400 p-0 m-0 border-none"
+                  />
+                </div>
+                <div class="border border-black/15 focus-within:border-black rounded-[8px] h-[40px] px-[12px] py-[6px] flex items-center gap-[6px] bg-black/[0.03] focus-within:bg-white transition-all">
+                  <Calendar class="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                  <input 
+                    v-model="endDate"
+                    type="text"
+                    placeholder="End (1 Nov 2026)"
+                    class="flex-1 min-w-0 bg-transparent font-707 text-[12px] text-black focus:outline-none placeholder:text-neutral-400 p-0 m-0 border-none"
+                  />
+                </div>
+              </div>
+              <p class="font-707 text-[11px] text-neutral-500 leading-tight px-1">
+                Campaign runs across the period. Passes automatically stamp <strong>today's date</strong> in real time with <strong>daily queue resets</strong> and a date-organized database.
+              </p>
+            </div>
+
+            <!-- Single-Day Date Input -->
+            <div v-else-if="eventType === 'single'" class="flex flex-col gap-1 w-full pt-1 animate-apple-pop">
+              <div class="border border-black/15 focus-within:border-black rounded-[8px] h-[40px] px-[14px] py-[6px] flex items-center gap-[10px] bg-black/[0.03] focus-within:bg-white transition-all w-full">
+                <Calendar class="w-4 h-4 text-neutral-400 shrink-0" />
+                <input 
+                  v-model="eventDate"
+                  type="text"
+                  placeholder="Event Date (e.g. 16 October 2026)"
+                  class="flex-1 min-w-0 bg-transparent font-707 text-[13px] text-black focus:outline-none placeholder:text-neutral-400 p-0 m-0 border-none"
+                />
+              </div>
+              <p class="font-707 text-[11px] text-neutral-500 leading-tight px-1">
+                Auto-populates "ACCESS VALID FOR" on guest passes & PDF tickets without requiring arrival date form selection.
+              </p>
+            </div>
+
+            <div v-else class="w-full pt-0.5 animate-apple-pop">
+              <p class="font-707 text-[11px] text-neutral-500 leading-tight px-1">
+                Guests will choose from session/arrival dates you configure in form widgets or modals.
+              </p>
+            </div>
+          </div>
+
+          <!-- 3. Project Slug -->
           <div class="flex flex-col gap-1.5">
             <label class="font-707 text-[11px] font-semibold text-neutral-700 tracking-wider uppercase">
               Custom URL Slug
@@ -104,11 +205,12 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
-import { Sliders, Check, Link as LinkIcon } from 'lucide-vue-next';
+import { Sliders, Check, Link as LinkIcon, Repeat, Calendar, CalendarRange } from 'lucide-vue-next';
 import { isProjectLive, liveLinkFor, absoluteLink, campaignPath, useCopiedFlag } from '../../../services/campaignLink.ts';
 import { useEditorStore } from '../../../stores/editorStore.ts';
 import { useBrandStore } from '../../../stores/brandStore.ts';
 import { useAuthStore } from '../../../stores/authStore.ts';
+import type { EventConfig, EventType } from '../../../types/editor.ts';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -124,6 +226,10 @@ const authStore = useAuthStore();
 
 const title = ref('');
 const slug = ref('');
+const eventType = ref<EventType>('daily_rolling');
+const eventDate = ref('16 October 2026');
+const startDate = ref('16 October 2026');
+const endDate = ref('1 November 2026');
 
 const currentProject = computed(() => editorStore.projects.find(p => p.id === editorStore.currentProjectId) || null);
 const projectIsLive = computed(() => isProjectLive(currentProject.value));
@@ -159,6 +265,18 @@ watch(
       title.value = editorStore.projectTitle;
       const proj = editorStore.projects.find(p => p.id === editorStore.currentProjectId);
       slug.value = proj?.slug || editorStore.pages[0]?.slug || editorStore.currentPage?.slug || '';
+
+      const cfg: EventConfig = proj?.event_config || editorStore.currentPage?.page_settings?.eventConfig || {
+        eventType: 'daily_rolling',
+        eventDate: '16 October 2026',
+        startDate: '16 October 2026',
+        endDate: '1 November 2026'
+      };
+
+      eventType.value = cfg.eventType || 'daily_rolling';
+      eventDate.value = cfg.eventDate || '16 October 2026';
+      startDate.value = cfg.startDate || '16 October 2026';
+      endDate.value = cfg.endDate || '1 November 2026';
     }
   },
   { immediate: true }
@@ -175,24 +293,41 @@ function handleSave() {
   const cleanSlug = slug.value.trim() || 'drop';
   editorStore.projectTitle = title.value.trim();
 
-  // Always keep master landing page slug aligned with project slug
+  const eventConfig: EventConfig = {
+    eventType: eventType.value,
+    eventDate: eventType.value === 'single' ? eventDate.value.trim() : (eventType.value === 'daily_rolling' ? startDate.value.trim() : ''),
+    startDate: startDate.value.trim(),
+    endDate: endDate.value.trim(),
+    dailyQueueReset: eventType.value === 'daily_rolling'
+  };
+
+  // Always keep master landing page slug aligned with project slug and sync eventConfig
   if (editorStore.pages[0]) {
     editorStore.pages[0].slug = cleanSlug;
     if (editorStore.pages[0].page_settings) {
       editorStore.pages[0].page_settings.seoTitle = title.value.trim();
+      editorStore.pages[0].page_settings.eventConfig = eventConfig;
     }
   }
+
+  // Sync eventConfig across all pages in the project
+  editorStore.pages.forEach(p => {
+    if (p.page_settings) {
+      p.page_settings.eventConfig = eventConfig;
+    }
+  });
 
   // Update projects list entry
   const proj = editorStore.projects.find(p => p.id === editorStore.currentProjectId);
   if (proj) {
     proj.title = title.value.trim();
     proj.slug = cleanSlug;
+    proj.event_config = eventConfig;
     proj.updated_at = new Date().toISOString();
   }
 
   editorStore.saveCurrentProject();
-  editorStore.showToast('Project title and campaign slug saved.');
+  editorStore.showToast('Project settings & event activation mode saved.');
   emit('close');
 }
 </script>
