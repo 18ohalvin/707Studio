@@ -60,6 +60,7 @@ export const useEditorStore = defineStore('editor', () => {
   const userProjects = computed<ProjectItem[]>(() => projects.value.filter(isVisibleToCurrentUser));
 
   const currentProjectId = ref<string>('');
+  const currentProject = computed<ProjectItem | undefined>(() => projects.value.find(p => p.id === currentProjectId.value));
 
   // Template Studio Mode (Superadmin only: editing master system templates)
   const isTemplateMode = ref<boolean>(false);
@@ -321,7 +322,7 @@ export const useEditorStore = defineStore('editor', () => {
     // Total items in flex row = totalPages + 1 (including the Add Page canvas card)
     // Geometric center of the flex row is at item index totalPages / 2
     const centerIndex = totalPages / 2;
-    const offset = -(index - centerIndex) * 404 * (zoom / 100);
+    const offset = -(index - centerIndex) * 457 * (zoom / 100);
     return Math.abs(offset) < 0.001 ? 0 : Math.round(offset * 100) / 100;
   }
 
@@ -1714,7 +1715,13 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
-  function createNewProject(title: string, slug?: string, widgets?: WidgetItem[], brandSlug?: string): ProjectItem {
+  function createNewProject(
+    title: string, 
+    slug?: string, 
+    widgets?: WidgetItem[], 
+    brandSlug?: string,
+    eventConfig?: { eventType?: 'single' | 'multiday'; eventDate?: string }
+  ): ProjectItem {
     exitTemplateMode();
     const id = `proj-${Date.now()}`;
     const now = new Date().toISOString();
@@ -1745,7 +1752,8 @@ export const useEditorStore = defineStore('editor', () => {
         page_settings: {
           seoTitle: cleanTitle,
           seoDescription: `Enter the official 707 activation for ${cleanTitle}.`,
-          theme: 'the-707-standard'
+          theme: 'the-707-standard',
+          eventConfig: eventConfig || { eventType: 'single', eventDate: '' }
         },
         created_at: now,
         updated_at: now
@@ -1765,7 +1773,8 @@ export const useEditorStore = defineStore('editor', () => {
       owner_email: authStore.currentUser?.email || (authStore.isSuperAdmin ? 'admin@707designstudio.internal' : ''),
       created_by: authStore.currentUser?.name || authStore.currentUser?.email || (authStore.isSuperAdmin ? 'Superadmin' : ''),
       created_at: now,
-      updated_at: now
+      updated_at: now,
+      event_config: eventConfig || { eventType: 'single', eventDate: '' }
     };
 
     projects.value.unshift(newProject);
@@ -1945,6 +1954,7 @@ export const useEditorStore = defineStore('editor', () => {
     projects,
     userProjects,
     currentProjectId,
+    currentProject,
     projectTitle,
     pages,
     activePageIndex,

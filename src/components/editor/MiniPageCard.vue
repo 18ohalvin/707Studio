@@ -29,7 +29,7 @@
       @dragend="handleDragEnd"
       @click="handleSelect"
       @dblclick="handleDoubleClick"
-      class="w-[138.6px] h-[277.2px] bg-[#f5f5f5] relative flex flex-col overflow-hidden cursor-grab active:cursor-grabbing shrink-0 rounded-none apple-card-hover transition-all duration-200"
+      class="w-[138.6px] h-[300.5px] bg-[#f5f5f5] relative flex flex-col overflow-hidden cursor-grab active:cursor-grabbing shrink-0 rounded-none apple-card-hover transition-all duration-200"
       :class="[
         isDragOver
           ? 'ring-2 ring-black border-black shadow-[0px_16px_40px_rgba(0,0,0,0.2)] scale-[1.03]'
@@ -44,7 +44,7 @@
       <!-- Scaled Live Artboard Container (100% Identical to User's Real Page Content) -->
       <div 
         class="origin-top-left pointer-events-none absolute inset-0 overflow-hidden"
-        style="transform: scale(0.407647); width: 340px; height: 680px;"
+        style="transform: scale(0.352672); width: 393px; height: 852px;"
       >
         <MobileArtboard 
           :page="page"

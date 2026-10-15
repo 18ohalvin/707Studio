@@ -419,7 +419,7 @@ async function sendSubmission() {
   livePass.status = 'pending';
   livePass.error = '';
 
-  const answers = {
+  const answers: Record<string, any> = {
     ...collectedFormData.value,
     // The server needs a name and email; a funnel that never asked for
     // them still issues a pass, under placeholders the hub hides.
@@ -427,6 +427,16 @@ async function sendSubmission() {
     email: collectedFormData.value.email || 'guest@activation.internal',
     ...(campaignGuestType() ? { 'Guest Type': campaignGuestType() } : {})
   };
+
+  // If campaign has a single-day event date and no form picks were made, auto-populate the single-day session
+  const singleEventDate = projectPages.value.flatMap(p => p.widget_tree).find(w => w.type === 'GuestEPass' || w.type === 'LiveQueuePass')?.props?.eventDate
+    || projectPages.value[0]?.page_settings?.eventConfig?.eventDate;
+
+  if (singleEventDate && (!answers[SESSIONS_ANSWER_KEY] || (Array.isArray(answers[SESSIONS_ANSWER_KEY]) && answers[SESSIONS_ANSWER_KEY].length === 0))) {
+    answers[SESSIONS_ANSWER_KEY] = [
+      { id: 'single_day', label: 'Single Day Admission', sublabel: singleEventDate, description: 'All-day access to venue and exhibition' }
+    ];
+  }
 
   // Transient failures (signal drop, server briefly without its database) are retried
   // here, with the pass still showing "Issuing…", before the guest sees an error.
@@ -449,7 +459,7 @@ async function sendSubmission() {
     livePass.guestName = recorded.fullName === 'Guest Participant' ? '' : String(recorded.fullName || '');
     livePass.email = recorded.email === 'guest@activation.internal' ? '' : String(recorded.email || '');
     livePass.guestType = String(recorded['Guest Type'] || campaignGuestType() || '');
-    const sessions = recorded[SESSIONS_ANSWER_KEY];
+    const sessions = recorded[SESSIONS_ANSWER_KEY] || answers[SESSIONS_ANSWER_KEY];
     livePass.sessions = Array.isArray(sessions) ? sessions.filter((x: any) => x && typeof x === 'object' && x.label) : [];
     livePass.waitlisted = outcome.entry.status === 'waitlisted';
     livePass.queueNumber = Number(outcome.entry.queue_number) || Number(recorded.queue_number) || 0;

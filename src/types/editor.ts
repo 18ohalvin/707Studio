@@ -93,6 +93,10 @@ export interface PageSettings {
   theme: 'the-707-standard';
   backgroundColor?: string;
   customCss?: string;
+  eventConfig?: {
+    eventType?: 'single' | 'multiday';
+    eventDate?: string;
+  };
 }
 
 export interface ActivationPage {
@@ -146,6 +150,7 @@ export interface ProjectItem {
   widget_tree: WidgetItem[];
   pages?: ActivationPage[];
   page_settings?: PageSettings;
+  event_config?: { eventType?: 'single' | 'multiday'; eventDate?: string };
   owner_id?: string;
   owner_email?: string;
   created_by?: string;

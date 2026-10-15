@@ -240,6 +240,26 @@
         </div>
       </div>
 
+      <!-- Event Date / Access Valid For -->
+      <div class="flex flex-col gap-[6px] w-full">
+        <div class="flex items-center justify-between">
+          <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
+            Event Date (Access Valid For)
+          </p>
+          <span class="text-[10px] font-707 text-neutral-400">Single-day validity</span>
+        </div>
+        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+          <input 
+            v-model="eventDate"
+            placeholder="e.g. 24 October 2026"
+            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase tracking-tight"
+          />
+        </div>
+        <p class="font-707 text-[11px] leading-[15px] text-neutral-500">
+          Printed under "ACCESS VALID FOR" on passes and PDF tickets when no arrival date is selected by guests.
+        </p>
+      </div>
+
       <!-- Guest Type Preset -->
       <div class="flex flex-col gap-[6px] w-full">
         <div class="flex items-center justify-between">
@@ -777,6 +797,33 @@ const venue = computed({
   set: (val: string) => {
     if (currentWidget.value) {
       editorStore.updateWidgetProps(currentWidget.value.id, { venue: val });
+    }
+  }
+});
+
+const eventDate = computed({
+  get: () => {
+    return currentWidget.value?.props?.eventDate || 
+      editorStore.currentProject?.event_config?.eventDate || 
+      editorStore.currentPage?.page_settings?.eventConfig?.eventDate || '';
+  },
+  set: (val: string) => {
+    if (currentWidget.value) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { eventDate: val });
+    }
+    if (editorStore.currentProject) {
+      if (!editorStore.currentProject.event_config) {
+        editorStore.currentProject.event_config = { eventType: 'single', eventDate: val };
+      } else {
+        editorStore.currentProject.event_config.eventDate = val;
+      }
+    }
+    if (editorStore.currentPage?.page_settings) {
+      if (!editorStore.currentPage.page_settings.eventConfig) {
+        editorStore.currentPage.page_settings.eventConfig = { eventType: 'single', eventDate: val };
+      } else {
+        editorStore.currentPage.page_settings.eventConfig.eventDate = val;
+      }
     }
   }
 });

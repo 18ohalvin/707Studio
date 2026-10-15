@@ -65,7 +65,7 @@ describe('707 Activation Builder Stores', () => {
     // Focus page 0
     editorStore.focusPage(0);
     expect(editorStore.activePageIndex).toBe(0);
-    expect(editorStore.panX).toBe(343.4); // -(0 - 1.0) * 404 * 0.85 (centered with 2 pages + Add Page card)
+    expect(editorStore.panX).toBe(388.45); // -(0 - 1.0) * 457 * 0.85 (centered with 2 pages + Add Page card at 393px iPhone 16/17 Pro resolution)
   });
 
   it('automatically closes level 2 add menu when sidebars or text tools are invoked', () => {

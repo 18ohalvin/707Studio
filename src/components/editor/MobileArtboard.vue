@@ -8,7 +8,7 @@
         ? 'w-full h-full min-h-[100dvh] flex flex-col flex-1' 
         : (isPreviewModal
             ? 'w-full h-full min-h-0 flex flex-col flex-1 overflow-hidden'
-            : 'w-[340px] h-[680px] shrink-0')
+            : 'w-[393px] h-[852px] shrink-0')
     ]"
     @click="handleSelectThisPage"
     @dblclick="handleDoubleClickThisPage"
@@ -73,8 +73,8 @@
           : (isPreviewModal
               ? 'w-full h-full min-h-0 flex-1 border-none shadow-none'
               : (isMiniPreview 
-                  ? 'w-[340px] h-[680px] border-none shadow-none' 
-                  : 'border-[0.5px] w-[340px] h-[680px]')),
+                  ? 'w-[393px] h-[852px] border-none shadow-none' 
+                  : 'border-[0.5px] w-[393px] h-[852px]')),
         !isMiniPreview && !isPreviewModal && !isLivePage && isSelected 
           ? 'border-black shadow-[0px_16px_48px_rgba(0,0,0,0.12)]' 
           : (!isMiniPreview && !isPreviewModal && !isLivePage ? 'border-neutral-300 opacity-80 shadow-[0px_0px_30px_rgba(0,0,0,0.04)] cursor-pointer' : '')
@@ -4520,6 +4520,14 @@ function getValidForSessions(widget: any) {
   // the pass lists the sessions the designer set on the Ticket Summary.
   if (isLivePass.value) {
     if (livePass!.sessions.length) return livePass!.sessions;
+    if (widget.props?.eventDate) {
+      return [{
+        id: 'single_day',
+        label: widget.props?.sessionTitle || 'Single Day Admission',
+        sublabel: widget.props.eventDate,
+        description: widget.props?.sessionDescription || 'All-day access to venue and exhibition'
+      }];
+    }
     return (widget.props?.validForFallback || []) as PassSession[];
   }
 
@@ -4585,7 +4593,17 @@ function getValidForSessions(widget: any) {
     }
   }
 
-  // 3. Fallback to clean dummy data UI placeholder strictly matching choice form format
+  // 3. If single-day event date is configured on widget or project
+  if (widget.props?.eventDate) {
+    return [{
+      id: 'single_day',
+      label: widget.props?.sessionTitle || 'Single Day Admission',
+      sublabel: widget.props.eventDate,
+      description: widget.props?.sessionDescription || 'All-day access to venue and exhibition'
+    }];
+  }
+
+  // 4. Fallback to clean dummy data UI placeholder strictly matching choice form format
   return widget.props?.validForFallback || [
     { 
       id: 'opt_1', 
