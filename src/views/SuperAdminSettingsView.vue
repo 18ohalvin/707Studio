@@ -655,17 +655,81 @@
               </div>
             </div>
 
-            <div class="flex flex-col gap-1">
-              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Brand Photo / Logo Image URL</label>
-              <div class="flex items-center gap-2">
-                <input 
-                  v-model="newBrandLogoUrl" 
-                  type="url" 
-                  placeholder="https://example.com/logo.png" 
-                  class="flex-1 h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black font-mono text-[12px]"
-                />
-                <div v-if="newBrandLogoUrl" class="size-[38px] rounded-[6px] overflow-hidden border border-black/10 shrink-0 bg-neutral-100 flex items-center justify-center">
-                  <img :src="newBrandLogoUrl" alt="Preview" class="size-full object-cover" @error="(e: any) => (e.target.style.display = 'none')" />
+            <div class="flex flex-col gap-1.5">
+              <div class="flex items-center justify-between">
+                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">
+                  Brand Logo / Photo
+                </label>
+                <span v-if="isUploadingNewLogo" class="text-[11px] text-neutral-500 font-mono flex items-center gap-1">
+                  <RefreshCw class="w-3 h-3 animate-spin" /> Uploading image...
+                </span>
+              </div>
+
+              <!-- Hidden device file input -->
+              <input 
+                ref="newBrandFileInputRef"
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                class="hidden"
+                @change="handleNewBrandFileChange"
+              />
+
+              <div class="flex items-center gap-3">
+                <!-- Thumbnail preview -->
+                <div 
+                  class="size-[42px] rounded-[8px] overflow-hidden border border-black/15 shrink-0 bg-black flex items-center justify-center relative group shadow-xs"
+                  :style="{ backgroundColor: newBrandColor || '#000000' }"
+                >
+                  <img 
+                    v-if="newBrandLogoUrl" 
+                    :src="sizedUrl(newBrandLogoUrl, 320)" 
+                    alt="Logo preview" 
+                    class="size-full object-cover" 
+                    @error="(e: any) => (e.target.style.display = 'none')" 
+                  />
+                  <span v-else class="text-white font-bold text-sm">
+                    {{ (newBrandName || 'B').charAt(0).toUpperCase() }}
+                  </span>
+                  <button 
+                    v-if="newBrandLogoUrl" 
+                    type="button" 
+                    @click="newBrandLogoUrl = ''" 
+                    class="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity cursor-pointer"
+                    title="Remove image"
+                  >
+                    <Trash2 class="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                <!-- Device upload button & URL fallback toggle -->
+                <div class="flex-1 flex flex-col gap-1.5">
+                  <div class="flex items-center gap-2">
+                    <button 
+                      type="button"
+                      @click="newBrandFileInputRef?.click()"
+                      :disabled="isUploadingNewLogo"
+                      class="px-3 h-[32px] rounded-[7px] bg-black text-white hover:bg-neutral-800 text-[12px] font-707 font-medium flex items-center gap-1.5 cursor-pointer disabled:opacity-50 transition-colors shadow-xs"
+                    >
+                      <Upload class="w-3.5 h-3.5" />
+                      <span>{{ newBrandLogoUrl ? 'Change from Device' : 'Upload from Device' }}</span>
+                    </button>
+                    <button 
+                      v-if="!showNewBrandUrlInput && !newBrandLogoUrl"
+                      type="button"
+                      @click="showNewBrandUrlInput = true"
+                      class="px-2.5 h-[32px] rounded-[7px] border border-black/15 text-[11px] font-707 text-neutral-600 hover:text-black hover:bg-black/5 transition-colors cursor-pointer"
+                    >
+                      Paste link instead
+                    </button>
+                  </div>
+
+                  <input 
+                    v-if="showNewBrandUrlInput || newBrandLogoUrl"
+                    v-model="newBrandLogoUrl" 
+                    type="text" 
+                    placeholder="Or enter image URL (https://...)" 
+                    class="w-full h-[30px] px-2.5 rounded-[6px] bg-black/[0.03] border border-black/15 text-[11px] font-707 text-black outline-none focus:border-black font-mono"
+                  />
                 </div>
               </div>
             </div>
@@ -742,17 +806,81 @@
               />
             </div>
 
-            <div class="flex flex-col gap-1">
-              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Brand Photo / Logo Image URL</label>
-              <div class="flex items-center gap-2">
-                <input 
-                  v-model="editBrandLogoUrl" 
-                  type="url" 
-                  placeholder="https://example.com/logo.png" 
-                  class="flex-1 h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black font-mono text-[12px]"
-                />
-                <div v-if="editBrandLogoUrl" class="size-[38px] rounded-[6px] overflow-hidden border border-black/10 shrink-0 bg-neutral-100 flex items-center justify-center">
-                  <img :src="editBrandLogoUrl" alt="Preview" class="size-full object-cover" @error="(e: any) => (e.target.style.display = 'none')" />
+            <div class="flex flex-col gap-1.5">
+              <div class="flex items-center justify-between">
+                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">
+                  Brand Logo / Photo
+                </label>
+                <span v-if="isUploadingEditLogo" class="text-[11px] text-neutral-500 font-mono flex items-center gap-1">
+                  <RefreshCw class="w-3 h-3 animate-spin" /> Uploading image...
+                </span>
+              </div>
+
+              <!-- Hidden device file input -->
+              <input 
+                ref="editBrandFileInputRef"
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                class="hidden"
+                @change="handleEditBrandFileChange"
+              />
+
+              <div class="flex items-center gap-3">
+                <!-- Thumbnail preview -->
+                <div 
+                  class="size-[42px] rounded-[8px] overflow-hidden border border-black/15 shrink-0 bg-black flex items-center justify-center relative group shadow-xs"
+                  :style="{ backgroundColor: targetBrand?.primary_color || '#000000' }"
+                >
+                  <img 
+                    v-if="editBrandLogoUrl || targetBrand?.logo_url" 
+                    :src="sizedUrl(editBrandLogoUrl || targetBrand?.logo_url || '', 320)" 
+                    alt="Logo preview" 
+                    class="size-full object-cover" 
+                    @error="(e: any) => (e.target.style.display = 'none')" 
+                  />
+                  <span v-else class="text-white font-bold text-sm">
+                    {{ (editBrandName || targetBrand?.name || 'B').charAt(0).toUpperCase() }}
+                  </span>
+                  <button 
+                    v-if="editBrandLogoUrl || targetBrand?.logo_url" 
+                    type="button" 
+                    @click="editBrandLogoUrl = ''; if (targetBrand) targetBrand.logo_url = ''" 
+                    class="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity cursor-pointer"
+                    title="Remove image"
+                  >
+                    <Trash2 class="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                <!-- Device upload button & URL fallback toggle -->
+                <div class="flex-1 flex flex-col gap-1.5">
+                  <div class="flex items-center gap-2">
+                    <button 
+                      type="button"
+                      @click="editBrandFileInputRef?.click()"
+                      :disabled="isUploadingEditLogo"
+                      class="px-3 h-[32px] rounded-[7px] bg-black text-white hover:bg-neutral-800 text-[12px] font-707 font-medium flex items-center gap-1.5 cursor-pointer disabled:opacity-50 transition-colors shadow-xs"
+                    >
+                      <Upload class="w-3.5 h-3.5" />
+                      <span>{{ (editBrandLogoUrl || targetBrand?.logo_url) ? 'Change from Device' : 'Upload from Device' }}</span>
+                    </button>
+                    <button 
+                      v-if="!showEditBrandUrlInput && !editBrandLogoUrl && !targetBrand?.logo_url"
+                      type="button"
+                      @click="showEditBrandUrlInput = true"
+                      class="px-2.5 h-[32px] rounded-[7px] border border-black/15 text-[11px] font-707 text-neutral-600 hover:text-black hover:bg-black/5 transition-colors cursor-pointer"
+                    >
+                      Paste link instead
+                    </button>
+                  </div>
+
+                  <input 
+                    v-if="showEditBrandUrlInput || editBrandLogoUrl || targetBrand?.logo_url"
+                    v-model="editBrandLogoUrl" 
+                    type="text" 
+                    placeholder="Or enter image URL (https://...)" 
+                    class="w-full h-[30px] px-2.5 rounded-[6px] bg-black/[0.03] border border-black/15 text-[11px] font-707 text-black outline-none focus:border-black font-mono"
+                  />
                 </div>
               </div>
             </div>
@@ -1355,7 +1483,7 @@
 </template>
 
 <script setup lang="ts">
-import { fetchServerMedia, fetchMediaUsage, purgeServerMedia } from '../services/mediaService.ts';
+import { fetchServerMedia, fetchMediaUsage, purgeServerMedia, uploadMediaDirectly } from '../services/mediaService.ts';
 import { sizedUrl } from '../services/responsiveImage.ts';
 import { glassConfirm, glassPrompt } from '../services/glassDialog.ts';
 import { ref, computed, reactive, onMounted, watch } from 'vue';
@@ -1369,7 +1497,8 @@ import {
   Plus,
   Trash2,
   ExternalLink,
-  Layers
+  Layers,
+  Upload
 } from 'lucide-vue-next';
 import { useAuthStore, type UserAccount, type UserRole } from '../stores/authStore.ts';
 import { useEditorStore } from '../stores/editorStore.ts';
@@ -1429,6 +1558,14 @@ const newBrandSlug = ref('');
 const newBrandColor = ref('#000000');
 const newBrandLogoUrl = ref('');
 const newBrandDesc = ref('');
+
+// Logo upload refs
+const newBrandFileInputRef = ref<HTMLInputElement | null>(null);
+const editBrandFileInputRef = ref<HTMLInputElement | null>(null);
+const isUploadingNewLogo = ref(false);
+const isUploadingEditLogo = ref(false);
+const showNewBrandUrlInput = ref(false);
+const showEditBrandUrlInput = ref(false);
 
 const newUserName = ref('');
 const newUserEmail = ref('');
@@ -1571,6 +1708,82 @@ function generateRandomPassword() {
   newUserPassword.value = secureRandomPassword();
 }
 
+async function handleNewBrandFileChange(e: Event) {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+
+  isUploadingNewLogo.value = true;
+  try {
+    const reader = new FileReader();
+    reader.onload = async (uploadEvt) => {
+      const dataUrl = uploadEvt.target?.result as string;
+      if (dataUrl) {
+        try {
+          const brandSlug = newBrandSlug.value.trim() || newBrandName.value.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          const saved = await uploadMediaDirectly({
+            dataUrl,
+            title: newBrandName.value.trim() || 'Brand Logo',
+            category: 'Logo',
+            filename: file.name
+          });
+          newBrandLogoUrl.value = saved.url;
+          editorStore.showToast(`Logo uploaded for ${newBrandName.value || 'new brand'}.`);
+        } catch (err: any) {
+          editorStore.showToast(err?.message || 'Could not upload image.');
+        } finally {
+          isUploadingNewLogo.value = false;
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+  } catch (err: any) {
+    editorStore.showToast(err?.message || 'Failed to read file.');
+    isUploadingNewLogo.value = false;
+  } finally {
+    input.value = '';
+  }
+}
+
+async function handleEditBrandFileChange(e: Event) {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+
+  isUploadingEditLogo.value = true;
+  try {
+    const reader = new FileReader();
+    reader.onload = async (uploadEvt) => {
+      const dataUrl = uploadEvt.target?.result as string;
+      if (dataUrl) {
+        try {
+          const saved = await uploadMediaDirectly({
+            dataUrl,
+            title: editBrandName.value.trim() || targetBrand.value?.name || 'Brand Logo',
+            category: 'Logo',
+            filename: file.name
+          });
+          editBrandLogoUrl.value = saved.url;
+          if (targetBrand.value) {
+            targetBrand.value.logo_url = saved.url;
+          }
+          editorStore.showToast(`Logo uploaded for ${editBrandName.value || 'brand'}.`);
+        } catch (err: any) {
+          editorStore.showToast(err?.message || 'Could not upload image.');
+        } finally {
+          isUploadingEditLogo.value = false;
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+  } catch (err: any) {
+    editorStore.showToast(err?.message || 'Failed to read file.');
+    isUploadingEditLogo.value = false;
+  } finally {
+    input.value = '';
+  }
+}
+
 async function handleAddBrandSubmit() {
   if (!newBrandName.value.trim()) return;
   const slug = newBrandSlug.value.trim() || newBrandName.value.toLowerCase().replace(/[^a-z0-9]+/g, '-');
@@ -1596,6 +1809,7 @@ async function handleAddBrandSubmit() {
   newBrandColor.value = '#000000';
   newBrandLogoUrl.value = '';
   newBrandDesc.value = '';
+  showNewBrandUrlInput.value = false;
   showAddBrandModal.value = false;
 }
 
@@ -1604,6 +1818,7 @@ function openBrandDetailsModal(brand: Brand) {
   editBrandName.value = brand.name;
   editBrandLogoUrl.value = brand.logo_url || '';
   editBrandDesc.value = brand.description || '';
+  showEditBrandUrlInput.value = false;
   showBrandDetailsModal.value = true;
 }
 
