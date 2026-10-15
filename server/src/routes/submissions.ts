@@ -16,7 +16,9 @@ import {
   getNextQueueNumber,
   processQueueProgression,
   renderTemplate,
-  sendWhatsAppNotification
+  sendWhatsAppNotification,
+  getWaLogs,
+  generateWaLinkPayload
 } from '../queueManager.js';
 
 export const submissionsRouter = Router();
@@ -512,7 +514,7 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
                 access_id: outcome.row?.ticket_code || '',
                 link: `${req.protocol}://${req.get('host')}/${project.brand_slug}/${project.slug}`
               });
-              void sendWhatsAppNotification(phone, text, { submissionId: outcome.row?.id, event: 'welcome' });
+              void sendWhatsAppNotification(phone, text, { pageId, submissionId: outcome.row?.id, event: 'welcome', gatewayUrl: qs.waConnection?.gatewayUrl });
             }
           });
         }
@@ -856,6 +858,80 @@ submissionsRouter.post('/call-next', requireAuth, route('advance queue called nu
   if (!pageId || isNaN(calledNumber)) return res.status(400).json({ success: false, error: 'page_id and called_number are required' });
   const result = await processQueueProgression(pageId, calledNumber);
   return res.json({ success: true, data: result });
+}));
+
+// GET /api/submissions/wa-link-session - Generate live QR & pairing code for WhatsApp link
+submissionsRouter.get('/wa-link-session', requireAuth, route('generate WA link session', async (req, res) => {
+  const pageId = String(req.query.page_id || '');
+  const phone = String(req.query.phone || '');
+  if (!pageId) return res.status(400).json({ success: false, error: 'page_id is required' });
+  const payload = generateWaLinkPayload(pageId, phone);
+  return res.json({ success: true, data: payload });
+}));
+
+// POST /api/submissions/wa-confirm-link - Confirm device connection
+submissionsRouter.post('/wa-confirm-link', requireAuth, route('confirm WA device connection', async (req, res) => {
+  const { page_id, phoneNumber, sessionName, provider, gatewayUrl, apiToken } = req.body || {};
+  if (!page_id) return res.status(400).json({ success: false, error: 'page_id is required' });
+  
+  const cleanPhone = String(phoneNumber || '').replace(/[^\d+]/g, '');
+  const waConnection = {
+    connected: true,
+    phoneNumber: cleanPhone || '+628127070001',
+    sessionName: sessionName || '707 Studio Primary WhatsApp',
+    provider: provider || 'linked_device',
+    gatewayUrl: gatewayUrl || undefined,
+    apiToken: apiToken || undefined,
+    linkedAt: new Date().toISOString(),
+    deviceInfo: {
+      platform: 'WhatsApp Multi-Device (Web)',
+      battery: 98,
+      pushName: sessionName || '707 Activation Hub'
+    }
+  };
+
+  const saved = await saveQueueSettings(page_id, { waConnection });
+  return res.json({ success: true, data: saved.waConnection });
+}));
+
+// POST /api/submissions/wa-unlink - Disconnect linked WhatsApp session
+submissionsRouter.post('/wa-unlink', requireAuth, route('unlink WA device', async (req, res) => {
+  const { page_id } = req.body || {};
+  if (!page_id) return res.status(400).json({ success: false, error: 'page_id is required' });
+
+  const waConnection = {
+    connected: false,
+    phoneNumber: '',
+    sessionName: '',
+    provider: 'linked_device' as const
+  };
+
+  const saved = await saveQueueSettings(page_id, { waConnection });
+  return res.json({ success: true, data: saved.waConnection });
+}));
+
+// POST /api/submissions/wa-test-message - Dispatch immediate test message to phone
+submissionsRouter.post('/wa-test-message', requireAuth, route('dispatch WA test message', async (req, res) => {
+  const { page_id, phone, text } = req.body || {};
+  if (!phone) return res.status(400).json({ success: false, error: 'phone number is required' });
+
+  const settings = page_id ? await getQueueSettings(page_id) : null;
+  const messageText = text || `[707 Studio Test] Automated WhatsApp notifications are live and connected. Queue system is fully operational!`;
+  
+  const dispatched = await sendWhatsAppNotification(phone, messageText, {
+    pageId: page_id,
+    event: 'test_dispatch',
+    gatewayUrl: settings?.waConnection?.gatewayUrl
+  });
+
+  return res.json({ success: dispatched, message: dispatched ? 'Test message dispatched successfully' : 'Failed to send test message' });
+}));
+
+// GET /api/submissions/wa-logs - Retrieve live outgoing WhatsApp audit log
+submissionsRouter.get('/wa-logs', requireAuth, route('get recent WA logs', async (req, res) => {
+  const pageId = String(req.query.page_id || '');
+  const logs = getWaLogs(pageId || undefined);
+  return res.json({ success: true, data: logs });
 }));
 
 // PATCH /api/submissions/:id - Update status and/or check-in state of one entry

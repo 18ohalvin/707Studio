@@ -297,6 +297,40 @@ export async function checkInCode(code: string, pageIds: string[] | null, mode: 
   });
 }
 
+export interface WhatsAppDeviceInfo {
+  platform?: string;
+  battery?: number;
+  pushName?: string;
+}
+
+export interface WhatsAppConnection {
+  connected: boolean;
+  phoneNumber?: string;
+  sessionName?: string;
+  provider?: 'linked_device' | 'pairing_code' | 'meta_cloud' | 'custom_gateway';
+  gatewayUrl?: string;
+  apiToken?: string;
+  linkedAt?: string;
+  deviceInfo?: WhatsAppDeviceInfo;
+}
+
+export interface WhatsAppLogEntry {
+  id: string;
+  pageId?: string;
+  phone: string;
+  text: string;
+  event: string;
+  status: 'sent' | 'delivered' | 'failed';
+  timestamp: string;
+}
+
+export interface WaLinkSessionData {
+  qrString: string;
+  pairingCode: string;
+  expiresInSeconds: number;
+  generatedAt: string;
+}
+
 export interface QueueSettingsData {
   enabled: boolean;
   waEnabled: boolean;
@@ -304,6 +338,7 @@ export interface QueueSettingsData {
   notifyThreshold: number;
   skippedTolerance: number;
   currentCalledNumber: number;
+  waConnection?: WhatsAppConnection;
   waTemplates: Record<string, string>;
   stages?: any[];
 }
@@ -329,6 +364,48 @@ export async function callNextQueue(pageId: string, calledNumber: number): Promi
     body: JSON.stringify({ page_id: pageId, called_number: calledNumber })
   });
   return json?.data || null;
+}
+
+export async function fetchWaLinkSession(pageId: string, phone?: string): Promise<WaLinkSessionData | null> {
+  const q = new URLSearchParams({ page_id: pageId });
+  if (phone) q.set('phone', phone);
+  const json = await apiJson<{ success: boolean; data: WaLinkSessionData }>(`/api/submissions/wa-link-session?${q.toString()}`);
+  return json?.data || null;
+}
+
+export async function confirmWaLinkApi(
+  pageId: string,
+  payload: { phoneNumber: string; sessionName?: string; provider?: string; gatewayUrl?: string; apiToken?: string }
+): Promise<WhatsAppConnection | null> {
+  const json = await apiJson<{ success: boolean; data: WhatsAppConnection }>('/api/submissions/wa-confirm-link', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page_id: pageId, ...payload })
+  });
+  return json?.data || null;
+}
+
+export async function unlinkWaApi(pageId: string): Promise<boolean> {
+  const json = await apiJson<{ success: boolean }>('/api/submissions/wa-unlink', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page_id: pageId })
+  });
+  return Boolean(json?.success);
+}
+
+export async function sendWaTestMessageApi(pageId: string, phone: string, text?: string): Promise<boolean> {
+  const json = await apiJson<{ success: boolean }>('/api/submissions/wa-test-message', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page_id: pageId, phone, text })
+  });
+  return Boolean(json?.success);
+}
+
+export async function fetchWaLogs(pageId: string): Promise<WhatsAppLogEntry[]> {
+  const json = await apiJson<{ success: boolean; data: WhatsAppLogEntry[] }>(`/api/submissions/wa-logs?page_id=${encodeURIComponent(pageId)}`);
+  return json?.data || [];
 }
 
 /** Unbiased random int in [0, max) using the platform CSPRNG — raffle fairness matters. */

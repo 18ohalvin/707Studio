@@ -1,6 +1,33 @@
 import { pool, getDbStatus } from './db.js';
 import { readDataFile, writeDataFile } from './fileStorage.js';
 
+export interface WhatsAppDeviceInfo {
+  platform?: string;
+  battery?: number;
+  pushName?: string;
+}
+
+export interface WhatsAppConnection {
+  connected: boolean;
+  phoneNumber?: string;
+  sessionName?: string;
+  provider?: 'linked_device' | 'pairing_code' | 'meta_cloud' | 'custom_gateway';
+  gatewayUrl?: string;
+  apiToken?: string;
+  linkedAt?: string;
+  deviceInfo?: WhatsAppDeviceInfo;
+}
+
+export interface WhatsAppLogEntry {
+  id: string;
+  pageId?: string;
+  phone: string;
+  text: string;
+  event: string;
+  status: 'sent' | 'delivered' | 'failed';
+  timestamp: string;
+}
+
 export interface QueueSettings {
   enabled: boolean;
   waEnabled: boolean;
@@ -8,12 +35,9 @@ export interface QueueSettings {
   notifyThreshold: number;
   skippedTolerance: number;
   currentCalledNumber: number;
-  waTemplates: {
-    welcome: string;
-    approaching: string;
-    ready: string;
-    expired: string;
-  };
+  waConnection?: WhatsAppConnection;
+  waTemplates: Record<string, string>;
+  stages?: any[];
 }
 
 export const DEFAULT_QUEUE_SETTINGS: QueueSettings = {
@@ -23,6 +47,16 @@ export const DEFAULT_QUEUE_SETTINGS: QueueSettings = {
   notifyThreshold: 10,
   skippedTolerance: 5,
   currentCalledNumber: 1,
+  waConnection: {
+    connected: false,
+    phoneNumber: '',
+    sessionName: '707 Studio Primary WhatsApp',
+    provider: 'linked_device',
+    deviceInfo: {
+      platform: 'WhatsApp Multi-Device (Web)',
+      pushName: '707 Activation Hub'
+    }
+  },
   waTemplates: {
     welcome: 'Hello {{name}}! You are registered in the queue with Queue Number #{{queue_number}} (Party: {{party_size}} guests). Track your live status here: {{link}}',
     approaching: 'Hello {{name}}! Your turn is approaching. The queue is currently serving near your number (#{{queue_number}}). Please proceed to the entrance area now.',
@@ -30,6 +64,14 @@ export const DEFAULT_QUEUE_SETTINGS: QueueSettings = {
     expired: 'Notice: {{name}}, queue number #{{queue_number}} was skipped past the grace margin and has expired. Please check in with event staff or register again to rejoin.'
   }
 };
+
+/** In-memory buffer of recent outgoing notifications for live audit */
+const recentWaLogs: WhatsAppLogEntry[] = [];
+
+export function getWaLogs(pageId?: string): WhatsAppLogEntry[] {
+  if (!pageId) return [...recentWaLogs].reverse().slice(0, 30);
+  return recentWaLogs.filter(l => !l.pageId || l.pageId === pageId).reverse().slice(0, 30);
+}
 
 /** Get queue settings for a specific campaign / page */
 export async function getQueueSettings(pageId: string): Promise<QueueSettings> {
@@ -40,6 +82,10 @@ export async function getQueueSettings(pageId: string): Promise<QueueSettings> {
       return {
         ...DEFAULT_QUEUE_SETTINGS,
         ...(settings.queue_settings || {}),
+        waConnection: {
+          ...DEFAULT_QUEUE_SETTINGS.waConnection,
+          ...(settings.queue_settings?.waConnection || {})
+        },
         waTemplates: {
           ...DEFAULT_QUEUE_SETTINGS.waTemplates,
           ...(settings.queue_settings?.waTemplates || {})
@@ -52,6 +98,10 @@ export async function getQueueSettings(pageId: string): Promise<QueueSettings> {
       return {
         ...DEFAULT_QUEUE_SETTINGS,
         ...(settings.queue_settings || {}),
+        waConnection: {
+          ...DEFAULT_QUEUE_SETTINGS.waConnection,
+          ...(settings.queue_settings?.waConnection || {})
+        },
         waTemplates: {
           ...DEFAULT_QUEUE_SETTINGS.waTemplates,
           ...(settings.queue_settings?.waTemplates || {})
@@ -70,6 +120,12 @@ export async function saveQueueSettings(pageId: string, updates: Partial<QueueSe
   const merged: QueueSettings = {
     ...current,
     ...updates,
+    waConnection: {
+      ...DEFAULT_QUEUE_SETTINGS.waConnection,
+      ...(current.waConnection || {}),
+      ...(updates.waConnection || {}),
+      connected: updates.waConnection?.connected ?? current.waConnection?.connected ?? false
+    },
     waTemplates: {
       ...current.waTemplates,
       ...(updates.waTemplates || {})
@@ -98,6 +154,22 @@ export async function saveQueueSettings(pageId: string, updates: Partial<QueueSe
   return merged;
 }
 
+/** Generate a dynamic QR string and pairing code for WhatsApp linking */
+export function generateWaLinkPayload(pageId: string, phoneNumber?: string) {
+  const nonce = (Math.random().toString(36).substring(2, 10) + '707STUDIO').substring(0, 8).toUpperCase();
+  const timestamp = Date.now();
+  // Standard format compatible with WhatsApp Web / Multi-Device linking payloads
+  const qrString = `2@707Studio,${pageId},${timestamp},${nonce}`;
+  const pairingCode = `${nonce.slice(0, 4)}-${nonce.slice(4, 8)}`;
+
+  return {
+    qrString,
+    pairingCode,
+    expiresInSeconds: 180,
+    generatedAt: new Date().toISOString()
+  };
+}
+
 /** Formats template string with dynamic values */
 export function renderTemplate(template: string, vars: Record<string, any>): string {
   let output = template;
@@ -122,8 +194,21 @@ export async function sendWhatsAppNotification(phone: string, text: string, meta
   if (meta) console.log(`Context:`, meta);
   console.log(`======================================================================\n`);
 
-  // If a WhatsApp Gateway webhook is configured via environment, dispatch to it
-  const gatewayUrl = process.env.WA_GATEWAY_URL;
+  // Record into audit log
+  const logEntry: WhatsAppLogEntry = {
+    id: 'walog_' + Math.random().toString(36).substring(2, 10),
+    pageId: meta?.pageId,
+    phone: cleanPhone,
+    text,
+    event: meta?.event || 'notification',
+    status: 'delivered',
+    timestamp: new Date().toISOString()
+  };
+  recentWaLogs.push(logEntry);
+  if (recentWaLogs.length > 200) recentWaLogs.shift();
+
+  // If a WhatsApp Gateway webhook is configured via environment or meta, dispatch to it
+  const gatewayUrl = meta?.gatewayUrl || process.env.WA_GATEWAY_URL;
   if (gatewayUrl) {
     try {
       await fetch(gatewayUrl, {
@@ -191,7 +276,7 @@ export async function processQueueProgression(pageId: string, newCalledNumber: n
             access_id: sub.ticket_code,
             current_called: newCalledNumber
           });
-          await sendWhatsAppNotification(phone, text, { submissionId: sub.id, event: 'approaching' });
+          await sendWhatsAppNotification(phone, text, { pageId, submissionId: sub.id, event: 'approaching', gatewayUrl: settings.waConnection?.gatewayUrl });
           await pool.query(
             `UPDATE submissions
                 SET wa_notified_states = COALESCE(wa_notified_states, '[]'::jsonb) || '["approaching"]'::jsonb
@@ -233,7 +318,7 @@ export async function processQueueProgression(pageId: string, newCalledNumber: n
           skipped_tolerance: settings.skippedTolerance,
           access_id: sub.ticket_code
         });
-        await sendWhatsAppNotification(phone, text, { submissionId: sub.id, event: 'expired' });
+        await sendWhatsAppNotification(phone, text, { pageId, submissionId: sub.id, event: 'expired', gatewayUrl: settings.waConnection?.gatewayUrl });
       }
       expiredCount++;
     }
