@@ -304,12 +304,8 @@ export interface QueueSettingsData {
   notifyThreshold: number;
   skippedTolerance: number;
   currentCalledNumber: number;
-  waTemplates: {
-    welcome: string;
-    approaching: string;
-    ready: string;
-    expired: string;
-  };
+  waTemplates: Record<string, string>;
+  stages?: any[];
 }
 
 export async function fetchQueueSettings(pageId: string): Promise<QueueSettingsData | null> {

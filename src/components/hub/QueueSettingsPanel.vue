@@ -120,7 +120,7 @@
 
           <div class="flex flex-col gap-4">
             <!-- Rule 1: Max Capacity -->
-            <div class="flex items-start justify-between gap-4 p-3.5 rounded-[12px] bg-black/[0.02] border border-black/5">
+            <div class="flex items-center justify-between gap-4 p-3.5 rounded-[12px] bg-black/[0.02] border border-black/5">
               <div class="flex items-start gap-3 min-w-0">
                 <div class="size-8 rounded-[8px] bg-black/5 flex items-center justify-center shrink-0 mt-0.5">
                   <Users class="w-4 h-4 text-neutral-600" />
@@ -132,21 +132,23 @@
                   </p>
                 </div>
               </div>
-              <div class="flex items-center gap-1.5 shrink-0">
+              <div class="flex items-center rounded-[10px] border border-black/15 bg-white overflow-hidden shadow-2xs shrink-0 w-[124px] h-[38px] divide-x divide-black/10 focus-within:border-black transition-colors">
                 <input
                   id="queue-max-capacity"
                   v-model.number="form.maxCapacity"
                   type="number"
                   min="1"
                   max="2000"
-                  class="w-[72px] h-[38px] px-2.5 rounded-[8px] border border-black/15 bg-white text-[16px] font-medium font-mono tabular-nums text-center text-black outline-none focus:border-black"
+                  class="flex-1 h-full min-w-0 px-2 text-[15px] font-semibold font-mono tabular-nums text-center text-black bg-transparent border-none outline-none focus:outline-none"
                 />
-                <span class="text-[12px] text-neutral-500">pax</span>
+                <span class="w-[46px] h-full flex items-center justify-center text-[11px] font-medium font-mono text-neutral-400 bg-black/[0.02] select-none uppercase tracking-wider">
+                  pax
+                </span>
               </div>
             </div>
 
             <!-- Rule 2: Alert Threshold Distance -->
-            <div class="flex items-start justify-between gap-4 p-3.5 rounded-[12px] bg-black/[0.02] border border-black/5">
+            <div class="flex items-center justify-between gap-4 p-3.5 rounded-[12px] bg-black/[0.02] border border-black/5">
               <div class="flex items-start gap-3 min-w-0">
                 <div class="size-8 rounded-[8px] bg-black/5 flex items-center justify-center shrink-0 mt-0.5">
                   <BellRing class="w-4 h-4 text-neutral-600" />
@@ -158,21 +160,23 @@
                   </p>
                 </div>
               </div>
-              <div class="flex items-center gap-1.5 shrink-0">
+              <div class="flex items-center rounded-[10px] border border-black/15 bg-white overflow-hidden shadow-2xs shrink-0 w-[124px] h-[38px] divide-x divide-black/10 focus-within:border-black transition-colors">
                 <input
                   id="queue-notify-threshold"
                   v-model.number="form.notifyThreshold"
                   type="number"
                   min="1"
                   max="100"
-                  class="w-[72px] h-[38px] px-2.5 rounded-[8px] border border-black/15 bg-white text-[16px] font-medium font-mono tabular-nums text-center text-black outline-none focus:border-black"
+                  class="flex-1 h-full min-w-0 px-2 text-[15px] font-semibold font-mono tabular-nums text-center text-black bg-transparent border-none outline-none focus:outline-none"
                 />
-                <span class="text-[12px] text-neutral-500">ahead</span>
+                <span class="w-[46px] h-full flex items-center justify-center text-[11px] font-medium font-mono text-neutral-400 bg-black/[0.02] select-none uppercase tracking-wider">
+                  ahead
+                </span>
               </div>
             </div>
 
             <!-- Rule 3: Skipped Tolerance -->
-            <div class="flex items-start justify-between gap-4 p-3.5 rounded-[12px] bg-black/[0.02] border border-black/5">
+            <div class="flex items-center justify-between gap-4 p-3.5 rounded-[12px] bg-black/[0.02] border border-black/5">
               <div class="flex items-start gap-3 min-w-0">
                 <div class="size-8 rounded-[8px] bg-black/5 flex items-center justify-center shrink-0 mt-0.5">
                   <Clock class="w-4 h-4 text-neutral-600" />
@@ -184,16 +188,18 @@
                   </p>
                 </div>
               </div>
-              <div class="flex items-center gap-1.5 shrink-0">
+              <div class="flex items-center rounded-[10px] border border-black/15 bg-white overflow-hidden shadow-2xs shrink-0 w-[124px] h-[38px] divide-x divide-black/10 focus-within:border-black transition-colors">
                 <input
                   id="queue-skipped-tolerance"
                   v-model.number="form.skippedTolerance"
                   type="number"
                   min="1"
                   max="50"
-                  class="w-[72px] h-[38px] px-2.5 rounded-[8px] border border-black/15 bg-white text-[16px] font-medium font-mono tabular-nums text-center text-black outline-none focus:border-black"
+                  class="flex-1 h-full min-w-0 px-2 text-[15px] font-semibold font-mono tabular-nums text-center text-black bg-transparent border-none outline-none focus:outline-none"
                 />
-                <span class="text-[12px] text-neutral-500">turns</span>
+                <span class="w-[46px] h-full flex items-center justify-center text-[11px] font-medium font-mono text-neutral-400 bg-black/[0.02] select-none uppercase tracking-wider">
+                  turns
+                </span>
               </div>
             </div>
           </div>
@@ -272,21 +278,57 @@
 
       <!-- State B: Enabled (Full Journey Stepper & 100% English Template Editor + Live Preview) -->
       <template v-else>
+        <!-- Pipeline Control Bar (Presets & Add Custom Stage) -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
+          <div class="flex items-center gap-2.5">
+            <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Stage Preset:</span>
+            <div class="relative inline-block">
+              <select
+                v-model="selectedPresetId"
+                @change="applyPreset(selectedPresetId)"
+                class="h-[32px] pl-3 pr-8 rounded-[8px] border border-black/15 bg-white text-[12.5px] font-medium text-black outline-none cursor-pointer appearance-none hover:bg-neutral-50 transition-colors"
+              >
+                <option v-for="p in PRESETS" :key="p.id" :value="p.id">{{ p.name }}</option>
+              </select>
+              <ChevronDown class="w-3.5 h-3.5 text-neutral-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          </div>
+
+          <button
+            type="button"
+            @click="openAddStageModal"
+            class="h-[32px] px-3 rounded-[8px] border border-black/15 bg-white text-[12.5px] font-medium text-black hover:bg-black/5 flex items-center gap-1.5 cursor-pointer transition-colors self-start sm:self-auto"
+          >
+            <Plus class="w-3.5 h-3.5" />
+            <span>Add Stage</span>
+          </button>
+        </div>
+
         <!-- Lifecycle Stepper Tabs -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
           <button
-            v-for="(stage, idx) in STAGES"
+            v-for="(stage, idx) in stagesList"
             :key="stage.id"
             type="button"
             @click="activeStageId = stage.id"
-            class="p-3.5 rounded-[12px] border text-left transition-all cursor-pointer flex flex-col gap-1 relative"
+            class="group p-3.5 rounded-[12px] border text-left transition-all cursor-pointer flex flex-col gap-1 relative"
             :class="activeStageId === stage.id ? 'bg-black text-white border-black shadow-sm' : 'bg-neutral-50 hover:bg-neutral-100 border-black/10 text-neutral-800'"
           >
             <div class="flex items-center justify-between">
               <span class="text-[10px] font-mono uppercase tracking-[0.1em]" :class="activeStageId === stage.id ? 'text-white/70' : 'text-neutral-400'">
                 Stage {{ idx + 1 }}
               </span>
-              <component :is="stage.icon" class="w-3.5 h-3.5" :class="activeStageId === stage.id ? 'text-white' : 'text-neutral-500'" />
+              <div class="flex items-center gap-1.5">
+                <component :is="stage.icon || MessageSquare" class="w-3.5 h-3.5" :class="activeStageId === stage.id ? 'text-white' : 'text-neutral-500'" />
+                <span
+                  v-if="stagesList.length > 2 && stage.id !== 'welcome'"
+                  @click.stop="handleRemoveStage(stage.id)"
+                  class="opacity-0 group-hover:opacity-100 hover:text-red-500 p-0.5 rounded cursor-pointer transition-opacity"
+                  title="Remove this stage"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                </span>
+              </div>
             </div>
             <span class="text-[13px] font-medium leading-snug">{{ stage.title }}</span>
             <span class="text-[11px] truncate" :class="activeStageId === stage.id ? 'text-white/60' : 'text-neutral-500'">
@@ -413,8 +455,12 @@ import {
   ShieldCheck,
   QrCode,
   UserCheck,
-  Ban
+  Ban,
+  Plus,
+  Trash2,
+  ChevronDown
 } from 'lucide-vue-next';
+import { glassConfirm, glassPrompt } from '../../services/glassDialog.ts';
 import {
   fetchQueueSettings,
   saveQueueSettingsApi,
@@ -425,7 +471,7 @@ import {
   type QueueSettingsData
 } from './hubUtils.ts';
 
-type StageId = 'welcome' | 'approaching' | 'ready' | 'expired';
+type StageId = string;
 
 interface StageDefinition {
   id: StageId;
@@ -465,7 +511,7 @@ const form = reactive<QueueSettingsData>({
   }
 });
 
-const STAGES: StageDefinition[] = [
+const DEFAULT_STAGES: StageDefinition[] = [
   {
     id: 'welcome',
     title: '1. Welcome & Pass',
@@ -523,7 +569,107 @@ const STAGES: StageDefinition[] = [
   }
 ];
 
-const currentStage = computed(() => STAGES.find(s => s.id === activeStageId.value) || STAGES[0]);
+const PRESETS = [
+  {
+    id: 'hype_queue',
+    name: 'Hype Drop Queue (4 Stages - Default)',
+    description: 'Full drop journey: Welcome Pass -> Approaching -> Called to Gate -> Missed',
+    stages: DEFAULT_STAGES
+  },
+  {
+    id: 'express_rsvp',
+    name: 'Fast-Track RSVP (2 Stages)',
+    description: 'Minimalist guest check-in: Confirmation Pass -> Admitted at Entrance',
+    stages: [DEFAULT_STAGES[0], DEFAULT_STAGES[2]]
+  },
+  {
+    id: 'multi_zone',
+    name: 'VIP Multi-Zone (5 Stages)',
+    description: 'Multi-station pipeline: Gate Admission -> Fitting Room -> Checkout Desk',
+    stages: [
+      DEFAULT_STAGES[0],
+      DEFAULT_STAGES[1],
+      DEFAULT_STAGES[2],
+      {
+        id: 'fitting_room',
+        title: '4. Fitting Room / Booth',
+        triggerSummary: 'Trigger: Station 2 Assigned',
+        triggerBadge: 'Trigger: Station Check-In',
+        description: 'Sent when customer is called into an individual fitting booth or private product viewing.',
+        icon: UserCheck,
+        tags: [
+          { key: 'name', label: 'Name', description: 'Visitor full name' },
+          { key: 'queue_number', label: 'Queue No', description: 'Sequential queue number' },
+          { key: 'access_id', label: 'Access ID', description: 'Ticket pass code' }
+        ]
+      },
+      DEFAULT_STAGES[3]
+    ]
+  }
+];
+
+const selectedPresetId = ref('hype_queue');
+const stagesList = ref<StageDefinition[]>(JSON.parse(JSON.stringify(DEFAULT_STAGES)));
+
+function applyPreset(presetId: string) {
+  const p = PRESETS.find(item => item.id === presetId);
+  if (!p) return;
+  stagesList.value = JSON.parse(JSON.stringify(p.stages));
+  if (!stagesList.value.some(s => s.id === activeStageId.value)) {
+    activeStageId.value = stagesList.value[0]?.id || 'welcome';
+  }
+  emit('toast', `Applied template preset: "${p.name}".`);
+}
+
+async function openAddStageModal() {
+  const name = await glassPrompt({
+    title: 'Add Journey Stage',
+    message: 'Enter the title for this milestone stage (e.g. VIP Lounge, Fitting Room Ready, Checkout).',
+    placeholder: 'e.g. Fitting Room Ready',
+    confirmLabel: 'Add Stage'
+  });
+  if (!name || !name.trim()) return;
+  const cleanName = name.trim();
+  const id = 'stage_' + cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+  stagesList.value.push({
+    id,
+    title: cleanName,
+    triggerSummary: 'Custom Milestone Trigger',
+    triggerBadge: 'Custom Trigger',
+    description: `Automated notification dispatched when reaching "${cleanName}".`,
+    icon: MessageSquare,
+    tags: [
+      { key: 'name', label: 'Name', description: 'Visitor full name' },
+      { key: 'queue_number', label: 'Queue No', description: 'Sequential queue number' },
+      { key: 'access_id', label: 'Access ID', description: 'Ticket pass code' },
+      { key: 'link', label: 'Pass Link', description: 'Direct ticket pass link' }
+    ]
+  });
+  if (!form.waTemplates[id]) {
+    form.waTemplates[id] = `Hello {{name}}! Update for ${cleanName}: your queue number is #{{queue_number}}. Please present Access ID {{access_id}}.`;
+  }
+  activeStageId.value = id;
+  emit('toast', `Added new stage "${cleanName}".`);
+}
+
+async function handleRemoveStage(id: string) {
+  if (stagesList.value.length <= 1) return;
+  const target = stagesList.value.find(s => s.id === id);
+  const ok = await glassConfirm({
+    title: 'Remove Stage?',
+    message: `Are you sure you want to remove "${target?.title || id}" from the pipeline?`,
+    confirmLabel: 'Remove',
+    danger: true
+  });
+  if (!ok) return;
+  stagesList.value = stagesList.value.filter(s => s.id !== id);
+  if (activeStageId.value === id) {
+    activeStageId.value = stagesList.value[0]?.id || 'welcome';
+  }
+  emit('toast', `Removed stage.`);
+}
+
+const currentStage = computed(() => stagesList.value.find(s => s.id === activeStageId.value) || stagesList.value[0]);
 
 /* Live Headcount Computations */
 const insideCount = computed(() => {
@@ -592,6 +738,12 @@ async function loadSettings() {
       Object.assign(form, data);
       form.waEnabled = Boolean(data.waEnabled);
       if (data.waTemplates) Object.assign(form.waTemplates, data.waTemplates);
+      if ((data as any).stages && Array.isArray((data as any).stages) && (data as any).stages.length > 0) {
+        stagesList.value = (data as any).stages.map((s: any) => ({
+          ...s,
+          icon: s.id === 'welcome' ? QrCode : (s.id === 'approaching' ? BellRing : (s.id === 'ready' ? UserCheck : (s.id === 'expired' ? Ban : MessageSquare)))
+        }));
+      }
     }
   } catch (err: any) {
     emit('toast', err?.message || 'Failed to load queue settings');
@@ -604,7 +756,18 @@ async function saveSettings() {
   if (!props.pageId) return;
   isSaving.value = true;
   try {
-    const res = await saveQueueSettingsApi(props.pageId, form);
+    const payload = {
+      ...form,
+      stages: stagesList.value.map(s => ({
+        id: s.id,
+        title: s.title,
+        triggerSummary: s.triggerSummary,
+        triggerBadge: s.triggerBadge,
+        description: s.description,
+        tags: s.tags
+      }))
+    };
+    const res = await saveQueueSettingsApi(props.pageId, payload);
     if (res) {
       Object.assign(form, res);
       emit('toast', 'Queue settings and WhatsApp preferences saved successfully.');

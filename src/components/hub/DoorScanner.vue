@@ -177,6 +177,93 @@
               <p v-if="!candidates.length" class="text-[14px] text-neutral-500 px-1 pt-1">No guest ends with “{{ query }}”. Check the characters, or try the WhatsApp number.</p>
               <p v-else-if="candidates.length > 1" class="text-[12.5px] text-neutral-500 px-1">{{ candidates.length }} guests share this ending. Tap the right one, or type more.</p>
             </template>
+            <div v-else-if="upcomingQueueGuests.length || queueEnabled" class="flex-1 min-h-0 flex flex-col gap-1.5 overflow-hidden">
+              <!-- Quick Stepper for Door Marshal -->
+              <div class="flex items-center justify-between px-2 py-1.5 rounded-[10px] bg-black/[0.03] border border-black/5 shrink-0">
+                <div class="flex items-center gap-2">
+                  <Volume2 class="w-3.5 h-3.5 text-neutral-600" />
+                  <span class="text-[11px] font-mono uppercase tracking-[0.08em] text-neutral-500">Serving</span>
+                  <span class="px-2 py-0.5 rounded-[6px] bg-black text-white font-mono text-[13px] font-bold">#{{ currentCalledNumber }}</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    @click="stepQueueCaller(-1)"
+                    :disabled="currentCalledNumber <= 1"
+                    class="h-[28px] px-2 rounded-[6px] border border-black/15 bg-white text-[11.5px] font-medium hover:bg-black/5 disabled:opacity-30 cursor-pointer active:bg-black/10"
+                    title="Step back to previous number"
+                  >
+                    -1
+                  </button>
+                  <button
+                    type="button"
+                    @click="stepQueueCaller(1)"
+                    class="h-[28px] px-3 rounded-[6px] bg-black text-white text-[11.5px] font-medium hover:bg-neutral-800 cursor-pointer flex items-center gap-1.5 active:bg-neutral-700 shadow-2xs"
+                    title="Call next queue number"
+                  >
+                    <span>Call Next (#{{ currentCalledNumber + 1 }})</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Upcoming Queue Stream List -->
+              <div class="flex-1 min-h-0 overflow-y-auto flex flex-col gap-1 pr-0.5">
+                <button
+                  v-for="guest in upcomingQueueGuests"
+                  :key="guest.id"
+                  type="button"
+                  @click="openConfirm(guest)"
+                  class="w-full flex items-center justify-between p-2 rounded-[10px] border text-left transition-colors cursor-pointer"
+                  :class="getGuestQueueNumber(guest) === currentCalledNumber
+                    ? 'border-emerald-500 bg-emerald-50/50 shadow-2xs'
+                    : (isGuestInside(guest) ? 'border-black/5 bg-neutral-100 opacity-60' : 'border-black/10 bg-white hover:bg-black/5 active:bg-black/10')"
+                >
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <span
+                      class="size-7 rounded-[7px] flex items-center justify-center font-mono font-bold text-[12px] shrink-0"
+                      :class="getGuestQueueNumber(guest) === currentCalledNumber
+                        ? 'bg-emerald-600 text-white shadow-2xs animate-pulse'
+                        : (isGuestInside(guest) ? 'bg-neutral-300 text-neutral-600' : 'bg-black/10 text-neutral-800')"
+                    >
+                      #{{ getGuestQueueNumber(guest) }}
+                    </span>
+                    <div class="min-w-0">
+                      <p class="text-[13px] font-medium text-black truncate flex items-center gap-1.5">
+                        {{ guestName(guest) }}
+                        <span v-if="isVip(guest)" class="px-1 py-0.2 rounded bg-black text-white text-[9px] font-medium tracking-wider">VIP</span>
+                      </p>
+                      <p class="text-[11px] text-neutral-500 font-mono">
+                        ID ···{{ codeTail(guest) }} <template v-if="phoneTail(guest)"> · WA ···{{ phoneTail(guest) }}</template>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-2 shrink-0">
+                    <span
+                      v-if="isGuestInside(guest)"
+                      class="text-[10.5px] font-medium px-2 py-0.5 rounded-full bg-neutral-200 text-neutral-700 border border-neutral-300"
+                    >
+                      Inside
+                    </span>
+                    <span
+                      v-else-if="getGuestQueueNumber(guest) === currentCalledNumber"
+                      class="text-[10.5px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 animate-pulse"
+                    >
+                      Now Serving
+                    </span>
+                    <span
+                      v-else
+                      class="text-[10.5px] font-medium px-2 py-0.5 rounded-full bg-black/5 text-neutral-600 border border-black/5"
+                    >
+                      In Line
+                    </span>
+                    <span class="text-[11px] font-medium text-black bg-white px-2 py-1 rounded-[6px] border border-black/15 shadow-2xs">
+                      {{ isGuestInside(guest) ? 'View' : 'Admit' }}
+                    </span>
+                  </div>
+                </button>
+              </div>
+            </div>
             <p v-else class="text-[14px] text-neutral-400 px-1 pt-1 leading-snug">Type the last 4 characters of the Access ID, or the last 4 digits of the WhatsApp number. The guest opens on their own.</p>
           </div>
 
@@ -432,7 +519,7 @@ import {
 import {
   type Submission, type CheckInResult, checkInCode, patchSubmission, guestName, guestType, guestEmail, accessId, initials,
   formatTime, formatValue, normalizeStatus, findGuestsByShortCode, codeTail, phoneTail, maskEmail,
-  totalInsideGuests, isGuestInside, fetchQueueSettings
+  totalInsideGuests, isGuestInside, fetchQueueSettings, callNextQueue
 } from './hubUtils.ts';
 
 const props = defineProps<{
@@ -489,9 +576,11 @@ function selectStation(st: 'in' | 'out') {
   nextTick(() => inputRef.value?.focus());
 }
 
-/* ---------- Capacity & Party Size ---------- */
+/* ---------- Capacity & Party Size & Queue Caller ---------- */
 const maxCapacity = ref(50);
 const pendingPartySize = ref(1);
+const queueEnabled = ref(false);
+const currentCalledNumber = ref(1);
 
 async function loadCapacitySettings() {
   const pageId = props.pageIds?.[0];
@@ -499,9 +588,49 @@ async function loadCapacitySettings() {
   try {
     const s = await fetchQueueSettings(pageId);
     if (s?.maxCapacity) maxCapacity.value = Number(s.maxCapacity) || 50;
+    if (s?.currentCalledNumber) currentCalledNumber.value = Number(s.currentCalledNumber) || 1;
+    queueEnabled.value = Boolean(s?.enabled);
   } catch { /* keep 50 default */ }
 }
 watch(() => props.pageIds, () => { void loadCapacitySettings(); }, { deep: true });
+
+async function stepQueueCaller(delta: number) {
+  const pageId = props.pageIds?.[0];
+  if (!pageId) return;
+  const target = Math.max(1, currentCalledNumber.value + delta);
+  currentCalledNumber.value = target;
+  try {
+    const res = await callNextQueue(pageId, target);
+    if (res) {
+      emit('toast', `Called Queue #${target}.`);
+    }
+  } catch (err: any) {
+    emit('toast', `Failed to advance queue: ${err?.message || 'error'}`);
+  }
+}
+
+function getGuestQueueNumber(guest: Submission): number {
+  return Number(guest.queue_number) || Number((guest as any).answers?.queue_number) || 0;
+}
+
+const upcomingQueueGuests = computed(() => {
+  if (!props.rows) return [];
+  return props.rows
+    .filter(r => {
+      const q = getGuestQueueNumber(r);
+      const st = normalizeStatus(r.status);
+      return q > 0 && !['declined', 'waitlisted'].includes(st);
+    })
+    .sort((a, b) => {
+      const qA = getGuestQueueNumber(a);
+      const qB = getGuestQueueNumber(b);
+      return qA - qB;
+    })
+    .filter(r => {
+      const q = getGuestQueueNumber(r);
+      return q >= Math.max(1, currentCalledNumber.value - 1) && q <= currentCalledNumber.value + 6;
+    });
+});
 
 type ScanKind = CheckInResult | 'waitlisted' | 'declined' | 'error';
 interface ScanResult { kind: ScanKind; name: string; detail: string; vip: boolean; tail: string; hold: number }

@@ -21,7 +21,7 @@ describe('Template Studio Mode (Option A)', () => {
     widget_tree: [
       {
         id: 'widget_text_1',
-        type: 'text',
+        type: 'TextBanner',
         props: { content: 'Exclusive Access' }
       }
     ]
@@ -55,7 +55,7 @@ describe('Template Studio Mode (Option A)', () => {
     editorStore.projectTitle = 'Updated VIP Master Preset';
     editorStore.pages[0].widget_tree.push({
       id: 'widget_btn_1',
-      type: 'button',
+      type: 'ActionButton',
       props: { label: 'Claim Pass' }
     });
 
