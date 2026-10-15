@@ -95,22 +95,16 @@ export const useBrandStore = defineStore('brand', () => {
         }
         return res.data;
       }
+      throw new Error('Server returned an unexpected response');
     } catch (err) {
-      // The server refused (reserved slug, not superadmin…) — that is an answer
-      // for the form to show, not a dropped connection to paper over.
-      if (err instanceof ApiError && err.status >= 400 && err.status < 500) throw err;
       console.error('[BrandStore] Failed to create brand on cloud server:', err);
-      // Optimistic local add
-      const fallbackBrand: Brand = {
-        id: `brand-${Date.now()}`,
-        ...brand
-      };
-      brands.value.unshift(fallbackBrand);
-      return fallbackBrand;
+      throw err;
     }
   }
 
   async function updateBrand(id: string, updates: Partial<Brand>) {
+    const prev = brands.value.find(b => b.id === id || b.slug === id);
+    const prevClone = prev ? { ...prev } : null;
     const idx = brands.value.findIndex(b => b.id === id || b.slug === id);
     if (idx !== -1) {
       brands.value[idx] = { ...brands.value[idx], ...updates };
@@ -126,10 +120,18 @@ export const useBrandStore = defineStore('brand', () => {
       });
     } catch (err) {
       console.error('[BrandStore] Failed to update brand on cloud server:', err);
+      if (idx !== -1 && prevClone) {
+        brands.value[idx] = prevClone;
+        if (activeBrand.value && (activeBrand.value.id === id || activeBrand.value.slug === id)) {
+          activeBrand.value = prevClone;
+        }
+      }
+      throw err;
     }
   }
 
   async function removeBrand(idOrSlug: string) {
+    const prevList = [...brands.value];
     brands.value = brands.value.filter(b => b.id !== idOrSlug && b.slug !== idOrSlug);
     if (activeBrand.value && (activeBrand.value.id === idOrSlug || activeBrand.value.slug === idOrSlug)) {
       activeBrand.value = brands.value[0] || null;
@@ -140,6 +142,8 @@ export const useBrandStore = defineStore('brand', () => {
       });
     } catch (err) {
       console.error('[BrandStore] Failed to delete brand on cloud server:', err);
+      brands.value = prevList;
+      throw err;
     }
   }
 

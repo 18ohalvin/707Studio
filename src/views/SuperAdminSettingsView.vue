@@ -1609,13 +1609,17 @@ function openBrandDetailsModal(brand: Brand) {
 
 async function handleSaveBrandDetails() {
   if (targetBrand.value) {
-    await brandStore.updateBrand(targetBrand.value.id, {
-      name: editBrandName.value,
-      logo_url: editBrandLogoUrl.value.trim(),
-      description: editBrandDesc.value
-    });
-    editorStore.showToast(`Updated details for ${editBrandName.value}.`);
-    showBrandDetailsModal.value = false;
+    try {
+      await brandStore.updateBrand(targetBrand.value.id, {
+        name: editBrandName.value,
+        logo_url: editBrandLogoUrl.value.trim(),
+        description: editBrandDesc.value
+      });
+      editorStore.showToast(`Updated details for ${editBrandName.value}.`);
+      showBrandDetailsModal.value = false;
+    } catch (err: any) {
+      editorStore.showToast(err?.message || 'Could not update this brand.');
+    }
   }
 }
 
@@ -1655,8 +1659,12 @@ async function handleSaveEditUserSubmit() {
 
 async function handleRemoveBrand(brand: Brand) {
   if (await glassConfirm({ title: 'Remove brand?', message: `"${brand.name}" is removed from the brand directory.`, confirmLabel: 'Remove', danger: true })) {
-    await brandStore.removeBrand(brand.id);
-    editorStore.showToast(`Brand "${brand.name}" removed from ecosystem.`);
+    try {
+      await brandStore.removeBrand(brand.id);
+      editorStore.showToast(`Brand "${brand.name}" removed from ecosystem.`);
+    } catch (err: any) {
+      editorStore.showToast(err?.message || 'Could not remove this brand.');
+    }
   }
 }
 

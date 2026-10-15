@@ -2,6 +2,7 @@ import pg from 'pg';
 import dotenv from 'dotenv';
 import { withClient } from './dbClient.js';
 import { ensureSubmissionColumns, installSubmissionGuards, importLegacySubmissions, backfillSlotPicks } from './submissionGuards.js';
+import { readDataFile } from './fileStorage.js';
 
 dotenv.config();
 
@@ -56,6 +57,8 @@ export async function initDbSchema(): Promise<void> {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+
+      ALTER TABLE brands ALTER COLUMN id SET DEFAULT ('brand_' || substr(md5(random()::text), 1, 16));
 
       CREATE TABLE IF NOT EXISTS users (
         id VARCHAR(100) PRIMARY KEY,
@@ -270,9 +273,49 @@ export async function initDbSchema(): Promise<void> {
       CREATE INDEX IF NOT EXISTS project_history_created_idx ON project_history (created_at DESC);
     `);
     console.log('[DB] Database schema initialized and verified successfully.');
+    await importLegacyBrands(pool);
   } catch (err: any) {
     console.error('[DB] Error initializing database schema:', err.message);
   }
+}
+
+/**
+ * Idempotently seeds initial brands from brands.json into the database so fresh deployments
+ * have the default brands available immediately.
+ */
+export async function importLegacyBrands(targetPool: pg.Pool): Promise<number> {
+  const fileBrands = readDataFile<any[]>('brands.json', []);
+  if (!Array.isArray(fileBrands) || fileBrands.length === 0) return 0;
+
+  let imported = 0;
+  for (const b of fileBrands) {
+    if (!b || !b.name || !b.slug) continue;
+    try {
+      const res = await targetPool.query(
+        `INSERT INTO brands (id, name, slug, description, primary_color, logo_url, is_active, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         ON CONFLICT (slug) DO NOTHING
+         RETURNING id`,
+        [
+          b.id || `brand_${b.slug}`,
+          b.name,
+          b.slug,
+          b.description || '',
+          b.primary_color || '#000000',
+          b.logo_url || '',
+          b.is_active !== false,
+          b.created_at || new Date().toISOString()
+        ]
+      );
+      if (res.rowCount && res.rowCount > 0) imported++;
+    } catch (e: any) {
+      console.warn(`[DB] Failed to seed brand "${b.slug}":`, e.message);
+    }
+  }
+  if (imported > 0) {
+    console.log(`[DB] Seeded ${imported} brand(s) into database from brands.json.`);
+  }
+  return imported;
 }
 
 let reconnectTimer: NodeJS.Timeout | null = null;
