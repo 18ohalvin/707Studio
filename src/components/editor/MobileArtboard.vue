@@ -203,6 +203,7 @@
             <!-- 1. HeroDrop / Media Banner Widget (Solid space preview blocking #EDEDED or populated media) -->
             <div 
               v-if="widget.type === 'HeroDrop'" 
+              @dblclick.stop="startCanvasHeroDragMode(widget)"
               class="relative overflow-hidden w-full flex flex-col justify-between transition-all"
               :class="[
                 widget.props.isSolidSpace || !widget.props.imageUrl ? 'bg-[#ededed] text-black' : 'bg-black text-white',
@@ -243,6 +244,54 @@
                   class="absolute inset-0 z-10 pointer-events-none transition-all duration-300"
                   :style="getOverlayStyle(widget.props)"
                 />
+
+                <!-- Quick Crop & Drag Studio Launcher Pill (Shown when widget is selected in editor mode) -->
+                <button 
+                  v-if="!isPreviewModal && !isLivePage && isSelected && editorStore.selectedWidgetId === widget.id && !isFreeDragTarget(widget)"
+                  type="button"
+                  @click.stop="editorStore.openCropStudio"
+                  class="absolute top-3 right-3 z-30 bg-black/80 hover:bg-black text-white text-[11px] font-707 px-3 py-1.5 rounded-full backdrop-blur-md border border-white/20 shadow-lg flex items-center gap-1.5 transition-all cursor-pointer hover:scale-105 active:scale-95"
+                  title="Open Interactive Photo Crop Studio"
+                >
+                  <Crop class="size-3 text-white" />
+                  <span>Crop & Drag</span>
+                </button>
+
+                <!-- Interactive In-Canvas Free Drag Overlay -->
+                <div 
+                  v-if="!isPreviewModal && !isLivePage && isFreeDragTarget(widget)"
+                  class="absolute inset-0 z-30 cursor-grab active:cursor-grabbing select-none touch-none bg-black/15"
+                  @pointerdown="startCanvasHeroDrag(widget, $event)"
+                  @pointermove="onCanvasHeroDrag(widget, $event)"
+                  @pointerup="endCanvasHeroDrag"
+                  @pointercancel="endCanvasHeroDrag"
+                  @wheel.prevent.stop="onCanvasHeroWheel(widget, $event)"
+                >
+                  <!-- 3x3 Rule of Thirds Grid -->
+                  <div class="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none border border-white/50">
+                    <div v-for="i in 9" :key="i" class="border border-white/30 border-dashed" />
+                  </div>
+
+                  <!-- Floating Tool Dock -->
+                  <div class="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/90 text-white backdrop-blur-xl px-3.5 py-1.5 rounded-full shadow-2xl flex items-center gap-2.5 z-40 border border-white/20 select-none">
+                    <div class="flex items-center gap-1.5 text-[11px] font-707">
+                      <Move class="size-3.5 text-amber-400 animate-pulse" />
+                      <span>Drag to reposition</span>
+                    </div>
+                    <div class="w-[1px] h-3 bg-white/20" />
+                    <div class="text-[11px] font-mono text-neutral-300">
+                      {{ Math.round(widget.props.imageZoom || 100) }}%
+                    </div>
+                    <div class="w-[1px] h-3 bg-white/20" />
+                    <button 
+                      type="button" 
+                      @click.stop="stopCanvasHeroDrag"
+                      class="bg-white text-black px-2.5 py-0.5 rounded-full text-[10px] font-bold font-707 hover:bg-neutral-200 transition-colors cursor-pointer"
+                    >
+                      Done ✓
+                    </button>
+                  </div>
+                </div>
               </template>
 
               <!-- Solid space blocking placeholder (#EDEDED for layout preview per Figma Node 134:4207) -->
@@ -2063,7 +2112,10 @@ import {
   RefreshCw,
   Phone,
   Instagram,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Crop,
+  Move,
+  ZoomIn
 } from 'lucide-vue-next';
 import { fetchQueueSettings } from '../hub/hubUtils.ts';
 import { uploadMediaDirectly } from '../../services/mediaService.ts';
@@ -3069,6 +3121,92 @@ function handleHeroImageError(widget: any) {
       imageUrl: ''
     });
   }
+}
+
+const isCanvasDragging = ref(false);
+let heroDragStartX = 0;
+let heroDragStartY = 0;
+let heroDragInitialX = 50;
+let heroDragInitialY = 50;
+const activeCanvasDragWidgetId = ref<string | null>(null);
+
+function isFreeDragTarget(widget: any): boolean {
+  if (editorStore.isHeroFreeDragActive) {
+    return editorStore.selectedWidgetId === widget.id || (!editorStore.selectedWidgetId && widget.type === 'HeroDrop');
+  }
+  return activeCanvasDragWidgetId.value === widget.id;
+}
+
+function startCanvasHeroDragMode(widget: any) {
+  if (props.isPreviewModal || props.isLivePage) return;
+  activeCanvasDragWidgetId.value = widget.id;
+  editorStore.toggleHeroFreeDrag(true);
+}
+
+function startCanvasHeroDrag(widget: any, e: PointerEvent) {
+  isCanvasDragging.value = true;
+  activeCanvasDragWidgetId.value = widget.id;
+  (e.currentTarget as HTMLElement)?.setPointerCapture?.(e.pointerId);
+  heroDragStartX = e.clientX;
+  heroDragStartY = e.clientY;
+
+  heroDragInitialX = typeof widget.props.imagePositionX === 'number' ? widget.props.imagePositionX : 50;
+  if (typeof widget.props.imagePositionY === 'number') {
+    heroDragInitialY = widget.props.imagePositionY;
+  } else if (widget.props.imagePosition === 'top') {
+    heroDragInitialY = 0;
+  } else if (widget.props.imagePosition === 'bottom') {
+    heroDragInitialY = 100;
+  } else {
+    heroDragInitialY = 50;
+  }
+}
+
+function onCanvasHeroDrag(widget: any, e: PointerEvent) {
+  if (!isCanvasDragging.value) return;
+
+  const dx = e.clientX - heroDragStartX;
+  const dy = e.clientY - heroDragStartY;
+
+  const targetEl = e.currentTarget as HTMLElement;
+  const w = targetEl?.clientWidth || 393;
+  const h = targetEl?.clientHeight || 600;
+
+  const percentDeltaX = (dx / w) * 100;
+  const percentDeltaY = (dy / h) * 100;
+
+  const newX = Math.min(100, Math.max(0, Math.round(heroDragInitialX - percentDeltaX)));
+  const newY = Math.min(100, Math.max(0, Math.round(heroDragInitialY - percentDeltaY)));
+
+  const preset = newY === 0 ? 'top' : (newY === 100 ? 'bottom' : (newY === 50 ? 'center' : 'custom'));
+
+  editorStore.updateWidgetProps(widget.id, {
+    imagePositionX: newX,
+    imagePositionY: newY,
+    imagePosition: preset
+  });
+}
+
+function endCanvasHeroDrag(e: PointerEvent) {
+  isCanvasDragging.value = false;
+  try {
+    (e.currentTarget as HTMLElement)?.releasePointerCapture?.(e.pointerId);
+  } catch (_) {}
+}
+
+function onCanvasHeroWheel(widget: any, e: WheelEvent) {
+  const currentZoom = typeof widget.props.imageZoom === 'number' ? widget.props.imageZoom : 100;
+  const delta = e.deltaY < 0 ? 5 : -5;
+  const newZoom = Math.min(300, Math.max(100, currentZoom + delta));
+  editorStore.updateWidgetProps(widget.id, {
+    imageZoom: newZoom
+  });
+}
+
+function stopCanvasHeroDrag() {
+  isCanvasDragging.value = false;
+  activeCanvasDragWidgetId.value = null;
+  editorStore.toggleHeroFreeDrag(false);
 }
 
 /** Ratios that size a banner to the screen — meaningless on the Ticket, whose height follows its content. */

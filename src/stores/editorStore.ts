@@ -201,6 +201,18 @@ export const useEditorStore = defineStore('editor', () => {
   const isTestFormModalOpen = ref<boolean>(false);
   const isRequestWidgetModalOpen = ref<boolean>(false);
   const isProjectSettingsOpen = ref<boolean>(false);
+  const isCropStudioOpen = ref<boolean>(false);
+  const isHeroFreeDragActive = ref<boolean>(false);
+
+  function openCropStudio() {
+    isCropStudioOpen.value = true;
+  }
+  function closeCropStudio() {
+    isCropStudioOpen.value = false;
+  }
+  function toggleHeroFreeDrag(active?: boolean) {
+    isHeroFreeDragActive.value = active !== undefined ? active : !isHeroFreeDragActive.value;
+  }
 
   // Floating Toast Notification
   const activeToastMessage = ref<string | null>(null);
@@ -2098,6 +2110,11 @@ export const useEditorStore = defineStore('editor', () => {
     restoreProjectBuild,
     applyServerProject,
     setDraggedWidget,
-    cleanupEmptyTextWidgets
+    cleanupEmptyTextWidgets,
+    isCropStudioOpen,
+    isHeroFreeDragActive,
+    openCropStudio,
+    closeCropStudio,
+    toggleHeroFreeDrag
   };
 });

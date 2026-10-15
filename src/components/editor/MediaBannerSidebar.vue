@@ -150,6 +150,30 @@
         </button>
       </div>
 
+      <!-- Interactive Photo Crop & Drag Studio Buttons -->
+      <div class="flex flex-col gap-[8px] w-full">
+        <!-- Dedicated Photo Editor Crop Studio -->
+        <button
+          type="button"
+          @click="editorStore.openCropStudio"
+          class="w-full flex items-center justify-center gap-2 h-[38px] rounded-[8px] bg-black text-white hover:bg-neutral-800 transition-colors shadow-sm font-707 text-[12px] font-medium cursor-pointer"
+        >
+          <Crop class="size-3.5 text-white" />
+          <span>Interactive Crop & Drag Studio</span>
+        </button>
+
+        <!-- In-Canvas Free Drag Mode -->
+        <button
+          type="button"
+          @click="editorStore.toggleHeroFreeDrag()"
+          :class="editorStore.isHeroFreeDragActive ? 'apple-glass-btn-dark font-medium shadow-sm ring-2 ring-black' : 'apple-glass-btn'"
+          class="w-full flex items-center justify-center gap-2 h-[36px] rounded-[8px] font-707 text-[12px] cursor-pointer transition-all"
+        >
+          <Move class="size-3.5" />
+          <span>{{ editorStore.isHeroFreeDragActive ? 'Done Repositioning (Canvas Active)' : 'Free Drag on Mobile Artboard' }}</span>
+        </button>
+      </div>
+
       <!-- Alignment Presets: Top / Center / Bottom -->
       <div class="flex flex-col gap-[8px] w-full">
         <span class="font-707 text-[12px] text-neutral-500">Vertical Alignment</span>
@@ -789,7 +813,7 @@ import { CTA_ACTION_OPTIONS, normalizeCtaAction } from './ctaActions.ts';
 import { ref, computed, watch, nextTick } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
-import { AlignLeft, AlignCenter, AlignRight, ChevronDown, Check, Trash2, Plus, SlidersHorizontal, ArrowRight } from 'lucide-vue-next';
+import { AlignLeft, AlignCenter, AlignRight, ChevronDown, Check, Trash2, Plus, SlidersHorizontal, ArrowRight, Crop, Move } from 'lucide-vue-next';
 import { uploadMediaDirectly } from '../../services/mediaService.ts';
 import type { WidgetItem } from '../../types/editor.ts';
 
