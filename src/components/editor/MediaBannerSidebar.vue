@@ -94,6 +94,27 @@
           {{ formatRatioLabel(ratio) }}
         </button>
       </div>
+
+      <!-- Merged Interactive Crop & Move Studio Button (Under Ratio Presets) -->
+      <div v-if="currentImageUrl && !isCurrentSolidSpace" class="w-full flex flex-col gap-2 pt-1">
+        <button
+          type="button"
+          @click="editorStore.openCropStudio"
+          class="w-full flex items-center justify-center gap-2 h-[38px] rounded-[8px] bg-black text-white hover:bg-neutral-800 transition-colors shadow-sm font-707 text-[12px] font-medium cursor-pointer"
+          title="Open interactive photo cropping, zooming, and free drag repositioning studio"
+        >
+          <Crop class="size-3.5 text-white" />
+          <span>Interactive Crop & Move Studio</span>
+        </button>
+        <button
+          v-if="isCustomPositionOrZoom"
+          type="button"
+          @click="resetImagePositionAndZoom"
+          class="self-center font-707 text-[11px] text-neutral-500 hover:text-black transition-colors underline cursor-pointer"
+        >
+          Reset Framing
+        </button>
+      </div>
     </div>
 
     <!-- Set Media Fits -->
@@ -131,47 +152,6 @@
             <Check v-if="selectedMediaFit === fit" class="size-[15px] text-black" />
           </button>
         </div>
-      </div>
-    </div>
-
-    <!-- Image Framing & Crop Position (Focal point alignment & crop scale) -->
-    <div v-if="currentImageUrl && !isCurrentSolidSpace" class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
-      <div class="flex items-center justify-between w-full">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Image Framing & Position
-        </p>
-        <button
-          v-if="isCustomPositionOrZoom"
-          type="button"
-          @click="resetImagePositionAndZoom"
-          class="font-707 text-[11px] text-neutral-500 hover:text-black transition-colors underline cursor-pointer"
-        >
-          Reset Framing
-        </button>
-      </div>
-
-      <!-- Interactive Photo Crop & Drag Studio Buttons -->
-      <div class="flex flex-col gap-[8px] w-full">
-        <!-- Dedicated Photo Editor Crop Studio -->
-        <button
-          type="button"
-          @click="editorStore.openCropStudio"
-          class="w-full flex items-center justify-center gap-2 h-[38px] rounded-[8px] bg-black text-white hover:bg-neutral-800 transition-colors shadow-sm font-707 text-[12px] font-medium cursor-pointer"
-        >
-          <Crop class="size-3.5 text-white" />
-          <span>Interactive Crop & Drag Studio</span>
-        </button>
-
-        <!-- In-Canvas Free Drag Mode -->
-        <button
-          type="button"
-          @click="editorStore.toggleHeroFreeDrag()"
-          :class="editorStore.isHeroFreeDragActive ? 'apple-glass-btn-dark font-medium shadow-sm ring-2 ring-black' : 'apple-glass-btn'"
-          class="w-full flex items-center justify-center gap-2 h-[36px] rounded-[8px] font-707 text-[12px] cursor-pointer transition-all"
-        >
-          <Move class="size-3.5" />
-          <span>{{ editorStore.isHeroFreeDragActive ? 'Done Repositioning (Canvas Active)' : 'Free Drag on Mobile Artboard' }}</span>
-        </button>
       </div>
     </div>
 

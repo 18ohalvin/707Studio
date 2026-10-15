@@ -273,7 +273,10 @@
                   </div>
 
                   <!-- Floating Tool Dock -->
-                  <div class="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/90 text-white backdrop-blur-xl px-3.5 py-1.5 rounded-full shadow-2xl flex items-center gap-2.5 z-40 border border-white/20 select-none">
+                  <div 
+                    :class="stickyButtonForThisPage ? 'bottom-[68px]' : 'bottom-3'"
+                    class="absolute left-1/2 -translate-x-1/2 bg-black/90 text-white backdrop-blur-xl px-3.5 py-1.5 rounded-full shadow-2xl flex items-center gap-2.5 z-40 border border-white/20 select-none transition-all duration-200"
+                  >
                     <div class="flex items-center gap-1.5 text-[11px] font-707">
                       <Move class="size-3.5 text-amber-400 animate-pulse" />
                       <span>Drag to reposition</span>

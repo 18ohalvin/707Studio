@@ -205,6 +205,7 @@ export const useEditorStore = defineStore('editor', () => {
   const isHeroFreeDragActive = ref<boolean>(false);
 
   function openCropStudio() {
+    isHeroFreeDragActive.value = false;
     isCropStudioOpen.value = true;
   }
   function closeCropStudio() {
