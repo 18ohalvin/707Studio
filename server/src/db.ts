@@ -335,8 +335,8 @@ export function dbRequired(): boolean {
 let schemaReady = false;
 
 // Handle idle client errors without crashing the process
-pool.on('error', (err) => {
-  console.warn('[DB Pool] Unexpected error on idle client:', err.message);
+pool.on('error', (err: any) => {
+  console.warn('[DB Pool] Unexpected error on idle client:', err?.message || err);
   isDbConnected = false;
   schemaReady = false;
   scheduleReconnect(5000);
@@ -404,9 +404,9 @@ export function testDbConnection(): Promise<boolean> {
 
 async function runDbConnectionTest(): Promise<boolean> {
   try {
-    const res = await withClient(pool, client => client.query('SELECT NOW()'));
+    const res: any = await withClient(pool, client => client.query('SELECT NOW()'));
     isDbConnected = true;
-    console.log('[DB] PostgreSQL connected successfully:', res.rows[0].now);
+    console.log('[DB] PostgreSQL connected successfully:', res?.rows?.[0]?.now);
     await initDbSchema();
     await prepareSubmissionStore();
     return true;

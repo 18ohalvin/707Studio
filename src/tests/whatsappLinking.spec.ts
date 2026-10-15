@@ -5,7 +5,7 @@ import {
   sendWhatsAppNotification,
   getWaLogs,
   DEFAULT_QUEUE_SETTINGS
-} from '../../server/src/queueManager.ts';
+} from '../../server/src/queueHelpers.ts';
 
 describe('WhatsApp Multi-Device Linking & Notifications', () => {
   it('generates a valid QR payload and pairing code for instant connection', () => {
