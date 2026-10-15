@@ -134,6 +134,90 @@
       </div>
     </div>
 
+    <!-- Image Framing & Crop Position (Focal point alignment & crop scale) -->
+    <div v-if="currentImageUrl && !isCurrentSolidSpace" class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
+      <div class="flex items-center justify-between w-full">
+        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+          Image Framing & Position
+        </p>
+        <button
+          v-if="isCustomPositionOrZoom"
+          type="button"
+          @click="resetImagePositionAndZoom"
+          class="font-707 text-[11px] text-neutral-500 hover:text-black transition-colors underline cursor-pointer"
+        >
+          Reset Framing
+        </button>
+      </div>
+
+      <!-- Alignment Presets: Top / Center / Bottom -->
+      <div class="flex flex-col gap-[8px] w-full">
+        <span class="font-707 text-[12px] text-neutral-500">Vertical Alignment</span>
+        <div class="flex gap-[8px] items-center w-full">
+          <button
+            type="button"
+            @click="setImagePreset('top')"
+            :class="activePositionPreset === 'top' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+            class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[12px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+          >
+            Top
+          </button>
+          <button
+            type="button"
+            @click="setImagePreset('center')"
+            :class="activePositionPreset === 'center' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+            class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[12px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+          >
+            Center
+          </button>
+          <button
+            type="button"
+            @click="setImagePreset('bottom')"
+            :class="activePositionPreset === 'bottom' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+            class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[12px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+          >
+            Bottom
+          </button>
+        </div>
+      </div>
+
+      <!-- Fine-tune Vertical Focal Point Slider -->
+      <div class="flex flex-col gap-[8px] w-full pt-1">
+        <div class="flex items-center justify-between w-full">
+          <span class="font-707 text-[12px] text-neutral-500">Vertical Position (Focal Point)</span>
+          <span class="font-707 text-[12px] font-medium text-black bg-neutral-100 px-2 py-0.5 rounded-[4px]">{{ imagePositionY }}%</span>
+        </div>
+        <div class="flex items-center w-full">
+          <input 
+            type="range"
+            min="0"
+            max="100"
+            step="1"
+            v-model.number="imagePositionY"
+            class="w-full h-1.5 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-black"
+          />
+        </div>
+      </div>
+
+      <!-- Crop & Zoom Scale Slider -->
+      <div class="flex flex-col gap-[8px] w-full pt-1">
+        <div class="flex items-center justify-between w-full">
+          <span class="font-707 text-[12px] text-neutral-500">Crop & Zoom Scale</span>
+          <span class="font-707 text-[12px] font-medium text-black bg-neutral-100 px-2 py-0.5 rounded-[4px]">{{ imageZoom }}%</span>
+        </div>
+        <div class="flex items-center w-full">
+          <input 
+            type="range"
+            min="100"
+            max="200"
+            step="1"
+            v-model.number="imageZoom"
+            class="w-full h-1.5 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-black"
+          />
+        </div>
+      </div>
+    </div>
+
     <!-- Add Brand Logo Section (Maximum height 32px, Select from media gallery / drag) -->
     <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
       <!-- Title row with Apple Style Toggle Switch -->
@@ -814,6 +898,43 @@ function selectMediaFit(fit: 'Fill the screen' | 'Fit to screen' | 'Center') {
   updateHeroProps({ mediaFit: fit });
 }
 
+const imagePositionY = ref<number>(50);
+const imagePositionX = ref<number>(50);
+const imageZoom = ref<number>(100);
+
+const activePositionPreset = computed(() => {
+  if (imagePositionY.value === 0) return 'top';
+  if (imagePositionY.value === 50) return 'center';
+  if (imagePositionY.value === 100) return 'bottom';
+  return 'custom';
+});
+
+const isCustomPositionOrZoom = computed(() => {
+  return imagePositionY.value !== 50 || imageZoom.value !== 100;
+});
+
+function setImagePreset(preset: 'top' | 'center' | 'bottom') {
+  if (preset === 'top') imagePositionY.value = 0;
+  if (preset === 'center') imagePositionY.value = 50;
+  if (preset === 'bottom') imagePositionY.value = 100;
+  updateHeroProps({
+    imagePosition: preset,
+    imagePositionY: imagePositionY.value
+  });
+}
+
+function resetImagePositionAndZoom() {
+  imagePositionY.value = 50;
+  imagePositionX.value = 50;
+  imageZoom.value = 100;
+  updateHeroProps({
+    imagePosition: 'center',
+    imagePositionY: 50,
+    imagePositionX: 50,
+    imageZoom: 100
+  });
+}
+
 function openMediaGallery() {
   getTargetWidgetId();
   editorStore.openMediaGallery('bannerImage');
@@ -1238,6 +1359,11 @@ watch(targetWidget, (widget) => {
     currentImageUrl.value = widget.props.imageUrl || '';
     isCurrentSolidSpace.value = widget.props.isSolidSpace ?? (!widget.props.imageUrl);
     selectedMediaFit.value = widget.props.mediaFit || 'Fill the screen';
+    imagePositionY.value = typeof widget.props.imagePositionY === 'number' 
+      ? widget.props.imagePositionY 
+      : (widget.props.imagePosition === 'top' ? 0 : (widget.props.imagePosition === 'bottom' ? 100 : 50));
+    imagePositionX.value = typeof widget.props.imagePositionX === 'number' ? widget.props.imagePositionX : 50;
+    imageZoom.value = typeof widget.props.imageZoom === 'number' ? widget.props.imageZoom : 100;
     
     if (typeof widget.props.isOverlayEnabled === 'boolean') {
       isOverlayEnabled.value = widget.props.isOverlayEnabled;
@@ -1378,5 +1504,25 @@ watch(textPosition, (newPos) => {
     textPosition: newPos,
     ...(newPos === 'center' ? { isOverlayEnabled: false } : {})
   });
+});
+
+watch(imagePositionY, (newVal) => {
+  const currentY = targetWidget.value?.props?.imagePositionY ?? (targetWidget.value?.props?.imagePosition === 'top' ? 0 : (targetWidget.value?.props?.imagePosition === 'bottom' ? 100 : 50));
+  if (newVal !== currentY) {
+    const preset = newVal === 0 ? 'top' : (newVal === 100 ? 'bottom' : (newVal === 50 ? 'center' : 'custom'));
+    updateHeroProps({
+      imagePositionY: newVal,
+      imagePosition: preset
+    });
+  }
+});
+
+watch(imageZoom, (newVal) => {
+  const currentZoom = targetWidget.value?.props?.imageZoom || 100;
+  if (newVal !== currentZoom) {
+    updateHeroProps({
+      imageZoom: newVal
+    });
+  }
 });
 </script>

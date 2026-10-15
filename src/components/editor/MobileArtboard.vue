@@ -161,7 +161,7 @@
           @click.self="handleArtboardClick"
           class="flex-1 flex flex-col w-full min-h-full cursor-default"
           :class="[
-            (isPreviewModal || isLivePage) ? '' : 'shrink-0',
+            (isPreviewModal || isLivePage || isHeroWithButtonOnly) ? '' : 'shrink-0',
             containerBottomPaddingClass,
             isHeroWithButtonOnly ? 'h-full justify-between' : ''
           ]"
@@ -181,7 +181,8 @@
               getWidgetMarginTopClass(index),
               (isHeroWithButtonOnly && widget.type === 'HeroDrop') ? (isLivePage ? 'h-full min-h-[calc(100dvh-48px)] flex-1' : 'h-full min-h-0 flex-1') : '',
               (isHeroWithButtonOnly && (widget.type === 'ActionButton' || widget.type === 'TextBanner')) ? 'shrink-0' : '',
-              'group relative cursor-pointer shrink-0 w-full'
+              'group relative cursor-pointer w-full',
+              (isHeroWithButtonOnly && widget.type === 'HeroDrop') ? '' : 'shrink-0'
             ]"
           >
             <!-- Selected / Hovered Dashed Outline Border for non-TextBanner widgets (matching Text widget outline) -->
@@ -228,9 +229,12 @@
                   v-else
                   v-bind="responsiveImgAttrs(widget.props.imageUrl, { priority: index === 0 })"
                   alt="Drop Banner" 
-                  class="w-full h-full absolute inset-0"
+                  class="w-full h-full absolute inset-0 transition-transform duration-150"
                   :class="getMediaFitClass(widget.props.mediaFit)"
-                  :style="isCoverFit(widget.props.mediaFit) ? placeholderStyle(widget.props.imageUrl) : undefined"
+                  :style="[
+                    isCoverFit(widget.props.mediaFit) ? placeholderStyle(widget.props.imageUrl) : undefined,
+                    getHeroImageStyle(widget.props)
+                  ]"
                   @error="handleHeroImageError(widget)"
                 />
                 <!-- Dynamic Image Overlay / Scrim automatically following text position (auto disabled on Center) -->
@@ -2979,14 +2983,37 @@ function ticketBannerStyle(widget: any): Record<string, string> {
   const boxW = TICKET_CANVAS.width;
   const boxH = boxW / ratioValue(heroRatio(widget));
   const fit = widget.props.mediaFit;
-  const scale = (fit === 'Fit to screen' || fit === 'fit')
+  let scale = (fit === 'Fit to screen' || fit === 'fit')
     ? Math.min(boxW / natural.w, boxH / natural.h)
     : (fit === 'Center' || fit === 'center')
       ? 1
       : Math.max(boxW / natural.w, boxH / natural.h);
+  
+  const zoom = Number(widget.props.imageZoom || widget.props.imageScale || 100);
+  if (zoom > 100) {
+    scale *= (zoom / 100);
+  }
+
   const w = natural.w * scale;
   const h = natural.h * scale;
-  return { width: `${w}px`, height: `${h}px`, left: `${(boxW - w) / 2}px`, top: `${(boxH - h) / 2}px` };
+
+  let posY = 50;
+  if (widget.props.imagePositionY !== undefined) {
+    posY = Number(widget.props.imagePositionY);
+  } else if (widget.props.imagePosition === 'top') {
+    posY = 0;
+  } else if (widget.props.imagePosition === 'bottom') {
+    posY = 100;
+  }
+  
+  let posX = 50;
+  if (widget.props.imagePositionX !== undefined) {
+    posX = Number(widget.props.imagePositionX);
+  }
+
+  const leftOffset = (boxW - w) * (posX / 100);
+  const topOffset = (boxH - h) * (posY / 100);
+  return { width: `${w}px`, height: `${h}px`, left: `${leftOffset}px`, top: `${topOffset}px` };
 }
 
 /** The blurred preview only suits cover-fit banners; letterboxed ones would show it around the image. */
@@ -2998,15 +3025,41 @@ function getMediaFitClass(fit?: string) {
   switch (fit) {
     case 'Fit to screen':
     case 'fit':
-      return 'object-contain object-center';
+      return 'object-contain';
     case 'Center':
     case 'center':
-      return 'object-none object-center';
+      return 'object-none';
     case 'Fill the screen':
     case 'fill':
     default:
-      return 'object-cover object-center';
+      return 'object-cover';
   }
+}
+
+function getHeroImageStyle(props: any): Record<string, string> {
+  if (!props) return { objectPosition: '50% 50%' };
+  const style: Record<string, string> = {};
+  
+  const posX = props.imagePositionX !== undefined ? `${props.imagePositionX}%` : '50%';
+  let posY = '50%';
+  if (props.imagePositionY !== undefined) {
+    posY = `${props.imagePositionY}%`;
+  } else if (props.imagePosition === 'top') {
+    posY = '0%';
+  } else if (props.imagePosition === 'bottom') {
+    posY = '100%';
+  } else if (props.imagePosition === 'center') {
+    posY = '50%';
+  }
+  style.objectPosition = `${posX} ${posY}`;
+
+  const zoom = Number(props.imageZoom || props.imageScale || 100);
+  if (zoom > 100) {
+    style.transform = `scale(${zoom / 100})`;
+    style.transformOrigin = `${posX} ${posY}`;
+  }
+
+  return style;
 }
 
 function handleHeroImageError(widget: any) {
@@ -3054,9 +3107,14 @@ function getRatioClass(ratio?: string) {
       return 'min-h-[76px] py-[16px] px-0 w-full shrink-0 flex flex-col justify-center';
     case 'Full screen landing page':
     default:
-      return isHeroWithButtonOnly.value
-        ? (props.isLivePage ? 'min-h-[calc(100dvh-48px)] h-full flex-1 w-full shrink-0' : (props.isPreviewModal ? 'h-full min-h-0 flex-1 w-full shrink-0' : 'h-[580px] min-h-[580px] w-full shrink-0'))
-        : (props.isPreviewModal ? 'h-[580px] min-h-[580px] w-full shrink-0' : 'h-[580px] min-h-[580px] w-full shrink-0');
+      if (isHeroWithButtonOnly.value) {
+        return props.isLivePage
+          ? 'min-h-[calc(100dvh-48px)] h-full flex-1 w-full shrink-0'
+          : 'h-full min-h-0 flex-1 w-full shrink-0';
+      }
+      return props.isLivePage
+        ? 'min-h-[calc(100dvh-48px)] h-[calc(100dvh-48px)] w-full shrink-0'
+        : 'h-[804px] min-h-[804px] w-full shrink-0';
   }
 }
 
