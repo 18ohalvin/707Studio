@@ -246,23 +246,8 @@
         </div>
       </div>
 
-      <!-- State A: Disabled (Clean, zero cognitive overload) -->
-      <div v-if="!form.waEnabled" class="p-5 rounded-[14px] bg-neutral-50 border border-black/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-[13px] text-neutral-500">
-        <div class="flex items-center gap-3">
-          <BellOff class="w-4 h-4 text-neutral-400 shrink-0" />
-          <span>WhatsApp notifications are turned off for this campaign. The queue operates strictly on-screen and at the door without sending outbound messages.</span>
-        </div>
-        <button
-          type="button"
-          @click="form.waEnabled = true"
-          class="text-[12.5px] font-medium text-black underline underline-offset-2 hover:opacity-70 cursor-pointer shrink-0"
-        >
-          Enable Notifications
-        </button>
-      </div>
-
-      <!-- State B: Enabled (Full Journey Stepper & 100% English Template Editor + Live Preview) -->
-      <template v-else>
+      <!-- State: Enabled (Full Journey Stepper & 100% English Template Editor + Live Preview) -->
+      <template v-if="form.waEnabled">
         <!-- WhatsApp Device Linking Station -->
         <div
           class="p-7 sm:p-8 md:p-9 rounded-[22px] border transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-xs"
@@ -917,7 +902,6 @@ import {
   Check,
   Users,
   BellRing,
-  BellOff,
   Clock,
   Volume2,
   MessageSquare,
