@@ -1389,8 +1389,8 @@ more</span>
                 </div>
               </div>
 
-              <!-- 1. Big Headline Display (H2 - responsive multiline without double line restriction) -->
-              <h2 class="font-707 font-medium text-heading-h2 text-[24px] sm:text-[28px] leading-[28px] sm:leading-[32px] tracking-tight uppercase text-black whitespace-pre-line break-words mt-[2px]">
+              <!-- 1. Big Headline Display (H2 - responsive multiline, Figma Node 328:3552 32px) -->
+              <h2 class="font-707 font-normal text-[28px] sm:text-[32px] leading-[30px] sm:leading-[32px] tracking-tight uppercase text-black whitespace-pre-line break-words mt-[2px]">
                 {{ getPassHeadline(widget) }}
               </h2>
               <p v-if="isLivePass && livePass!.waitlisted" class="font-707 text-[13px] leading-[19px] text-neutral-600 -mt-[6px]">
@@ -1465,25 +1465,25 @@ more</span>
                     </div>
                   </div>
 
-                  <!-- Re-generate Queue Number Action (shown only for Black / Expired state) -->
+                  <!-- Re-generate Queue Number Action (shown only for Black / Expired state, 707 button style) -->
                   <button
                     v-if="getQueueStatus(widget).kind === 'black'"
                     type="button"
                     @click.stop="isLivePass ? livePass!.retry() : null"
-                    class="mt-1 h-[40px] w-full rounded-[8px] bg-black text-white text-[12.5px] font-medium hover:bg-neutral-800 active:bg-neutral-900 transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-sm font-707 uppercase tracking-wider"
+                    class="mt-1 h-[48px] w-full rounded-[8px] bg-black text-white text-[13px] font-medium font-707 uppercase apple-cta-btn apple-cta-btn-dark flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-sm"
                   >
                     <RefreshCw class="w-4 h-4" />
                     <span>Re-Generate Queue Number</span>
                   </button>
                 </div>
 
-                <!-- [ E-PASS DETAIL ] Toggle Button (for cleaner live status look per user feedback) -->
+                <!-- E-PASS DETAIL Action Button (Figma Node 328:4042, 707 UI Button Style) -->
                 <button
                   type="button"
                   @click="showEPassDetail = !showEPassDetail"
-                  class="w-full h-[48px] rounded-[8px] border border-black bg-transparent text-black text-[13px] font-medium tracking-wider uppercase font-707 flex items-center justify-center gap-2 hover:bg-black/5 active:bg-black/10 transition-colors cursor-pointer select-none"
+                  class="w-full h-[48px] rounded-[8px] border border-black bg-white hover:bg-neutral-50 active:bg-neutral-100 text-black text-[14px] font-medium uppercase font-707 apple-cta-btn flex items-center justify-center gap-2 cursor-pointer select-none transition-colors"
                 >
-                  <span>{{ showEPassDetail ? '[ HIDE E-PASS DETAIL ]' : '[ E-PASS DETAIL ]' }}</span>
+                  <span>{{ showEPassDetail ? 'HIDE E-PASS DETAIL' : 'E-PASS DETAIL' }}</span>
                   <ChevronDown class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': showEPassDetail }" />
                 </button>
               </div>
@@ -4330,10 +4330,7 @@ function getPassHeadline(widget: any): string {
     return 'YOU ARE ON\nTHE WAITLIST.';
   }
   if (widget.type === 'LiveQueuePass' || widget.props?.passMode === 'queue') {
-    if (!widget.props?.heading || widget.props.heading === 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.' || widget.props.heading === 'YOU ARE IN LINE.\nPLEASE WAIT FOR\nYOUR NUMBER.') {
-      return 'SUCCESS.\nYOU ARE IN QUEUE.';
-    }
-    return widget.props.heading;
+    return widget.props?.heading || 'SUCCESS.\nYOU ARE IN QUEUE.';
   }
   return widget.props?.heading || 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.';
 }

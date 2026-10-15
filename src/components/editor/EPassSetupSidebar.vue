@@ -53,51 +53,21 @@
       </button>
     </div>
 
-    <!-- Section: Widget Type Switcher -->
-    <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+    <!-- Section: Real-Time State Simulator (Live Queue Pass only) -->
+    <div v-if="isLiveQueueMode" class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="flex flex-col gap-[4px] w-full">
         <div class="flex items-center justify-between">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Widget Type
+            Real-Time State Simulator
           </p>
           <span class="text-[10px] font-mono text-neutral-400 uppercase">
-            {{ isLiveQueueMode ? 'Live Queue Mode' : 'Standard Pass' }}
+            5 Color States
           </span>
         </div>
         <p class="font-707 text-[11px] text-neutral-500">
-          {{ isLiveQueueMode 
-            ? 'Live queue pass with real-time progress bar, gate calling telemetry, and expandable pass details.' 
-            : 'Standard admission pass with QR code, attendee details, and downloadable PDF ticket.' }}
+          Preview how the live progress bar and status change dynamically as guests advance in line.
         </p>
       </div>
-
-      <div class="grid grid-cols-2 gap-2 w-full p-1 rounded-[10px] bg-black/[0.04] border border-black/5">
-        <button
-          type="button"
-          @click="setWidgetType('GuestEPass')"
-          class="h-[34px] rounded-[7px] text-[12px] font-707 font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-          :class="!isLiveQueueMode ? 'bg-white text-black shadow-xs font-semibold' : 'text-neutral-500 hover:text-black'"
-        >
-          <Ticket class="w-3.5 h-3.5" />
-          <span>Guest E-Pass</span>
-        </button>
-        <button
-          type="button"
-          @click="setWidgetType('LiveQueuePass')"
-          class="h-[34px] rounded-[7px] text-[12px] font-707 font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-          :class="isLiveQueueMode ? 'bg-white text-black shadow-xs font-semibold' : 'text-neutral-500 hover:text-black'"
-        >
-          <Users class="w-3.5 h-3.5" />
-          <span>Live Queue Pass</span>
-        </button>
-      </div>
-
-      <!-- State Simulator for Brand Editor (Shown for Live Queue Pass) -->
-      <div v-if="isLiveQueueMode" class="flex flex-col gap-3 w-full pt-1">
-        <div class="flex items-center justify-between">
-          <span class="text-[11px] font-707 font-medium text-neutral-700 uppercase tracking-wider">Preview Real-Time State</span>
-          <span class="text-[10.5px] text-neutral-400 font-mono">5 Color States</span>
-        </div>
         <div class="grid grid-cols-5 gap-1 w-full p-1 rounded-[8px] bg-black/[0.03] border border-black/5">
           <button
             type="button"
@@ -177,7 +147,6 @@
           </div>
         </div>
       </div>
-    </div>
 
     <!-- Section 0: Brand Logo (Inherited from Hero Banner) -->
     <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
@@ -709,21 +678,6 @@ const isLiveQueueMode = computed(() => {
   return currentWidget.value?.type === 'LiveQueuePass' || currentWidget.value?.props?.passMode === 'queue';
 });
 
-function setWidgetType(type: 'GuestEPass' | 'LiveQueuePass') {
-  if (!currentWidget.value) return;
-  currentWidget.value.type = type;
-  if (type === 'LiveQueuePass') {
-    editorStore.updateWidgetProps(currentWidget.value.id, {
-      passMode: 'queue',
-      heading: currentWidget.value.props?.heading === 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.' ? 'SUCCESS.\nYOU ARE IN QUEUE.' : currentWidget.value.props?.heading
-    });
-  } else {
-    editorStore.updateWidgetProps(currentWidget.value.id, {
-      passMode: 'ticket',
-      heading: currentWidget.value.props?.heading === 'SUCCESS.\nYOU ARE IN QUEUE.' ? 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.' : currentWidget.value.props?.heading
-    });
-  }
-}
 
 const sampleQueueNumber = computed({
   get: () => currentWidget.value?.props?.sampleQueueNumber ?? 42,
@@ -810,7 +764,7 @@ const guestType = computed({
 
 // 2. Headline & Venue Metadata
 const heading = computed({
-  get: () => currentWidget.value?.props?.heading ?? 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.',
+  get: () => currentWidget.value?.props?.heading ?? (isLiveQueueMode.value ? 'SUCCESS.\nYOU ARE IN QUEUE.' : 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.'),
   set: (val: string) => {
     if (currentWidget.value) {
       editorStore.updateWidgetProps(currentWidget.value.id, { heading: val });
