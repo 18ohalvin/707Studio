@@ -386,6 +386,7 @@ function handleWheel(e: WheelEvent) {
       editorStore.panY = cursorY - (cursorY - editorStore.panY) * scaleRatio;
     }
 
+    editorStore.isFitMode = false;
     editorStore.zoomLevel = Math.round(targetZoom * 100) / 100;
   }
   // Freeform canvas movement via trackpad swipe / mouse scroll is disabled (must hold Space)
@@ -458,11 +459,29 @@ watch(
   }
 );
 
+let resizeObserver: ResizeObserver | null = null;
+
 onMounted(() => {
   window.addEventListener('keydown', handleKeyDown);
   window.addEventListener('keyup', handleKeyUp);
   if (canvasRef.value) {
     canvasRef.value.addEventListener('wheel', handleWheel, { passive: false });
+
+    // Intelligently fit iPhone 16/17 Pro canvas artboard to user's desktop display
+    const rect = canvasRef.value.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      editorStore.updateFitZoom(rect.width, rect.height);
+    }
+
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          const { width, height } = entry.contentRect;
+          editorStore.updateFitZoom(width, height);
+        }
+      });
+      resizeObserver.observe(canvasRef.value);
+    }
   }
   // Guarantee active selected page is centered in viewport
   editorStore.panX = editorStore.getPageCenterOffsetX(editorStore.activePageIndex);
@@ -476,6 +495,10 @@ onUnmounted(() => {
   window.removeEventListener('mouseup', handleWindowMouseUp);
   if (wheelEndTimer) clearTimeout(wheelEndTimer);
   if (modeTransitionTimer) clearTimeout(modeTransitionTimer);
+  if (resizeObserver) {
+    resizeObserver.disconnect();
+    resizeObserver = null;
+  }
   if (canvasRef.value) {
     canvasRef.value.removeEventListener('wheel', handleWheel);
   }

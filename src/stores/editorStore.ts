@@ -127,8 +127,29 @@ export const useEditorStore = defineStore('editor', () => {
   // Editor Viewport, Zoom & Canvas Pan State (Adobe Infinite Pan/Zoom Behavior)
   const viewportMode = ref<ViewportMode>('iphone-16-pro');
   const zoomLevel = ref<number>(85);
+  const fitZoomLevel = ref<number>(85);
+  const isFitMode = ref<boolean>(true);
   const panX = ref<number>(171.7);
   const panY = ref<number>(0);
+
+  function updateFitZoom(containerWidth: number, containerHeight: number) {
+    if (!containerHeight || !containerWidth) return;
+    const availableH = Math.max(300, containerHeight - 110);
+    const availableW = Math.max(300, containerWidth - 80);
+    
+    // iPhone 16/17 Pro dimensions: 393 x 852
+    const scaleH = availableH / 852;
+    const scaleW = availableW / 393;
+    const rawFit = Math.min(scaleH, scaleW);
+    const calculated = Math.min(100, Math.max(45, Math.round(rawFit * 100)));
+    fitZoomLevel.value = calculated;
+
+    if (isFitMode.value) {
+      zoomLevel.value = calculated;
+      panX.value = getPageCenterOffsetX(activePageIndex.value, calculated);
+      panY.value = 0;
+    }
+  }
   const isPreviewMode = ref<boolean>(false);
   const isSaving = ref<boolean>(false);
   const lastSavedAt = ref<Date>(new Date());
@@ -328,7 +349,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   function focusPage(index: number) {
     if (index < 0 || index >= pages.value.length) return;
-    zoomLevel.value = 85;
+    zoomLevel.value = fitZoomLevel.value;
     selectPage(index);
     isPagesOpen.value = false;
     panX.value = getPageCenterOffsetX(index);
@@ -1172,7 +1193,7 @@ export const useEditorStore = defineStore('editor', () => {
   function closePages() {
     isPagesOpen.value = false;
     // Center the selected page in the viewport when exiting pages overview
-    zoomLevel.value = 85;
+    zoomLevel.value = fitZoomLevel.value;
     panX.value = getPageCenterOffsetX(activePageIndex.value);
     panY.value = 0;
   }
@@ -1979,6 +2000,9 @@ export const useEditorStore = defineStore('editor', () => {
     hoveredWidgetId,
     viewportMode,
     zoomLevel,
+    fitZoomLevel,
+    isFitMode,
+    updateFitZoom,
     panX,
     panY,
     resetPan,

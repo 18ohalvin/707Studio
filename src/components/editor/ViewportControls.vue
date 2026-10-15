@@ -12,7 +12,7 @@
           <img alt="Zoom" class="absolute block inset-0 max-w-none size-full brightness-0" :src="FIGMA_ASSETS.zoomIcon" />
         </div>
         <p class="font-707 text-btn font-normal text-black whitespace-nowrap">
-          {{ Math.round(editorStore.zoomLevel) }}%
+          <span v-if="editorStore.isFitMode" class="font-medium text-[11px] opacity-75">Fit · </span>{{ Math.round(editorStore.zoomLevel) }}%
         </p>
       </button>
     </div>
@@ -87,12 +87,16 @@ defineEmits<{
 const editorStore = useEditorStore();
 
 function cycleZoom() {
-  if (editorStore.zoomLevel === 85) {
+  const fit = editorStore.fitZoomLevel;
+  if (Math.abs(editorStore.zoomLevel - fit) < 2) {
+    editorStore.isFitMode = false;
     editorStore.zoomLevel = 100;
-  } else if (editorStore.zoomLevel === 100) {
+  } else if (Math.abs(editorStore.zoomLevel - 100) < 2) {
+    editorStore.isFitMode = false;
     editorStore.zoomLevel = 125;
   } else {
-    editorStore.zoomLevel = 85; // Reset to 85% default portview
+    editorStore.isFitMode = true;
+    editorStore.zoomLevel = fit;
   }
   editorStore.panX = editorStore.getPageCenterOffsetX(editorStore.activePageIndex);
   editorStore.panY = 0;
