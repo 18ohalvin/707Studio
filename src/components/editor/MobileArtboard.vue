@@ -4517,14 +4517,22 @@ function selectedSessionsIn(widgets: any[]): PassSession[] {
 function getValidForSessions(widget: any) {
   // Live: exactly what this guest picked, as the server recorded it — the same
   // list the PDF and the door staff see. If the campaign offered no choice,
+  // Live: exactly what this guest picked, as the server recorded it — the same
+  // list the PDF and the door staff see. If the campaign offered no choice,
   // the pass lists the sessions the designer set on the Ticket Summary.
   if (isLivePass.value) {
     if (livePass!.sessions.length) return livePass!.sessions;
-    if (widget.props?.eventDate) {
+    const cfg = editorStore.currentPage?.page_settings?.eventConfig || editorStore.currentProject?.event_config;
+    const isDailyRolling = cfg?.eventType === 'daily_rolling';
+    const effectiveDate = isDailyRolling 
+      ? (cfg?.startDate || widget.props?.eventDate || '16 October 2026') 
+      : (widget.props?.eventDate || cfg?.eventDate);
+
+    if (effectiveDate) {
       return [{
         id: 'single_day',
         label: widget.props?.sessionTitle || 'Single Day Admission',
-        sublabel: widget.props.eventDate,
+        sublabel: effectiveDate,
         description: widget.props?.sessionDescription || 'All-day access to venue and exhibition'
       }];
     }
@@ -4593,12 +4601,18 @@ function getValidForSessions(widget: any) {
     }
   }
 
-  // 3. If single-day event date is configured on widget or project
-  if (widget.props?.eventDate) {
+  // 3. If single-day or daily-rolling event date is configured on widget or project
+  const cfg = editorStore.currentPage?.page_settings?.eventConfig || editorStore.currentProject?.event_config;
+  const isDailyRolling = cfg?.eventType === 'daily_rolling';
+  const effectiveDate = isDailyRolling 
+    ? (cfg?.startDate || widget.props?.eventDate || '16 October 2026') 
+    : (widget.props?.eventDate || cfg?.eventDate);
+
+  if (effectiveDate) {
     return [{
       id: 'single_day',
       label: widget.props?.sessionTitle || 'Single Day Admission',
-      sublabel: widget.props.eventDate,
+      sublabel: effectiveDate,
       description: widget.props?.sessionDescription || 'All-day access to venue and exhibition'
     }];
   }

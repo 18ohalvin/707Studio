@@ -20,6 +20,22 @@
           </button>
         </div>
 
+        <!-- Event Date Filter (For Single-Day & Daily Rolling Multi-Day Activations) -->
+        <div v-if="availableDates.length > 1" class="flex items-center gap-1.5 shrink-0">
+          <div class="flex items-center gap-1.5 h-[36px] px-2.5 rounded-[8px] bg-white border border-black/12">
+            <Calendar class="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+            <select 
+              v-model="dateFilter"
+              class="bg-transparent text-[11.5px] font-707 text-black focus:outline-none cursor-pointer border-none p-0 pr-2"
+            >
+              <option value="all">All Dates ({{ props.rows.length }})</option>
+              <option v-for="d in availableDates" :key="d" :value="d">
+                {{ d }} ({{ props.rows.filter(r => matchesDate(r, d)).length }})
+              </option>
+            </select>
+          </div>
+        </div>
+
         <!-- Status segmented filter -->
         <div class="flex items-center gap-1 p-0.5 rounded-[8px] bg-black/[0.04] border border-black/5 text-[11px] font-707 overflow-x-auto no-scrollbar">
           <button
@@ -487,7 +503,7 @@ import { glassConfirm } from '../../services/glassDialog.ts';
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import {
   Search, X, Download, Columns3, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, ChevronRight,
-  Check, Circle, CircleCheck, Users, Trash2, Copy, LogIn, LogOut, Mail, RotateCw
+  Check, Circle, CircleCheck, Users, Trash2, Copy, LogIn, LogOut, Mail, RotateCw, Calendar
 } from 'lucide-vue-next';
 import { useTicketSender } from './useTicketSender.ts';
 import {
@@ -513,9 +529,37 @@ const emit = defineEmits<{
 const search = ref('');
 const statusFilter = ref<'all' | GuestStatus>('all');
 const checkFilter = ref<'any' | 'in' | 'out'>('any');
+const dateFilter = ref<string>('all');
 const duplicatesOnly = ref(false);
 const duplicateCount = computed(() => props.rows.filter(r => r.duplicate_of).length);
 const searchRef = ref<HTMLInputElement | null>(null);
+
+function matchesDate(r: Submission, targetDate: string): boolean {
+  const d = String(r.form_data?.event_date || r.form_data?.eventDate || r.form_data?.['Access Valid For'] || '');
+  if (d.toLowerCase().includes(targetDate.toLowerCase())) return true;
+  if (r.created_at) {
+    const created = new Date(r.created_at);
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const formatted = `${created.getDate()} ${months[created.getMonth()]} ${created.getFullYear()}`;
+    if (formatted.toLowerCase().includes(targetDate.toLowerCase())) return true;
+  }
+  return false;
+}
+
+const availableDates = computed(() => {
+  const dates = new Set<string>();
+  props.rows.forEach(r => {
+    const d = r.form_data?.event_date || r.form_data?.eventDate || r.form_data?.['Access Valid For'];
+    if (typeof d === 'string' && d.trim()) {
+      dates.add(d.trim());
+    } else if (r.created_at) {
+      const created = new Date(r.created_at);
+      const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      dates.add(`${created.getDate()} ${months[created.getMonth()]} ${created.getFullYear()}`);
+    }
+  });
+  return Array.from(dates);
+});
 
 const statusFilters = computed(() => [
   { value: 'all' as const, label: 'All', count: props.rows.length },
@@ -528,18 +572,20 @@ const checkFilters = [
   { value: 'out' as const, label: 'Not in' }
 ];
 
-const hasActiveFilters = computed(() => !!search.value.trim() || statusFilter.value !== 'all' || checkFilter.value !== 'any' || duplicatesOnly.value);
+const hasActiveFilters = computed(() => !!search.value.trim() || statusFilter.value !== 'all' || checkFilter.value !== 'any' || dateFilter.value !== 'all' || duplicatesOnly.value);
 
 function clearFilters() {
   search.value = '';
   statusFilter.value = 'all';
   checkFilter.value = 'any';
+  dateFilter.value = 'all';
   duplicatesOnly.value = false;
 }
 
 const filteredRows = computed(() => {
   const q = search.value.trim().toLowerCase();
   return props.rows.filter(s => {
+    if (dateFilter.value !== 'all' && !matchesDate(s, dateFilter.value)) return false;
     if (statusFilter.value !== 'all' && normalizeStatus(s.status) !== statusFilter.value) return false;
     if (checkFilter.value === 'in' && !s.checked_in_at) return false;
     if (checkFilter.value === 'out' && s.checked_in_at) return false;
@@ -639,7 +685,7 @@ const sortedRows = computed(() => {
 
 const renderLimit = ref(150);
 const pagedRows = computed(() => sortedRows.value.slice(0, renderLimit.value));
-watch([search, statusFilter, checkFilter, duplicatesOnly], () => (renderLimit.value = 150));
+watch([search, statusFilter, checkFilter, duplicatesOnly, dateFilter], () => (renderLimit.value = 150));
 
 /* ---------- Selection ---------- */
 const selected = ref<Set<string>>(new Set());

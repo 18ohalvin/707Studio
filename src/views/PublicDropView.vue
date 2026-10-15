@@ -428,14 +428,28 @@ async function sendSubmission() {
     ...(campaignGuestType() ? { 'Guest Type': campaignGuestType() } : {})
   };
 
-  // If campaign has a single-day event date and no form picks were made, auto-populate the single-day session
-  const singleEventDate = projectPages.value.flatMap(p => p.widget_tree).find(w => w.type === 'GuestEPass' || w.type === 'LiveQueuePass')?.props?.eventDate
-    || projectPages.value[0]?.page_settings?.eventConfig?.eventDate;
+  // If campaign has a single-day or daily-rolling event date and no form picks were made, auto-populate the session
+  const eventConfig = projectPages.value[0]?.page_settings?.eventConfig;
+  const now = new Date();
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const todayFormatted = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
 
-  if (singleEventDate && (!answers[SESSIONS_ANSWER_KEY] || (Array.isArray(answers[SESSIONS_ANSWER_KEY]) && answers[SESSIONS_ANSWER_KEY].length === 0))) {
-    answers[SESSIONS_ANSWER_KEY] = [
-      { id: 'single_day', label: 'Single Day Admission', sublabel: singleEventDate, description: 'All-day access to venue and exhibition' }
-    ];
+  let resolvedEventDate = '';
+  if (eventConfig?.eventType === 'daily_rolling') {
+    resolvedEventDate = todayFormatted;
+  } else {
+    resolvedEventDate = projectPages.value.flatMap(p => p.widget_tree).find(w => w.type === 'GuestEPass' || w.type === 'LiveQueuePass')?.props?.eventDate
+      || eventConfig?.eventDate || '';
+  }
+
+  if (resolvedEventDate) {
+    answers.event_date = resolvedEventDate;
+    answers.event_iso_date = now.toISOString().slice(0, 10);
+    if (!answers[SESSIONS_ANSWER_KEY] || (Array.isArray(answers[SESSIONS_ANSWER_KEY]) && answers[SESSIONS_ANSWER_KEY].length === 0)) {
+      answers[SESSIONS_ANSWER_KEY] = [
+        { id: 'single_day', label: 'Single Day Admission', sublabel: resolvedEventDate, description: 'All-day access to venue and exhibition' }
+      ];
+    }
   }
 
   // Transient failures (signal drop, server briefly without its database) are retried

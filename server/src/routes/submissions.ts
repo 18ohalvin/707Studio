@@ -455,7 +455,8 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
   const wantsWaitlist = req.body?.waitlist === true;
 
   const partySize = Math.max(1, Math.min(10, Number(answers.party_size || answers['Jumlah Tamu'] || answers['Party Size'] || answers.guests) || 1));
-  const queueNumber = await getNextQueueNumber(pageId, store === 'db');
+  const eventDate = String(answers.event_date || answers['Access Valid For'] || answers.eventDate || '');
+  const queueNumber = await getNextQueueNumber(pageId, store === 'db', eventDate);
 
   const draft = () => ({
     id: `sub-${Date.now()}-${crypto.randomBytes(5).toString('hex')}`,

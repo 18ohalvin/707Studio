@@ -2,7 +2,7 @@ import { uploadMediaDirectly } from '../services/mediaService.ts';
 import { apiFetch, apiJson } from '../services/apiClient.ts';
 import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
-import type { WidgetItem, WidgetType, ActivationPage, ViewportMode, PageStatus, ProjectItem, ProjectHistoryEntry, GlobalTemplate } from '../types/editor.ts';
+import type { WidgetItem, WidgetType, ActivationPage, ViewportMode, PageStatus, ProjectItem, ProjectHistoryEntry, GlobalTemplate, EventConfig } from '../types/editor.ts';
 import { useAuthStore } from './authStore.ts';
 import { defaultTicketWidgets } from '../components/editor/ticket/ticketFields.ts';
 import { stripTextAnswers } from '../components/editor/guestAnswers.ts';
@@ -1720,7 +1720,7 @@ export const useEditorStore = defineStore('editor', () => {
     slug?: string, 
     widgets?: WidgetItem[], 
     brandSlug?: string,
-    eventConfig?: { eventType?: 'single' | 'multiday'; eventDate?: string }
+    eventConfig?: EventConfig
   ): ProjectItem {
     exitTemplateMode();
     const id = `proj-${Date.now()}`;

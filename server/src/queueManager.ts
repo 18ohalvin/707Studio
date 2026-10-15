@@ -105,14 +105,38 @@ export async function saveQueueSettings(pageId: string, updates: Partial<QueueSe
   return merged;
 }
 
-/** Calculates the next queue number sequentially for a campaign */
-export async function getNextQueueNumber(pageId: string, storeIsDb: boolean): Promise<number> {
+/** Calculates the next queue number sequentially for a campaign (optionally scoped per event date) */
+export async function getNextQueueNumber(pageId: string, storeIsDb: boolean, eventDate?: string): Promise<number> {
+  const cleanDate = (eventDate || '').trim();
   if (storeIsDb) {
+    if (cleanDate) {
+      const res = await pool.query(
+        `SELECT COALESCE(MAX(queue_number), 0) + 1 AS next_num 
+         FROM submissions 
+         WHERE page_id = $1 
+           AND (
+             form_data->>'event_date' = $2 
+             OR form_data->>'eventDate' = $2 
+             OR form_data->>'Access Valid For' ILIKE '%' || $2 || '%'
+             OR to_char(created_at, 'YYYY-MM-DD') = $2
+           )`,
+        [pageId, cleanDate]
+      );
+      return Number(res.rows[0]?.next_num) || 1;
+    }
     const res = await pool.query('SELECT COALESCE(MAX(queue_number), 0) + 1 AS next_num FROM submissions WHERE page_id = $1', [pageId]);
     return Number(res.rows[0]?.next_num) || 1;
   } else {
     const subs = readDataFile<any[]>('submissions.json', []);
-    const matching = subs.filter(s => s.page_id === pageId);
+    const matching = subs.filter(s => {
+      if (s.page_id !== pageId) return false;
+      if (cleanDate) {
+        const d = String(s.form_data?.event_date || s.form_data?.eventDate || s.form_data?.['Access Valid For'] || '');
+        const createdDate = String(s.created_at || '').slice(0, 10);
+        return d.toLowerCase().includes(cleanDate.toLowerCase()) || createdDate === cleanDate;
+      }
+      return true;
+    });
     const maxNum = matching.reduce((max, s) => Math.max(max, Number(s.queue_number) || 0), 0);
     return maxNum + 1;
   }

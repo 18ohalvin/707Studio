@@ -51,45 +51,92 @@
               />
             </div>
 
-            <!-- Field 2: Event Format (Single-Day vs Multi-Day) -->
+            <!-- Field 2: Event Format (Daily Rolling vs Single-Day vs Multi-Day) -->
             <div class="flex flex-col gap-[8px] w-full">
               <label class="font-707 font-medium text-[12px] text-neutral-600 uppercase tracking-tight flex items-center justify-between">
                 <span>Event Format</span>
                 <span class="text-[11px] font-normal lowercase text-neutral-400">sets access validity</span>
               </label>
-              <div class="grid grid-cols-2 gap-2 w-full">
+              <div class="grid grid-cols-3 gap-1.5 w-full">
+                <button
+                  type="button"
+                  @click="eventType = 'daily_rolling'"
+                  class="h-[44px] rounded-[8px] border text-[12px] font-707 flex flex-col items-center justify-center cursor-pointer transition-all px-1"
+                  :class="eventType === 'daily_rolling' 
+                    ? 'bg-black text-white border-black font-medium shadow-2xs' 
+                    : 'bg-white/70 hover:bg-white text-neutral-700 border-neutral-300 hover:border-black/50'"
+                >
+                  <span class="flex items-center gap-1.5 leading-none">
+                    <Repeat class="w-3.5 h-3.5 shrink-0" :class="eventType === 'daily_rolling' ? 'text-white' : 'text-neutral-500'" />
+                    <span>Daily Rolling</span>
+                  </span>
+                  <span class="text-[9.5px] mt-0.5 opacity-75 font-normal">Stanley Style</span>
+                </button>
                 <button
                   type="button"
                   @click="eventType = 'single'"
-                  class="h-[44px] rounded-[8px] border text-[13px] font-707 flex items-center justify-center gap-2 cursor-pointer transition-all"
+                  class="h-[44px] rounded-[8px] border text-[12px] font-707 flex flex-col items-center justify-center cursor-pointer transition-all px-1"
                   :class="eventType === 'single' 
                     ? 'bg-black text-white border-black font-medium shadow-2xs' 
                     : 'bg-white/70 hover:bg-white text-neutral-700 border-neutral-300 hover:border-black/50'"
                 >
-                  <Calendar class="w-4 h-4 shrink-0" :class="eventType === 'single' ? 'text-white' : 'text-neutral-500'" />
-                  <span>Single-Day</span>
+                  <span class="flex items-center gap-1.5 leading-none">
+                    <Calendar class="w-3.5 h-3.5 shrink-0" :class="eventType === 'single' ? 'text-white' : 'text-neutral-500'" />
+                    <span>Single Day</span>
+                  </span>
+                  <span class="text-[9.5px] mt-0.5 opacity-75 font-normal">1 Specific Date</span>
                 </button>
                 <button
                   type="button"
                   @click="eventType = 'multiday'"
-                  class="h-[44px] rounded-[8px] border text-[13px] font-707 flex items-center justify-center gap-2 cursor-pointer transition-all"
+                  class="h-[44px] rounded-[8px] border text-[12px] font-707 flex flex-col items-center justify-center cursor-pointer transition-all px-1"
                   :class="eventType === 'multiday' 
                     ? 'bg-black text-white border-black font-medium shadow-2xs' 
                     : 'bg-white/70 hover:bg-white text-neutral-700 border-neutral-300 hover:border-black/50'"
                 >
-                  <CalendarRange class="w-4 h-4 shrink-0" :class="eventType === 'multiday' ? 'text-white' : 'text-neutral-500'" />
-                  <span>Multi-Day</span>
+                  <span class="flex items-center gap-1.5 leading-none">
+                    <CalendarRange class="w-3.5 h-3.5 shrink-0" :class="eventType === 'multiday' ? 'text-white' : 'text-neutral-500'" />
+                    <span>Multi-Day</span>
+                  </span>
+                  <span class="text-[9.5px] mt-0.5 opacity-75 font-normal">Form Picker</span>
                 </button>
               </div>
 
+              <!-- Daily Rolling Date Range Inputs -->
+              <div v-if="eventType === 'daily_rolling'" class="flex flex-col gap-1.5 w-full pt-1 animate-apple-pop">
+                <div class="grid grid-cols-2 gap-2 w-full">
+                  <div class="border border-[#aaa] focus-within:border-black rounded-[8px] h-[46px] px-[12px] py-[6px] flex items-center gap-[6px] bg-white/60 transition-all">
+                    <Calendar class="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                    <input 
+                      v-model="startDate"
+                      type="text"
+                      placeholder="Start (16 Oct 2026)"
+                      class="flex-1 min-w-0 bg-transparent font-707 text-[12px] text-black focus:outline-none placeholder:text-[#aaa] p-0 m-0 border-none"
+                    />
+                  </div>
+                  <div class="border border-[#aaa] focus-within:border-black rounded-[8px] h-[46px] px-[12px] py-[6px] flex items-center gap-[6px] bg-white/60 transition-all">
+                    <Calendar class="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                    <input 
+                      v-model="endDate"
+                      type="text"
+                      placeholder="End (1 Nov 2026)"
+                      class="flex-1 min-w-0 bg-transparent font-707 text-[12px] text-black focus:outline-none placeholder:text-[#aaa] p-0 m-0 border-none"
+                    />
+                  </div>
+                </div>
+                <p class="font-707 text-[11px] text-neutral-500 leading-tight px-1">
+                  Campaign runs across the period. Passes automatically stamp <strong>today's date</strong> in real time with <strong>daily queue resets</strong> and a date-organized database.
+                </p>
+              </div>
+
               <!-- Single-Day Date Input -->
-              <div v-if="eventType === 'single'" class="flex flex-col gap-1 w-full pt-1 animate-apple-pop">
+              <div v-else-if="eventType === 'single'" class="flex flex-col gap-1 w-full pt-1 animate-apple-pop">
                 <div class="border border-[#aaa] focus-within:border-black rounded-[8px] h-[46px] px-[16px] py-[6px] flex items-center gap-[10px] bg-white/60 transition-all w-full">
                   <Calendar class="w-4 h-4 text-neutral-400 shrink-0" />
                   <input 
                     v-model="eventDate"
                     type="text"
-                    placeholder="Event Date (e.g. 24 October 2026)"
+                    placeholder="Event Date (e.g. 16 October 2026)"
                     class="flex-1 min-w-0 bg-transparent font-707 text-[13px] text-black focus:outline-none placeholder:text-[#aaa] p-0 m-0 border-none"
                   />
                 </div>
@@ -144,10 +191,11 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
-import { X, Calendar, CalendarRange } from 'lucide-vue-next';
+import { X, Calendar, CalendarRange, Repeat } from 'lucide-vue-next';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { useAuthStore } from '../../stores/authStore.ts';
 import { useBrandStore } from '../../stores/brandStore.ts';
+import type { EventConfig } from '../../types/editor.ts';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -178,8 +226,10 @@ const targetBrandSlug = computed(() => {
 const campaignName = ref('');
 const campaignSlug = ref('');
 const isSlugManuallyEdited = ref(false);
-const eventType = ref<'single' | 'multiday'>('single');
-const eventDate = ref('');
+const eventType = ref<'daily_rolling' | 'single' | 'multiday'>('daily_rolling');
+const eventDate = ref('16 October 2026');
+const startDate = ref('16 October 2026');
+const endDate = ref('1 November 2026');
 const nameInputRef = ref<HTMLInputElement | null>(null);
 
 function slugify(text: string) {
@@ -211,8 +261,10 @@ watch(() => props.isOpen, async (open) => {
   if (open) {
     campaignName.value = '';
     campaignSlug.value = '';
-    eventType.value = 'single';
-    eventDate.value = '';
+    eventType.value = 'daily_rolling';
+    eventDate.value = '16 October 2026';
+    startDate.value = '16 October 2026';
+    endDate.value = '1 November 2026';
     isSlugManuallyEdited.value = false;
     await nextTick();
     nameInputRef.value?.focus();
@@ -226,9 +278,12 @@ function handleCreate() {
     ? authStore.currentUser.assignedBrands[0] 
     : (brandStore.activeBrand?.slug || undefined);
 
-  const eventConfig = {
+  const eventConfig: EventConfig = {
     eventType: eventType.value,
-    eventDate: eventType.value === 'single' ? eventDate.value.trim() : ''
+    eventDate: eventType.value === 'single' ? eventDate.value.trim() : (eventType.value === 'daily_rolling' ? startDate.value.trim() : ''),
+    startDate: startDate.value.trim(),
+    endDate: endDate.value.trim(),
+    dailyQueueReset: eventType.value === 'daily_rolling'
   };
 
   editorStore.createNewProject(title, slug, undefined, brandSlug, eventConfig);
