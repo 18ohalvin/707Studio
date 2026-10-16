@@ -36,6 +36,8 @@ export interface WhatsAppLogEntry {
 export interface QueueSettings {
   enabled: boolean;
   waEnabled: boolean;
+  activeWaStage?: 'ready' | 'welcome' | 'approaching' | 'expired';
+  emailNotificationEnabled?: boolean;
   maxCapacity: number;
   notifyThreshold: number;
   skippedTolerance: number;
@@ -48,6 +50,8 @@ export interface QueueSettings {
 export const DEFAULT_QUEUE_SETTINGS: QueueSettings = {
   enabled: true,
   waEnabled: false,
+  activeWaStage: 'ready',
+  emailNotificationEnabled: true,
   maxCapacity: 50,
   notifyThreshold: 10,
   skippedTolerance: 5,

@@ -1,5 +1,6 @@
 import { pool, getDbStatus } from './db.js';
 import { readDataFile, writeDataFile } from './fileStorage.js';
+import { sendTurnReadyEmail } from './mailer.js';
 import {
   type WhatsAppDeviceInfo,
   type WhatsAppConnection,
@@ -205,8 +206,8 @@ export async function processQueueProgression(pageId: string, newCalledNumber: n
   };
 
   if (storeIsDb) {
-    // 1. Approaching notification: within notifyThreshold (only if WA notifications enabled)
-    if (settings.waEnabled) {
+    // 1. Approaching notification: within notifyThreshold (only if WA notifications enabled and stage is active)
+    if (settings.waEnabled && settings.activeWaStage === 'approaching') {
       const approachLimit = newCalledNumber + settings.notifyThreshold;
       const approachingSubs = await pool.query(
         `SELECT * FROM submissions
@@ -277,7 +278,7 @@ export async function processQueueProgression(pageId: string, newCalledNumber: n
           WHERE id = $1`,
         [sub.id]
       );
-      if (phone && settings.waEnabled) {
+      if (phone && settings.waEnabled && settings.activeWaStage === 'expired') {
         const passUrl = buildPassUrl(sub);
         const text = renderTemplate(settings.waTemplates.expired, {
           name,
@@ -307,7 +308,7 @@ export async function processQueueProgression(pageId: string, newCalledNumber: n
     const matching = subs.filter(s => s.page_id === pageId);
 
     // Approaching
-    if (settings.waEnabled) {
+    if (settings.waEnabled && settings.activeWaStage === 'approaching') {
       const approachLimit = newCalledNumber + settings.notifyThreshold;
       for (const sub of matching) {
         const qNum = Number(sub.queue_number) || 0;
@@ -355,7 +356,7 @@ export async function processQueueProgression(pageId: string, newCalledNumber: n
         const form = sub.form_data || {};
         const phone = extractPhoneNumber(form);
         const name = form.fullName || form.name || 'Visitor';
-        if (phone && settings.waEnabled) {
+        if (phone && settings.waEnabled && settings.activeWaStage === 'expired') {
           const passUrl = buildPassUrl(sub);
           const text = renderTemplate(settings.waTemplates.expired, {
             name,
@@ -402,12 +403,15 @@ export async function processQueueBatch(pageId: string, requestedSpots: number, 
   let brandSlug = 'atmos';
   let pageSlug = 'drop';
 
+  let campaignTitle = 'Event';
+
   if (storeIsDb) {
     try {
-      const pRes = await pool.query('SELECT brand_slug, slug FROM pages WHERE id = $1 LIMIT 1', [pageId]);
+      const pRes = await pool.query('SELECT brand_slug, slug, title FROM pages WHERE id = $1 LIMIT 1', [pageId]);
       if (pRes.rows[0]) {
         brandSlug = pRes.rows[0].brand_slug || brandSlug;
         pageSlug = pRes.rows[0].slug || pageSlug;
+        campaignTitle = pRes.rows[0].title || brandSlug;
       }
     } catch {
       // fallback
@@ -419,6 +423,7 @@ export async function processQueueBatch(pageId: string, requestedSpots: number, 
       if (pObj) {
         brandSlug = pObj.brand_slug || brandSlug;
         pageSlug = pObj.slug || pageSlug;
+        campaignTitle = pObj.title || brandSlug;
       }
     } catch {
       // fallback
@@ -466,13 +471,27 @@ export async function processQueueBatch(pageId: string, requestedSpots: number, 
           [sub.id]
         );
 
-        // Send ready WhatsApp notification
-        if (settings.waEnabled) {
-          const form = typeof sub.form_data === 'string' ? JSON.parse(sub.form_data) : (sub.form_data || {});
-          const phone = extractPhoneNumber(form);
-          const name = form.fullName || form.name || 'Visitor';
+        const form = typeof sub.form_data === 'string' ? JSON.parse(sub.form_data) : (sub.form_data || {});
+        const phone = extractPhoneNumber(form);
+        const email = String(form.email || form['Email Address'] || form['email'] || '').trim();
+        const name = form.fullName || form.name || 'Visitor';
+        const passUrl = buildPassUrl(sub);
+
+        // Send Turn Ready Email (Primary notification, immune to WhatsApp burst bans)
+        if (email && settings.emailNotificationEnabled !== false) {
+          void sendTurnReadyEmail({
+            email,
+            fullName: name,
+            ticketCode: sub.ticket_code,
+            queueNumber: sub.queue_number,
+            campaign: campaignTitle,
+            liveUrl: passUrl
+          } as any);
+        }
+
+        // Send ready WhatsApp notification (Only if enabled and active stage is 'ready')
+        if (settings.waEnabled && (settings.activeWaStage || 'ready') === 'ready') {
           if (phone) {
-            const passUrl = buildPassUrl(sub);
             const text = renderTemplate(settings.waTemplates.ready, {
               name,
               queue_number: sub.queue_number,
@@ -515,12 +534,27 @@ export async function processQueueBatch(pageId: string, requestedSpots: number, 
         sub.queue_status = 'called';
         sub.wa_notified_states = [...(sub.wa_notified_states || []), 'ready'];
 
-        if (settings.waEnabled) {
-          const form = sub.form_data || {};
-          const phone = extractPhoneNumber(form);
-          const name = form.fullName || form.name || 'Visitor';
+        const form = sub.form_data || {};
+        const phone = extractPhoneNumber(form);
+        const email = String(form.email || form['Email Address'] || form['email'] || '').trim();
+        const name = form.fullName || form.name || 'Visitor';
+        const passUrl = buildPassUrl(sub);
+
+        // Send Turn Ready Email (Primary notification)
+        if (email && settings.emailNotificationEnabled !== false) {
+          void sendTurnReadyEmail({
+            email,
+            fullName: name,
+            ticketCode: sub.ticket_code,
+            queueNumber: sub.queue_number,
+            campaign: campaignTitle,
+            liveUrl: passUrl
+          } as any);
+        }
+
+        // Send ready WhatsApp notification (Only if enabled and active stage is 'ready')
+        if (settings.waEnabled && (settings.activeWaStage || 'ready') === 'ready') {
           if (phone) {
-            const passUrl = buildPassUrl(sub);
             const text = renderTemplate(settings.waTemplates.ready, {
               name,
               queue_number: sub.queue_number,

@@ -170,7 +170,7 @@
       </div>
       <label v-if="trackEmailEnabled" class="flex flex-col gap-1 w-full">
         <span class="text-[10px] font-707 text-neutral-500 uppercase tracking-tight">Email button label</span>
-        <input v-model="trackEmailLabel" type="text" maxlength="40" placeholder="TRACK REAL TIME"
+        <input v-model="trackEmailLabel" type="text" maxlength="40" placeholder="VIEW LIVE QUEUE"
           class="h-[34px] px-2.5 rounded-[6px] border border-neutral-300 text-[12px] font-707 text-black focus:outline-none focus:border-black bg-white" />
       </label>
 
@@ -895,7 +895,7 @@ function trackProp<T>(key: string, fallback: T) {
   });
 }
 const trackEmailEnabled = trackProp<boolean>('trackEmailEnabled', true);
-const trackEmailLabel = trackProp<string>('trackEmailLabel', 'TRACK REAL TIME');
+const trackEmailLabel = trackProp<string>('trackEmailLabel', 'VIEW LIVE QUEUE');
 const trackNoticeEnabled = trackProp<boolean>('trackNoticeEnabled', true);
 const trackNoticeTitle = trackProp<string>('trackNoticeTitle', DEFAULT_TRACK_NOTICE.title);
 const trackNoticeMessage = trackProp<string>('trackNoticeMessage', DEFAULT_TRACK_NOTICE.message);

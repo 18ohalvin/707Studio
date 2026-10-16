@@ -394,6 +394,8 @@ export interface WaLinkSessionData {
 export interface QueueSettingsData {
   enabled: boolean;
   waEnabled: boolean;
+  emailNotificationEnabled?: boolean;
+  activeWaStage?: 'ready' | 'welcome' | 'approaching' | 'expired';
   maxCapacity: number;
   notifyThreshold: number;
   skippedTolerance: number;

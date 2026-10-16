@@ -2113,6 +2113,66 @@ more</span>
           </div>
         </div>
       </Transition>
+
+      <!-- Live Queue Tracking Notice Bottom Sheet (Figma Node 276:4722 Token Harmonization) -->
+      <Transition name="apple-bottom-sheet">
+        <div 
+          v-if="showTrackNoticeSheet"
+          class="absolute inset-0 z-50 flex flex-col justify-end overflow-hidden"
+          @click.stop="resolveTrackNotice(false)"
+        >
+          <!-- Frosted Dark Backdrop -->
+          <div class="absolute inset-0 bg-black/40 backdrop-blur-md transition-opacity" />
+
+          <!-- Bottom Sheet Card (Apple frost strong, rounded top, shadow) -->
+          <div 
+            @click.stop
+            class="apple-bottom-sheet-card relative z-10 w-full apple-frost-strong border-t border-white/60 text-black rounded-t-[20px] shadow-[0px_-10px_40px_rgba(0,0,0,0.16),0_-1px_3px_rgba(0,0,0,0.05)] max-h-[85%] flex flex-col overflow-hidden"
+            data-node-id="276:4722"
+            data-name="Live Queue Tracking Notice Modal"
+          >
+            <!-- Sheet Top Fixed Header (Handle Pill + Title + Subtitle) -->
+            <div class="px-[24px] pt-[16px] pb-[16px] shrink-0 flex flex-col items-start w-full">
+              <!-- Sheet Top Handle Pill -->
+              <div class="w-full flex items-center justify-center pb-2.5">
+                <div class="w-10 h-1 rounded-full bg-neutral-300" />
+              </div>
+
+              <!-- Header: Title + Subtitle -->
+              <div class="flex flex-col gap-[8px] items-start w-full">
+                <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-black/5 text-[10px] font-mono tracking-wider text-neutral-600 uppercase">
+                  Live Queue Tracking
+                </div>
+                <h3 class="font-707 font-medium text-heading-h3 text-black tracking-tight whitespace-pre-line text-left">
+                  {{ trackNoticeData.title }}
+                </h3>
+                <p class="font-707 font-normal text-bodytext text-neutral-700 whitespace-pre-line leading-relaxed text-left">
+                  {{ trackNoticeData.message }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Fixed / Sticky Bottom Action CTA Buttons -->
+            <div class="px-[24px] pt-[8px] pb-[20px] shrink-0 w-full flex flex-col gap-2 bg-transparent z-20">
+              <button 
+                type="button"
+                @click.stop="resolveTrackNotice(true)"
+                class="apple-cta-btn-dark bg-black text-white hover:bg-neutral-900 active:bg-neutral-800 w-full h-[48px] px-[16px] py-[12px] rounded-none flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none uppercase transition-all"
+              >
+                <span>{{ trackNoticeData.confirmLabel }}</span>
+              </button>
+              <button 
+                v-if="trackNoticeData.cancelLabel"
+                type="button"
+                @click.stop="resolveTrackNotice(false)"
+                class="w-full h-[38px] px-[16px] text-neutral-500 hover:text-black font-707 font-medium text-[13px] tracking-normal cursor-pointer transition-colors text-center"
+              >
+                <span>{{ trackNoticeData.cancelLabel }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
     </div>
   </div>
 </template>
@@ -2126,7 +2186,6 @@ import { LIVE_PASS_KEY, SESSIONS_ANSWER_KEY, type PassSession } from './livePass
 import { normalizeCtaAction } from './ctaActions.ts';
 import { responsiveImgAttrs, placeholderStyle, sizedUrl } from '../../services/responsiveImage.ts';
 import { TICKET_CONTEXT_KEY, TICKET_SOURCE_KEY, TICKET_CANVAS, ticketFieldMeta, type TicketFieldKey } from './ticket/ticketFields.ts';
-import { glassConfirm } from '../../services/glassDialog.ts';
 import { DEFAULT_TRACK_NOTICE, fillTrackNotice } from './trackNotice.ts';
 import { defaultTicketPage } from './ticket/ticketDesign.ts';
 import { openPendingPdfWindow, closePendingPdfWindow } from './ticket/pdfDelivery.ts';
@@ -3093,14 +3152,19 @@ async function downloadPass(trigger: any) {
 
   // Queue campaigns: tell the guest where to follow their place live before the download starts.
   // The brand editor controls it (on/off and wording) on the Live Queue Pass.
+  // Uses Figma Node 276:4722 Apple bottom sheet design token modal.
   if (isLivePass.value && isQueuePass(pass) && pass?.props?.trackNoticeEnabled !== false
       && hasRealEmail(livePass!.email) && !queueEmailNoticeSeen(livePass!.code)) {
     const p = pass?.props || {};
-    const ok = await glassConfirm({
+    trackNoticeData.value = {
       title: p.trackNoticeTitle || DEFAULT_TRACK_NOTICE.title,
       message: fillTrackNotice(p.trackNoticeMessage || DEFAULT_TRACK_NOTICE.message, livePass!.email),
       confirmLabel: p.trackNoticeConfirmLabel || DEFAULT_TRACK_NOTICE.confirmLabel,
       cancelLabel: p.trackNoticeCancelLabel || DEFAULT_TRACK_NOTICE.cancelLabel
+    };
+    showTrackNoticeSheet.value = true;
+    const ok = await new Promise<boolean>(resolve => {
+      trackNoticeResolve.value = resolve;
     });
     if (!ok) return;
     markQueueEmailNoticeSeen(livePass!.code);
@@ -4003,6 +4067,24 @@ const inFlowWidgets = computed(() => {
 // Pop Up Modal State & Interactions (Figma Node 276:4722)
 const activeTriggeredModal = ref<any>(null);
 const modalInputValue = ref('');
+
+// Live Queue Tracking Notice Bottom Sheet (Figma Node 276:4722 Token Harmonization)
+const showTrackNoticeSheet = ref(false);
+const trackNoticeResolve = ref<((value: boolean) => void) | null>(null);
+const trackNoticeData = ref({
+  title: '',
+  message: '',
+  confirmLabel: '',
+  cancelLabel: ''
+});
+
+function resolveTrackNotice(confirmed: boolean) {
+  showTrackNoticeSheet.value = false;
+  if (trackNoticeResolve.value) {
+    trackNoticeResolve.value(confirmed);
+    trackNoticeResolve.value = null;
+  }
+}
 
 const isModalOverlayVisible = computed(() => {
   if (activeTriggeredModal.value) return true;

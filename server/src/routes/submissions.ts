@@ -554,7 +554,7 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
         const phone = extractPhoneNumber(mergedForm);
         if (phone) {
           void getQueueSettings(pageId).then(qs => {
-            if (qs.enabled && qs.waEnabled) {
+            if (qs.enabled && qs.waEnabled && qs.activeWaStage === 'welcome') {
               const passUrl = `${publicBaseUrl(req)}/${project.brand_slug}/${project.slug}?code=${newTicketCode}`;
               const text = renderTemplate(qs.waTemplates.welcome, {
                 name: fullName || existingForm.fullName || existingForm.name || 'Visitor',
@@ -612,7 +612,7 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
         const phone = extractPhoneNumber(answers);
         if (phone) {
           void getQueueSettings(pageId).then(qs => {
-            if (qs.enabled && qs.waEnabled) {
+            if (qs.enabled && qs.waEnabled && qs.activeWaStage === 'welcome') {
               const passUrl = `${publicBaseUrl(req)}/${project.brand_slug}/${project.slug}?code=${outcome.row?.ticket_code || ''}`;
               const text = renderTemplate(qs.waTemplates.welcome, {
                 name: fullName || 'Visitor',
@@ -674,7 +674,7 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
       const phone = extractPhoneNumber(existing.form_data);
       if (phone) {
         void getQueueSettings(pageId).then(qs => {
-          if (qs.enabled && qs.waEnabled) {
+          if (qs.enabled && qs.waEnabled && qs.activeWaStage === 'welcome') {
             const passUrl = `${publicBaseUrl(req)}/${project.brand_slug}/${project.slug}?code=${newTicketCode}`;
             const text = renderTemplate(qs.waTemplates.welcome, {
               name: fullName || existingForm.fullName || existingForm.name || 'Visitor',

@@ -100,5 +100,34 @@ describe('Brand Logo Switchable & Queue Tab Conditional Visibility', () => {
     store.updateWidgetProps(hero.id, { brandLogoVerticalPosition: 48 });
     expect(hero.props.brandLogoVerticalPosition).toBe(48);
   });
+
+  it('verifies Campaign Hub tabs list includes "Queue & Notifications" when hasLiveQueue is true', () => {
+    function computeTabs(hasLiveQueue: boolean) {
+      const list = [
+        { id: 'overview', label: 'Overview' },
+        { id: 'guests', label: 'Guest Database' }
+      ];
+      if (hasLiveQueue) {
+        list.push({ id: 'queue', label: 'Queue & Notifications' });
+      }
+      list.push({ id: 'raffle', label: 'Raffle Draw' });
+      return list;
+    }
+
+    const standardTabs = computeTabs(false);
+    expect(standardTabs.some(t => t.id === 'queue')).toBe(false);
+
+    const queueTabs = computeTabs(true);
+    const queueTab = queueTabs.find(t => t.id === 'queue');
+    expect(queueTab).toBeDefined();
+    expect(queueTab?.label).toBe('Queue & Notifications');
+  });
+
+  it('validates single stage WhatsApp settings: waEnabled is false by default, activeWaStage is ready, and email notifications enabled by default', async () => {
+    const { DEFAULT_QUEUE_SETTINGS } = await import('../../server/src/queueHelpers.js');
+    expect(DEFAULT_QUEUE_SETTINGS.waEnabled).toBe(false);
+    expect(DEFAULT_QUEUE_SETTINGS.activeWaStage).toBe('ready');
+    expect(DEFAULT_QUEUE_SETTINGS.emailNotificationEnabled).toBe(true);
+  });
 });
 

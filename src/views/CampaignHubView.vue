@@ -330,7 +330,7 @@ const tabs = computed(() => {
     { id: 'guests' as TabId, label: 'Guest Database', badge: rows.value.length }
   ];
   if (hasLiveQueue.value) {
-    list.push({ id: 'queue' as TabId, label: 'Queue & WA', badge: undefined });
+    list.push({ id: 'queue' as TabId, label: 'Queue & Notifications', badge: undefined });
   }
   list.push({ id: 'raffle' as TabId, label: 'Raffle Draw', badge: undefined });
   return list;

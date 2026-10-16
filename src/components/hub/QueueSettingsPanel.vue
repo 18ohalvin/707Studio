@@ -394,78 +394,61 @@
           </div>
         </div>
 
-        <!-- Section Header: NOTIFICATION LIST AUTOMATION -->
-        <div class="pt-4 border-t border-black/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h4 class="text-[15px] font-mono uppercase tracking-[0.08em] font-bold text-black">NOTIFICATION LIST AUTOMATION</h4>
-            <p class="text-[12px] text-neutral-500 mt-0.5">Automated notification profiles triggered across guest queue progression stages.</p>
+        <!-- Section Header: TARGETED WHATSAPP TRIGGER STAGE -->
+        <div class="pt-4 border-t border-black/10 flex flex-col gap-1.5">
+          <div class="flex items-center justify-between gap-3">
+            <h4 class="text-[15px] font-mono uppercase tracking-[0.08em] font-bold text-black">TARGETED WHATSAPP TRIGGER STAGE</h4>
+            <span class="text-[11px] font-mono uppercase tracking-wider text-neutral-600 bg-neutral-100 px-2 py-0.5 rounded-[6px]">
+              Single Stage Precision
+            </span>
           </div>
-          <button
-            type="button"
-            @click="openAddStageModal"
-            class="h-[36px] px-3.5 rounded-[10px] bg-black text-white text-[12.5px] font-medium hover:bg-neutral-800 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs self-start sm:self-auto"
-          >
-            <Plus class="w-3.5 h-3.5" />
-            <span>Add Notification Profile</span>
-          </button>
+          <p class="text-[12px] text-neutral-500 leading-snug">
+            Choose the single queue milestone that will dispatch an automated WhatsApp message to the guest. Multi-stage pipelines are disabled to keep your connected number safe from spam blocks and Baileys session bans.
+          </p>
         </div>
 
-        <!-- Pipeline Control Bar (Presets & Add Custom Stage) -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
-          <div class="flex items-center gap-2.5">
-            <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Stage Preset:</span>
-            <div class="relative inline-block">
-              <select
-                v-model="selectedPresetId"
-                @change="applyPreset(selectedPresetId)"
-                class="h-[32px] pl-3 pr-8 rounded-[8px] border border-black/15 bg-white text-[12.5px] font-medium text-black outline-none cursor-pointer appearance-none hover:bg-neutral-50 transition-colors"
-              >
-                <option v-for="p in PRESETS" :key="p.id" :value="p.id">{{ p.name }}</option>
-              </select>
-              <ChevronDown class="w-3.5 h-3.5 text-neutral-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
-          </div>
-
+        <!-- Single-Stage Choice Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <button
-            type="button"
-            @click="openAddStageModal"
-            class="h-[32px] px-3 rounded-[8px] border border-black/15 bg-white text-[12.5px] font-medium text-black hover:bg-black/5 flex items-center gap-1.5 cursor-pointer transition-colors self-start sm:self-auto"
-          >
-            <Plus class="w-3.5 h-3.5" />
-            <span>Add Stage</span>
-          </button>
-        </div>
-
-        <!-- Lifecycle Stepper Tabs -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-          <button
-            v-for="(stage, idx) in stagesList"
+            v-for="stage in DEFAULT_STAGES"
             :key="stage.id"
             type="button"
-            @click="activeStageId = stage.id"
-            class="group p-3.5 rounded-[12px] border text-left transition-all cursor-pointer flex flex-col gap-1 relative"
-            :class="activeStageId === stage.id ? 'bg-black text-white border-black shadow-sm' : 'bg-neutral-50 hover:bg-neutral-100 border-black/10 text-neutral-800'"
+            @click="selectActiveWaStage(stage.id)"
+            class="group p-4 rounded-[14px] border text-left transition-all cursor-pointer flex flex-col justify-between gap-3 relative text-neutral-800"
+            :class="form.activeWaStage === stage.id 
+              ? 'bg-black text-white border-black shadow-md ring-1 ring-black' 
+              : 'bg-white hover:bg-neutral-50 border-black/15 hover:border-black/30'"
           >
-            <div class="flex items-center justify-between">
-              <span class="text-[10px] font-mono uppercase tracking-[0.1em]" :class="activeStageId === stage.id ? 'text-white/70' : 'text-neutral-400'">
-                Stage {{ idx + 1 }}
-              </span>
+            <div class="flex items-center justify-between w-full">
+              <div 
+                class="size-7 rounded-[8px] flex items-center justify-center transition-colors"
+                :class="form.activeWaStage === stage.id ? 'bg-white/15 text-white' : 'bg-black/5 text-neutral-700'"
+              >
+                <component :is="stage.icon || MessageSquare" class="w-4 h-4" />
+              </div>
               <div class="flex items-center gap-1.5">
-                <component :is="stage.icon || MessageSquare" class="w-3.5 h-3.5" :class="activeStageId === stage.id ? 'text-white' : 'text-neutral-500'" />
-                <span
-                  v-if="stagesList.length > 2 && stage.id !== 'welcome'"
-                  @click.stop="handleRemoveStage(stage.id)"
-                  class="opacity-0 group-hover:opacity-100 hover:text-red-500 p-0.5 rounded cursor-pointer transition-opacity"
-                  title="Remove this stage"
+                <span 
+                  v-if="stage.id === 'ready'"
+                  class="text-[9.5px] font-mono uppercase px-1.5 py-0.5 rounded font-medium"
+                  :class="form.activeWaStage === stage.id ? 'bg-emerald-400 text-black font-bold' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'"
                 >
-                  <Trash2 class="w-3.5 h-3.5" />
+                  Recommended
                 </span>
+                <div 
+                  class="size-4 rounded-full border flex items-center justify-center transition-colors"
+                  :class="form.activeWaStage === stage.id ? 'border-white bg-white text-black' : 'border-neutral-300 bg-transparent'"
+                >
+                  <Check v-if="form.activeWaStage === stage.id" class="w-2.5 h-2.5 stroke-[3]" />
+                </div>
               </div>
             </div>
-            <span class="text-[13px] font-medium leading-snug">{{ stage.title }}</span>
-            <span class="text-[11px] truncate" :class="activeStageId === stage.id ? 'text-white/60' : 'text-neutral-500'">
-              {{ stage.triggerSummary }}
-            </span>
+
+            <div class="flex flex-col gap-1">
+              <span class="text-[13px] font-semibold leading-snug">{{ stage.title }}</span>
+              <span class="text-[11.5px] leading-relaxed" :class="form.activeWaStage === stage.id ? 'text-white/70' : 'text-neutral-500'">
+                {{ stage.triggerSummary }}
+              </span>
+            </div>
           </button>
         </div>
 
@@ -1232,7 +1215,7 @@ const emit = defineEmits<{
 const editorStore = useEditorStore();
 const isLoading = ref(false);
 const isSaving = ref(false);
-const activeStageId = ref<StageId>('approaching');
+const activeStageId = ref<string>('ready');
 
 // WhatsApp Multi-Device Gateway State (Baileys)
 const showWhatsAppQrModal = ref(false);
@@ -1418,6 +1401,8 @@ const isLoadingLogs = ref(false);
 const form = reactive<QueueSettingsData>({
   enabled: true,
   waEnabled: false,
+  emailNotificationEnabled: true,
+  activeWaStage: 'ready',
   maxCapacity: 50,
   notifyThreshold: 10,
   skippedTolerance: 5,
@@ -1499,107 +1484,14 @@ const DEFAULT_STAGES: StageDefinition[] = [
   }
 ];
 
-const PRESETS = [
-  {
-    id: 'hype_queue',
-    name: 'Hype Drop Queue (4 Stages - Default)',
-    description: 'Full drop journey: Welcome Pass -> Approaching -> Called to Gate -> Missed',
-    stages: DEFAULT_STAGES
-  },
-  {
-    id: 'express_rsvp',
-    name: 'Fast-Track RSVP (2 Stages)',
-    description: 'Minimalist guest check-in: Confirmation Pass -> Admitted at Entrance',
-    stages: [DEFAULT_STAGES[0], DEFAULT_STAGES[2]]
-  },
-  {
-    id: 'multi_zone',
-    name: 'VIP Multi-Zone (5 Stages)',
-    description: 'Multi-station pipeline: Gate Admission -> Fitting Room -> Checkout Desk',
-    stages: [
-      DEFAULT_STAGES[0],
-      DEFAULT_STAGES[1],
-      DEFAULT_STAGES[2],
-      {
-        id: 'fitting_room',
-        title: '4. Fitting Room / Booth',
-        triggerSummary: 'Trigger: Station 2 Assigned',
-        triggerBadge: 'Trigger: Station Check-In',
-        description: 'Sent when customer is called into an individual fitting booth or private product viewing.',
-        icon: UserCheck,
-        tags: [
-          { key: 'name', label: 'Name', description: 'Visitor full name' },
-          { key: 'queue_number', label: 'Queue No', description: 'Sequential queue number' },
-          { key: 'access_id', label: 'Access ID', description: 'Ticket pass code' }
-        ]
-      },
-      DEFAULT_STAGES[3]
-    ]
-  }
-];
-
-const selectedPresetId = ref('hype_queue');
-const stagesList = ref<StageDefinition[]>(JSON.parse(JSON.stringify(DEFAULT_STAGES)));
-
-function applyPreset(presetId: string) {
-  const p = PRESETS.find(item => item.id === presetId);
-  if (!p) return;
-  stagesList.value = JSON.parse(JSON.stringify(p.stages));
-  if (!stagesList.value.some(s => s.id === activeStageId.value)) {
-    activeStageId.value = stagesList.value[0]?.id || 'welcome';
-  }
-  emit('toast', `Applied template preset: "${p.name}".`);
-}
-
-async function openAddStageModal() {
-  const name = await glassPrompt({
-    title: 'Add Journey Stage',
-    message: 'Enter the title for this milestone stage (e.g. VIP Lounge, Fitting Room Ready, Checkout).',
-    placeholder: 'e.g. Fitting Room Ready',
-    confirmLabel: 'Add Stage'
-  });
-  if (!name || !name.trim()) return;
-  const cleanName = name.trim();
-  const id = 'stage_' + cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '_');
-  stagesList.value.push({
-    id,
-    title: cleanName,
-    triggerSummary: 'Custom Milestone Trigger',
-    triggerBadge: 'Custom Trigger',
-    description: `Automated notification dispatched when reaching "${cleanName}".`,
-    icon: MessageSquare,
-    tags: [
-      { key: 'name', label: 'Name', description: 'Visitor full name' },
-      { key: 'queue_number', label: 'Queue No', description: 'Sequential queue number' },
-      { key: 'access_id', label: 'Access ID', description: 'Ticket pass code' },
-      { key: 'link', label: 'Pass Link', description: 'Direct ticket pass link' }
-    ]
-  });
-  if (!form.waTemplates[id]) {
-    form.waTemplates[id] = `Hello {{name}}! Update for ${cleanName}: your queue number is #{{queue_number}}. Please present Access ID {{access_id}}.`;
-  }
+function selectActiveWaStage(id: string) {
+  form.activeWaStage = id as any;
   activeStageId.value = id;
-  emit('toast', `Added new stage "${cleanName}".`);
 }
 
-async function handleRemoveStage(id: string) {
-  if (stagesList.value.length <= 1) return;
-  const target = stagesList.value.find(s => s.id === id);
-  const ok = await glassConfirm({
-    title: 'Remove Stage?',
-    message: `Are you sure you want to remove "${target?.title || id}" from the pipeline?`,
-    confirmLabel: 'Remove',
-    danger: true
-  });
-  if (!ok) return;
-  stagesList.value = stagesList.value.filter(s => s.id !== id);
-  if (activeStageId.value === id) {
-    activeStageId.value = stagesList.value[0]?.id || 'welcome';
-  }
-  emit('toast', `Removed stage.`);
-}
-
-const currentStage = computed(() => stagesList.value.find(s => s.id === activeStageId.value) || stagesList.value[0]);
+const currentStage = computed(() => {
+  return DEFAULT_STAGES.find(s => s.id === (form.activeWaStage || activeStageId.value)) || DEFAULT_STAGES[2];
+});
 
 /* Live Headcount Computations */
 const insideCount = computed(() => {
@@ -1678,16 +1570,13 @@ async function loadSettings() {
     if (data) {
       Object.assign(form, data);
       form.waEnabled = Boolean(data.waEnabled);
+      form.activeWaStage = data.activeWaStage || 'ready';
+      activeStageId.value = form.activeWaStage;
+      form.emailNotificationEnabled = data.emailNotificationEnabled !== false;
       if (data.waConnection) {
         form.waConnection = { ...data.waConnection };
       }
       if (data.waTemplates) Object.assign(form.waTemplates, data.waTemplates);
-      if ((data as any).stages && Array.isArray((data as any).stages) && (data as any).stages.length > 0) {
-        stagesList.value = (data as any).stages.map((s: any) => ({
-          ...s,
-          icon: s.id === 'welcome' ? QrCode : (s.id === 'approaching' ? BellRing : (s.id === 'ready' ? UserCheck : (s.id === 'expired' ? Ban : MessageSquare)))
-        }));
-      }
     }
 
     // Check live status of Baileys WhatsApp Gateway
@@ -1719,20 +1608,14 @@ async function saveSettings() {
     const payload = {
       ...form,
       waConnection: form.waConnection,
-      stages: stagesList.value.map(s => ({
-        id: s.id,
-        title: s.title,
-        triggerSummary: s.triggerSummary,
-        triggerBadge: s.triggerBadge,
-        description: s.description,
-        tags: s.tags
-      }))
+      activeWaStage: form.activeWaStage || 'ready',
+      emailNotificationEnabled: form.emailNotificationEnabled !== false
     };
     const res = await saveQueueSettingsApi(props.pageId, payload);
     if (res) {
       Object.assign(form, res);
       if (res.waConnection) form.waConnection = { ...res.waConnection };
-      emit('toast', 'Queue settings and WhatsApp preferences saved successfully.');
+      emit('toast', 'Queue settings and notification preferences saved successfully.');
     }
   } catch (err: any) {
     emit('toast', err?.message || 'Failed to save settings');
