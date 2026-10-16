@@ -60,9 +60,12 @@ export function blackenLogo(url: string): Promise<string | null> {
       img.crossOrigin = 'anonymous';
       img.onload = () => {
         try {
-          const scale = Math.min(1, MAX_SIDE / Math.max(img.naturalWidth, img.naturalHeight, 1));
-          const width = Math.max(1, Math.round(img.naturalWidth * scale));
-          const height = Math.max(1, Math.round(img.naturalHeight * scale));
+          // An SVG without its own width/height reports 0×0 in Safari and Firefox — draw it at a usable size instead of a blank 1px canvas
+          const naturalW = img.naturalWidth || 600;
+          const naturalH = img.naturalHeight || 200;
+          const scale = Math.min(1, MAX_SIDE / Math.max(naturalW, naturalH, 1));
+          const width = Math.max(1, Math.round(naturalW * scale));
+          const height = Math.max(1, Math.round(naturalH * scale));
           const canvas = document.createElement('canvas');
           canvas.width = width;
           canvas.height = height;

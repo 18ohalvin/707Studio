@@ -3068,7 +3068,7 @@ async function downloadPass(trigger: any) {
     editorStore.showToast('Preparing your ticket PDF…');
     try {
       const context = props.isLivePage && ticketSource
-        ? ticketSource.context
+        ? { ...ticketSource.context, logoUrl: ticketSource.context.logoUrl || (pass ? getBrandLogo(pass) : '') }
         : { 
             passWidget: pass, 
             logoUrl: pass ? getBrandLogo(pass) : '', 

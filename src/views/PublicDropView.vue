@@ -198,6 +198,10 @@ async function loadPage() {
         };
         projectPages.value = [singlePage];
         singlePageData.value = singlePage;
+        // Same ticket design and logo lookup as a multi-page campaign
+        const design = resolveTicketDesign([singlePage], item.title || '', item.brand_slug || brandSlug);
+        ticketSource.page = design.page;
+        ticketSource.context = design.context;
         await finalizePageLoad(0);
         return;
       }
