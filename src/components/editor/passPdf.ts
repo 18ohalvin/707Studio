@@ -21,6 +21,9 @@ export interface PassPdfData {
   showQr: boolean;
   /** Editor preview: watermark it so a sample is never mistaken for a pass. */
   isSample?: boolean;
+  showBrandLogo?: boolean;
+  logoColorMode?: 'normal' | 'black';
+  passWidget?: any;
 }
 
 const PAGE_W = 90; // 9:16 portrait, mm — same sheet as a designed Ticket page
@@ -64,10 +67,14 @@ export async function buildPassPdf(data: PassPdfData) {
   // Soft grey page, like the designed ticket — not solid white.
   doc.setFillColor(245, 245, 245).rect(0, 0, PAGE_W, PAGE_H, 'F');
 
+  const pass = data.passWidget;
+  const hideLogo = data.showBrandLogo === false || pass?.props?.showBrandLogo === false;
   // Logo, or the campaign title when there is no logo to embed.
-  const loadedLogo = data.logoUrl && !data.logoUrl.startsWith('data:image/svg') ? await loadImageAsDataUrl(data.logoUrl) : null;
-  // Solid black, like the Ticket Summary. (Redrawn as a PNG, which also lets an SVG logo through.)
-  const blackLogo = loadedLogo ? await blackenLogo(loadedLogo.dataUrl) : null;
+  const loadedLogo = !hideLogo && data.logoUrl && !data.logoUrl.startsWith('data:image/svg') ? await loadImageAsDataUrl(data.logoUrl) : null;
+  // Solid black if black mode selected (Redrawn as a PNG, which also lets an SVG logo through.)
+  const colorMode = data.logoColorMode || pass?.props?.logoColorMode || 'black';
+  const wantBlack = colorMode !== 'normal';
+  const blackLogo = loadedLogo && wantBlack ? await blackenLogo(loadedLogo.dataUrl) : null;
   const logo = loadedLogo && blackLogo ? { ...loadedLogo, dataUrl: blackLogo } : loadedLogo;
   if (logo && !logo.dataUrl.startsWith('data:image/svg')) {
     const h = 7;

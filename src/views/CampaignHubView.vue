@@ -263,6 +263,7 @@ import GateAccessPanel from '../components/hub/GateAccessPanel.vue';
 import { FIGMA_ASSETS } from '../constants/figmaAssets.ts';
 import type { ProjectItem } from '../types/editor.ts';
 import { useCampaignGuests } from '../components/hub/useCampaignGuests.ts';
+import { useEditorStore } from '../stores/editorStore.ts';
 import HubOverview from '../components/hub/HubOverview.vue';
 import GuestDatabaseTable from '../components/hub/GuestDatabaseTable.vue';
 import RaffleDraw from '../components/hub/RaffleDraw.vue';
@@ -273,6 +274,7 @@ const TAB_IDS: TabId[] = ['overview', 'guests', 'queue', 'raffle'];
 
 const route = useRoute();
 const router = useRouter();
+const editorStore = useEditorStore();
 
 const {
   rows, isLoading, isInitialLoad, loadError, lastSyncedAt,
@@ -299,12 +301,46 @@ const exportBaseName = computed(() => {
   return base.replace(/[^a-z0-9-_]+/gi, '-').toLowerCase();
 });
 
-const tabs = computed(() => [
-  { id: 'overview' as TabId, label: 'Overview', badge: undefined as number | undefined },
-  { id: 'guests' as TabId, label: 'Guest Database', badge: rows.value.length },
-  { id: 'queue' as TabId, label: 'Queue & WA', badge: undefined },
-  { id: 'raffle' as TabId, label: 'Raffle Draw', badge: undefined }
-]);
+function projectHasLiveQueue(p?: ProjectItem | null): boolean {
+  if (!p) return false;
+  if (p.id === editorStore.currentProjectId && editorStore.pages?.length) {
+    if (editorStore.pages.some(pg => pg.widget_tree?.some(w => w.type === 'LiveQueuePass'))) {
+      return true;
+    }
+  }
+  const trees = [p.widget_tree || [], ...(p.pages || []).map(pg => pg.widget_tree || [])];
+  for (const tree of trees) {
+    if (tree.some(w => w.type === 'LiveQueuePass')) {
+      return true;
+    }
+  }
+  return false;
+}
+
+const hasLiveQueue = computed(() => {
+  if (selectedProject.value) {
+    return projectHasLiveQueue(selectedProject.value);
+  }
+  return projects.value.some(projectHasLiveQueue);
+});
+
+const tabs = computed(() => {
+  const list = [
+    { id: 'overview' as TabId, label: 'Overview', badge: undefined as number | undefined },
+    { id: 'guests' as TabId, label: 'Guest Database', badge: rows.value.length }
+  ];
+  if (hasLiveQueue.value) {
+    list.push({ id: 'queue' as TabId, label: 'Queue & WA', badge: undefined });
+  }
+  list.push({ id: 'raffle' as TabId, label: 'Raffle Draw', badge: undefined });
+  return list;
+});
+
+watch(hasLiveQueue, (active) => {
+  if (!active && activeTab.value === 'queue') {
+    activeTab.value = 'overview';
+  }
+});
 
 const lastSyncedLabel = computed(() => {
   if (!lastSyncedAt.value) return 'now';

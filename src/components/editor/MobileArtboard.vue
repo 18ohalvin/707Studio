@@ -1429,9 +1429,9 @@ more</span>
                 </button>
               </div>
 
-              <!-- Top Brand Logo (Inherited from Hero Banner setup - Exactly 48px height, 0 top padding) -->
+              <!-- Top Brand Logo (Switchable via active toggle, Normal vs Black mode) -->
               <div 
-                v-if="getBrandLogo(widget)" 
+                v-if="shouldShowBrandLogo(widget) && getBrandLogo(widget)" 
                 class="w-full flex items-center pt-0"
                 :class="[
                   getBrandLogoAlign(widget) === 'center' ? 'justify-center' :
@@ -1443,8 +1443,12 @@ more</span>
                   <img 
                     :src="sizedUrl(getBrandLogo(widget), logoImageWidth(getBrandLogoHeight(widget)))" 
                     alt="Brand Logo" 
-                    class="w-auto max-w-full object-contain brightness-0 transition-transform" 
-                    :style="{ height: `${getBrandLogoHeight(widget)}px`, filter: 'brightness(0)' }"
+                    class="w-auto max-w-full object-contain transition-all" 
+                    :class="{ 'brightness-0': getLogoColorMode(widget) === 'black' }"
+                    :style="{ 
+                      height: `${getBrandLogoHeight(widget)}px`, 
+                      filter: getLogoColorMode(widget) === 'black' ? 'brightness(0)' : 'none' 
+                    }"
                   />
                 </div>
               </div>
@@ -3065,7 +3069,9 @@ async function downloadPass(trigger: any) {
       campaignTitle: activePage.value.page_settings?.seoTitle || editorStore.projectTitle,
       pageUrl: typeof window !== 'undefined' && props.isLivePage ? window.location.href : undefined,
       showQr: pass.props?.showQrCode !== false,
-      isSample: !isLivePass.value
+      isSample: !isLivePass.value,
+      showBrandLogo: shouldShowBrandLogo(pass),
+      logoColorMode: getLogoColorMode(pass)
     });
   } catch (err) {
     console.warn('[MobileArtboard] Could not build the pass PDF:', err);
@@ -4903,6 +4909,14 @@ function getValidForSessions(widget: any) {
     sublabel: effectiveDate,
     description: widget.props?.sessionDescription || 'All-day access to venue and exhibition'
   }];
+}
+
+function shouldShowBrandLogo(widget: any): boolean {
+  return widget?.props?.showBrandLogo !== false;
+}
+
+function getLogoColorMode(widget: any): 'normal' | 'black' {
+  return widget?.props?.logoColorMode === 'normal' ? 'normal' : 'black';
 }
 
 function getBrandLogo(widget: any) {

@@ -148,25 +148,96 @@
         </div>
       </div>
 
-    <!-- Section 0: Brand Logo (Inherited from Hero Banner) -->
+    <!-- Section 0: Brand Logo (Switchable Active Toggle & Special Appearance Mode: Normal vs Black) -->
     <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
-      <div class="flex flex-col gap-[6px] w-full">
-        <div class="flex items-center justify-between">
+      <div class="flex items-center justify-between w-full">
+        <div class="flex flex-col">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
             Brand Logo
           </p>
-          <span class="font-707 text-[11px] text-neutral-400">
-            {{ projectBrandLogoUrl ? 'Active from Hero Banner' : 'Not configured' }}
-          </span>
+          <p class="font-707 text-[11px] text-neutral-500">
+            {{ showBrandLogo ? (projectBrandLogoUrl ? 'Enabled: Displayed at top of pass' : 'Enabled: Uses logo from Hero Banner') : 'Disabled: Brand logo hidden from pass' }}
+          </p>
         </div>
-        <div v-if="projectBrandLogoUrl" class="border-[0.5px] border-neutral-200 p-3 rounded-[8px] bg-neutral-50 flex items-center justify-between">
-          <img :src="sizedUrl(projectBrandLogoUrl, 320)" alt="Brand Logo" class="max-h-[32px] h-[24px] w-auto object-contain" />
-          <span class="font-707 text-[11px] text-emerald-600 font-medium">● Visible on Summary</span>
-        </div>
-        <p v-else class="font-707 text-[11px] text-neutral-400 leading-normal">
-          Upload a brand logo in your Hero Banner setup to automatically display it at the top of this summary ticket.
-        </p>
+
+        <!-- Modern Elegant Apple Style Toggle Switch -->
+        <button
+          type="button"
+          role="switch"
+          :aria-checked="showBrandLogo"
+          @click="toggleBrandLogo"
+          class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+          :class="showBrandLogo ? 'bg-black' : 'bg-[#e5e5ea]'"
+          title="Toggle Brand Logo"
+        >
+          <span
+            aria-hidden="true"
+            class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+            :class="showBrandLogo ? 'translate-x-[18px]' : 'translate-x-0'"
+          />
+        </button>
       </div>
+
+      <!-- Visible when toggle is active -->
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="transform opacity-0 -translate-y-2"
+        enter-to-class="transform opacity-100 translate-y-0"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="transform opacity-100 translate-y-0"
+        leave-to-class="transform opacity-0 -translate-y-2"
+      >
+        <div v-if="showBrandLogo" class="flex flex-col gap-[12px] w-full pt-1">
+          <!-- Logo Preview Card -->
+          <div v-if="projectBrandLogoUrl" class="border-[0.5px] border-neutral-200 p-3 rounded-[8px] bg-neutral-50 flex items-center justify-between">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <img 
+                :src="sizedUrl(projectBrandLogoUrl, 320)" 
+                alt="Brand Logo" 
+                class="max-h-[32px] h-[24px] w-auto object-contain transition-all"
+                :class="{ 'brightness-0': logoColorMode === 'black' }"
+                :style="{ filter: logoColorMode === 'black' ? 'brightness(0)' : 'none' }"
+              />
+              <span class="font-707 text-[11px] font-medium text-neutral-600 truncate">
+                {{ logoColorMode === 'black' ? 'Black Mode' : 'Normal Mode' }}
+              </span>
+            </div>
+            <span class="font-707 text-[11px] text-emerald-600 font-medium shrink-0">● Visible</span>
+          </div>
+          <p v-else class="font-707 text-[11px] text-neutral-400 leading-normal">
+            Upload a brand logo in your Hero Banner setup to automatically display it at the top of this pass.
+          </p>
+
+          <!-- Appearance Mode Control: Normal vs Black Mode -->
+          <div class="flex flex-col gap-[6px] w-full pt-1">
+            <div class="flex items-center justify-between">
+              <span class="font-707 text-[11px] font-medium text-neutral-700">Logo Appearance Mode</span>
+              <span class="font-707 text-[10px] text-neutral-400 uppercase font-mono">{{ logoColorMode }}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-1.5 w-full p-1 rounded-[8px] bg-black/[0.04] border border-black/5">
+              <button
+                type="button"
+                @click="logoColorMode = 'normal'"
+                :class="logoColorMode === 'normal' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                class="h-[34px] rounded-[6px] text-[11.5px] font-707 flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+              >
+                <span>Normal (Original)</span>
+              </button>
+              <button
+                type="button"
+                @click="logoColorMode = 'black'"
+                :class="logoColorMode === 'black' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                class="h-[34px] rounded-[6px] text-[11.5px] font-707 flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+              >
+                <span>Black Mode</span>
+              </button>
+            </div>
+            <p class="font-707 text-[10.5px] text-neutral-500 leading-snug">
+              {{ logoColorMode === 'black' ? 'Monochrome black silhouette matching 707 ticket aesthetics.' : 'Original brand logo colors without monochrome filter.' }}
+            </p>
+          </div>
+        </div>
+      </Transition>
     </div>
 
     <!-- Section 1: Global QR Function On/Off Toggle (Only for Standard E-Pass) -->
@@ -742,6 +813,29 @@ const queuePreviewState = computed<'green' | 'yellow' | 'calling' | 'red' | 'bla
   set: (val: 'green' | 'yellow' | 'calling' | 'red' | 'black') => {
     if (currentWidget.value) {
       editorStore.updateWidgetProps(currentWidget.value.id, { previewState: val });
+    }
+  }
+});
+
+// Brand Logo Toggle & Color Mode
+const showBrandLogo = computed({
+  get: () => currentWidget.value?.props?.showBrandLogo ?? true,
+  set: (val: boolean) => {
+    if (currentWidget.value) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { showBrandLogo: val });
+    }
+  }
+});
+
+function toggleBrandLogo() {
+  showBrandLogo.value = !showBrandLogo.value;
+}
+
+const logoColorMode = computed<'normal' | 'black'>({
+  get: () => currentWidget.value?.props?.logoColorMode ?? 'black',
+  set: (val: 'normal' | 'black') => {
+    if (currentWidget.value) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { logoColorMode: val });
     }
   }
 });

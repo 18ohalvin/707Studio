@@ -64,10 +64,13 @@ async function drawTicketPdf(opts: TicketPdfOptions) {
     import('jspdf')
   ]);
 
-  // The logo prints black, as in the Ticket Summary. Done before the page is drawn so the
-  // capture never catches the coloured original.
+  // The logo prints according to the pass widget setup (normal or black mode; hidden if toggled off).
   let context = opts.context;
-  if (context.logoUrl && !context.logoIsBlack) {
+  const pass = context.passWidget;
+  const hideLogo = pass?.props?.showBrandLogo === false;
+  if (hideLogo) {
+    context = { ...context, logoUrl: '' };
+  } else if (context.logoUrl && !context.logoIsBlack && pass?.props?.logoColorMode !== 'normal') {
     const black = await blackenLogo(sizedUrl(context.logoUrl, 1080));
     if (black) context = { ...context, logoUrl: black, logoIsBlack: true };
   }

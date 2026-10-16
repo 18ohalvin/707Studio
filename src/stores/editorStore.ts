@@ -652,6 +652,8 @@ export const useEditorStore = defineStore('editor', () => {
       case 'GuestEPass':
         defaultProps = {
           passMode: 'ticket',
+          showBrandLogo: true,
+          logoColorMode: 'black',
           showQrCode: true,
           heading: 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.',
           venue: 'PLAZA SENAYAN 4th FLOOR',
@@ -682,6 +684,8 @@ export const useEditorStore = defineStore('editor', () => {
       case 'LiveQueuePass':
         defaultProps = {
           passMode: 'queue',
+          showBrandLogo: true,
+          logoColorMode: 'black',
           heading: 'SUCCESS.\nYOU ARE IN QUEUE.',
           sampleQueueNumber: 42,
           sampleCalledNumber: 23,
