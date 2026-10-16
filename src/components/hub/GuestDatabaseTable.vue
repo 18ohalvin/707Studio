@@ -391,7 +391,7 @@
             </button>
           </div>
 
-          <div class="flex-1 overflow-y-auto px-5 py-6 flex flex-col gap-6">
+          <div class="flex-1 min-h-0 overflow-y-auto px-5 py-6 flex flex-col gap-6">
             <!-- Identity -->
             <div class="flex items-center gap-4">
               <div class="size-14 rounded-full flex items-center justify-center text-[17px] font-medium shrink-0" :class="normalizeStatus(drawerRow.status) === 'winner' ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-700 border border-black/5'">
@@ -407,34 +407,38 @@
             </div>
 
             <!-- Access ID card -->
-            <!-- shrink-0: the drawer body is a scrolling flex column and an overflow-hidden card is otherwise squeezed, clipping its contents -->
-            <div class="rounded-[14px] bg-[#0c0d0e] text-white p-4 relative overflow-hidden shrink-0">
-              <div class="absolute inset-0 opacity-[0.07] hub-grid" />
-              <div class="flex items-center justify-between gap-3 relative">
-                <p class="text-[10px] uppercase tracking-[0.18em] text-white/50">Access ID</p>
-                <button type="button" @click="copy(accessId(drawerRow))" class="h-[26px] px-2.5 rounded-[7px] bg-white/10 hover:bg-white/20 text-[11px] flex items-center gap-1.5 cursor-pointer shrink-0">
+            <div class="w-full shrink-0 min-h-[168px] rounded-[14px] bg-[#0c0d0e] text-white p-4 relative overflow-hidden flex flex-col justify-between gap-3 shadow-[0_4px_20px_rgba(0,0,0,0.12)]">
+              <div class="absolute inset-0 opacity-[0.07] hub-grid pointer-events-none" />
+              <div class="flex items-center justify-between gap-3 relative z-10">
+                <p class="text-[10px] uppercase tracking-[0.18em] text-white/50 font-medium">Access ID</p>
+                <button
+                  type="button"
+                  @click="copy(accessId(drawerRow))"
+                  class="h-[26px] px-2.5 rounded-[7px] bg-white/10 hover:bg-white/20 active:bg-white/25 text-[11px] flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors"
+                >
                   <Copy class="w-3.5 h-3.5" /> Copy
                 </button>
               </div>
               <!-- The ID sits in the middle of the space between the header and the status lines -->
-              <div class="relative flex items-center justify-center min-h-[56px] py-2">
-                <span class="font-mono text-[22px] leading-none tracking-[0.06em] text-center break-all">{{ accessId(drawerRow) }}</span>
+              <div class="relative z-10 flex items-center justify-center py-1">
+                <span class="font-mono text-[22px] leading-none tracking-[0.06em] text-center break-all select-all font-medium">{{ accessId(drawerRow) || '—' }}</span>
               </div>
-              <div class="relative border-t border-white/10 pt-3"></div>
-              <div class="flex items-center gap-2 text-[11px] relative" :class="drawerRow.checked_in_at ? 'text-moss-300' : 'text-white/50'">
-                <span class="size-1.5 rounded-full" :class="drawerRow.checked_in_at ? 'bg-moss-300' : 'bg-white/30'" />
-                {{ drawerRow.checked_in_at ? `Checked in ${formatDateTime(drawerRow.checked_in_at)}${drawerRow.checked_in_by ? ` · by ${drawerRow.checked_in_by}` : ''}` : 'Not checked in yet' }}
-              </div>
-              <div class="flex items-center justify-between gap-2 mt-2 text-[11px] text-white/50 relative">
-                <span class="truncate">{{ drawerRow.ticket_emailed_at ? `Ticket emailed ${formatDateTime(drawerRow.ticket_emailed_at)}` : 'Ticket not emailed yet' }}</span>
-                <button
-                  type="button"
-                  @click="sendTickets([drawerRow], true)"
-                  :disabled="!!ticketSender.progress.value && !ticketSender.progress.value.finished"
-                  class="h-[26px] px-2.5 rounded-[7px] bg-white/10 hover:bg-white/20 text-white text-[11px] flex items-center gap-1.5 cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  <Mail class="w-3 h-3" /> {{ drawerRow.ticket_emailed_at ? 'Resend ticket' : 'Send ticket' }}
-                </button>
+              <div class="relative z-10 border-t border-white/10 pt-3 flex flex-col gap-2">
+                <div class="flex items-center gap-2 text-[11px]" :class="drawerRow.checked_in_at ? 'text-moss-300' : 'text-white/50'">
+                  <span class="size-1.5 rounded-full shrink-0" :class="drawerRow.checked_in_at ? 'bg-moss-300' : 'bg-white/30'" />
+                  <span class="truncate">{{ drawerRow.checked_in_at ? `Checked in ${formatDateTime(drawerRow.checked_in_at)}${drawerRow.checked_in_by ? ` · by ${drawerRow.checked_in_by}` : ''}` : 'Not checked in yet' }}</span>
+                </div>
+                <div class="flex items-center justify-between gap-2 text-[11px] text-white/50">
+                  <span class="truncate">{{ drawerRow.ticket_emailed_at ? `Ticket emailed ${formatDateTime(drawerRow.ticket_emailed_at)}` : 'Ticket not emailed yet' }}</span>
+                  <button
+                    type="button"
+                    @click="sendTickets([drawerRow], true)"
+                    :disabled="!!ticketSender.progress.value && !ticketSender.progress.value.finished"
+                    class="h-[26px] px-2.5 rounded-[7px] bg-white/10 hover:bg-white/20 active:bg-white/25 text-white text-[11px] flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <Mail class="w-3 h-3" /> {{ drawerRow.ticket_emailed_at ? 'Resend ticket' : 'Send ticket' }}
+                  </button>
+                </div>
               </div>
             </div>
 
