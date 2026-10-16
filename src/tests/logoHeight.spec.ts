@@ -76,4 +76,29 @@ describe('brand logo height', () => {
     const img = new DOMParser().parseFromString(wrapper.html(), 'text/html').querySelector('img[alt="Brand logo"]');
     expect(img?.getAttribute('style')).toContain('height: 64px');
   });
+
+  it('positions brand logo in hero banner according to brandLogoVerticalPosition', async () => {
+    const wrapper = mountLive(heroPage({ brandLogoHeight: 48, brandLogoVerticalPosition: 36, textPosition: 'top', showBannerText: true, headline: 'VIP' }));
+    await flushPromises();
+    expect(wrapper.html()).toContain('padding-top: 36px');
+    // Top text padding: 36 + 48 + 4 = 88px
+    expect(wrapper.html()).toContain('padding-top: 88px');
+  });
+
+  it('renders ticket brand logo in normal mode without brightness(0) filter when logoColorMode is normal', async () => {
+    const page = heroPage({}, 'ticket');
+    page.widget_tree = [{ id: 'tf', type: 'TicketField', props: { fields: ['brandLogo'], logoColorMode: 'normal' } }];
+    const wrapper = mount(MobileArtboard, {
+      props: { page, pageIndex: 1, isSelected: true },
+      global: {
+        plugins: [createPinia()],
+        provide: { [TICKET_CONTEXT_KEY as symbol]: { passWidget: null, logoUrl: '/uploads/logo.png', campaignTitle: 'Atmos Drop', logoColorMode: 'normal' } }
+      }
+    });
+    await flushPromises();
+    const img = new DOMParser().parseFromString(wrapper.html(), 'text/html').querySelector('img[alt="Brand logo"]');
+    expect(img?.getAttribute('class')).not.toContain('brightness-0');
+    expect(img?.getAttribute('style')).not.toContain('brightness(0)');
+  });
 });
+

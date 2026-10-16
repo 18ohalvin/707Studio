@@ -67,30 +67,79 @@
       </div>
     </div>
 
-    <!-- Logo height (only for a block that shows the brand logo) -->
-    <div v-if="fields.includes('brandLogo')" class="flex flex-col gap-[10px] items-start p-[24px] w-full border-b border-[#f0f0f0]">
-      <div class="flex items-center justify-between w-full">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Logo Height</p>
-        <div class="flex items-center gap-1.5">
-          <span class="font-707 text-[12px] text-black tabular-nums">{{ logoHeight }}px</span>
-          <button
-            v-if="logoHeight !== TICKET_LOGO_HEIGHT.default"
-            type="button"
-            @click="update({ logoHeight: TICKET_LOGO_HEIGHT.default })"
-            class="h-[26px] px-2 rounded-[6px] text-[11px] font-707 text-neutral-600 hover:text-black hover:bg-black/5 cursor-pointer"
-          >Reset</button>
+    <!-- Logo height & appearance mode (only for a block that shows the brand logo) -->
+    <div v-if="fields.includes('brandLogo')" class="flex flex-col gap-[14px] items-start p-[24px] w-full border-b border-[#f0f0f0]">
+      <!-- Logo Preview Card if logo exists -->
+      <div v-if="projectBrandLogoUrl" class="border-[0.5px] border-neutral-200 p-3 rounded-[8px] bg-neutral-50 flex items-center justify-between w-full">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <img 
+            :src="sizedUrl(projectBrandLogoUrl, 320)" 
+            alt="Brand Logo" 
+            class="max-h-[32px] h-[24px] w-auto object-contain transition-all"
+            :class="{ 'brightness-0': logoColorMode === 'black' }"
+            :style="{ filter: logoColorMode === 'black' ? 'brightness(0)' : 'none' }"
+          />
+          <span class="font-707 text-[11px] font-medium text-neutral-600 truncate">
+            {{ logoColorMode === 'black' ? 'Black Mode' : 'Normal Mode' }}
+          </span>
         </div>
+        <span class="font-707 text-[11px] text-emerald-600 font-medium shrink-0">● On Ticket</span>
       </div>
-      <input
-        type="range"
-        :min="TICKET_LOGO_HEIGHT.min"
-        :max="TICKET_LOGO_HEIGHT.max"
-        step="1"
-        :value="logoHeight"
-        @input="update({ logoHeight: clampLogoHeight(($event.target as HTMLInputElement).value, TICKET_LOGO_HEIGHT) })"
-        class="w-full accent-black cursor-pointer"
-        aria-label="Ticket logo height"
-      />
+
+      <!-- Appearance Mode: Normal vs Black Mode -->
+      <div class="flex flex-col gap-[6px] w-full">
+        <div class="flex items-center justify-between">
+          <span class="font-707 text-[12px] font-medium text-neutral-700">Logo Appearance Mode</span>
+          <span class="font-707 text-[10px] text-neutral-400 uppercase font-mono">{{ logoColorMode }}</span>
+        </div>
+        <div class="grid grid-cols-2 gap-1.5 w-full p-1 rounded-[8px] bg-black/[0.04] border border-black/5">
+          <button
+            type="button"
+            @click="logoColorMode = 'normal'"
+            :class="logoColorMode === 'normal' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+            class="h-[34px] rounded-[6px] text-[11.5px] font-707 flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+          >
+            <span>Normal (Original)</span>
+          </button>
+          <button
+            type="button"
+            @click="logoColorMode = 'black'"
+            :class="logoColorMode === 'black' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+            class="h-[34px] rounded-[6px] text-[11.5px] font-707 flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+          >
+            <span>Black Mode</span>
+          </button>
+        </div>
+        <p class="font-707 text-[10.5px] text-neutral-500 leading-snug">
+          {{ logoColorMode === 'black' ? 'Monochrome black silhouette matching 707 ticket aesthetics.' : 'Original brand logo colors without monochrome filter on ticket page & PDF.' }}
+        </p>
+      </div>
+
+      <!-- Logo Height Slider -->
+      <div class="flex flex-col gap-[10px] w-full pt-1">
+        <div class="flex items-center justify-between w-full">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Logo Height</p>
+          <div class="flex items-center gap-1.5">
+            <span class="font-707 text-[12px] text-black tabular-nums">{{ logoHeight }}px</span>
+            <button
+              v-if="logoHeight !== TICKET_LOGO_HEIGHT.default"
+              type="button"
+              @click="update({ logoHeight: TICKET_LOGO_HEIGHT.default })"
+              class="h-[26px] px-2 rounded-[6px] text-[11px] font-707 text-neutral-600 hover:text-black hover:bg-black/5 cursor-pointer"
+            >Reset</button>
+          </div>
+        </div>
+        <input
+          type="range"
+          :min="TICKET_LOGO_HEIGHT.min"
+          :max="TICKET_LOGO_HEIGHT.max"
+          step="1"
+          :value="logoHeight"
+          @input="update({ logoHeight: clampLogoHeight(($event.target as HTMLInputElement).value, TICKET_LOGO_HEIGHT) })"
+          class="w-full accent-black cursor-pointer"
+          aria-label="Ticket logo height"
+        />
+      </div>
     </div>
 
     <!-- Alignment -->
@@ -156,6 +205,7 @@ import { computed } from 'vue';
 import { Ticket, Plus, Check, Trash2, Image as ImageIcon } from 'lucide-vue-next';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
+import { sizedUrl } from '../../services/responsiveImage.ts';
 import { TICKET_FIELDS, ticketFieldMeta, type TicketFieldKey } from './ticket/ticketFields.ts';
 
 defineProps<{ isOpen: boolean }>();
@@ -173,6 +223,38 @@ const fields = computed<TicketFieldKey[]>(() => {
   return (Array.isArray(raw) && raw.length ? raw : ['guestName']) as TicketFieldKey[];
 });
 const logoHeight = computed(() => clampLogoHeight(currentWidget.value?.props?.logoHeight, TICKET_LOGO_HEIGHT));
+
+const projectBrandLogoUrl = computed<string>(() => {
+  for (const page of editorStore.pages) {
+    for (const w of page.widget_tree) {
+      if (w.type === 'HeroDrop' && w.props?.brandLogoUrl) {
+        return w.props.brandLogoUrl;
+      }
+      if (w.props?.brandLogoUrl) {
+        return w.props.brandLogoUrl;
+      }
+    }
+  }
+  return '';
+});
+
+const logoColorMode = computed<'normal' | 'black'>({
+  get: () => {
+    if (currentWidget.value?.props?.logoColorMode) {
+      return currentWidget.value.props.logoColorMode;
+    }
+    // Fall back to pass widget's color mode if present, else 'black'
+    for (const page of editorStore.pages) {
+      const pass = page.widget_tree.find(w => w.type === 'GuestEPass' || w.type === 'LiveQueuePass');
+      if (pass?.props?.logoColorMode) return pass.props.logoColorMode;
+    }
+    return 'black';
+  },
+  set: (val) => {
+    update({ logoColorMode: val });
+  }
+});
+
 const captionFields = computed(() => fields.value.filter(k => ticketFieldMeta(k).caption));
 
 function update(props: Record<string, any>) {

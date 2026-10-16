@@ -61,14 +61,16 @@ export function useTicketSender() {
         const page = pages.find(p => p.kind === 'ticket');
         if (!page) return null;
         const widgets = pages.flatMap(p => p.widget_tree || []);
-        const pass = widgets.find((w: any) => w.type === 'GuestEPass') || null;
+        const pass = widgets.find((w: any) => w.type === 'GuestEPass' || w.type === 'LiveQueuePass') || null;
         const hero = widgets.find((w: any) => w.type === 'HeroDrop' && w.props?.brandLogoUrl);
+        const ticketField = page.widget_tree?.find((w: any) => w.type === 'TicketField' && (Array.isArray(w.props?.fields) ? w.props.fields.includes('brandLogo') : w.props?.field === 'brandLogo'));
         return {
           page,
           context: {
             passWidget: pass,
             logoUrl: pass?.props?.brandLogoUrl || hero?.props?.brandLogoUrl || '',
-            campaignTitle: item.title || project.title || ''
+            campaignTitle: item.title || project.title || '',
+            logoColorMode: ticketField?.props?.logoColorMode || pass?.props?.logoColorMode || 'black'
           },
           passGuestType: pass ? String(pass.props?.guestType || 'Public') : ''
         };

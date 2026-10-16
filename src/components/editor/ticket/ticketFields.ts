@@ -42,6 +42,7 @@ export interface TicketContext {
   campaignTitle: string;
   /** logoUrl is already the solid-black version (made for the PDF), so it is shown as is. */
   logoIsBlack?: boolean;
+  logoColorMode?: 'normal' | 'black';
 }
 
 export const TICKET_CONTEXT_KEY: InjectionKey<TicketContext> = Symbol('ticketContext');
@@ -49,7 +50,7 @@ export const TICKET_CONTEXT_KEY: InjectionKey<TicketContext> = Symbol('ticketCon
 /** The layout a new Ticket page starts with. */
 export function defaultTicketWidgets(): { type: 'TicketField' | 'TextBanner'; props: Record<string, any> }[] {
   return [
-    { type: 'TicketField', props: { fields: ['brandLogo'], align: 'left' } },
+    { type: 'TicketField', props: { fields: ['brandLogo'], align: 'left', logoColorMode: 'black' } },
     { type: 'TextBanner', props: { text: 'ACCESS PASS', placeholder: 'WRITE YOUR TEXT HERE', typographyStyle: 'headline-2', fontSize: '24px', fontWeight: 'medium', textAlign: 'left', color: '#000000' } },
     { type: 'TicketField', props: { fields: ['qr'], align: 'left' } },
     { type: 'TicketField', props: { fields: ['guestName', 'guestType'], align: 'left' } },

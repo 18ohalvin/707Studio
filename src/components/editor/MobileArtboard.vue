@@ -311,12 +311,13 @@
               <!-- Brand Logo Area under header (Only available and rendered on the top-most banner) -->
               <div 
                 v-if="index === 0 && (widget.props.isBrandLogoEnabled || widget.props.brandLogoUrl)"
-                class="relative z-20 w-full px-[16px] pt-[16px] flex items-center transition-all"
+                class="relative z-20 w-full px-[16px] flex items-center transition-all"
                 :class="[
                   widget.props.brandLogoAlign === 'center' ? 'justify-center' : 
                   widget.props.brandLogoAlign === 'right' ? 'justify-end' : 
                   'justify-start'
                 ]"
+                :style="{ paddingTop: `${logoVerticalPositionOf(widget)}px` }"
                 @dragover.prevent.stop="isDragOverLogoSlot = widget.id"
                 @dragleave.prevent.stop="isDragOverLogoSlot = null"
                 @drop.prevent.stop="handleLogoDropOnBanner($event, widget.id)"
@@ -357,7 +358,7 @@
                   widget.props.textAlign === 'right' ? 'text-right' : 
                   'text-left items-start'
                 ]"
-                :style="widget.props.textPosition === 'top' && index === 0 && widget.props.brandLogoUrl ? { paddingTop: `${logoHeightOf(widget) + 20}px` } : undefined"
+                :style="widget.props.textPosition === 'top' && index === 0 && (widget.props.isBrandLogoEnabled || widget.props.brandLogoUrl) ? { paddingTop: `${logoVerticalPositionOf(widget) + logoHeightOf(widget) + 4}px` } : undefined"
               >
                 <!-- 1. Optional Tag / Badge (Placed on Top of H1 Headline) -->
                 <div 
@@ -1360,7 +1361,18 @@ more</span>
                   </div>
                   <!-- Brand logo, or the campaign title when there is none -->
                   <template v-else-if="field === 'brandLogo'">
-                    <img v-if="ticketLogo" :src="ticketLogoSrc || sizedUrl(ticketLogo, logoImageWidth(ticketLogoHeight(widget)))" alt="Brand logo" class="w-auto max-w-full object-contain" :style="{ height: `${ticketLogoHeight(widget)}px`, ...(ticketLogoSrc ? {} : { filter: 'brightness(0)' }) }" crossorigin="anonymous" />
+                    <img 
+                      v-if="ticketLogo" 
+                      :src="ticketLogoSrc || sizedUrl(ticketLogo, logoImageWidth(ticketLogoHeight(widget)))" 
+                      alt="Brand logo" 
+                      class="w-auto max-w-full object-contain" 
+                      :class="{ 'brightness-0': ticketLogoColorMode(widget) === 'black' && !ticketLogoSrc }" 
+                      :style="{ 
+                        height: `${ticketLogoHeight(widget)}px`, 
+                        filter: ticketLogoColorMode(widget) === 'black' && !ticketLogoSrc ? 'brightness(0)' : 'none' 
+                      }" 
+                      crossorigin="anonymous" 
+                    />
                     <span v-else class="font-707 text-[10px] uppercase tracking-[0.12em] text-neutral-500">{{ ticketCampaignTitle }}</span>
                   </template>
                   <!-- Sessions the guest picked -->
@@ -2106,7 +2118,7 @@ more</span>
 </template>
 
 <script setup lang="ts">
-import { clampLogoHeight, logoImageWidth, TICKET_LOGO_HEIGHT } from './logoSize.ts';
+import { clampLogoHeight, clampLogoVerticalPosition, logoImageWidth, TICKET_LOGO_HEIGHT } from './logoSize.ts';
 import { ref, reactive, computed, watch, nextTick, onMounted, onUnmounted, inject } from 'vue';
 import QRCode from 'qrcode';
 import { PLACES_KEY, placeStatus, placeKey, configuredLimit, type PlaceStatus } from '../../services/places.ts';
@@ -2248,15 +2260,31 @@ const ticketLogo = computed(() => {
   const pass = ticketPassWidget();
   return pass ? getBrandLogo(pass) : '';
 });
-// The logo prints solid black, like the Ticket Summary. The CSS filter does that on screen but the
-// PDF capture ignores filters, so the logo's pixels are made black (until then the filter stands in).
+const ticketColorMode = computed<'normal' | 'black'>(() => {
+  const ticketWidget = activePage.value?.widget_tree?.find((w: any) => 
+    w.type === 'TicketField' && (Array.isArray(w.props?.fields) ? w.props.fields.includes('brandLogo') : w.props?.field === 'brandLogo')
+  );
+  if (ticketWidget?.props?.logoColorMode) return ticketWidget.props.logoColorMode;
+  if (ticketContext?.logoColorMode) return ticketContext.logoColorMode;
+  const pass = ticketPassWidget();
+  if (pass?.props?.logoColorMode) return pass.props.logoColorMode;
+  return 'black';
+});
+
+function ticketLogoColorMode(widget?: any): 'normal' | 'black' {
+  if (widget?.props?.logoColorMode) return widget.props.logoColorMode;
+  return ticketColorMode.value;
+}
+
+// The logo prints according to the chosen color mode (normal or black).
+// In black mode, the CSS filter stands in on screen while the logo pixels are made black for the PDF capture.
 const ticketLogoSrc = ref('');
 watch(
-  () => [ticketLogo.value, ticketContext?.logoIsBlack] as const,
-  async ([url, alreadyBlack]) => {
+  () => [ticketLogo.value, ticketContext?.logoIsBlack, ticketColorMode.value] as const,
+  async ([url, alreadyBlack, mode]) => {
     ticketLogoSrc.value = '';
     if (!url) return;
-    if (alreadyBlack) {
+    if (mode === 'normal' || alreadyBlack) {
       ticketLogoSrc.value = url;
       return;
     }
@@ -3033,7 +3061,12 @@ async function downloadPass(trigger: any) {
     try {
       const context = props.isLivePage && ticketSource
         ? ticketSource.context
-        : { passWidget: pass, logoUrl: pass ? getBrandLogo(pass) : '', campaignTitle: editorStore.projectTitle };
+        : { 
+            passWidget: pass, 
+            logoUrl: pass ? getBrandLogo(pass) : '', 
+            campaignTitle: editorStore.projectTitle,
+            logoColorMode: ticketColorMode.value
+          };
       const title = (context.campaignTitle || 'ticket').replace(/[^a-z0-9]+/gi, '-').replace(/(^-|-$)/g, '').toLowerCase() || 'ticket';
       const { renderTicketPdf } = await import('./ticket/ticketPdf.ts');
       await renderTicketPdf({
@@ -4941,6 +4974,11 @@ function getBrandLogo(widget: any) {
 /** Height of the logo on a banner: its own setting, 48px by default. */
 function logoHeightOf(widget: any): number {
   return clampLogoHeight(widget?.props?.brandLogoHeight);
+}
+
+/** Vertical spacing of the logo on a banner from the top: 16px by default. */
+function logoVerticalPositionOf(widget: any): number {
+  return clampLogoVerticalPosition(widget?.props?.brandLogoVerticalPosition ?? widget?.props?.brandLogoTop);
 }
 
 /** The e-pass inherits the logo — and its height — from the banner. */

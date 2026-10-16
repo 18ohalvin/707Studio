@@ -4,6 +4,7 @@
  */
 export const LOGO_HEIGHT = { min: 16, max: 200, default: 48 } as const;
 export const TICKET_LOGO_HEIGHT = { min: 12, max: 160, default: 22 } as const;
+export const LOGO_VERTICAL_POSITION = { min: 0, max: 200, default: 16 } as const;
 
 export function clampLogoHeight(value: unknown, range: { min: number; max: number; default: number } = LOGO_HEIGHT): number {
   const n = Number(value);
@@ -11,7 +12,14 @@ export function clampLogoHeight(value: unknown, range: { min: number; max: numbe
   return Math.min(range.max, Math.max(range.min, Math.round(n)));
 }
 
+export function clampLogoVerticalPosition(value: unknown, range: { min: number; max: number; default: number } = LOGO_VERTICAL_POSITION): number {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < 0) return range.default;
+  return Math.min(range.max, Math.max(range.min, Math.round(n)));
+}
+
 /** Image width to request from the server: enough for a 3× phone screen at this height. */
 export function logoImageWidth(height: number): number {
   return height <= 48 ? 640 : 1080;
 }
+

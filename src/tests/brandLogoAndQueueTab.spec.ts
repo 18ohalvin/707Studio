@@ -78,4 +78,27 @@ describe('Brand Logo Switchable & Queue Tab Conditional Visibility', () => {
     };
     expect(projectHasLiveQueue(queueProject)).toBe(true);
   });
+
+  it('initializes TicketField with logoColorMode: black and allows switching to normal', () => {
+    const store = useEditorStore();
+    store.ensureTicketPage();
+    store.selectPage(store.ticketPageIndex);
+    const tf = store.addWidget('TicketField', undefined, { fields: ['brandLogo'] });
+    expect(tf).toBeDefined();
+    expect(tf!.props.fields).toEqual(['brandLogo']);
+    expect(tf!.props.logoColorMode).toBe('black');
+
+    store.updateWidgetProps(tf!.id, { logoColorMode: 'normal' });
+    expect(tf!.props.logoColorMode).toBe('normal');
+  });
+
+  it('supports HeroDrop brandLogoVerticalPosition and clamps correctly', () => {
+    const store = useEditorStore();
+    const hero = store.addWidget('HeroDrop');
+    expect(hero.props.brandLogoVerticalPosition).toBe(16);
+
+    store.updateWidgetProps(hero.id, { brandLogoVerticalPosition: 48 });
+    expect(hero.props.brandLogoVerticalPosition).toBe(48);
+  });
 });
+

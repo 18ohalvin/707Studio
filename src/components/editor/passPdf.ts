@@ -31,6 +31,35 @@ const PAGE_H = 160;
 const MARGIN = 9;
 
 async function loadImageAsDataUrl(url: string): Promise<{ dataUrl: string; ratio: number } | null> {
+  // First try in-browser canvas rasterization to PNG (reliably embeds SVG/WebP/PNG/JPG into jsPDF)
+  try {
+    const viaCanvas = await new Promise<{ dataUrl: string; ratio: number } | null>((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth || 600;
+          canvas.height = img.naturalHeight || 200;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return resolve(null);
+          ctx.drawImage(img, 0, 0);
+          resolve({
+            dataUrl: canvas.toDataURL('image/png'),
+            ratio: canvas.width / Math.max(1, canvas.height)
+          });
+        } catch {
+          resolve(null);
+        }
+      };
+      img.onerror = () => resolve(null);
+      img.src = url;
+    });
+    if (viaCanvas) return viaCanvas;
+  } catch {
+    /* fallback to fetch */
+  }
+
   try {
     const res = await fetch(url, { mode: 'cors' });
     if (!res.ok) return null;
@@ -70,7 +99,7 @@ export async function buildPassPdf(data: PassPdfData) {
   const pass = data.passWidget;
   const hideLogo = data.showBrandLogo === false || pass?.props?.showBrandLogo === false;
   // Logo, or the campaign title when there is no logo to embed.
-  const loadedLogo = !hideLogo && data.logoUrl && !data.logoUrl.startsWith('data:image/svg') ? await loadImageAsDataUrl(data.logoUrl) : null;
+  const loadedLogo = !hideLogo && data.logoUrl ? await loadImageAsDataUrl(data.logoUrl) : null;
   // Solid black if black mode selected (Redrawn as a PNG, which also lets an SVG logo through.)
   const colorMode = data.logoColorMode || pass?.props?.logoColorMode || 'black';
   const wantBlack = colorMode !== 'normal';

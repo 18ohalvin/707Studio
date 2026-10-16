@@ -315,10 +315,12 @@ function setCampaignPages(pages: ActivationPage[], title?: string) {
   const widgets = pages.flatMap(p => p.widget_tree || []);
   const pass = widgets.find(w => w.type === 'GuestEPass' || w.type === 'LiveQueuePass') || null;
   const hero = widgets.find(w => w.type === 'HeroDrop' && w.props?.brandLogoUrl);
+  const ticketField = pages.find(p => p.kind === 'ticket')?.widget_tree?.find(w => w.type === 'TicketField' && (Array.isArray(w.props?.fields) ? w.props.fields.includes('brandLogo') : w.props?.field === 'brandLogo'));
   ticketSource.context = {
     passWidget: pass,
     logoUrl: pass?.props?.brandLogoUrl || hero?.props?.brandLogoUrl || '',
-    campaignTitle: title || ''
+    campaignTitle: title || '',
+    logoColorMode: ticketField?.props?.logoColorMode || pass?.props?.logoColorMode || 'black'
   };
 }
 

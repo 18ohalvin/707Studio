@@ -523,7 +523,10 @@ export const useEditorStore = defineStore('editor', () => {
           isOverlayEnabled: false,
           overlayOpacity: 50,
           isBrandLogoEnabled: false,
-          brandLogoUrl: ''
+          brandLogoUrl: '',
+          brandLogoAlign: 'left',
+          brandLogoHeight: 48,
+          brandLogoVerticalPosition: 16
         };
         break;
       case 'CountdownTimer':
@@ -647,7 +650,7 @@ export const useEditorStore = defineStore('editor', () => {
         };
         break;
       case 'TicketField':
-        defaultProps = { fields: ['guestName'], align: 'left' };
+        defaultProps = { fields: ['guestName'], align: 'left', logoColorMode: 'black' };
         break;
       case 'GuestEPass':
         defaultProps = {

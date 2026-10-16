@@ -64,15 +64,24 @@ async function drawTicketPdf(opts: TicketPdfOptions) {
     import('jspdf')
   ]);
 
-  // The logo prints according to the pass widget setup (normal or black mode; hidden if toggled off).
+  // The logo prints according to the ticket field or pass widget setup (normal or black mode; hidden if toggled off).
   let context = opts.context;
   const pass = context.passWidget;
   const hideLogo = pass?.props?.showBrandLogo === false;
+  const ticketLogoWidget = opts.page?.widget_tree?.find((w: any) => 
+    w.type === 'TicketField' && (Array.isArray(w.props?.fields) ? w.props.fields.includes('brandLogo') : w.props?.field === 'brandLogo')
+  );
+  const colorMode = ticketLogoWidget?.props?.logoColorMode || context.logoColorMode || pass?.props?.logoColorMode || 'black';
+  const wantBlack = colorMode !== 'normal';
+
   if (hideLogo) {
-    context = { ...context, logoUrl: '' };
-  } else if (context.logoUrl && !context.logoIsBlack && pass?.props?.logoColorMode !== 'normal') {
+    context = { ...context, logoUrl: '', logoColorMode: colorMode };
+  } else if (context.logoUrl && !context.logoIsBlack && wantBlack) {
     const black = await blackenLogo(sizedUrl(context.logoUrl, 1080));
-    if (black) context = { ...context, logoUrl: black, logoIsBlack: true };
+    if (black) context = { ...context, logoUrl: black, logoIsBlack: true, logoColorMode: colorMode };
+    else context = { ...context, logoColorMode: colorMode };
+  } else {
+    context = { ...context, logoColorMode: colorMode };
   }
 
   const host = document.createElement('div');
