@@ -126,21 +126,13 @@ export function getWaLogs(pageId?: string): WhatsAppLogEntry[] {
   return recentWaLogs.filter(l => !l.pageId || l.pageId === pageId).reverse().slice(0, 30);
 }
 
-/** Generate a dynamic QR string and pairing payload for WhatsApp linking */
+/** Generate direct WhatsApp URL payload and normalized numbers */
 export function generateWaLinkPayload(pageId: string, phoneNumber?: string) {
   const norm = normalizeWhatsAppNumber(phoneNumber || '');
-  const nonce = (Math.random().toString(36).substring(2, 10) + '707STUDIO').substring(0, 8).toUpperCase();
-  const timestamp = Date.now();
-  const qrString = `2@707Studio,${pageId},${timestamp},${nonce}`;
-  const pairingCode = `${nonce.slice(0, 4)}-${nonce.slice(4, 8)}`;
-
   return {
-    qrString,
-    pairingCode,
     cleanPhone: norm,
     formattedDisplay: formatWhatsAppDisplay(norm),
     directLink: norm ? `https://wa.me/${norm}` : '',
-    expiresInSeconds: 180,
     generatedAt: new Date().toISOString()
   };
 }
@@ -157,7 +149,7 @@ export function renderTemplate(template: string, vars: Record<string, any>): str
 
 /**
  * Dispatch or log WhatsApp notification.
- * Works seamlessly in development (console & memory log) and production (gateway integration).
+ * Works seamlessly in direct mode (wa.me link generation & audit log) and cloud gateway mode.
  */
 export async function sendWhatsAppNotification(
   phone: string,
@@ -174,7 +166,7 @@ export async function sendWhatsAppNotification(
       text,
       event: meta?.event || 'notification',
       status: 'failed',
-      error: 'Invalid phone number format (min 9 digits required)',
+      error: 'Invalid phone number format (min 9 digits required, e.g. 0812... or +62...)',
       timestamp: new Date().toISOString()
     });
     return false;
@@ -186,7 +178,7 @@ export async function sendWhatsAppNotification(
   if (meta) console.log(`Context:`, meta);
   console.log(`======================================================================\n`);
 
-  let status: 'sent' | 'delivered' | 'failed' = 'delivered';
+  let status: 'sent' | 'delivered' | 'failed' = 'sent';
   let deliveryError: string | undefined = undefined;
 
   // If a WhatsApp Gateway webhook or URL is configured
@@ -200,14 +192,23 @@ export async function sendWhatsAppNotification(
       let body: any = {};
 
       if (gatewayUrl.includes('api.fonnte.com') || provider === 'fonnte') {
-        if (apiToken) headers['Authorization'] = apiToken;
+        if (apiToken) headers['Authorization'] = apiToken.trim();
         body = { target: cleanPhone, message: text };
       } else if (gatewayUrl.includes('wablas.com') || provider === 'wablas') {
-        if (apiToken) headers['Authorization'] = apiToken;
+        if (apiToken) headers['Authorization'] = apiToken.trim();
         body = { phone: cleanPhone, message: text };
+      } else if (gatewayUrl.includes('graph.facebook.com') || provider === 'meta_cloud') {
+        if (apiToken) headers['Authorization'] = apiToken.startsWith('Bearer ') ? apiToken : `Bearer ${apiToken.trim()}`;
+        body = {
+          messaging_product: 'whatsapp',
+          recipient_type: 'individual',
+          to: cleanPhone,
+          type: 'text',
+          text: { preview_url: false, body: text }
+        };
       } else {
-        if (apiToken) headers['Authorization'] = apiToken.startsWith('Bearer ') ? apiToken : `Bearer ${apiToken}`;
-        body = { phone: cleanPhone, text, ...meta };
+        if (apiToken) headers['Authorization'] = apiToken.startsWith('Bearer ') ? apiToken : `Bearer ${apiToken.trim()}`;
+        body = { phone: cleanPhone, target: cleanPhone, to: cleanPhone, message: text, text, ...meta };
       }
 
       const res = await fetch(gatewayUrl, {
@@ -216,16 +217,39 @@ export async function sendWhatsAppNotification(
         body: JSON.stringify(body)
       });
 
+      const resText = await res.text();
+      let resJson: any = null;
+      try {
+        resJson = JSON.parse(resText);
+      } catch {
+        // Not JSON
+      }
+
       if (!res.ok) {
         status = 'failed';
-        deliveryError = `Gateway returned HTTP ${res.status}: ${res.statusText}`;
-        console.warn(`[QueueManager] Gateway dispatch warning (${res.status}):`, res.statusText);
+        const errorDetail = resJson?.message || resJson?.reason || resJson?.error?.message || resText.slice(0, 150);
+        deliveryError = `Gateway returned HTTP ${res.status}: ${errorDetail}`;
+        console.warn(`[QueueManager] Gateway dispatch error (${res.status}):`, deliveryError);
+      } else if (resJson) {
+        // Providers like Fonnte return HTTP 200 with { status: false, reason: "device disconnect" }
+        if (resJson.status === false || resJson.success === false) {
+          status = 'failed';
+          deliveryError = resJson.reason || resJson.message || resJson.error || 'Gateway rejected message dispatch';
+          console.warn('[QueueManager] Gateway returned rejection:', deliveryError);
+        } else {
+          status = 'delivered';
+        }
+      } else {
+        status = 'delivered';
       }
     } catch (e: any) {
       status = 'failed';
       deliveryError = e?.message || String(e);
       console.warn('[QueueManager] Gateway dispatch exception:', deliveryError);
     }
+  } else {
+    // Direct WhatsApp mode: Recorded as sent / available for 1-tap wa.me link
+    status = 'sent';
   }
 
   // Record into audit log

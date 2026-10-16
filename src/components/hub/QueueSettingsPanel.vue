@@ -335,8 +335,8 @@
                 @click="openLinkModal"
                 class="h-[42px] px-5 rounded-[12px] bg-black text-white text-[13px] font-medium hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
               >
-                <QrCode class="w-4 h-4" />
-                <span>Link WhatsApp Device</span>
+                <MessageSquare class="w-4 h-4" />
+                <span>Connect WhatsApp</span>
               </button>
             </template>
           </div>
@@ -513,11 +513,11 @@
         <div class="p-6 sm:p-7 border-b border-black/10 flex items-center justify-between bg-neutral-50/50">
           <div class="flex items-center gap-3.5">
             <div class="size-10 rounded-[12px] bg-emerald-600 text-white flex items-center justify-center shadow-2xs">
-              <QrCode class="w-5 h-5" />
+              <MessageSquare class="w-5 h-5" />
             </div>
             <div>
-              <h3 class="text-[17px] font-medium text-black">Link WhatsApp Device</h3>
-              <p class="text-[12.5px] text-neutral-500 mt-0.5">Connect your business number to dispatch automated notifications.</p>
+              <h3 class="text-[17px] font-medium text-black">Configure WhatsApp Notifications</h3>
+              <p class="text-[12.5px] text-neutral-500 mt-0.5">Connect your business number for reliable visitor alerts &amp; queue tracking.</p>
             </div>
           </div>
           <button
@@ -538,7 +538,7 @@
             :class="linkTab === 'direct' ? 'border-black text-black' : 'border-transparent text-neutral-400 hover:text-neutral-700'"
           >
             <Smartphone class="w-3.5 h-3.5" />
-            <span>Direct Number</span>
+            <span>Direct WhatsApp (1-Tap Web/App)</span>
           </button>
           <button
             type="button"
@@ -547,35 +547,26 @@
             :class="linkTab === 'gateway' ? 'border-black text-black' : 'border-transparent text-neutral-400 hover:text-neutral-700'"
           >
             <Link2 class="w-3.5 h-3.5" />
-            <span>Cloud Gateway (Fonnte/Wablas)</span>
-          </button>
-          <button
-            type="button"
-            @click="linkTab = 'qr'"
-            class="pb-3 px-3.5 text-[13px] font-medium border-b-2 transition-colors cursor-pointer flex items-center gap-2"
-            :class="linkTab === 'qr' ? 'border-black text-black' : 'border-transparent text-neutral-400 hover:text-neutral-700'"
-          >
-            <QrCode class="w-3.5 h-3.5" />
-            <span>QR Device Session</span>
+            <span>Cloud Gateway (Fonnte / Wablas)</span>
           </button>
         </div>
 
         <!-- Body -->
         <div class="p-6 sm:p-8 flex flex-col gap-6 overflow-y-auto max-h-[70vh]">
-          <!-- TAB 1: DIRECT NUMBER LINKING (Instant, Bulletproof) -->
+          <!-- TAB 1: DIRECT WHATSAPP (100% Reliable Native wa.me) -->
           <div v-if="linkTab === 'direct'" class="flex flex-col gap-5">
             <div class="p-4 rounded-[14px] bg-emerald-500/[0.08] border border-emerald-500/20 flex items-start gap-3">
               <CheckCircle2 class="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
               <div class="text-[12.5px] text-emerald-950 leading-relaxed">
-                <strong>Instant Verified Activation:</strong> Enter your Business WhatsApp phone number.
-                The system automatically normalizes your number format (e.g. converting local <code class="bg-emerald-100 px-1 py-0.5 rounded text-[11.5px]">08...</code> to <code class="bg-emerald-100 px-1 py-0.5 rounded text-[11.5px]">+62 8...</code>) to ensure zero "Wrong number" errors.
+                <strong>Native WhatsApp Connection:</strong> Enter your Business WhatsApp phone number.
+                No paid gateway or fragile QR pairing required — messages and test notifications launch directly in WhatsApp Web or the WhatsApp mobile app.
               </div>
             </div>
 
             <!-- Phone Number Input -->
             <div class="flex flex-col gap-1.5">
               <label for="link-phone" class="text-[12px] font-medium text-black flex items-center justify-between">
-                <span>Business WhatsApp Phone Number</span>
+                <span>Sender WhatsApp Phone Number</span>
                 <span class="text-[11px] text-neutral-400 font-normal">Supports 08... or +62... format</span>
               </label>
               <input
@@ -588,18 +579,29 @@
               />
 
               <!-- Live Validation Feedback -->
-              <div class="min-h-[20px] flex items-center text-[12px]">
+              <div class="min-h-[20px] flex items-center justify-between text-[12px]">
                 <span v-if="isLinkPhoneValid" class="text-emerald-700 font-medium flex items-center gap-1.5 animate-in fade-in">
                   <Check class="w-3.5 h-3.5 text-emerald-600" />
-                  Verified WhatsApp format: <strong>{{ displayLinkPhone }}</strong> (E.164: +{{ normalizedLinkPhone }})
+                  Format: <strong>{{ displayLinkPhone }}</strong> (E.164: +{{ normalizedLinkPhone }})
                 </span>
                 <span v-else-if="linkPhone" class="text-amber-700 flex items-center gap-1.5">
                   <AlertCircle class="w-3.5 h-3.5 text-amber-600" />
                   Please enter at least 9 digits (e.g. 081234567890 or +62 812 3456 7890)
                 </span>
                 <span v-else class="text-neutral-400 text-[11.5px]">
-                  WhatsApp notifications and gate dispatch links will be routed from this verified number.
+                  Local Indonesian and international formats are auto-normalized.
                 </span>
+
+                <a
+                  v-if="isLinkPhoneValid"
+                  :href="'https://wa.me/' + normalizedLinkPhone"
+                  target="_blank"
+                  rel="noopener"
+                  class="text-[11.5px] text-emerald-700 hover:text-emerald-800 underline font-mono flex items-center gap-1"
+                >
+                  <ExternalLink class="w-3 h-3" />
+                  <span>Test wa.me link ↗</span>
+                </a>
               </div>
             </div>
 
@@ -613,64 +615,75 @@
                 placeholder="e.g. 707 Gate System or Stanley 1913 Host"
                 class="h-[40px] px-3.5 rounded-[10px] bg-black/[0.02] border border-black/15 text-[13.5px] outline-none focus:border-black focus:bg-white text-black transition-all"
               />
-              <span class="text-[11.5px] text-neutral-400">Displayed on tickets and internal audit logs.</span>
+              <span class="text-[11.5px] text-neutral-400">Displayed on tickets, WhatsApp audit logs, and scanner staff screens.</span>
             </div>
 
             <!-- Features Included -->
             <div class="p-4 rounded-[14px] bg-neutral-50 border border-black/5 flex flex-col gap-2 text-[12px] text-neutral-600">
               <div class="flex items-center gap-2 font-medium text-black text-[12.5px] mb-0.5">
                 <ShieldCheck class="w-4 h-4 text-emerald-600" />
-                <span>What happens after linking:</span>
+                <span>What this enables:</span>
               </div>
               <div class="flex items-start gap-2">
                 <span class="text-emerald-600 font-bold">✓</span>
-                <span>Automated queue notifications (Welcome, Approaching Alert, Turn Ready) are activated immediately.</span>
+                <span>Immediate 1-tap WhatsApp chat dispatch from the Guest Database table and Gate Scanner.</span>
               </div>
               <div class="flex items-start gap-2">
                 <span class="text-emerald-600 font-bold">✓</span>
-                <span>Door Scanner &amp; Guest Database provide 1-tap WhatsApp direct messaging for door staff.</span>
+                <span>Direct "Send Test" launches WhatsApp Web or mobile app instantly with pre-filled test notification copy.</span>
               </div>
               <div class="flex items-start gap-2">
                 <span class="text-emerald-600 font-bold">✓</span>
-                <span>You can test sending a live notification to your phone right after linking.</span>
+                <span>Zero monthly provider subscriptions, zero bot disconnects.</span>
               </div>
             </div>
           </div>
 
-          <!-- TAB 2: CLOUD GATEWAY (Fonnte / Wablas / Mekari Qontact) -->
+          <!-- TAB 2: CLOUD GATEWAY (Automated Server Dispatch via Fonnte / Wablas / Meta) -->
           <div v-else-if="linkTab === 'gateway'" class="flex flex-col gap-5">
             <div class="p-4 rounded-[14px] bg-black/[0.02] border border-black/5 text-[12.5px] text-neutral-600 leading-relaxed">
-              Connect an automated WhatsApp API provider (Fonnte, Wablas, or Mekari Qontact webhook) for 100% background server dispatch without manual taps.
+              Connect a cloud WhatsApp API provider to allow your server to send background notifications automatically when visitors register, approach the queue, or are called.
             </div>
 
             <!-- Provider Presets -->
             <div class="flex flex-col gap-1.5">
               <span class="text-[11.5px] uppercase tracking-[0.08em] text-neutral-500 font-medium">Gateway Provider:</span>
-              <div class="grid grid-cols-3 gap-2">
+              <div class="grid grid-cols-4 gap-2">
                 <button
                   type="button"
                   @click="onGatewayPresetChange('fonnte')"
-                  class="h-[42px] px-3 rounded-[10px] border text-[12.5px] font-medium cursor-pointer transition-all flex items-center justify-center gap-1.5"
+                  class="h-[42px] px-2 rounded-[10px] border text-[12px] font-medium cursor-pointer transition-all flex flex-col items-center justify-center"
                   :class="gatewayPreset === 'fonnte' ? 'bg-black text-white border-black shadow-xs' : 'bg-white border-black/15 text-neutral-700 hover:bg-black/5'"
                 >
                   <span>Fonnte</span>
-                  <span class="text-[10px] opacity-75 font-mono">(ID #1)</span>
+                  <span class="text-[9.5px] opacity-75 font-mono">(ID #1)</span>
                 </button>
                 <button
                   type="button"
                   @click="onGatewayPresetChange('wablas')"
-                  class="h-[42px] px-3 rounded-[10px] border text-[12.5px] font-medium cursor-pointer transition-all flex items-center justify-center gap-1.5"
+                  class="h-[42px] px-2 rounded-[10px] border text-[12px] font-medium cursor-pointer transition-all flex flex-col items-center justify-center"
                   :class="gatewayPreset === 'wablas' ? 'bg-black text-white border-black shadow-xs' : 'bg-white border-black/15 text-neutral-700 hover:bg-black/5'"
                 >
                   <span>Wablas</span>
+                  <span class="text-[9.5px] opacity-75 font-mono">API</span>
+                </button>
+                <button
+                  type="button"
+                  @click="onGatewayPresetChange('meta')"
+                  class="h-[42px] px-2 rounded-[10px] border text-[12px] font-medium cursor-pointer transition-all flex flex-col items-center justify-center"
+                  :class="gatewayPreset === 'meta' ? 'bg-black text-white border-black shadow-xs' : 'bg-white border-black/15 text-neutral-700 hover:bg-black/5'"
+                >
+                  <span>Meta</span>
+                  <span class="text-[9.5px] opacity-75 font-mono">Cloud API</span>
                 </button>
                 <button
                   type="button"
                   @click="onGatewayPresetChange('custom')"
-                  class="h-[42px] px-3 rounded-[10px] border text-[12.5px] font-medium cursor-pointer transition-all flex items-center justify-center gap-1.5"
+                  class="h-[42px] px-2 rounded-[10px] border text-[12px] font-medium cursor-pointer transition-all flex flex-col items-center justify-center"
                   :class="gatewayPreset === 'custom' ? 'bg-black text-white border-black shadow-xs' : 'bg-white border-black/15 text-neutral-700 hover:bg-black/5'"
                 >
-                  <span>Qontact / Webhook</span>
+                  <span>Webhook</span>
+                  <span class="text-[9.5px] opacity-75 font-mono">Custom</span>
                 </button>
               </div>
             </div>
@@ -692,7 +705,7 @@
 
             <!-- Dispatch Webhook URL -->
             <div class="flex flex-col gap-1">
-              <label for="gateway-url" class="text-[12px] font-medium text-black">Gateway Dispatch URL</label>
+              <label for="gateway-url" class="text-[12px] font-medium text-black">Gateway API Endpoint URL</label>
               <input
                 id="gateway-url"
                 v-model="linkGatewayUrl"
@@ -704,9 +717,20 @@
 
             <!-- API Token -->
             <div class="flex flex-col gap-1">
-              <label for="gateway-token" class="text-[12px] font-medium text-black">
-                {{ gatewayPreset === 'fonnte' ? 'Fonnte Device Token' : (gatewayPreset === 'wablas' ? 'Wablas API Key' : 'API Token / Bearer Token') }}
-              </label>
+              <div class="flex items-center justify-between">
+                <label for="gateway-token" class="text-[12px] font-medium text-black">
+                  {{ gatewayPreset === 'fonnte' ? 'Fonnte Device Token' : (gatewayPreset === 'wablas' ? 'Wablas API Key' : (gatewayPreset === 'meta' ? 'System User Token' : 'API Token / Bearer Token')) }}
+                </label>
+                <a
+                  v-if="gatewayPreset === 'fonnte'"
+                  href="https://fonnte.com"
+                  target="_blank"
+                  rel="noopener"
+                  class="text-[11px] text-emerald-700 hover:underline font-mono"
+                >
+                  Get token at fonnte.com ↗
+                </a>
+              </div>
               <input
                 id="gateway-token"
                 v-model="linkApiToken"
@@ -714,64 +738,15 @@
                 placeholder="Paste API token from gateway dashboard"
                 class="h-[40px] px-3.5 rounded-[10px] bg-black/[0.02] border border-black/15 text-[13.5px] outline-none focus:border-black focus:bg-white text-black font-mono transition-all"
               />
-              <span class="text-[11px] text-neutral-400">Tokens are encrypted and dispatched strictly from server to provider.</span>
-            </div>
-          </div>
-
-          <!-- TAB 3: QR CODE SESSION -->
-          <div v-else-if="linkTab === 'qr'" class="flex flex-col items-center gap-5">
-            <div class="p-4 rounded-[14px] bg-neutral-50 border border-black/10 text-[12.5px] text-neutral-600 leading-relaxed text-center max-w-[480px]">
-              If you host a WhatsApp Web bridge or Baileys instance, scan the QR code to create an active WebSocket device session.
-            </div>
-
-            <div class="p-6 rounded-[20px] bg-white border border-black/15 shadow-sm flex flex-col items-center relative">
-              <div v-if="isGeneratingSession" class="size-[200px] flex flex-col items-center justify-center gap-2 text-neutral-400">
-                <RefreshCw class="w-6 h-6 animate-spin text-emerald-600" />
-                <span class="text-[12px]">Generating session…</span>
-              </div>
-              <img
-                v-else-if="qrDataUrl"
-                :src="qrDataUrl"
-                alt="WhatsApp QR Code"
-                class="size-[200px] object-contain rounded-[8px]"
-              />
-              <div v-else class="size-[200px] flex items-center justify-center text-neutral-400 text-[12px]">
-                Failed to generate QR
-              </div>
-
-              <div class="mt-3 flex items-center gap-1.5 text-[11.5px] text-neutral-400">
-                <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Live 707 Gateway Handshake</span>
-              </div>
-            </div>
-
-            <div class="w-full flex flex-col gap-2">
-              <label for="link-qr-phone" class="text-[12px] font-medium text-black">Sender WhatsApp Phone Number</label>
-              <input
-                id="link-qr-phone"
-                v-model="linkPhone"
-                type="text"
-                placeholder="e.g. +62 812 7070 8888 or 081234567890"
-                class="h-[40px] px-3.5 rounded-[10px] bg-black/[0.02] border border-black/15 text-[13.5px] outline-none focus:border-black focus:bg-white text-black font-mono transition-all"
-              />
+              <span class="text-[11px] text-neutral-400">Tokens are stored securely and dispatched strictly from server to provider.</span>
             </div>
           </div>
         </div>
 
         <!-- Footer -->
         <div class="p-4 border-t border-black/10 bg-neutral-50 flex items-center justify-between">
-          <button
-            v-if="linkTab === 'qr'"
-            type="button"
-            @click="refreshQrCode"
-            :disabled="isGeneratingSession"
-            class="h-[38px] px-3.5 rounded-[10px] border border-black/15 bg-white text-[12.5px] font-medium hover:bg-black/5 disabled:opacity-40 transition-colors cursor-pointer flex items-center gap-1.5"
-          >
-            <RefreshCw class="w-3.5 h-3.5" :class="isGeneratingSession ? 'animate-spin' : ''" />
-            <span>Regenerate QR</span>
-          </button>
-          <div v-else class="text-[12px] text-neutral-500">
-            {{ isLinkPhoneValid ? `Ready: ${displayLinkPhone}` : 'Enter phone to proceed' }}
+          <div class="text-[12px] text-neutral-500">
+            {{ isLinkPhoneValid ? `Ready: ${displayLinkPhone}` : 'Enter sender number to proceed' }}
           </div>
 
           <button
@@ -781,7 +756,7 @@
             class="apple-cta-btn h-[40px] px-6 rounded-[10px] bg-black text-white text-[13px] font-medium hover:bg-neutral-800 disabled:opacity-40 transition-all flex items-center gap-2 cursor-pointer shadow-sm"
           >
             <Check class="w-4 h-4" />
-            <span>{{ isLinking ? 'Activating…' : (linkTab === 'gateway' ? 'Connect Gateway' : 'Activate & Link WhatsApp') }}</span>
+            <span>{{ isLinking ? 'Activating…' : (linkTab === 'gateway' ? 'Save Gateway Configuration' : 'Save & Activate WhatsApp') }}</span>
           </button>
         </div>
       </div>
@@ -793,15 +768,15 @@
       class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
       @click.self="showTestModal = false"
     >
-      <div class="w-full max-w-[480px] bg-white rounded-[20px] shadow-2xl border border-black/10 overflow-hidden flex flex-col font-707">
+      <div class="w-full max-w-[500px] bg-white rounded-[22px] shadow-2xl border border-black/10 overflow-hidden flex flex-col font-707">
         <div class="p-5 border-b border-black/10 flex items-center justify-between bg-neutral-50/50">
           <div class="flex items-center gap-3">
             <div class="size-9 rounded-[10px] bg-emerald-600 text-white flex items-center justify-center shadow-2xs">
               <Send class="w-4 h-4" />
             </div>
             <div>
-              <h3 class="text-[16px] font-medium text-black">Send Test WhatsApp</h3>
-              <p class="text-[12px] text-neutral-500">Test live outbound delivery from your linked number.</p>
+              <h3 class="text-[16px] font-medium text-black">Test WhatsApp Notification</h3>
+              <p class="text-[12px] text-neutral-500">Dispatch live test to verify recipient delivery.</p>
             </div>
           </div>
           <button
@@ -814,17 +789,22 @@
         </div>
 
         <div class="p-6 flex flex-col gap-4">
+          <!-- Recipient Phone Input -->
           <div class="flex flex-col gap-1">
-            <label for="test-phone-input" class="text-[12px] font-medium text-black">Recipient Phone Number</label>
+            <label for="test-phone-input" class="text-[12px] font-medium text-black flex items-center justify-between">
+              <span>Recipient Phone Number</span>
+              <span v-if="testPhoneNormalized" class="text-[11px] text-emerald-700 font-mono">+{{ testPhoneNormalized }}</span>
+            </label>
             <input
               id="test-phone-input"
               v-model="testPhone"
               type="text"
-              placeholder="e.g. +62 812 3456 7890"
+              placeholder="e.g. +62 812 3456 7890 or 081234567890"
               class="h-[40px] px-3.5 rounded-[10px] bg-black/[0.02] border border-black/15 text-[13.5px] outline-none focus:border-black focus:bg-white text-black font-mono transition-all"
             />
           </div>
 
+          <!-- Stage Template Selector -->
           <div class="flex flex-col gap-1">
             <label for="test-stage-select" class="text-[12px] font-medium text-black">Test Stage Template</label>
             <select
@@ -840,34 +820,64 @@
             </select>
           </div>
 
+          <!-- Live Preview Box -->
           <div class="flex flex-col gap-1">
-            <label for="test-preview-box" class="text-[12px] font-medium text-black">Rendered Preview</label>
+            <label for="test-preview-box" class="text-[12px] font-medium text-black">Live Preview</label>
             <textarea
               id="test-preview-box"
               v-model="testPreviewMessage"
               rows="4"
-              class="w-full p-3 rounded-[10px] bg-black/[0.02] border border-black/15 text-[12.5px] leading-relaxed font-mono outline-none text-neutral-700"
+              class="w-full p-3 rounded-[10px] bg-black/[0.02] border border-black/15 text-[12.5px] leading-relaxed font-mono outline-none text-neutral-800"
             />
+          </div>
+
+          <!-- Status / Active Mode Notice -->
+          <div class="p-3 rounded-[10px] bg-black/[0.02] border border-black/5 flex items-start gap-2.5 text-[12px] text-neutral-600">
+            <MessageSquare class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+            <div class="leading-relaxed">
+              <span v-if="form.waConnection?.gatewayUrl">
+                <strong>Cloud Gateway Configured:</strong> Using {{ formatProvider(form.waConnection?.provider) }}. You can send via server or open WhatsApp directly.
+              </span>
+              <span v-else>
+                <strong>Direct Mode Active:</strong> Clicking "Open in WhatsApp" will immediately launch WhatsApp Web or the WhatsApp mobile app with this exact message pre-filled.
+              </span>
+            </div>
           </div>
         </div>
 
-        <div class="p-4 border-t border-black/10 bg-neutral-50 flex items-center justify-end gap-2.5">
+        <div class="p-4 border-t border-black/10 bg-neutral-50 flex items-center justify-between gap-2.5">
           <button
             type="button"
             @click="showTestModal = false"
-            class="h-[38px] px-4 rounded-[10px] border border-black/15 bg-white text-[12.5px] font-medium hover:bg-black/5 transition-colors cursor-pointer"
+            class="h-[38px] px-3.5 rounded-[10px] border border-black/15 bg-white text-[12.5px] font-medium hover:bg-black/5 transition-colors cursor-pointer"
           >
             Cancel
           </button>
-          <button
-            type="button"
-            @click="handleSendTestMessage"
-            :disabled="isSendingTest"
-            class="apple-cta-btn h-[38px] px-5 rounded-[10px] bg-black text-white text-[12.5px] font-medium hover:bg-neutral-800 disabled:opacity-40 transition-all flex items-center gap-2 cursor-pointer shadow-sm"
-          >
-            <Send class="w-3.5 h-3.5" />
-            <span>{{ isSendingTest ? 'Sending…' : 'Send Test Notification' }}</span>
-          </button>
+
+          <div class="flex items-center gap-2">
+            <!-- 1. Direct WhatsApp Button (Opens wa.me instantly) -->
+            <button
+              type="button"
+              @click="handleDirectWhatsAppOpen"
+              class="h-[38px] px-4 rounded-[10px] bg-emerald-600 hover:bg-emerald-700 text-white text-[12.5px] font-medium transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+              title="Launch WhatsApp Web or mobile app with this test message"
+            >
+              <ExternalLink class="w-3.5 h-3.5" />
+              <span>Open in WhatsApp</span>
+            </button>
+
+            <!-- 2. Gateway / Server Dispatch Button -->
+            <button
+              type="button"
+              @click="handleSendTestMessage"
+              :disabled="isSendingTest"
+              class="apple-cta-btn h-[38px] px-4 rounded-[10px] bg-black text-white text-[12.5px] font-medium hover:bg-neutral-800 disabled:opacity-40 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+              :title="form.waConnection?.gatewayUrl ? 'Dispatch test message via background Cloud Gateway' : 'Test message dispatch'"
+            >
+              <Send class="w-3.5 h-3.5" />
+              <span>{{ isSendingTest ? 'Sending…' : (form.waConnection?.gatewayUrl ? 'Send via Gateway' : 'Send Test') }}</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -986,9 +996,9 @@ import {
   ScanLine,
   X,
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  ExternalLink
 } from 'lucide-vue-next';
-import QRCode from 'qrcode';
 import { glassConfirm, glassPrompt } from '../../services/glassDialog.ts';
 import {
   fetchQueueSettings,
@@ -1036,15 +1046,12 @@ const activeStageId = ref<StageId>('approaching');
 
 // WhatsApp Device Linking & Testing State
 const showLinkModal = ref(false);
-const linkTab = ref<'direct' | 'gateway' | 'qr'>('direct');
-const gatewayPreset = ref<'fonnte' | 'wablas' | 'custom'>('fonnte');
+const linkTab = ref<'direct' | 'gateway'>('direct');
+const gatewayPreset = ref<'fonnte' | 'wablas' | 'meta' | 'custom'>('fonnte');
 const linkPhone = ref('');
 const linkSessionName = ref('707 Studio Primary WhatsApp');
 const linkGatewayUrl = ref('https://api.fonnte.com/send');
 const linkApiToken = ref('');
-const qrDataUrl = ref('');
-const pairingCode = ref('');
-const isGeneratingSession = ref(false);
 const isLinking = ref(false);
 
 const normalizedLinkPhone = computed(() => normalizeWhatsAppNumber(linkPhone.value));
@@ -1054,12 +1061,14 @@ const isLinkPhoneValid = computed(() => {
   return norm.length >= 9 && norm.length <= 15;
 });
 
-function onGatewayPresetChange(preset: 'fonnte' | 'wablas' | 'custom') {
+function onGatewayPresetChange(preset: 'fonnte' | 'wablas' | 'meta' | 'custom') {
   gatewayPreset.value = preset;
   if (preset === 'fonnte') {
     linkGatewayUrl.value = 'https://api.fonnte.com/send';
   } else if (preset === 'wablas') {
     linkGatewayUrl.value = 'https://pati.wablas.com/api/send-message';
+  } else if (preset === 'meta') {
+    linkGatewayUrl.value = 'https://graph.facebook.com/v20.0/YOUR_PHONE_NUMBER_ID/messages';
   } else {
     linkGatewayUrl.value = '';
   }
@@ -1070,6 +1079,7 @@ const testPhone = ref('');
 const testStage = ref<string>('welcome');
 const testCustomMessage = ref('');
 const isSendingTest = ref(false);
+const testPhoneNormalized = computed(() => normalizeWhatsAppNumber(testPhone.value));
 
 const showLogsModal = ref(false);
 const waLogs = ref<WhatsAppLogEntry[]>([]);
@@ -1413,37 +1423,6 @@ async function openLinkModal() {
   linkApiToken.value = form.waConnection?.apiToken || '';
   linkTab.value = form.waConnection?.gatewayUrl ? 'gateway' : 'direct';
   showLinkModal.value = true;
-  await refreshQrCode();
-}
-
-async function refreshQrCode() {
-  if (!props.pageId) return;
-  isGeneratingSession.value = true;
-  try {
-    const session = await fetchWaLinkSession(props.pageId, linkPhone.value);
-    if (session) {
-      pairingCode.value = session.pairingCode;
-      qrDataUrl.value = await QRCode.toDataURL(session.qrString, {
-        margin: 1,
-        width: 220,
-        color: { dark: '#000000', light: '#ffffff' }
-      });
-    }
-  } catch (err: any) {
-    console.error('Failed to generate WhatsApp linking session:', err);
-  } finally {
-    isGeneratingSession.value = false;
-  }
-}
-
-async function copyPairingCode() {
-  if (!pairingCode.value) return;
-  try {
-    await navigator.clipboard.writeText(pairingCode.value);
-    emit('toast', 'Pairing code copied to clipboard!');
-  } catch {
-    emit('toast', `Pairing code: ${pairingCode.value}`);
-  }
 }
 
 async function handleConfirmLink() {
@@ -1455,19 +1434,17 @@ async function handleConfirmLink() {
   }
   isLinking.value = true;
   try {
-    let provider: 'direct_sender' | 'fonnte' | 'wablas' | 'custom_gateway' | 'linked_device' = 'direct_sender';
+    let provider: 'direct_sender' | 'fonnte' | 'wablas' | 'meta_cloud' | 'custom_gateway' = 'direct_sender';
     if (linkTab.value === 'gateway') {
-      provider = gatewayPreset.value === 'fonnte' ? 'fonnte' : (gatewayPreset.value === 'wablas' ? 'wablas' : 'custom_gateway');
-    } else if (linkTab.value === 'qr') {
-      provider = 'linked_device';
+      provider = gatewayPreset.value === 'fonnte' ? 'fonnte' : (gatewayPreset.value === 'wablas' ? 'wablas' : (gatewayPreset.value === 'meta' ? 'meta_cloud' : 'custom_gateway'));
     }
 
     const res = await confirmWaLinkApi(props.pageId, {
       phoneNumber: clean || linkPhone.value.trim(),
       sessionName: linkSessionName.value.trim() || '707 Studio Primary WhatsApp',
       provider,
-      gatewayUrl: linkGatewayUrl.value.trim() || undefined,
-      apiToken: linkApiToken.value.trim() || undefined
+      gatewayUrl: linkTab.value === 'gateway' ? (linkGatewayUrl.value.trim() || undefined) : undefined,
+      apiToken: linkTab.value === 'gateway' ? (linkApiToken.value.trim() || undefined) : undefined
     });
 
     if (res) {
@@ -1475,7 +1452,7 @@ async function handleConfirmLink() {
       form.waEnabled = true;
       showLinkModal.value = false;
       const display = res.formattedNumber || formatWhatsAppDisplay(res.phoneNumber || '') || res.phoneNumber;
-      emit('toast', `WhatsApp Business (${display}) linked & active! Automated notifications enabled.`);
+      emit('toast', `WhatsApp (${display}) connected & ready! Automated notifications active.`);
     }
   } catch (err: any) {
     emit('toast', err?.message || 'Failed to confirm WhatsApp device link');
@@ -1515,9 +1492,22 @@ function openTestModal() {
   showTestModal.value = true;
 }
 
+function handleDirectWhatsAppOpen() {
+  const raw = testPhone.value.trim() || form.waConnection?.phoneNumber || '';
+  const clean = normalizeWhatsAppNumber(raw);
+  if (!clean || clean.length < 9) {
+    emit('toast', 'Please enter a valid recipient phone number (min 9 digits, e.g. 0812... or +62...).');
+    return;
+  }
+  const text = encodeURIComponent(testPreviewMessage.value);
+  const waUrl = `https://wa.me/${clean}?text=${text}`;
+  window.open(waUrl, '_blank', 'noopener,noreferrer');
+  emit('toast', `Opening WhatsApp for +${clean}…`);
+}
+
 async function handleSendTestMessage() {
   if (!props.pageId) return;
-  const raw = testPhone.value.trim();
+  const raw = testPhone.value.trim() || form.waConnection?.phoneNumber || '';
   const clean = normalizeWhatsAppNumber(raw);
   if (!clean || clean.length < 9) {
     emit('toast', 'Please enter a valid recipient phone number (min 9 digits, e.g. 0812... or +62...).');
@@ -1525,12 +1515,17 @@ async function handleSendTestMessage() {
   }
   isSendingTest.value = true;
   try {
-    const ok = await sendWaTestMessageApi(props.pageId, clean, testPreviewMessage.value);
-    if (ok) {
+    const res = await sendWaTestMessageApi(props.pageId, clean, testPreviewMessage.value);
+    if (res?.success) {
+      if (res.mode === 'direct' && res.waUrl) {
+        window.open(res.waUrl, '_blank', 'noopener,noreferrer');
+        emit('toast', `Direct WhatsApp opened for ${formatWhatsAppDisplay(clean)}! Tap send in WhatsApp.`);
+      } else {
+        emit('toast', res.message || `Test notification dispatched via Gateway to ${formatWhatsAppDisplay(clean)}!`);
+      }
       showTestModal.value = false;
-      emit('toast', `Test WhatsApp notification sent to ${formatWhatsAppDisplay(clean)}!`);
     } else {
-      emit('toast', 'Could not dispatch test notification. Check recipient format or gateway logs.');
+      emit('toast', res?.error || 'Could not dispatch test notification. Check recipient format or gateway logs.');
     }
   } catch (err: any) {
     emit('toast', err?.message || 'Failed to send test WhatsApp message');
@@ -1577,12 +1572,11 @@ function formatLogTime(iso?: string): string {
 }
 
 function formatProvider(provider?: string): string {
-  if (provider === 'fonnte') return 'Fonnte WhatsApp Gateway';
+  if (provider === 'fonnte') return 'Fonnte Cloud Gateway';
   if (provider === 'wablas') return 'Wablas WhatsApp API';
+  if (provider === 'meta_cloud') return 'Meta WhatsApp Cloud API';
   if (provider === 'custom_gateway') return 'Custom Webhook Gateway';
-  if (provider === 'direct_sender') return 'Direct Verified Sender';
-  if (provider === 'pairing_code') return 'WhatsApp Pairing Code';
-  return 'Direct Verified Sender';
+  return 'Direct WhatsApp (1-Tap Web/App)';
 }
 
 async function stepCaller(delta: number) {

@@ -441,13 +441,22 @@ export async function unlinkWaApi(pageId: string): Promise<boolean> {
   return Boolean(json?.success);
 }
 
-export async function sendWaTestMessageApi(pageId: string, phone: string, text?: string): Promise<boolean> {
-  const json = await apiJson<{ success: boolean }>('/api/submissions/wa-test-message', {
+export interface WaTestResult {
+  success: boolean;
+  mode?: 'gateway' | 'direct';
+  waUrl?: string;
+  formattedPhone?: string;
+  message?: string;
+  error?: string;
+}
+
+export async function sendWaTestMessageApi(pageId: string, phone: string, text?: string): Promise<WaTestResult> {
+  const json = await apiJson<WaTestResult>('/api/submissions/wa-test-message', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ page_id: pageId, phone, text })
   });
-  return Boolean(json?.success);
+  return json;
 }
 
 export async function fetchWaLogs(pageId: string): Promise<WhatsAppLogEntry[]> {

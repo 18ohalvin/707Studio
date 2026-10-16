@@ -11,14 +11,11 @@ import {
 } from '../../server/src/queueHelpers.ts';
 
 describe('WhatsApp Multi-Device Linking & Notifications', () => {
-  it('generates a valid QR payload and pairing code for instant connection', () => {
+  it('generates a valid direct link and formatted phone payload for instant connection', () => {
     const session = generateWaLinkPayload('page-123', '+6281234567890');
-    expect(session.qrString).toContain('2@707Studio,page-123');
-    expect(session.pairingCode).toMatch(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/);
     expect(session.cleanPhone).toBe('6281234567890');
     expect(session.formattedDisplay).toBe('+62 812-3456-7890');
     expect(session.directLink).toBe('https://wa.me/6281234567890');
-    expect(session.expiresInSeconds).toBe(180);
     expect(session.generatedAt).toBeDefined();
   });
 
@@ -73,7 +70,7 @@ describe('WhatsApp Multi-Device Linking & Notifications', () => {
     expect(latest.phone).toBe('6281270701234');
     expect(latest.text).toBe(testMessage);
     expect(latest.event).toBe('welcome');
-    expect(latest.status).toBe('delivered');
+    expect(['sent', 'delivered']).toContain(latest.status);
   });
 
   it('has proper default queue settings with waConnection structure', () => {
@@ -102,5 +99,25 @@ describe('WhatsApp Multi-Device Linking & Notifications', () => {
     expect(rendered).toContain('Maya Lin');
     expect(rendered).toContain('#14');
     expect(rendered).toContain('https://707.studio/nike/air-max-day?code=STAN-8842');
+  });
+
+  it('correctly constructs direct wa.me links with url-encoded message text', () => {
+    const phone = '0812 7070 8888';
+    const clean = normalizeWhatsAppNumber(phone);
+    const message = 'Hello John Doe! Your Queue Number is #25.';
+    const waUrl = `https://wa.me/${clean}?text=${encodeURIComponent(message)}`;
+
+    expect(waUrl).toBe('https://wa.me/6281270708888?text=Hello%20John%20Doe!%20Your%20Queue%20Number%20is%20%2325.');
+  });
+
+  it('rejects invalid recipient numbers and records failed status in logs', async () => {
+    const invalidPhone = '123'; // too short
+    const ok = await sendWhatsAppNotification(invalidPhone, 'Test alert', { pageId: 'test-camp-invalid' });
+    expect(ok).toBe(false);
+
+    const logs = getWaLogs('test-camp-invalid');
+    expect(logs.length).toBeGreaterThan(0);
+    expect(logs[0].status).toBe('failed');
+    expect(logs[0].error).toContain('Invalid phone number format');
   });
 });

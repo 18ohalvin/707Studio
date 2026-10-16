@@ -1026,7 +1026,7 @@ submissionsRouter.post('/call-batch', requireAuth, route('call batch of waiting 
   return res.json({ success: true, data: result });
 }));
 
-// GET /api/submissions/wa-link-session - Generate live QR & pairing code for WhatsApp link
+// GET /api/submissions/wa-link-session - Direct WhatsApp link payload and clean number info
 submissionsRouter.get('/wa-link-session', requireAuth, route('generate WA link session', async (req, res) => {
   const pageId = String(req.query.page_id || '');
   const phone = String(req.query.phone || '');
@@ -1054,13 +1054,12 @@ submissionsRouter.post('/wa-confirm-link', requireAuth, route('confirm WA device
     phoneNumber: cleanPhone,
     formattedNumber: formatted,
     sessionName: sessionName || '707 Studio Primary WhatsApp',
-    provider: provider || 'direct_sender',
-    gatewayUrl: gatewayUrl || undefined,
-    apiToken: apiToken || undefined,
+    provider: provider || (gatewayUrl ? 'fonnte' : 'direct_sender'),
+    gatewayUrl: gatewayUrl ? String(gatewayUrl).trim() : undefined,
+    apiToken: apiToken ? String(apiToken).trim() : undefined,
     linkedAt: new Date().toISOString(),
     deviceInfo: {
-      platform: 'WhatsApp Multi-Device (Web)',
-      battery: 98,
+      platform: gatewayUrl ? 'Cloud Gateway API' : 'Direct WhatsApp (Web / App)',
       pushName: sessionName || '707 Activation Hub'
     }
   };
@@ -1078,7 +1077,7 @@ submissionsRouter.post('/wa-unlink', requireAuth, route('unlink WA device', asyn
     connected: false,
     phoneNumber: '',
     sessionName: '',
-    provider: 'linked_device' as const
+    provider: 'direct_sender' as const
   };
 
   const saved = await saveQueueSettings(page_id, { waConnection });
@@ -1088,7 +1087,7 @@ submissionsRouter.post('/wa-unlink', requireAuth, route('unlink WA device', asyn
 // POST /api/submissions/wa-test-message - Dispatch immediate test message to phone
 submissionsRouter.post('/wa-test-message', requireAuth, route('dispatch WA test message', async (req, res) => {
   const { page_id, phone, text } = req.body || {};
-  if (!phone) return res.status(400).json({ success: false, error: 'phone number is required' });
+  if (!phone) return res.status(400).json({ success: false, error: 'Recipient phone number is required' });
 
   const cleanPhone = normalizeWhatsAppNumber(phone);
   if (!cleanPhone || cleanPhone.length < 9) {
@@ -1101,19 +1100,56 @@ submissionsRouter.post('/wa-test-message', requireAuth, route('dispatch WA test 
   const settings = page_id ? await getQueueSettings(page_id) : null;
   const messageText = text || `[707 Studio Test] Automated WhatsApp notifications are live and connected. Queue system is fully operational!`;
   
-  const dispatched = await sendWhatsAppNotification(cleanPhone, messageText, {
-    pageId: page_id,
-    event: 'test_dispatch',
-    gatewayUrl: settings?.waConnection?.gatewayUrl,
-    apiToken: settings?.waConnection?.apiToken,
-    provider: settings?.waConnection?.provider
-  });
+  const gatewayUrl = settings?.waConnection?.gatewayUrl;
+  const apiToken = settings?.waConnection?.apiToken;
+  const provider = settings?.waConnection?.provider;
 
-  return res.json({
-    success: dispatched,
-    formattedPhone: formatWhatsAppDisplay(cleanPhone),
-    message: dispatched ? `Test message dispatched successfully to +${cleanPhone}` : 'Failed to send test message'
-  });
+  const directWaUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(messageText)}`;
+
+  if (gatewayUrl) {
+    const dispatched = await sendWhatsAppNotification(cleanPhone, messageText, {
+      pageId: page_id,
+      event: 'test_dispatch',
+      gatewayUrl,
+      apiToken,
+      provider
+    });
+
+    const recent = getWaLogs(page_id);
+    const lastLog = recent[0];
+
+    if (!dispatched || lastLog?.status === 'failed') {
+      return res.status(400).json({
+        success: false,
+        mode: 'gateway',
+        error: lastLog?.error || 'Gateway failed to deliver message. Please check your Gateway URL, Device Token, or device pairing status.',
+        waUrl: directWaUrl
+      });
+    }
+
+    return res.json({
+      success: true,
+      mode: 'gateway',
+      formattedPhone: formatWhatsAppDisplay(cleanPhone),
+      message: `Test notification successfully delivered via ${provider || 'Cloud Gateway'} to +${cleanPhone}!`,
+      waUrl: directWaUrl
+    });
+  } else {
+    // Direct WhatsApp mode: Record log and provide ready wa.me url
+    await sendWhatsAppNotification(cleanPhone, messageText, {
+      pageId: page_id,
+      event: 'test_dispatch',
+      provider: 'direct_sender'
+    });
+
+    return res.json({
+      success: true,
+      mode: 'direct',
+      formattedPhone: formatWhatsAppDisplay(cleanPhone),
+      message: `Direct WhatsApp message generated for +${cleanPhone}!`,
+      waUrl: directWaUrl
+    });
+  }
 }));
 
 // GET /api/submissions/wa-logs - Retrieve live outgoing WhatsApp audit log
