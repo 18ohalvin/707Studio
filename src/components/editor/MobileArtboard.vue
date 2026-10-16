@@ -2126,6 +2126,7 @@ import { LIVE_PASS_KEY, SESSIONS_ANSWER_KEY, type PassSession } from './livePass
 import { normalizeCtaAction } from './ctaActions.ts';
 import { responsiveImgAttrs, placeholderStyle, sizedUrl } from '../../services/responsiveImage.ts';
 import { TICKET_CONTEXT_KEY, TICKET_SOURCE_KEY, TICKET_CANVAS, ticketFieldMeta, type TicketFieldKey } from './ticket/ticketFields.ts';
+import { glassConfirm } from '../../services/glassDialog.ts';
 import { defaultTicketPage } from './ticket/ticketDesign.ts';
 import { openPendingPdfWindow, closePendingPdfWindow } from './ticket/pdfDelivery.ts';
 import { blackenLogo } from './ticket/blackLogo.ts';
@@ -3060,6 +3061,24 @@ function findPassWidget(trigger: any): any | null {
     || null;
 }
 
+function isQueuePass(pass: any): boolean {
+  return pass?.type === 'LiveQueuePass' || pass?.props?.passMode === 'queue';
+}
+
+function hasRealEmail(email?: string): boolean {
+  const value = String(email || '').trim().toLowerCase();
+  return Boolean(value) && value !== 'guest@activation.internal';
+}
+
+// The notice is shown once per pass on this device, not on every download
+const queueNoticeKey = (code: string) => `queue_email_notice_${code}`;
+function queueEmailNoticeSeen(code: string): boolean {
+  try { return localStorage.getItem(queueNoticeKey(code)) === '1'; } catch { return false; }
+}
+function markQueueEmailNoticeSeen(code: string) {
+  try { localStorage.setItem(queueNoticeKey(code), '1'); } catch { /* private mode: it just shows again */ }
+}
+
 async function downloadPass(trigger: any) {
   const pass = findPassWidget(trigger);
   if (isLivePass.value && livePass!.waitlisted) {
@@ -3069,6 +3088,18 @@ async function downloadPass(trigger: any) {
   if (isLivePass.value && livePass!.status !== 'ready') {
     editorStore.showToast(livePass!.status === 'error' ? 'Your pass was not issued yet — tap "Try again" on the pass first.' : 'Your pass is still being issued — one moment.');
     return;
+  }
+
+  // Queue campaigns: tell the guest where to follow their place live before the download starts.
+  if (isLivePass.value && isQueuePass(pass) && hasRealEmail(livePass!.email) && !queueEmailNoticeSeen(livePass!.code)) {
+    const ok = await glassConfirm({
+      title: 'Track your queue live',
+      message: `Your live queue link was sent to ${livePass!.email}. Open that email and tap "Track Real Time" to follow your number as it moves. Download your e-pass now?`,
+      confirmLabel: 'Download E-Pass',
+      cancelLabel: 'Not now'
+    });
+    if (!ok) return;
+    markQueueEmailNoticeSeen(livePass!.code);
   }
 
   // iPhone Safari only lets a tab open during the tap itself, so claim it before the PDF is made.

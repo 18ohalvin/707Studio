@@ -65,7 +65,7 @@ function escape(value: unknown): string {
     .replace(/"/g, '&quot;');
 }
 
-function shell(title: string, lead: string, rows: Array<[string, string]>, footer: string): string {
+function shell(title: string, lead: string, rows: Array<[string, string]>, footer: string, cta?: { label: string; url: string }): string {
   const cells = rows
     .filter(([, v]) => v)
     .map(
@@ -85,6 +85,7 @@ function shell(title: string, lead: string, rows: Array<[string, string]>, foote
         <tr><td style="font-size:22px;font-weight:700;color:#111;padding-bottom:8px;">${escape(title)}</td></tr>
         <tr><td style="font-size:15px;color:#555;line-height:1.6;padding-bottom:24px;">${escape(lead)}</td></tr>
         <tr><td><table width="100%" cellpadding="0" cellspacing="0">${cells}</table></td></tr>
+        ${cta ? `<tr><td style="padding-top:24px;"><a href="${escape(cta.url)}" style="display:block;background:#111;color:#fff;text-decoration:none;text-align:center;font-size:14px;font-weight:700;letter-spacing:.04em;padding:14px 20px;border-radius:10px;">${escape(cta.label)}</a></td></tr>` : ''}
         <tr><td style="padding-top:28px;border-top:1px solid #eee;margin-top:24px;font-size:13px;color:#8a8a8a;line-height:1.6;">${escape(footer)}</td></tr>
       </table>
     </td></tr>
@@ -177,7 +178,8 @@ function ticketMail(guest: GuestMail, title: string, intro: string) {
       : [['Access code', guest.ticketCode || ''], ['Name', guest.fullName || ''], ['Event', guest.campaign || '']],
     withPdf
       ? 'Keep this email. Your ticket is the attached PDF.'
-      : 'Keep this email. Your access code is your entry.'
+      : 'Keep this email. Your access code is your entry.',
+    guest.liveUrl ? { label: 'TRACK REAL TIME', url: guest.liveUrl } : undefined
   );
 }
 

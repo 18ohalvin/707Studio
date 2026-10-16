@@ -6,10 +6,18 @@ import type { Request } from 'express';
  * reverse proxy's forwarded headers (behind one, req.protocol is "http" and the
  * link would not open on the https site).
  */
+let lastSeenBase = '';
+
+/** Remembers the address of the latest request, for emails and messages built outside a request. */
+export function rememberBaseUrl(req: Request): void {
+  const seen = publicBaseUrl(req);
+  if (seen) lastSeenBase = seen;
+}
+
 export function publicBaseUrl(req?: Request): string {
   const configured = (process.env.APP_URL || process.env.PUBLIC_APP_URL || '').trim();
   if (configured) return configured.replace(/\/+$/, '');
-  if (!req) return '';
+  if (!req) return lastSeenBase;
   const first = (v: unknown) => String(v || '').split(',')[0].trim();
   const proto = first(req.headers['x-forwarded-proto']) || req.protocol;
   const host = first(req.headers['x-forwarded-host']) || req.get('host');

@@ -246,13 +246,7 @@ async function notifyGuest(row: any, kind: 'new' | 'promoted', ticketPdf?: Buffe
     const email = String(form.email || '').trim();
     if (!email || email === PLACEHOLDER_EMAIL) return;
 
-    let campaign = '';
-    try {
-      if (getDbStatus().isConnected && row.page_id) {
-        const r = await pool.query('SELECT title FROM pages WHERE id = $1', [row.page_id]);
-        campaign = r.rows[0]?.title || '';
-      }
-    } catch { /* the title is a nicety, not a reason to skip the mail */ }
+    const { campaign, liveUrl } = await campaignAndLiveLink(row);
 
     let pdf = ticketPdf ?? null;
     if (!pdf && kind === 'promoted') pdf = await storedTicket(String(row.id));
@@ -262,6 +256,7 @@ async function notifyGuest(row: any, kind: 'new' | 'promoted', ticketPdf?: Buffe
       fullName: String(form.fullName || '').trim(),
       ticketCode: row.ticket_code || '',
       campaign,
+      liveUrl,
       ticketPdf: pdf
     };
 
@@ -271,6 +266,24 @@ async function notifyGuest(row: any, kind: 'new' | 'promoted', ticketPdf?: Buffe
   } catch (err: any) {
     console.warn('[Submissions] Could not notify guest:', err?.message || err);
   }
+}
+
+/** Campaign title and, for a queued guest, the link to their live queue page. */
+async function campaignAndLiveLink(row: any): Promise<{ campaign: string; liveUrl: string }> {
+  let campaign = '';
+  let liveUrl = '';
+  try {
+    if (getDbStatus().isConnected && row?.page_id) {
+      const r = await pool.query('SELECT title, brand_slug, slug FROM pages WHERE id = $1', [row.page_id]);
+      const page = r.rows[0];
+      campaign = page?.title || '';
+      const base = publicBaseUrl();
+      if (page?.slug && base && row.queue_number && row.ticket_code) {
+        liveUrl = `${base}/${page.brand_slug || row.brand_slug}/${page.slug}?code=${encodeURIComponent(row.ticket_code)}`;
+      }
+    }
+  } catch { /* the title and link are niceties, not a reason to skip the mail */ }
+  return { campaign, liveUrl };
 }
 
 /** Remembers that a ticket email went out, so a bulk send skips this guest. */
@@ -415,17 +428,14 @@ submissionsRouter.put('/:id/send-ticket', requireAuth, express.raw({ type: 'appl
     [id, pdf]
   );
 
-  let campaign = '';
-  try {
-    const r = await pool.query('SELECT title FROM pages WHERE id = $1', [row.page_id]);
-    campaign = r.rows[0]?.title || '';
-  } catch { /* the title is a nicety */ }
+  const { campaign, liveUrl } = await campaignAndLiveLink(row);
 
   const outcome: any = await sendPassEmail({
     email,
     fullName: String(form.fullName || '').trim(),
     ticketCode: row.ticket_code || '',
     campaign,
+    liveUrl,
     ticketPdf: pdf,
     resend: true
   });
