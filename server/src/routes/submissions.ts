@@ -24,6 +24,7 @@ import {
   normalizeWhatsAppNumber,
   formatWhatsAppDisplay
 } from '../queueManager.js';
+import { publicBaseUrl } from '../publicUrl.js';
 import { recordWaLog } from '../queueHelpers.js';
 import {
   getPageStatus,
@@ -524,7 +525,7 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
         if (phone) {
           void getQueueSettings(pageId).then(qs => {
             if (qs.enabled && qs.waEnabled) {
-              const passUrl = `${req.protocol}://${req.get('host')}/${project.brand_slug}/${project.slug}?code=${newTicketCode}`;
+              const passUrl = `${publicBaseUrl(req)}/${project.brand_slug}/${project.slug}?code=${newTicketCode}`;
               const text = renderTemplate(qs.waTemplates.welcome, {
                 name: fullName || existingForm.fullName || existingForm.name || 'Visitor',
                 queue_number: newQueueNum,
@@ -582,7 +583,7 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
         if (phone) {
           void getQueueSettings(pageId).then(qs => {
             if (qs.enabled && qs.waEnabled) {
-              const passUrl = `${req.protocol}://${req.get('host')}/${project.brand_slug}/${project.slug}?code=${outcome.row?.ticket_code || ''}`;
+              const passUrl = `${publicBaseUrl(req)}/${project.brand_slug}/${project.slug}?code=${outcome.row?.ticket_code || ''}`;
               const text = renderTemplate(qs.waTemplates.welcome, {
                 name: fullName || 'Visitor',
                 queue_number: queueNumber,
@@ -644,7 +645,7 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
       if (phone) {
         void getQueueSettings(pageId).then(qs => {
           if (qs.enabled && qs.waEnabled) {
-            const passUrl = `${req.protocol}://${req.get('host')}/${project.brand_slug}/${project.slug}?code=${newTicketCode}`;
+            const passUrl = `${publicBaseUrl(req)}/${project.brand_slug}/${project.slug}?code=${newTicketCode}`;
             const text = renderTemplate(qs.waTemplates.welcome, {
               name: fullName || existingForm.fullName || existingForm.name || 'Visitor',
               queue_number: newQueueNum,
@@ -1039,7 +1040,7 @@ submissionsRouter.post('/call-next', requireAuth, route('advance queue called nu
   const pageId = String(req.body?.page_id || '');
   const calledNumber = Number(req.body?.called_number);
   if (!pageId || isNaN(calledNumber)) return res.status(400).json({ success: false, error: 'page_id and called_number are required' });
-  const result = await processQueueProgression(pageId, calledNumber);
+  const result = await processQueueProgression(pageId, calledNumber, publicBaseUrl(req));
   return res.json({ success: true, data: result });
 }));
 
@@ -1048,7 +1049,7 @@ submissionsRouter.post('/call-batch', requireAuth, route('call batch of waiting 
   const pageId = String(req.body?.page_id || '');
   const spots = Number(req.body?.spots) || 1;
   if (!pageId) return res.status(400).json({ success: false, error: 'page_id is required' });
-  const result = await processQueueBatch(pageId, spots);
+  const result = await processQueueBatch(pageId, spots, publicBaseUrl(req));
   return res.json({ success: true, data: result });
 }));
 

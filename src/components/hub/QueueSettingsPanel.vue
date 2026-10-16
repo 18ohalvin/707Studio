@@ -1154,6 +1154,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
+import { useEditorStore } from '../../stores/editorStore.ts';
 import {
   RefreshCw,
   Check,
@@ -1228,6 +1229,7 @@ const emit = defineEmits<{
   (e: 'toast', msg: string): void;
 }>();
 
+const editorStore = useEditorStore();
 const isLoading = ref(false);
 const isSaving = ref(false);
 const activeStageId = ref<StageId>('approaching');
@@ -1429,8 +1431,8 @@ const form = reactive<QueueSettingsData>({
   },
   waTemplates: {
     welcome: 'Hello {{name}}! You are registered in the queue with Queue Number #{{queue_number}} (Party: {{party_size}} guests). Track your live status here: {{link}}',
-    approaching: 'Hello {{name}}! Your turn is approaching. The queue is currently serving near your number (#{{queue_number}}). Please proceed to the entrance area now.',
-    ready: 'Hello {{name}}! It is your turn to enter. Please present your Access ID {{access_id}} to the door staff at the entrance.',
+    approaching: 'Hello {{name}}! Your turn is approaching. The queue is currently serving near your number (#{{queue_number}}). Please proceed to the entrance area now. Live status: {{link}}',
+    ready: 'Hello {{name}}! It is your turn to enter. Please present your Access ID {{access_id}} to the door staff at the entrance. Your pass: {{link}}',
     expired: 'Notice: {{name}}, queue number #{{queue_number}} was skipped past the grace margin and has expired. You can rejoin and regenerate a new queue number on your live pass here: {{link}}'
   }
 });
@@ -1632,6 +1634,13 @@ const previewTime = computed(() => {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 });
 
+/** What the guest's real link looks like: this campaign's own live page with their pass code. */
+const sampleLink = computed(() => {
+  const project = editorStore.userProjects.find(p => p.id === props.pageId || (p.pages || []).some(pg => pg.id === props.pageId));
+  const path = project ? `/${project.brand_slug}/${project.slug}` : '/brand/campaign';
+  return `${window.location.origin}${path}?code=STAN-8842`;
+});
+
 const renderedPreviewText = computed(() => {
   const raw = form.waTemplates[activeStageId.value] || '';
   const sampleData: Record<string, string | number> = {
@@ -1641,11 +1650,11 @@ const renderedPreviewText = computed(() => {
     party_size: 2,
     access_id: 'STAN-8842',
     skipped_tolerance: form.skippedTolerance || 5,
-    link: 'https://707.studio/pass/STAN-8842',
-    epass_link: 'https://707.studio/pass/STAN-8842',
-    pass_link: 'https://707.studio/pass/STAN-8842',
-    pass_url: 'https://707.studio/pass/STAN-8842',
-    requeue_link: 'https://707.studio/pass/STAN-8842'
+    link: sampleLink.value,
+    epass_link: sampleLink.value,
+    pass_link: sampleLink.value,
+    pass_url: sampleLink.value,
+    requeue_link: sampleLink.value
   };
 
   let rendered = raw;
