@@ -1,10 +1,10 @@
 import { pool, getDbStatus } from './db.js';
 import { readDataFile, writeDataFile } from './fileStorage.js';
 import {
-  WhatsAppDeviceInfo,
-  WhatsAppConnection,
-  WhatsAppLogEntry,
-  QueueSettings,
+  type WhatsAppDeviceInfo,
+  type WhatsAppConnection,
+  type WhatsAppLogEntry,
+  type QueueSettings,
   DEFAULT_QUEUE_SETTINGS,
   getWaLogs,
   generateWaLinkPayload,
@@ -15,11 +15,8 @@ import {
   formatWhatsAppDisplay
 } from './queueHelpers.js';
 
+export type { WhatsAppDeviceInfo, WhatsAppConnection, WhatsAppLogEntry, QueueSettings };
 export {
-  WhatsAppDeviceInfo,
-  WhatsAppConnection,
-  WhatsAppLogEntry,
-  QueueSettings,
   DEFAULT_QUEUE_SETTINGS,
   getWaLogs,
   generateWaLinkPayload,

@@ -652,6 +652,10 @@
                 <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span>Waiting for camera scan...</span>
               </div>
+              <div v-if="waDeviceStatus.pairingCode" class="mt-4 w-full border-t border-black/10 pt-3">
+                <div class="text-[11px] text-neutral-500">Can't scan? On the phone choose <strong>Link with phone number instead</strong> and enter:</div>
+                <div class="mt-1.5 font-mono text-[22px] font-bold tracking-[0.18em] text-black select-all">{{ waDeviceStatus.pairingCode }}</div>
+              </div>
             </template>
             <template v-else-if="waDeviceStatus.status === 'connecting' || isConnectingWa">
               <div class="flex flex-col items-center gap-3">
@@ -1237,6 +1241,7 @@ const waDeviceStatus = ref<WaDeviceStatus>({
   connected: false,
   phone: null,
   qr: null,
+  pairingCode: null,
   error: null
 });
 let waPollTimer: any = null;

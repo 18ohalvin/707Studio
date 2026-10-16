@@ -731,6 +731,25 @@ submissionsRouter.get('/availability/:pageId', route('load availability', async 
   return res.json({ success: true, data: availability, generated_at: new Date().toISOString() });
 }));
 
+// GET /api/submissions/queue-now/:pageId - Which number is being served, polled by guests' live passes (public)
+submissionsRouter.get('/queue-now/:pageId', route('load queue position', async (req, res) => {
+  const store = await storeFor(res);
+  if (!store) return;
+  const project = await findProjectForEntry(String(req.params.pageId || ''), store === 'db');
+  if (!project || !canViewPublicPage(optionalClaims(req), project)) {
+    return res.status(404).json({ success: false, error: 'This campaign is not available.' });
+  }
+  const settings = await getQueueSettings(String(project.id));
+  res.setHeader('Cache-Control', 'no-store');
+  return res.json({
+    success: true,
+    data: {
+      currentCalledNumber: Number(settings.currentCalledNumber) || 1,
+      skippedTolerance: Number(settings.skippedTolerance) || 0
+    }
+  });
+}));
+
 // GET /api/submissions - Query submissions (by page_id, page_ids=a,b,c and/or brand_slug)
 submissionsRouter.get('/', requireAuth, route('load the guest list', async (req, res) => {
   const { brand_slug } = req.query;

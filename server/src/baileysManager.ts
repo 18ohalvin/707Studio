@@ -1,4 +1,4 @@
-import { makeWASocket, useMultiFileAuthState, DisconnectReason } from '@whiskeysockets/baileys';
+import { makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers, fetchLatestWaWebVersion, fetchLatestBaileysVersion } from '@whiskeysockets/baileys';
 import QRCode from 'qrcode';
 import pino from 'pino';
 import fs from 'fs';
@@ -33,6 +33,7 @@ export interface WaPageSession {
   sock: any | null;
   phone: string | null;
   qrCodeDataUrl: string | null;
+  pairingCode: string | null;
   expectedPhone: string | null;
   error: string | null;
   lastUpdated: string;
@@ -127,6 +128,7 @@ export function getPageStatus(pageId: string) {
       connected: false,
       phone: null,
       qr: null,
+      pairingCode: null,
       error: null,
       lastUpdated: new Date().toISOString()
     };
@@ -138,6 +140,7 @@ export function getPageStatus(pageId: string) {
     connected: session.status === 'connected',
     phone: session.phone || null,
     qr: session.qrCodeDataUrl || null,
+    pairingCode: session.pairingCode || null,
     error: session.error || null,
     lastUpdated: session.lastUpdated || new Date().toISOString()
   };
@@ -172,6 +175,7 @@ export async function initPageWhatsApp(pageId: string, options: { expectedPhone?
     sock: null,
     phone: null,
     qrCodeDataUrl: null,
+    pairingCode: null,
     expectedPhone: null,
     error: null,
     lastUpdated: new Date().toISOString(),
@@ -192,12 +196,28 @@ export async function initPageWhatsApp(pageId: string, options: { expectedPhone?
     const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
     const silentLogger = pino({ level: 'silent' });
 
+    // WhatsApp rejects ("couldn't link device") clients that announce an outdated web
+    // version, so always negotiate with the current one instead of the bundled default.
+    let version: [number, number, number] | undefined;
+    try {
+      version = (await fetchLatestWaWebVersion({})).version as [number, number, number];
+    } catch {
+      try {
+        version = (await fetchLatestBaileysVersion()).version as [number, number, number];
+      } catch (verErr: any) {
+        console.warn(`[WA-${pageId}] Could not fetch latest WA version, using bundled default:`, verErr?.message);
+      }
+    }
+
     const sock = makeWASocket({
       auth: state,
       logger: silentLogger,
-      printQRInTerminal: false,
-      browser: ['707 Activation Hub', 'Chrome', '124.0.0']
+      ...(version ? { version } : {}),
+      browser: Browsers.macOS('Desktop'),
+      syncFullHistory: false,
+      markOnlineOnConnect: false
     });
+    let pairingRequested = false;
 
     sessionData.sock = sock;
 
@@ -211,6 +231,20 @@ export async function initPageWhatsApp(pageId: string, options: { expectedPhone?
       if (sessionData.sock !== sock) return;
 
       if (qr) {
+        // Alternative to scanning: an 8-character code typed into
+        // WhatsApp > Linked devices > Link with phone number instead (far more reliable on phones)
+        const pairPhone = normalizePhoneDigits(sessionData.expectedPhone || '');
+        if (!pairingRequested && !state.creds.registered && pairPhone.length >= 8) {
+          pairingRequested = true;
+          try {
+            const code = await sock.requestPairingCode(pairPhone);
+            sessionData.pairingCode = code ? String(code).replace(/(.{4})(.{4})/, '$1-$2') : null;
+            sessionData.lastUpdated = new Date().toISOString();
+            console.log(`[WA-${pageId}] Pairing code issued for +${pairPhone}`);
+          } catch (pcErr: any) {
+            console.warn(`[WA-${pageId}] Pairing code request failed:`, pcErr?.message);
+          }
+        }
         try {
           sessionData.qrCodeDataUrl = await QRCode.toDataURL(qr, {
             margin: 2,
@@ -258,6 +292,7 @@ export async function initPageWhatsApp(pageId: string, options: { expectedPhone?
         sessionData.status = 'connected';
         sessionData.error = null;
         sessionData.qrCodeDataUrl = null;
+        sessionData.pairingCode = null;
         sessionData.lastUpdated = new Date().toISOString();
 
         console.log(`[WA-${pageId}] WhatsApp Gateway Connected successfully! Linked Phone: +${sessionData.phone}`);
@@ -289,6 +324,10 @@ export async function initPageWhatsApp(pageId: string, options: { expectedPhone?
 
         console.log(`[WA-${pageId}] Connection closed. Code: ${statusCode}. Logged out: ${isLoggedOut}`);
         sessionData.qrCodeDataUrl = null;
+        sessionData.pairingCode = null;
+        if (!isLoggedOut && !sessionData.isManualStop) {
+          sessionData.error = lastDisconnect?.error?.message ? `Connection closed (${statusCode ?? 'unknown'}): ${lastDisconnect.error.message}` : null;
+        }
 
         if (isLoggedOut || sessionData.isManualStop) {
           sessionData.status = 'disconnected';

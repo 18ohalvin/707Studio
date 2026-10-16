@@ -386,6 +386,18 @@ export async function fetchQueueSettings(pageId: string): Promise<QueueSettingsD
   return json?.data || null;
 }
 
+/** Public (no sign-in): the number currently being served, for guests' live passes. */
+export async function fetchPublicQueueNow(pageId: string): Promise<{ currentCalledNumber: number; skippedTolerance: number } | null> {
+  try {
+    const res = await fetch(`/api/submissions/queue-now/${encodeURIComponent(pageId)}`, { cache: 'no-store' });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json?.data || null;
+  } catch {
+    return null;
+  }
+}
+
 export async function saveQueueSettingsApi(pageId: string, settings: Partial<QueueSettingsData>): Promise<QueueSettingsData | null> {
   const json = await apiJson<{ success: boolean; data: QueueSettingsData }>('/api/submissions/queue-settings', {
     method: 'POST',
@@ -426,6 +438,7 @@ export interface WaDeviceStatus {
   connected: boolean;
   phone?: string | null;
   qr?: string | null;
+  pairingCode?: string | null;
   error?: string | null;
   lastUpdated?: string;
 }
@@ -437,6 +450,7 @@ export async function fetchWaStatusApi(pageId: string): Promise<WaDeviceStatus> 
     connected: Boolean(json?.connected),
     phone: json?.phone || null,
     qr: json?.qr || null,
+    pairingCode: json?.pairingCode || null,
     error: json?.error || null,
     lastUpdated: json?.lastUpdated
   };
@@ -453,6 +467,7 @@ export async function connectWaDeviceApi(pageId: string, expectedPhone?: string)
     connected: Boolean(json?.connected),
     phone: json?.phone || null,
     qr: json?.qr || null,
+    pairingCode: json?.pairingCode || null,
     error: json?.error || null,
     lastUpdated: json?.lastUpdated
   };

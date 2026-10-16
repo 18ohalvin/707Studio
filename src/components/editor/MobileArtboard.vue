@@ -2151,7 +2151,7 @@ import {
   Move,
   ZoomIn
 } from 'lucide-vue-next';
-import { fetchQueueSettings } from '../hub/hubUtils.ts';
+import { fetchPublicQueueNow } from '../hub/hubUtils.ts';
 import { uploadMediaDirectly } from '../../services/mediaService.ts';
 import type { ActivationPage } from '../../types/editor.ts';
 
@@ -4620,14 +4620,15 @@ async function handleChoiceImageDrop(e: DragEvent, widget: any, optId: string) {
 }
 
 /* ---------- Live Queue Pass Polling & Status Progression System ---------- */
-const liveQueueNowServing = ref<number>(28);
+// Starts at 1 (the queue's first number) — never a demo value, or a fresh guest would look skipped
+const liveQueueNowServing = ref<number>(1);
 let queuePollingTimer: ReturnType<typeof setInterval> | null = null;
 
 async function pollQueueStatus() {
   const pageId = livePass?.pageId || activePage.value?.id;
   if (!pageId) return;
   try {
-    const s = await fetchQueueSettings(pageId);
+    const s = await fetchPublicQueueNow(pageId);
     if (s && typeof s.currentCalledNumber === 'number') {
       liveQueueNowServing.value = s.currentCalledNumber;
     }

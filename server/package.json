@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "name": "707-activation-server",
   "version": "1.0.0",
   "description": "Backend API for 707 Activation Builder",
