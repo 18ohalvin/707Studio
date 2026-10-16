@@ -1,6 +1,17 @@
 import nodemailer, { Transporter } from 'nodemailer';
 
-interface Attachment { filename: string; content: Buffer; contentType: string }
+import { LOGO_707_PNG_BASE64 } from './brandLogo.js';
+
+interface Attachment { filename: string; content: Buffer; contentType: string; cid?: string; contentDisposition?: 'inline' | 'attachment' }
+
+/** Inline image shown at the top of every email (referenced as cid:logo707). */
+const LOGO_ATTACHMENT: Attachment = {
+  filename: '707-logo.png',
+  content: Buffer.from(LOGO_707_PNG_BASE64, 'base64'),
+  contentType: 'image/png',
+  cid: 'logo707',
+  contentDisposition: 'inline'
+};
 
 /**
  * Guest email.
@@ -70,7 +81,7 @@ function shell(title: string, lead: string, rows: Array<[string, string]>, foote
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:32px 16px;">
     <tr><td align="center">
       <table width="100%" style="max-width:520px;background:#fff;border-radius:16px;padding:32px;" cellpadding="0" cellspacing="0">
-        <tr><td style="font-size:13px;letter-spacing:.34em;color:#111;font-weight:700;padding-bottom:24px;">707</td></tr>
+        <tr><td style="padding-bottom:24px;"><img src="cid:logo707" alt="707" width="84" height="26" style="display:block;border:0;width:84px;height:auto;" /></td></tr>
         <tr><td style="font-size:22px;font-weight:700;color:#111;padding-bottom:8px;">${escape(title)}</td></tr>
         <tr><td style="font-size:15px;color:#555;line-height:1.6;padding-bottom:24px;">${escape(lead)}</td></tr>
         <tr><td><table width="100%" cellpadding="0" cellspacing="0">${cells}</table></td></tr>
@@ -114,7 +125,7 @@ async function send(to: string, subject: string, html: string, label: string, at
   }
 
   try {
-    await queued(() => tx.sendMail({ from: `"${FROM_NAME}" <${FROM_EMAIL}>`, to, subject, html, attachments }));
+    await queued(() => tx.sendMail({ from: `"${FROM_NAME}" <${FROM_EMAIL}>`, to, subject, html, attachments: [LOGO_ATTACHMENT, ...attachments] }));
     console.log(`[Mailer] Sent "${label}" to ${to}`);
     return { success: true };
   } catch (err: any) {

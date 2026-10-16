@@ -5,6 +5,7 @@
  * page already has; jsPDF and the QR encoder load only when a guest taps
  * "Download E-Pass".
  */
+import { deliverPdf } from './ticket/pdfDelivery.ts';
 import { blackenLogo } from './ticket/blackLogo.ts';
 
 export interface PassPdfData {
@@ -186,7 +187,7 @@ export async function buildPassPdf(data: PassPdfData) {
   return doc;
 }
 
-export async function downloadPassPdf(data: PassPdfData): Promise<void> {
+export async function downloadPassPdf(data: PassPdfData, pendingWindow?: Window | null): Promise<void> {
   const doc = await buildPassPdf(data);
-  doc.save(`${safeFileName(`${data.campaignTitle || 'e-pass'}-${data.accessId || 'sample'}`)}.pdf`);
+  deliverPdf(doc.output('blob'), `${safeFileName(`${data.campaignTitle || 'e-pass'}-${data.accessId || 'sample'}`)}.pdf`, pendingWindow);
 }

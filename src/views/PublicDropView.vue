@@ -83,6 +83,7 @@ import { useRoute } from 'vue-router';
 import { AlertCircle } from 'lucide-vue-next';
 import MobileArtboard from '../components/editor/MobileArtboard.vue';
 import { LIVE_PASS_KEY, SESSIONS_ANSWER_KEY, type LivePassState } from '../components/editor/livePass.ts';
+import { resolveTicketDesign } from '../components/editor/ticket/ticketDesign.ts';
 import { TICKET_SOURCE_KEY, type TicketSource } from '../components/editor/ticket/ticketFields.ts';
 import { stripTextAnswers } from '../components/editor/guestAnswers.ts';
 import { getToken } from '../services/apiClient.ts';
@@ -311,17 +312,9 @@ function setCampaignPages(pages: ActivationPage[], title?: string) {
   // A guest's form always starts empty, whatever a project saved earlier holds.
   stripTextAnswers(pages);
   projectPages.value = pages.filter(p => p.kind !== 'ticket');
-  ticketSource.page = pages.find(p => p.kind === 'ticket') || null;
-  const widgets = pages.flatMap(p => p.widget_tree || []);
-  const pass = widgets.find(w => w.type === 'GuestEPass' || w.type === 'LiveQueuePass') || null;
-  const hero = widgets.find(w => w.type === 'HeroDrop' && w.props?.brandLogoUrl);
-  const ticketField = pages.find(p => p.kind === 'ticket')?.widget_tree?.find(w => w.type === 'TicketField' && (Array.isArray(w.props?.fields) ? w.props.fields.includes('brandLogo') : w.props?.field === 'brandLogo'));
-  ticketSource.context = {
-    passWidget: pass,
-    logoUrl: pass?.props?.brandLogoUrl || hero?.props?.brandLogoUrl || '',
-    campaignTitle: title || '',
-    logoColorMode: ticketField?.props?.logoColorMode || pass?.props?.logoColorMode || 'black'
-  };
+  const design = resolveTicketDesign(pages, title || '', campaignBrandSlug.value);
+  ticketSource.page = design.page;
+  ticketSource.context = design.context;
 }
 
 function pageHasPass(page?: ActivationPage | null): boolean {

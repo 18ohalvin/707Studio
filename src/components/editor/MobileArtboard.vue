@@ -2126,6 +2126,8 @@ import { LIVE_PASS_KEY, SESSIONS_ANSWER_KEY, type PassSession } from './livePass
 import { normalizeCtaAction } from './ctaActions.ts';
 import { responsiveImgAttrs, placeholderStyle, sizedUrl } from '../../services/responsiveImage.ts';
 import { TICKET_CONTEXT_KEY, TICKET_SOURCE_KEY, TICKET_CANVAS, ticketFieldMeta, type TicketFieldKey } from './ticket/ticketFields.ts';
+import { defaultTicketPage } from './ticket/ticketDesign.ts';
+import { openPendingPdfWindow, closePendingPdfWindow } from './ticket/pdfDelivery.ts';
 import { blackenLogo } from './ticket/blackLogo.ts';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
@@ -3054,8 +3056,14 @@ async function downloadPass(trigger: any) {
     return;
   }
 
+  // iPhone Safari only lets a tab open during the tap itself, so claim it before the PDF is made.
+  const pendingWindow = openPendingPdfWindow();
+
   // The campaign's own Ticket page, when it has one: the PDF is that design.
-  const ticketPage = props.isLivePage ? ticketSource?.page : editorStore.pages.find(p => p.kind === 'ticket');
+  // Always the current ticket design: the campaign's Ticket page, or the standard layout when it has none.
+  const ticketPage = props.isLivePage
+    ? (ticketSource?.page || defaultTicketPage())
+    : (editorStore.pages.find(p => p.kind === 'ticket') || (pass ? defaultTicketPage() : null));
   if (ticketPage) {
     editorStore.showToast('Preparing your ticket PDF…');
     try {
@@ -3074,9 +3082,11 @@ async function downloadPass(trigger: any) {
         context,
         livePass: isLivePass.value ? livePass : null,
         fileName: `${title}-${isLivePass.value ? livePass!.code : 'sample'}.pdf`,
-        isSample: !isLivePass.value
+        isSample: !isLivePass.value,
+        pendingWindow
       });
     } catch (err) {
+      closePendingPdfWindow(pendingWindow);
       console.warn('[MobileArtboard] Could not render the ticket PDF:', err);
       editorStore.showToast('Could not create the PDF. Please take a screenshot of your pass instead.');
     }
@@ -3084,6 +3094,7 @@ async function downloadPass(trigger: any) {
   }
 
   if (!pass) {
+    closePendingPdfWindow(pendingWindow);
     editorStore.showToast('Add a Ticket Summary to this campaign to offer a downloadable pass.');
     return;
   }
@@ -3105,8 +3116,9 @@ async function downloadPass(trigger: any) {
       isSample: !isLivePass.value,
       showBrandLogo: shouldShowBrandLogo(pass),
       logoColorMode: getLogoColorMode(pass)
-    });
+    }, pendingWindow);
   } catch (err) {
+    closePendingPdfWindow(pendingWindow);
     console.warn('[MobileArtboard] Could not build the pass PDF:', err);
     editorStore.showToast('Could not create the PDF. Please take a screenshot of your pass instead.');
   }

@@ -4,6 +4,7 @@ import type { ActivationPage } from '../../../types/editor.ts';
 import { LIVE_PASS_KEY, type LivePassState } from '../livePass.ts';
 import { TICKET_CONTEXT_KEY, TICKET_CANVAS, TICKET_PAPER, type TicketContext } from './ticketFields.ts';
 import { blackenLogo } from './blackLogo.ts';
+import { deliverPdf } from './pdfDelivery.ts';
 import { sizedUrl } from '../../../services/responsiveImage.ts';
 
 /**
@@ -22,6 +23,8 @@ export interface TicketPdfOptions {
   livePass?: LivePassState | null;
   fileName: string;
   isSample?: boolean;
+  /** iOS: the tab opened during the guest's tap, to show the PDF in. */
+  pendingWindow?: Window | null;
 }
 
 /**
@@ -138,7 +141,7 @@ async function drawTicketPdf(opts: TicketPdfOptions) {
 
 /** Makes the guest's ticket and hands it to the browser as a download. */
 export async function renderTicketPdf(opts: TicketPdfOptions): Promise<void> {
-  (await drawTicketPdf(opts)).save(opts.fileName);
+  deliverPdf((await drawTicketPdf(opts)).output('blob'), opts.fileName, opts.pendingWindow);
 }
 
 /** The same ticket as a file in memory, for the copy that is emailed to the guest. */

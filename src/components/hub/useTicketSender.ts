@@ -3,6 +3,7 @@ import { useEditorStore } from '../../stores/editorStore.ts';
 import { apiFetch } from '../../services/apiClient.ts';
 import { stripTextAnswers } from '../editor/guestAnswers.ts';
 import { SESSIONS_ANSWER_KEY, type LivePassState } from '../editor/livePass.ts';
+import { resolveTicketDesign } from '../editor/ticket/ticketDesign.ts';
 import type { TicketContext } from '../editor/ticket/ticketFields.ts';
 import type { ActivationPage, ProjectItem } from '../../types/editor.ts';
 import { accessId, guestEmail, guestName, normalizeStatus, type Submission } from './hubUtils.ts';
@@ -58,20 +59,11 @@ export function useTicketSender() {
         if (!res.ok) return null;
         const item = (await res.json())?.data;
         const pages: ActivationPage[] = Array.isArray(item?.pages) ? stripTextAnswers(item.pages) : [];
-        const page = pages.find(p => p.kind === 'ticket');
-        if (!page) return null;
-        const widgets = pages.flatMap(p => p.widget_tree || []);
-        const pass = widgets.find((w: any) => w.type === 'GuestEPass' || w.type === 'LiveQueuePass') || null;
-        const hero = widgets.find((w: any) => w.type === 'HeroDrop' && w.props?.brandLogoUrl);
-        const ticketField = page.widget_tree?.find((w: any) => w.type === 'TicketField' && (Array.isArray(w.props?.fields) ? w.props.fields.includes('brandLogo') : w.props?.field === 'brandLogo'));
+        const { page, context } = resolveTicketDesign(pages, item.title || project.title || '', project.brand_slug);
+        const pass = context.passWidget;
         return {
           page,
-          context: {
-            passWidget: pass,
-            logoUrl: pass?.props?.brandLogoUrl || hero?.props?.brandLogoUrl || '',
-            campaignTitle: item.title || project.title || '',
-            logoColorMode: ticketField?.props?.logoColorMode || pass?.props?.logoColorMode || 'black'
-          },
+          context,
           passGuestType: pass ? String(pass.props?.guestType || 'Public') : ''
         };
       })().catch(() => null);
