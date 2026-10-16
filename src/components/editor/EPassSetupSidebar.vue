@@ -194,7 +194,7 @@
             class="h-[34px] px-2.5 rounded-[6px] border border-neutral-300 text-[12px] font-707 text-black focus:outline-none focus:border-black bg-white" />
         </label>
         <label class="flex flex-col gap-1">
-          <span class="text-[10px] font-707 text-neutral-500 uppercase tracking-tight">Message — use {{ '{{email}}' }} for the guest's address</span>
+          <span class="text-[10px] font-707 text-neutral-500 uppercase tracking-tight">Message — use {{ EMAIL_TOKEN }} for the guest's address</span>
           <textarea v-model="trackNoticeMessage" rows="4" maxlength="400"
             class="px-2.5 py-2 rounded-[6px] border border-neutral-300 text-[12px] leading-[17px] font-707 text-black focus:outline-none focus:border-black bg-white resize-none" />
         </label>
@@ -885,6 +885,7 @@ const queuePreviewState = computed<'green' | 'yellow' | 'calling' | 'red' | 'bla
 
 
 // Live tracking: pop-up before download + email button (defaults match what guests see if nothing is set)
+const EMAIL_TOKEN = '{' + '{email}' + '}';
 function trackProp<T>(key: string, fallback: T) {
   return computed<T>({
     get: () => (currentWidget.value?.props?.[key] ?? fallback) as T,
