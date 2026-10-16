@@ -119,7 +119,7 @@
     <!-- Done Action Button when in Pages Overview Mode (Access to exit overview page) -->
     <Transition name="apple-dock-fade">
       <div 
-        v-if="editorStore.isPagesOpen && !editorStore.isPreviewMode"
+        v-if="editorStore.isPagesOpen && !editorStore.isPreviewMode && !editorStore.isCropStudioOpen"
         class="fixed left-1/2 -translate-x-1/2 bottom-[24px] z-[70] select-none pointer-events-auto"
       >
         <button
@@ -138,7 +138,7 @@
     <!-- Center Floating Level 1 Bottom Toolbar when in normal canvas edit mode -->
     <Transition name="apple-dock-fade">
       <FloatingQuickAdd 
-        v-if="!editorStore.isPagesOpen && !editorStore.isPreviewMode"
+        v-if="!editorStore.isPagesOpen && !editorStore.isPreviewMode && !editorStore.isCropStudioOpen"
         @click.stop
         @toggle-layers="toggleLayers"
         @toggle-pages="togglePages"
@@ -148,7 +148,7 @@
     <!-- Right Bottom Dock Tools (Figma Node 97:3400) - Hidden in Pages Overview Mode & Preview Mode -->
     <Transition name="apple-dock-fade">
       <ViewportControls 
-        v-if="!editorStore.isPagesOpen && !editorStore.isPreviewMode"
+        v-if="!editorStore.isPagesOpen && !editorStore.isPreviewMode && !editorStore.isCropStudioOpen"
         @click.stop
         @open-settings="showProjectSettingsModal = true"
       />
