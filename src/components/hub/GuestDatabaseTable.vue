@@ -407,7 +407,8 @@
             </div>
 
             <!-- Access ID card -->
-            <div class="rounded-[14px] bg-[#0c0d0e] text-white p-4 relative overflow-hidden">
+            <!-- shrink-0: the drawer body is a scrolling flex column and an overflow-hidden card is otherwise squeezed, clipping its contents -->
+            <div class="rounded-[14px] bg-[#0c0d0e] text-white p-4 relative overflow-hidden shrink-0">
               <div class="absolute inset-0 opacity-[0.07] hub-grid" />
               <div class="flex items-center justify-between gap-3 relative">
                 <p class="text-[10px] uppercase tracking-[0.18em] text-white/50">Access ID</p>
@@ -416,7 +417,7 @@
                 </button>
               </div>
               <!-- The ID sits in the middle of the space between the header and the status lines -->
-              <div class="relative flex items-center justify-center min-h-[64px] py-3">
+              <div class="relative flex items-center justify-center min-h-[56px] py-2">
                 <span class="font-mono text-[22px] leading-none tracking-[0.06em] text-center break-all">{{ accessId(drawerRow) }}</span>
               </div>
               <div class="relative border-t border-white/10 pt-3"></div>
