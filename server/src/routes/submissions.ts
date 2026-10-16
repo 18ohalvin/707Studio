@@ -246,7 +246,7 @@ async function notifyGuest(row: any, kind: 'new' | 'promoted', ticketPdf?: Buffe
     const email = String(form.email || '').trim();
     if (!email || email === PLACEHOLDER_EMAIL) return;
 
-    const { campaign, liveUrl } = await campaignAndLiveLink(row);
+    const { campaign, liveUrl, liveLabel } = await campaignAndLiveLink(row);
 
     let pdf = ticketPdf ?? null;
     if (!pdf && kind === 'promoted') pdf = await storedTicket(String(row.id));
@@ -257,6 +257,7 @@ async function notifyGuest(row: any, kind: 'new' | 'promoted', ticketPdf?: Buffe
       ticketCode: row.ticket_code || '',
       campaign,
       liveUrl,
+      liveLabel,
       ticketPdf: pdf
     };
 
@@ -269,21 +270,38 @@ async function notifyGuest(row: any, kind: 'new' | 'promoted', ticketPdf?: Buffe
 }
 
 /** Campaign title and, for a queued guest, the link to their live queue page. */
-async function campaignAndLiveLink(row: any): Promise<{ campaign: string; liveUrl: string }> {
+async function campaignAndLiveLink(row: any): Promise<{ campaign: string; liveUrl: string; liveLabel?: string }> {
   let campaign = '';
   let liveUrl = '';
+  let liveLabel: string | undefined;
   try {
     if (getDbStatus().isConnected && row?.page_id) {
-      const r = await pool.query('SELECT title, brand_slug, slug FROM pages WHERE id = $1', [row.page_id]);
+      const r = await pool.query(
+        `SELECT title, brand_slug, slug,
+                COALESCE(live_snapshot->'pages', pages) AS funnel,
+                COALESCE(live_snapshot->'widget_tree', widget_tree) AS widgets
+           FROM pages WHERE id = $1`,
+        [row.page_id]
+      );
       const page = r.rows[0];
       campaign = page?.title || '';
+
+      // The brand editor sets this on the Live Queue Pass: on/off and the button's wording
+      const widgets: any[] = [
+        ...(Array.isArray(page?.widgets) ? page.widgets : []),
+        ...(Array.isArray(page?.funnel) ? page.funnel.flatMap((p: any) => p?.widget_tree || []) : [])
+      ];
+      const pass = widgets.find(w => w?.type === 'LiveQueuePass' || w?.props?.passMode === 'queue');
+      const emailButton = pass?.props?.trackEmailEnabled !== false;
+      liveLabel = String(pass?.props?.trackEmailLabel || '').trim() || undefined;
+
       const base = publicBaseUrl();
-      if (page?.slug && base && row.queue_number && row.ticket_code) {
+      if (emailButton && page?.slug && base && row.queue_number && row.ticket_code) {
         liveUrl = `${base}/${page.brand_slug || row.brand_slug}/${page.slug}?code=${encodeURIComponent(row.ticket_code)}`;
       }
     }
   } catch { /* the title and link are niceties, not a reason to skip the mail */ }
-  return { campaign, liveUrl };
+  return { campaign, liveUrl, liveLabel };
 }
 
 /** Remembers that a ticket email went out, so a bulk send skips this guest. */
@@ -428,7 +446,7 @@ submissionsRouter.put('/:id/send-ticket', requireAuth, express.raw({ type: 'appl
     [id, pdf]
   );
 
-  const { campaign, liveUrl } = await campaignAndLiveLink(row);
+  const { campaign, liveUrl, liveLabel } = await campaignAndLiveLink(row);
 
   const outcome: any = await sendPassEmail({
     email,
@@ -436,6 +454,7 @@ submissionsRouter.put('/:id/send-ticket', requireAuth, express.raw({ type: 'appl
     ticketCode: row.ticket_code || '',
     campaign,
     liveUrl,
+    liveLabel,
     ticketPdf: pdf,
     resend: true
   });

@@ -2127,6 +2127,7 @@ import { normalizeCtaAction } from './ctaActions.ts';
 import { responsiveImgAttrs, placeholderStyle, sizedUrl } from '../../services/responsiveImage.ts';
 import { TICKET_CONTEXT_KEY, TICKET_SOURCE_KEY, TICKET_CANVAS, ticketFieldMeta, type TicketFieldKey } from './ticket/ticketFields.ts';
 import { glassConfirm } from '../../services/glassDialog.ts';
+import { DEFAULT_TRACK_NOTICE, fillTrackNotice } from './trackNotice.ts';
 import { defaultTicketPage } from './ticket/ticketDesign.ts';
 import { openPendingPdfWindow, closePendingPdfWindow } from './ticket/pdfDelivery.ts';
 import { blackenLogo } from './ticket/blackLogo.ts';
@@ -3091,12 +3092,15 @@ async function downloadPass(trigger: any) {
   }
 
   // Queue campaigns: tell the guest where to follow their place live before the download starts.
-  if (isLivePass.value && isQueuePass(pass) && hasRealEmail(livePass!.email) && !queueEmailNoticeSeen(livePass!.code)) {
+  // The brand editor controls it (on/off and wording) on the Live Queue Pass.
+  if (isLivePass.value && isQueuePass(pass) && pass?.props?.trackNoticeEnabled !== false
+      && hasRealEmail(livePass!.email) && !queueEmailNoticeSeen(livePass!.code)) {
+    const p = pass?.props || {};
     const ok = await glassConfirm({
-      title: 'Track your queue live',
-      message: `Your live queue link was sent to ${livePass!.email}. Open that email and tap "Track Real Time" to follow your number as it moves. Download your e-pass now?`,
-      confirmLabel: 'Download E-Pass',
-      cancelLabel: 'Not now'
+      title: p.trackNoticeTitle || DEFAULT_TRACK_NOTICE.title,
+      message: fillTrackNotice(p.trackNoticeMessage || DEFAULT_TRACK_NOTICE.message, livePass!.email),
+      confirmLabel: p.trackNoticeConfirmLabel || DEFAULT_TRACK_NOTICE.confirmLabel,
+      cancelLabel: p.trackNoticeCancelLabel || DEFAULT_TRACK_NOTICE.cancelLabel
     });
     if (!ok) return;
     markQueueEmailNoticeSeen(livePass!.code);

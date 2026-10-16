@@ -143,6 +143,8 @@ interface GuestMail {
   ticketCode?: string;
   campaign?: string;
   liveUrl?: string;
+  /** Wording of the live-tracking button, set by the brand editor. */
+  liveLabel?: string;
   /** The guest's e-ticket, the same PDF they can download. */
   ticketPdf?: Buffer | null;
   /** The guest already had a ticket email (or a download that did not work); this is a second copy. */
@@ -179,7 +181,7 @@ function ticketMail(guest: GuestMail, title: string, intro: string) {
     withPdf
       ? 'Keep this email. Your ticket is the attached PDF.'
       : 'Keep this email. Your access code is your entry.',
-    guest.liveUrl ? { label: 'TRACK REAL TIME', url: guest.liveUrl } : undefined
+    guest.liveUrl ? { label: guest.liveLabel || 'TRACK REAL TIME', url: guest.liveUrl } : undefined
   );
 }
 
