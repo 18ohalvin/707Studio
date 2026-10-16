@@ -1031,7 +1031,15 @@ submissionsRouter.get('/queue-settings', requireAuth, route('get queue settings'
 submissionsRouter.post('/queue-settings', requireAuth, route('update queue settings', async (req, res) => {
   const pageId = String(req.body?.page_id || '');
   if (!pageId) return res.status(400).json({ success: false, error: 'page_id is required' });
-  const saved = await saveQueueSettings(pageId, req.body?.settings || {});
+  // Runtime state is changed only by its own actions (call-next / call-batch, the WhatsApp
+  // link routes). A settings form that was opened earlier carries stale copies of it, and
+  // saving them back would rewind the queue or unlink WhatsApp.
+  const { currentCalledNumber: _called, ...incoming } = (req.body?.settings || {}) as Record<string, any>;
+  if (incoming.waConnection) {
+    const { connected: _c, phoneNumber: _p, formattedNumber: _f, linkedAt: _l, deviceInfo: _d, sessionName: _s, ...editable } = incoming.waConnection;
+    incoming.waConnection = editable;
+  }
+  const saved = await saveQueueSettings(pageId, incoming);
   return res.json({ success: true, data: saved });
 }));
 

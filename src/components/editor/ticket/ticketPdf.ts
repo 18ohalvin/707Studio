@@ -70,7 +70,10 @@ async function drawTicketPdf(opts: TicketPdfOptions) {
   // The logo prints according to the ticket field or pass widget setup (normal or black mode; hidden if toggled off).
   let context = opts.context;
   const pass = context.passWidget;
-  const hideLogo = pass?.props?.showBrandLogo === false;
+  // The Ticket page decides: a Brand Logo block the designer placed is printed. (The Ticket Summary's
+  // "show logo" switch is about the on-screen pass — honouring it here dropped the logo from a design
+  // that clearly shows one.)
+  const hideLogo = false;
   const ticketLogoWidget = opts.page?.widget_tree?.find((w: any) => 
     w.type === 'TicketField' && (Array.isArray(w.props?.fields) ? w.props.fields.includes('brandLogo') : w.props?.field === 'brandLogo')
   );

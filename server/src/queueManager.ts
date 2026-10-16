@@ -31,8 +31,17 @@ export {
 export async function getQueueSettings(pageId: string): Promise<QueueSettings> {
   try {
     if (getDbStatus().isConnected) {
-      const res = await pool.query('SELECT page_settings FROM pages WHERE id = $1', [pageId]);
-      const settings = res.rows[0]?.page_settings || {};
+      // Live queue state has its own table: the editor re-saves a project's whole
+      // page_settings on every autosave (and restores/discards replace it), and any
+      // stale copy used to wipe the called number, the WhatsApp link and the templates.
+      const own = await pool.query('SELECT settings FROM queue_state WHERE page_id = $1', [pageId]);
+      let stored = own.rows[0]?.settings;
+      if (!stored) {
+        // Campaigns from before the table existed still keep it inside page_settings
+        const res = await pool.query('SELECT page_settings FROM pages WHERE id = $1', [pageId]);
+        stored = res.rows[0]?.page_settings?.queue_settings || {};
+      }
+      const settings = { queue_settings: stored };
       return {
         ...DEFAULT_QUEUE_SETTINGS,
         ...(settings.queue_settings || {}),
@@ -88,10 +97,11 @@ export async function saveQueueSettings(pageId: string, updates: Partial<QueueSe
 
   try {
     if (getDbStatus().isConnected) {
-      const res = await pool.query('SELECT page_settings FROM pages WHERE id = $1', [pageId]);
-      const pageSettings = res.rows[0]?.page_settings || {};
-      pageSettings.queue_settings = merged;
-      await pool.query('UPDATE pages SET page_settings = $2, updated_at = NOW() WHERE id = $1', [pageId, JSON.stringify(pageSettings)]);
+      await pool.query(
+        `INSERT INTO queue_state (page_id, settings, updated_at) VALUES ($1, $2, NOW())
+         ON CONFLICT (page_id) DO UPDATE SET settings = EXCLUDED.settings, updated_at = NOW()`,
+        [pageId, JSON.stringify(merged)]
+      );
     } else {
       const pages = readDataFile<any[]>('pages.json', []);
       const idx = pages.findIndex(item => item.id === pageId);

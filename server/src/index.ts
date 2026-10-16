@@ -15,7 +15,7 @@ import { gateAccountsRouter } from './routes/gateAccounts.js';
 import { mediaRouter } from './routes/media.js';
 import { notificationsRouter } from './routes/notifications.js';
 import { whatsappRouter } from './routes/whatsapp.js';
-import { autoRestoreSessions, sendBaileysMessage } from './baileysManager.js';
+import { autoRestoreSessions, sendBaileysMessage, shutdownWhatsApp } from './baileysManager.js';
 import { setBaileysDispatcher } from './queueHelpers.js';
 import { resolveUploadDir } from './uploads.js';
 import { imageVariantMiddleware } from './imageVariants.js';
@@ -130,6 +130,14 @@ if (fs.existsSync(distDir)) {
   });
 } else {
   console.warn(`[Server] No frontend build at ${distDir} — running API only.`);
+}
+
+// A deploy stops the old container: release WhatsApp (without logging out) so the new one can take over
+for (const signal of ['SIGTERM', 'SIGINT'] as const) {
+  process.on(signal, () => {
+    shutdownWhatsApp();
+    setTimeout(() => process.exit(0), 500);
+  });
 }
 
 // Start Server

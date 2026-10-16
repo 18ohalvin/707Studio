@@ -4,6 +4,7 @@ import pino from 'pino';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { useDbAuthState, dbAuthAvailable, clearDbAuth, pairedPagesInDb } from './waAuthState.js';
 import { saveQueueSettings, getQueueSettings } from './queueManager.js';
 import { formatWhatsAppDisplay } from './queueHelpers.js';
 
@@ -39,6 +40,8 @@ export interface WaPageSession {
   lastUpdated: string;
   isManualStop: boolean;
 }
+
+let shuttingDown = false;
 
 // In-memory sessions map (pageId -> session)
 const sessions = new Map<string, WaPageSession>();
@@ -193,7 +196,9 @@ export async function initPageWhatsApp(pageId: string, options: { expectedPhone?
   sessions.set(pageId, sessionData);
 
   try {
-    const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
+    const { state, saveCreds } = dbAuthAvailable()
+      ? await useDbAuthState(pageId)
+      : await useMultiFileAuthState(sessionDir);
     const silentLogger = pino({ level: 'silent' });
 
     // WhatsApp rejects ("couldn't link device") clients that announce an outdated web
@@ -285,6 +290,7 @@ export async function initPageWhatsApp(pageId: string, options: { expectedPhone?
                 fs.rmSync(sessionDir, { recursive: true, force: true });
               }
             } catch {}
+            await clearDbAuth(pageId);
             return;
           }
         }
@@ -329,6 +335,17 @@ export async function initPageWhatsApp(pageId: string, options: { expectedPhone?
           sessionData.error = lastDisconnect?.error?.message ? `Connection closed (${statusCode ?? 'unknown'}): ${lastDisconnect.error.message}` : null;
         }
 
+        if (shuttingDown) return; // server is stopping: keep the saved login, no reconnect
+
+        // Another process (the new container during a deploy) took over this login: yield
+        // instead of fighting it in a reconnect loop, and keep the saved login for it.
+        if (statusCode === DisconnectReason.connectionReplaced) {
+          sessionData.status = 'disconnected';
+          sessionData.sock = null;
+          sessionData.error = 'This WhatsApp login is now used by another server instance.';
+          return;
+        }
+
         if (isLoggedOut || sessionData.isManualStop) {
           sessionData.status = 'disconnected';
           sessionData.phone = null;
@@ -339,6 +356,7 @@ export async function initPageWhatsApp(pageId: string, options: { expectedPhone?
           } catch (rmErr: any) {
             console.warn(`[WA-${pageId}] Error cleaning session folder:`, rmErr?.message);
           }
+          await clearDbAuth(pageId);
 
           try {
             await saveQueueSettings(pageId, {
@@ -407,6 +425,7 @@ export async function disconnectPageWhatsApp(pageId: string) {
   } catch (err: any) {
     console.warn(`[WA-${pageId}] Error deleting session files:`, err?.message);
   }
+  await clearDbAuth(pageId);
 
   sessions.delete(pageId);
 
@@ -516,13 +535,23 @@ export async function sendBaileysMessage(pageId: string, recipientPhone: string,
  * Automatically restore saved sessions from disk upon server boot
  */
 export async function autoRestoreSessions() {
+  const restored: string[] = [];
+
+  // Phones linked while the database was in use survive redeploys there
+  for (const pageId of await pairedPagesInDb()) {
+    console.log(`[WA-BOOT] Auto-restoring linked session for page: ${pageId}`);
+    initPageWhatsApp(pageId).catch(err => {
+      console.warn(`[WA-BOOT] Failed to restore session ${pageId}:`, err?.message);
+    });
+    restored.push(pageId);
+  }
+
   if (!fs.existsSync(SESSIONS_ROOT)) {
-    return [];
+    return restored;
   }
 
   try {
     const dirs = fs.readdirSync(SESSIONS_ROOT, { withFileTypes: true });
-    const restored: string[] = [];
 
     for (const d of dirs) {
       if (d.isDirectory() && d.name.startsWith('page_')) {
@@ -532,7 +561,7 @@ export async function autoRestoreSessions() {
         try {
           paired = fs.existsSync(credsPath) && Boolean(JSON.parse(fs.readFileSync(credsPath, 'utf8'))?.me?.id);
         } catch {}
-        if (paired) {
+        if (paired && !restored.includes(pageId)) {
           console.log(`[WA-BOOT] Auto-restoring linked session for page: ${pageId}`);
           initPageWhatsApp(pageId).catch(err => {
             console.warn(`[WA-BOOT] Failed to restore session ${pageId}:`, err?.message);
@@ -546,5 +575,13 @@ export async function autoRestoreSessions() {
   } catch (err: any) {
     console.warn('[WA-BOOT] Could not auto-restore WhatsApp sessions:', err?.message);
     return [];
+  }
+}
+
+/** Closes every socket without logging out, so the next instance can take the login over cleanly. */
+export function shutdownWhatsApp() {
+  shuttingDown = true;
+  for (const session of sessions.values()) {
+    try { session.sock?.end(undefined); } catch { /* already closed */ }
   }
 }

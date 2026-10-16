@@ -269,6 +269,23 @@ export async function initDbSchema(): Promise<void> {
         created_by VARCHAR(150),
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+      -- Live queue state (called number, WhatsApp link, templates) lives apart from the
+      -- project's design so saving, restoring or discarding the design never touches it.
+      CREATE TABLE IF NOT EXISTS queue_state (
+        page_id VARCHAR(100) PRIMARY KEY,
+        settings JSONB NOT NULL DEFAULT '{}'::jsonb,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+
+      -- WhatsApp linked-device login, kept in the database so a redeploy (new container,
+      -- empty disk) does not unlink the phone.
+      CREATE TABLE IF NOT EXISTS wa_auth (
+        page_id VARCHAR(100) NOT NULL,
+        key VARCHAR(255) NOT NULL,
+        value TEXT NOT NULL,
+        PRIMARY KEY (page_id, key)
+      );
+
       CREATE INDEX IF NOT EXISTS project_history_page_idx ON project_history (page_id, revision DESC);
       CREATE INDEX IF NOT EXISTS project_history_created_idx ON project_history (created_at DESC);
     `);
