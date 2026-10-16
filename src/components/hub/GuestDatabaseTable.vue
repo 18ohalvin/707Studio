@@ -409,14 +409,18 @@
             <!-- Access ID card -->
             <div class="rounded-[14px] bg-[#0c0d0e] text-white p-4 relative overflow-hidden">
               <div class="absolute inset-0 opacity-[0.07] hub-grid" />
-              <p class="text-[10px] uppercase tracking-[0.18em] text-white/50 relative">Access ID</p>
-              <div class="flex items-center justify-between gap-3 mt-1.5 relative">
-                <span class="font-mono text-[20px] leading-[28px] h-[28px] flex items-center tracking-[0.06em] truncate">{{ accessId(drawerRow) }}</span>
-                <button type="button" @click="copy(accessId(drawerRow))" class="h-[28px] px-2.5 rounded-[7px] bg-white/10 hover:bg-white/20 text-[11px] flex items-center gap-1.5 cursor-pointer shrink-0">
+              <div class="flex items-center justify-between gap-3 relative">
+                <p class="text-[10px] uppercase tracking-[0.18em] text-white/50">Access ID</p>
+                <button type="button" @click="copy(accessId(drawerRow))" class="h-[26px] px-2.5 rounded-[7px] bg-white/10 hover:bg-white/20 text-[11px] flex items-center gap-1.5 cursor-pointer shrink-0">
                   <Copy class="w-3.5 h-3.5" /> Copy
                 </button>
               </div>
-              <div class="flex items-center gap-2 mt-3 text-[11px] relative" :class="drawerRow.checked_in_at ? 'text-moss-300' : 'text-white/50'">
+              <!-- The ID sits in the middle of the space between the header and the status lines -->
+              <div class="relative flex items-center justify-center min-h-[64px] py-3">
+                <span class="font-mono text-[22px] leading-none tracking-[0.06em] text-center break-all">{{ accessId(drawerRow) }}</span>
+              </div>
+              <div class="relative border-t border-white/10 pt-3"></div>
+              <div class="flex items-center gap-2 text-[11px] relative" :class="drawerRow.checked_in_at ? 'text-moss-300' : 'text-white/50'">
                 <span class="size-1.5 rounded-full" :class="drawerRow.checked_in_at ? 'bg-moss-300' : 'bg-white/30'" />
                 {{ drawerRow.checked_in_at ? `Checked in ${formatDateTime(drawerRow.checked_in_at)}${drawerRow.checked_in_by ? ` · by ${drawerRow.checked_in_by}` : ''}` : 'Not checked in yet' }}
               </div>
