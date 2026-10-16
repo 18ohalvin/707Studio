@@ -248,98 +248,166 @@
 
       <!-- State: Enabled (Full Journey Stepper & 100% English Template Editor + Live Preview) -->
       <template v-if="form.waEnabled">
-        <!-- WhatsApp Device Linking Station -->
-        <div
-          class="p-7 sm:p-8 md:p-9 rounded-[22px] border transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-xs"
-          :class="form.waConnection?.connected ? 'border-emerald-200/80 bg-emerald-500/[0.04]' : 'border-black/10 bg-neutral-50/70'"
-        >
-          <div class="flex items-start gap-4">
-            <div
-              class="size-12 rounded-[14px] flex items-center justify-center shrink-0 mt-0.5 shadow-2xs transition-colors"
-              :class="form.waConnection?.connected ? 'bg-emerald-600 text-white' : 'bg-white text-neutral-600 border border-black/10'"
-            >
-              <Smartphone class="w-6 h-6" />
+        <!-- Zero-Cost WhatsApp Linked Device Gateway Section (Stanley Architecture) -->
+        <div class="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6 items-start">
+          <!-- Left Column: Default Number & WhatsApp Gateway Card -->
+          <div class="p-6 rounded-[20px] border border-black/10 bg-white flex flex-col gap-5 shadow-xs">
+            <!-- 1. Default WhatsApp Number Header -->
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-mono uppercase tracking-[0.12em] text-neutral-500 font-bold">DEFAULT WHATSAPP NUMBER</span>
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-medium border transition-colors"
+                :class="form.waConnection?.connected ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-neutral-100 text-neutral-500 border-neutral-200'"
+              >
+                <span class="size-1.5 rounded-full" :class="form.waConnection?.connected ? 'bg-emerald-500 animate-pulse' : 'bg-neutral-400'"></span>
+                {{ form.waConnection?.connected ? 'Linked' : 'Not Linked' }}
+              </span>
             </div>
-            <div>
-              <div class="flex flex-wrap items-center gap-2.5">
-                <h4 class="text-[15.5px] font-medium text-black">
-                  {{ form.waConnection?.connected ? `Sender: ${form.waConnection?.formattedNumber || form.waConnection?.phoneNumber || 'Linked Phone'}` : 'Business WhatsApp Sender Device' }}
-                </h4>
-                <span
-                  class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium border transition-colors"
-                  :class="form.waConnection?.connected ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-50 text-amber-800 border-amber-200'"
-                >
-                  <span
-                    class="size-1.5 rounded-full"
-                    :class="form.waConnection?.connected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'"
-                  />
-                  {{ form.waConnection?.connected ? 'Linked & Active' : 'Not Linked (Offline)' }}
-                </span>
-                <a
-                  v-if="form.waConnection?.connected && form.waConnection?.phoneNumber"
-                  :href="'https://wa.me/' + form.waConnection.phoneNumber"
-                  target="_blank"
-                  rel="noopener"
-                  class="text-[12px] text-emerald-700 underline font-mono hover:text-emerald-800"
-                >
-                  Test wa.me ↗
-                </a>
+
+            <!-- Phone display & edit button -->
+            <div class="p-3.5 rounded-[12px] border border-black/10 bg-neutral-50/70 flex items-center justify-between">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="size-9 rounded-[10px] bg-white border border-black/10 flex items-center justify-center text-neutral-600 shadow-2xs shrink-0">
+                  <Phone class="w-4 h-4" />
+                </div>
+                <div class="min-w-0">
+                  <div class="text-[11px] text-neutral-400 font-medium">Default Sender Phone</div>
+                  <div class="text-[13.5px] font-semibold text-black font-mono truncate">
+                    {{ form.waConnection?.formattedNumber || (form.waConnection?.phoneNumber ? `+${form.waConnection.phoneNumber}` : 'No phone configured') }}
+                  </div>
+                </div>
               </div>
-              <p class="text-[13px] text-neutral-500 mt-1 leading-relaxed max-w-[560px]">
-                <template v-if="form.waConnection?.connected">
-                  {{ form.waConnection?.sessionName || '707 Studio Primary WhatsApp' }} ·
-                  <span class="text-neutral-400">Linked {{ formatLinkedTime(form.waConnection?.linkedAt) }} via {{ formatProvider(form.waConnection?.provider) }}</span>
-                </template>
-                <template v-else>
-                  Link your business phone number to send automated queue confirmation and alerts directly to visitors without third-party fees.
-                </template>
+              <button
+                type="button"
+                @click="editDefaultPhone"
+                class="text-[11.5px] text-neutral-600 hover:text-black font-medium underline shrink-0 cursor-pointer pl-2"
+              >
+                Edit
+              </button>
+            </div>
+
+            <!-- 2. WhatsApp Gateway Section -->
+            <div class="pt-4 border-t border-black/10 flex flex-col gap-3.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] font-mono uppercase tracking-[0.12em] text-neutral-500 font-bold">WHATSAPP GATEWAY</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-neutral-100 text-neutral-700 border border-neutral-200">
+                  Zero Cost Direct
+                </span>
+              </div>
+
+              <!-- Unlinked State -->
+              <div v-if="!form.waConnection?.connected" class="flex flex-col gap-3.5">
+                <p class="text-[12.5px] text-neutral-500 leading-relaxed">
+                  Connect store phone via WhatsApp Linked Devices to send automated order notifications with no monthly platform fees.
+                </p>
+                <button
+                  type="button"
+                  class="h-[42px] px-5 rounded-[12px] bg-black hover:bg-neutral-800 text-white text-[13px] font-medium transition-colors flex items-center justify-center gap-2.5 cursor-pointer shadow-sm w-full"
+                  :disabled="isConnectingWa"
+                  @click="openWhatsAppQrModal"
+                >
+                  <QrCode class="w-4 h-4" />
+                  <span>{{ isConnectingWa ? 'Connecting Gateway...' : 'Link Device (QR Code)' }}</span>
+                </button>
+              </div>
+
+              <!-- Connected State -->
+              <div v-else class="flex flex-col gap-3">
+                <div class="p-3.5 rounded-[12px] bg-emerald-500/[0.06] border border-emerald-200 flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-[12.5px] font-semibold text-emerald-800">Gateway Active</span>
+                  </div>
+                  <span class="text-[13px] font-mono font-semibold text-emerald-900">
+                    {{ form.waConnection?.formattedNumber || (form.waConnection?.phoneNumber ? `+${form.waConnection.phoneNumber}` : '') }}
+                  </span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    class="h-[38px] px-3 rounded-[10px] border border-black/15 bg-white hover:bg-black/5 text-[12.5px] font-medium text-black flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-2xs"
+                    @click="openTestModal"
+                  >
+                    <Send class="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Test Message</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="h-[38px] px-3 rounded-[10px] border border-red-200 text-red-600 hover:bg-red-50 text-[12.5px] font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                    :disabled="isDisconnectingWa"
+                    @click="disconnectWhatsAppDevice"
+                  >
+                    <Unlink class="w-3.5 h-3.5" />
+                    <span>{{ isDisconnectingWa ? 'Unlinking...' : 'Disconnect' }}</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Audit Logs & Advanced Link -->
+              <div class="pt-1 flex items-center justify-between text-[11.5px] text-neutral-400">
+                <button
+                  type="button"
+                  @click="openLogsModal"
+                  class="hover:text-black flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <History class="w-3.5 h-3.5" />
+                  <span>View Dispatch Logs</span>
+                </button>
+                <button
+                  type="button"
+                  @click="openLinkModal"
+                  class="hover:text-black cursor-pointer transition-colors"
+                >
+                  Gateway API Options ⚙
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Description & Feature Overview -->
+          <div class="p-6 rounded-[20px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between h-full gap-4">
+            <div>
+              <div class="flex items-center gap-2 text-black font-medium text-[14.5px]">
+                <ShieldCheck class="w-4 h-4 text-emerald-600" />
+                <span>Zero-Cost Direct WhatsApp Automation</span>
+              </div>
+              <p class="text-[12.5px] text-neutral-500 mt-2 leading-relaxed">
+                Uses WhatsApp Multi-Device linked device technology. Pair once with your official brand or store phone camera — our server sends messages directly through your active WhatsApp Web connection without monthly gateway subscription costs or message limits.
               </p>
             </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-black/10">
+              <div class="flex flex-col gap-0.5">
+                <span class="text-[10.5px] font-mono text-neutral-400 uppercase tracking-wider">Session</span>
+                <span class="text-[13px] font-medium text-black">{{ form.waConnection?.connected ? 'Persistent' : 'Ready' }}</span>
+              </div>
+              <div class="flex flex-col gap-0.5">
+                <span class="text-[10.5px] font-mono text-neutral-400 uppercase tracking-wider">Protocol</span>
+                <span class="text-[13px] font-medium text-black">WhatsApp Web MD</span>
+              </div>
+              <div class="flex flex-col gap-0.5">
+                <span class="text-[10.5px] font-mono text-neutral-400 uppercase tracking-wider">Cost</span>
+                <span class="text-[13px] font-medium text-emerald-600 font-mono">$0 / Free</span>
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div class="flex flex-wrap items-center gap-2.5 shrink-0">
-            <template v-if="form.waConnection?.connected">
-              <button
-                type="button"
-                @click="openTestModal"
-                class="h-[38px] px-4 rounded-[10px] border border-black/15 bg-white text-[12.5px] font-medium hover:bg-black/5 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs text-black"
-                title="Send a quick test WhatsApp notification"
-              >
-                <Send class="w-4 h-4 text-emerald-600" />
-                <span>Send Test</span>
-              </button>
-
-              <button
-                type="button"
-                @click="openLogsModal"
-                class="h-[38px] px-4 rounded-[10px] border border-black/15 bg-white text-[12.5px] font-medium hover:bg-black/5 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs text-black"
-                title="View recent outgoing WhatsApp audit log"
-              >
-                <History class="w-4 h-4 text-neutral-500" />
-                <span>Logs</span>
-              </button>
-
-              <button
-                type="button"
-                @click="handleUnlinkDevice"
-                class="h-[38px] px-3.5 rounded-[10px] border border-red-200 text-red-600 hover:bg-red-50 text-[12.5px] font-medium flex items-center gap-1.5 cursor-pointer transition-colors"
-                title="Disconnect linked WhatsApp device"
-              >
-                <Unlink class="w-4 h-4" />
-                <span>Unlink</span>
-              </button>
-            </template>
-            <template v-else>
-              <button
-                type="button"
-                @click="openLinkModal"
-                class="h-[42px] px-5 rounded-[12px] bg-black text-white text-[13px] font-medium hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
-              >
-                <MessageSquare class="w-4 h-4" />
-                <span>Connect WhatsApp</span>
-              </button>
-            </template>
+        <!-- Section Header: NOTIFICATION LIST AUTOMATION -->
+        <div class="pt-4 border-t border-black/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h4 class="text-[15px] font-mono uppercase tracking-[0.08em] font-bold text-black">NOTIFICATION LIST AUTOMATION</h4>
+            <p class="text-[12px] text-neutral-500 mt-0.5">Automated notification profiles triggered across guest queue progression stages.</p>
           </div>
+          <button
+            type="button"
+            @click="openAddStageModal"
+            class="h-[36px] px-3.5 rounded-[10px] bg-black text-white text-[12.5px] font-medium hover:bg-neutral-800 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs self-start sm:self-auto"
+          >
+            <Plus class="w-3.5 h-3.5" />
+            <span>Add Notification Profile</span>
+          </button>
         </div>
 
         <!-- Pipeline Control Bar (Presets & Add Custom Stage) -->
@@ -500,6 +568,116 @@
           </div>
         </div>
       </template>
+    </div>
+
+    <!-- Modal 0: WhatsApp Web Linked Device QR Scanner (Baileys) -->
+    <div
+      v-if="showWhatsAppQrModal"
+      class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
+      @click.self="closeWhatsAppQrModal"
+    >
+      <div class="w-full max-w-[640px] bg-white rounded-[24px] shadow-2xl border border-black/10 overflow-hidden flex flex-col font-707">
+        <div class="p-6 border-b border-black/10 flex items-center justify-between bg-neutral-50/50">
+          <div class="flex items-center gap-3">
+            <div class="size-10 rounded-[12px] bg-black text-white flex items-center justify-center shadow-xs">
+              <QrCode class="w-5 h-5" />
+            </div>
+            <div>
+              <h3 class="text-[17px] font-semibold text-black tracking-tight">Link WhatsApp Device</h3>
+              <p class="text-[12.5px] text-neutral-500">Zero-cost automated notifications via WhatsApp Linked Devices.</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            @click="closeWhatsAppQrModal"
+            class="size-8 rounded-[8px] hover:bg-black/5 flex items-center justify-center text-neutral-400 hover:text-black cursor-pointer transition-colors"
+          >
+            <X class="w-4 h-4" />
+          </button>
+        </div>
+
+        <!-- Error Alert if any -->
+        <div v-if="waDeviceStatus.error" class="mx-6 mt-5 p-3.5 rounded-[12px] bg-red-50 border border-red-200 flex items-start justify-between gap-3 text-red-800 text-[12.5px]">
+          <div class="flex items-start gap-2">
+            <AlertTriangle class="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+            <span>{{ waDeviceStatus.error }}</span>
+          </div>
+          <button type="button" @click="openWhatsAppQrModal" class="px-2.5 py-1 rounded-[6px] bg-red-100 hover:bg-red-200 font-semibold text-[11px] shrink-0 cursor-pointer">
+            Retry
+          </button>
+        </div>
+
+        <!-- 2-Column Split: Steps on Left, QR on Right -->
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+          <!-- Steps -->
+          <div class="flex flex-col gap-4">
+            <div class="flex items-start gap-3">
+              <span class="size-6 rounded-full bg-black text-white text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
+              <div>
+                <div class="text-[13px] font-semibold text-black">Open WhatsApp</div>
+                <div class="text-[12px] text-neutral-500 mt-0.5">Open WhatsApp or WhatsApp Business on your phone.</div>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-3">
+              <span class="size-6 rounded-full bg-black text-white text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
+              <div>
+                <div class="text-[13px] font-semibold text-black">Go to Linked Devices</div>
+                <div class="text-[12px] text-neutral-500 mt-0.5">Tap <strong>Settings</strong> (iOS) or <strong>⋮ Menu</strong> (Android) &gt; <strong>Linked Devices</strong>.</div>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-3">
+              <span class="size-6 rounded-full bg-black text-white text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">3</span>
+              <div>
+                <div class="text-[13px] font-semibold text-black">Link a Device</div>
+                <div class="text-[12px] text-neutral-500 mt-0.5">Tap <strong>Link a Device</strong> and authenticate with biometric or passcode.</div>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-3">
+              <span class="size-6 rounded-full bg-black text-white text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">4</span>
+              <div>
+                <div class="text-[13px] font-semibold text-black">Scan QR Code</div>
+                <div class="text-[12px] text-neutral-500 mt-0.5">Point phone camera directly at the QR code on screen.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- QR Display Box -->
+          <div class="flex flex-col items-center justify-center p-4 rounded-[16px] bg-neutral-50 border border-black/10 min-h-[260px] text-center">
+            <template v-if="waDeviceStatus.qr">
+              <img :src="waDeviceStatus.qr" alt="WhatsApp Pairing QR" class="size-[220px] rounded-[10px] bg-white p-2 border border-black/10 shadow-xs object-contain" />
+              <div class="mt-3 flex items-center gap-2 text-[11px] text-neutral-400 font-mono">
+                <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Waiting for camera scan...</span>
+              </div>
+            </template>
+            <template v-else-if="waDeviceStatus.status === 'connecting' || isConnectingWa">
+              <div class="flex flex-col items-center gap-3">
+                <div class="size-8 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                <span class="text-[12.5px] text-neutral-600 font-medium">Generating secure QR code...</span>
+              </div>
+            </template>
+            <template v-else>
+              <div class="flex flex-col items-center gap-2 text-neutral-400">
+                <QrCode class="size-12 opacity-30" />
+                <span class="text-[12px]">Click Retry to generate a new QR</span>
+                <button type="button" @click="openWhatsAppQrModal" class="mt-2 px-3 py-1.5 rounded-[8px] bg-black text-white text-[12px] font-medium hover:bg-neutral-800 cursor-pointer">
+                  Generate QR
+                </button>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <div class="p-4 border-t border-black/10 bg-neutral-50 flex items-center justify-between text-[11.5px] text-neutral-400">
+          <span>Authentic Multi-Device connection • End-to-end encrypted</span>
+          <button type="button" @click="closeWhatsAppQrModal" class="px-4 py-1.5 rounded-[8px] border border-black/15 bg-white hover:bg-neutral-100 text-[12px] font-medium text-black cursor-pointer">
+            Close
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Modal 1: Link WhatsApp Device Modal -->
@@ -971,7 +1149,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
 import {
   RefreshCw,
   Check,
@@ -981,6 +1159,7 @@ import {
   Volume2,
   MessageSquare,
   Smartphone,
+  Phone,
   ShieldCheck,
   QrCode,
   UserCheck,
@@ -996,6 +1175,7 @@ import {
   ScanLine,
   X,
   AlertCircle,
+  AlertTriangle,
   CheckCircle2,
   ExternalLink
 } from 'lucide-vue-next';
@@ -1011,6 +1191,10 @@ import {
   fetchWaLinkSession,
   confirmWaLinkApi,
   unlinkWaApi,
+  fetchWaStatusApi,
+  connectWaDeviceApi,
+  disconnectWaDeviceApi,
+  type WaDeviceStatus,
   sendWaTestMessageApi,
   fetchWaLogs,
   type Submission,
@@ -1043,6 +1227,145 @@ const emit = defineEmits<{
 const isLoading = ref(false);
 const isSaving = ref(false);
 const activeStageId = ref<StageId>('approaching');
+
+// WhatsApp Multi-Device Gateway State (Baileys)
+const showWhatsAppQrModal = ref(false);
+const isConnectingWa = ref(false);
+const isDisconnectingWa = ref(false);
+const waDeviceStatus = ref<WaDeviceStatus>({
+  status: 'disconnected',
+  connected: false,
+  phone: null,
+  qr: null,
+  error: null
+});
+let waPollTimer: any = null;
+
+function startWaPolling(pageId: string) {
+  stopWaPolling();
+  waPollTimer = setInterval(async () => {
+    try {
+      const data = await fetchWaStatusApi(pageId);
+      waDeviceStatus.value = data;
+      if (data.connected) {
+        stopWaPolling();
+        form.waConnection = {
+          ...(form.waConnection || {}),
+          connected: true,
+          phoneNumber: data.phone || form.waConnection?.phoneNumber || '',
+          formattedNumber: data.phone ? formatWhatsAppDisplay(data.phone) : (form.waConnection?.formattedNumber || ''),
+          provider: 'linked_device'
+        };
+        form.waEnabled = true;
+        showWhatsAppQrModal.value = false;
+        emit('toast', `WhatsApp device linked successfully (+${data.phone})! Automated notifications active.`);
+      } else if (data.status === 'rejected_mismatch') {
+        stopWaPolling();
+      }
+    } catch {
+      // quiet poll
+    }
+  }, 2000);
+}
+
+function stopWaPolling() {
+  if (waPollTimer) {
+    clearInterval(waPollTimer);
+    waPollTimer = null;
+  }
+}
+
+async function openWhatsAppQrModal() {
+  if (!props.pageId) return;
+  showWhatsAppQrModal.value = true;
+  isConnectingWa.value = true;
+  waDeviceStatus.value.error = null;
+  try {
+    const data = await connectWaDeviceApi(props.pageId, form.waConnection?.phoneNumber || undefined);
+    waDeviceStatus.value = data;
+    if (data.connected) {
+      form.waConnection = {
+        ...(form.waConnection || {}),
+        connected: true,
+        phoneNumber: data.phone || '',
+        formattedNumber: data.phone ? formatWhatsAppDisplay(data.phone) : '',
+        provider: 'linked_device'
+      };
+      form.waEnabled = true;
+      showWhatsAppQrModal.value = false;
+      emit('toast', `WhatsApp device is already connected (+${data.phone})!`);
+      return;
+    }
+  } catch (err: any) {
+    waDeviceStatus.value.error = err?.message || 'Could not initiate WhatsApp socket connection';
+  } finally {
+    isConnectingWa.value = false;
+  }
+  startWaPolling(props.pageId);
+}
+
+function closeWhatsAppQrModal() {
+  showWhatsAppQrModal.value = false;
+  stopWaPolling();
+}
+
+async function disconnectWhatsAppDevice() {
+  if (!props.pageId) return;
+  const ok = await glassConfirm({
+    title: 'Disconnect WhatsApp Device?',
+    message: 'Are you sure you want to unlink this WhatsApp device? Automated queue notifications will be paused until a device is linked.',
+    confirmLabel: 'Disconnect',
+    danger: true
+  });
+  if (!ok) return;
+
+  isDisconnectingWa.value = true;
+  try {
+    await disconnectWaDeviceApi(props.pageId);
+    waDeviceStatus.value = {
+      connected: false,
+      status: 'disconnected',
+      phone: null,
+      qr: null
+    };
+    form.waConnection = {
+      connected: false,
+      phoneNumber: '',
+      formattedNumber: '',
+      sessionName: '',
+      provider: 'linked_device'
+    };
+    emit('toast', 'WhatsApp device disconnected successfully.');
+  } catch (err: any) {
+    emit('toast', err?.message || 'Failed to disconnect WhatsApp device');
+  } finally {
+    isDisconnectingWa.value = false;
+  }
+}
+
+async function editDefaultPhone() {
+  const current = form.waConnection?.phoneNumber || '';
+  const input = await glassPrompt({
+    title: 'Edit Default WhatsApp Number',
+    message: 'Enter official store/brand WhatsApp number (e.g. 081234567890 or +62 812-3456-7890):',
+    defaultValue: current,
+    placeholder: '+62 812-3456-7890'
+  });
+  if (input === null) return;
+  const clean = normalizeWhatsAppNumber(input);
+  if (!clean && input.trim()) {
+    emit('toast', 'Invalid phone number format.');
+    return;
+  }
+  form.waConnection = {
+    connected: Boolean(form.waConnection?.connected),
+    ...(form.waConnection || {}),
+    phoneNumber: clean,
+    formattedNumber: clean ? formatWhatsAppDisplay(clean) : ''
+  };
+  await saveSettings();
+  emit('toast', `Default WhatsApp number updated${clean ? ` to +${clean}` : ''}.`);
+}
 
 // WhatsApp Device Linking & Testing State
 const showLinkModal = ref(false);
@@ -1352,6 +1675,22 @@ async function loadSettings() {
         }));
       }
     }
+
+    // Check live status of Baileys WhatsApp Gateway
+    if (props.pageId) {
+      try {
+        const liveStatus = await fetchWaStatusApi(props.pageId);
+        waDeviceStatus.value = liveStatus;
+        if (liveStatus.connected) {
+          if (!form.waConnection) form.waConnection = { connected: true };
+          form.waConnection.connected = true;
+          if (liveStatus.phone) {
+            form.waConnection.phoneNumber = liveStatus.phone;
+            form.waConnection.formattedNumber = formatWhatsAppDisplay(liveStatus.phone);
+          }
+        }
+      } catch {}
+    }
   } catch (err: any) {
     emit('toast', err?.message || 'Failed to load queue settings');
   } finally {
@@ -1599,5 +1938,9 @@ async function stepCaller(delta: number) {
 
 onMounted(() => {
   loadSettings();
+});
+
+onUnmounted(() => {
+  stopWaPolling();
 });
 </script>

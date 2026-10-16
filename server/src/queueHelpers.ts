@@ -147,9 +147,16 @@ export function renderTemplate(template: string, vars: Record<string, any>): str
   return output;
 }
 
+type BaileysDispatcher = (pageId: string, phone: string, text: string) => Promise<{ success: boolean; error?: string; messageId?: string; [key: string]: any }>;
+let globalBaileysDispatcher: BaileysDispatcher | null = null;
+
+export function setBaileysDispatcher(dispatcher: BaileysDispatcher | null) {
+  globalBaileysDispatcher = dispatcher;
+}
+
 /**
  * Dispatch or log WhatsApp notification.
- * Works seamlessly in direct mode (wa.me link generation & audit log) and cloud gateway mode.
+ * Works seamlessly via Linked WhatsApp Web (Baileys), Cloud Gateway (Fonnte/Wablas/Meta), or direct link.
  */
 export async function sendWhatsAppNotification(
   phone: string,
@@ -157,7 +164,7 @@ export async function sendWhatsAppNotification(
   meta?: Record<string, any>
 ): Promise<boolean> {
   const cleanPhone = normalizeWhatsAppNumber(phone);
-  if (!cleanPhone || cleanPhone.length < 9) {
+  if (!cleanPhone || cleanPhone.length < 8) {
     console.warn(`[sendWhatsAppNotification] Invalid recipient phone number provided: "${phone}"`);
     recentWaLogs.push({
       id: 'walog_' + Math.random().toString(36).substring(2, 10),
@@ -166,7 +173,7 @@ export async function sendWhatsAppNotification(
       text,
       event: meta?.event || 'notification',
       status: 'failed',
-      error: 'Invalid phone number format (min 9 digits required, e.g. 0812... or +62...)',
+      error: 'Invalid phone number format (min 8 digits required, e.g. 0812... or +62...)',
       timestamp: new Date().toISOString()
     });
     return false;
@@ -181,7 +188,35 @@ export async function sendWhatsAppNotification(
   let status: 'sent' | 'delivered' | 'failed' = 'sent';
   let deliveryError: string | undefined = undefined;
 
-  // If a WhatsApp Gateway webhook or URL is configured
+  // 1. Try Baileys Linked Device Dispatcher first (Zero Cost Direct)
+  if (globalBaileysDispatcher) {
+    const pageId = meta?.pageId || 'default';
+    try {
+      const baileysRes = await globalBaileysDispatcher(pageId, cleanPhone, text);
+      if (baileysRes && baileysRes.success) {
+        status = 'delivered';
+        const logEntry: WhatsAppLogEntry = {
+          id: 'walog_' + Math.random().toString(36).substring(2, 10),
+          pageId: meta?.pageId,
+          phone: cleanPhone,
+          text,
+          event: meta?.event || 'notification',
+          status: 'delivered',
+          timestamp: new Date().toISOString()
+        };
+        recentWaLogs.push(logEntry);
+        if (recentWaLogs.length > 200) recentWaLogs.shift();
+        return true;
+      } else if (baileysRes && !baileysRes.success && meta?.requireConnected) {
+        status = 'failed';
+        deliveryError = baileysRes.error || 'Linked WhatsApp device is not connected';
+      }
+    } catch (bErr: any) {
+      console.warn('[QueueManager] Baileys dispatch exception:', bErr?.message);
+    }
+  }
+
+  // 2. If a WhatsApp Gateway webhook or URL is configured
   const gatewayUrl = meta?.gatewayUrl || (typeof process !== 'undefined' ? process.env.WA_GATEWAY_URL : undefined);
   const apiToken = meta?.apiToken || (typeof process !== 'undefined' ? process.env.WA_GATEWAY_TOKEN : undefined);
   const provider = meta?.provider || 'direct_sender';

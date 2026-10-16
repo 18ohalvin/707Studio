@@ -24,6 +24,12 @@ import {
   normalizeWhatsAppNumber,
   formatWhatsAppDisplay
 } from '../queueManager.js';
+import {
+  getPageStatus,
+  initPageWhatsApp,
+  disconnectPageWhatsApp,
+  sendBaileysMessage
+} from '../baileysManager.js';
 
 export const submissionsRouter = Router();
 
@@ -1026,6 +1032,30 @@ submissionsRouter.post('/call-batch', requireAuth, route('call batch of waiting 
   return res.json({ success: true, data: result });
 }));
 
+// GET /api/submissions/wa-status - Poll current Baileys session status & QR code
+submissionsRouter.get('/wa-status', requireAuth, route('get WA session status', async (req, res) => {
+  const pageId = String(req.query.page_id || '');
+  if (!pageId) return res.status(400).json({ success: false, error: 'page_id is required' });
+  const status = getPageStatus(pageId);
+  return res.json({ success: true, ...status });
+}));
+
+// POST /api/submissions/wa-connect - Initialize Baileys socket & generate QR code
+submissionsRouter.post('/wa-connect', requireAuth, route('connect WA device', async (req, res) => {
+  const { page_id, expectedPhone } = req.body || {};
+  if (!page_id) return res.status(400).json({ success: false, error: 'page_id is required' });
+  const status = await initPageWhatsApp(page_id, { expectedPhone });
+  return res.json({ success: true, ...status });
+}));
+
+// POST /api/submissions/wa-disconnect - Disconnect & logout Baileys socket
+submissionsRouter.post('/wa-disconnect', requireAuth, route('disconnect WA device', async (req, res) => {
+  const { page_id } = req.body || {};
+  if (!page_id) return res.status(400).json({ success: false, error: 'page_id is required' });
+  const result = await disconnectPageWhatsApp(page_id);
+  return res.json(result);
+}));
+
 // GET /api/submissions/wa-link-session - Direct WhatsApp link payload and clean number info
 submissionsRouter.get('/wa-link-session', requireAuth, route('generate WA link session', async (req, res) => {
   const pageId = String(req.query.page_id || '');
@@ -1054,12 +1084,12 @@ submissionsRouter.post('/wa-confirm-link', requireAuth, route('confirm WA device
     phoneNumber: cleanPhone,
     formattedNumber: formatted,
     sessionName: sessionName || '707 Studio Primary WhatsApp',
-    provider: provider || (gatewayUrl ? 'fonnte' : 'direct_sender'),
+    provider: provider || (gatewayUrl ? 'fonnte' : 'linked_device'),
     gatewayUrl: gatewayUrl ? String(gatewayUrl).trim() : undefined,
     apiToken: apiToken ? String(apiToken).trim() : undefined,
     linkedAt: new Date().toISOString(),
     deviceInfo: {
-      platform: gatewayUrl ? 'Cloud Gateway API' : 'Direct WhatsApp (Web / App)',
+      platform: gatewayUrl ? 'Cloud Gateway API' : 'WhatsApp Multi-Device (Web)',
       pushName: sessionName || '707 Activation Hub'
     }
   };
@@ -1073,38 +1103,60 @@ submissionsRouter.post('/wa-unlink', requireAuth, route('unlink WA device', asyn
   const { page_id } = req.body || {};
   if (!page_id) return res.status(400).json({ success: false, error: 'page_id is required' });
 
+  await disconnectPageWhatsApp(page_id);
+
   const waConnection = {
     connected: false,
     phoneNumber: '',
     sessionName: '',
-    provider: 'direct_sender' as const
+    provider: 'linked_device' as const
   };
 
   const saved = await saveQueueSettings(page_id, { waConnection });
   return res.json({ success: true, data: saved.waConnection });
 }));
 
-// POST /api/submissions/wa-test-message - Dispatch immediate test message to phone
+// POST /api/submissions/wa-test-message - Dispatch authentic test message to phone
 submissionsRouter.post('/wa-test-message', requireAuth, route('dispatch WA test message', async (req, res) => {
-  const { page_id, phone, text } = req.body || {};
-  if (!phone) return res.status(400).json({ success: false, error: 'Recipient phone number is required' });
+  const { page_id, phone, text, recipientPhone, message } = req.body || {};
+  const targetPhone = recipientPhone || phone;
+  const messageBody = message || text;
 
-  const cleanPhone = normalizeWhatsAppNumber(phone);
-  if (!cleanPhone || cleanPhone.length < 9) {
+  if (!targetPhone) return res.status(400).json({ success: false, error: 'Recipient phone number is required' });
+
+  const cleanPhone = normalizeWhatsAppNumber(targetPhone);
+  if (!cleanPhone || cleanPhone.length < 8) {
     return res.status(400).json({
       success: false,
-      error: `Invalid phone number format: "${phone}". Please enter a valid number (e.g. +62 812-3456-7890 or 081234567890).`
+      error: `Invalid phone number format: "${targetPhone}". Please enter a valid number (e.g. +62 812-3456-7890 or 081234567890).`
     });
   }
 
+  const messageText = messageBody || `[707 Studio Test] Automated WhatsApp notifications are live and connected. Queue system is fully operational!`;
+  const directWaUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(messageText)}`;
+
+  // 1. Try Baileys Linked Device Socket (The real WhatsApp Web gateway)
+  const baileysResult = await sendBaileysMessage(page_id || 'default', cleanPhone, messageText);
+  if (baileysResult.success) {
+    await sendWhatsAppNotification(cleanPhone, messageText, {
+      pageId: page_id,
+      event: 'test_dispatch'
+    });
+    return res.json({
+      success: true,
+      mode: 'baileys',
+      formattedPhone: formatWhatsAppDisplay(cleanPhone),
+      message: `Test notification successfully delivered via Linked WhatsApp to +${cleanPhone}!`,
+      messageId: baileysResult.messageId,
+      waUrl: directWaUrl
+    });
+  }
+
+  // 2. Check if third-party gateway is configured
   const settings = page_id ? await getQueueSettings(page_id) : null;
-  const messageText = text || `[707 Studio Test] Automated WhatsApp notifications are live and connected. Queue system is fully operational!`;
-  
   const gatewayUrl = settings?.waConnection?.gatewayUrl;
   const apiToken = settings?.waConnection?.apiToken;
   const provider = settings?.waConnection?.provider;
-
-  const directWaUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(messageText)}`;
 
   if (gatewayUrl) {
     const dispatched = await sendWhatsAppNotification(cleanPhone, messageText, {
@@ -1134,22 +1186,14 @@ submissionsRouter.post('/wa-test-message', requireAuth, route('dispatch WA test 
       message: `Test notification successfully delivered via ${provider || 'Cloud Gateway'} to +${cleanPhone}!`,
       waUrl: directWaUrl
     });
-  } else {
-    // Direct WhatsApp mode: Record log and provide ready wa.me url
-    await sendWhatsAppNotification(cleanPhone, messageText, {
-      pageId: page_id,
-      event: 'test_dispatch',
-      provider: 'direct_sender'
-    });
-
-    return res.json({
-      success: true,
-      mode: 'direct',
-      formattedPhone: formatWhatsAppDisplay(cleanPhone),
-      message: `Direct WhatsApp message generated for +${cleanPhone}!`,
-      waUrl: directWaUrl
-    });
   }
+
+  // If Baileys is not linked and no gateway configured:
+  return res.status(400).json({
+    success: false,
+    error: baileysResult.error || 'WhatsApp device is not linked or offline. Please click "Link Device (QR Code)" and scan with your WhatsApp camera first.',
+    waUrl: directWaUrl
+  });
 }));
 
 // GET /api/submissions/wa-logs - Retrieve live outgoing WhatsApp audit log

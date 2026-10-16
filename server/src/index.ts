@@ -14,8 +14,14 @@ import { gateGuard } from './gateGuard.js';
 import { gateAccountsRouter } from './routes/gateAccounts.js';
 import { mediaRouter } from './routes/media.js';
 import { notificationsRouter } from './routes/notifications.js';
+import { whatsappRouter } from './routes/whatsapp.js';
+import { autoRestoreSessions, sendBaileysMessage } from './baileysManager.js';
+import { setBaileysDispatcher } from './queueHelpers.js';
 import { resolveUploadDir } from './uploads.js';
 import { imageVariantMiddleware } from './imageVariants.js';
+
+// Wire authentic Baileys socket dispatcher to queue notifications
+setBaileysDispatcher(sendBaileysMessage);
 
 dotenv.config();
 
@@ -73,6 +79,7 @@ app.use('/api/gate-accounts', requireAuth, gateAccountsRouter);
 app.use('/api/pages', pagesRouter);
 app.use('/api/templates', requireAuth, templatesRouter);
 app.use('/api/submissions', submissionsRouter);
+app.use('/api/whatsapp', whatsappRouter);
 app.use('/api/media', requireAuth, mediaRouter);
 app.use('/api/notifications', requireAuth, notificationsRouter);
 
@@ -128,6 +135,7 @@ if (fs.existsSync(distDir)) {
 // Start Server
 async function startServer() {
   await testDbConnection();
+  void autoRestoreSessions();
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`[707 Activation Server] Running on port ${PORT}`);
     console.log(`[707 Activation Server] Uploads directory: ${uploadDir}`);

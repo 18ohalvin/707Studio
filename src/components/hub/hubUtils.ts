@@ -420,6 +420,52 @@ export async function fetchWaLinkSession(pageId: string, phone?: string): Promis
   return json?.data || null;
 }
 
+export interface WaDeviceStatus {
+  pageId?: string;
+  status: 'disconnected' | 'connecting' | 'qr_ready' | 'connected' | 'rejected_mismatch' | 'saved_offline';
+  connected: boolean;
+  phone?: string | null;
+  qr?: string | null;
+  error?: string | null;
+  lastUpdated?: string;
+}
+
+export async function fetchWaStatusApi(pageId: string): Promise<WaDeviceStatus> {
+  const json = await apiJson<{ success: boolean } & WaDeviceStatus>(`/api/whatsapp/${encodeURIComponent(pageId)}/status`);
+  return {
+    status: json?.status || 'disconnected',
+    connected: Boolean(json?.connected),
+    phone: json?.phone || null,
+    qr: json?.qr || null,
+    error: json?.error || null,
+    lastUpdated: json?.lastUpdated
+  };
+}
+
+export async function connectWaDeviceApi(pageId: string, expectedPhone?: string): Promise<WaDeviceStatus> {
+  const json = await apiJson<{ success: boolean } & WaDeviceStatus>(`/api/whatsapp/${encodeURIComponent(pageId)}/connect`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ expectedPhone })
+  });
+  return {
+    status: json?.status || 'connecting',
+    connected: Boolean(json?.connected),
+    phone: json?.phone || null,
+    qr: json?.qr || null,
+    error: json?.error || null,
+    lastUpdated: json?.lastUpdated
+  };
+}
+
+export async function disconnectWaDeviceApi(pageId: string): Promise<boolean> {
+  const json = await apiJson<{ success: boolean }>(`/api/whatsapp/${encodeURIComponent(pageId)}/disconnect`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }
+  });
+  return Boolean(json?.success);
+}
+
 export async function confirmWaLinkApi(
   pageId: string,
   payload: { phoneNumber: string; sessionName?: string; provider?: string; gatewayUrl?: string; apiToken?: string }
@@ -433,12 +479,7 @@ export async function confirmWaLinkApi(
 }
 
 export async function unlinkWaApi(pageId: string): Promise<boolean> {
-  const json = await apiJson<{ success: boolean }>('/api/submissions/wa-unlink', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ page_id: pageId })
-  });
-  return Boolean(json?.success);
+  return disconnectWaDeviceApi(pageId);
 }
 
 export interface WaTestResult {
