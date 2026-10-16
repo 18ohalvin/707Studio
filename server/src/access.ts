@@ -126,7 +126,7 @@ export async function findProjectForPageId(pageId: string): Promise<any | null> 
 export async function findProjectForEntry(pageId: string, useDb: boolean): Promise<any | null> {
   if (!pageId) return null;
   if (useDb) {
-    const columns = 'id, brand_slug, owner_id, owner_email, status, live_version';
+    const columns = 'id, brand_slug, slug, owner_id, owner_email, status, live_version';
     const direct = await pool.query(`SELECT ${columns} FROM pages WHERE id = $1 LIMIT 1`, [pageId]);
     if (direct.rows[0]) return direct.rows[0];
     const viaFunnelPage = await pool.query(`SELECT ${columns} FROM pages WHERE pages @> $1::jsonb LIMIT 1`, [JSON.stringify([{ id: pageId }])]);
