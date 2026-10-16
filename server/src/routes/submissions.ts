@@ -251,6 +251,8 @@ async function notifyGuest(row: any, kind: 'new' | 'promoted', ticketPdf?: Buffe
     let pdf = ticketPdf ?? null;
     if (!pdf && kind === 'promoted') pdf = await storedTicket(String(row.id));
 
+    const qs = await getQueueSettings(row.page_id);
+
     const guest = {
       email,
       fullName: String(form.fullName || '').trim(),
@@ -258,12 +260,13 @@ async function notifyGuest(row: any, kind: 'new' | 'promoted', ticketPdf?: Buffe
       campaign,
       liveUrl,
       liveLabel,
-      ticketPdf: pdf
+      ticketPdf: pdf,
+      queueNumber: row.queue_number
     };
 
     if (kind === 'promoted') await sendPromotedEmail(guest).then(r => markTicketEmailed(row.id, r));
     else if (row.status === 'waitlisted') await sendWaitlistEmail(guest);
-    else await sendPassEmail(guest).then(r => markTicketEmailed(row.id, r));
+    else await sendPassEmail(guest, qs.emailTemplates?.pass).then(r => markTicketEmailed(row.id, r));
   } catch (err: any) {
     console.warn('[Submissions] Could not notify guest:', err?.message || err);
   }

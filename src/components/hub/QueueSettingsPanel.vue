@@ -196,7 +196,210 @@
       </div>
     </div>
 
-    <!-- 2. Option 1: WhatsApp Notification Section with Dedicated Apple-Style Toggle Switch -->
+    <!-- 2. Primary Email Notifications Section (Always Active & Free From Spam Bans) -->
+    <div class="p-7 sm:p-8 md:p-10 rounded-[22px] border border-black/10 bg-white flex flex-col gap-8 shadow-xs">
+      <!-- Email Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-5 pb-6 border-b border-black/10">
+        <div class="flex items-start gap-4">
+          <div class="size-11 rounded-[12px] flex items-center justify-center shrink-0 mt-0.5 bg-black text-white shadow-sm">
+            <Mail class="w-5 h-5" />
+          </div>
+          <div>
+            <div class="flex items-center gap-2.5">
+              <h3 class="text-[18px] font-medium tracking-tight text-black">Primary Email Notifications</h3>
+              <span class="text-[10.5px] uppercase tracking-[0.1em] font-mono px-2.5 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">
+                Primary • Active
+              </span>
+            </div>
+            <p class="text-[13.5px] text-neutral-500 mt-1 leading-relaxed max-w-[640px]">
+              Guaranteed delivery for tickets, live queue position tracking, and entrance calls without risk of WhatsApp account bans or carrier blocks.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-[10px] bg-neutral-50 border border-black/10 text-[12px] font-mono text-neutral-600 shrink-0">
+          <span class="size-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span>SMTP Delivery Active</span>
+        </div>
+      </div>
+
+      <!-- Email Template Selector (Pass Confirmation vs Turn Ready) -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-2 p-1 rounded-[12px] bg-black/[0.03] border border-black/5 w-fit">
+          <button
+            type="button"
+            @click="activeEmailTab = 'pass'"
+            class="px-4 py-2 rounded-[9px] text-[13px] font-medium transition-all cursor-pointer flex items-center gap-2"
+            :class="activeEmailTab === 'pass' ? 'bg-white text-black shadow-xs' : 'text-neutral-500 hover:text-black'"
+          >
+            <QrCode class="w-4 h-4" />
+            <span>1. Ticket & Live Pass Email</span>
+            <span class="text-[10px] font-mono uppercase bg-black/5 px-1.5 py-0.5 rounded text-neutral-500">On Submit</span>
+          </button>
+          <button
+            type="button"
+            @click="activeEmailTab = 'ready'"
+            class="px-4 py-2 rounded-[9px] text-[13px] font-medium transition-all cursor-pointer flex items-center gap-2"
+            :class="activeEmailTab === 'ready' ? 'bg-white text-black shadow-xs' : 'text-neutral-500 hover:text-black'"
+          >
+            <UserCheck class="w-4 h-4" />
+            <span>2. Turn Ready / Gate Admission</span>
+            <span class="text-[10px] font-mono uppercase bg-black/5 px-1.5 py-0.5 rounded text-neutral-500">Door Call</span>
+          </button>
+        </div>
+
+        <span class="text-[11.5px] text-neutral-400 font-mono">
+          Variables: &#123;&#123;name&#125;&#125;, &#123;&#123;queue_number&#125;&#125;, &#123;&#123;campaign&#125;&#125;, &#123;&#123;link&#125;&#125;
+        </span>
+      </div>
+
+      <!-- Email Editor + Live Luxury Email Preview -->
+      <div class="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6 items-start">
+        <!-- Left: Form Fields (Subject, Heading, Body Copy) -->
+        <div class="flex flex-col gap-4">
+          <!-- Subject Line Field -->
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[12px] font-medium uppercase tracking-[0.08em] text-neutral-500 flex items-center justify-between">
+              <span>Email Subject Line</span>
+              <span class="text-[11px] text-neutral-400 font-mono">{{ currentEmailTemplate.subject?.length || 0 }} chars</span>
+            </label>
+            <input
+              v-model="currentEmailTemplate.subject"
+              type="text"
+              class="w-full h-[42px] px-3.5 rounded-[10px] bg-black/[0.02] border border-black/15 text-[13.5px] font-707 text-black outline-none focus:border-black focus:bg-white transition-all placeholder:text-neutral-400"
+              placeholder="e.g. Your 707 ticket for {{campaign}}"
+            />
+          </div>
+
+          <!-- Email Heading Field -->
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[12px] font-medium uppercase tracking-[0.08em] text-neutral-500">
+              Email Main Heading
+            </label>
+            <input
+              v-model="currentEmailTemplate.heading"
+              type="text"
+              class="w-full h-[42px] px-3.5 rounded-[10px] bg-black/[0.02] border border-black/15 text-[13.5px] font-707 text-black outline-none focus:border-black focus:bg-white transition-all placeholder:text-neutral-400"
+              placeholder="e.g. Your ticket"
+            />
+          </div>
+
+          <!-- Email Body Copy Field -->
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[12px] font-medium uppercase tracking-[0.08em] text-neutral-500 flex items-center justify-between">
+              <span>Body Copy / Intro</span>
+              <span class="text-[11px] text-neutral-400 font-mono">{{ currentEmailTemplate.body?.length || 0 }} chars</span>
+            </label>
+            <textarea
+              v-model="currentEmailTemplate.body"
+              rows="4"
+              class="w-full p-3.5 rounded-[12px] bg-black/[0.02] border border-black/15 text-[13.5px] leading-relaxed font-707 text-black outline-none focus:border-black focus:bg-white transition-all resize-y placeholder:text-neutral-400"
+              placeholder="Enter message body copy..."
+            />
+          </div>
+
+          <!-- Dynamic Variable Pills -->
+          <div class="flex flex-col gap-1.5">
+            <span class="text-[11px] uppercase tracking-[0.08em] text-neutral-500 font-medium">Insert Dynamic Variables:</span>
+            <div class="flex flex-wrap gap-1.5">
+              <button
+                v-for="v in emailVariablePills"
+                :key="v.key"
+                type="button"
+                @click="insertEmailTag(v.key)"
+                class="px-2.5 py-1 rounded-[8px] bg-black/5 hover:bg-black/10 border border-black/5 text-[11.5px] font-medium text-neutral-800 cursor-pointer flex items-center gap-1 transition-colors"
+                :title="v.description"
+              >
+                <span>+ {{ v.label }}</span>
+                <span class="text-[10px] text-neutral-400 font-mono">&#123;&#123;{{ v.key }}&#125;&#125;</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Elegant Live Email Card Preview -->
+        <div class="rounded-[16px] border border-black/10 bg-white overflow-hidden shadow-xs flex flex-col">
+          <!-- Fake Email Client Chrome Header -->
+          <div class="px-4 py-3 bg-neutral-100/80 border-b border-black/10 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <span class="size-2.5 rounded-full bg-red-400/80" />
+                <span class="size-2.5 rounded-full bg-amber-400/80" />
+                <span class="size-2.5 rounded-full bg-emerald-400/80" />
+              </div>
+              <span class="text-[11px] font-mono text-neutral-500 uppercase tracking-wider">Email Inbox Preview</span>
+            </div>
+            <div class="flex flex-col gap-0.5 text-[12px]">
+              <div class="flex items-center gap-2">
+                <span class="font-medium text-neutral-400 w-14 text-right text-[11px]">Subject:</span>
+                <span class="font-semibold text-black truncate">{{ renderedEmailSubject }}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-medium text-neutral-400 w-14 text-right text-[11px]">From:</span>
+                <span class="text-neutral-600 truncate">707 Studio &lt;notifications@707studio.id&gt;</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Email Content Body -->
+          <div class="p-6 flex flex-col gap-5 bg-white">
+            <!-- Brand Wordmark Header -->
+            <div class="flex items-center justify-between pb-4 border-b border-black/10">
+              <span class="text-[16px] font-bold tracking-tight text-black font-707">707 STUDIO</span>
+              <span class="text-[10px] font-mono uppercase bg-black/5 px-2 py-0.5 rounded text-neutral-600">Official Pass</span>
+            </div>
+
+            <!-- Email Headline -->
+            <div class="flex flex-col gap-1.5">
+              <h2 class="text-[20px] font-semibold text-black tracking-tight leading-snug">
+                {{ renderedEmailHeading }}
+              </h2>
+              <p class="text-[13px] text-neutral-600 leading-relaxed whitespace-pre-wrap">
+                {{ renderedEmailBody }}
+              </p>
+            </div>
+
+            <!-- Details Summary Grid -->
+            <div class="p-3.5 rounded-[10px] bg-neutral-50 border border-black/5 grid grid-cols-2 gap-3 text-[12px]">
+              <div class="flex flex-col gap-0.5">
+                <span class="text-[10px] font-mono uppercase text-neutral-400">Queue Number</span>
+                <span class="font-mono font-bold text-black text-[14px]">#42</span>
+              </div>
+              <div class="flex flex-col gap-0.5">
+                <span class="text-[10px] font-mono uppercase text-neutral-400">Access ID</span>
+                <span class="font-mono font-bold text-black text-[14px]">707-K92F</span>
+              </div>
+              <div class="flex flex-col gap-0.5">
+                <span class="text-[10px] font-mono uppercase text-neutral-400">Visitor</span>
+                <span class="font-medium text-black truncate">Sarah Jenkins</span>
+              </div>
+              <div class="flex flex-col gap-0.5">
+                <span class="text-[10px] font-mono uppercase text-neutral-400">Event</span>
+                <span class="font-medium text-black truncate">{{ editorStore.projectTitle || 'Atmos Drop' }}</span>
+              </div>
+            </div>
+
+            <!-- Primary CTA Button (VIEW LIVE QUEUE) -->
+            <div class="flex flex-col items-center gap-1.5 pt-1">
+              <div class="w-full h-[44px] bg-black text-white rounded-[10px] flex items-center justify-center font-medium text-[13px] tracking-wide uppercase select-none shadow-sm cursor-default">
+                VIEW LIVE QUEUE
+              </div>
+              <span class="text-[11px] text-neutral-500 text-center leading-tight">
+                Your live position and QR code update automatically on this page.
+              </span>
+            </div>
+
+            <!-- PDF Attachment Indicator (for Pass email) -->
+            <div v-if="activeEmailTab === 'pass'" class="pt-3 border-t border-black/5 flex items-center gap-2 text-[11px] text-neutral-500">
+              <Paperclip class="w-3.5 h-3.5 text-neutral-400" />
+              <span>Attachment: <strong>707-ticket-sarah.pdf</strong> (e-ticket with offline QR)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Option 2: WhatsApp Notification Section with Dedicated Apple-Style Toggle Switch -->
     <div class="p-7 sm:p-8 md:p-10 rounded-[22px] border border-black/10 bg-white flex flex-col gap-8 shadow-xs">
       <!-- Master Toggle Header -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-5 pb-6" :class="form.waEnabled ? 'border-b border-black/10' : ''">
@@ -1165,7 +1368,9 @@ import {
   AlertCircle,
   AlertTriangle,
   CheckCircle2,
-  ExternalLink
+  ExternalLink,
+  Mail,
+  Paperclip
 } from 'lucide-vue-next';
 import { glassConfirm, glassPrompt } from '../../services/glassDialog.ts';
 import {
@@ -1419,6 +1624,18 @@ const form = reactive<QueueSettingsData>({
     approaching: 'Hello {{name}}! Your turn is approaching. The queue is currently serving near your number (#{{queue_number}}). Please proceed to the entrance area now. Live status: {{link}}',
     ready: 'Hello {{name}}! It is your turn to enter. Please present your Access ID {{access_id}} to the door staff at the entrance. Your pass: {{link}}',
     expired: 'Notice: {{name}}, queue number #{{queue_number}} was skipped past the grace margin and has expired. You can rejoin and regenerate a new queue number on your live pass here: {{link}}'
+  },
+  emailTemplates: {
+    pass: {
+      subject: 'Your 707 ticket for {{campaign}}',
+      heading: 'Your ticket',
+      body: 'Your e-ticket is attached to this email as a PDF. Track your live queue status and show your pass at the door.'
+    },
+    ready: {
+      subject: "It's your turn to enter: {{campaign}}",
+      heading: "It's Your Turn to Enter!",
+      body: 'Your turn has arrived for {{campaign}}. Please proceed to the entrance area now and present your live pass to the door staff.'
+    }
   }
 });
 
@@ -1492,6 +1709,67 @@ function selectActiveWaStage(id: string) {
 const currentStage = computed(() => {
   return DEFAULT_STAGES.find(s => s.id === (form.activeWaStage || activeStageId.value)) || DEFAULT_STAGES[2];
 });
+
+/* Email Template Configuration & Live Mockup Preview */
+const activeEmailTab = ref<'pass' | 'ready'>('pass');
+
+const emailVariablePills = [
+  { key: 'name', label: 'Name', description: 'Visitor full name' },
+  { key: 'queue_number', label: 'Queue No', description: 'Sequential queue number' },
+  { key: 'campaign', label: 'Campaign', description: 'Event / campaign title' },
+  { key: 'access_id', label: 'Access ID', description: 'Unique ticket pass code' },
+  { key: 'link', label: 'Live Pass Link', description: 'Direct URL to view live pass status' }
+];
+
+const currentEmailTemplate = computed(() => {
+  if (!form.emailTemplates) {
+    form.emailTemplates = {
+      pass: {
+        subject: 'Your 707 ticket for {{campaign}}',
+        heading: 'Your ticket',
+        body: 'Your e-ticket is attached to this email as a PDF. Track your live queue status and show your pass at the door.'
+      },
+      ready: {
+        subject: "It's your turn to enter: {{campaign}}",
+        heading: "It's Your Turn to Enter!",
+        body: 'Your turn has arrived for {{campaign}}. Please proceed to the entrance area now and present your live pass to the door staff.'
+      }
+    };
+  }
+  if (!form.emailTemplates[activeEmailTab.value]) {
+    form.emailTemplates[activeEmailTab.value] = activeEmailTab.value === 'pass'
+      ? {
+          subject: 'Your 707 ticket for {{campaign}}',
+          heading: 'Your ticket',
+          body: 'Your e-ticket is attached to this email as a PDF. Track your live queue status and show your pass at the door.'
+        }
+      : {
+          subject: "It's your turn to enter: {{campaign}}",
+          heading: "It's Your Turn to Enter!",
+          body: 'Your turn has arrived for {{campaign}}. Please proceed to the entrance area now and present your live pass to the door staff.'
+        };
+  }
+  return form.emailTemplates[activeEmailTab.value]!;
+});
+
+function insertEmailTag(key: string) {
+  const cur = currentEmailTemplate.value.body || '';
+  currentEmailTemplate.value.body = `${cur} {{${key}}}`.trim();
+}
+
+function renderMockEmail(raw: string) {
+  if (!raw) return '';
+  return raw
+    .replace(/\{\{\s*name\s*\}\}/g, 'Sarah Jenkins')
+    .replace(/\{\{\s*queue_number\s*\}\}/g, '#42')
+    .replace(/\{\{\s*campaign\s*\}\}/g, editorStore.projectTitle || 'Atmos Drop')
+    .replace(/\{\{\s*access_id\s*\}\}/g, '707-K92F')
+    .replace(/\{\{\s*link\s*\}\}/g, 'https://707studio.id/atmos/drop?code=707-K92F');
+}
+
+const renderedEmailSubject = computed(() => renderMockEmail(currentEmailTemplate.value.subject || ''));
+const renderedEmailHeading = computed(() => renderMockEmail(currentEmailTemplate.value.heading || ''));
+const renderedEmailBody = computed(() => renderMockEmail(currentEmailTemplate.value.body || ''));
 
 /* Live Headcount Computations */
 const insideCount = computed(() => {
@@ -1577,6 +1855,20 @@ async function loadSettings() {
         form.waConnection = { ...data.waConnection };
       }
       if (data.waTemplates) Object.assign(form.waTemplates, data.waTemplates);
+      if (data.emailTemplates) {
+        form.emailTemplates = {
+          pass: {
+            subject: data.emailTemplates.pass?.subject || form.emailTemplates?.pass?.subject || '',
+            heading: data.emailTemplates.pass?.heading || form.emailTemplates?.pass?.heading || '',
+            body: data.emailTemplates.pass?.body || form.emailTemplates?.pass?.body || ''
+          },
+          ready: {
+            subject: data.emailTemplates.ready?.subject || form.emailTemplates?.ready?.subject || '',
+            heading: data.emailTemplates.ready?.heading || form.emailTemplates?.ready?.heading || '',
+            body: data.emailTemplates.ready?.body || form.emailTemplates?.ready?.body || ''
+          }
+        };
+      }
     }
 
     // Check live status of Baileys WhatsApp Gateway
@@ -1609,7 +1901,8 @@ async function saveSettings() {
       ...form,
       waConnection: form.waConnection,
       activeWaStage: form.activeWaStage || 'ready',
-      emailNotificationEnabled: form.emailNotificationEnabled !== false
+      emailNotificationEnabled: form.emailNotificationEnabled !== false,
+      emailTemplates: form.emailTemplates
     };
     const res = await saveQueueSettingsApi(props.pageId, payload);
     if (res) {

@@ -486,7 +486,7 @@ export async function processQueueBatch(pageId: string, requestedSpots: number, 
             queueNumber: sub.queue_number,
             campaign: campaignTitle,
             liveUrl: passUrl
-          } as any);
+          } as any, settings.emailTemplates?.ready);
         }
 
         // Send ready WhatsApp notification (Only if enabled and active stage is 'ready')
@@ -549,7 +549,7 @@ export async function processQueueBatch(pageId: string, requestedSpots: number, 
             queueNumber: sub.queue_number,
             campaign: campaignTitle,
             liveUrl: passUrl
-          } as any);
+          } as any, settings.emailTemplates?.ready);
         }
 
         // Send ready WhatsApp notification (Only if enabled and active stage is 'ready')

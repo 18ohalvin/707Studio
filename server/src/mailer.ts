@@ -165,6 +165,19 @@ function ticketAttachment(guest: GuestMail): Attachment[] {
     : [];
 }
 
+function renderEmailText(template: string, vars: Record<string, any>): string {
+  if (!template) return '';
+  return template.replace(/\{\{\s*([a-zA-Z0-9_-]+)\s*\}\}/g, (_, key) => {
+    return vars[key] !== undefined && vars[key] !== null ? String(vars[key]) : '';
+  });
+}
+
+export interface EmailTemplateConfig {
+  subject?: string;
+  heading?: string;
+  body?: string;
+}
+
 /**
  * The ticket email. With the PDF attached it only says "this is your ticket";
  * without it (the PDF never reached us) the access code is in the email itself,
@@ -172,9 +185,12 @@ function ticketAttachment(guest: GuestMail): Attachment[] {
  */
 function ticketMail(guest: GuestMail, title: string, intro: string) {
   const withPdf = Boolean(guest.ticketPdf);
+  const formattedIntro = (/^(hi|hello|dear)\b/i.test(intro.trim()))
+    ? intro
+    : `Hi ${guest.fullName || 'there'}, ${intro}`;
   return shell(
     title,
-    `Hi ${guest.fullName || 'there'}, ${intro}`,
+    formattedIntro,
     withPdf
       ? [['Name', guest.fullName || ''], ['Event', guest.campaign || '']]
       : [['Access code', guest.ticketCode || ''], ['Name', guest.fullName || ''], ['Event', guest.campaign || '']],
@@ -193,12 +209,30 @@ const TICKET_INTRO = (guest: GuestMail) => guest.resend
     : 'this is your ticket. Show the access code below at the door.';
 
 /** Sent when a guest registers and has a place. */
-export function sendPassEmail(guest: GuestMail) {
+export function sendPassEmail(guest: GuestMail, template?: EmailTemplateConfig) {
   if (!guest.email) return Promise.resolve({ success: false, skipped: true });
+  const vars = {
+    name: guest.fullName || 'there',
+    fullName: guest.fullName || 'there',
+    campaign: eventLabel(guest),
+    queue_number: (guest as any).queueNumber || guest.ticketCode || '',
+    access_id: guest.ticketCode || '',
+    link: guest.liveUrl || ''
+  };
+  const subject = template?.subject?.trim()
+    ? renderEmailText(template.subject, vars)
+    : `Your 707 ticket for ${eventLabel(guest)}`;
+  const heading = template?.heading?.trim()
+    ? renderEmailText(template.heading, vars)
+    : 'Your ticket';
+  const intro = template?.body?.trim()
+    ? renderEmailText(template.body, vars)
+    : TICKET_INTRO(guest);
+
   return send(
     guest.email,
-    `Your 707 ticket for ${eventLabel(guest)}`,
-    ticketMail(guest, 'Your ticket', TICKET_INTRO(guest)),
+    subject,
+    ticketMail(guest, heading, intro),
     'ticket',
     ticketAttachment(guest)
   );
@@ -234,24 +268,43 @@ export function sendPromotedEmail(guest: GuestMail) {
 }
 
 /** Sent when a queued guest's number is called to enter the venue at the door. */
-export function sendTurnReadyEmail(guest: GuestMail) {
+export function sendTurnReadyEmail(guest: GuestMail, template?: EmailTemplateConfig) {
   if (!guest.email) return Promise.resolve({ success: false, skipped: true });
+  const vars = {
+    name: guest.fullName || 'there',
+    fullName: guest.fullName || 'there',
+    campaign: eventLabel(guest),
+    queue_number: (guest as any).queueNumber || guest.ticketCode || '',
+    access_id: guest.ticketCode || '',
+    link: guest.liveUrl || ''
+  };
+  const subject = template?.subject?.trim()
+    ? renderEmailText(template.subject, vars)
+    : `It's your turn to enter: ${eventLabel(guest)}`;
+  const heading = template?.heading?.trim()
+    ? renderEmailText(template.heading, vars)
+    : "It's Your Turn to Enter!";
+  const bodyText = template?.body?.trim()
+    ? renderEmailText(template.body, vars)
+    : `Hi ${guest.fullName || 'there'}, your turn has arrived for ${eventLabel(guest)}. Please proceed to the entrance area now and present your live pass to the door staff.`;
+
   const html = shell(
-    "It's Your Turn to Enter!",
-    `Hi ${guest.fullName || 'there'}, your turn has arrived for ${eventLabel(guest)}. Please proceed to the entrance area now and present your live pass to the door staff.`,
+    heading,
+    bodyText,
     [
-      ['Queue Number', guest.ticketCode ? `#${guest.ticketCode}` : ''],
+      ['Queue Number', (guest as any).queueNumber ? `#${(guest as any).queueNumber}` : (guest.ticketCode ? `#${guest.ticketCode}` : '')],
+      ['Access Code', guest.ticketCode || ''],
       ['Name', guest.fullName || ''],
       ['Event', guest.campaign || '']
     ],
     'Please proceed to the entrance promptly. Present your pass on screen at the door.',
     guest.liveUrl ? {
-      label: 'VIEW LIVE PASS',
+      label: 'VIEW LIVE QUEUE',
       url: guest.liveUrl,
       hint: 'Your live pass is active and ready for door scanning.'
     } : undefined
   );
-  return send(guest.email, `It's your turn to enter: ${eventLabel(guest)}`, html, 'turn ready notification');
+  return send(guest.email, subject, html, 'turn ready notification');
 }
 
 export default { sendPassEmail, sendWaitlistEmail, sendPromotedEmail, sendTurnReadyEmail, mailerStatus };

@@ -391,6 +391,12 @@ export interface WaLinkSessionData {
   generatedAt: string;
 }
 
+export interface EmailTemplateConfig {
+  subject: string;
+  heading: string;
+  body: string;
+}
+
 export interface QueueSettingsData {
   enabled: boolean;
   waEnabled: boolean;
@@ -402,6 +408,10 @@ export interface QueueSettingsData {
   currentCalledNumber: number;
   waConnection?: WhatsAppConnection;
   waTemplates: Record<string, string>;
+  emailTemplates?: {
+    pass?: EmailTemplateConfig;
+    ready?: EmailTemplateConfig;
+  };
   stages?: any[];
 }
 

@@ -33,6 +33,12 @@ export interface WhatsAppLogEntry {
   timestamp: string;
 }
 
+export interface EmailTemplateConfig {
+  subject: string;
+  heading: string;
+  body: string;
+}
+
 export interface QueueSettings {
   enabled: boolean;
   waEnabled: boolean;
@@ -44,6 +50,10 @@ export interface QueueSettings {
   currentCalledNumber: number;
   waConnection?: WhatsAppConnection;
   waTemplates: Record<string, string>;
+  emailTemplates?: {
+    pass?: EmailTemplateConfig;
+    ready?: EmailTemplateConfig;
+  };
   stages?: any[];
 }
 
@@ -72,6 +82,18 @@ export const DEFAULT_QUEUE_SETTINGS: QueueSettings = {
     approaching: 'Hello {{name}}! Your turn is approaching. The queue is currently serving near your number (#{{queue_number}}). Please proceed to the entrance area now. Live status: {{link}}',
     ready: 'Hello {{name}}! It is your turn to enter. Please present your Access ID {{access_id}} to the door staff at the entrance. Your pass: {{link}}',
     expired: 'Notice: {{name}}, queue number #{{queue_number}} was skipped past the grace margin and has expired. You can rejoin and regenerate a new queue number on your live pass here: {{link}}'
+  },
+  emailTemplates: {
+    pass: {
+      subject: 'Your 707 ticket for {{campaign}}',
+      heading: 'Your ticket',
+      body: 'Your e-ticket is attached to this email as a PDF. Track your live queue status and show your pass at the door.'
+    },
+    ready: {
+      subject: "It's your turn to enter: {{campaign}}",
+      heading: "It's Your Turn to Enter!",
+      body: 'Your turn has arrived for {{campaign}}. Please proceed to the entrance area now and present your live pass to the door staff.'
+    }
   }
 };
 
