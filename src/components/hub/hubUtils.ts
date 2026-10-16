@@ -303,11 +303,45 @@ export interface WhatsAppDeviceInfo {
   pushName?: string;
 }
 
+/** Normalizes any international or Indonesian phone format to strict E.164 digits without leading zeros */
+export function normalizeWhatsAppNumber(raw: string, defaultCountry = '62'): string {
+  if (!raw) return '';
+  let digits = String(raw).replace(/[^\d+]/g, '');
+  if (digits.startsWith('+')) digits = digits.slice(1);
+  digits = digits.replace(/\D/g, '');
+  if (!digits) return '';
+
+  // Local Indonesian format e.g. 0812... -> 62812...
+  if (digits.startsWith('0')) {
+    digits = defaultCountry + digits.slice(1);
+  }
+  // Missing country code e.g. 8123456789 (9 to 13 digits) -> 628123456789
+  else if (digits.startsWith('8') && digits.length >= 9 && digits.length <= 13) {
+    digits = defaultCountry + digits;
+  }
+  return digits;
+}
+
+/** Formats clean digits into an international display string e.g. +62 812-3456-7890 */
+export function formatWhatsAppDisplay(raw: string): string {
+  const norm = normalizeWhatsAppNumber(raw);
+  if (!norm) return '';
+  if (norm.startsWith('62') && norm.length >= 10) {
+    const rest = norm.slice(2);
+    const p1 = rest.slice(0, 3);
+    const p2 = rest.slice(3, 7);
+    const p3 = rest.slice(7);
+    return `+62 ${p1}-${p2}${p3 ? `-${p3}` : ''}`;
+  }
+  return `+${norm}`;
+}
+
 export interface WhatsAppConnection {
   connected: boolean;
   phoneNumber?: string;
+  formattedNumber?: string;
   sessionName?: string;
-  provider?: 'linked_device' | 'pairing_code' | 'meta_cloud' | 'custom_gateway';
+  provider?: 'direct_sender' | 'fonnte' | 'wablas' | 'custom_gateway' | 'linked_device' | 'pairing_code';
   gatewayUrl?: string;
   apiToken?: string;
   linkedAt?: string;
@@ -321,12 +355,16 @@ export interface WhatsAppLogEntry {
   text: string;
   event: string;
   status: 'sent' | 'delivered' | 'failed';
+  error?: string;
   timestamp: string;
 }
 
 export interface WaLinkSessionData {
   qrString: string;
   pairingCode: string;
+  cleanPhone?: string;
+  formattedDisplay?: string;
+  directLink?: string;
   expiresInSeconds: number;
   generatedAt: string;
 }

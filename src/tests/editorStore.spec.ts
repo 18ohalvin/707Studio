@@ -332,28 +332,16 @@ describe('707 Activation Builder Stores', () => {
     const editorStore = useEditorStore();
     expect(editorStore.isEPassSidebarOpen).toBe(false);
 
-    // Rule 1 & Rule 2: Cannot add GuestEPass if no Form Input or Date Choice exists
+    // Rule 1: Cannot add GuestEPass if no Form Input exists
     const blockedWithoutPrereqs = editorStore.addWidget('GuestEPass');
     expect(blockedWithoutPrereqs).toBeNull();
-    expect(editorStore.activeToastMessage).toContain('Please create form inputs');
+    expect(editorStore.activeToastMessage).toContain('Please create a Form Input widget');
 
     // Add Form Input (FieldInput)
     const field = editorStore.addWidget('FieldInput', undefined, { label: 'First Name', placeholder: 'Your Name*' });
     expect(field).toBeTruthy();
 
-    // Still blocked without Date Choice
-    const blockedWithoutChoice = editorStore.addWidget('GuestEPass');
-    expect(blockedWithoutChoice).toBeNull();
-    expect(editorStore.activeToastMessage).toContain('Please add a Date / Session Selection widget');
-
-    // Add Date Choice (MultipleChoice)
-    const choice = editorStore.addWidget('MultipleChoice', undefined, {
-      variant: 'detailed-card',
-      options: [{ id: 'd1', label: 'Day 1', sublabel: '2 Sept 2026' }]
-    });
-    expect(choice).toBeTruthy();
-
-    // Now adding GuestEPass with default props
+    // Now adding GuestEPass succeeds directly using Project Settings Event Activation Mode (no MultipleChoice needed)!
     const defaultEPass = editorStore.addWidget('GuestEPass');
     expect(defaultEPass).toBeTruthy();
     expect(defaultEPass.type).toBe('GuestEPass');
@@ -447,15 +435,9 @@ describe('707 Activation Builder Stores', () => {
     editorStore.openFormSidebar();
     expect(editorStore.isFormSidebarOpen).toBe(true);
 
-    // 3. Verify RegistrationForm satisfies GuestEPass requirement for form inputs
-    const checkBeforeDate = editorStore.canAddWidget('GuestEPass');
-    expect(checkBeforeDate.allowed).toBe(false);
-    expect(checkBeforeDate.reason).toContain('Date / Session Selection widget');
-
-    // Add Date choice widget
-    editorStore.addWidget('MultipleChoice');
-    const checkAfterBoth = editorStore.canAddWidget('GuestEPass');
-    expect(checkAfterBoth.allowed).toBe(true);
+    // 3. Verify RegistrationForm satisfies GuestEPass requirement for form inputs directly without MultipleChoice
+    const checkWithRegForm = editorStore.canAddWidget('GuestEPass');
+    expect(checkWithRegForm.allowed).toBe(true);
   });
 
   it('allows GuestEPass if user collects choice/form data via Pop Up Modal without full page form', () => {
@@ -482,5 +464,32 @@ describe('707 Activation Builder Stores', () => {
 
     const checkWithModal = editorStore.canAddWidget('GuestEPass');
     expect(checkWithModal.allowed).toBe(true);
+  });
+
+  it('allows adding LiveQueuePass and GuestEPass with project setting event activation mode without MultipleChoice widget', () => {
+    const editorStore = useEditorStore();
+    editorStore.currentPage.widget_tree = [];
+
+    // Set project event activation mode
+    if (editorStore.currentProject) {
+      editorStore.currentProject.event_config = {
+        eventType: 'daily_rolling',
+        startDate: '20 October 2026',
+        dailyQueueReset: true
+      };
+    }
+
+    // Add a simple form field (e.g. Name)
+    editorStore.addWidget('FieldInput', undefined, { label: 'Full Name', placeholder: 'Your Name*' });
+
+    // LiveQueuePass can be added directly without any MultipleChoice widget
+    const queuePass = editorStore.addWidget('LiveQueuePass');
+    expect(queuePass).toBeTruthy();
+    expect(queuePass.type).toBe('LiveQueuePass');
+
+    // GuestEPass can also be added directly without any MultipleChoice widget
+    const epass = editorStore.addWidget('GuestEPass');
+    expect(epass).toBeTruthy();
+    expect(epass.type).toBe('GuestEPass');
   });
 });

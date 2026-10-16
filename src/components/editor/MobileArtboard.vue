@@ -2862,20 +2862,41 @@ function collectPageAnswers(): Record<string, any> {
   const formData: Record<string, any> = {};
   let userEmail = '';
   let userName = '';
+  let userPhone = '';
 
   activePage.value.widget_tree.forEach((w) => {
     if (w.type === 'FieldInput') {
       const key = w.props?.label || w.props?.placeholder || w.id;
-      formData[key] = w.props?.value || '';
-      if (w.props?.inputType === 'email' || /email/i.test(key)) userEmail = w.props?.value;
-      if (/name/i.test(key)) userName = w.props?.value;
+      const raw = w.props?.value || '';
+      formData[key] = raw;
+      if (w.props?.inputType === 'email' || /email/i.test(key)) userEmail = raw;
+      if (/name/i.test(key)) userName = raw;
+      if (isPhoneField(w) || /whats\s?app|phone|telp|telepon|\bwa\b|mobile|hp\b/i.test(key)) {
+        const country = String(w.props?.countryCode || '+62').replace(/\D/g, '') || '62';
+        const digits = String(raw).replace(/\D/g, '');
+        if (digits) {
+          userPhone = digits.startsWith('0')
+            ? country + digits.slice(1)
+            : (digits.startsWith(country) ? digits : (digits.startsWith('8') ? country + digits : digits));
+        }
+      }
     } else if (w.type === 'RegistrationForm') {
       const fields = (w.props?.fields || []) as any[];
       fields.forEach((f: any) => {
         const key = f.name || f.label || 'field';
-        formData[key] = f.value || '';
-        if (f.type === 'email' || /email/i.test(key)) userEmail = f.value;
-        if (/name/i.test(key)) userName = f.value;
+        const raw = f.value || '';
+        formData[key] = raw;
+        if (f.type === 'email' || /email/i.test(key)) userEmail = raw;
+        if (/name/i.test(key)) userName = raw;
+        if (f.type === 'tel' || /whats\s?app|phone|telp|telepon|\bwa\b|mobile|hp\b/i.test(key)) {
+          const country = String(f.countryCode || '+62').replace(/\D/g, '') || '62';
+          const digits = String(raw).replace(/\D/g, '');
+          if (digits) {
+            userPhone = digits.startsWith('0')
+              ? country + digits.slice(1)
+              : (digits.startsWith(country) ? digits : (digits.startsWith('8') ? country + digits : digits));
+          }
+        }
       });
     } else if (w.type === 'MultipleChoice') {
       const key = w.props?.question || w.id;
@@ -2888,12 +2909,42 @@ function collectPageAnswers(): Record<string, any> {
   });
 
   const sessions = selectedSessionsIn(activePage.value.widget_tree);
-  if (sessions.length) formData[SESSIONS_ANSWER_KEY] = sessions;
+  if (sessions.length) {
+    formData[SESSIONS_ANSWER_KEY] = sessions;
+  } else {
+    // If no MultipleChoice widget was added, use the manual event date from Project Settings Event Activation Mode
+    const passWidget = ticketPassWidget();
+    if (passWidget) {
+      const validSessions = getValidForSessions(passWidget);
+      if (validSessions.length) {
+        formData[SESSIONS_ANSWER_KEY] = validSessions;
+      }
+    } else {
+      const cfg = editorStore.currentPage?.page_settings?.eventConfig || editorStore.currentProject?.event_config;
+      const isDailyRolling = cfg?.eventType === 'daily_rolling';
+      const isMultiday = cfg?.eventType === 'multiday';
+      const effectiveDate = isDailyRolling 
+        ? (cfg?.startDate || cfg?.eventDate || '16 October 2026') 
+        : (isMultiday 
+            ? (cfg?.startDate && cfg?.endDate ? `${cfg.startDate} - ${cfg.endDate}` : cfg?.startDate || cfg?.endDate || '16-18 October 2026')
+            : (cfg?.eventDate || cfg?.startDate || '16 October 2026')
+          );
+      formData[SESSIONS_ANSWER_KEY] = [{
+        label: isMultiday ? 'Multi-Day Admission' : (isDailyRolling ? 'Daily Rolling Pass' : 'Single Day Admission'),
+        sublabel: effectiveDate,
+        description: 'All-day access to venue and exhibition'
+      }];
+    }
+  }
 
   // Only real answers: placeholders are added once, at submission, so a later
   // page without a name field cannot overwrite the name given earlier.
   if (!formData.email && userEmail) formData.email = userEmail;
   if (!formData.fullName && userName) formData.fullName = userName;
+  if (!formData.phone && userPhone) {
+    formData.phone = userPhone;
+    formData.whatsapp = userPhone;
+  }
   return formData;
 }
 
@@ -4757,19 +4808,20 @@ function getValidForSessions(widget: any) {
     if (livePass!.sessions.length) return livePass!.sessions;
     const cfg = editorStore.currentPage?.page_settings?.eventConfig || editorStore.currentProject?.event_config;
     const isDailyRolling = cfg?.eventType === 'daily_rolling';
+    const isMultiday = cfg?.eventType === 'multiday';
     const effectiveDate = isDailyRolling 
-      ? (cfg?.startDate || widget.props?.eventDate || '16 October 2026') 
-      : (widget.props?.eventDate || cfg?.eventDate);
+      ? (cfg?.startDate || widget.props?.eventDate || cfg?.eventDate || '16 October 2026') 
+      : (isMultiday 
+          ? (cfg?.startDate && cfg?.endDate ? `${cfg.startDate} - ${cfg.endDate}` : cfg?.startDate || cfg?.endDate || widget.props?.eventDate || '16-18 October 2026')
+          : (widget.props?.eventDate || cfg?.eventDate || cfg?.startDate || '16 October 2026')
+        );
 
-    if (effectiveDate) {
-      return [{
-        id: 'single_day',
-        label: widget.props?.sessionTitle || 'Single Day Admission',
-        sublabel: effectiveDate,
-        description: widget.props?.sessionDescription || 'All-day access to venue and exhibition'
-      }];
-    }
-    return (widget.props?.validForFallback || []) as PassSession[];
+    return [{
+      id: 'event_date',
+      label: widget.props?.sessionTitle || (isMultiday ? 'Multi-Day Admission' : (isDailyRolling ? 'Daily Rolling Pass' : 'Single Day Admission')),
+      sublabel: effectiveDate,
+      description: widget.props?.sessionDescription || 'All-day access to venue and exhibition'
+    }];
   }
 
   // 1. Check if user selected any options in MultipleChoice widgets across pages
@@ -4808,7 +4860,7 @@ function getValidForSessions(widget: any) {
     }
   }
 
-  // 2. If no selection active yet, check if a MultipleChoice exists in the project and use its options
+  // 2. If a MultipleChoice exists in the project and has options, use them as preview options
   for (const cw of choiceWidgets) {
     if (cw.props?.options && cw.props.options.length > 0) {
       return cw.props.options.slice(0, 2).map((opt: any, idx: number) => ({
@@ -4834,37 +4886,23 @@ function getValidForSessions(widget: any) {
     }
   }
 
-  // 3. If single-day or daily-rolling event date is configured on widget or project
+  // 3. No MultipleChoice widget or selection: Resolve date from Project Settings (Event Activation Mode)
   const cfg = editorStore.currentPage?.page_settings?.eventConfig || editorStore.currentProject?.event_config;
   const isDailyRolling = cfg?.eventType === 'daily_rolling';
+  const isMultiday = cfg?.eventType === 'multiday';
   const effectiveDate = isDailyRolling 
-    ? (cfg?.startDate || widget.props?.eventDate || '16 October 2026') 
-    : (widget.props?.eventDate || cfg?.eventDate);
+    ? (cfg?.startDate || widget.props?.eventDate || cfg?.eventDate || '16 October 2026') 
+    : (isMultiday 
+        ? (cfg?.startDate && cfg?.endDate ? `${cfg.startDate} - ${cfg.endDate}` : cfg?.startDate || cfg?.endDate || widget.props?.eventDate || '16-18 October 2026')
+        : (widget.props?.eventDate || cfg?.eventDate || cfg?.startDate || '16 October 2026')
+      );
 
-  if (effectiveDate) {
-    return [{
-      id: 'single_day',
-      label: widget.props?.sessionTitle || 'Single Day Admission',
-      sublabel: effectiveDate,
-      description: widget.props?.sessionDescription || 'All-day access to venue and exhibition'
-    }];
-  }
-
-  // 4. Fallback to clean dummy data UI placeholder strictly matching choice form format
-  return widget.props?.validForFallback || [
-    { 
-      id: 'opt_1', 
-      label: 'Pass Option 1', 
-      sublabel: '2 September 2026', 
-      description: 'Access to main floor & VIP lounge' 
-    },
-    { 
-      id: 'opt_2', 
-      label: 'Pass Option 2', 
-      sublabel: '3 September 2026', 
-      description: 'Access to main floor & VIP lounge' 
-    }
-  ];
+  return [{
+    id: 'single_day',
+    label: widget.props?.sessionTitle || (isMultiday ? 'Multi-Day Admission' : (isDailyRolling ? 'Daily Rolling Pass' : 'Single Day Admission')),
+    sublabel: effectiveDate,
+    description: widget.props?.sessionDescription || 'All-day access to venue and exhibition'
+  }];
 }
 
 function getBrandLogo(widget: any) {

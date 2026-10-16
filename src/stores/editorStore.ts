@@ -276,28 +276,14 @@ export const useEditorStore = defineStore('editor', () => {
         (w.props?.modalProps && (w.props.modalProps.variant === 'message-field' || w.props.modalProps.fieldType)) ||
         (w.type === 'ModalOverlay' && (w.props?.variant === 'message-field' || w.props?.fieldType))
       );
-      const hasDateChoice = allWidgets.some(w => 
-        w.type === 'MultipleChoice' ||
-        (w.props?.modalProps && (w.props.modalProps.variant === 'choice-detailed' || w.props.modalProps.variant === 'choice-simple' || w.props.modalProps.variant === 'image-matrix' || (w.props.modalProps.options && w.props.modalProps.options.length > 0))) ||
-        (w.type === 'ModalOverlay' && (w.props?.variant === 'choice-detailed' || w.props?.variant === 'choice-simple' || w.props?.variant === 'image-matrix' || (w.props?.options && w.props.options.length > 0)))
-      );
 
-      if (!hasFormInput && !hasDateChoice) {
-        return {
-          allowed: false,
-          reason: 'Please create form inputs (e.g. Name) and a Date/Session Selection widget on Page 1 or 2 first.'
-        };
-      }
+      // Date selection data is supported either via an on-page MultipleChoice widget
+      // OR manually configured via Project Settings > Event Activation Mode (single, daily rolling, or multi-day).
+      // Therefore, a MultipleChoice widget is completely optional and never blocks adding the pass.
       if (!hasFormInput) {
         return {
           allowed: false,
           reason: 'Please create a Form Input widget (e.g. Name) on your page before adding the Summary Ticket.'
-        };
-      }
-      if (!hasDateChoice) {
-        return {
-          allowed: false,
-          reason: 'Please add a Date / Session Selection widget on your page before adding the Summary Ticket.'
         };
       }
     }

@@ -19,7 +19,10 @@ import {
   renderTemplate,
   sendWhatsAppNotification,
   getWaLogs,
-  generateWaLinkPayload
+  generateWaLinkPayload,
+  extractPhoneNumber,
+  normalizeWhatsAppNumber,
+  formatWhatsAppDisplay
 } from '../queueManager.js';
 
 export const submissionsRouter = Router();
@@ -98,16 +101,21 @@ async function scopedPageIds(req: Request, res: Response, strict: boolean): Prom
 
 const inScope = (scope: string[] | null, pageId: string) => scope === null || scope.includes(pageId);
 
-/** The existing entry for this visit's key or this email, if either has registered already. */
-async function findExisting(pageId: string, clientKey: string | null, emailKey: string | null) {
-  if (!clientKey && !emailKey) return null;
+/** The existing entry for this visit's key, this email, or ticket code, if either has registered already. */
+async function findExisting(pageId: string, clientKey: string | null, emailKey: string | null, ticketCode?: string | null) {
+  const cleanCode = ticketCode ? ticketCode.trim().toLowerCase() : null;
+  if (!clientKey && !emailKey && !cleanCode) return null;
   const result = await pool.query(
     `SELECT * FROM submissions
       WHERE page_id = $1
-        AND (($2::text IS NOT NULL AND client_key = $2::text) OR ($3::text IS NOT NULL AND email_key = $3::text))
+        AND (
+          ($2::text IS NOT NULL AND client_key = $2::text) OR 
+          ($3::text IS NOT NULL AND email_key = $3::text) OR
+          ($4::text IS NOT NULL AND LOWER(ticket_code) = $4::text)
+        )
       ORDER BY created_at ASC, id ASC
       LIMIT 1`,
-    [pageId, clientKey, emailKey]
+    [pageId, clientKey, emailKey, cleanCode]
   );
   return result.rows[0] || null;
 }
@@ -480,9 +488,67 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
     res.status(200).json({ success: true, data: publicEntry(row), duplicate: true, message: 'Entry already recorded' });
 
   if (store === 'db') {
-    // A retry, a double tap or a repeat registration: hand back the entry that exists.
-    const existing = await findExisting(pageId, clientKey, emailKey);
-    if (existing) return alreadyRecorded(existing);
+    const isRequeue = req.body?.requeue === true;
+    const existing = await findExisting(pageId, clientKey, emailKey, req.body?.ticket_code);
+    if (existing) {
+      if (existing.queue_status === 'expired' || isRequeue) {
+        // Re-queueing after expired: issue a brand-new queue number
+        const newQueueNum = await getNextQueueNumber(pageId, true, eventDate);
+        const newTicketCode = generateTicketCode();
+        const updatedRes = await pool.query(
+          `UPDATE submissions
+              SET queue_number = $1,
+                  queue_status = 'waiting',
+                  wa_notified_states = '[]'::jsonb,
+                  ticket_code = $2,
+                  status = 'registered',
+                  created_at = CURRENT_TIMESTAMP
+            WHERE id = $3
+            RETURNING *`,
+          [newQueueNum, newTicketCode, existing.id]
+        );
+        const updatedRow = updatedRes.rows[0] || existing;
+        touchAvailability(pageId);
+        notifyNewEntry(updatedRow);
+
+        const existingForm = typeof existing.form_data === 'string' ? JSON.parse(existing.form_data) : (existing.form_data || {});
+        const mergedForm = { ...existingForm, ...answers };
+        const phone = extractPhoneNumber(mergedForm);
+        if (phone) {
+          void getQueueSettings(pageId).then(qs => {
+            if (qs.enabled && qs.waEnabled) {
+              const passUrl = `${req.protocol}://${req.get('host')}/${project.brand_slug}/${project.slug}?code=${newTicketCode}`;
+              const text = renderTemplate(qs.waTemplates.welcome, {
+                name: fullName || existingForm.fullName || existingForm.name || 'Visitor',
+                queue_number: newQueueNum,
+                party_size: partySize,
+                access_id: newTicketCode,
+                link: passUrl,
+                epass_link: passUrl,
+                pass_link: passUrl,
+                requeue_link: passUrl
+              });
+              void sendWhatsAppNotification(phone, text, {
+                pageId,
+                submissionId: updatedRow.id,
+                event: 'welcome',
+                gatewayUrl: qs.waConnection?.gatewayUrl,
+                apiToken: qs.waConnection?.apiToken,
+                provider: qs.waConnection?.provider
+              });
+            }
+          });
+        }
+
+        return res.status(200).json({
+          success: true,
+          data: publicEntry(updatedRow),
+          requeued: true,
+          message: 'New queue number generated successfully'
+        });
+      }
+      return alreadyRecorded(existing);
+    }
 
     // Which of the guest's picks are options of this campaign, and which of those are limited or closed.
     const defs = picks.length ? await getSlotDefs(pageId, true) : new Map<string, SlotDef>();
@@ -505,18 +571,29 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
         notifyNewEntry(outcome.row);
 
         // Send Welcome WhatsApp Notification if phone provided and WA notifications enabled
-        const phone = answers.phone || answers.whatsapp || answers['WhatsApp'] || answers['Phone'] || answers['No WhatsApp'];
+        const phone = extractPhoneNumber(answers);
         if (phone) {
           void getQueueSettings(pageId).then(qs => {
             if (qs.enabled && qs.waEnabled) {
+              const passUrl = `${req.protocol}://${req.get('host')}/${project.brand_slug}/${project.slug}?code=${outcome.row?.ticket_code || ''}`;
               const text = renderTemplate(qs.waTemplates.welcome, {
                 name: fullName || 'Visitor',
                 queue_number: queueNumber,
                 party_size: partySize,
                 access_id: outcome.row?.ticket_code || '',
-                link: `${req.protocol}://${req.get('host')}/${project.brand_slug}/${project.slug}`
+                link: passUrl,
+                epass_link: passUrl,
+                pass_link: passUrl,
+                requeue_link: passUrl
               });
-              void sendWhatsAppNotification(phone, text, { pageId, submissionId: outcome.row?.id, event: 'welcome', gatewayUrl: qs.waConnection?.gatewayUrl });
+              void sendWhatsAppNotification(phone, text, {
+                pageId,
+                submissionId: outcome.row?.id,
+                event: 'welcome',
+                gatewayUrl: qs.waConnection?.gatewayUrl,
+                apiToken: qs.waConnection?.apiToken,
+                provider: qs.waConnection?.provider
+              });
             }
           });
         }
@@ -534,10 +611,59 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
 
   // Development without a database.
   refreshMemory();
+  const codeParam = typeof req.body?.ticket_code === 'string' ? req.body.ticket_code.trim().toLowerCase() : null;
   const existing = inMemorySubmissions.find(
-    s => s.page_id === pageId && ((clientKey && s.client_key === clientKey) || (emailKey && s.email_key === emailKey))
+    s => s.page_id === pageId && (
+      (clientKey && s.client_key === clientKey) || 
+      (emailKey && s.email_key === emailKey) ||
+      (codeParam && String(s.ticket_code || '').trim().toLowerCase() === codeParam)
+    )
   );
-  if (existing) return alreadyRecorded(existing);
+  if (existing) {
+    if (existing.queue_status === 'expired' || req.body?.requeue === true) {
+      const newQueueNum = await getNextQueueNumber(pageId, false, eventDate);
+      const newTicketCode = generateTicketCode();
+      existing.queue_number = newQueueNum;
+      existing.ticket_code = newTicketCode;
+      existing.queue_status = 'waiting';
+      existing.wa_notified_states = [];
+      existing.status = 'registered';
+      existing.created_at = new Date().toISOString();
+      const existingForm = typeof existing.form_data === 'string' ? JSON.parse(existing.form_data) : (existing.form_data || {});
+      existing.form_data = { ...existingForm, ...answers };
+      persistMemory();
+
+      const phone = extractPhoneNumber(existing.form_data);
+      if (phone) {
+        void getQueueSettings(pageId).then(qs => {
+          if (qs.enabled && qs.waEnabled) {
+            const passUrl = `${req.protocol}://${req.get('host')}/${project.brand_slug}/${project.slug}?code=${newTicketCode}`;
+            const text = renderTemplate(qs.waTemplates.welcome, {
+              name: fullName || existingForm.fullName || existingForm.name || 'Visitor',
+              queue_number: newQueueNum,
+              party_size: partySize,
+              access_id: newTicketCode,
+              link: passUrl,
+              epass_link: passUrl,
+              pass_link: passUrl,
+              requeue_link: passUrl
+            });
+            void sendWhatsAppNotification(phone, text, {
+              pageId,
+              submissionId: existing.id,
+              event: 'welcome',
+              gatewayUrl: qs.waConnection?.gatewayUrl,
+              apiToken: qs.waConnection?.apiToken,
+              provider: qs.waConnection?.provider
+            });
+          }
+        });
+      }
+
+      return res.status(200).json({ success: true, data: publicEntry(existing), requeued: true, message: 'New queue number generated successfully' });
+    }
+    return alreadyRecorded(existing);
+  }
 
   const fileDefs = picks.length ? await getSlotDefs(pageId, false) : new Map<string, SlotDef>();
   const fileChosen = picks.map(p => fileDefs.get(slotKey(p.widget, p.option))).filter((d): d is SlotDef => !!d);
@@ -553,6 +679,35 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
   persistMemory();
   void notifyGuest(entry, 'new');
   return res.status(201).json({ success: true, data: publicEntry(entry), message: 'Entry recorded successfully' });
+}));
+
+// GET /api/submissions/pass/:code - Public pass lookup for live queue status & requeue
+submissionsRouter.get('/pass/:code', route('fetch pass by code', async (req, res) => {
+  const code = String(req.params.code || '').trim().toLowerCase();
+  if (!code) return res.status(400).json({ success: false, error: 'Code is required' });
+
+  const store = await storeFor(res);
+  if (!store) return;
+
+  if (store === 'db') {
+    const result = await pool.query(
+      `SELECT * FROM submissions 
+        WHERE LOWER(ticket_code) = $1 OR LOWER(id) = $1 
+        ORDER BY created_at DESC LIMIT 1`,
+      [code]
+    );
+    const row = result.rows[0];
+    if (!row) return res.status(404).json({ success: false, error: 'Pass not found' });
+    return res.json({ success: true, data: publicEntry(row) });
+  } else {
+    refreshMemory();
+    const row = inMemorySubmissions.find(s => 
+      String(s.ticket_code || '').toLowerCase() === code || 
+      String(s.id).toLowerCase() === code
+    );
+    if (!row) return res.status(404).json({ success: false, error: 'Pass not found' });
+    return res.json({ success: true, data: publicEntry(row) });
+  }
 }));
 
 // GET /api/submissions/availability/:pageId - Live places left, polled by the guests' pages (public, like registering)
@@ -885,12 +1040,21 @@ submissionsRouter.post('/wa-confirm-link', requireAuth, route('confirm WA device
   const { page_id, phoneNumber, sessionName, provider, gatewayUrl, apiToken } = req.body || {};
   if (!page_id) return res.status(400).json({ success: false, error: 'page_id is required' });
   
-  const cleanPhone = String(phoneNumber || '').replace(/[^\d+]/g, '');
+  const cleanPhone = normalizeWhatsAppNumber(phoneNumber || '');
+  if (!cleanPhone && !gatewayUrl) {
+    return res.status(400).json({
+      success: false,
+      error: 'Please enter a valid WhatsApp phone number (e.g. +62 812-3456-7890 or 081234567890).'
+    });
+  }
+
+  const formatted = cleanPhone ? formatWhatsAppDisplay(cleanPhone) : '';
   const waConnection = {
     connected: true,
-    phoneNumber: cleanPhone || '+628127070001',
+    phoneNumber: cleanPhone,
+    formattedNumber: formatted,
     sessionName: sessionName || '707 Studio Primary WhatsApp',
-    provider: provider || 'linked_device',
+    provider: provider || 'direct_sender',
     gatewayUrl: gatewayUrl || undefined,
     apiToken: apiToken || undefined,
     linkedAt: new Date().toISOString(),
@@ -901,7 +1065,7 @@ submissionsRouter.post('/wa-confirm-link', requireAuth, route('confirm WA device
     }
   };
 
-  const saved = await saveQueueSettings(page_id, { waConnection });
+  const saved = await saveQueueSettings(page_id, { waConnection, waEnabled: true });
   return res.json({ success: true, data: saved.waConnection });
 }));
 
@@ -926,16 +1090,30 @@ submissionsRouter.post('/wa-test-message', requireAuth, route('dispatch WA test 
   const { page_id, phone, text } = req.body || {};
   if (!phone) return res.status(400).json({ success: false, error: 'phone number is required' });
 
+  const cleanPhone = normalizeWhatsAppNumber(phone);
+  if (!cleanPhone || cleanPhone.length < 9) {
+    return res.status(400).json({
+      success: false,
+      error: `Invalid phone number format: "${phone}". Please enter a valid number (e.g. +62 812-3456-7890 or 081234567890).`
+    });
+  }
+
   const settings = page_id ? await getQueueSettings(page_id) : null;
   const messageText = text || `[707 Studio Test] Automated WhatsApp notifications are live and connected. Queue system is fully operational!`;
   
-  const dispatched = await sendWhatsAppNotification(phone, messageText, {
+  const dispatched = await sendWhatsAppNotification(cleanPhone, messageText, {
     pageId: page_id,
     event: 'test_dispatch',
-    gatewayUrl: settings?.waConnection?.gatewayUrl
+    gatewayUrl: settings?.waConnection?.gatewayUrl,
+    apiToken: settings?.waConnection?.apiToken,
+    provider: settings?.waConnection?.provider
   });
 
-  return res.json({ success: dispatched, message: dispatched ? 'Test message dispatched successfully' : 'Failed to send test message' });
+  return res.json({
+    success: dispatched,
+    formattedPhone: formatWhatsAppDisplay(cleanPhone),
+    message: dispatched ? `Test message dispatched successfully to +${cleanPhone}` : 'Failed to send test message'
+  });
 }));
 
 // GET /api/submissions/wa-logs - Retrieve live outgoing WhatsApp audit log

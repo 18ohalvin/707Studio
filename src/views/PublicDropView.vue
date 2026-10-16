@@ -161,12 +161,17 @@ async function loadPage() {
         campaignStatus.value = item.status || 'published';
         campaignBrandSlug.value = item.brand_slug || brandSlug;
 
+        const finalizePageLoad = async (initialIdx: number) => {
+          activePageIndex.value = initialIdx >= 0 ? initialIdx : 0;
+          await restorePassFromQuery();
+          applySeo(projectPages.value[activePageIndex.value] || projectPages.value[0]);
+          isLoading.value = false;
+        };
+
         if (Array.isArray(item.pages) && item.pages.length > 0) {
           setCampaignPages(item.pages, item.title);
           const matchIdx = projectPages.value.findIndex((p: any) => normalize(p.slug) === normalize(pageSlug));
-          activePageIndex.value = matchIdx >= 0 ? matchIdx : 0;
-          applySeo(projectPages.value[activePageIndex.value] || projectPages.value[0]);
-          isLoading.value = false;
+          await finalizePageLoad(matchIdx);
           return;
         }
 
@@ -192,15 +197,20 @@ async function loadPage() {
         };
         projectPages.value = [singlePage];
         singlePageData.value = singlePage;
-        activePageIndex.value = 0;
-        applySeo(singlePage);
-        isLoading.value = false;
+        await finalizePageLoad(0);
         return;
       }
     }
   } catch (err) {
     console.warn('[PublicDropView] Error loading page from server:', err);
   }
+
+  const finalizeLocalLoad = async (initialIdx: number) => {
+    activePageIndex.value = initialIdx >= 0 ? initialIdx : 0;
+    await restorePassFromQuery();
+    applySeo(projectPages.value[activePageIndex.value] || projectPages.value[0]);
+    isLoading.value = false;
+  };
 
   // 2b. Server unreachable: the signed-in account's own cached copy, so an
   // owner can still preview offline. Never first — the server decides which
@@ -215,9 +225,7 @@ async function loadPage() {
     campaignStatus.value = localMatch.status || 'draft';
     if (localMatch.pages && localMatch.pages.length > 0) {
       setCampaignPages(JSON.parse(JSON.stringify(localMatch.pages)), localMatch.title);
-      activePageIndex.value = 0;
-      applySeo(localMatch.pages[0]);
-      isLoading.value = false;
+      await finalizeLocalLoad(0);
       return;
     }
   }
@@ -229,9 +237,7 @@ async function loadPage() {
     submissionPageId.value = editorStore.currentProjectId;
     campaignStatus.value = editorStore.currentPage.status || 'draft';
     setCampaignPages(JSON.parse(JSON.stringify(editorStore.pages)), editorStore.projectTitle);
-    activePageIndex.value = editorStore.activePageIndex || 0;
-    applySeo(editorStore.currentPage);
-    isLoading.value = false;
+    await finalizeLocalLoad(editorStore.activePageIndex || 0);
     return;
   }
 
@@ -371,6 +377,41 @@ function stopPlacesPolling() {
   placesTimer = null;
 }
 
+async function restorePassFromQuery() {
+  const code = String(route.query.code || route.query.access_id || '').trim();
+  if (!code) return;
+  try {
+    const res = await fetch(`/api/submissions/pass/${encodeURIComponent(code)}`);
+    if (res.ok) {
+      const json = await res.json();
+      if (json && json.success && json.data) {
+        const item = json.data;
+        const recorded = item.form_data || {};
+        livePass.code = item.ticket_code || code;
+        livePass.guestName = recorded.fullName === 'Guest Participant' ? '' : String(recorded.fullName || recorded.name || '');
+        livePass.email = recorded.email === 'guest@activation.internal' ? '' : String(recorded.email || '');
+        livePass.guestType = String(recorded['Guest Type'] || campaignGuestType() || '');
+        const sessions = recorded[SESSIONS_ANSWER_KEY];
+        livePass.sessions = Array.isArray(sessions) ? sessions.filter((x: any) => x && typeof x === 'object' && x.label) : [];
+        livePass.waitlisted = item.status === 'waitlisted';
+        livePass.queueNumber = Number(item.queue_number) || Number(recorded.queue_number) || 0;
+        livePass.partySize = Number(item.party_size) || Number(recorded.party_size) || 1;
+        livePass.pageId = String(submissionPageId.value || item.page_id || '');
+        livePass.status = 'ready';
+
+        Object.assign(collectedFormData.value, recorded);
+
+        const passPageIdx = projectPages.value.findIndex(pageHasPass);
+        if (passPageIdx >= 0) {
+          activePageIndex.value = passPageIdx;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[PublicDropView] Error restoring pass from query code:', err);
+  }
+}
+
 const livePass = reactive<LivePassState>({
   status: 'idle',
   waitlisted: false,
@@ -380,7 +421,13 @@ const livePass = reactive<LivePassState>({
   guestType: '',
   sessions: [],
   error: '',
-  retry: () => sendSubmission()
+  retry: () => {
+    if (livePass.code) {
+      void handleRequeue();
+    } else {
+      void sendSubmission();
+    }
+  }
 });
 provide(LIVE_PASS_KEY, livePass);
 
@@ -500,6 +547,59 @@ async function sendSubmission() {
   livePass.status = 'error';
 }
 
+async function handleRequeue() {
+  if (livePass.status === 'pending') return;
+  livePass.status = 'pending';
+  livePass.error = '';
+
+  const answers: Record<string, any> = {
+    ...collectedFormData.value,
+    fullName: collectedFormData.value.fullName || collectedFormData.value.name || livePass.guestName || 'Guest Participant',
+    email: collectedFormData.value.email || livePass.email || 'guest@activation.internal',
+    ...(campaignGuestType() ? { 'Guest Type': campaignGuestType() } : {})
+  };
+
+  const outcome = await postEntry(
+    {
+      page_id: submissionPageId.value,
+      submission_type: 'raffle',
+      form_data: { ...answers, submittedAt: new Date().toISOString() },
+      slot_picks: collectPicks(projectPages.value),
+      waitlist: false,
+      requeue: true,
+      ticket_code: livePass.code
+    },
+    entryKeyring.keyFor(answers),
+    { headers: staffAuthHeaders() }
+  );
+
+  if (outcome.ok) {
+    const recorded = outcome.entry.form_data || {};
+    livePass.code = outcome.entry.ticket_code;
+    livePass.guestName = recorded.fullName === 'Guest Participant' ? '' : String(recorded.fullName || livePass.guestName || '');
+    livePass.email = recorded.email === 'guest@activation.internal' ? '' : String(recorded.email || livePass.email || '');
+    livePass.guestType = String(recorded['Guest Type'] || campaignGuestType() || '');
+    const sessions = recorded[SESSIONS_ANSWER_KEY] || answers[SESSIONS_ANSWER_KEY];
+    livePass.sessions = Array.isArray(sessions) ? sessions.filter((x: any) => x && typeof x === 'object' && x.label) : [];
+    livePass.waitlisted = outcome.entry.status === 'waitlisted';
+    livePass.queueNumber = Number(outcome.entry.queue_number) || Number(recorded.queue_number) || 0;
+    livePass.partySize = Number(outcome.entry.party_size) || Number(recorded.party_size) || 1;
+    livePass.pageId = String(submissionPageId.value || outcome.entry.page_id || '');
+    livePass.status = 'ready';
+
+    if (typeof window !== 'undefined' && window.history && outcome.entry.ticket_code) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('code', outcome.entry.ticket_code);
+      window.history.replaceState({}, '', url.toString());
+    }
+    void refreshPlaces();
+    return;
+  }
+
+  livePass.error = outcome.message || 'Unable to regenerate queue number. Please try again.';
+  livePass.status = 'ready';
+}
+
 function applySeo(page: ActivationPage) {
   const title = page.page_settings?.seoTitle || page.title || '707 Activation Drop';
   document.title = `${title} | 707 Activation`;
@@ -527,6 +627,15 @@ watch(
   () => [route.params.brandSlug, route.params.pageSlug],
   () => {
     loadPage().then(startPlacesPolling);
+  }
+);
+
+watch(
+  () => route.query.code || route.query.access_id,
+  (newCode) => {
+    if (newCode && !isLoading.value && projectPages.value.length > 0) {
+      void restorePassFromQuery();
+    }
   }
 );
 </script>

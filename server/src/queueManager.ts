@@ -9,7 +9,10 @@ import {
   getWaLogs,
   generateWaLinkPayload,
   renderTemplate,
-  sendWhatsAppNotification
+  sendWhatsAppNotification,
+  extractPhoneNumber,
+  normalizeWhatsAppNumber,
+  formatWhatsAppDisplay
 } from './queueHelpers.js';
 
 export {
@@ -21,7 +24,10 @@ export {
   getWaLogs,
   generateWaLinkPayload,
   renderTemplate,
-  sendWhatsAppNotification
+  sendWhatsAppNotification,
+  extractPhoneNumber,
+  normalizeWhatsAppNumber,
+  formatWhatsAppDisplay
 };
 
 /** Get queue settings for a specific campaign / page */
@@ -145,7 +151,7 @@ export async function getNextQueueNumber(pageId: string, storeIsDb: boolean, eve
 /**
  * Progress the queue call number and trigger automated approaching/expired logic
  */
-export async function processQueueProgression(pageId: string, newCalledNumber: number) {
+export async function processQueueProgression(pageId: string, newCalledNumber: number, reqBaseUrl?: string) {
   const settings = await getQueueSettings(pageId);
   await saveQueueSettings(pageId, { currentCalledNumber: newCalledNumber });
 
@@ -154,6 +160,42 @@ export async function processQueueProgression(pageId: string, newCalledNumber: n
   const storeIsDb = getDbStatus().isConnected;
   let approachingCount = 0;
   let expiredCount = 0;
+
+  let brandSlug = 'atmos';
+  let pageSlug = 'drop';
+
+  if (storeIsDb) {
+    try {
+      const pRes = await pool.query('SELECT brand_slug, slug FROM pages WHERE id = $1 LIMIT 1', [pageId]);
+      if (pRes.rows[0]) {
+        brandSlug = pRes.rows[0].brand_slug || brandSlug;
+        pageSlug = pRes.rows[0].slug || pageSlug;
+      }
+    } catch {
+      // fallback
+    }
+  } else {
+    try {
+      const allPages = readDataFile<any[]>('pages.json', []);
+      const pObj = allPages.find(p => p.id === pageId);
+      if (pObj) {
+        brandSlug = pObj.brand_slug || brandSlug;
+        pageSlug = pObj.slug || pageSlug;
+      }
+    } catch {
+      // fallback
+    }
+  }
+
+  const baseAppUrl = reqBaseUrl || 
+    (typeof process !== 'undefined' ? (process.env.APP_URL || process.env.PUBLIC_APP_URL || '') : '');
+
+  const buildPassUrl = (sub: any) => {
+    const bSlug = sub.brand_slug || brandSlug;
+    const code = sub.ticket_code || '';
+    const linkPath = `/${bSlug}/${pageSlug}?code=${code}`;
+    return baseAppUrl ? `${baseAppUrl.replace(/\/$/, '')}${linkPath}` : linkPath;
+  };
 
   if (storeIsDb) {
     // 1. Approaching notification: within notifyThreshold (only if WA notifications enabled)
@@ -171,17 +213,29 @@ export async function processQueueProgression(pageId: string, newCalledNumber: n
 
       for (const sub of approachingSubs.rows) {
         const form = typeof sub.form_data === 'string' ? JSON.parse(sub.form_data) : (sub.form_data || {});
-        const phone = form.phone || form.whatsapp || form['WhatsApp'] || form['Phone'] || form['No WhatsApp'] || '';
+        const phone = extractPhoneNumber(form);
         const name = form.fullName || form.name || 'Visitor';
         if (phone) {
+          const passUrl = buildPassUrl(sub);
           const text = renderTemplate(settings.waTemplates.approaching, {
             name,
             queue_number: sub.queue_number,
             party_size: sub.party_size || 1,
             access_id: sub.ticket_code,
-            current_called: newCalledNumber
+            current_called: newCalledNumber,
+            link: passUrl,
+            epass_link: passUrl,
+            pass_link: passUrl,
+            pass_url: passUrl
           });
-          await sendWhatsAppNotification(phone, text, { pageId, submissionId: sub.id, event: 'approaching', gatewayUrl: settings.waConnection?.gatewayUrl });
+          await sendWhatsAppNotification(phone, text, {
+            pageId,
+            submissionId: sub.id,
+            event: 'approaching',
+            gatewayUrl: settings.waConnection?.gatewayUrl,
+            apiToken: settings.waConnection?.apiToken,
+            provider: settings.waConnection?.provider
+          });
           await pool.query(
             `UPDATE submissions
                 SET wa_notified_states = COALESCE(wa_notified_states, '[]'::jsonb) || '["approaching"]'::jsonb
@@ -207,7 +261,7 @@ export async function processQueueProgression(pageId: string, newCalledNumber: n
 
     for (const sub of expiredSubs.rows) {
       const form = typeof sub.form_data === 'string' ? JSON.parse(sub.form_data) : (sub.form_data || {});
-      const phone = form.phone || form.whatsapp || form['WhatsApp'] || form['Phone'] || form['No WhatsApp'] || '';
+      const phone = extractPhoneNumber(form);
       const name = form.fullName || form.name || 'Visitor';
       await pool.query(
         `UPDATE submissions
@@ -217,16 +271,109 @@ export async function processQueueProgression(pageId: string, newCalledNumber: n
         [sub.id]
       );
       if (phone && settings.waEnabled) {
+        const passUrl = buildPassUrl(sub);
         const text = renderTemplate(settings.waTemplates.expired, {
           name,
           queue_number: sub.queue_number,
           skipped_tolerance: settings.skippedTolerance,
-          access_id: sub.ticket_code
+          access_id: sub.ticket_code,
+          link: passUrl,
+          epass_link: passUrl,
+          pass_link: passUrl,
+          pass_url: passUrl,
+          requeue_link: passUrl
         });
-        await sendWhatsAppNotification(phone, text, { pageId, submissionId: sub.id, event: 'expired', gatewayUrl: settings.waConnection?.gatewayUrl });
+        await sendWhatsAppNotification(phone, text, {
+          pageId,
+          submissionId: sub.id,
+          event: 'expired',
+          gatewayUrl: settings.waConnection?.gatewayUrl,
+          apiToken: settings.waConnection?.apiToken,
+          provider: settings.waConnection?.provider
+        });
       }
       expiredCount++;
     }
+  } else {
+    // Memory store fallback
+    const subs = readDataFile<any[]>('submissions.json', []);
+    const matching = subs.filter(s => s.page_id === pageId);
+
+    // Approaching
+    if (settings.waEnabled) {
+      const approachLimit = newCalledNumber + settings.notifyThreshold;
+      for (const sub of matching) {
+        const qNum = Number(sub.queue_number) || 0;
+        const notified = Array.isArray(sub.wa_notified_states) ? sub.wa_notified_states : [];
+        if (qNum > newCalledNumber && qNum <= approachLimit && !notified.includes('approaching') && !['declined', 'waitlisted'].includes(sub.status)) {
+          const form = sub.form_data || {};
+          const phone = extractPhoneNumber(form);
+          const name = form.fullName || form.name || 'Visitor';
+          if (phone) {
+            const passUrl = buildPassUrl(sub);
+            const text = renderTemplate(settings.waTemplates.approaching, {
+              name,
+              queue_number: qNum,
+              party_size: sub.party_size || 1,
+              access_id: sub.ticket_code,
+              current_called: newCalledNumber,
+              link: passUrl,
+              epass_link: passUrl,
+              pass_link: passUrl,
+              pass_url: passUrl
+            });
+            await sendWhatsAppNotification(phone, text, {
+              pageId,
+              submissionId: sub.id,
+              event: 'approaching',
+              gatewayUrl: settings.waConnection?.gatewayUrl,
+              apiToken: settings.waConnection?.apiToken,
+              provider: settings.waConnection?.provider
+            });
+            sub.wa_notified_states = [...notified, 'approaching'];
+            approachingCount++;
+          }
+        }
+      }
+    }
+
+    // Expired
+    const expiredCutoff = newCalledNumber - settings.skippedTolerance;
+    for (const sub of matching) {
+      const qNum = Number(sub.queue_number) || 0;
+      if (qNum < expiredCutoff && !sub.checked_in_at && !['admitted', 'completed', 'expired', 'declined', 'waitlisted'].includes(sub.queue_status)) {
+        sub.queue_status = 'expired';
+        const notified = Array.isArray(sub.wa_notified_states) ? sub.wa_notified_states : [];
+        sub.wa_notified_states = [...notified, 'expired'];
+        const form = sub.form_data || {};
+        const phone = extractPhoneNumber(form);
+        const name = form.fullName || form.name || 'Visitor';
+        if (phone && settings.waEnabled) {
+          const passUrl = buildPassUrl(sub);
+          const text = renderTemplate(settings.waTemplates.expired, {
+            name,
+            queue_number: qNum,
+            skipped_tolerance: settings.skippedTolerance,
+            access_id: sub.ticket_code,
+            link: passUrl,
+            epass_link: passUrl,
+            pass_link: passUrl,
+            pass_url: passUrl,
+            requeue_link: passUrl
+          });
+          await sendWhatsAppNotification(phone, text, {
+            pageId,
+            submissionId: sub.id,
+            event: 'expired',
+            gatewayUrl: settings.waConnection?.gatewayUrl,
+            apiToken: settings.waConnection?.apiToken,
+            provider: settings.waConnection?.provider
+          });
+        }
+        expiredCount++;
+      }
+    }
+    writeDataFile('submissions.json', subs);
   }
 
   return { calledNumber: newCalledNumber, approachingCount, expiredCount };
@@ -235,7 +382,7 @@ export async function processQueueProgression(pageId: string, newCalledNumber: n
 /**
  * Call the next batch of guests automatically based on available venue spots
  */
-export async function processQueueBatch(pageId: string, requestedSpots: number) {
+export async function processQueueBatch(pageId: string, requestedSpots: number, reqBaseUrl?: string) {
   const settings = await getQueueSettings(pageId);
   const spots = Math.max(1, requestedSpots || 1);
   const storeIsDb = getDbStatus().isConnected;
@@ -244,6 +391,42 @@ export async function processQueueBatch(pageId: string, requestedSpots: number) 
   let newCalledNumber = settings.currentCalledNumber || 1;
   let approachingCount = 0;
   let expiredCount = 0;
+
+  let brandSlug = 'atmos';
+  let pageSlug = 'drop';
+
+  if (storeIsDb) {
+    try {
+      const pRes = await pool.query('SELECT brand_slug, slug FROM pages WHERE id = $1 LIMIT 1', [pageId]);
+      if (pRes.rows[0]) {
+        brandSlug = pRes.rows[0].brand_slug || brandSlug;
+        pageSlug = pRes.rows[0].slug || pageSlug;
+      }
+    } catch {
+      // fallback
+    }
+  } else {
+    try {
+      const allPages = readDataFile<any[]>('pages.json', []);
+      const pObj = allPages.find(p => p.id === pageId);
+      if (pObj) {
+        brandSlug = pObj.brand_slug || brandSlug;
+        pageSlug = pObj.slug || pageSlug;
+      }
+    } catch {
+      // fallback
+    }
+  }
+
+  const baseAppUrl = reqBaseUrl || 
+    (typeof process !== 'undefined' ? (process.env.APP_URL || process.env.PUBLIC_APP_URL || '') : '');
+
+  const buildPassUrl = (sub: any) => {
+    const bSlug = sub.brand_slug || brandSlug;
+    const code = sub.ticket_code || '';
+    const linkPath = `/${bSlug}/${pageSlug}?code=${code}`;
+    return baseAppUrl ? `${baseAppUrl.replace(/\/$/, '')}${linkPath}` : linkPath;
+  };
 
   if (storeIsDb) {
     // 1. Fetch unadmitted, waiting guests in queue order
@@ -279,20 +462,27 @@ export async function processQueueBatch(pageId: string, requestedSpots: number) 
         // Send ready WhatsApp notification
         if (settings.waEnabled) {
           const form = typeof sub.form_data === 'string' ? JSON.parse(sub.form_data) : (sub.form_data || {});
-          const phone = form.phone || form.whatsapp || form['WhatsApp'] || form['Phone'] || form['No WhatsApp'] || '';
+          const phone = extractPhoneNumber(form);
           const name = form.fullName || form.name || 'Visitor';
           if (phone) {
+            const passUrl = buildPassUrl(sub);
             const text = renderTemplate(settings.waTemplates.ready, {
               name,
               queue_number: sub.queue_number,
               party_size: pSize,
-              access_id: sub.ticket_code
+              access_id: sub.ticket_code,
+              link: passUrl,
+              epass_link: passUrl,
+              pass_link: passUrl,
+              pass_url: passUrl
             });
             await sendWhatsAppNotification(phone, text, {
               pageId,
               submissionId: sub.id,
               event: 'ready',
-              gatewayUrl: settings.waConnection?.gatewayUrl
+              gatewayUrl: settings.waConnection?.gatewayUrl,
+              apiToken: settings.waConnection?.apiToken,
+              provider: settings.waConnection?.provider
             });
           }
         }
@@ -320,20 +510,27 @@ export async function processQueueBatch(pageId: string, requestedSpots: number) 
 
         if (settings.waEnabled) {
           const form = sub.form_data || {};
-          const phone = form.phone || form.whatsapp || form['WhatsApp'] || form['Phone'] || form['No WhatsApp'] || '';
+          const phone = extractPhoneNumber(form);
           const name = form.fullName || form.name || 'Visitor';
           if (phone) {
+            const passUrl = buildPassUrl(sub);
             const text = renderTemplate(settings.waTemplates.ready, {
               name,
               queue_number: sub.queue_number,
               party_size: pSize,
-              access_id: sub.ticket_code
+              access_id: sub.ticket_code,
+              link: passUrl,
+              epass_link: passUrl,
+              pass_link: passUrl,
+              pass_url: passUrl
             });
             await sendWhatsAppNotification(phone, text, {
               pageId,
               submissionId: sub.id,
               event: 'ready',
-              gatewayUrl: settings.waConnection?.gatewayUrl
+              gatewayUrl: settings.waConnection?.gatewayUrl,
+              apiToken: settings.waConnection?.apiToken,
+              provider: settings.waConnection?.provider
             });
           }
         }
@@ -347,7 +544,7 @@ export async function processQueueBatch(pageId: string, requestedSpots: number) 
   // Update currentCalledNumber and trigger approaching & expired logic
   if (calledGuests.length > 0) {
     await saveQueueSettings(pageId, { currentCalledNumber: newCalledNumber });
-    const prog = await processQueueProgression(pageId, newCalledNumber);
+    const prog = await processQueueProgression(pageId, newCalledNumber, reqBaseUrl);
     approachingCount = prog.approachingCount;
     expiredCount = prog.expiredCount;
   }

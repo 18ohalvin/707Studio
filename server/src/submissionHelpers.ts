@@ -45,9 +45,13 @@ export function publicEntry(row: any) {
   }
   return {
     id: row.id,
+    page_id: row.page_id,
     ticket_code: row.ticket_code,
     status: row.status,
     submission_type: row.submission_type,
+    queue_number: row.queue_number,
+    party_size: row.party_size,
+    queue_status: row.queue_status,
     created_at: row.created_at,
     form_data
   };

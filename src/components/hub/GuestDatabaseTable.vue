@@ -508,7 +508,7 @@ import {
 import { useTicketSender } from './useTicketSender.ts';
 import {
   type Submission, type GuestStatus, STATUS_OPTIONS, normalizeStatus, statusLabel, statusBadgeClass, statusDotClass,
-  guestName, guestEmail, guestPhone, customFieldKeys, formatValue, initials, accessId, formatDateTime, formatTime,
+  guestName, guestEmail, guestPhone, normalizeWhatsAppNumber, customFieldKeys, formatValue, initials, accessId, formatDateTime, formatTime,
   buildCsv, downloadText, patchSubmission, bulkSetStatus, bulkDelete
 } from './hubUtils.ts';
 
@@ -854,9 +854,8 @@ function stepDrawer(delta: number) {
 
 /* ---------- Misc ---------- */
 function whatsappLink(phone: string): string {
-  let digits = phone.replace(/[^\d]/g, '');
-  if (digits.startsWith('0')) digits = `62${digits.slice(1)}`;
-  return `https://wa.me/${digits}`;
+  const norm = normalizeWhatsAppNumber(phone);
+  return `https://wa.me/${norm}`;
 }
 
 async function copy(text: string) {

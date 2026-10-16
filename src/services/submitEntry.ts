@@ -18,6 +18,10 @@ export interface EntryPayload {
   slot_picks?: Array<{ widget: string; option: string }>;
   /** The guest accepts the waitlist for any option that turns out to be full. */
   waitlist?: boolean;
+  /** Request regenerating a fresh queue number when an existing entry has expired. */
+  requeue?: boolean;
+  /** Existing ticket code for requeue identification */
+  ticket_code?: string;
 }
 
 export interface RecordedEntry {

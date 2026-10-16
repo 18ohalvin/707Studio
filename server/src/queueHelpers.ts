@@ -13,8 +13,9 @@ export interface WhatsAppDeviceInfo {
 export interface WhatsAppConnection {
   connected: boolean;
   phoneNumber?: string;
+  formattedNumber?: string;
   sessionName?: string;
-  provider?: 'linked_device' | 'pairing_code' | 'meta_cloud' | 'custom_gateway';
+  provider?: 'direct_sender' | 'fonnte' | 'wablas' | 'custom_gateway' | 'linked_device' | 'pairing_code';
   gatewayUrl?: string;
   apiToken?: string;
   linkedAt?: string;
@@ -28,6 +29,7 @@ export interface WhatsAppLogEntry {
   text: string;
   event: string;
   status: 'sent' | 'delivered' | 'failed';
+  error?: string;
   timestamp: string;
 }
 
@@ -53,8 +55,9 @@ export const DEFAULT_QUEUE_SETTINGS: QueueSettings = {
   waConnection: {
     connected: false,
     phoneNumber: '',
+    formattedNumber: '',
     sessionName: '707 Studio Primary WhatsApp',
-    provider: 'linked_device',
+    provider: 'direct_sender',
     deviceInfo: {
       platform: 'WhatsApp Multi-Device (Web)',
       pushName: '707 Activation Hub'
@@ -64,9 +67,56 @@ export const DEFAULT_QUEUE_SETTINGS: QueueSettings = {
     welcome: 'Hello {{name}}! You are registered in the queue with Queue Number #{{queue_number}} (Party: {{party_size}} guests). Track your live status here: {{link}}',
     approaching: 'Hello {{name}}! Your turn is approaching. The queue is currently serving near your number (#{{queue_number}}). Please proceed to the entrance area now.',
     ready: 'Hello {{name}}! It is your turn to enter. Please present your Access ID {{access_id}} to the door staff at the entrance.',
-    expired: 'Notice: {{name}}, queue number #{{queue_number}} was skipped past the grace margin and has expired. Please check in with event staff or register again to rejoin.'
+    expired: 'Notice: {{name}}, queue number #{{queue_number}} was skipped past the grace margin and has expired. You can rejoin and regenerate a new queue number on your live pass here: {{link}}'
   }
 };
+
+/** Normalizes any international or Indonesian phone format to strict E.164 digits without leading zeros */
+export function normalizeWhatsAppNumber(raw: string, defaultCountry = '62'): string {
+  if (!raw) return '';
+  let digits = String(raw).replace(/[^\d+]/g, '');
+  if (digits.startsWith('+')) digits = digits.slice(1);
+  digits = digits.replace(/\D/g, '');
+  if (!digits) return '';
+
+  // Local Indonesian format e.g. 0812... -> 62812...
+  if (digits.startsWith('0')) {
+    digits = defaultCountry + digits.slice(1);
+  }
+  // Missing country code e.g. 8123456789 (9 to 13 digits) -> 628123456789
+  else if (digits.startsWith('8') && digits.length >= 9 && digits.length <= 13) {
+    digits = defaultCountry + digits;
+  }
+  return digits;
+}
+
+/** Formats clean digits into an international display string e.g. +62 812-3456-7890 */
+export function formatWhatsAppDisplay(raw: string): string {
+  const norm = normalizeWhatsAppNumber(raw);
+  if (!norm) return '';
+  if (norm.startsWith('62') && norm.length >= 10) {
+    const rest = norm.slice(2);
+    const p1 = rest.slice(0, 3);
+    const p2 = rest.slice(3, 7);
+    const p3 = rest.slice(7);
+    return `+62 ${p1}-${p2}${p3 ? `-${p3}` : ''}`;
+  }
+  return `+${norm}`;
+}
+
+/** Extracts phone or WhatsApp number from any guest answer object regardless of exact key casing */
+const PHONE_KEY_REGEX = /whats\s?app|phone|telp|telepon|\bwa\b|mobile|hp\b/i;
+export function extractPhoneNumber(formData: Record<string, any> = {}): string {
+  if (!formData || typeof formData !== 'object') return '';
+  if (formData.phone) return String(formData.phone);
+  if (formData.whatsapp) return String(formData.whatsapp);
+  for (const [key, val] of Object.entries(formData)) {
+    if (val && PHONE_KEY_REGEX.test(key)) {
+      return String(val);
+    }
+  }
+  return '';
+}
 
 /** In-memory buffer of recent outgoing notifications for live audit */
 const recentWaLogs: WhatsAppLogEntry[] = [];
@@ -76,17 +126,20 @@ export function getWaLogs(pageId?: string): WhatsAppLogEntry[] {
   return recentWaLogs.filter(l => !l.pageId || l.pageId === pageId).reverse().slice(0, 30);
 }
 
-/** Generate a dynamic QR string and pairing code for WhatsApp linking */
+/** Generate a dynamic QR string and pairing payload for WhatsApp linking */
 export function generateWaLinkPayload(pageId: string, phoneNumber?: string) {
+  const norm = normalizeWhatsAppNumber(phoneNumber || '');
   const nonce = (Math.random().toString(36).substring(2, 10) + '707STUDIO').substring(0, 8).toUpperCase();
   const timestamp = Date.now();
-  // Standard format compatible with WhatsApp Web / Multi-Device linking payloads
   const qrString = `2@707Studio,${pageId},${timestamp},${nonce}`;
   const pairingCode = `${nonce.slice(0, 4)}-${nonce.slice(4, 8)}`;
 
   return {
     qrString,
     pairingCode,
+    cleanPhone: norm,
+    formattedDisplay: formatWhatsAppDisplay(norm),
+    directLink: norm ? `https://wa.me/${norm}` : '',
     expiresInSeconds: 180,
     generatedAt: new Date().toISOString()
   };
@@ -106,15 +159,74 @@ export function renderTemplate(template: string, vars: Record<string, any>): str
  * Dispatch or log WhatsApp notification.
  * Works seamlessly in development (console & memory log) and production (gateway integration).
  */
-export async function sendWhatsAppNotification(phone: string, text: string, meta?: Record<string, any>): Promise<boolean> {
-  const cleanPhone = phone.replace(/\D/g, '');
-  if (!cleanPhone || cleanPhone.length < 8) return false;
+export async function sendWhatsAppNotification(
+  phone: string,
+  text: string,
+  meta?: Record<string, any>
+): Promise<boolean> {
+  const cleanPhone = normalizeWhatsAppNumber(phone);
+  if (!cleanPhone || cleanPhone.length < 9) {
+    console.warn(`[sendWhatsAppNotification] Invalid recipient phone number provided: "${phone}"`);
+    recentWaLogs.push({
+      id: 'walog_' + Math.random().toString(36).substring(2, 10),
+      pageId: meta?.pageId,
+      phone: phone || '(empty)',
+      text,
+      event: meta?.event || 'notification',
+      status: 'failed',
+      error: 'Invalid phone number format (min 9 digits required)',
+      timestamp: new Date().toISOString()
+    });
+    return false;
+  }
 
   console.log(`\n================== [WHATSAPP OUTGOING NOTIFICATION] ==================`);
-  console.log(`To: +${cleanPhone}`);
+  console.log(`To: +${cleanPhone} (${formatWhatsAppDisplay(cleanPhone)})`);
   console.log(`Message:\n${text}`);
   if (meta) console.log(`Context:`, meta);
   console.log(`======================================================================\n`);
+
+  let status: 'sent' | 'delivered' | 'failed' = 'delivered';
+  let deliveryError: string | undefined = undefined;
+
+  // If a WhatsApp Gateway webhook or URL is configured
+  const gatewayUrl = meta?.gatewayUrl || (typeof process !== 'undefined' ? process.env.WA_GATEWAY_URL : undefined);
+  const apiToken = meta?.apiToken || (typeof process !== 'undefined' ? process.env.WA_GATEWAY_TOKEN : undefined);
+  const provider = meta?.provider || 'direct_sender';
+
+  if (gatewayUrl) {
+    try {
+      let headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      let body: any = {};
+
+      if (gatewayUrl.includes('api.fonnte.com') || provider === 'fonnte') {
+        if (apiToken) headers['Authorization'] = apiToken;
+        body = { target: cleanPhone, message: text };
+      } else if (gatewayUrl.includes('wablas.com') || provider === 'wablas') {
+        if (apiToken) headers['Authorization'] = apiToken;
+        body = { phone: cleanPhone, message: text };
+      } else {
+        if (apiToken) headers['Authorization'] = apiToken.startsWith('Bearer ') ? apiToken : `Bearer ${apiToken}`;
+        body = { phone: cleanPhone, text, ...meta };
+      }
+
+      const res = await fetch(gatewayUrl, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body)
+      });
+
+      if (!res.ok) {
+        status = 'failed';
+        deliveryError = `Gateway returned HTTP ${res.status}: ${res.statusText}`;
+        console.warn(`[QueueManager] Gateway dispatch warning (${res.status}):`, res.statusText);
+      }
+    } catch (e: any) {
+      status = 'failed';
+      deliveryError = e?.message || String(e);
+      console.warn('[QueueManager] Gateway dispatch exception:', deliveryError);
+    }
+  }
 
   // Record into audit log
   const logEntry: WhatsAppLogEntry = {
@@ -123,25 +235,12 @@ export async function sendWhatsAppNotification(phone: string, text: string, meta
     phone: cleanPhone,
     text,
     event: meta?.event || 'notification',
-    status: 'delivered',
+    status,
+    error: deliveryError,
     timestamp: new Date().toISOString()
   };
   recentWaLogs.push(logEntry);
   if (recentWaLogs.length > 200) recentWaLogs.shift();
 
-  // If a WhatsApp Gateway webhook is configured via environment or meta, dispatch to it
-  const gatewayUrl = meta?.gatewayUrl || (typeof process !== 'undefined' ? process.env.WA_GATEWAY_URL : undefined);
-  if (gatewayUrl) {
-    try {
-      await fetch(gatewayUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: cleanPhone, text, ...meta })
-      });
-    } catch (e: any) {
-      console.warn('[QueueManager] Gateway dispatch warning:', e?.message || e);
-    }
-  }
-
-  return true;
+  return status !== 'failed';
 }

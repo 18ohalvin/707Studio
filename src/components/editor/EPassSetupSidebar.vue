@@ -803,9 +803,13 @@ const venue = computed({
 
 const eventDate = computed({
   get: () => {
-    return currentWidget.value?.props?.eventDate || 
-      editorStore.currentProject?.event_config?.eventDate || 
-      editorStore.currentPage?.page_settings?.eventConfig?.eventDate || '';
+    if (currentWidget.value?.props?.eventDate) return currentWidget.value.props.eventDate;
+    const cfg = editorStore.currentProject?.event_config || editorStore.currentPage?.page_settings?.eventConfig;
+    if (cfg?.eventType === 'daily_rolling') return cfg.startDate || cfg.eventDate || '16 October 2026';
+    if (cfg?.eventType === 'multiday') {
+      return (cfg.startDate && cfg.endDate) ? `${cfg.startDate} - ${cfg.endDate}` : cfg.startDate || cfg.endDate || '16-18 October 2026';
+    }
+    return cfg?.eventDate || cfg?.startDate || '';
   },
   set: (val: string) => {
     if (currentWidget.value) {

@@ -263,7 +263,7 @@
             <div>
               <div class="flex flex-wrap items-center gap-2.5">
                 <h4 class="text-[15.5px] font-medium text-black">
-                  {{ form.waConnection?.connected ? `Sender: ${form.waConnection?.phoneNumber || 'Linked Phone'}` : 'Business WhatsApp Sender Device' }}
+                  {{ form.waConnection?.connected ? `Sender: ${form.waConnection?.formattedNumber || form.waConnection?.phoneNumber || 'Linked Phone'}` : 'Business WhatsApp Sender Device' }}
                 </h4>
                 <span
                   class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium border transition-colors"
@@ -275,6 +275,15 @@
                   />
                   {{ form.waConnection?.connected ? 'Linked & Active' : 'Not Linked (Offline)' }}
                 </span>
+                <a
+                  v-if="form.waConnection?.connected && form.waConnection?.phoneNumber"
+                  :href="'https://wa.me/' + form.waConnection.phoneNumber"
+                  target="_blank"
+                  rel="noopener"
+                  class="text-[12px] text-emerald-700 underline font-mono hover:text-emerald-800"
+                >
+                  Test wa.me ↗
+                </a>
               </div>
               <p class="text-[13px] text-neutral-500 mt-1 leading-relaxed max-w-[560px]">
                 <template v-if="form.waConnection?.connected">
@@ -524,21 +533,12 @@
         <div class="flex items-center border-b border-black/10 px-6 sm:px-7 pt-4 gap-3 bg-white">
           <button
             type="button"
-            @click="linkTab = 'qr'"
+            @click="linkTab = 'direct'"
             class="pb-3 px-3.5 text-[13px] font-medium border-b-2 transition-colors cursor-pointer flex items-center gap-2"
-            :class="linkTab === 'qr' ? 'border-black text-black' : 'border-transparent text-neutral-400 hover:text-neutral-700'"
-          >
-            <QrCode class="w-3.5 h-3.5" />
-            <span>Scan QR Code</span>
-          </button>
-          <button
-            type="button"
-            @click="linkTab = 'code'"
-            class="pb-3 px-3.5 text-[13px] font-medium border-b-2 transition-colors cursor-pointer flex items-center gap-2"
-            :class="linkTab === 'code' ? 'border-black text-black' : 'border-transparent text-neutral-400 hover:text-neutral-700'"
+            :class="linkTab === 'direct' ? 'border-black text-black' : 'border-transparent text-neutral-400 hover:text-neutral-700'"
           >
             <Smartphone class="w-3.5 h-3.5" />
-            <span>8-Digit Code</span>
+            <span>Direct Number</span>
           </button>
           <button
             type="button"
@@ -547,15 +547,183 @@
             :class="linkTab === 'gateway' ? 'border-black text-black' : 'border-transparent text-neutral-400 hover:text-neutral-700'"
           >
             <Link2 class="w-3.5 h-3.5" />
-            <span>Custom Gateway</span>
+            <span>Cloud Gateway (Fonnte/Wablas)</span>
+          </button>
+          <button
+            type="button"
+            @click="linkTab = 'qr'"
+            class="pb-3 px-3.5 text-[13px] font-medium border-b-2 transition-colors cursor-pointer flex items-center gap-2"
+            :class="linkTab === 'qr' ? 'border-black text-black' : 'border-transparent text-neutral-400 hover:text-neutral-700'"
+          >
+            <QrCode class="w-3.5 h-3.5" />
+            <span>QR Device Session</span>
           </button>
         </div>
 
         <!-- Body -->
         <div class="p-6 sm:p-8 flex flex-col gap-6 overflow-y-auto max-h-[70vh]">
-          <!-- TAB 1: SCAN QR CODE -->
-          <div v-if="linkTab === 'qr'" class="flex flex-col items-center gap-6">
-            <!-- QR Card -->
+          <!-- TAB 1: DIRECT NUMBER LINKING (Instant, Bulletproof) -->
+          <div v-if="linkTab === 'direct'" class="flex flex-col gap-5">
+            <div class="p-4 rounded-[14px] bg-emerald-500/[0.08] border border-emerald-500/20 flex items-start gap-3">
+              <CheckCircle2 class="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+              <div class="text-[12.5px] text-emerald-950 leading-relaxed">
+                <strong>Instant Verified Activation:</strong> Enter your Business WhatsApp phone number.
+                The system automatically normalizes your number format (e.g. converting local <code class="bg-emerald-100 px-1 py-0.5 rounded text-[11.5px]">08...</code> to <code class="bg-emerald-100 px-1 py-0.5 rounded text-[11.5px]">+62 8...</code>) to ensure zero "Wrong number" errors.
+              </div>
+            </div>
+
+            <!-- Phone Number Input -->
+            <div class="flex flex-col gap-1.5">
+              <label for="link-phone" class="text-[12px] font-medium text-black flex items-center justify-between">
+                <span>Business WhatsApp Phone Number</span>
+                <span class="text-[11px] text-neutral-400 font-normal">Supports 08... or +62... format</span>
+              </label>
+              <input
+                id="link-phone"
+                v-model="linkPhone"
+                type="text"
+                placeholder="e.g. +62 812 7070 8888 or 081234567890"
+                class="h-[44px] px-3.5 rounded-[12px] bg-black/[0.02] border text-[14px] outline-none font-mono transition-all"
+                :class="isLinkPhoneValid ? 'border-emerald-500 focus:border-emerald-600 focus:bg-white' : (linkPhone ? 'border-amber-400 focus:border-amber-500' : 'border-black/15 focus:border-black focus:bg-white')"
+              />
+
+              <!-- Live Validation Feedback -->
+              <div class="min-h-[20px] flex items-center text-[12px]">
+                <span v-if="isLinkPhoneValid" class="text-emerald-700 font-medium flex items-center gap-1.5 animate-in fade-in">
+                  <Check class="w-3.5 h-3.5 text-emerald-600" />
+                  Verified WhatsApp format: <strong>{{ displayLinkPhone }}</strong> (E.164: +{{ normalizedLinkPhone }})
+                </span>
+                <span v-else-if="linkPhone" class="text-amber-700 flex items-center gap-1.5">
+                  <AlertCircle class="w-3.5 h-3.5 text-amber-600" />
+                  Please enter at least 9 digits (e.g. 081234567890 or +62 812 3456 7890)
+                </span>
+                <span v-else class="text-neutral-400 text-[11.5px]">
+                  WhatsApp notifications and gate dispatch links will be routed from this verified number.
+                </span>
+              </div>
+            </div>
+
+            <!-- Session / Station Label -->
+            <div class="flex flex-col gap-1.5">
+              <label for="link-session" class="text-[12px] font-medium text-black">Sender Device / Station Label</label>
+              <input
+                id="link-session"
+                v-model="linkSessionName"
+                type="text"
+                placeholder="e.g. 707 Gate System or Stanley 1913 Host"
+                class="h-[40px] px-3.5 rounded-[10px] bg-black/[0.02] border border-black/15 text-[13.5px] outline-none focus:border-black focus:bg-white text-black transition-all"
+              />
+              <span class="text-[11.5px] text-neutral-400">Displayed on tickets and internal audit logs.</span>
+            </div>
+
+            <!-- Features Included -->
+            <div class="p-4 rounded-[14px] bg-neutral-50 border border-black/5 flex flex-col gap-2 text-[12px] text-neutral-600">
+              <div class="flex items-center gap-2 font-medium text-black text-[12.5px] mb-0.5">
+                <ShieldCheck class="w-4 h-4 text-emerald-600" />
+                <span>What happens after linking:</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-emerald-600 font-bold">✓</span>
+                <span>Automated queue notifications (Welcome, Approaching Alert, Turn Ready) are activated immediately.</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-emerald-600 font-bold">✓</span>
+                <span>Door Scanner &amp; Guest Database provide 1-tap WhatsApp direct messaging for door staff.</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-emerald-600 font-bold">✓</span>
+                <span>You can test sending a live notification to your phone right after linking.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 2: CLOUD GATEWAY (Fonnte / Wablas / Mekari Qontact) -->
+          <div v-else-if="linkTab === 'gateway'" class="flex flex-col gap-5">
+            <div class="p-4 rounded-[14px] bg-black/[0.02] border border-black/5 text-[12.5px] text-neutral-600 leading-relaxed">
+              Connect an automated WhatsApp API provider (Fonnte, Wablas, or Mekari Qontact webhook) for 100% background server dispatch without manual taps.
+            </div>
+
+            <!-- Provider Presets -->
+            <div class="flex flex-col gap-1.5">
+              <span class="text-[11.5px] uppercase tracking-[0.08em] text-neutral-500 font-medium">Gateway Provider:</span>
+              <div class="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  @click="onGatewayPresetChange('fonnte')"
+                  class="h-[42px] px-3 rounded-[10px] border text-[12.5px] font-medium cursor-pointer transition-all flex items-center justify-center gap-1.5"
+                  :class="gatewayPreset === 'fonnte' ? 'bg-black text-white border-black shadow-xs' : 'bg-white border-black/15 text-neutral-700 hover:bg-black/5'"
+                >
+                  <span>Fonnte</span>
+                  <span class="text-[10px] opacity-75 font-mono">(ID #1)</span>
+                </button>
+                <button
+                  type="button"
+                  @click="onGatewayPresetChange('wablas')"
+                  class="h-[42px] px-3 rounded-[10px] border text-[12.5px] font-medium cursor-pointer transition-all flex items-center justify-center gap-1.5"
+                  :class="gatewayPreset === 'wablas' ? 'bg-black text-white border-black shadow-xs' : 'bg-white border-black/15 text-neutral-700 hover:bg-black/5'"
+                >
+                  <span>Wablas</span>
+                </button>
+                <button
+                  type="button"
+                  @click="onGatewayPresetChange('custom')"
+                  class="h-[42px] px-3 rounded-[10px] border text-[12.5px] font-medium cursor-pointer transition-all flex items-center justify-center gap-1.5"
+                  :class="gatewayPreset === 'custom' ? 'bg-black text-white border-black shadow-xs' : 'bg-white border-black/15 text-neutral-700 hover:bg-black/5'"
+                >
+                  <span>Qontact / Webhook</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Sender Phone Number -->
+            <div class="flex flex-col gap-1">
+              <label for="gateway-phone" class="text-[12px] font-medium text-black">Sender Phone Number</label>
+              <input
+                id="gateway-phone"
+                v-model="linkPhone"
+                type="text"
+                placeholder="e.g. +62 812 7070 8888 or 081234567890"
+                class="h-[40px] px-3.5 rounded-[10px] bg-black/[0.02] border border-black/15 text-[13.5px] outline-none focus:border-black focus:bg-white text-black font-mono transition-all"
+              />
+              <span v-if="isLinkPhoneValid" class="text-[11.5px] text-emerald-600 font-medium">
+                Normalized: +{{ normalizedLinkPhone }}
+              </span>
+            </div>
+
+            <!-- Dispatch Webhook URL -->
+            <div class="flex flex-col gap-1">
+              <label for="gateway-url" class="text-[12px] font-medium text-black">Gateway Dispatch URL</label>
+              <input
+                id="gateway-url"
+                v-model="linkGatewayUrl"
+                type="text"
+                placeholder="e.g. https://api.fonnte.com/send"
+                class="h-[40px] px-3.5 rounded-[10px] bg-black/[0.02] border border-black/15 text-[13.5px] outline-none focus:border-black focus:bg-white text-black font-mono transition-all"
+              />
+            </div>
+
+            <!-- API Token -->
+            <div class="flex flex-col gap-1">
+              <label for="gateway-token" class="text-[12px] font-medium text-black">
+                {{ gatewayPreset === 'fonnte' ? 'Fonnte Device Token' : (gatewayPreset === 'wablas' ? 'Wablas API Key' : 'API Token / Bearer Token') }}
+              </label>
+              <input
+                id="gateway-token"
+                v-model="linkApiToken"
+                type="password"
+                placeholder="Paste API token from gateway dashboard"
+                class="h-[40px] px-3.5 rounded-[10px] bg-black/[0.02] border border-black/15 text-[13.5px] outline-none focus:border-black focus:bg-white text-black font-mono transition-all"
+              />
+              <span class="text-[11px] text-neutral-400">Tokens are encrypted and dispatched strictly from server to provider.</span>
+            </div>
+          </div>
+
+          <!-- TAB 3: QR CODE SESSION -->
+          <div v-else-if="linkTab === 'qr'" class="flex flex-col items-center gap-5">
+            <div class="p-4 rounded-[14px] bg-neutral-50 border border-black/10 text-[12.5px] text-neutral-600 leading-relaxed text-center max-w-[480px]">
+              If you host a WhatsApp Web bridge or Baileys instance, scan the QR code to create an active WebSocket device session.
+            </div>
+
             <div class="p-6 rounded-[20px] bg-white border border-black/15 shadow-sm flex flex-col items-center relative">
               <div v-if="isGeneratingSession" class="size-[200px] flex flex-col items-center justify-center gap-2 text-neutral-400">
                 <RefreshCw class="w-6 h-6 animate-spin text-emerald-600" />
@@ -573,124 +741,17 @@
 
               <div class="mt-3 flex items-center gap-1.5 text-[11.5px] text-neutral-400">
                 <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Live WhatsApp Multi-Device Session</span>
+                <span>Live 707 Gateway Handshake</span>
               </div>
             </div>
 
-            <!-- Steps -->
-            <div class="w-full p-4 sm:p-5 rounded-[16px] bg-black/[0.02] border border-black/5 flex flex-col gap-3 text-[13px] text-neutral-600">
-              <div class="flex items-start gap-3">
-                <span class="size-5 rounded-full bg-black text-white text-[11px] font-mono flex items-center justify-center shrink-0 mt-0.5">1</span>
-                <span>Open <strong>WhatsApp</strong> on your phone</span>
-              </div>
-              <div class="flex items-start gap-3">
-                <span class="size-5 rounded-full bg-black text-white text-[11px] font-mono flex items-center justify-center shrink-0 mt-0.5">2</span>
-                <span>Tap <strong>Settings</strong> (iOS) or <strong>⋮ More options</strong> (Android) &gt; <strong>Linked Devices</strong></span>
-              </div>
-              <div class="flex items-start gap-3">
-                <span class="size-5 rounded-full bg-black text-white text-[11px] font-mono flex items-center justify-center shrink-0 mt-0.5">3</span>
-                <span>Tap <strong>Link a Device</strong> and point your phone's camera at the QR code</span>
-              </div>
-            </div>
-
-            <!-- Phone Number & Session Name Input -->
-            <div class="w-full flex flex-col gap-3">
-              <div class="flex flex-col gap-1">
-                <label for="link-phone" class="text-[12px] font-medium text-black">Business WhatsApp Phone Number</label>
-                <input
-                  id="link-phone"
-                  v-model="linkPhone"
-                  type="text"
-                  placeholder="e.g. +62 812 7070 8888"
-                  class="h-[40px] px-3.5 rounded-[10px] bg-black/[0.02] border border-black/15 text-[13.5px] outline-none focus:border-black focus:bg-white text-black font-mono transition-all"
-                />
-              </div>
-
-              <div class="flex flex-col gap-1">
-                <label for="link-session" class="text-[12px] font-medium text-black">Device Label / Station</label>
-                <input
-                  id="link-session"
-                  v-model="linkSessionName"
-                  type="text"
-                  placeholder="e.g. 707 Studio Primary WhatsApp"
-                  class="h-[40px] px-3.5 rounded-[10px] bg-black/[0.02] border border-black/15 text-[13.5px] outline-none focus:border-black focus:bg-white text-black transition-all"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- TAB 2: PAIRING CODE -->
-          <div v-else-if="linkTab === 'code'" class="flex flex-col gap-4">
-            <div class="p-4 rounded-[12px] bg-emerald-50 border border-emerald-200 text-[12.5px] text-emerald-800 leading-snug">
-              Pair your phone without using a camera by entering an 8-character verification code into WhatsApp.
-            </div>
-
-            <div class="flex flex-col gap-1">
-              <label for="link-code-phone" class="text-[12px] font-medium text-black">WhatsApp Phone Number</label>
+            <div class="w-full flex flex-col gap-2">
+              <label for="link-qr-phone" class="text-[12px] font-medium text-black">Sender WhatsApp Phone Number</label>
               <input
-                id="link-code-phone"
+                id="link-qr-phone"
                 v-model="linkPhone"
                 type="text"
-                placeholder="e.g. +62 812 7070 8888"
-                class="h-[40px] px-3.5 rounded-[10px] bg-black/[0.02] border border-black/15 text-[13.5px] outline-none focus:border-black focus:bg-white text-black font-mono transition-all"
-              />
-            </div>
-
-            <!-- Pairing Code Block -->
-            <div class="p-4 rounded-[14px] bg-black/[0.02] border border-black/10 flex flex-col items-center gap-2">
-              <span class="text-[11px] uppercase tracking-[0.1em] text-neutral-400 font-medium">Your Pairing Code</span>
-              <div class="flex items-center gap-3">
-                <span class="text-[28px] font-mono font-bold tracking-widest text-black">{{ pairingCode || '707S-LINK' }}</span>
-                <button
-                  type="button"
-                  @click="copyPairingCode"
-                  class="size-8 rounded-[8px] bg-white border border-black/15 hover:bg-black/5 flex items-center justify-center cursor-pointer transition-colors shadow-2xs"
-                  title="Copy Pairing Code"
-                >
-                  <Copy class="w-3.5 h-3.5 text-neutral-600" />
-                </button>
-              </div>
-              <p class="text-[11.5px] text-neutral-400 text-center">
-                In WhatsApp &gt; Linked Devices &gt; Tap "Link with phone number instead" and enter this code.
-              </p>
-            </div>
-          </div>
-
-          <!-- TAB 3: CUSTOM GATEWAY -->
-          <div v-else-if="linkTab === 'gateway'" class="flex flex-col gap-4">
-            <div class="p-3.5 rounded-[12px] bg-black/[0.02] border border-black/5 text-[12.5px] text-neutral-600 leading-snug">
-              Connect via an external aggregator (Fonnte, Wablas) or your self-hosted WhatsApp Baileys / WPPConnect server.
-            </div>
-
-            <div class="flex flex-col gap-1">
-              <label for="gateway-phone" class="text-[12px] font-medium text-black">Sender Phone Number</label>
-              <input
-                id="gateway-phone"
-                v-model="linkPhone"
-                type="text"
-                placeholder="e.g. +62 812 7070 8888"
-                class="h-[40px] px-3.5 rounded-[10px] bg-black/[0.02] border border-black/15 text-[13.5px] outline-none focus:border-black focus:bg-white text-black font-mono transition-all"
-              />
-            </div>
-
-            <div class="flex flex-col gap-1">
-              <label for="gateway-url" class="text-[12px] font-medium text-black">Webhook / Dispatch URL</label>
-              <input
-                id="gateway-url"
-                v-model="linkGatewayUrl"
-                type="text"
-                placeholder="e.g. https://api.fonnte.com/send"
-                class="h-[40px] px-3.5 rounded-[10px] bg-black/[0.02] border border-black/15 text-[13.5px] outline-none focus:border-black focus:bg-white text-black font-mono transition-all"
-              />
-            </div>
-
-            <div class="flex flex-col gap-1">
-              <label for="gateway-token" class="text-[12px] font-medium text-black">API Token (Optional)</label>
-              <input
-                id="gateway-token"
-                v-model="linkApiToken"
-                type="password"
-                placeholder="Bearer token or API key"
+                placeholder="e.g. +62 812 7070 8888 or 081234567890"
                 class="h-[40px] px-3.5 rounded-[10px] bg-black/[0.02] border border-black/15 text-[13.5px] outline-none focus:border-black focus:bg-white text-black font-mono transition-all"
               />
             </div>
@@ -700,23 +761,27 @@
         <!-- Footer -->
         <div class="p-4 border-t border-black/10 bg-neutral-50 flex items-center justify-between">
           <button
+            v-if="linkTab === 'qr'"
             type="button"
             @click="refreshQrCode"
             :disabled="isGeneratingSession"
             class="h-[38px] px-3.5 rounded-[10px] border border-black/15 bg-white text-[12.5px] font-medium hover:bg-black/5 disabled:opacity-40 transition-colors cursor-pointer flex items-center gap-1.5"
           >
             <RefreshCw class="w-3.5 h-3.5" :class="isGeneratingSession ? 'animate-spin' : ''" />
-            <span>Regenerate</span>
+            <span>Regenerate QR</span>
           </button>
+          <div v-else class="text-[12px] text-neutral-500">
+            {{ isLinkPhoneValid ? `Ready: ${displayLinkPhone}` : 'Enter phone to proceed' }}
+          </div>
 
           <button
             type="button"
             @click="handleConfirmLink"
-            :disabled="isLinking"
-            class="apple-cta-btn h-[40px] px-5 rounded-[10px] bg-black text-white text-[13px] font-medium hover:bg-neutral-800 disabled:opacity-40 transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+            :disabled="(!isLinkPhoneValid && linkTab !== 'gateway') || isLinking"
+            class="apple-cta-btn h-[40px] px-6 rounded-[10px] bg-black text-white text-[13px] font-medium hover:bg-neutral-800 disabled:opacity-40 transition-all flex items-center gap-2 cursor-pointer shadow-sm"
           >
             <Check class="w-4 h-4" />
-            <span>{{ isLinking ? 'Linking…' : 'Confirm Device Linked' }}</span>
+            <span>{{ isLinking ? 'Activating…' : (linkTab === 'gateway' ? 'Connect Gateway' : 'Activate & Link WhatsApp') }}</span>
           </button>
         </div>
       </div>
@@ -919,7 +984,9 @@ import {
   History,
   Copy,
   ScanLine,
-  X
+  X,
+  AlertCircle,
+  CheckCircle2
 } from 'lucide-vue-next';
 import QRCode from 'qrcode';
 import { glassConfirm, glassPrompt } from '../../services/glassDialog.ts';
@@ -929,6 +996,8 @@ import {
   callNextQueue,
   totalInsideGuests,
   normalizeStatus,
+  normalizeWhatsAppNumber,
+  formatWhatsAppDisplay,
   fetchWaLinkSession,
   confirmWaLinkApi,
   unlinkWaApi,
@@ -967,15 +1036,34 @@ const activeStageId = ref<StageId>('approaching');
 
 // WhatsApp Device Linking & Testing State
 const showLinkModal = ref(false);
-const linkTab = ref<'qr' | 'code' | 'gateway'>('qr');
+const linkTab = ref<'direct' | 'gateway' | 'qr'>('direct');
+const gatewayPreset = ref<'fonnte' | 'wablas' | 'custom'>('fonnte');
 const linkPhone = ref('');
 const linkSessionName = ref('707 Studio Primary WhatsApp');
-const linkGatewayUrl = ref('');
+const linkGatewayUrl = ref('https://api.fonnte.com/send');
 const linkApiToken = ref('');
 const qrDataUrl = ref('');
 const pairingCode = ref('');
 const isGeneratingSession = ref(false);
 const isLinking = ref(false);
+
+const normalizedLinkPhone = computed(() => normalizeWhatsAppNumber(linkPhone.value));
+const displayLinkPhone = computed(() => formatWhatsAppDisplay(linkPhone.value));
+const isLinkPhoneValid = computed(() => {
+  const norm = normalizedLinkPhone.value;
+  return norm.length >= 9 && norm.length <= 15;
+});
+
+function onGatewayPresetChange(preset: 'fonnte' | 'wablas' | 'custom') {
+  gatewayPreset.value = preset;
+  if (preset === 'fonnte') {
+    linkGatewayUrl.value = 'https://api.fonnte.com/send';
+  } else if (preset === 'wablas') {
+    linkGatewayUrl.value = 'https://pati.wablas.com/api/send-message';
+  } else {
+    linkGatewayUrl.value = '';
+  }
+}
 
 const showTestModal = ref(false);
 const testPhone = ref('');
@@ -997,14 +1085,15 @@ const form = reactive<QueueSettingsData>({
   waConnection: {
     connected: false,
     phoneNumber: '',
+    formattedNumber: '',
     sessionName: '707 Studio Primary WhatsApp',
-    provider: 'linked_device'
+    provider: 'direct_sender'
   },
   waTemplates: {
     welcome: 'Hello {{name}}! You are registered in the queue with Queue Number #{{queue_number}} (Party: {{party_size}} guests). Track your live status here: {{link}}',
     approaching: 'Hello {{name}}! Your turn is approaching. The queue is currently serving near your number (#{{queue_number}}). Please proceed to the entrance area now.',
     ready: 'Hello {{name}}! It is your turn to enter. Please present your Access ID {{access_id}} to the door staff at the entrance.',
-    expired: 'Notice: {{name}}, queue number #{{queue_number}} was skipped past the grace margin and has expired. Please check in with event staff or register again to rejoin.'
+    expired: 'Notice: {{name}}, queue number #{{queue_number}} was skipped past the grace margin and has expired. You can rejoin and regenerate a new queue number on your live pass here: {{link}}'
   }
 });
 
@@ -1035,7 +1124,8 @@ const DEFAULT_STAGES: StageDefinition[] = [
       { key: 'name', label: 'Name', description: 'Visitor full name' },
       { key: 'queue_number', label: 'Queue No', description: 'Sequential queue number' },
       { key: 'current_called', label: 'Currently Serving', description: 'The active called number right now' },
-      { key: 'party_size', label: 'Party Size', description: 'Number of people in group' }
+      { key: 'party_size', label: 'Party Size', description: 'Number of people in group' },
+      { key: 'link', label: 'Pass Link', description: 'Direct URL to view ticket status' }
     ]
   },
   {
@@ -1048,7 +1138,8 @@ const DEFAULT_STAGES: StageDefinition[] = [
     tags: [
       { key: 'name', label: 'Name', description: 'Visitor full name' },
       { key: 'queue_number', label: 'Queue No', description: 'Sequential queue number' },
-      { key: 'access_id', label: 'Access ID', description: 'Ticket pass code' }
+      { key: 'access_id', label: 'Access ID', description: 'Ticket pass code' },
+      { key: 'link', label: 'Pass Link', description: 'Direct URL to view ticket status' }
     ]
   },
   {
@@ -1056,12 +1147,14 @@ const DEFAULT_STAGES: StageDefinition[] = [
     title: '4. Missed / Expired',
     triggerSummary: 'Trigger: Grace Margin Exceeded',
     triggerBadge: 'Trigger: Skipped Beyond Tolerance',
-    description: 'Sent when a guest misses their turn beyond the grace tolerance limit, informing them to re-queue if desired.',
+    description: 'Sent when a guest misses their turn beyond the grace tolerance limit, with a link to rejoin and regenerate their queue number.',
     icon: Ban,
     tags: [
       { key: 'name', label: 'Name', description: 'Visitor full name' },
       { key: 'queue_number', label: 'Queue No', description: 'Sequential queue number' },
-      { key: 'skipped_tolerance', label: 'Grace Limit', description: 'Configured skipped tolerance limit' }
+      { key: 'skipped_tolerance', label: 'Grace Limit', description: 'Configured skipped tolerance limit' },
+      { key: 'link', label: 'Pass Link', description: 'Direct link to live pass to requeue & regenerate number' },
+      { key: 'requeue_link', label: 'Requeue Link', description: 'Alias for live e-pass regeneration link' }
     ]
   }
 ];
@@ -1210,7 +1303,11 @@ const renderedPreviewText = computed(() => {
     party_size: 2,
     access_id: 'STAN-8842',
     skipped_tolerance: form.skippedTolerance || 5,
-    link: 'https://707.studio/pass/STAN-8842'
+    link: 'https://707.studio/pass/STAN-8842',
+    epass_link: 'https://707.studio/pass/STAN-8842',
+    pass_link: 'https://707.studio/pass/STAN-8842',
+    pass_url: 'https://707.studio/pass/STAN-8842',
+    requeue_link: 'https://707.studio/pass/STAN-8842'
   };
 
   let rendered = raw;
@@ -1310,10 +1407,11 @@ const testPreviewMessage = computed({
 });
 
 async function openLinkModal() {
-  linkPhone.value = form.waConnection?.phoneNumber || '';
+  linkPhone.value = form.waConnection?.formattedNumber || form.waConnection?.phoneNumber || '';
   linkSessionName.value = form.waConnection?.sessionName || '707 Studio Primary WhatsApp';
-  linkGatewayUrl.value = form.waConnection?.gatewayUrl || '';
+  linkGatewayUrl.value = form.waConnection?.gatewayUrl || 'https://api.fonnte.com/send';
   linkApiToken.value = form.waConnection?.apiToken || '';
+  linkTab.value = form.waConnection?.gatewayUrl ? 'gateway' : 'direct';
   showLinkModal.value = true;
   await refreshQrCode();
 }
@@ -1350,12 +1448,22 @@ async function copyPairingCode() {
 
 async function handleConfirmLink() {
   if (!props.pageId) return;
+  const clean = normalizeWhatsAppNumber(linkPhone.value);
+  if (!clean && linkTab.value !== 'gateway') {
+    emit('toast', 'Please enter a valid WhatsApp phone number (e.g. +62 812-3456-7890 or 081234567890).');
+    return;
+  }
   isLinking.value = true;
   try {
-    const phone = linkPhone.value.trim() || '+628127070001';
-    const provider = linkTab.value === 'code' ? 'pairing_code' : (linkTab.value === 'gateway' ? 'custom_gateway' : 'linked_device');
+    let provider: 'direct_sender' | 'fonnte' | 'wablas' | 'custom_gateway' | 'linked_device' = 'direct_sender';
+    if (linkTab.value === 'gateway') {
+      provider = gatewayPreset.value === 'fonnte' ? 'fonnte' : (gatewayPreset.value === 'wablas' ? 'wablas' : 'custom_gateway');
+    } else if (linkTab.value === 'qr') {
+      provider = 'linked_device';
+    }
+
     const res = await confirmWaLinkApi(props.pageId, {
-      phoneNumber: phone,
+      phoneNumber: clean || linkPhone.value.trim(),
       sessionName: linkSessionName.value.trim() || '707 Studio Primary WhatsApp',
       provider,
       gatewayUrl: linkGatewayUrl.value.trim() || undefined,
@@ -1364,8 +1472,10 @@ async function handleConfirmLink() {
 
     if (res) {
       form.waConnection = { ...res };
+      form.waEnabled = true;
       showLinkModal.value = false;
-      emit('toast', `WhatsApp Business number (${res.phoneNumber}) linked successfully!`);
+      const display = res.formattedNumber || formatWhatsAppDisplay(res.phoneNumber || '') || res.phoneNumber;
+      emit('toast', `WhatsApp Business (${display}) linked & active! Automated notifications enabled.`);
     }
   } catch (err: any) {
     emit('toast', err?.message || 'Failed to confirm WhatsApp device link');
@@ -1389,8 +1499,9 @@ async function handleUnlinkDevice() {
     form.waConnection = {
       connected: false,
       phoneNumber: '',
+      formattedNumber: '',
       sessionName: '',
-      provider: 'linked_device'
+      provider: 'direct_sender'
     };
     emit('toast', 'WhatsApp device disconnected.');
   } catch (err: any) {
@@ -1399,26 +1510,27 @@ async function handleUnlinkDevice() {
 }
 
 function openTestModal() {
-  testPhone.value = form.waConnection?.phoneNumber || '';
+  testPhone.value = form.waConnection?.formattedNumber || form.waConnection?.phoneNumber || '';
   testStage.value = 'welcome';
   showTestModal.value = true;
 }
 
 async function handleSendTestMessage() {
   if (!props.pageId) return;
-  const phone = testPhone.value.trim();
-  if (!phone) {
-    emit('toast', 'Please enter a valid recipient phone number.');
+  const raw = testPhone.value.trim();
+  const clean = normalizeWhatsAppNumber(raw);
+  if (!clean || clean.length < 9) {
+    emit('toast', 'Please enter a valid recipient phone number (min 9 digits, e.g. 0812... or +62...).');
     return;
   }
   isSendingTest.value = true;
   try {
-    const ok = await sendWaTestMessageApi(props.pageId, phone, testPreviewMessage.value);
+    const ok = await sendWaTestMessageApi(props.pageId, clean, testPreviewMessage.value);
     if (ok) {
       showTestModal.value = false;
-      emit('toast', `Test WhatsApp notification sent to ${phone}!`);
+      emit('toast', `Test WhatsApp notification sent to ${formatWhatsAppDisplay(clean)}!`);
     } else {
-      emit('toast', 'Could not send test notification. Check phone number format.');
+      emit('toast', 'Could not dispatch test notification. Check recipient format or gateway logs.');
     }
   } catch (err: any) {
     emit('toast', err?.message || 'Failed to send test WhatsApp message');
@@ -1465,9 +1577,12 @@ function formatLogTime(iso?: string): string {
 }
 
 function formatProvider(provider?: string): string {
-  if (provider === 'custom_gateway') return 'Custom Gateway / Webhook';
+  if (provider === 'fonnte') return 'Fonnte WhatsApp Gateway';
+  if (provider === 'wablas') return 'Wablas WhatsApp API';
+  if (provider === 'custom_gateway') return 'Custom Webhook Gateway';
+  if (provider === 'direct_sender') return 'Direct Verified Sender';
   if (provider === 'pairing_code') return 'WhatsApp Pairing Code';
-  return 'WhatsApp Multi-Device (Web)';
+  return 'Direct Verified Sender';
 }
 
 async function stepCaller(delta: number) {
