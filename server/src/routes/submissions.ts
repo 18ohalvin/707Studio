@@ -28,6 +28,7 @@ import { publicBaseUrl } from '../publicUrl.js';
 import { recordWaLog } from '../queueHelpers.js';
 import {
   getPageStatus,
+  ensureSessionRestored,
   initPageWhatsApp,
   disconnectPageWhatsApp,
   sendBaileysMessage
@@ -1065,6 +1066,7 @@ submissionsRouter.post('/call-batch', requireAuth, route('call batch of waiting 
 submissionsRouter.get('/wa-status', requireAuth, route('get WA session status', async (req, res) => {
   const pageId = String(req.query.page_id || '');
   if (!pageId) return res.status(400).json({ success: false, error: 'page_id is required' });
+  await ensureSessionRestored(pageId);
   const status = getPageStatus(pageId);
   return res.json({ success: true, ...status });
 }));

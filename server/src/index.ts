@@ -144,6 +144,20 @@ for (const signal of ['SIGTERM', 'SIGINT'] as const) {
 async function startServer() {
   await testDbConnection();
   void autoRestoreSessions();
+  // The database may come up after the server (a deploy restarts both): keep looking for
+  // linked phones until it has, so the WhatsApp link is not left down until someone re-scans.
+  if (!getDbStatus().isConnected) {
+    let restoreTries = 0;
+    const restoreTimer = setInterval(() => {
+      restoreTries++;
+      if (getDbStatus().isConnected) {
+        clearInterval(restoreTimer);
+        void autoRestoreSessions();
+      } else if (restoreTries >= 60) {
+        clearInterval(restoreTimer);
+      }
+    }, 5000);
+  }
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`[707 Activation Server] Running on port ${PORT}`);
     console.log(`[707 Activation Server] Uploads directory: ${uploadDir}`);

@@ -4,7 +4,7 @@ import pino from 'pino';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { useDbAuthState, dbAuthAvailable, clearDbAuth, pairedPagesInDb } from './waAuthState.js';
+import { useDbAuthState, dbAuthAvailable, clearDbAuth, pairedPagesInDb, hasDbCreds } from './waAuthState.js';
 import { saveQueueSettings, getQueueSettings } from './queueManager.js';
 import { formatWhatsAppDisplay } from './queueHelpers.js';
 
@@ -115,6 +115,26 @@ export function formatToWhatsAppJid(phone: string, defaultCountryCode = '62'): s
   const digits = normalizePhoneDigits(phone, defaultCountryCode);
   if (!digits || digits.length < 8) return null;
   return `${digits}@s.whatsapp.net`;
+}
+
+/**
+ * Brings back a linked phone whose socket is not running (the server booted before the
+ * database was reachable, or the socket dropped). Safe to call often: it does nothing when
+ * a session is already connecting or connected.
+ */
+export async function ensureSessionRestored(pageId: string, waitMs = 0): Promise<void> {
+  const existing = sessions.get(pageId);
+  if (!existing || (existing.status === 'disconnected' && !existing.isManualStop && !shuttingDown)) {
+    if (existing?.status === 'rejected_mismatch') return;
+    if (await hasDbCreds(pageId)) {
+      console.log(`[WA-${pageId}] Linked phone found in the database, restoring the session...`);
+      void initPageWhatsApp(pageId).catch(err => console.warn(`[WA-${pageId}] Restore failed:`, err?.message));
+    }
+  }
+  const deadline = Date.now() + waitMs;
+  while (Date.now() < deadline && sessions.get(pageId)?.status !== 'connected') {
+    await new Promise(r => setTimeout(r, 400));
+  }
 }
 
 /**
@@ -328,7 +348,7 @@ export async function initPageWhatsApp(pageId: string, options: { expectedPhone?
         const statusCode = lastDisconnect?.error?.output?.statusCode;
         const isLoggedOut = statusCode === DisconnectReason.loggedOut;
 
-        console.log(`[WA-${pageId}] Connection closed. Code: ${statusCode}. Logged out: ${isLoggedOut}`);
+        console.log(`[WA-${pageId}] Connection closed. Code: ${statusCode}. Logged out: ${isLoggedOut}. Reason: ${lastDisconnect?.error?.message || 'n/a'}`);
         sessionData.qrCodeDataUrl = null;
         sessionData.pairingCode = null;
         if (!isLoggedOut && !sessionData.isManualStop) {
@@ -448,6 +468,8 @@ export async function disconnectPageWhatsApp(pageId: string) {
  * Send an authentic WhatsApp text notification from the linked Baileys socket
  */
 export async function sendBaileysMessage(pageId: string, recipientPhone: string, messageText: string) {
+  // A deploy or reconnect may have left the socket down: bring it back first (up to 12 s)
+  if (sessions.get(pageId)?.status !== 'connected') await ensureSessionRestored(pageId, 12000);
   // 1. Try exact page session
   let session = sessions.get(pageId);
   let resolvedPageId = pageId;

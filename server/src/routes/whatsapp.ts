@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   initPageWhatsApp,
   getPageStatus,
+  ensureSessionRestored,
   disconnectPageWhatsApp,
   sendBaileysMessage,
   normalizePhoneDigits
@@ -15,6 +16,7 @@ export const whatsappRouter = Router();
 whatsappRouter.get('/:pageId/status', async (req, res) => {
   const pageId = String(req.params.pageId || '');
   if (!pageId) return res.status(400).json({ success: false, error: 'pageId is required' });
+  await ensureSessionRestored(pageId);
   const status = getPageStatus(pageId);
   return res.json({ success: true, ...status });
 });
