@@ -1,10 +1,10 @@
 <template>
-  <div class="public-drop-view min-h-[100dvh] w-full bg-white md:bg-[#0a0a0c] text-black flex flex-col items-center justify-start relative select-text overflow-x-hidden">
+  <div class="public-drop-view min-h-[100dvh] w-full bg-white min-[600px]:bg-[#0a0a0c] text-black flex flex-col items-center justify-start relative select-text overflow-x-hidden">
     <!-- Background subtle ambient lighting for desktop viewers -->
-    <div class="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-neutral-800 via-[#0a0a0c] to-[#0a0a0c] hidden md:block" />
+    <div class="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-neutral-800 via-[#0a0a0c] to-[#0a0a0c] hidden min-[600px]:block" />
 
     <!-- Loading State -->
-    <div v-if="isLoading" class="flex-1 w-full md:max-w-[440px] min-h-[100dvh] bg-white flex flex-col items-center justify-center p-6 text-center shadow-2xl relative z-10">
+    <div v-if="isLoading" class="flex-1 w-full min-[600px]:max-w-[393px] min-h-[100dvh] bg-white flex flex-col items-center justify-center p-6 text-center shadow-2xl relative z-10">
       <div class="size-16 rounded-2xl bg-neutral-900 text-white flex items-center justify-center shadow-xl animate-pulse mb-5">
         <span class="font-black text-xl tracking-tight">707</span>
       </div>
@@ -14,7 +14,7 @@
     </div>
 
     <!-- Error / Not Found State -->
-    <div v-else-if="errorMessage || !currentPageData" class="flex-1 w-full md:max-w-[440px] min-h-[100dvh] bg-white flex flex-col items-center justify-center p-8 text-center shadow-2xl relative z-10">
+    <div v-else-if="errorMessage || !currentPageData" class="flex-1 w-full min-[600px]:max-w-[393px] min-h-[100dvh] bg-white flex flex-col items-center justify-center p-8 text-center shadow-2xl relative z-10">
       <div class="size-16 rounded-full bg-neutral-100 border border-neutral-200 flex items-center justify-center mb-5 text-neutral-400">
         <AlertCircle class="w-8 h-8" />
       </div>
@@ -37,9 +37,9 @@
       v-else 
       class="w-full flex-1 flex flex-col items-center justify-start relative z-10"
     >
-      <!-- Dedicated Mobile Viewport Container: 100% full-bleed on mobile, 440px centered frame on desktop -->
+      <!-- Mobile-only experience: full-bleed on phones; on larger screens the same 393x852 phone frame as the editor's mobile preview -->
       <main 
-        class="w-full md:max-w-[440px] min-h-[100dvh] h-[100dvh] bg-white flex flex-col md:shadow-[0_24px_80px_rgba(0,0,0,0.4)] relative flex-1"
+        class="public-drop-frame w-full min-h-[100dvh] h-[100dvh] bg-white flex flex-col relative flex-1"
         style="-webkit-overflow-scrolling: touch;"
         @touchstart="handleTouchStart"
         @touchend="handleTouchEnd"
@@ -646,5 +646,26 @@ watch(
 .public-drop-view {
   min-height: 100dvh;
   -webkit-text-size-adjust: 100%;
+}
+
+/* Tablets / desktops: pin the page to the mobile preview size instead of stretching it */
+@media (min-width: 600px) {
+  .public-drop-frame {
+    width: 393px;
+    max-width: 393px;
+    min-height: 0;
+    height: min(852px, calc(100dvh - 48px));
+    margin: 24px 0;
+    border-radius: 40px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: none;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.4);
+    /* makes position:fixed children (bars, toasts) stay inside the frame */
+    transform: translateZ(0);
+  }
+}
+@media (min-width: 600px) {
+  .public-drop-frame::-webkit-scrollbar { display: none; }
 }
 </style>
