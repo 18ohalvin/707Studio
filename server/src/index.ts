@@ -79,7 +79,7 @@ app.use('/api/gate-accounts', requireAuth, gateAccountsRouter);
 app.use('/api/pages', pagesRouter);
 app.use('/api/templates', requireAuth, templatesRouter);
 app.use('/api/submissions', submissionsRouter);
-app.use('/api/whatsapp', whatsappRouter);
+app.use('/api/whatsapp', requireAuth, whatsappRouter);
 app.use('/api/media', requireAuth, mediaRouter);
 app.use('/api/notifications', requireAuth, notificationsRouter);
 

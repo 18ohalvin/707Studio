@@ -121,6 +121,15 @@ export function extractPhoneNumber(formData: Record<string, any> = {}): string {
 /** In-memory buffer of recent outgoing notifications for live audit */
 const recentWaLogs: WhatsAppLogEntry[] = [];
 
+export function recordWaLog(entry: Omit<WhatsAppLogEntry, 'id' | 'timestamp'>) {
+  recentWaLogs.push({
+    ...entry,
+    id: 'walog_' + Math.random().toString(36).substring(2, 10),
+    timestamp: new Date().toISOString()
+  });
+  if (recentWaLogs.length > 200) recentWaLogs.shift();
+}
+
 export function getWaLogs(pageId?: string): WhatsAppLogEntry[] {
   if (!pageId) return [...recentWaLogs].reverse().slice(0, 30);
   return recentWaLogs.filter(l => !l.pageId || l.pageId === pageId).reverse().slice(0, 30);
@@ -207,9 +216,10 @@ export async function sendWhatsAppNotification(
         recentWaLogs.push(logEntry);
         if (recentWaLogs.length > 200) recentWaLogs.shift();
         return true;
-      } else if (baileysRes && !baileysRes.success && meta?.requireConnected) {
+      } else if (baileysRes && !baileysRes.success) {
         status = 'failed';
         deliveryError = baileysRes.error || 'Linked WhatsApp device is not connected';
+        console.warn(`[WA-GATEWAY] Baileys dispatch failed for page "${pageId}": ${deliveryError}`);
       }
     } catch (bErr: any) {
       console.warn('[QueueManager] Baileys dispatch exception:', bErr?.message);
@@ -282,7 +292,7 @@ export async function sendWhatsAppNotification(
       deliveryError = e?.message || String(e);
       console.warn('[QueueManager] Gateway dispatch exception:', deliveryError);
     }
-  } else {
+  } else if (status !== 'failed') {
     // Direct WhatsApp mode: Recorded as sent / available for 1-tap wa.me link
     status = 'sent';
   }

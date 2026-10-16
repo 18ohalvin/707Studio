@@ -159,6 +159,13 @@ export async function initPageWhatsApp(pageId: string, options: { expectedPhone?
     return getPageStatus(pageId);
   }
 
+  // A socket is already negotiating / showing a QR: don't spawn a second one (it would
+  // invalidate the QR and trigger "connection replaced" on the same credentials)
+  if (existing && existing.sock && (existing.status === 'connecting' || existing.status === 'qr_ready')) {
+    if (options.expectedPhone && options.expectedPhone.trim()) existing.expectedPhone = options.expectedPhone.trim();
+    return getPageStatus(pageId);
+  }
+
   const sessionData: WaPageSession = existing || {
     pageId,
     status: 'connecting',
@@ -200,6 +207,8 @@ export async function initPageWhatsApp(pageId: string, options: { expectedPhone?
     // Connection lifecycle
     sock.ev.on('connection.update', async (update: any) => {
       const { connection, lastDisconnect, qr } = update;
+      // Ignore events from a stale socket that was replaced by a newer one
+      if (sessionData.sock !== sock) return;
 
       if (qr) {
         try {
@@ -480,7 +489,11 @@ export async function autoRestoreSessions() {
       if (d.isDirectory() && d.name.startsWith('page_')) {
         const pageId = d.name.replace(/^page_/, '');
         const credsPath = path.join(SESSIONS_ROOT, d.name, 'creds.json');
-        if (fs.existsSync(credsPath)) {
+        let paired = false;
+        try {
+          paired = fs.existsSync(credsPath) && Boolean(JSON.parse(fs.readFileSync(credsPath, 'utf8'))?.me?.id);
+        } catch {}
+        if (paired) {
           console.log(`[WA-BOOT] Auto-restoring linked session for page: ${pageId}`);
           initPageWhatsApp(pageId).catch(err => {
             console.warn(`[WA-BOOT] Failed to restore session ${pageId}:`, err?.message);

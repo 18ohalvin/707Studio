@@ -24,6 +24,7 @@ import {
   normalizeWhatsAppNumber,
   formatWhatsAppDisplay
 } from '../queueManager.js';
+import { recordWaLog } from '../queueHelpers.js';
 import {
   getPageStatus,
   initPageWhatsApp,
@@ -1138,10 +1139,7 @@ submissionsRouter.post('/wa-test-message', requireAuth, route('dispatch WA test 
   // 1. Try Baileys Linked Device Socket (The real WhatsApp Web gateway)
   const baileysResult = await sendBaileysMessage(page_id || 'default', cleanPhone, messageText);
   if (baileysResult.success) {
-    await sendWhatsAppNotification(cleanPhone, messageText, {
-      pageId: page_id,
-      event: 'test_dispatch'
-    });
+    recordWaLog({ pageId: page_id, phone: cleanPhone, text: messageText, event: 'test_dispatch', status: 'delivered' });
     return res.json({
       success: true,
       mode: 'baileys',

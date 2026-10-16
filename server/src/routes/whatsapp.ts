@@ -6,7 +6,7 @@ import {
   sendBaileysMessage,
   normalizePhoneDigits
 } from '../baileysManager.js';
-import { formatWhatsAppDisplay, sendWhatsAppNotification } from '../queueHelpers.js';
+import { formatWhatsAppDisplay, sendWhatsAppNotification, recordWaLog } from '../queueHelpers.js';
 import { getQueueSettings } from '../queueManager.js';
 
 export const whatsappRouter = Router();
@@ -55,7 +55,7 @@ whatsappRouter.post('/:pageId/send-test', async (req, res) => {
 
   const result = await sendBaileysMessage(pageId, cleanPhone, messageText);
   if (result.success) {
-    await sendWhatsAppNotification(cleanPhone, messageText, { pageId, event: 'test_dispatch' });
+    recordWaLog({ pageId, phone: cleanPhone, text: messageText, event: 'test_dispatch', status: 'delivered' });
     return res.json({
       success: true,
       message: `Test message sent successfully to +${cleanPhone}!`,
@@ -104,7 +104,7 @@ whatsappRouter.post('/:pageId/send', async (req, res) => {
   const cleanPhone = normalizePhoneDigits(recipientPhone);
   const result = await sendBaileysMessage(pageId, cleanPhone, message);
   if (result.success) {
-    await sendWhatsAppNotification(cleanPhone, message, { pageId, event: 'api_dispatch' });
+    recordWaLog({ pageId, phone: cleanPhone, text: message, event: 'api_dispatch', status: 'delivered' });
     return res.json(result);
   }
 
