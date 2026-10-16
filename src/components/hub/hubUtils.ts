@@ -73,9 +73,31 @@ const PHONE_RE = /whats\s?app|phone|telp|telepon|\bwa\b|mobile|hp\b/i;
 const NAME_RE = /name|nama/i;
 const EMAIL_RE = /e-?mail/i;
 
+const FIRST_NAME_RE = /first|given|depan/i;
+const LAST_NAME_RE = /last|family|sur\s?name|belakang/i;
+
+/**
+ * Entries made while only the surname was kept as the name: when the answers hold both a
+ * First Name and a Last Name field, the full name is rebuilt from them.
+ */
+function nameFromParts(fd: Record<string, any>): string {
+  let first = '';
+  let last = '';
+  for (const [key, value] of Object.entries(fd)) {
+    const text = typeof value === 'string' ? value.trim() : '';
+    if (!text || !NAME_RE.test(key)) continue;
+    if (!first && FIRST_NAME_RE.test(key)) first = text;
+    else if (!last && LAST_NAME_RE.test(key)) last = text;
+  }
+  return first && last ? `${first} ${last}` : '';
+}
+
 export function guestName(s: Submission): string {
   const fd = s.form_data || {};
-  return String(fd.fullName || fd.name || 'Guest Participant').trim();
+  const stored = String(fd.fullName || fd.name || '').trim();
+  const rebuilt = nameFromParts(fd);
+  if (rebuilt && (!stored || stored.toLowerCase() !== rebuilt.toLowerCase())) return rebuilt;
+  return stored || 'Guest Participant';
 }
 
 export function guestEmail(s: Submission): string {

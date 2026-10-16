@@ -410,8 +410,8 @@
             <div class="rounded-[14px] bg-[#0c0d0e] text-white p-4 relative overflow-hidden">
               <div class="absolute inset-0 opacity-[0.07] hub-grid" />
               <p class="text-[10px] uppercase tracking-[0.18em] text-white/50 relative">Access ID</p>
-              <div class="flex items-center justify-between gap-3 mt-1 relative">
-                <span class="font-mono text-[20px] tracking-[0.06em] truncate">{{ accessId(drawerRow) }}</span>
+              <div class="flex items-center justify-between gap-3 mt-1.5 relative">
+                <span class="font-mono text-[20px] leading-[28px] h-[28px] flex items-center tracking-[0.06em] truncate">{{ accessId(drawerRow) }}</span>
                 <button type="button" @click="copy(accessId(drawerRow))" class="h-[28px] px-2.5 rounded-[7px] bg-white/10 hover:bg-white/20 text-[11px] flex items-center gap-1.5 cursor-pointer shrink-0">
                   <Copy class="w-3.5 h-3.5" /> Copy
                 </button>

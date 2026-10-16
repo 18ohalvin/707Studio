@@ -2891,12 +2891,26 @@ function goToNextPage(formData?: Record<string, any>) {
   }
 }
 
+/**
+ * The guest's whole name. A form often asks First Name and Last Name separately; the
+ * last field used to win, so only the surname was stored. A single "Full Name" field is
+ * used as is; otherwise the parts are joined in the order they were asked.
+ */
+function composeGuestName(parts: { key: string; value: string }[]): string {
+  if (!parts.length) return '';
+  const full = parts.find(p => /full\s*name|nama\s*lengkap/i.test(p.key));
+  if (full) return full.value;
+  const seen = new Set<string>();
+  return parts.filter(p => (seen.has(p.value.toLowerCase()) ? false : (seen.add(p.value.toLowerCase()), true))).map(p => p.value).join(' ');
+}
+
 /** The guest's answers on this page, keyed by field label. Empty when the page has no fields. */
 function collectPageAnswers(): Record<string, any> {
   const formData: Record<string, any> = {};
   let userEmail = '';
-  let userName = '';
   let userPhone = '';
+  // Every name-like field in the order the guest sees them (First Name, Last Name, ...), joined below
+  const nameParts: { key: string; value: string }[] = [];
 
   activePage.value.widget_tree.forEach((w) => {
     if (w.type === 'FieldInput') {
@@ -2904,7 +2918,7 @@ function collectPageAnswers(): Record<string, any> {
       const raw = w.props?.value || '';
       formData[key] = raw;
       if (w.props?.inputType === 'email' || /email/i.test(key)) userEmail = raw;
-      if (/name/i.test(key)) userName = raw;
+      if (/name|nama/i.test(key) && String(raw).trim()) nameParts.push({ key, value: String(raw).trim() });
       if (isPhoneField(w) || /whats\s?app|phone|telp|telepon|\bwa\b|mobile|hp\b/i.test(key)) {
         const country = String(w.props?.countryCode || '+62').replace(/\D/g, '') || '62';
         const digits = String(raw).replace(/\D/g, '');
@@ -2921,7 +2935,7 @@ function collectPageAnswers(): Record<string, any> {
         const raw = f.value || '';
         formData[key] = raw;
         if (f.type === 'email' || /email/i.test(key)) userEmail = raw;
-        if (/name/i.test(key)) userName = raw;
+        if (/name|nama/i.test(key) && String(raw).trim()) nameParts.push({ key, value: String(raw).trim() });
         if (f.type === 'tel' || /whats\s?app|phone|telp|telepon|\bwa\b|mobile|hp\b/i.test(key)) {
           const country = String(f.countryCode || '+62').replace(/\D/g, '') || '62';
           const digits = String(raw).replace(/\D/g, '');
@@ -2974,6 +2988,7 @@ function collectPageAnswers(): Record<string, any> {
   // Only real answers: placeholders are added once, at submission, so a later
   // page without a name field cannot overwrite the name given earlier.
   if (!formData.email && userEmail) formData.email = userEmail;
+  const userName = composeGuestName(nameParts);
   if (!formData.fullName && userName) formData.fullName = userName;
   if (!formData.phone && userPhone) {
     formData.phone = userPhone;
