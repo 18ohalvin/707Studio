@@ -139,9 +139,9 @@
                   <BellRing class="w-4 h-4 text-neutral-600" />
                 </div>
                 <div>
-                  <label for="queue-notify-threshold" class="text-[13px] font-medium text-black block">Approaching Alert Window</label>
+                  <label for="queue-notify-threshold" class="text-[13px] font-medium text-black block">Up Next Alert Distance</label>
                   <p class="text-[12px] text-neutral-500 leading-snug mt-0.5">
-                    Triggers approaching alerts this many numbers before a guest's turn.
+                    Sends standby alert this many numbers before a guest's turn.
                   </p>
                 </div>
               </div>
@@ -243,7 +243,7 @@
             :class="activeEmailTab === 'ready' ? 'bg-white text-black shadow-xs' : 'text-neutral-500 hover:text-black'"
           >
             <UserCheck class="w-4 h-4" />
-            <span>2. Turn Ready / Gate Admission</span>
+            <span>2. Entry Call</span>
             <span class="text-[10px] font-mono uppercase bg-black/5 px-1.5 py-0.5 rounded text-neutral-500">Door Call</span>
           </button>
         </div>
@@ -379,9 +379,9 @@
 
           <!-- Email Content Body -->
           <div class="p-6 flex flex-col gap-5 bg-white">
-            <!-- Brand Wordmark Header -->
+            <!-- Brand Logo Header -->
             <div class="flex items-center justify-between pb-4 border-b border-black/10">
-              <span class="text-[16px] font-bold tracking-tight text-black font-707">707 STUDIO</span>
+              <img :src="FIGMA_ASSETS.logo707" alt="707" class="h-[20px] w-auto object-contain" />
               <span class="text-[10px] font-mono uppercase bg-black/5 px-2 py-0.5 rounded text-neutral-600">Official Pass</span>
             </div>
 
@@ -460,7 +460,7 @@
               </span>
             </div>
             <p class="text-[13.5px] text-neutral-500 mt-1 leading-relaxed max-w-[640px]">
-              Dispatch automated WhatsApp messages to customer phones for queue confirmation, approaching turn alerts, and ticket passes.
+              Optional direct messaging to customer phones. Disabled by default. All ticket passes and live queue updates are safely delivered via Primary Email.
             </p>
           </div>
         </div>
@@ -636,113 +636,80 @@
           </div>
         </div>
 
-        <!-- Section Header: Anti-Ban & Single Targeted Milestone Architecture -->
+        <!-- Section: Anti-Ban Advisory & Milestone Selection -->
         <div class="pt-4 border-t border-black/10 flex flex-col gap-3">
-          <!-- Anti-Ban Protection Banner -->
-          <div class="p-4 rounded-[14px] bg-amber-50/70 border border-amber-200/80 flex items-start gap-3.5">
-            <div class="size-8 rounded-[8px] bg-amber-100 flex items-center justify-center shrink-0 mt-0.5 text-amber-800">
-              <AlertTriangle class="w-4 h-4" />
-            </div>
-            <div class="flex flex-col gap-0.5 min-w-0 text-[12.5px] leading-relaxed">
-              <span class="font-semibold text-amber-950">Meta Anti-Ban Policy — Single Milestone Limit</span>
-              <span class="text-amber-900/85">
-                Meta strictly penalizes repeated automated bulk messages. To safeguard your linked phone from carrier blocks and bans, automated WhatsApp messaging is restricted to <strong>1 single milestone per guest</strong>. Registration confirmations and live tracking are safely delivered via Primary Email.
+          <!-- Compact Anti-Ban Banner -->
+          <div class="p-3.5 rounded-[12px] bg-amber-500/[0.08] border border-amber-500/20 flex items-center justify-between gap-3 text-amber-950">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <AlertTriangle class="w-4 h-4 text-amber-700 shrink-0" />
+              <span class="text-[12px] leading-snug">
+                <strong>Anti-Ban Protection:</strong> Max 1 milestone per guest to protect your linked number. Ticket passes and live tracking are safely delivered via Email.
               </span>
             </div>
-          </div>
-
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
-            <div>
-              <h4 class="text-[13.5px] font-mono uppercase tracking-[0.08em] font-bold text-black">
-                SELECTED WHATSAPP TRIGGER MILESTONE (1 PER GUEST MAX)
-              </h4>
-              <p class="text-[12px] text-neutral-500 mt-0.5">
-                Select the single high-priority milestone that will dispatch an automated WhatsApp message to the guest:
-              </p>
-            </div>
-            <span class="text-[10.5px] font-mono uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full shrink-0 font-medium">
-              Single Milestone Active
+            <span class="text-[10px] font-mono uppercase bg-amber-500/15 text-amber-900 border border-amber-500/30 px-2 py-0.5 rounded-full font-semibold shrink-0 hidden sm:inline-block">
+              1 Milestone Max
             </span>
           </div>
-        </div>
 
-        <!-- Single-Stage Choice Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <button
-            v-for="stage in DEFAULT_STAGES"
-            :key="stage.id"
-            type="button"
-            @click="selectActiveWaStage(stage.id)"
-            class="group p-4 rounded-[14px] border text-left transition-all cursor-pointer flex flex-col justify-between gap-3 relative text-neutral-800"
-            :class="form.activeWaStage === stage.id 
-              ? 'bg-black text-white border-black shadow-md ring-1 ring-black' 
-              : 'bg-white hover:bg-neutral-50 border-black/15 hover:border-black/30'"
-          >
-            <div class="flex items-center justify-between w-full">
-              <div 
-                class="size-7 rounded-[8px] flex items-center justify-center transition-colors"
-                :class="form.activeWaStage === stage.id ? 'bg-white/15 text-white' : 'bg-black/5 text-neutral-700'"
+          <!-- Compact 707 Milestone Selector -->
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <label class="text-[11.5px] font-mono uppercase tracking-[0.08em] font-bold text-neutral-600">
+                Active WhatsApp Trigger Milestone
+              </label>
+              <span class="text-[11px] text-neutral-400">1 selected milestone will send to customer</span>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <button
+                v-for="stage in DEFAULT_STAGES"
+                :key="stage.id"
+                type="button"
+                @click="selectActiveWaStage(stage.id)"
+                class="h-[52px] px-3.5 rounded-[10px] text-left transition-all cursor-pointer flex items-center justify-between gap-2 border font-707 apple-press"
+                :class="form.activeWaStage === stage.id 
+                  ? 'apple-glass-btn-dark bg-black text-white border-black shadow-xs' 
+                  : 'apple-glass-btn bg-white hover:bg-neutral-50 text-neutral-800 border-black/15'"
               >
-                <component :is="stage.icon || MessageSquare" class="w-4 h-4" />
-              </div>
-              <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <component :is="stage.icon || MessageSquare" class="w-4 h-4 shrink-0" :class="form.activeWaStage === stage.id ? 'text-white' : 'text-neutral-500'" />
+                  <div class="flex flex-col min-w-0">
+                    <span class="text-[12.5px] font-semibold leading-none truncate">{{ stage.title }}</span>
+                    <span class="text-[10px] leading-none mt-1 truncate" :class="form.activeWaStage === stage.id ? 'text-white/70' : 'text-neutral-400'">{{ stage.triggerSummary }}</span>
+                  </div>
+                </div>
                 <span 
                   v-if="stage.id === 'ready'"
-                  class="text-[9.5px] font-mono uppercase px-1.5 py-0.5 rounded font-medium"
-                  :class="form.activeWaStage === stage.id ? 'bg-emerald-400 text-black font-bold' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'"
+                  class="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded font-semibold shrink-0"
+                  :class="form.activeWaStage === stage.id ? 'bg-white/20 text-white' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'"
                 >
-                  Recommended
+                  Best
                 </span>
-                <div 
-                  class="size-4 rounded-full border flex items-center justify-center transition-colors"
-                  :class="form.activeWaStage === stage.id ? 'border-white bg-white text-black' : 'border-neutral-300 bg-transparent'"
-                >
-                  <Check v-if="form.activeWaStage === stage.id" class="w-2.5 h-2.5 stroke-[3]" />
-                </div>
-              </div>
+              </button>
             </div>
-
-            <div class="flex flex-col gap-1">
-              <span class="text-[13px] font-semibold leading-snug">{{ stage.title }}</span>
-              <span class="text-[11.5px] leading-relaxed" :class="form.activeWaStage === stage.id ? 'text-white/70' : 'text-neutral-500'">
-                {{ stage.triggerSummary }}
-              </span>
-            </div>
-          </button>
+          </div>
         </div>
 
         <!-- Stage Editor + Live Smartphone Preview -->
-        <div class="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-6 items-start pt-2">
+        <div class="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6 items-start pt-2">
           <!-- Left: Template Textarea Editor -->
-          <div class="flex flex-col gap-4">
-            <div class="p-4 rounded-[12px] bg-black/[0.02] border border-black/5 flex flex-col gap-1">
-              <div class="flex items-center justify-between">
-                <span class="text-[13px] font-medium text-black">{{ currentStage.title }}</span>
-                <span class="text-[11px] font-mono text-neutral-500 bg-black/5 px-2 py-0.5 rounded-[6px]">{{ currentStage.triggerBadge }}</span>
-              </div>
-              <p class="text-[12.5px] text-neutral-500 leading-snug mt-0.5">
-                {{ currentStage.description }}
-              </p>
+          <div class="flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <label for="template-editor" class="text-[11.5px] font-medium uppercase tracking-[0.08em] text-neutral-500">
+                {{ currentStage.title }} Template Copy
+              </label>
+              <span class="text-[11px] text-neutral-400 font-mono">
+                {{ form.waTemplates[activeStageId]?.length || 0 }} chars
+              </span>
             </div>
 
-            <div class="flex flex-col gap-2">
-              <div class="flex items-center justify-between">
-                <label for="template-editor" class="text-[12px] font-medium uppercase tracking-[0.08em] text-neutral-500">
-                  English Template Copy
-                </label>
-                <span class="text-[11px] text-neutral-400 font-mono">
-                  {{ form.waTemplates[activeStageId]?.length || 0 }} characters
-                </span>
-              </div>
-
-              <textarea
-                id="template-editor"
-                v-model="form.waTemplates[activeStageId]"
-                rows="5"
-                class="w-full p-3.5 rounded-[12px] bg-black/[0.02] border border-black/15 text-[13.5px] leading-relaxed font-707 outline-none focus:border-black focus:bg-white transition-all resize-y text-black placeholder:text-neutral-400"
-                placeholder="Enter English WhatsApp message template..."
-              />
-            </div>
+            <textarea
+              id="template-editor"
+              v-model="form.waTemplates[activeStageId]"
+              rows="4"
+              class="w-full p-3.5 rounded-[12px] bg-black/[0.02] border border-black/15 text-[13px] leading-relaxed font-707 outline-none focus:border-black focus:bg-white transition-all resize-y text-black placeholder:text-neutral-400"
+              placeholder="Enter WhatsApp message copy..."
+            />
 
             <!-- Dynamic Tag Pills -->
             <div class="flex flex-col gap-1.5">
@@ -753,11 +720,11 @@
                   :key="tag.key"
                   type="button"
                   @click="insertTag(tag.key)"
-                  class="px-2.5 py-1 rounded-[8px] bg-black/5 hover:bg-black/10 border border-black/5 text-[11.5px] font-medium text-neutral-800 cursor-pointer flex items-center gap-1 transition-colors"
+                  class="px-2.5 py-1 rounded-[8px] bg-black/5 hover:bg-black/10 border border-black/5 text-[11px] font-medium text-neutral-800 cursor-pointer flex items-center gap-1 transition-colors"
                   :title="tag.description"
                 >
                   <span>+ {{ tag.label }}</span>
-                  <span class="text-[10px] text-neutral-400 font-mono">&#123;&#123;{{ tag.key }}&#125;&#125;</span>
+                  <span class="text-[9.5px] text-neutral-400 font-mono">&#123;&#123;{{ tag.key }}&#125;&#125;</span>
                 </button>
               </div>
             </div>
@@ -1428,6 +1395,7 @@ import {
   Mail,
   Paperclip
 } from 'lucide-vue-next';
+import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { glassConfirm, glassPrompt } from '../../services/glassDialog.ts';
 import {
   fetchQueueSettings,
@@ -1507,9 +1475,8 @@ function startWaPolling(pageId: string) {
           formattedNumber: data.phone ? formatWhatsAppDisplay(data.phone) : (form.waConnection?.formattedNumber || ''),
           provider: 'linked_device'
         };
-        form.waEnabled = true;
         showWhatsAppQrModal.value = false;
-        emit('toast', `WhatsApp device linked successfully (+${data.phone})! Automated notifications active.`);
+        emit('toast', `WhatsApp device linked successfully (+${data.phone})!`);
       } else if (data.status === 'rejected_mismatch') {
         stopWaPolling();
       }
@@ -1542,7 +1509,6 @@ async function openWhatsAppQrModal() {
         formattedNumber: data.phone ? formatWhatsAppDisplay(data.phone) : '',
         provider: 'linked_device'
       };
-      form.waEnabled = true;
       showWhatsAppQrModal.value = false;
       emit('toast', `WhatsApp device is already connected (+${data.phone})!`);
       return;
@@ -1699,9 +1665,38 @@ const form = reactive<QueueSettingsData>({
 
 const DEFAULT_STAGES: StageDefinition[] = [
   {
+    id: 'ready',
+    title: 'Entry Call',
+    triggerSummary: 'When Called Now',
+    triggerBadge: 'Trigger: Number Called Now',
+    description: 'Sent when the guest number is called to step inside and present their pass to the door staff.',
+    icon: UserCheck,
+    tags: [
+      { key: 'name', label: 'Name', description: 'Visitor full name' },
+      { key: 'queue_number', label: 'Queue No', description: 'Sequential queue number' },
+      { key: 'access_id', label: 'Access ID', description: 'Ticket pass code' },
+      { key: 'link', label: 'Pass Link', description: 'Direct URL to view ticket status' }
+    ]
+  },
+  {
+    id: 'approaching',
+    title: 'Up Next Alert',
+    triggerSummary: 'Standby Ahead',
+    triggerBadge: 'Trigger: Within Alert Distance',
+    description: 'Sent when the caller reaches within the Up Next distance, notifying the guest to stand by near the entrance.',
+    icon: BellRing,
+    tags: [
+      { key: 'name', label: 'Name', description: 'Visitor full name' },
+      { key: 'queue_number', label: 'Queue No', description: 'Sequential queue number' },
+      { key: 'current_called', label: 'Currently Serving', description: 'The active called number right now' },
+      { key: 'party_size', label: 'Party Size', description: 'Number of people in group' },
+      { key: 'link', label: 'Pass Link', description: 'Direct URL to view ticket status' }
+    ]
+  },
+  {
     id: 'welcome',
-    title: '1. Welcome & Pass',
-    triggerSummary: 'Trigger: OTS Form Submit',
+    title: 'Welcome & Pass',
+    triggerSummary: 'On Form Submit',
     triggerBadge: 'Trigger: Instant on Registration',
     description: 'Sent immediately when a visitor submits the registration form to confirm their queue number and ticket pass.',
     icon: QrCode,
@@ -1714,38 +1709,9 @@ const DEFAULT_STAGES: StageDefinition[] = [
     ]
   },
   {
-    id: 'approaching',
-    title: '2. Approaching Alert',
-    triggerSummary: 'Trigger: Queue within Threshold',
-    triggerBadge: 'Trigger: Distance Threshold Reached',
-    description: 'Sent when the live caller reaches within the alert distance of this guest, telling them to return to the entrance.',
-    icon: BellRing,
-    tags: [
-      { key: 'name', label: 'Name', description: 'Visitor full name' },
-      { key: 'queue_number', label: 'Queue No', description: 'Sequential queue number' },
-      { key: 'current_called', label: 'Currently Serving', description: 'The active called number right now' },
-      { key: 'party_size', label: 'Party Size', description: 'Number of people in group' },
-      { key: 'link', label: 'Pass Link', description: 'Direct URL to view ticket status' }
-    ]
-  },
-  {
-    id: 'ready',
-    title: '3. Ready for Entry',
-    triggerSummary: 'Trigger: Turn Called Now',
-    triggerBadge: 'Trigger: Guest Number Called',
-    description: 'Sent when the guest number is called to step inside the booth and present their pass to the door staff.',
-    icon: UserCheck,
-    tags: [
-      { key: 'name', label: 'Name', description: 'Visitor full name' },
-      { key: 'queue_number', label: 'Queue No', description: 'Sequential queue number' },
-      { key: 'access_id', label: 'Access ID', description: 'Ticket pass code' },
-      { key: 'link', label: 'Pass Link', description: 'Direct URL to view ticket status' }
-    ]
-  },
-  {
     id: 'expired',
-    title: '4. Missed / Expired',
-    triggerSummary: 'Trigger: Grace Margin Exceeded',
+    title: 'Missed / Expired',
+    triggerSummary: 'Grace Exceeded',
     triggerBadge: 'Trigger: Skipped Beyond Tolerance',
     description: 'Sent when a guest misses their turn beyond the grace tolerance limit, with a link to rejoin and regenerate their queue number.',
     icon: Ban,
@@ -1765,7 +1731,7 @@ function selectActiveWaStage(id: string) {
 }
 
 const currentStage = computed(() => {
-  return DEFAULT_STAGES.find(s => s.id === (form.activeWaStage || activeStageId.value)) || DEFAULT_STAGES[2];
+  return DEFAULT_STAGES.find(s => s.id === (form.activeWaStage || activeStageId.value)) || DEFAULT_STAGES[0];
 });
 
 /* Email Template Configuration & Live Mockup Preview */
@@ -2045,10 +2011,9 @@ async function handleConfirmLink() {
 
     if (res) {
       form.waConnection = { ...res };
-      form.waEnabled = true;
       showLinkModal.value = false;
       const display = res.formattedNumber || formatWhatsAppDisplay(res.phoneNumber || '') || res.phoneNumber;
-      emit('toast', `WhatsApp (${display}) connected & ready! Automated notifications active.`);
+      emit('toast', `WhatsApp (${display}) connected & ready!`);
     }
   } catch (err: any) {
     emit('toast', err?.message || 'Failed to confirm WhatsApp device link');
