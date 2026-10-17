@@ -395,6 +395,8 @@ export interface EmailTemplateConfig {
   subject: string;
   heading: string;
   body: string;
+  includeLiveTrackingButton?: boolean;
+  liveTrackingButtonLabel?: string;
 }
 
 export interface QueueSettingsData {

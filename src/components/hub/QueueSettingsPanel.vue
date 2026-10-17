@@ -315,6 +315,42 @@
               </button>
             </div>
           </div>
+
+          <!-- Live Tracking Link Button Settings (Pass Confirmation Email) -->
+          <div v-if="activeEmailTab === 'pass'" class="p-4 rounded-[14px] bg-black/[0.02] border border-black/10 flex flex-col gap-3">
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex flex-col min-w-0">
+                <span class="text-[12.5px] font-semibold text-black">Live Queue Tracking Link Button</span>
+                <span class="text-[11.5px] text-neutral-500">Provides guests a 1-tap button to track their live queue position without WhatsApp.</span>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                :aria-checked="currentEmailTemplate.includeLiveTrackingButton !== false"
+                @click="currentEmailTemplate.includeLiveTrackingButton = !(currentEmailTemplate.includeLiveTrackingButton !== false)"
+                class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200"
+                :class="currentEmailTemplate.includeLiveTrackingButton !== false ? 'bg-black' : 'bg-neutral-200'"
+                title="Toggle live queue button in email"
+              >
+                <span
+                  class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] transition duration-200"
+                  :class="currentEmailTemplate.includeLiveTrackingButton !== false ? 'translate-x-5' : 'translate-x-0'"
+                />
+              </button>
+            </div>
+
+            <div v-if="currentEmailTemplate.includeLiveTrackingButton !== false" class="flex flex-col gap-1.5 pt-1">
+              <label class="text-[11px] font-medium uppercase tracking-[0.08em] text-neutral-500">
+                Email Button Label
+              </label>
+              <input
+                v-model="currentEmailTemplate.liveTrackingButtonLabel"
+                type="text"
+                placeholder="VIEW LIVE QUEUE"
+                class="w-full h-[38px] px-3 rounded-[8px] bg-white border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black uppercase transition-all"
+              />
+            </div>
+          </div>
         </div>
 
         <!-- Right: Elegant Live Email Card Preview -->
@@ -380,12 +416,15 @@
             </div>
 
             <!-- Primary CTA Button (VIEW LIVE QUEUE) -->
-            <div class="flex flex-col items-center gap-1.5 pt-1">
+            <div 
+              v-if="activeEmailTab === 'ready' || currentEmailTemplate.includeLiveTrackingButton !== false" 
+              class="flex flex-col items-center gap-1.5 pt-1"
+            >
               <div class="w-full h-[44px] bg-black text-white rounded-[10px] flex items-center justify-center font-medium text-[13px] tracking-wide uppercase select-none shadow-sm cursor-default">
-                VIEW LIVE QUEUE
+                {{ activeEmailTab === 'ready' ? 'VIEW LIVE PASS' : (currentEmailTemplate.liveTrackingButtonLabel || 'VIEW LIVE QUEUE') }}
               </div>
               <span class="text-[11px] text-neutral-500 text-center leading-tight">
-                Your live position and QR code update automatically on this page.
+                {{ activeEmailTab === 'ready' ? 'Your live pass is active and ready for door scanning.' : 'Your live position and QR code update automatically on this page.' }}
               </span>
             </div>
 
@@ -597,17 +636,34 @@
           </div>
         </div>
 
-        <!-- Section Header: TARGETED WHATSAPP TRIGGER STAGE -->
-        <div class="pt-4 border-t border-black/10 flex flex-col gap-1.5">
-          <div class="flex items-center justify-between gap-3">
-            <h4 class="text-[15px] font-mono uppercase tracking-[0.08em] font-bold text-black">TARGETED WHATSAPP TRIGGER STAGE</h4>
-            <span class="text-[11px] font-mono uppercase tracking-wider text-neutral-600 bg-neutral-100 px-2 py-0.5 rounded-[6px]">
-              Single Stage Precision
+        <!-- Section Header: Anti-Ban & Single Targeted Milestone Architecture -->
+        <div class="pt-4 border-t border-black/10 flex flex-col gap-3">
+          <!-- Anti-Ban Protection Banner -->
+          <div class="p-4 rounded-[14px] bg-amber-50/70 border border-amber-200/80 flex items-start gap-3.5">
+            <div class="size-8 rounded-[8px] bg-amber-100 flex items-center justify-center shrink-0 mt-0.5 text-amber-800">
+              <AlertTriangle class="w-4 h-4" />
+            </div>
+            <div class="flex flex-col gap-0.5 min-w-0 text-[12.5px] leading-relaxed">
+              <span class="font-semibold text-amber-950">Meta Anti-Ban Policy — Single Milestone Limit</span>
+              <span class="text-amber-900/85">
+                Meta strictly penalizes repeated automated bulk messages. To safeguard your linked phone from carrier blocks and bans, automated WhatsApp messaging is restricted to <strong>1 single milestone per guest</strong>. Registration confirmations and live tracking are safely delivered via Primary Email.
+              </span>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
+            <div>
+              <h4 class="text-[13.5px] font-mono uppercase tracking-[0.08em] font-bold text-black">
+                SELECTED WHATSAPP TRIGGER MILESTONE (1 PER GUEST MAX)
+              </h4>
+              <p class="text-[12px] text-neutral-500 mt-0.5">
+                Select the single high-priority milestone that will dispatch an automated WhatsApp message to the guest:
+              </p>
+            </div>
+            <span class="text-[10.5px] font-mono uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full shrink-0 font-medium">
+              Single Milestone Active
             </span>
           </div>
-          <p class="text-[12px] text-neutral-500 leading-snug">
-            Choose the single queue milestone that will dispatch an automated WhatsApp message to the guest. Multi-stage pipelines are disabled to keep your connected number safe from spam blocks and Baileys session bans.
-          </p>
         </div>
 
         <!-- Single-Stage Choice Cards -->
@@ -1629,7 +1685,9 @@ const form = reactive<QueueSettingsData>({
     pass: {
       subject: 'Your 707 ticket for {{campaign}}',
       heading: 'Your ticket',
-      body: 'Your e-ticket is attached to this email as a PDF. Track your live queue status and show your pass at the door.'
+      body: 'Your e-ticket is attached to this email as a PDF. Track your live queue status and show your pass at the door.',
+      includeLiveTrackingButton: true,
+      liveTrackingButtonLabel: 'VIEW LIVE QUEUE'
     },
     ready: {
       subject: "It's your turn to enter: {{campaign}}",
@@ -1727,7 +1785,9 @@ const currentEmailTemplate = computed(() => {
       pass: {
         subject: 'Your 707 ticket for {{campaign}}',
         heading: 'Your ticket',
-        body: 'Your e-ticket is attached to this email as a PDF. Track your live queue status and show your pass at the door.'
+        body: 'Your e-ticket is attached to this email as a PDF. Track your live queue status and show your pass at the door.',
+        includeLiveTrackingButton: true,
+        liveTrackingButtonLabel: 'VIEW LIVE QUEUE'
       },
       ready: {
         subject: "It's your turn to enter: {{campaign}}",
@@ -1741,7 +1801,9 @@ const currentEmailTemplate = computed(() => {
       ? {
           subject: 'Your 707 ticket for {{campaign}}',
           heading: 'Your ticket',
-          body: 'Your e-ticket is attached to this email as a PDF. Track your live queue status and show your pass at the door.'
+          body: 'Your e-ticket is attached to this email as a PDF. Track your live queue status and show your pass at the door.',
+          includeLiveTrackingButton: true,
+          liveTrackingButtonLabel: 'VIEW LIVE QUEUE'
         }
       : {
           subject: "It's your turn to enter: {{campaign}}",
@@ -1749,7 +1811,12 @@ const currentEmailTemplate = computed(() => {
           body: 'Your turn has arrived for {{campaign}}. Please proceed to the entrance area now and present your live pass to the door staff.'
         };
   }
-  return form.emailTemplates[activeEmailTab.value]!;
+  const tmpl = form.emailTemplates[activeEmailTab.value]!;
+  if (activeEmailTab.value === 'pass') {
+    if (tmpl.includeLiveTrackingButton === undefined) tmpl.includeLiveTrackingButton = true;
+    if (!tmpl.liveTrackingButtonLabel) tmpl.liveTrackingButtonLabel = 'VIEW LIVE QUEUE';
+  }
+  return tmpl;
 });
 
 function insertEmailTag(key: string) {

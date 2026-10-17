@@ -176,6 +176,8 @@ export interface EmailTemplateConfig {
   subject?: string;
   heading?: string;
   body?: string;
+  includeLiveTrackingButton?: boolean;
+  liveTrackingButtonLabel?: string;
 }
 
 /**
@@ -183,11 +185,12 @@ export interface EmailTemplateConfig {
  * without it (the PDF never reached us) the access code is in the email itself,
  * so the guest still holds something that gets them in.
  */
-function ticketMail(guest: GuestMail, title: string, intro: string) {
+function ticketMail(guest: GuestMail, title: string, intro: string, template?: EmailTemplateConfig) {
   const withPdf = Boolean(guest.ticketPdf);
   const formattedIntro = (/^(hi|hello|dear)\b/i.test(intro.trim()))
     ? intro
     : `Hi ${guest.fullName || 'there'}, ${intro}`;
+  const showLiveButton = template?.includeLiveTrackingButton !== false && Boolean(guest.liveUrl);
   return shell(
     title,
     formattedIntro,
@@ -197,9 +200,9 @@ function ticketMail(guest: GuestMail, title: string, intro: string) {
     withPdf
       ? 'Keep this email. Your ticket is the attached PDF.'
       : 'Keep this email. Your access code is your entry.',
-    guest.liveUrl ? {
-      label: guest.liveLabel || 'VIEW LIVE QUEUE',
-      url: guest.liveUrl,
+    showLiveButton ? {
+      label: template?.liveTrackingButtonLabel?.trim() || guest.liveLabel || 'VIEW LIVE QUEUE',
+      url: guest.liveUrl!,
       hint: 'Your live position and QR code update automatically on this page.'
     } : undefined
   );
@@ -235,7 +238,7 @@ export function sendPassEmail(guest: GuestMail, template?: EmailTemplateConfig) 
   return send(
     guest.email,
     subject,
-    ticketMail(guest, heading, intro),
+    ticketMail(guest, heading, intro, template),
     'ticket',
     ticketAttachment(guest)
   );

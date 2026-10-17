@@ -148,70 +148,6 @@
         </div>
       </div>
 
-    <!-- Section: Live tracking — notice before download + email button (Live Queue Pass only) -->
-    <div v-if="isLiveQueueMode" class="content-stretch flex flex-col gap-[16px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
-      <div class="flex flex-col">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Live Tracking Link</p>
-        <p class="font-707 text-[11px] text-neutral-500">How guests are pointed to their real-time queue status without WhatsApp.</p>
-      </div>
-
-      <!-- Email button -->
-      <div class="flex items-center justify-between w-full gap-3">
-        <div class="flex flex-col min-w-0">
-          <p class="font-707 font-medium text-[12px] text-black">Button in the ticket email</p>
-          <p class="font-707 text-[11px] text-neutral-500">Opens the guest's live queue page from their email.</p>
-        </div>
-        <button type="button" role="switch" :aria-checked="trackEmailEnabled" @click="trackEmailEnabled = !trackEmailEnabled"
-          class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200"
-          :class="trackEmailEnabled ? 'bg-black' : 'bg-[#e5e5ea]'" title="Toggle the email button">
-          <span class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] transition duration-200"
-            :class="trackEmailEnabled ? 'translate-x-[18px]' : 'translate-x-0'" />
-        </button>
-      </div>
-      <label v-if="trackEmailEnabled" class="flex flex-col gap-1 w-full">
-        <span class="text-[10px] font-707 text-neutral-500 uppercase tracking-tight">Email button label</span>
-        <input v-model="trackEmailLabel" type="text" maxlength="40" placeholder="VIEW LIVE QUEUE"
-          class="h-[34px] px-2.5 rounded-[6px] border border-neutral-300 text-[12px] font-707 text-black focus:outline-none focus:border-black bg-white" />
-      </label>
-
-      <!-- Notice before download -->
-      <div class="flex items-center justify-between w-full gap-3 pt-1">
-        <div class="flex flex-col min-w-0">
-          <p class="font-707 font-medium text-[12px] text-black">Pop-up before "Download E-Pass"</p>
-          <p class="font-707 text-[11px] text-neutral-500">Tells the guest where their live link is. Shown once per pass.</p>
-        </div>
-        <button type="button" role="switch" :aria-checked="trackNoticeEnabled" @click="trackNoticeEnabled = !trackNoticeEnabled"
-          class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200"
-          :class="trackNoticeEnabled ? 'bg-black' : 'bg-[#e5e5ea]'" title="Toggle the pop-up">
-          <span class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] transition duration-200"
-            :class="trackNoticeEnabled ? 'translate-x-[18px]' : 'translate-x-0'" />
-        </button>
-      </div>
-      <div v-if="trackNoticeEnabled" class="flex flex-col gap-[10px] w-full">
-        <label class="flex flex-col gap-1">
-          <span class="text-[10px] font-707 text-neutral-500 uppercase tracking-tight">Title</span>
-          <input v-model="trackNoticeTitle" type="text" maxlength="60"
-            class="h-[34px] px-2.5 rounded-[6px] border border-neutral-300 text-[12px] font-707 text-black focus:outline-none focus:border-black bg-white" />
-        </label>
-        <label class="flex flex-col gap-1">
-          <span class="text-[10px] font-707 text-neutral-500 uppercase tracking-tight">Message — use {{ EMAIL_TOKEN }} for the guest's address</span>
-          <textarea v-model="trackNoticeMessage" rows="4" maxlength="400"
-            class="px-2.5 py-2 rounded-[6px] border border-neutral-300 text-[12px] leading-[17px] font-707 text-black focus:outline-none focus:border-black bg-white resize-none" />
-        </label>
-        <div class="grid grid-cols-2 gap-2">
-          <label class="flex flex-col gap-1">
-            <span class="text-[10px] font-707 text-neutral-500 uppercase tracking-tight">Main button</span>
-            <input v-model="trackNoticeConfirmLabel" type="text" maxlength="30"
-              class="h-[34px] px-2.5 rounded-[6px] border border-neutral-300 text-[12px] font-707 text-black focus:outline-none focus:border-black bg-white" />
-          </label>
-          <label class="flex flex-col gap-1">
-            <span class="text-[10px] font-707 text-neutral-500 uppercase tracking-tight">Cancel button</span>
-            <input v-model="trackNoticeCancelLabel" type="text" maxlength="30"
-              class="h-[34px] px-2.5 rounded-[6px] border border-neutral-300 text-[12px] font-707 text-black focus:outline-none focus:border-black bg-white" />
-          </label>
-        </div>
-      </div>
-    </div>
 
     <!-- Section 0: Brand Logo (Switchable Active Toggle & Special Appearance Mode: Normal vs Black) -->
     <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
@@ -798,7 +734,6 @@ import { CTA_ACTION_OPTIONS, normalizeCtaAction } from './ctaActions.ts';
 import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
-import { DEFAULT_TRACK_NOTICE } from './trackNotice.ts';
 import { 
   Ticket, 
   Users,
@@ -883,24 +818,6 @@ const queuePreviewState = computed<'green' | 'yellow' | 'calling' | 'red' | 'bla
   }
 });
 
-
-// Live tracking: pop-up before download + email button (defaults match what guests see if nothing is set)
-const EMAIL_TOKEN = '{' + '{email}' + '}';
-function trackProp<T>(key: string, fallback: T) {
-  return computed<T>({
-    get: () => (currentWidget.value?.props?.[key] ?? fallback) as T,
-    set: (val: T) => {
-      if (currentWidget.value) editorStore.updateWidgetProps(currentWidget.value.id, { [key]: val });
-    }
-  });
-}
-const trackEmailEnabled = trackProp<boolean>('trackEmailEnabled', true);
-const trackEmailLabel = trackProp<string>('trackEmailLabel', 'VIEW LIVE QUEUE');
-const trackNoticeEnabled = trackProp<boolean>('trackNoticeEnabled', true);
-const trackNoticeTitle = trackProp<string>('trackNoticeTitle', DEFAULT_TRACK_NOTICE.title);
-const trackNoticeMessage = trackProp<string>('trackNoticeMessage', DEFAULT_TRACK_NOTICE.message);
-const trackNoticeConfirmLabel = trackProp<string>('trackNoticeConfirmLabel', DEFAULT_TRACK_NOTICE.confirmLabel);
-const trackNoticeCancelLabel = trackProp<string>('trackNoticeCancelLabel', DEFAULT_TRACK_NOTICE.cancelLabel);
 
 // Brand Logo Toggle & Color Mode
 const showBrandLogo = computed({
