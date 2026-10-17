@@ -1023,7 +1023,23 @@ submissionsRouter.post('/check-in', requireAuth, route('check this pass', async 
         [row.id, operator, partySize]
       );
       if (!upd.rows[0]) return res.json({ success: false, result: 'already', data: normalizeRow(row) });
-      return res.json({ success: true, result: 'admitted', data: normalizeRow(upd.rows[0]) });
+
+      let updatedCalledNumber = qSettings?.currentCalledNumber || 1;
+      if (qSettings?.enabled) {
+        const guestQueueNum = Number(upd.rows[0]?.queue_number) || Number(row.queue_number) || Number(row.form_data?.queue_number) || 0;
+        if (guestQueueNum > 0 && guestQueueNum >= updatedCalledNumber) {
+          updatedCalledNumber = guestQueueNum;
+          await saveQueueSettings(row.page_id, { currentCalledNumber: updatedCalledNumber });
+          void processQueueProgression(row.page_id, updatedCalledNumber, publicBaseUrl(req));
+        }
+      }
+
+      return res.json({
+        success: true,
+        result: 'admitted',
+        currentCalledNumber: updatedCalledNumber,
+        data: normalizeRow(upd.rows[0])
+      });
     }
     // mode === 'out' - Preserve checked_in_at timestamp, record checked_out_at!
     const upd = await pool.query(
@@ -1107,7 +1123,23 @@ submissionsRouter.post('/check-in', requireAuth, route('check this pass', async 
       queue_status: 'admitted'
     };
     persistMemory();
-    return res.json({ success: true, result: 'admitted', data: normalizeRow(inMemorySubmissions[idx]) });
+
+    let updatedCalledNumber = qSettings?.currentCalledNumber || 1;
+    if (qSettings?.enabled) {
+      const guestQueueNum = Number(current.queue_number) || Number(current.form_data?.queue_number) || 0;
+      if (guestQueueNum > 0 && guestQueueNum >= updatedCalledNumber) {
+        updatedCalledNumber = guestQueueNum;
+        await saveQueueSettings(current.page_id, { currentCalledNumber: updatedCalledNumber });
+        void processQueueProgression(current.page_id, updatedCalledNumber, publicBaseUrl(req));
+      }
+    }
+
+    return res.json({
+      success: true,
+      result: 'admitted',
+      currentCalledNumber: updatedCalledNumber,
+      data: normalizeRow(inMemorySubmissions[idx])
+    });
   }
   inMemorySubmissions[idx] = {
     ...current,

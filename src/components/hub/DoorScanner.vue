@@ -683,6 +683,7 @@ const pendingPartySize = ref(1);
 const queueEnabled = ref(false);
 const currentCalledNumber = ref(1);
 const isBatchCalling = ref(false);
+let queuePollTimer: ReturnType<typeof setInterval> | null = null;
 
 const autoCallQueue = ref<boolean>((() => {
   try {
@@ -704,7 +705,9 @@ async function loadCapacitySettings() {
   try {
     const s = await fetchQueueSettings(pageId);
     if (s?.maxCapacity) maxCapacity.value = Number(s.maxCapacity) || 50;
-    if (s?.currentCalledNumber) currentCalledNumber.value = Number(s.currentCalledNumber) || 1;
+    if (s?.currentCalledNumber && Number(s.currentCalledNumber) > 0) {
+      currentCalledNumber.value = Number(s.currentCalledNumber);
+    }
     queueEnabled.value = Boolean(s?.enabled);
   } catch { /* keep 50 default */ }
 }
@@ -1090,6 +1093,14 @@ async function submitCode(raw: string, partySize: number = 1) {
     if (kind === 'admitted') {
       const pCount = guest?.party_size && Number(guest.party_size) > 1 ? ` (${guest.party_size} guests)` : '';
       detail = `Checked in at ${formatTime(guest?.checked_in_at)}${pCount}`;
+
+      // Auto-sync serving number to latest admitted guest
+      const serverCalled = Number(res.currentCalledNumber);
+      const qNum = guest ? getGuestQueueNumber(guest) : 0;
+      const nextCalled = serverCalled > 0 ? serverCalled : (qNum > 0 ? Math.max(currentCalledNumber.value, qNum) : currentCalledNumber.value);
+      if (nextCalled > currentCalledNumber.value) {
+        currentCalledNumber.value = nextCalled;
+      }
     }
     else if (kind === 'capacity_exceeded') detail = res.error || 'Venue is at maximum capacity. Admittance blocked.';
     else if (kind === 'wrong_date') detail = res.error || `Pass is not valid for today (${todayDisplay.value}).`;
@@ -1333,6 +1344,10 @@ onMounted(() => {
     showStationModal.value = true;
   }
   void loadCapacitySettings();
+  if (queuePollTimer) clearInterval(queuePollTimer);
+  queuePollTimer = setInterval(() => {
+    void loadCapacitySettings();
+  }, 6000);
   document.addEventListener('fullscreenchange', onFullscreenChange);
   document.addEventListener('keydown', onKeydown);
   nextTick(() => inputRef.value?.focus());
@@ -1340,6 +1355,10 @@ onMounted(() => {
 
 onUnmounted(() => {
   stopCamera();
+  if (queuePollTimer) {
+    clearInterval(queuePollTimer);
+    queuePollTimer = null;
+  }
   if (resultTimer) clearTimeout(resultTimer);
   if (armTimer) clearTimeout(armTimer);
   document.removeEventListener('fullscreenchange', onFullscreenChange);

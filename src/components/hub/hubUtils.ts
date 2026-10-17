@@ -424,7 +424,7 @@ export function totalInsideGuests(rows: Submission[]): number {
   }, 0);
 }
 
-export async function checkInCode(code: string, pageIds: string[] | null, mode: 'in' | 'out', operator: string, partySize?: number): Promise<{ result: CheckInResult; data?: Submission; error?: string }> {
+export async function checkInCode(code: string, pageIds: string[] | null, mode: 'in' | 'out', operator: string, partySize?: number): Promise<{ result: CheckInResult; data?: Submission; currentCalledNumber?: number; error?: string }> {
   return apiJson('/api/submissions/check-in', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
