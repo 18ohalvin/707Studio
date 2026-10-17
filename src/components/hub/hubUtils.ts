@@ -68,10 +68,21 @@ export function statusDotClass(status?: string): string {
   }
 }
 
-const SYSTEM_KEYS = new Set(['fullName', 'email', 'submittedAt', 'name']);
+const SYSTEM_KEYS = new Set([
+  'fullName', 'email', 'submittedAt', 'name', 'firstName', 'lastName',
+  'event_iso_date', 'event_date', 'eventDate', 'Access Valid For', 'Event Date', 'Date',
+  'selected_sessions', 'selectedSessions',
+  'queue_number', 'queueNumber', 'queue_status', 'party_size', 'partySize',
+  'wa_notified_states', 'answers', 'formType', 'deviceInfo',
+  'ip_address', 'user_agent', 'status', 'ticket_code', 'ticketCode',
+  'brand_slug', 'page_id', 'id', 'created_at', 'checked_in_at', 'checked_in_by',
+  'checked_out_at', 'duplicate_of', 'ticket_emailed_at', 'email_key', 'client_key',
+  'terms', 'terms_accepted', 'privacy', 'privacy_accepted', 'csrf', 'token'
+]);
 const PHONE_RE = /whats\s?app|phone|telp|telepon|\bwa\b|mobile|hp\b/i;
 const NAME_RE = /name|nama/i;
 const EMAIL_RE = /e-?mail/i;
+const INTERNAL_KEY_RE = /^(_|internal|csrf|token|session|event_iso|queue_|party_|wa_notified)/i;
 
 const FIRST_NAME_RE = /first|given|depan/i;
 const LAST_NAME_RE = /last|family|sur\s?name|belakang/i;
@@ -132,7 +143,7 @@ export function customFieldKeys(rows: Submission[]): string[] {
   rows.forEach(s => {
     const fd = s.form_data || {};
     Object.keys(fd).forEach(k => {
-      if (SYSTEM_KEYS.has(k)) return;
+      if (SYSTEM_KEYS.has(k) || INTERNAL_KEY_RE.test(k)) return;
       if (PHONE_RE.test(k) || EMAIL_RE.test(k)) return;
       // The labelled "Full Name" field duplicates fullName — hide it.
       if (NAME_RE.test(k) && formatValue(fd[k]).trim() === guestName(s)) return;
@@ -230,8 +241,22 @@ function csvCell(value: string): string {
 }
 
 export function buildCsv(rows: Submission[], extraKeys: string[], campaignTitle: (pageId: string) => string): string {
-  const header = ['Access ID', 'Full Name', 'Email', 'WhatsApp / Phone', 'Campaign', 'Status', 'Checked In At', ...extraKeys, 'Submitted At'];
+  const hasQueue = rows.some(r => Number(r.queue_number) > 0);
+  const header = [
+    ...(hasQueue ? ['Queue No'] : []),
+    'Access ID',
+    'Full Name',
+    'Email',
+    'WhatsApp / Phone',
+    'Campaign',
+    'Status',
+    'Checked In At',
+    'Checked Out At',
+    ...extraKeys,
+    'Submitted At'
+  ];
   const lines = rows.map(s => [
+    ...(hasQueue ? [s.queue_number ? `#${s.queue_number}` : ''] : []),
     accessId(s),
     guestName(s),
     guestEmail(s),
@@ -239,6 +264,7 @@ export function buildCsv(rows: Submission[], extraKeys: string[], campaignTitle:
     campaignTitle(s.page_id),
     statusLabel(s.status),
     s.checked_in_at ? new Date(s.checked_in_at).toISOString() : '',
+    s.checked_out_at ? new Date(s.checked_out_at).toISOString() : '',
     ...extraKeys.map(k => formatValue(s.form_data?.[k])),
     new Date(s.created_at).toISOString()
   ].map(v => csvCell(String(v))).join(','));
@@ -266,7 +292,7 @@ export async function fetchSubmissions(pageIds: string[] | null): Promise<Submis
   return Array.isArray(json?.data) ? json.data : [];
 }
 
-export async function patchSubmission(id: string, body: { status?: string; checked_in?: boolean; operator?: string }): Promise<Submission | null> {
+export async function patchSubmission(id: string, body: { status?: string; checked_in?: boolean; checked_out?: boolean; operator?: string }): Promise<Submission | null> {
   const json = await apiJson<{ success: boolean; data: Submission }>(`/api/submissions/${encodeURIComponent(id)}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },

@@ -211,6 +211,7 @@
             :campaign-title="campaignTitle"
             :show-campaign-column="selectedProjectId === 'all'"
             :export-name="exportBaseName"
+            :has-live-queue="hasLiveQueue"
             @updated="mergeRows"
             @removed="removeRows"
             @toast="toast"

@@ -1364,7 +1364,7 @@ submissionsRouter.get('/wa-logs', requireAuth, route('get recent WA logs', async
 // PATCH /api/submissions/:id - Update status and/or check-in state of one entry
 submissionsRouter.patch('/:id', requireAuth, route('update this guest', async (req, res) => {
   const { id } = req.params;
-  const { status, checked_in, operator } = req.body || {};
+  const { status, checked_in, checked_out, operator } = req.body || {};
 
   if (status !== undefined && !ALLOWED_STATUSES.includes(status)) {
     return res.status(400).json({ success: false, error: `Invalid status "${status}".` });
@@ -1385,6 +1385,11 @@ submissionsRouter.patch('/:id', requireAuth, route('update this guest', async (r
       sets.push(`checked_in_at = COALESCE(checked_in_at, NOW()), checked_in_by = $${params.length}`);
     } else if (checked_in === false) {
       sets.push('checked_in_at = NULL, checked_in_by = NULL');
+    }
+    if (checked_out === true) {
+      sets.push(`checked_out_at = NOW(), queue_status = 'completed'`);
+    } else if (checked_out === false) {
+      sets.push('checked_out_at = NULL');
     }
     if (sets.length === 0) return res.status(400).json({ success: false, error: 'Nothing to update.' });
 
@@ -1423,6 +1428,12 @@ submissionsRouter.patch('/:id', requireAuth, route('update this guest', async (r
   } else if (checked_in === false) {
     next.checked_in_at = null;
     next.checked_in_by = null;
+  }
+  if (checked_out === true) {
+    next.checked_out_at = new Date().toISOString();
+    next.queue_status = 'completed';
+  } else if (checked_out === false) {
+    next.checked_out_at = null;
   }
   inMemorySubmissions[idx] = next;
   persistMemory();

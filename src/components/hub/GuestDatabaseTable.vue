@@ -205,6 +205,16 @@
 
                 <td v-else-if="col.key === 'email'" class="px-3 text-[12px] text-neutral-700 whitespace-nowrap" :class="rowPad">{{ guestEmail(s) || '—' }}</td>
 
+                <td v-else-if="col.key === 'queue_number'" class="px-3 whitespace-nowrap" :class="rowPad">
+                  <span
+                    v-if="s.queue_number"
+                    class="font-mono text-[11px] font-bold px-2 py-0.5 rounded-[5px] bg-black text-white tabular-nums tracking-wide"
+                  >
+                    #{{ String(s.queue_number).padStart(3, '0') }}
+                  </span>
+                  <span v-else class="text-neutral-300 font-mono text-[12px]">—</span>
+                </td>
+
                 <td v-else-if="col.key === 'phone'" class="px-3 text-[12px] text-neutral-700 font-mono whitespace-nowrap" :class="rowPad">
                   <a v-if="guestPhone(s)" :href="whatsappLink(guestPhone(s))" target="_blank" rel="noopener" @click.stop class="hover:underline underline-offset-2">{{ guestPhone(s) }}</a>
                   <span v-else class="text-neutral-300">—</span>
@@ -215,6 +225,13 @@
                 </td>
 
                 <td v-else-if="col.key === 'campaign'" class="px-3 text-[12px] text-neutral-700 whitespace-nowrap max-w-[180px] truncate" :class="rowPad">{{ campaignTitle(s.page_id) }}</td>
+
+                <td v-else-if="col.key === 'party_size'" class="px-3 text-[12px] text-neutral-700 font-mono whitespace-nowrap" :class="rowPad">
+                  <span v-if="(Number(s.party_size) || 1) > 1" class="px-1.5 py-0.5 rounded-[4px] bg-black/5 text-neutral-800 text-[11px] font-medium">
+                    {{ s.party_size }} pax
+                  </span>
+                  <span v-else class="text-neutral-400 text-[11px]">1</span>
+                </td>
 
                 <td v-else-if="col.key === 'status'" class="px-3 whitespace-nowrap" :class="rowPad" @click.stop>
                   <button
@@ -241,6 +258,17 @@
                     <Circle v-else class="w-3.5 h-3.5" />
                     <span class="tabular-nums">{{ s.checked_in_at ? formatTime(s.checked_in_at) : 'Not in' }}</span>
                   </button>
+                </td>
+
+                <td v-else-if="col.key === 'checked_out_at'" class="px-3 whitespace-nowrap text-[11.5px]" :class="rowPad">
+                  <span v-if="s.checked_out_at" class="text-neutral-700 font-mono tabular-nums">
+                    {{ formatTime(s.checked_out_at) }}
+                  </span>
+                  <span v-else-if="s.checked_in_at" class="inline-flex items-center gap-1 text-[10.5px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                    <span class="size-1 rounded-full bg-emerald-500 animate-pulse" />
+                    Inside
+                  </span>
+                  <span v-else class="text-neutral-300">—</span>
                 </td>
 
                 <td v-else-if="col.key === 'created_at'" class="px-3 text-[11.5px] text-neutral-500 whitespace-nowrap tabular-nums" :class="rowPad">{{ formatDateTime(s.created_at) }}</td>
@@ -428,6 +456,10 @@
                   <span class="size-1.5 rounded-full shrink-0" :class="drawerRow.checked_in_at ? 'bg-moss-300' : 'bg-white/30'" />
                   <span class="truncate">{{ drawerRow.checked_in_at ? `Checked in ${formatDateTime(drawerRow.checked_in_at)}${drawerRow.checked_in_by ? ` · by ${drawerRow.checked_in_by}` : ''}` : 'Not checked in yet' }}</span>
                 </div>
+                <div v-if="drawerRow.checked_out_at" class="flex items-center gap-2 text-[11px] text-white/70">
+                  <span class="size-1.5 rounded-full shrink-0 bg-neutral-400" />
+                  <span class="truncate">Checked out {{ formatDateTime(drawerRow.checked_out_at) }}</span>
+                </div>
                 <div class="flex items-center justify-between gap-2 text-[11px] text-white/50">
                   <span class="truncate">{{ drawerRow.ticket_emailed_at ? `Ticket emailed ${formatDateTime(drawerRow.ticket_emailed_at)}` : 'Ticket not emailed yet' }}</span>
                   <button
@@ -479,7 +511,23 @@
             <div class="flex flex-col gap-2">
               <p class="text-[10.5px] uppercase tracking-[0.12em] text-neutral-500">Record</p>
               <div class="rounded-[12px] border border-black/8 bg-white divide-y divide-black/5 text-[12px]">
+                <div v-if="drawerRow.queue_number" class="flex justify-between px-3.5 py-2.5">
+                  <span class="text-neutral-500">Queue Number</span>
+                  <span class="font-mono font-bold text-black">#{{ drawerRow.queue_number }}</span>
+                </div>
+                <div v-if="(Number(drawerRow.party_size) || 1) > 1" class="flex justify-between px-3.5 py-2.5">
+                  <span class="text-neutral-500">Party Size</span>
+                  <span class="font-medium text-black">{{ drawerRow.party_size }} pax</span>
+                </div>
                 <div class="flex justify-between px-3.5 py-2.5"><span class="text-neutral-500">Campaign</span><span class="text-right truncate ml-4">{{ campaignTitle(drawerRow.page_id) }}</span></div>
+                <div v-if="drawerRow.checked_in_at" class="flex justify-between px-3.5 py-2.5">
+                  <span class="text-neutral-500">Checked In</span>
+                  <span class="tabular-nums font-mono text-black">{{ formatDateTime(drawerRow.checked_in_at) }}</span>
+                </div>
+                <div v-if="drawerRow.checked_out_at" class="flex justify-between px-3.5 py-2.5">
+                  <span class="text-neutral-500">Checked Out</span>
+                  <span class="tabular-nums font-mono text-black">{{ formatDateTime(drawerRow.checked_out_at) }}</span>
+                </div>
                 <div class="flex justify-between px-3.5 py-2.5"><span class="text-neutral-500">Submitted</span><span class="tabular-nums">{{ formatDateTime(drawerRow.created_at) }}</span></div>
                 <div class="flex justify-between px-3.5 py-2.5"><span class="text-neutral-500">Record ID</span><span class="font-mono text-[11px] text-neutral-500 truncate ml-4">{{ drawerRow.id }}</span></div>
               </div>
@@ -488,16 +536,48 @@
 
           <!-- Drawer footer -->
           <div class="flex items-center gap-2 px-5 py-4 border-t border-black/5 shrink-0">
-            <button
-              type="button"
-              @click="toggleCheckIn(drawerRow)"
-              class="flex-1 h-[40px] rounded-[10px] text-[12.5px] font-medium flex items-center justify-center gap-2 cursor-pointer transition-colors"
-              :class="drawerRow.checked_in_at ? 'border border-black/15 hover:bg-black/5' : 'bg-black text-white hover:bg-neutral-800'"
-            >
-              <component :is="drawerRow.checked_in_at ? LogOut : LogIn" class="w-4 h-4" />
-              {{ drawerRow.checked_in_at ? 'Undo check-in' : 'Check in guest' }}
-            </button>
-            <button type="button" @click="deleteRows([drawerRow.id])" class="size-[40px] rounded-[10px] border border-oxblood-200 text-oxblood-600 hover:bg-oxblood-600 hover:text-white flex items-center justify-center cursor-pointer transition-colors" title="Delete guest">
+            <template v-if="drawerRow.checked_in_at && (!drawerRow.checked_out_at || new Date(drawerRow.checked_out_at) < new Date(drawerRow.checked_in_at))">
+              <button
+                type="button"
+                @click="toggleCheckOut(drawerRow)"
+                class="flex-1 h-[40px] rounded-[10px] text-[12.5px] font-medium flex items-center justify-center gap-2 cursor-pointer transition-colors bg-neutral-900 text-white hover:bg-black"
+                title="Mark guest as checked out and left venue"
+              >
+                <LogOut class="w-4 h-4 text-emerald-400" />
+                Check out guest
+              </button>
+              <button
+                type="button"
+                @click="toggleCheckIn(drawerRow)"
+                class="h-[40px] px-3 rounded-[10px] border border-black/15 text-[11.5px] text-neutral-600 hover:bg-black/5 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                title="Undo check-in"
+              >
+                <RotateCw class="w-3.5 h-3.5" />
+                Undo in
+              </button>
+            </template>
+            <template v-else-if="drawerRow.checked_out_at">
+              <button
+                type="button"
+                @click="toggleCheckOut(drawerRow)"
+                class="flex-1 h-[40px] rounded-[10px] text-[12.5px] font-medium flex items-center justify-center gap-2 cursor-pointer transition-colors border border-black/15 hover:bg-black/5"
+                title="Guest returned or checkout was accidental"
+              >
+                <RotateCw class="w-4 h-4" />
+                Undo checkout
+              </button>
+            </template>
+            <template v-else>
+              <button
+                type="button"
+                @click="toggleCheckIn(drawerRow)"
+                class="flex-1 h-[40px] rounded-[10px] text-[12.5px] font-medium flex items-center justify-center gap-2 cursor-pointer transition-colors bg-black text-white hover:bg-neutral-800"
+              >
+                <LogIn class="w-4 h-4" />
+                Check in guest
+              </button>
+            </template>
+            <button type="button" @click="deleteRows([drawerRow.id])" class="size-[40px] rounded-[10px] border border-oxblood-200 text-oxblood-600 hover:bg-oxblood-600 hover:text-white flex items-center justify-center cursor-pointer transition-colors shrink-0" title="Delete guest">
               <Trash2 class="w-4 h-4" />
             </button>
           </div>
@@ -521,12 +601,15 @@ import {
   buildCsv, downloadText, patchSubmission, bulkSetStatus, bulkDelete
 } from './hubUtils.ts';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   rows: Submission[];
   campaignTitle: (pageId: string) => string;
   showCampaignColumn: boolean;
   exportName: string;
-}>();
+  hasLiveQueue?: boolean;
+}>(), {
+  hasLiveQueue: false
+});
 
 const emit = defineEmits<{
   (e: 'updated', rows: Submission[]): void;
@@ -537,7 +620,7 @@ const emit = defineEmits<{
 /* ---------- Filters ---------- */
 const search = ref('');
 const statusFilter = ref<'all' | GuestStatus>('all');
-const checkFilter = ref<'any' | 'in' | 'out'>('any');
+const checkFilter = ref<'any' | 'in' | 'inside' | 'checked_out' | 'out'>('any');
 const dateFilter = ref<string>('all');
 const duplicatesOnly = ref(false);
 const duplicateCount = computed(() => props.rows.filter(r => r.duplicate_of).length);
@@ -575,11 +658,23 @@ const statusFilters = computed(() => [
   ...STATUS_OPTIONS.map(o => ({ value: o.value, label: o.label, count: props.rows.filter(r => normalizeStatus(r.status) === o.value).length }))
 ]);
 
-const checkFilters = [
-  { value: 'any' as const, label: 'Any' },
-  { value: 'in' as const, label: 'Checked in' },
-  { value: 'out' as const, label: 'Not in' }
-];
+const isLiveQueueProject = computed(() => props.hasLiveQueue || props.rows.some(r => Number(r.queue_number) > 0));
+
+const checkFilters = computed(() => {
+  if (isLiveQueueProject.value) {
+    return [
+      { value: 'any' as const, label: 'Any' },
+      { value: 'inside' as const, label: 'Inside' },
+      { value: 'checked_out' as const, label: 'Checked out' },
+      { value: 'out' as const, label: 'Not in' }
+    ];
+  }
+  return [
+    { value: 'any' as const, label: 'Any' },
+    { value: 'in' as const, label: 'Checked in' },
+    { value: 'out' as const, label: 'Not in' }
+  ];
+});
 
 const hasActiveFilters = computed(() => !!search.value.trim() || statusFilter.value !== 'all' || checkFilter.value !== 'any' || dateFilter.value !== 'all' || duplicatesOnly.value);
 
@@ -597,6 +692,8 @@ const filteredRows = computed(() => {
     if (dateFilter.value !== 'all' && !matchesDate(s, dateFilter.value)) return false;
     if (statusFilter.value !== 'all' && normalizeStatus(s.status) !== statusFilter.value) return false;
     if (checkFilter.value === 'in' && !s.checked_in_at) return false;
+    if (checkFilter.value === 'inside' && (!s.checked_in_at || (s.checked_out_at && new Date(s.checked_out_at) >= new Date(s.checked_in_at)))) return false;
+    if (checkFilter.value === 'checked_out' && (!s.checked_out_at || (s.checked_in_at && new Date(s.checked_out_at) < new Date(s.checked_in_at)))) return false;
     if (checkFilter.value === 'out' && s.checked_in_at) return false;
     if (duplicatesOnly.value && !s.duplicate_of) return false;
     if (!q) return true;
@@ -613,16 +710,33 @@ interface Col { key: string; label: string; sortable?: boolean; thClass?: string
 const customKeys = computed(() => customFieldKeys(props.rows));
 
 const allColumns = computed<Col[]>(() => {
-  const cols: Col[] = [
+  const cols: Col[] = [];
+
+  // When live queue is active on project or submissions have queue numbers, show Queue No first
+  if (isLiveQueueProject.value) {
+    cols.push({ key: 'queue_number', label: 'Queue No', sortable: true });
+  }
+
+  cols.push(
     { key: 'guest', label: 'Guest', sortable: true },
     { key: 'phone', label: 'WhatsApp' },
     { key: 'access', label: 'Access ID' }
-  ];
+  );
+
   if (props.showCampaignColumn) cols.push({ key: 'campaign', label: 'Campaign', sortable: true });
+
+  if (isLiveQueueProject.value && props.rows.some(r => (Number(r.party_size) || 1) > 1)) {
+    cols.push({ key: 'party_size', label: 'Party Size', sortable: true });
+  }
+
+  // Genuine custom form questions only (clean, non-system)
   customKeys.value.forEach(k => cols.push({ key: k, label: k, sortable: true, custom: true }));
+
+  // Status and attendance timestamps
   cols.push(
     { key: 'status', label: 'Status', sortable: true },
     { key: 'checked_in_at', label: 'Check-in', sortable: true },
+    { key: 'checked_out_at', label: 'Check-out', sortable: true },
     { key: 'created_at', label: 'Submitted', sortable: true }
   );
   return cols;
@@ -667,10 +781,13 @@ function toggleSort(key: string) {
 
 function sortValue(s: Submission, key: string): string | number {
   switch (key) {
+    case 'queue_number': return Number(s.queue_number) || 999999;
+    case 'party_size': return Number(s.party_size) || 1;
     case 'guest': return guestName(s).toLowerCase();
     case 'campaign': return props.campaignTitle(s.page_id).toLowerCase();
     case 'status': return STATUS_OPTIONS.findIndex(o => o.value === normalizeStatus(s.status));
     case 'checked_in_at': return s.checked_in_at ? new Date(s.checked_in_at).getTime() : 0;
+    case 'checked_out_at': return s.checked_out_at ? new Date(s.checked_out_at).getTime() : 0;
     case 'created_at': return new Date(s.created_at).getTime();
     default: {
       const v = formatValue(s.form_data?.[key]);
@@ -813,6 +930,20 @@ async function toggleCheckIn(s: Submission) {
   } catch (err: any) {
     emit('updated', [s]);
     emit('toast', `Couldn't update check-in: ${err?.message || 'network error'}`);
+  }
+}
+
+async function toggleCheckOut(s: Submission) {
+  const isCheckedOut = !!(s.checked_out_at && (!s.checked_in_at || new Date(s.checked_out_at) >= new Date(s.checked_in_at)));
+  const newOut = !isCheckedOut;
+  emit('updated', [{ ...s, checked_out_at: newOut ? new Date().toISOString() : null }]);
+  try {
+    const updated = await patchSubmission(s.id, { checked_out: newOut, operator: 'Studio' });
+    if (updated) emit('updated', [updated]);
+    emit('toast', newOut ? `${guestName(s)} checked out.` : `Checkout undone for ${guestName(s)}.`);
+  } catch (err: any) {
+    emit('updated', [s]);
+    emit('toast', `Couldn't update checkout: ${err?.message || 'network error'}`);
   }
 }
 
