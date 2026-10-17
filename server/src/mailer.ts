@@ -87,7 +87,7 @@ function shell(title: string, lead: string, rows: Array<[string, string]>, foote
         <tr><td><table width="100%" cellpadding="0" cellspacing="0">${cells}</table></td></tr>
         ${cta ? `<tr><td style="padding-top:24px;"><a href="${escape(cta.url)}" style="display:block;background:#111;color:#fff;text-decoration:none;text-align:center;font-size:14px;font-weight:700;letter-spacing:.04em;padding:14px 20px;border-radius:10px;">${escape(cta.label)}</a>${cta.hint ? `<p style="margin:8px 0 0 0;text-align:center;font-size:12px;color:#888;">${escape(cta.hint)}</p>` : ''}</td></tr>` : ''}
         <tr><td style="padding-top:28px;border-top:1px solid #eee;margin-top:24px;font-size:13px;color:#8a8a8a;line-height:1.6;">${escape(footer)}</td></tr>
-      </table>`
+      </table>
     </td></tr>
   </table>
 </body></html>`;
@@ -194,6 +194,9 @@ function ticketMail(guest: GuestMail, title: string, intro: string) {
     withPdf
       ? [['Name', guest.fullName || ''], ['Event', guest.campaign || '']]
       : [['Access code', guest.ticketCode || ''], ['Name', guest.fullName || ''], ['Event', guest.campaign || '']],
+    withPdf
+      ? 'Keep this email. Your ticket is the attached PDF.'
+      : 'Keep this email. Your access code is your entry.',
     guest.liveUrl ? {
       label: guest.liveLabel || 'VIEW LIVE QUEUE',
       url: guest.liveUrl,
