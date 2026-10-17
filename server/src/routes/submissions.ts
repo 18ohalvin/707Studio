@@ -952,6 +952,39 @@ submissionsRouter.post('/check-in', requireAuth, route('check this pass', async 
       return res.json({ success: false, result: row.status, data: normalizeRow(row) });
     }
     if (mode === 'in') {
+      const project = await findProjectForEntry(row.page_id, store === 'db');
+      const eventConfig = project?.event_config || project?.pages?.[0]?.page_settings?.eventConfig;
+      const isRollingOrMulti = eventConfig?.eventType === 'daily_rolling' || eventConfig?.eventType === 'multiday' || eventConfig?.dailyQueueReset;
+      if (isRollingOrMulti) {
+        const rowDate = String(row.form_data?.event_iso_date || row.form_data?.event_date || row.form_data?.eventDate || row.form_data?.['Access Valid For'] || '').trim();
+        const now = new Date();
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const todayFormatted = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`.toLowerCase();
+        const todayShort = `${now.getDate()} ${monthsShort[now.getMonth()]} ${now.getFullYear()}`.toLowerCase();
+        const todayIso = now.toISOString().slice(0, 10);
+        let isToday = true;
+        if (rowDate) {
+          const lower = rowDate.toLowerCase();
+          isToday = lower.includes(todayFormatted) || lower.includes(todayShort) || lower.includes(todayIso);
+          if (!isToday && !isNaN(new Date(rowDate).getTime())) {
+            const d = new Date(rowDate);
+            isToday = d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+          }
+        } else if (row.created_at) {
+          const d = new Date(row.created_at);
+          isToday = d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+        }
+        if (!isToday) {
+          return res.json({
+            success: false,
+            result: 'wrong_date',
+            error: `Pass is valid for ${rowDate || 'another date'}, not today.`,
+            data: normalizeRow(row)
+          });
+        }
+      }
+
       const isCurrentlyInside = row.checked_in_at && (!row.checked_out_at || new Date(row.checked_out_at) < new Date(row.checked_in_at));
       if (isCurrentlyInside) return res.json({ success: false, result: 'already', data: normalizeRow(row) });
 
@@ -1013,6 +1046,39 @@ submissionsRouter.post('/check-in', requireAuth, route('check this pass', async 
     return res.json({ success: false, result: current.status, data: normalizeRow(current) });
   }
   if (mode === 'in') {
+    const project = await findProjectForEntry(current.page_id, false);
+    const eventConfig = project?.event_config || project?.pages?.[0]?.page_settings?.eventConfig;
+    const isRollingOrMulti = eventConfig?.eventType === 'daily_rolling' || eventConfig?.eventType === 'multiday' || eventConfig?.dailyQueueReset;
+    if (isRollingOrMulti) {
+      const rowDate = String(current.form_data?.event_iso_date || current.form_data?.event_date || current.form_data?.eventDate || current.form_data?.['Access Valid For'] || '').trim();
+      const now = new Date();
+      const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const todayFormatted = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`.toLowerCase();
+      const todayShort = `${now.getDate()} ${monthsShort[now.getMonth()]} ${now.getFullYear()}`.toLowerCase();
+      const todayIso = now.toISOString().slice(0, 10);
+      let isToday = true;
+      if (rowDate) {
+        const lower = rowDate.toLowerCase();
+        isToday = lower.includes(todayFormatted) || lower.includes(todayShort) || lower.includes(todayIso);
+        if (!isToday && !isNaN(new Date(rowDate).getTime())) {
+          const d = new Date(rowDate);
+          isToday = d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+        }
+      } else if (current.created_at) {
+        const d = new Date(current.created_at);
+        isToday = d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+      }
+      if (!isToday) {
+        return res.json({
+          success: false,
+          result: 'wrong_date',
+          error: `Pass is valid for ${rowDate || 'another date'}, not today.`,
+          data: normalizeRow(current)
+        });
+      }
+    }
+
     const isCurrentlyInside = current.checked_in_at && (!current.checked_out_at || new Date(current.checked_out_at) < new Date(current.checked_in_at));
     if (isCurrentlyInside) return res.json({ success: false, result: 'already', data: normalizeRow(current) });
 

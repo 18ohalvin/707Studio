@@ -38,6 +38,14 @@
             <ScanLine class="w-3.5 h-3.5 text-emerald-400" />
             <span>Gate Scanner</span>
           </div>
+
+          <!-- Active Today Date Badge (Single Daily Rolling & Multi-Day) -->
+          <div v-if="isDailyOrMultiday" class="flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-white/[0.08] border border-white/10 text-white/90 text-[11.5px] font-mono shrink-0">
+            <span class="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Today · {{ todayDisplay }}</span>
+            <span class="text-white/40 text-[10.5px]">({{ activeRows.length }})</span>
+          </div>
+
           <div class="flex items-center gap-1">
             <button type="button" @click="soundOn = !soundOn" class="size-[40px] rounded-[10px] active:bg-white/15 flex items-center justify-center cursor-pointer text-white/70" :title="soundOn ? 'Mute scan sounds' : 'Enable scan sounds'">
               <Volume2 v-if="soundOn" class="w-5 h-5" />
@@ -606,16 +614,19 @@ import {
   CircleCheck, TriangleAlert, OctagonX, DoorOpen, Undo2, X, Delete, Hourglass, Search, ListChecks, ArrowLeft,
   ArrowRightLeft, ChevronRight
 } from 'lucide-vue-next';
+import type { EventConfig } from '../../types/editor.ts';
 import {
   type Submission, type CheckInResult, checkInCode, patchSubmission, guestName, guestType, guestEmail, accessId, initials,
   formatTime, formatValue, normalizeStatus, findGuestsByShortCode, codeTail, phoneTail, maskEmail,
-  totalInsideGuests, isGuestInside, fetchQueueSettings, callNextQueue, callBatchQueue
+  totalInsideGuests, isGuestInside, fetchQueueSettings, callNextQueue, callBatchQueue,
+  getTodayDateStrings, extractSubmissionDate, isSubmissionForToday
 } from './hubUtils.ts';
 
 const props = defineProps<{
   rows: Submission[];
   pageIds: string[] | null;
   operator: string;
+  eventConfig?: EventConfig;
   /** On its own page (/hub/scanner): fullscreen covers the whole page. */
   standalone?: boolean;
 }>();
@@ -754,10 +765,37 @@ const getPartySize = (guest: Submission): number => {
   return Number(guest.party_size) || Number((guest as any).answers?.party_size) || 1;
 };
 
+/* ---------- Daily Rolling & Multi-Day 'Today' Scoping ---------- */
+const todayDisplay = computed(() => getTodayDateStrings().formattedShort);
+
+const availableDates = computed(() => {
+  const dates = new Set<string>();
+  for (const r of props.rows || []) {
+    const d = extractSubmissionDate(r);
+    if (d) dates.add(d);
+  }
+  return Array.from(dates);
+});
+
+const isDailyOrMultiday = computed(() => {
+  const type = props.eventConfig?.eventType;
+  if (type === 'daily_rolling' || type === 'multiday' || props.eventConfig?.dailyQueueReset) return true;
+  return availableDates.value.length > 1;
+});
+
+/** Data strictly scoped to 'today' for single daily rolling & multi-day events */
+const activeRows = computed(() => {
+  if (!props.rows) return [];
+  if (isDailyOrMultiday.value) {
+    return props.rows.filter(r => isSubmissionForToday(r));
+  }
+  return props.rows;
+});
+
 /** Guests who are actively called and ready to enter right now */
 const currentlyCalledGuests = computed(() => {
-  if (!props.rows) return [];
-  return props.rows
+  if (!activeRows.value) return [];
+  return activeRows.value
     .filter(r => {
       const q = getGuestQueueNumber(r);
       const isInside = isGuestInside(r);
@@ -769,8 +807,8 @@ const currentlyCalledGuests = computed(() => {
 
 /** Guests waiting in line after the currently called number */
 const waitingQueueGuests = computed(() => {
-  if (!props.rows) return [];
-  return props.rows
+  if (!activeRows.value) return [];
+  return activeRows.value
     .filter(r => {
       const q = getGuestQueueNumber(r);
       const isInside = isGuestInside(r);
@@ -781,8 +819,8 @@ const waitingQueueGuests = computed(() => {
 });
 
 const upcomingQueueGuests = computed(() => {
-  if (!props.rows) return [];
-  return props.rows
+  if (!activeRows.value) return [];
+  return activeRows.value
     .filter(r => {
       const q = getGuestQueueNumber(r);
       const st = normalizeStatus(r.status);
@@ -803,14 +841,14 @@ const result = ref<ScanResult | null>(null);
 const pending = ref<Submission | null>(null);
 
 /* ---------- Stats & 707 Direction Progress Bar ---------- */
-const expectedCount = computed(() => props.rows.filter(r => !['declined', 'waitlisted'].includes(normalizeStatus(r.status))).length);
-const insideCount = computed(() => totalInsideGuests(props.rows));
+const expectedCount = computed(() => activeRows.value.filter(r => !['declined', 'waitlisted'].includes(normalizeStatus(r.status))).length);
+const insideCount = computed(() => totalInsideGuests(activeRows.value));
 const capacityPercent = computed(() => Math.min(100, Math.round((insideCount.value / Math.max(1, maxCapacity.value)) * 100)));
 const barColor = computed(() => capacityPercent.value >= 100 ? '#7e2c32' : capacityPercent.value >= 80 ? '#8f7c50' : '#7b8b67');
 
 const recentArrivals = computed(() => {
   const cutoff = Date.now() - 15 * 60 * 1000;
-  return props.rows.filter(r => isGuestInside(r) && r.checked_in_at && new Date(r.checked_in_at).getTime() >= cutoff).length;
+  return activeRows.value.filter(r => isGuestInside(r) && r.checked_in_at && new Date(r.checked_in_at).getTime() >= cutoff).length;
 });
 const stats = computed(() => {
   if (queueEnabled.value) {
@@ -832,7 +870,7 @@ const isVip = (g: Submission) => guestType(g).toLowerCase() === 'vip';
 
 /* ---------- Lookup by short code ---------- */
 const query = computed(() => codeInput.value.trim());
-const candidates = computed(() => findGuestsByShortCode(props.rows, query.value, 12));
+const candidates = computed(() => findGuestsByShortCode(activeRows.value, query.value, 12));
 
 function matchChipLabel(g: Submission): string {
   const status = normalizeStatus(g.status);
@@ -884,6 +922,18 @@ watch(candidates, (list) => {
 });
 
 function openConfirm(guest: Submission) {
+  if (isDailyOrMultiday.value && !isSubmissionForToday(guest)) {
+    const passDate = extractSubmissionDate(guest) || 'another date';
+    showResult({
+      kind: 'wrong_date',
+      name: guestName(guest),
+      detail: `Pass is valid for ${passDate}, not today (${todayDisplay.value}).`,
+      vip: isVip(guest),
+      tail: codeTail(guest),
+      hold: HOLD_PROBLEM_MS
+    });
+    return;
+  }
   pending.value = guest;
   pendingPartySize.value = Number(guest.party_size) || 1;
 }
@@ -898,6 +948,13 @@ function cancelConfirm() {
 const pendingProblem = computed<{ text: string; class: string } | null>(() => {
   const g = pending.value;
   if (!g) return null;
+  if (isDailyOrMultiday.value && !isSubmissionForToday(g)) {
+    const passDate = extractSubmissionDate(g) || 'another date';
+    return {
+      text: `Wrong Date: Pass is valid for ${passDate}, not today (${todayDisplay.value}). Admission blocked.`,
+      class: 'bg-oxblood-50 text-oxblood-700 border border-oxblood-200'
+    };
+  }
   const status = normalizeStatus(g.status);
   if (status === 'waitlisted') return { text: 'On the waitlist: no place yet. Send them to the event team.', class: 'bg-oxblood-50 text-oxblood-700' };
   if (status === 'declined') return { text: 'This registration was declined.', class: 'bg-oxblood-50 text-oxblood-700' };
@@ -919,8 +976,10 @@ const pendingProblem = computed<{ text: string; class: string } | null>(() => {
 });
 
 const pendingSessions = computed(() => {
-  const value = pending.value?.form_data?.['Access Valid For'];
-  return value ? formatValue(value) : '';
+  const g = pending.value;
+  if (!g) return '';
+  const d = extractSubmissionDate(g);
+  return d || formatValue(g.form_data?.['Access Valid For'] || '');
 });
 
 /** The door confirmed it is the right person: only now is the full Access ID sent. */
@@ -964,6 +1023,8 @@ const resultTheme = computed(() => {
       return { bg: 'bg-bronze-700 text-white', iconWrap: 'bg-white text-bronze-700', icon: TriangleAlert, kicker: 'Already inside', title: 'Pass already used' };
     case 'capacity_exceeded':
       return { bg: 'bg-oxblood-800 text-white', iconWrap: 'bg-white text-oxblood-800', icon: TriangleAlert, kicker: 'Capacity Full', title: 'Admit Blocked' };
+    case 'wrong_date':
+      return { bg: 'bg-oxblood-800 text-white', iconWrap: 'bg-white text-oxblood-800', icon: TriangleAlert, kicker: 'Wrong Date', title: 'Invalid for Today' };
     case 'waitlisted':
       return { bg: 'bg-oxblood-700 text-white', iconWrap: 'bg-white text-oxblood-700', icon: Hourglass, kicker: 'Not admitted', title: 'On the waitlist' };
     case 'declined':
@@ -978,6 +1039,7 @@ const frameColor = computed(() => {
     case 'admitted': return 'border-moss-300';
     case 'already': return 'border-bronze-300';
     case 'capacity_exceeded':
+    case 'wrong_date':
     case 'invalid':
     case 'waitlisted':
     case 'declined':
@@ -999,6 +1061,24 @@ async function submitCode(raw: string, partySize: number = 1) {
   lastScannedCode = code;
   lastScannedAt = Date.now();
 
+  // Safeguard: Check if this pass belongs to a different date in a daily rolling or multi-day event
+  const matchedInAll = (props.rows || []).find(r =>
+    (r.ticket_code && r.ticket_code.toLowerCase() === code.toLowerCase()) ||
+    (r.id && r.id.toLowerCase() === code.toLowerCase())
+  );
+  if (matchedInAll && isDailyOrMultiday.value && !isSubmissionForToday(matchedInAll)) {
+    const passDate = extractSubmissionDate(matchedInAll) || 'another date';
+    showResult({
+      kind: 'wrong_date',
+      name: guestName(matchedInAll),
+      detail: `Pass is valid for ${passDate}, not today (${todayDisplay.value}).`,
+      vip: isVip(matchedInAll),
+      tail: codeTail(matchedInAll),
+      hold: HOLD_PROBLEM_MS
+    });
+    return;
+  }
+
   isChecking.value = true;
   codeInput.value = '';
   try {
@@ -1012,6 +1092,7 @@ async function submitCode(raw: string, partySize: number = 1) {
       detail = `Checked in at ${formatTime(guest?.checked_in_at)}${pCount}`;
     }
     else if (kind === 'capacity_exceeded') detail = res.error || 'Venue is at maximum capacity. Admittance blocked.';
+    else if (kind === 'wrong_date') detail = res.error || `Pass is not valid for today (${todayDisplay.value}).`;
     else if (kind === 'already') detail = `First entry at ${formatTime(guest?.checked_in_at)}${guest?.checked_in_by ? ` · by ${guest.checked_in_by}` : ''}`;
     else if (kind === 'checked_out') {
       detail = 'Guest has left the venue';
@@ -1057,7 +1138,7 @@ const cancelArmed = ref<string | null>(null);
 let armTimer: ReturnType<typeof setTimeout> | null = null;
 
 const loggedIn = computed(() =>
-  props.rows
+  activeRows.value
     .filter(r => isGuestInside(r) && !r.duplicate_of)
     .sort((a, b) => new Date(b.checked_in_at!).getTime() - new Date(a.checked_in_at!).getTime())
 );

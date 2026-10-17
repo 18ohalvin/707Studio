@@ -11,6 +11,10 @@
           <span class="text-[15px] font-medium truncate max-w-[40vw]" :title="selectedProject?.title || ''">{{ selectedProject?.title || 'No campaign selected' }}</span>
           <button v-if="selectedProject && !isGate" type="button" @click="pickerOpen = true" class="shrink-0 px-2.5 h-[30px] rounded-[8px] border border-black/15 text-[12px] font-medium active:bg-black/10 cursor-pointer">Change</button>
         </div>
+        <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-black/5 border border-black/10 text-[11.5px] font-mono text-neutral-700 shrink-0">
+          <Calendar class="w-3.5 h-3.5 text-neutral-500" />
+          <span>Today · {{ todayFormatted }}</span>
+        </div>
       </div>
 
       <div class="flex items-center gap-3 shrink-0 min-w-0">
@@ -30,6 +34,7 @@
         :rows="rows"
         :page-ids="pageIds"
         :operator="operatorName"
+        :event-config="selectedProject.event_config || selectedProject.pages?.[0]?.page_settings?.eventConfig"
         standalone
         @updated="mergeRows"
         @toast="toast"
@@ -82,9 +87,10 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { ArrowLeft, AlertTriangle } from 'lucide-vue-next';
+import { ArrowLeft, AlertTriangle, Calendar } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/authStore.ts';
 import { useCampaignGuests } from '../components/hub/useCampaignGuests.ts';
+import { getTodayDateStrings } from '../components/hub/hubUtils.ts';
 import DoorScanner from '../components/hub/DoorScanner.vue';
 
 /**
@@ -94,6 +100,8 @@ import DoorScanner from '../components/hub/DoorScanner.vue';
  */
 const router = useRouter();
 const authStore = useAuthStore();
+
+const todayFormatted = computed(() => getTodayDateStrings().formattedShort);
 
 const { rows, loadError, selectedProjectId, selectedProject, projects, pageIds, refresh, mergeRows } = useCampaignGuests({ pollMs: 10000, requireProject: true });
 const pickerOpen = ref(false);

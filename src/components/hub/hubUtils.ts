@@ -294,7 +294,120 @@ export async function bulkDelete(ids: string[]): Promise<string[]> {
   return Array.isArray(json?.ids) ? json.ids : ids;
 }
 
-export type CheckInResult = 'admitted' | 'already' | 'invalid' | 'checked_out' | 'capacity_exceeded';
+export type CheckInResult = 'admitted' | 'already' | 'invalid' | 'checked_out' | 'capacity_exceeded' | 'wrong_date';
+
+/** Formats today's date into ISO, full British English, and short formats for strict date matching. */
+export function getTodayDateStrings(refDate: Date = new Date()): {
+  iso: string;
+  formatted: string;
+  formattedShort: string;
+} {
+  const year = refDate.getFullYear();
+  const month = refDate.getMonth();
+  const date = refDate.getDate();
+  const iso = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return {
+    iso,
+    formatted: `${date} ${months[month]} ${year}`,
+    formattedShort: `${date} ${monthsShort[month]} ${year}`
+  };
+}
+
+/** Extracts the target event date assigned to a guest submission. */
+export function extractSubmissionDate(r: Submission): string {
+  const fd = r.form_data || {};
+  const d = String(
+    fd.event_iso_date ||
+    fd.event_date ||
+    fd.eventDate ||
+    fd['Access Valid For'] ||
+    fd['Event Date'] ||
+    fd['Date'] ||
+    ''
+  ).trim();
+  if (d) return d;
+
+  if (Array.isArray(fd.selected_sessions) && fd.selected_sessions.length > 0) {
+    const s = fd.selected_sessions[0];
+    const sub = String(s?.sublabel || s?.label || s?.date || '').trim();
+    if (sub) return sub;
+  }
+
+  if (r.created_at) {
+    const created = new Date(r.created_at);
+    if (!isNaN(created.getTime())) {
+      const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      return `${created.getDate()} ${months[created.getMonth()]} ${created.getFullYear()}`;
+    }
+  }
+  return '';
+}
+
+/** Verifies whether a submission is explicitly stamped or registered for 'today'. */
+export function isSubmissionForToday(r: Submission, refDate: Date = new Date()): boolean {
+  const { iso, formatted, formattedShort } = getTodayDateStrings(refDate);
+  const fd = r.form_data || {};
+
+  // 1. Check exact event_iso_date (YYYY-MM-DD)
+  const isoDate = String(fd.event_iso_date || '').trim();
+  if (isoDate) {
+    return isoDate === iso;
+  }
+
+  // 2. Check explicit event_date or aliases
+  const rawDate = String(
+    fd.event_date ||
+    fd.eventDate ||
+    fd['Access Valid For'] ||
+    fd['Event Date'] ||
+    fd['Date'] ||
+    ''
+  ).trim();
+
+  if (rawDate) {
+    const lower = rawDate.toLowerCase();
+    if (lower.includes(formatted.toLowerCase()) || lower.includes(formattedShort.toLowerCase()) || lower.includes(iso.toLowerCase())) {
+      return true;
+    }
+    const d = new Date(rawDate);
+    if (!isNaN(d.getTime())) {
+      return d.getFullYear() === refDate.getFullYear() &&
+             d.getMonth() === refDate.getMonth() &&
+             d.getDate() === refDate.getDate();
+    }
+    return false;
+  }
+
+  // 3. Check selected_sessions
+  if (Array.isArray(fd.selected_sessions) && fd.selected_sessions.length > 0) {
+    const s = fd.selected_sessions[0];
+    const sub = String(s?.sublabel || s?.label || s?.date || '').toLowerCase();
+    if (sub.includes(formatted.toLowerCase()) || sub.includes(formattedShort.toLowerCase()) || sub.includes(iso.toLowerCase())) {
+      return true;
+    }
+    const d = new Date(sub);
+    if (!isNaN(d.getTime())) {
+      return d.getFullYear() === refDate.getFullYear() &&
+             d.getMonth() === refDate.getMonth() &&
+             d.getDate() === refDate.getDate();
+    }
+    return false;
+  }
+
+  // 4. Fallback to registration created_at calendar date
+  if (r.created_at) {
+    const created = new Date(r.created_at);
+    if (!isNaN(created.getTime())) {
+      return created.getFullYear() === refDate.getFullYear() &&
+             created.getMonth() === refDate.getMonth() &&
+             created.getDate() === refDate.getDate();
+    }
+  }
+
+  return true;
+}
 
 export function isGuestInside(g: Submission): boolean {
   if (!g.checked_in_at) return false;
