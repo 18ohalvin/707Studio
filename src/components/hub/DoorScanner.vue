@@ -19,24 +19,22 @@
       <!-- Camera panel -->
       <section class="min-h-0 rounded-[16px] bg-editor-bg text-white border border-editor-border overflow-hidden flex flex-col">
         <div class="flex items-center justify-between gap-2 px-3 h-[48px] shrink-0 border-b border-white/10">
-          <div v-if="queueEnabled" class="flex items-center gap-2 p-1 rounded-[10px] bg-white/[0.08] border border-white/10 text-[13px]">
-            <span class="flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] font-medium uppercase tracking-[0.06em] text-[11px]" :class="mode === 'in' ? 'bg-moss-600 text-white' : 'bg-neutral-800 text-white'">
+          <div class="flex items-center gap-2 p-1 rounded-[10px] bg-white/[0.08] border border-white/10 text-[13px]">
+            <span class="flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] font-medium tracking-[0.04em] text-[11px]" :class="mode === 'in' ? 'bg-moss-600 text-white' : 'bg-neutral-800 text-white'">
               <component :is="mode === 'in' ? LogIn : LogOut" class="w-3.5 h-3.5" />
-              {{ mode === 'in' ? 'Entrance Gate' : 'Exit Gate' }}
+              <span class="font-semibold">{{ deviceName || 'Tab 1' }}</span>
+              <span class="text-white/40">·</span>
+              <span class="text-[10px] uppercase tracking-wider">{{ mode === 'in' ? 'Entrance' : 'Exit' }}</span>
             </span>
             <button
               id="scanner-switch-station"
               type="button"
-              @click="showStationModal = true"
-              class="px-2 py-1 text-[11px] text-white/60 hover:text-white cursor-pointer underline underline-offset-2 transition-colors"
-              title="Switch between Entrance and Exit gate"
+              @click="openStationModal"
+              class="px-2 py-1 text-[11px] text-white/70 hover:text-white cursor-pointer underline underline-offset-2 transition-colors"
+              title="Configure tablet label (Tab 1, Tab 2) and station role"
             >
-              Switch Gate
+              Configure
             </button>
-          </div>
-          <div v-else class="flex items-center gap-2 px-3 py-1.5 rounded-[10px] bg-white/[0.08] border border-white/10 text-[11.5px] uppercase tracking-[0.08em] font-medium text-white/80">
-            <ScanLine class="w-3.5 h-3.5 text-emerald-400" />
-            <span>Gate Scanner</span>
           </div>
 
           <!-- Active Today Date Badge (Single Daily Rolling & Multi-Day) -->
@@ -402,6 +400,20 @@
           <p class="text-[10.5px] uppercase tracking-[0.12em] text-neutral-500 leading-none">Check-in log</p>
           <p class="text-[20px] font-medium leading-tight tabular-nums">{{ loggedIn.length }} <span class="text-[13px] text-neutral-500 font-normal">guests inside</span></p>
         </div>
+        <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] font-mono text-emerald-800 shrink-0">
+          <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span>Live Synced</span>
+        </div>
+        <button
+          type="button"
+          @click="syncLog"
+          :disabled="isSyncingLog"
+          class="h-[40px] px-3 rounded-[10px] border border-black/15 bg-white text-[13px] font-medium flex items-center gap-1.5 cursor-pointer hover:bg-black/5 active:bg-black/10 transition-colors shrink-0"
+          title="Force refresh check-in data across all scanners"
+        >
+          <RefreshCw class="w-3.5 h-3.5 text-neutral-700" :class="{ 'animate-spin': isSyncingLog }" />
+          <span class="hidden md:inline">Sync Now</span>
+        </button>
         <div class="relative flex-1 max-w-[420px] ml-auto">
           <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
           <input
@@ -426,7 +438,7 @@
             <p class="text-[13px] text-neutral-500 leading-tight truncate">
               ID ···<span class="font-mono">{{ codeTail(g) }}</span>
               <template v-if="phoneTail(g)"> · WA ···{{ phoneTail(g) }}</template>
-              · in at {{ formatTime(g.checked_in_at) }}<template v-if="g.checked_in_by"> · by {{ g.checked_in_by }}</template>
+              · in at {{ formatTime(g.checked_in_at) }}<template v-if="g.checked_in_by"> · by <span class="font-semibold text-neutral-800">{{ g.checked_in_by }}</span></template>
             </p>
           </div>
           <template v-if="cancelArmed === g.id">
@@ -536,71 +548,109 @@
       </div>
     </Transition>
 
-    <!-- ============ Station Selector Modal (Prompted on Entry) ============ -->
+    <!-- ============ Station & Device Selection Modal ============ -->
     <Transition name="hud-result">
-      <div v-if="showStationModal" class="absolute inset-0 z-50 rounded-[16px] bg-white/95 backdrop-blur-md border border-black/10 flex flex-col items-center justify-center p-6 text-center select-none">
-        <div class="max-w-[540px] w-full flex flex-col items-center gap-5">
-          <div class="size-14 rounded-full bg-black text-white flex items-center justify-center shadow-md">
-            <ArrowRightLeft class="w-7 h-7" />
+      <div v-if="showStationModal" class="absolute inset-0 z-50 rounded-[16px] bg-white/95 backdrop-blur-md border border-black/10 flex flex-col items-center justify-center p-6 text-center select-none overflow-y-auto">
+        <div class="max-w-[540px] w-full flex flex-col items-center gap-4 py-2">
+          <div class="size-13 rounded-full bg-black text-white flex items-center justify-center shadow-md">
+            <ArrowRightLeft class="w-6 h-6" />
           </div>
           <div>
-            <p class="text-[11px] uppercase tracking-[0.2em] text-neutral-500 font-medium">Scanner Station Role</p>
-            <h2 class="text-[26px] font-medium text-black mt-1">Select Scanner Station</h2>
-            <p class="text-[13.5px] text-neutral-500 mt-1.5 max-w-[440px]">
-              Configure whether this device operates at the Entrance or Exit for live venue capacity synchronization.
+            <p class="text-[11px] uppercase tracking-[0.2em] text-neutral-500 font-medium">Gate Scanner Setup</p>
+            <h2 class="text-[24px] font-medium text-black mt-0.5">Configure Scanner & Station</h2>
+            <p class="text-[13px] text-neutral-500 mt-1 max-w-[440px]">
+              Identify this tablet device and role so check-ins and capacity sync across all tablets in real-time.
             </p>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 w-full mt-1">
+          <!-- Device / Tablet Identifier Selection -->
+          <div class="w-full flex flex-col items-start gap-2 text-left bg-black/[0.03] border border-black/10 p-3.5 rounded-[12px]">
+            <label class="text-[11px] uppercase tracking-[0.1em] font-semibold text-neutral-600 flex items-center justify-between w-full">
+              <span>Device / Tablet Label</span>
+              <span class="text-[10.5px] font-normal text-neutral-400">Shows in admission log</span>
+            </label>
+            <input
+              v-model="deviceNameInput"
+              type="text"
+              placeholder="e.g. Tab 1, Tab 2, Gate A"
+              maxlength="30"
+              class="w-full h-[40px] px-3 rounded-[8px] bg-white border border-black/15 text-[14px] font-medium text-black outline-none focus:border-black transition-colors"
+            />
+            <div class="flex items-center gap-1.5 flex-wrap mt-0.5">
+              <span class="text-[11px] text-neutral-400 mr-1">Quick pick:</span>
+              <button
+                v-for="preset in ['Tab 1', 'Tab 2', 'Tab 3', 'Gate 1', 'Gate 2', 'Exit Tab']"
+                :key="preset"
+                type="button"
+                @click="deviceNameInput = preset"
+                class="px-2.5 py-1 rounded-[6px] text-[11.5px] font-medium border cursor-pointer transition-colors"
+                :class="deviceNameInput === preset ? 'bg-black text-white border-black' : 'bg-white text-neutral-700 border-black/15 hover:bg-black/5'"
+              >
+                {{ preset }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Station Role Selection -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
             <button
               type="button"
-              @click="selectStation('in')"
-              class="p-5 rounded-[14px] border-2 text-left cursor-pointer transition-all flex flex-col justify-between gap-4 group"
-              :class="mode === 'in' ? 'border-black bg-black/[0.04]' : 'border-black/15 hover:border-black/40 bg-white'"
+              @click="stationModeInput = 'in'"
+              class="p-4 rounded-[14px] border-2 text-left cursor-pointer transition-all flex flex-col justify-between gap-3 group"
+              :class="stationModeInput === 'in' ? 'border-black bg-black/[0.04]' : 'border-black/15 hover:border-black/40 bg-white'"
             >
               <div class="flex items-center justify-between">
-                <div class="size-10 rounded-[10px] bg-moss-600 text-white flex items-center justify-center shadow-sm">
-                  <LogIn class="w-5 h-5" />
+                <div class="size-9 rounded-[10px] bg-moss-600 text-white flex items-center justify-center shadow-sm">
+                  <LogIn class="w-4 h-4" />
                 </div>
-                <span v-if="mode === 'in'" class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-black text-white">Active</span>
+                <span v-if="stationModeInput === 'in'" class="text-[10.5px] font-medium px-2 py-0.5 rounded-full bg-black text-white">Selected</span>
               </div>
               <div>
-                <p class="text-[17px] font-medium text-black">Entrance Gate</p>
-                <p class="text-[12px] text-neutral-500 mt-1 leading-snug">
-                  Check in incoming guests, adjust group party size, and monitor live venue capacity.
+                <p class="text-[16px] font-medium text-black">Entrance Gate</p>
+                <p class="text-[11.5px] text-neutral-500 mt-0.5 leading-snug">
+                  Admit incoming guests & update live capacity.
                 </p>
               </div>
             </button>
 
             <button
               type="button"
-              @click="selectStation('out')"
-              class="p-5 rounded-[14px] border-2 text-left cursor-pointer transition-all flex flex-col justify-between gap-4 group"
-              :class="mode === 'out' ? 'border-black bg-black/[0.04]' : 'border-black/15 hover:border-black/40 bg-white'"
+              @click="stationModeInput = 'out'"
+              class="p-4 rounded-[14px] border-2 text-left cursor-pointer transition-all flex flex-col justify-between gap-3 group"
+              :class="stationModeInput === 'out' ? 'border-black bg-black/[0.04]' : 'border-black/15 hover:border-black/40 bg-white'"
             >
               <div class="flex items-center justify-between">
-                <div class="size-10 rounded-[10px] bg-neutral-800 text-white flex items-center justify-center shadow-sm">
-                  <LogOut class="w-5 h-5" />
+                <div class="size-9 rounded-[10px] bg-neutral-800 text-white flex items-center justify-center shadow-sm">
+                  <LogOut class="w-4 h-4" />
                 </div>
-                <span v-if="mode === 'out'" class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-black text-white">Active</span>
+                <span v-if="stationModeInput === 'out'" class="text-[10.5px] font-medium px-2 py-0.5 rounded-full bg-black text-white">Selected</span>
               </div>
               <div>
-                <p class="text-[17px] font-medium text-black">Exit Gate</p>
-                <p class="text-[12px] text-neutral-500 mt-1 leading-snug">
-                  Check out departing guests to automatically release capacity spots in real-time.
+                <p class="text-[16px] font-medium text-black">Exit Gate</p>
+                <p class="text-[11.5px] text-neutral-500 mt-0.5 leading-snug">
+                  Check out guests to release capacity spots.
                 </p>
               </div>
             </button>
           </div>
 
-          <button
-            v-if="hasSavedStation"
-            type="button"
-            @click="showStationModal = false"
-            class="text-[13px] text-neutral-500 hover:text-black cursor-pointer underline underline-offset-4 mt-1"
-          >
-            Close without changing
-          </button>
+          <div class="flex items-center gap-2.5 w-full mt-1">
+            <button
+              type="button"
+              @click="saveStationAndDevice"
+              class="flex-1 h-[44px] rounded-[10px] bg-black text-white text-[14px] font-medium hover:bg-neutral-800 active:bg-neutral-700 cursor-pointer transition-colors shadow-2xs"
+            >
+              Save Configuration
+            </button>
+            <button
+              v-if="hasSavedStation"
+              type="button"
+              @click="showStationModal = false"
+              class="px-4 h-[44px] rounded-[10px] border border-black/15 text-[14px] font-medium hover:bg-black/5 active:bg-black/10 cursor-pointer transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       </div>
     </Transition>
@@ -634,6 +684,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'updated', rows: Submission[]): void;
   (e: 'toast', msg: string): void;
+  (e: 'refresh'): void;
 }>();
 
 /** How long a result stays up: a clean admit clears fast so the queue keeps moving; problems stay long enough to read. */
@@ -663,18 +714,48 @@ const soundOn = ref(true);
 const isFullscreen = ref(false);
 const systemKeyboard = ref(false);
 
-/* ---------- Station Selection (Gate Masuk vs Gate Keluar) ---------- */
+/* ---------- Station & Device Selection (Tab 1 / Tab 2 & Entrance / Exit) ---------- */
 const showStationModal = ref(false);
 const hasSavedStation = ref(false);
+const deviceName = ref<string>('Tab 1');
+const deviceNameInput = ref<string>('Tab 1');
+const stationModeInput = ref<'in' | 'out'>('in');
+const isSyncingLog = ref(false);
 
-function selectStation(st: 'in' | 'out') {
-  mode.value = st;
+function openStationModal() {
+  deviceNameInput.value = deviceName.value;
+  stationModeInput.value = mode.value;
+  showStationModal.value = true;
+}
+
+function saveStationAndDevice() {
+  const cleanName = deviceNameInput.value.trim() || 'Tab 1';
+  deviceName.value = cleanName;
+  mode.value = stationModeInput.value;
   try {
-    localStorage.setItem('707_scanner_station', st);
+    localStorage.setItem('707_scanner_station', stationModeInput.value);
+    localStorage.setItem('707_scanner_device_name', cleanName);
   } catch { /* quota/incognito */ }
   hasSavedStation.value = true;
   showStationModal.value = false;
+  emit('toast', `Configured as ${cleanName} · ${mode.value === 'in' ? 'Entrance Gate' : 'Exit Gate'}`);
   nextTick(() => inputRef.value?.focus());
+}
+
+const effectiveOperator = computed(() => {
+  const custom = deviceName.value.trim();
+  if (custom) return custom;
+  return props.operator || 'Door staff';
+});
+
+async function syncLog() {
+  if (isSyncingLog.value) return;
+  isSyncingLog.value = true;
+  emit('refresh');
+  await loadCapacitySettings();
+  setTimeout(() => {
+    isSyncingLog.value = false;
+  }, 450);
 }
 
 /* ---------- Capacity & Party Size & Batch Queue Caller ---------- */
@@ -916,6 +997,7 @@ function toggleKeyboard() {
  */
 watch(view, (v) => {
   if (v === 'scan') nextTick(() => inputRef.value?.focus());
+  if (v === 'log') void syncLog();
 });
 
 watch(candidates, (list) => {
@@ -1085,9 +1167,10 @@ async function submitCode(raw: string, partySize: number = 1) {
   isChecking.value = true;
   codeInput.value = '';
   try {
-    const res = await checkInCode(code, props.pageIds, mode.value, props.operator, partySize);
+    const res = await checkInCode(code, props.pageIds, mode.value, effectiveOperator.value, partySize);
     const guest = res.data || null;
     if (guest) emit('updated', [guest]);
+    emit('refresh');
     const kind = res.result as ScanKind;
     let detail = '';
     if (kind === 'admitted') {
@@ -1176,6 +1259,7 @@ async function cancelEntry(g: Submission) {
   try {
     const updated = await patchSubmission(g.id, { checked_in: false });
     if (updated) emit('updated', [updated]);
+    emit('refresh');
     emit('toast', `Entry cancelled for ${guestName(g)}. They can be admitted again.`);
   } catch (err: any) {
     emit('toast', `Couldn't cancel: ${err?.message || 'network error'}`);
@@ -1334,10 +1418,20 @@ function onKeydown(e: KeyboardEvent) {
 onMounted(() => {
   try {
     const saved = localStorage.getItem('707_scanner_station');
+    const savedDev = localStorage.getItem('707_scanner_device_name');
     if (saved === 'in' || saved === 'out') {
       mode.value = saved;
+      stationModeInput.value = saved;
       hasSavedStation.value = true;
+    }
+    if (savedDev && savedDev.trim()) {
+      deviceName.value = savedDev.trim();
+      deviceNameInput.value = savedDev.trim();
     } else {
+      deviceName.value = 'Tab 1';
+      deviceNameInput.value = 'Tab 1';
+    }
+    if (!saved || !savedDev) {
       showStationModal.value = true;
     }
   } catch {
@@ -1347,7 +1441,7 @@ onMounted(() => {
   if (queuePollTimer) clearInterval(queuePollTimer);
   queuePollTimer = setInterval(() => {
     void loadCapacitySettings();
-  }, 6000);
+  }, 3000);
   document.addEventListener('fullscreenchange', onFullscreenChange);
   document.addEventListener('keydown', onKeydown);
   nextTick(() => inputRef.value?.focus());

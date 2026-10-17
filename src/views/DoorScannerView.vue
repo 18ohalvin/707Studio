@@ -18,11 +18,15 @@
       </div>
 
       <div class="flex items-center gap-3 shrink-0 min-w-0">
+        <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-emerald-50 border border-emerald-200 text-[11px] font-mono text-emerald-800 shrink-0" title="Real-time sync active across all gate scanners">
+          <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span>Sync · 2.5s</span>
+        </div>
         <button v-if="loadError" type="button" @click="refresh()" class="flex items-center gap-1.5 px-2.5 h-[32px] rounded-[8px] bg-oxblood-50 border border-oxblood-200 text-[12px] text-oxblood-700 font-medium cursor-pointer" title="The guest list could not be refreshed. Scans still go straight to the server.">
           <AlertTriangle class="w-4 h-4" /> Offline · Retry
         </button>
         <span v-else class="size-2 rounded-full bg-moss-500 shrink-0" title="Connected" />
-        <span class="hidden md:inline text-[12px] text-neutral-500 truncate max-w-[160px]" title="Shown on each check-in">{{ operatorName }}</span>
+        <span class="hidden md:inline text-[12px] text-neutral-500 truncate max-w-[160px]" title="Logged in user">{{ operatorName }}</span>
         <button v-if="isGate" type="button" @click="leave" class="px-3 h-[34px] rounded-[8px] border border-black/15 text-[12px] font-medium active:bg-black/10 cursor-pointer">Sign out</button>
       </div>
     </header>
@@ -37,6 +41,7 @@
         :event-config="selectedProject.event_config || selectedProject.pages?.[0]?.page_settings?.eventConfig"
         standalone
         @updated="mergeRows"
+        @refresh="refresh"
         @toast="toast"
       />
 
@@ -103,7 +108,7 @@ const authStore = useAuthStore();
 
 const todayFormatted = computed(() => getTodayDateStrings().formattedShort);
 
-const { rows, loadError, selectedProjectId, selectedProject, projects, pageIds, refresh, mergeRows } = useCampaignGuests({ pollMs: 10000, requireProject: true });
+const { rows, loadError, selectedProjectId, selectedProject, projects, pageIds, refresh, mergeRows } = useCampaignGuests({ pollMs: 2500, requireProject: true });
 const pickerOpen = ref(false);
 
 /** Door security is tied to one campaign by the server; here it is simply fixed and the way out is signing out. */
