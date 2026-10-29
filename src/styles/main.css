@@ -119,21 +119,85 @@ html {
   box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.3);
 }
 
-/* 707 Global Typography & Visual System (Figma Node 22:627) */
-/* Helvetica Neue only. The generic sans-serif is a last resort for devices
-   that do not have it installed (most Windows and Android); no other named
-   family is ever requested. */
-body, button, input, textarea, select {
-  font-family: 'Helvetica Neue', Helvetica, sans-serif;
-  letter-spacing: 0;
+/* ==========================================================================
+   Typography System: Apple UI Standard + Windows HD Clarity
+   ========================================================================== */
+:root {
+  /* Default Apple UI font stack (SF Pro on Apple, Inter / Segoe UI Variable HD on Windows) */
+  --font-apple-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "SF Pro", "Inter", "Segoe UI Variable Text", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+  
+  /* Campaign Page Content font stack (Helvetica Neue 707 brand standard) */
+  --font-campaign-page: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* Base UI typography with modern subpixel antialiasing & legibility optimizations */
+html, body, button, input, textarea, select {
+  font-family: var(--font-apple-ui);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  letter-spacing: -0.011em;
+}
+
+/* UI Font Utility Classes */
+.font-apple,
+.font-ui {
+  font-family: var(--font-apple-ui) !important;
+}
+
+/* Database Hub, Editor Workspace, Sidebars, Modals & Shell force Apple UI HD font */
+.hub-root,
+.hub-root *,
+.editor-ui,
+.editor-ui *,
+aside,
+aside *,
+.modal-setup-container,
+.modal-setup-container *,
+.modal-overlay,
+.modal-overlay *,
+header,
+header *,
+nav,
+nav * {
+  font-family: var(--font-apple-ui);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Campaign Page Content Font: STRICTLY preserved for page content & artboard preview */
+[data-artboard-frame="true"],
+[data-artboard-frame="true"] *,
+.artboard-scroll-container,
+.artboard-scroll-container *,
+.campaign-page-content,
+.campaign-page-content *,
+.public-drop-page,
+.public-drop-page *,
+.ticket-canvas,
+.ticket-canvas *,
+.font-campaign {
+  font-family: var(--font-campaign-page);
 }
 
 .font-707 {
-  font-family: 'Helvetica Neue', Helvetica, sans-serif;
-  letter-spacing: 0;
+  font-family: var(--font-campaign-page);
 }
 
-/* Codes (Access IDs, URLs) keep Helvetica Neue but line their digits up. */
+/* Inside Editor UI and Database Hub, .font-707 resolves to Apple UI font */
+aside .font-707,
+.hub-root .font-707,
+.editor-ui .font-707,
+header .font-707,
+nav .font-707,
+.modal-overlay .font-707,
+.floating-quick-add .font-707,
+.viewport-controls .font-707 {
+  font-family: var(--font-apple-ui) !important;
+}
+
+/* Codes (Access IDs, URLs) keep tabular numbers */
 .font-mono {
   font-variant-numeric: tabular-nums;
 }

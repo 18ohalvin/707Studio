@@ -49,9 +49,79 @@
       </div>
     </div>
 
-    <!-- TAB 1: CONTENT -->
+    <!-- TAB 1: CONTENT (Layout & Options) -->
     <div v-show="activeTab === 'content'" class="w-full flex flex-col">
-      <!-- Title & Subtitle Input -->
+      <!-- 1. Choice Style Variant (4 Variants with Minimal Icons) -->
+      <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
+        <div class="flex items-center justify-between w-full">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Choice Layout
+          </p>
+          <span class="text-[10px] uppercase font-mono text-neutral-400">
+            {{ variantLabel }}
+          </span>
+        </div>
+        <div class="grid grid-cols-4 gap-[8px] w-full pt-1">
+          <button 
+            v-for="v in variants" 
+            :key="v.id"
+            type="button"
+            @click="setVariant(v.id)"
+            class="flex flex-col gap-[6px] items-center p-2 rounded-[8px] border transition-all cursor-pointer group"
+            :class="variant === v.id ? 'bg-black text-white border-black shadow-sm ring-1 ring-black' : 'bg-white hover:bg-neutral-50 text-black border-[#d9d9d9]'"
+          >
+            <div 
+              class="size-[36px] rounded-full flex items-center justify-center transition-all duration-150 shadow-sm shrink-0"
+              :class="variant === v.id ? 'bg-white text-black' : 'bg-[#f5f5f5] group-hover:bg-black group-hover:text-white text-black border border-[#d9d9d9]'"
+            >
+              <component :is="v.icon" class="size-4 stroke-[1.75]" />
+            </div>
+            <span 
+              class="font-707 text-[10px] leading-tight text-center truncate w-full"
+              :class="variant === v.id ? 'font-medium text-white' : 'font-normal text-black group-hover:font-medium'"
+            >
+              {{ v.label }}
+            </span>
+          </button>
+        </div>
+
+        <!-- Grid Columns Option for Image Matrix (Directly under layout) -->
+        <div v-if="variant === 'image-grid'" class="flex flex-col gap-[10px] w-full pt-3 border-t border-[#f0f0f0]">
+          <div class="flex items-center justify-between w-full">
+            <div class="flex flex-col">
+              <span class="font-707 text-[12px] font-medium text-neutral-700">Grid Columns</span>
+              <span class="font-707 text-[10px] text-neutral-400">3:4 card aspect ratio</span>
+            </div>
+            <span class="font-707 text-[11px] font-medium text-black px-2 py-0.5 bg-neutral-100 rounded-[6px]">
+              {{ gridColumns }} {{ gridColumns === 1 ? 'Column' : 'Columns' }}
+            </span>
+          </div>
+
+          <!-- Block Table Selector (1, 2, 3, 4 Columns) -->
+          <div class="grid grid-cols-4 gap-[8px] w-full">
+            <button 
+              v-for="col in [1, 2, 3, 4]" 
+              :key="col"
+              type="button"
+              @click="setGridColumns(col)"
+              :class="gridColumns === col ? 'bg-black text-white border-black shadow-sm ring-1 ring-black' : 'bg-white text-neutral-700 hover:bg-neutral-50 hover:border-black/40 border-[#d9d9d9]'"
+              class="h-[40px] rounded-[8px] border flex flex-col items-center justify-center gap-1 cursor-pointer transition-all font-707"
+            >
+              <div class="flex gap-[2px] items-center h-[10px]">
+                <div 
+                  v-for="b in col" 
+                  :key="b" 
+                  class="w-[4px] h-[9px] rounded-[1px]" 
+                  :class="gridColumns === col ? 'bg-white' : 'bg-neutral-400'"
+                />
+              </div>
+              <span class="text-[10px] font-medium">{{ col }} Col</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Title & Subtitle Input -->
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
         <div class="flex flex-col gap-[6px] w-full">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
@@ -323,8 +393,8 @@
       </div>
     </div>
 
-    <!-- TAB 2: DESIGN & STYLE -->
-    <div v-show="activeTab === 'style'" class="w-full flex flex-col">
+    <!-- TAB 2: TYPOGRAPHY -->
+    <div v-show="activeTab === 'typography'" class="w-full flex flex-col">
       <!-- Title Typography Preset Dropdown -->
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
         <div class="flex flex-col gap-[6px] w-full">
@@ -408,75 +478,6 @@
               </button>
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Choice Style Variant (4 Figma Variants with Minimal Icons) -->
-      <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Choice Style Variant
-        </p>
-        <div class="grid grid-cols-4 gap-[8px] w-full pt-1">
-          <button 
-            v-for="v in variants" 
-            :key="v.id"
-            type="button"
-            @click="setVariant(v.id)"
-            class="flex flex-col gap-[6px] items-center p-2 rounded-[8px] border transition-all cursor-pointer group"
-            :class="variant === v.id ? 'bg-black text-white border-black shadow-sm ring-1 ring-black' : 'bg-white hover:bg-neutral-50 text-black border-[#d9d9d9]'"
-          >
-            <div 
-              class="size-[36px] rounded-full flex items-center justify-center transition-all duration-150 shadow-sm shrink-0"
-              :class="variant === v.id ? 'bg-white text-black' : 'bg-[#f5f5f5] group-hover:bg-black group-hover:text-white text-black border border-[#d9d9d9]'"
-            >
-              <component :is="v.icon" class="size-4 stroke-[1.75]" />
-            </div>
-            <span 
-              class="font-707 text-[10px] leading-tight text-center truncate w-full"
-              :class="variant === v.id ? 'font-medium text-white' : 'font-normal text-black group-hover:font-medium'"
-            >
-              {{ v.label }}
-            </span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Grid Columns Option for Image Matrix -->
-      <div v-if="variant === 'image-grid'" class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
-        <div class="flex items-center justify-between w-full">
-          <div class="flex flex-col">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Grid Columns
-            </p>
-            <span class="font-707 text-[11px] text-neutral-400">
-              3:4 card aspect ratio
-            </span>
-          </div>
-          <span class="font-707 text-[12px] font-medium text-black px-2.5 py-1 bg-neutral-100 rounded-[6px]">
-            {{ gridColumns }} {{ gridColumns === 1 ? 'Column' : 'Columns' }}
-          </span>
-        </div>
-
-        <!-- Block Table Selector (1, 2, 3, 4 Columns) -->
-        <div class="grid grid-cols-4 gap-[8px] w-full pt-1">
-          <button 
-            v-for="col in [1, 2, 3, 4]" 
-            :key="col"
-            type="button"
-            @click="setGridColumns(col)"
-            :class="gridColumns === col ? 'bg-black text-white border-black shadow-sm ring-1 ring-black' : 'bg-white text-neutral-700 hover:bg-neutral-50 hover:border-black/40 border-[#d9d9d9]'"
-            class="h-[44px] rounded-[8px] border flex flex-col items-center justify-center gap-1 cursor-pointer transition-all font-707"
-          >
-            <div class="flex gap-[2px] items-center h-[10px]">
-              <div 
-                v-for="b in col" 
-                :key="b" 
-                class="w-[4px] h-[9px] rounded-[1px]" 
-                :class="gridColumns === col ? 'bg-white' : 'bg-neutral-400'"
-              />
-            </div>
-            <span class="text-[11px] font-medium">{{ col }} Col</span>
-          </button>
         </div>
       </div>
     </div>
@@ -632,7 +633,7 @@ import {
   LayoutGrid, 
   Image as ImageIcon,
   FileText,
-  Palette,
+  Type,
   Sliders
 } from 'lucide-vue-next';
 
@@ -645,11 +646,11 @@ defineEmits<{
 }>();
 
 // 3-Tab Segment Navigation
-type TabType = 'content' | 'style' | 'rules';
+type TabType = 'content' | 'typography' | 'rules';
 const activeTab = ref<TabType>('content');
 const tabs = [
   { id: 'content' as const, label: 'Content', icon: FileText },
-  { id: 'style' as const, label: 'Style', icon: Palette },
+  { id: 'typography' as const, label: 'Typography', icon: Type },
   { id: 'rules' as const, label: 'Rules & Limits', icon: Sliders }
 ];
 

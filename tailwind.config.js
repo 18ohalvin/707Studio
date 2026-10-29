@@ -31,12 +31,58 @@ export default {
         }
       },
       fontFamily: {
-        // One type family across the studio and every campaign: Helvetica Neue.
-        // "mono" is kept as a class name for codes (Access IDs, URLs) but is
-        // the same family with tabular figures (see main.css), not a monospace face.
-        sans: ['"Helvetica Neue"', 'Helvetica', 'sans-serif'],
+        // UI default Apple System font stack with Windows HD Inter / Segoe UI Variable fallback
+        sans: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"SF Pro Text"',
+          '"SF Pro Display"',
+          '"SF Pro"',
+          '"Inter"',
+          '"Segoe UI Variable Text"',
+          '"Segoe UI Variable"',
+          '"Segoe UI"',
+          'system-ui',
+          'sans-serif'
+        ],
+        ui: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"SF Pro Text"',
+          '"SF Pro Display"',
+          '"SF Pro"',
+          '"Inter"',
+          '"Segoe UI Variable Text"',
+          '"Segoe UI Variable"',
+          '"Segoe UI"',
+          'system-ui',
+          'sans-serif'
+        ],
+        apple: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"SF Pro Text"',
+          '"SF Pro Display"',
+          '"SF Pro"',
+          '"Inter"',
+          '"Segoe UI Variable Text"',
+          '"Segoe UI Variable"',
+          '"Segoe UI"',
+          'system-ui',
+          'sans-serif'
+        ],
+        // Campaign Page Content Brand Font (Helvetica Neue standard for event posters/tickets)
         '707': ['"Helvetica Neue"', 'Helvetica', 'sans-serif'],
-        mono: ['"Helvetica Neue"', 'Helvetica', 'sans-serif'],
+        'page': ['"Helvetica Neue"', 'Helvetica', 'sans-serif'],
+        campaign: ['"Helvetica Neue"', 'Helvetica', 'sans-serif'],
+        mono: [
+          '"SF Mono"',
+          'SFMono-Regular',
+          'ui-monospace',
+          'Menlo',
+          'Consolas',
+          'monospace'
+        ],
         display: ['"Helvetica Neue"', 'Helvetica', 'sans-serif']
       },
       fontSize: {
