@@ -329,16 +329,16 @@
         <!-- 2. Minimal Bold Title -->
         <div 
           draggable="true"
-          @dragstart="handleDragStart($event, { type: 'TextBanner', label: 'Bold Title', customProps: { text: 'LIMITED ACCESS DROP', placeholder: 'LIMITED ACCESS DROP', typographyStyle: 'headline-1', variant: 'editorial', textAlign: 'left' } })"
+          @dragstart="handleDragStart($event, { type: 'TextBanner', label: 'Bold Title', customProps: { text: 'LIMITED ACCESS DROP', placeholder: 'LIMITED ACCESS DROP', typographyStyle: 'headline-1', variant: 'editorial', textAlign: 'center' } })"
           @dragend="handleDragEnd"
           @click="addTextWidget('title')"
           class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[84px] cursor-grab active:cursor-grabbing group"
-          title="Drag to canvas or click to add (Bold header without subtitle)"
+          title="Drag to canvas or click to add (Center H1 bold title)"
         >
           <div class="bg-white group-hover:bg-neutral-50 h-[130px] rounded-[8px] shrink-0 w-[72px] transition-all border border-black/10 group-hover:border-black shadow-sm overflow-hidden flex flex-col justify-center items-center p-2.5">
-            <div class="flex flex-col gap-2 w-full items-center">
+            <div class="flex flex-col gap-1.5 w-full items-center">
               <div class="w-full h-3 bg-black rounded-[1px]" />
-              <div class="w-4/5 h-2.5 bg-black/80 rounded-[1px]" />
+              <div class="w-3/4 h-2.5 bg-black/80 rounded-[1px]" />
             </div>
           </div>
           <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
@@ -366,29 +366,6 @@
           </div>
           <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
             Story / Body
-          </p>
-        </div>
-
-        <!-- 4. Notice / Scrim -->
-        <div 
-          draggable="true"
-          @dragstart="handleDragStart($event, { type: 'TextBanner', label: 'Notice / Scrim', customProps: { text: 'EVENT NOTICE\nPlease arrive 15 minutes before your scheduled entry time. Valid government ID required upon check-in.', placeholder: 'EVENT NOTICE', typographyStyle: 'heading-3', variant: 'scrim', textAlign: 'left' } })"
-          @dragend="handleDragEnd"
-          @click="addTextWidget('scrim')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[84px] cursor-grab active:cursor-grabbing group"
-          title="Drag to canvas or click to add (Translucent dark card banner)"
-        >
-          <div class="bg-white group-hover:bg-neutral-50 h-[130px] rounded-[8px] shrink-0 w-[72px] transition-all border border-black/10 group-hover:border-black shadow-sm overflow-hidden flex flex-col justify-center p-1.5">
-            <div class="w-full h-[80px] bg-black/90 rounded-[4px] p-2 flex flex-col justify-between">
-              <div class="w-3/4 h-2 bg-white/90 rounded-[1px]" />
-              <div class="flex flex-col gap-1 w-full">
-                <div class="w-full h-1 bg-white/50 rounded-full" />
-                <div class="w-2/3 h-1 bg-white/40 rounded-full" />
-              </div>
-            </div>
-          </div>
-          <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
-            Notice / Scrim
           </p>
         </div>
       </div>
@@ -873,30 +850,6 @@
             Live Queue Pass
           </p>
         </div>
-
-        <!-- Interactive Card 3: Tennis Court / Sneaker Sizing Grid -->
-        <div 
-          draggable="true"
-          @dragstart="handleDragStart($event, { type: 'RsvpForm', label: 'Sneaker Sizing & Court Selector', customProps: { heading: 'TENNIS COURT RSVP & SIZING' } })"
-          @dragend="handleDragEnd"
-          @click="addInteractiveWidget('Sneaker Sizing & Court Selector')"
-          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group"
-          title="Drag to canvas or click to add"
-        >
-          <div class="border border-[#c9c9c9] flex flex-col gap-[8px] h-[130px] items-center justify-center rounded-[8px] shrink-0 w-[84px] bg-white group-hover:border-black transition-colors relative overflow-hidden shadow-sm">
-            <div class="bg-[#d9d9d9] h-[64px] rounded-[6px] w-[50px] relative flex flex-col items-center justify-center p-1.5">
-              <div class="grid grid-cols-2 gap-1 w-full">
-                <div class="bg-[#aaa] rounded-sm size-2.5"></div>
-                <div class="bg-[#aaa] rounded-sm size-2.5"></div>
-                <div class="bg-[#aaa] rounded-sm size-2.5"></div>
-                <div class="bg-[#aaa] rounded-sm size-2.5"></div>
-              </div>
-            </div>
-          </div>
-          <p class="font-707 font-normal text-[11px] text-black text-center leading-tight">
-            Tennis Court Picker
-          </p>
-        </div>
       </div>
     </div>
   </aside>
@@ -1011,7 +964,7 @@ function addMediaWidget(ratio: string) {
   editorStore.addMediaBannerWidget(ratio);
 }
 
-function addTextWidget(variant: 'headline' | 'body' | 'title' | 'scrim' = 'headline') {
+function addTextWidget(variant: 'headline' | 'body' | 'title' = 'headline') {
   let props: Record<string, any> = {
     text: 'EXCLUSIVE ACCESS DROP\nReserve your spot for the community run and raffle pass.',
     placeholder: 'EXCLUSIVE ACCESS DROP',
@@ -1025,7 +978,7 @@ function addTextWidget(variant: 'headline' | 'body' | 'title' | 'scrim' = 'headl
       placeholder: 'LIMITED ACCESS DROP',
       typographyStyle: 'headline-1',
       variant: 'editorial',
-      textAlign: 'left'
+      textAlign: 'center'
     };
   } else if (variant === 'body') {
     props = {
@@ -1033,14 +986,6 @@ function addTextWidget(variant: 'headline' | 'body' | 'title' | 'scrim' = 'headl
       placeholder: 'Write your story or instructions here...',
       typographyStyle: 'body-text',
       variant: 'editorial',
-      textAlign: 'left'
-    };
-  } else if (variant === 'scrim') {
-    props = {
-      text: 'EVENT NOTICE\nPlease arrive 15 minutes before your scheduled entry time. Valid government ID required upon check-in.',
-      placeholder: 'EVENT NOTICE',
-      typographyStyle: 'heading-3',
-      variant: 'scrim',
       textAlign: 'left'
     };
   }
