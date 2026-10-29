@@ -38,32 +38,43 @@
           />
         </div>
 
-        <!-- Template Studio Indicator Pill -->
+        <!-- Unified Apple Glass Status Indicator Pill -->
         <div 
-          v-if="editorStore.isTemplateMode" 
-          class="flex h-[20px] items-center gap-1.5 px-[8px] rounded-[10px] shrink-0 border-[0.5px] border-purple-300 bg-purple-50 text-purple-900 shadow-xs"
-          title="Master system template being designed for global brand presets"
+          class="flex h-[22px] items-center gap-1.5 px-[8px] rounded-full shrink-0 border-[0.5px] border-black/10 bg-[#ececec]/25 backdrop-blur-[4px] shadow-xs cursor-default transition-all"
+          :title="`${publishBadge.title} • ${saveStatusText}`"
         >
-          <span class="size-1.5 rounded-full bg-purple-600 animate-pulse" />
-          <p class="font-707 text-legal-micro font-medium whitespace-nowrap">Template Studio</p>
-        </div>
+          <!-- Dynamic Status Dot -->
+          <span 
+            v-if="!editorStore.isTemplateMode"
+            class="size-1.5 rounded-full" 
+            :class="publishBadge.dot" 
+          />
+          <span 
+            v-else 
+            class="size-1.5 rounded-full bg-purple-600 animate-pulse" 
+          />
 
-        <!-- Save Info Pill right beside dynamic title -->
-        <div class="border-black/10 border-[0.5px] border-solid content-stretch flex h-[20px] items-center justify-center px-[7px] rounded-[10px] shrink-0 bg-[#ececec]/20 backdrop-blur-[4px] shadow-sm">
-          <p class="font-707 text-legal-micro font-light text-black whitespace-nowrap">
+          <!-- Status Label -->
+          <p class="font-707 text-legal-micro font-medium text-black whitespace-nowrap">
+            {{ editorStore.isTemplateMode ? 'Template Studio' : publishBadge.label }}
+          </p>
+
+          <span class="text-neutral-300 font-light text-[10px]">·</span>
+
+          <!-- Compact Save Status -->
+          <p class="font-707 text-legal-micro font-normal text-neutral-500 whitespace-nowrap">
             {{ saveStatusText }}
           </p>
         </div>
 
-        <!-- Publish state: what visitors see vs what is being edited -->
-        <div
-          v-if="!editorStore.isTemplateMode"
-          class="flex h-[20px] items-center gap-1.5 px-[7px] rounded-[10px] shrink-0 border-[0.5px] border-solid"
-          :class="publishBadge.class"
-          :title="publishBadge.title"
+        <!-- Preview Mode Indicator Pill (Prominent when simulating guest mode) -->
+        <div 
+          v-if="editorStore.isPreviewMode"
+          class="flex h-[22px] items-center gap-1 px-[8px] rounded-full bg-black text-white shadow-xs animate-in fade-in duration-200"
+          title="Guest simulation mode — inputs and submissions are isolated"
         >
-          <span class="size-1.5 rounded-full" :class="publishBadge.dot" />
-          <p class="font-707 text-legal-micro whitespace-nowrap">{{ publishBadge.label }}</p>
+          <Eye class="size-3 text-white" />
+          <span class="font-707 text-legal-micro font-medium whitespace-nowrap">Guest Preview</span>
         </div>
       </div>
     </div>
@@ -91,13 +102,14 @@
       <!-- Preview / Editor Mode Toggle Button -->
       <button 
         @click="editorStore.togglePreviewMode()"
-        class="apple-glass-btn text-black content-stretch flex items-center justify-center gap-1.5 overflow-clip px-[14px] h-[32px] rounded-[8px] apple-press cursor-pointer transition-all ml-[6px]"
-        :title="editorStore.isPreviewMode ? 'Back to designing — test answers are cleared' : 'Test the campaign as a guest: fill in forms and pick options'"
+        :class="editorStore.isPreviewMode ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn text-black'"
+        class="content-stretch flex items-center justify-center gap-1.5 overflow-clip px-[14px] h-[32px] rounded-[8px] apple-press cursor-pointer transition-all ml-[6px]"
+        :title="editorStore.isPreviewMode ? 'Exit preview mode and return to canvas editor' : 'Test the campaign as a guest: fill in forms and pick options'"
       >
-        <Edit3 v-if="editorStore.isPreviewMode" class="w-3.5 h-3.5 text-black" />
+        <Edit3 v-if="editorStore.isPreviewMode" class="w-3.5 h-3.5 text-white" />
         <Eye v-else class="w-3.5 h-3.5 text-black" />
-        <span class="font-707 font-medium text-[13px] whitespace-nowrap text-black">
-          {{ editorStore.isPreviewMode ? 'Editor Mode' : 'Preview' }}
+        <span class="font-707 font-medium text-[13px] whitespace-nowrap" :class="editorStore.isPreviewMode ? 'text-white' : 'text-black'">
+          {{ editorStore.isPreviewMode ? 'Exit Preview' : 'Preview' }}
         </span>
       </button>
 

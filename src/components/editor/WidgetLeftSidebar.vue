@@ -4,26 +4,51 @@
     v-if="isOpen"
     @click.stop
     @wheel.stop
-    class="absolute left-[24px] top-1/2 -translate-y-1/2 w-[464px] h-auto max-h-[calc(100vh-140px)] backdrop-blur-2xl bg-[rgba(255,255,255,0.92)] border border-black/8 content-stretch flex flex-col items-start overflow-y-auto pb-[32px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] z-40 select-none transition-all animate-apple-slide-left-center no-scrollbar"
+    class="absolute left-[24px] top-1/2 -translate-y-1/2 w-[380px] h-auto max-h-[calc(100vh-140px)] backdrop-blur-2xl bg-[rgba(255,255,255,0.92)] border border-black/8 content-stretch flex flex-col items-start overflow-y-auto pb-[32px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] z-40 select-none transition-all animate-apple-slide-left-center no-scrollbar"
     data-node-id="74:182"
     data-name="Sidebar"
   >
     <!-- Widget Container & Header -->
-    <div class="content-stretch flex flex-col gap-[6px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+    <div class="content-stretch flex flex-col gap-[10px] items-start p-[20px] pb-[16px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
-        <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
-          Widget
-        </p>
+        <div class="flex items-center gap-2">
+          <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
+            Widgets
+          </p>
+          <button
+            type="button"
+            @click="editorStore.openMediaGallery('addNewMedia')"
+            class="apple-glass-btn h-[24px] px-2 rounded-[6px] text-[11px] font-707 font-medium text-neutral-700 hover:text-black flex items-center gap-1 cursor-pointer transition-colors"
+            title="Open project Media Gallery"
+          >
+            <span>Media</span>
+          </button>
+        </div>
         <button 
           @click="$emit('close')"
-          class="apple-glass-icon-btn size-7 flex items-center justify-center rounded-full cursor-pointer"
+          class="apple-glass-icon-btn size-7 flex items-center justify-center rounded-full cursor-pointer hover:bg-neutral-200/60 transition-colors"
+          title="Close"
         >
           <img :src="FIGMA_ASSETS.closeIcon" class="w-3.5 h-3.5" alt="Close" />
         </button>
       </div>
       <p class="font-707 font-normal text-[12px] leading-[16px] text-neutral-500">
-        Select blocks to assemble your campaign page.
+        Drag or click blocks to assemble your campaign.
       </p>
+    </div>
+
+    <!-- Category Filter Tabs (Sticky Top) -->
+    <div v-if="!isTicketPage" class="px-[20px] py-[10px] w-full border-b border-[#f0f0f0] bg-white/70 backdrop-blur-md sticky top-0 z-10 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
+      <button
+        v-for="cat in categories"
+        :key="cat.id"
+        type="button"
+        @click="activeCategory = cat.id"
+        class="h-[28px] px-3 rounded-full text-[11.5px] font-707 font-medium whitespace-nowrap transition-all cursor-pointer"
+        :class="activeCategory === cat.id ? 'apple-glass-btn-dark shadow-xs' : 'apple-glass-btn text-neutral-600 hover:text-black'"
+      >
+        {{ cat.label }}
+      </button>
     </div>
 
     <!-- Ticket page: guest data blocks for the PDF ticket -->
@@ -57,7 +82,7 @@
     </div>
 
     <!-- Section 1: Media/Banners -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+    <div v-if="(activeCategory === 'all' || activeCategory === 'banners') && !isTicketPage" class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
         <p class="flex-[1_0_0] font-707 font-medium text-[13px] leading-[18px] text-black">
           Media/Banners
@@ -279,7 +304,7 @@
     </div>
 
     <!-- Section 2: Add Form Inputs & Choices -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+    <div v-if="(activeCategory === 'all' || activeCategory === 'forms') && !isTicketPage" class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
         <p class="flex-[1_0_0] font-707 font-medium text-[13px] leading-[18px] text-black">
           Add Form Inputs & Choices
@@ -610,7 +635,7 @@
     </div>
 
     <!-- Section 3: Action Button (Figma Node 244:11560) -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+    <div v-if="(activeCategory === 'all' || activeCategory === 'actions') && !isTicketPage" class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
         <p class="flex-[1_0_0] font-707 font-medium text-[13px] leading-[18px] text-black">
           Action Button
@@ -658,7 +683,7 @@
     </div>
 
     <!-- Section 4: Interactive & Activations -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+    <div v-if="(activeCategory === 'all' || activeCategory === 'interactive') && !isTicketPage" class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
         <p class="flex-[1_0_0] font-707 font-medium text-[13px] leading-[18px] text-black">
           Interactive & Activations
@@ -826,6 +851,15 @@ const emit = defineEmits<{
 }>();
 
 const editorStore = useEditorStore();
+
+const activeCategory = ref<'all' | 'banners' | 'forms' | 'actions' | 'interactive'>('all');
+const categories = [
+  { id: 'all' as const, label: 'All' },
+  { id: 'banners' as const, label: 'Banners' },
+  { id: 'forms' as const, label: 'Forms' },
+  { id: 'actions' as const, label: 'Buttons' },
+  { id: 'interactive' as const, label: 'Pass & Queue' }
+];
 
 const formTabs = ['Contacts', 'General', 'Dates', 'Scheduling'];
 const selectedFormTab = ref('Contacts');

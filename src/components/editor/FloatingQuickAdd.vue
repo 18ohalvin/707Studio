@@ -15,24 +15,24 @@
           class="absolute -top-[38px] left-1/2 -translate-x-1/2 z-50 pointer-events-none select-none flex justify-center"
         >
           <div class="backdrop-blur-[16px] bg-white/85 text-black border border-black/10 px-[12px] py-[4px] rounded-full text-[11px] font-707 font-medium shadow-[0px_4px_20px_rgba(0,0,0,0.1),0_1px_3px_rgba(0,0,0,0.05)] whitespace-nowrap tracking-tight animate-apple-pop">
-            Add a widget, media and more
+            Add widgets & blocks
           </div>
         </div>
       </Transition>
 
       <button 
-        @click="editorStore.toggleAddMenu()"
-        :class="editorStore.isAddMenuOpen 
+        @click="editorStore.toggleWidgetSidebar()"
+        :class="editorStore.isWidgetSidebarOpen 
           ? 'bg-black text-white shadow-[0_4px_16px_rgba(0,0,0,0.25)]' 
           : 'backdrop-blur-[4px] bg-[#ececec]/20 hover:bg-[#ececec] active:bg-[#e0e0e0] text-black border-[0.5px] border-black/10 hover:border-black/25 shadow-[0_2px_8px_rgba(0,0,0,0.02)]'"
         class="flex items-center justify-center overflow-clip p-[8px] relative rounded-[8px] shrink-0 size-[40px] apple-press cursor-pointer transition-all duration-200"
-        title="Quick Add Menu"
+        title="Add widgets & blocks"
       >
         <div class="relative shrink-0 size-[18px] transition-transform duration-200">
           <img 
             alt="Add" 
             class="absolute block inset-0 max-w-none size-full transition-all duration-200" 
-            :class="editorStore.isAddMenuOpen ? 'brightness-0 invert rotate-45' : 'brightness-0 rotate-0'"
+            :class="editorStore.isWidgetSidebarOpen ? 'brightness-0 invert rotate-45' : 'brightness-0 rotate-0'"
             :src="FIGMA_ASSETS.addIcon" 
           />
         </div>

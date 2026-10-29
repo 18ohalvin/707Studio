@@ -965,6 +965,18 @@ export const useEditorStore = defineStore('editor', () => {
     isWidgetSidebarOpen.value = true;
   }
 
+  function closeWidgetSidebar() {
+    isWidgetSidebarOpen.value = false;
+  }
+
+  function toggleWidgetSidebar() {
+    if (isWidgetSidebarOpen.value) {
+      closeWidgetSidebar();
+    } else {
+      openWidgetSidebar();
+    }
+  }
+
   function openMediaGallery(target: MediaGalleryTarget = 'bannerImage') {
     mediaGalleryTarget.value = target;
     isAddMenuOpen.value = false;
@@ -2055,6 +2067,8 @@ export const useEditorStore = defineStore('editor', () => {
     toggleAddMenu,
     openMediaSidebar,
     openWidgetSidebar,
+    closeWidgetSidebar,
+    toggleWidgetSidebar,
     openMediaGallery,
     closeMediaGallery,
     openTextSidebar,
