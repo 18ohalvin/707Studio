@@ -97,9 +97,17 @@ export function collectPicks(pages: Array<{ widget_tree?: any[] }>): PickInput[]
   for (const page of pages) {
     for (const w of page.widget_tree || []) {
       if (w?.type !== 'MultipleChoice' || !w.id) continue;
-      const known = new Set((w.props?.options || []).map((o: any) => o.id));
-      for (const id of (w.props?.selectedValues || []) as string[]) {
-        if (known.has(id)) picks.push({ widget: String(w.id), option: String(id) });
+      const options = (w.props?.options || []) as any[];
+      const known = new Set(options.map((o: any) => o.id));
+      let selected = ((w.props?.selectedValues || []) as string[]).filter(id => known.has(id));
+
+      // Safety: If limited places and single option, auto-pick if unselected
+      if (selected.length === 0 && options.length === 1 && w.props?.limitPlaces && options[0]?.id) {
+        selected = [options[0].id];
+      }
+
+      for (const id of selected) {
+        picks.push({ widget: String(w.id), option: String(id) });
       }
     }
   }

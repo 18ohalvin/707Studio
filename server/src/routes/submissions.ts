@@ -501,10 +501,34 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
   const clientKey = clientKeyOf(req.body?.client_key);
   const answers = { ...form_data, fullName, email };
   const picks: SlotPick[] = normalizePicks(req.body?.slot_picks);
-  const wantsWaitlist = req.body?.waitlist === true;
-
   const partySize = Math.max(1, Math.min(10, Number(answers.party_size || answers['Jumlah Tamu'] || answers['Party Size'] || answers.guests) || 1));
   const eventDate = String(answers.event_date || answers['Access Valid For'] || answers.eventDate || '');
+
+  // Auto-protect against bypassed single limited options or unassigned slots
+  const slotDefs = await getSlotDefs(pageId, store === 'db');
+  if (!picks.length && slotDefs.size > 0) {
+    const limitedDefs = Array.from(slotDefs.values()).filter(d => d.capacity !== null);
+    if (limitedDefs.length === 1) {
+      picks.push({ widget: limitedDefs[0].widget, option: limitedDefs[0].option });
+      const currentValid = answers['Access Valid For'];
+      if (!currentValid || !Array.isArray(currentValid) || currentValid.length === 0 || currentValid[0]?.label === 'Single Day Admission') {
+        answers['Access Valid For'] = [{
+          id: limitedDefs[0].option,
+          label: limitedDefs[0].label,
+          sublabel: eventDate,
+          description: ''
+        }];
+      }
+      if (limitedDefs[0].widget && !answers[limitedDefs[0].widget]) {
+        answers[limitedDefs[0].widget] = [limitedDefs[0].label];
+      }
+      if (!answers['BOOK YOUR SPOT']) {
+        answers['BOOK YOUR SPOT'] = [limitedDefs[0].label];
+      }
+    }
+  }
+
+  const wantsWaitlist = req.body?.waitlist === true;
   const queueNumber = await getNextQueueNumber(pageId, store === 'db', eventDate);
 
   const draft = () => ({
@@ -592,7 +616,7 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
     }
 
     // Which of the guest's picks are options of this campaign, and which of those are limited or closed.
-    const defs = picks.length ? await getSlotDefs(pageId, true) : new Map<string, SlotDef>();
+    const defs = picks.length ? slotDefs : new Map<string, SlotDef>();
     const chosen = picks.map(p => defs.get(slotKey(p.widget, p.option))).filter((d): d is SlotDef => !!d);
     const closed = chosen.filter(d => d.closed);
     if (closed.length) {
@@ -706,7 +730,7 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
     return alreadyRecorded(existing);
   }
 
-  const fileDefs = picks.length ? await getSlotDefs(pageId, false) : new Map<string, SlotDef>();
+  const fileDefs = picks.length ? slotDefs : new Map<string, SlotDef>();
   const fileChosen = picks.map(p => fileDefs.get(slotKey(p.widget, p.option))).filter((d): d is SlotDef => !!d);
   if (fileChosen.some(d => d.closed)) {
     return res.status(409).json({ success: false, code: 'option_closed', error: 'This option is no longer open for registration.', full: fileChosen.filter(d => d.closed).map(d => ({ widget: d.widget, option: d.option, label: d.label, waitlist: false })) });

@@ -201,28 +201,34 @@
         </div>
       </div>
 
-      <div class="flex items-center justify-between w-full">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Required Field
-        </p>
-        <div class="flex gap-[6px] items-center">
-          <button 
-            type="button"
-            @click="setRequired(false)"
-            :class="!required ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
-          >
-            Optional
-          </button>
-          <button 
-            type="button"
-            @click="setRequired(true)"
-            :class="required ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
-          >
-            Required
-          </button>
+      <div class="flex flex-col gap-1 w-full">
+        <div class="flex items-center justify-between w-full">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Required Field
+          </p>
+          <div class="flex gap-[6px] items-center">
+            <button 
+              type="button"
+              @click="setRequired(false)"
+              :disabled="limitPlaces"
+              :class="[!required ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn', limitPlaces ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer']"
+              class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px]"
+            >
+              Optional
+            </button>
+            <button 
+              type="button"
+              @click="setRequired(true)"
+              :class="required ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
+            >
+              Required
+            </button>
+          </div>
         </div>
+        <p v-if="limitPlaces" class="font-707 text-[10.5px] text-amber-700 bg-amber-50/80 px-2 py-1 rounded-[5px] border border-amber-200/60 leading-normal">
+          Required is locked on while Limit Places is active so guests cannot bypass capacity counts.
+        </p>
       </div>
     </div>
 
@@ -752,7 +758,7 @@ const allowMultiple = computed({
 });
 
 const required = computed({
-  get: () => currentWidget.value?.props.required ?? false,
+  get: () => (currentWidget.value?.props.required ?? false) || currentWidget.value?.props.limitPlaces === true,
   set: (val: boolean) => {
     if (currentWidget.value) {
       editorStore.updateWidgetProps(currentWidget.value.id, { required: val });
@@ -777,7 +783,11 @@ const limitPlaces = computed({
   get: () => currentWidget.value?.props.limitPlaces === true,
   set: (val: boolean) => {
     if (currentWidget.value) {
-      editorStore.updateWidgetProps(currentWidget.value.id, { limitPlaces: val });
+      const updates: Record<string, any> = { limitPlaces: val };
+      if (val) {
+        updates.required = true;
+      }
+      editorStore.updateWidgetProps(currentWidget.value.id, updates);
     }
   }
 });
@@ -880,6 +890,10 @@ function setAllowMultiple(val: boolean) {
 }
 
 function setRequired(val: boolean) {
+  if (!val && limitPlaces.value) {
+    editorStore.showToast('Required is mandatory while Limit Places is active to ensure capacity accuracy.');
+    return;
+  }
   required.value = val;
 }
 

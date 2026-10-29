@@ -3008,12 +3008,23 @@ function collectPageAnswers(): Record<string, any> {
         }
       });
     } else if (w.type === 'MultipleChoice') {
-      const key = w.props?.question || w.id;
+      const key = w.props?.question || w.props?.title || w.id;
+      const options = (w.props?.options || []) as any[];
+      let selected = (w.props?.selectedValues || []) as string[];
+      // Auto-select single option if limited and unselected
+      if (selected.length === 0 && options.length === 1 && w.props?.limitPlaces && options[0]?.id) {
+        const onlyId = options[0].id;
+        setWidgetProps(w, { selectedValues: [onlyId] });
+        selected = [onlyId];
+      }
       // Store what the guest saw (labels), not internal option ids.
-      const selected = (w.props?.selectedValues || []) as string[];
-      formData[key] = (w.props?.options || [])
+      const labels = options
         .filter((opt: any) => selected.includes(opt.id))
         .map((opt: any) => opt.label || opt.id);
+      formData[key] = labels;
+      if (w.id && key !== w.id) {
+        formData[w.id] = labels;
+      }
     }
   });
 
@@ -3081,8 +3092,15 @@ function handleButtonClick(widget: any) {
             if (!firstInvalidWidget) firstInvalidWidget = w;
           }
         });
-      } else if (w.type === 'MultipleChoice' && w.props?.required) {
-        const selected = (w.props?.selectedValues || []) as string[];
+      } else if (w.type === 'MultipleChoice' && (w.props?.required || w.props?.limitPlaces)) {
+        const options = (w.props?.options || []) as any[];
+        let selected = (w.props?.selectedValues || []) as string[];
+        // Auto-select single option if limited and unselected
+        if (selected.length === 0 && options.length === 1 && w.props?.limitPlaces && options[0]?.id) {
+          const onlyId = options[0].id;
+          setWidgetProps(w, { selectedValues: [onlyId] });
+          selected = [onlyId];
+        }
         if (selected.length === 0 && !firstInvalidWidget) {
           firstInvalidWidget = w;
           allValid = false;

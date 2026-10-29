@@ -274,8 +274,8 @@
                 <td v-else-if="col.key === 'created_at'" class="px-3 text-[11.5px] text-neutral-500 whitespace-nowrap tabular-nums" :class="rowPad">{{ formatDateTime(s.created_at) }}</td>
 
                 <!-- Custom answer columns -->
-                <td v-else class="px-3 text-[12px] text-neutral-700 whitespace-nowrap max-w-[200px] truncate" :class="rowPad" :title="formatValue(s.form_data?.[col.key])">
-                  <span v-if="formatValue(s.form_data?.[col.key])">{{ formatValue(s.form_data?.[col.key]) }}</span>
+                <td v-else class="px-3 text-[12px] text-neutral-700 whitespace-nowrap max-w-[200px] truncate" :class="rowPad" :title="formatCustomAnswer(s, col.key)">
+                  <span v-if="formatCustomAnswer(s, col.key)">{{ formatCustomAnswer(s, col.key) }}</span>
                   <span v-else class="text-neutral-300">—</span>
                 </td>
               </template>
@@ -501,8 +501,8 @@
                   <span v-else class="text-[12px] text-neutral-300">—</span>
                 </div>
                 <div v-for="k in drawerAnswerKeys" :key="k" class="flex items-start justify-between gap-4 px-3.5 py-2.5">
-                  <span class="text-[12px] text-neutral-500 shrink-0 max-w-[45%]">{{ k }}</span>
-                  <span class="text-[12px] text-right break-words min-w-0">{{ formatValue(drawerRow.form_data?.[k]) || '—' }}</span>
+                  <span class="text-[12px] text-neutral-500 shrink-0 max-w-[45%]">{{ formatColumnLabel(k) }}</span>
+                  <span class="text-[12px] text-right break-words min-w-0">{{ formatCustomAnswer(drawerRow, k) || '—' }}</span>
                 </div>
               </div>
             </div>
@@ -730,7 +730,7 @@ const allColumns = computed<Col[]>(() => {
   }
 
   // Genuine custom form questions only (clean, non-system)
-  customKeys.value.forEach(k => cols.push({ key: k, label: k, sortable: true, custom: true }));
+  customKeys.value.forEach(k => cols.push({ key: k, label: formatColumnLabel(k), sortable: true, custom: true }));
 
   // Status and attendance timestamps
   cols.push(
@@ -741,6 +741,26 @@ const allColumns = computed<Col[]>(() => {
   );
   return cols;
 });
+
+function formatColumnLabel(k: string): string {
+  if (/^multiplechoice_/i.test(k)) return 'Spot / Session';
+  if (/^fieldinput_/i.test(k)) return 'Custom Field';
+  return k;
+}
+
+function formatCustomAnswer(s: Submission | null, key: string): string {
+  if (!s) return '';
+  const val = s.form_data?.[key];
+  if (val !== undefined && val !== null && String(val).trim()) {
+    return formatValue(val);
+  }
+  // Fallback for Multiple Choice session/spot columns
+  if (/^multiplechoice_|book\s*your\s*spot/i.test(key)) {
+    const fallback = s.form_data?.['BOOK YOUR SPOT'] || s.form_data?.['multiplechoice_1793178196321'] || s.form_data?.['Access Valid For'];
+    if (fallback) return formatValue(fallback);
+  }
+  return '';
+}
 
 const STORAGE_KEY = 'hub_guest_table_prefs';
 const savedPrefs = (() => {
