@@ -4,7 +4,7 @@
     class="fixed bottom-[20px] z-[60] select-none backdrop-blur-[4px] bg-[#f5f5f5]/20 border border-black/10 border-solid flex gap-[8px] items-center p-[6px] rounded-[14px] shadow-[0px_12px_40px_0px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
     :class="[
       isRightSidebarOpen 
-        ? 'right-[24px] max-xl:opacity-0 max-xl:pointer-events-none xl:right-[416px]' 
+        ? 'right-[24px] max-xl:opacity-0 max-xl:pointer-events-none xl:right-[500px]' 
         : 'right-[24px] opacity-100'
     ]"
   >

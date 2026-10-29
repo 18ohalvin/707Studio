@@ -4,26 +4,16 @@
     v-if="isOpen"
     @click.stop
     @wheel.stop
-    class="absolute left-[24px] top-1/2 -translate-y-1/2 w-[380px] h-auto max-h-[calc(100vh-140px)] backdrop-blur-2xl bg-[rgba(255,255,255,0.92)] border border-black/8 content-stretch flex flex-col items-start overflow-y-auto pb-[32px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] z-40 select-none transition-all animate-apple-slide-left-center no-scrollbar"
+    class="absolute left-[24px] top-1/2 -translate-y-1/2 w-[464px] h-auto max-h-[calc(100vh-140px)] backdrop-blur-2xl bg-[rgba(255,255,255,0.92)] border border-black/8 content-stretch flex flex-col items-start overflow-y-auto pb-[32px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] z-40 select-none transition-all animate-apple-slide-left-center no-scrollbar"
     data-node-id="74:182"
     data-name="Sidebar"
   >
     <!-- Widget Container & Header -->
-    <div class="content-stretch flex flex-col gap-[10px] items-start p-[20px] pb-[16px] shrink-0 w-full border-b border-[#f0f0f0]">
+    <div class="content-stretch flex flex-col gap-[6px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
-        <div class="flex items-center gap-2">
-          <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
-            Widgets
-          </p>
-          <button
-            type="button"
-            @click="editorStore.openMediaGallery('addNewMedia')"
-            class="apple-glass-btn h-[24px] px-2 rounded-[6px] text-[11px] font-707 font-medium text-neutral-700 hover:text-black flex items-center gap-1 cursor-pointer transition-colors"
-            title="Open project Media Gallery"
-          >
-            <span>Media</span>
-          </button>
-        </div>
+        <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
+          Widgets
+        </p>
         <button 
           @click="$emit('close')"
           class="apple-glass-icon-btn size-7 flex items-center justify-center rounded-full cursor-pointer hover:bg-neutral-200/60 transition-colors"

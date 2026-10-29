@@ -4,8 +4,8 @@
          header itself would trap every menu inside it (profile, notifications,
          history), leaving them nothing to blur — they showed fully transparent. -->
     <div class="absolute inset-0 -z-10 pointer-events-none bg-white/20 [backdrop-filter:blur(4px)] [-webkit-backdrop-filter:blur(4px)]" aria-hidden="true" />
-    <!-- Left: 707 Logo, Dynamic-Width Title, and Save Status Pill -->
-    <div class="content-stretch flex gap-[16px] md:gap-[20px] items-center flex-1 min-w-0 mr-4">
+    <!-- Left: Normal Mode (707 Logo, Title Input, Save Status) -->
+    <div v-if="!editorStore.isPreviewMode" class="content-stretch flex gap-[16px] md:gap-[20px] items-center flex-1 min-w-0 mr-4">
       <!-- 707 Official Logo from Figma (Click to return to Landing Page or Superadmin Templates) -->
       <a 
         href="/"
@@ -66,26 +66,23 @@
             {{ saveStatusText }}
           </p>
         </div>
-
-        <!-- Preview Mode Indicator Pill (Prominent when simulating guest mode) -->
-        <div 
-          v-if="editorStore.isPreviewMode"
-          class="flex h-[22px] items-center gap-1 px-[8px] rounded-full bg-black text-white shadow-xs animate-in fade-in duration-200"
-          title="Guest simulation mode — inputs and submissions are isolated"
-        >
-          <Eye class="size-3 text-white" />
-          <span class="font-707 text-legal-micro font-medium whitespace-nowrap">Guest Preview</span>
-        </div>
       </div>
+    </div>
+
+    <!-- Left in Preview Mode: Replace 707 and Title with "Guest Preview" -->
+    <div v-else class="flex items-center gap-2 flex-1 min-w-0 mr-4">
+      <p class="font-707 font-medium text-[16px] leading-[22px] text-black tracking-tight">
+        Guest Preview
+      </p>
     </div>
 
     <!-- Right: Test Your Form, Ask for Review & Avatar proportioned for 48px Header -->
     <div class="content-stretch flex gap-[10px] items-center shrink-0">
-      <!-- Review requests / publish notices -->
-      <NotificationsMenu v-if="!editorStore.isTemplateMode" />
+      <!-- Review requests / publish notices (Hidden in preview mode) -->
+      <NotificationsMenu v-if="!editorStore.isTemplateMode && !editorStore.isPreviewMode" />
 
-      <!-- Build history: a plain icon, like the bell beside it -->
-      <div v-if="!editorStore.isTemplateMode" class="relative flex items-center" ref="historyRef">
+      <!-- Build history: a plain icon, like the bell beside it (Hidden in preview mode) -->
+      <div v-if="!editorStore.isTemplateMode && !editorStore.isPreviewMode" class="relative flex items-center" ref="historyRef">
         <button
           type="button"
           @click="showHistory = !showHistory"
@@ -113,9 +110,9 @@
         </span>
       </button>
 
-      <!-- Superadmin: send a pending submission back -->
+      <!-- Superadmin: send a pending submission back (Hidden in preview mode) -->
       <button
-        v-if="authStore.isSuperAdmin && isPending"
+        v-if="authStore.isSuperAdmin && isPending && !editorStore.isPreviewMode"
         type="button"
         :disabled="isTransitioning"
         @click="handleDecline"
@@ -125,22 +122,24 @@
         <span class="font-707 font-medium text-[13px] whitespace-nowrap">Request Changes</span>
       </button>
 
-      <!-- Primary CTA: depends on whether the project is live and what changed -->
+      <!-- Primary CTA: depends on whether the project is live and what changed (Hidden in preview mode) -->
       <button 
+        v-if="!editorStore.isPreviewMode"
         @click="handlePrimaryCtaClick"
         :disabled="primaryCta.disabled || isTransitioning"
         class="content-stretch flex items-center justify-center gap-1.5 overflow-clip px-[14px] h-[32px] rounded-[8px] apple-press"
-        :class="primaryCta.disabled ? 'apple-glass-btn cursor-default' : 'apple-glass-btn-dark cursor-pointer'"
+        :class="primaryCta.disabled ? 'apple-glass-btn cursor-default' : (primaryCta.state === 'live' ? 'apple-glass-btn hover:border-black/30 cursor-pointer shadow-xs' : 'apple-glass-btn-dark cursor-pointer')"
         :title="primaryCta.title"
       >
         <Check v-if="primaryCta.state === 'live'" class="w-3.5 h-3.5 text-emerald-600" />
-        <span class="font-707 font-medium text-[13px] whitespace-nowrap" :class="primaryCta.disabled ? 'text-neutral-600' : 'text-white'">
+        <span class="font-707 font-medium text-[13px] whitespace-nowrap" :class="primaryCta.disabled ? 'text-neutral-600' : (primaryCta.state === 'live' ? 'text-black font-semibold' : 'text-white')">
           {{ isTransitioning ? 'Working…' : primaryCta.label }}
         </span>
+        <Copy v-if="primaryCta.state === 'live'" class="w-3 h-3 text-neutral-400 ml-0.5" />
       </button>
 
-      <!-- Profile Avatar Container with Anchored UserProfileModal -->
-      <div class="relative">
+      <!-- Profile Avatar Container with Anchored UserProfileModal (Hidden in preview mode) -->
+      <div v-if="!editorStore.isPreviewMode" class="relative">
         <button 
           @click="showUserProfileModal = !showUserProfileModal"
           class="size-[30px] rounded-full border border-black/10 hover:border-black/30 shrink-0 bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors duration-200 cursor-pointer shadow-xs apple-press"
@@ -169,7 +168,7 @@ import { useRouter } from 'vue-router';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { useAuthStore } from '../../stores/authStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
-import { Eye, Edit3, User, History, Check } from 'lucide-vue-next';
+import { Eye, Edit3, User, History, Check, Copy } from 'lucide-vue-next';
 import ProjectHistoryPanel from './ProjectHistoryPanel.vue';
 import NotificationsMenu from '../common/NotificationsMenu.vue';
 import UserProfileModal from '../modals/UserProfileModal.vue';
@@ -217,7 +216,7 @@ const primaryCta = computed(() => {
   if (authStore.isSuperAdmin) {
     if (!isLive.value) return { state: 'publish', label: 'Approve & Publish', disabled: false, title: 'Publish this campaign — visitors will see it right away' };
     if (hasChanges.value) return { state: 'publish', label: `Publish Update${liveVersion.value ? ` (v${liveVersion.value + 1})` : ''}`, disabled: false, title: 'Replace the live version with what is in the editor' };
-    return { state: 'live', label: 'Live', disabled: true, title: 'Nothing to publish — the editor matches the live version' };
+    return { state: 'live', label: 'Live', disabled: false, title: 'Click to copy live campaign link' };
   }
   if (!isLive.value) {
     return isPending.value
@@ -226,7 +225,7 @@ const primaryCta = computed(() => {
   }
   if (isPending.value) return { state: 'pending', label: 'Update in Review', disabled: true, title: 'The superadmin has been notified. Edits you keep making are included in the review.' };
   if (hasChanges.value) return { state: 'submit', label: 'Submit Update', disabled: false, title: 'Ask the UI/UX team to publish your changes' };
-  return { state: 'live', label: 'Live', disabled: true, title: 'Nothing to submit — the editor matches the live version' };
+  return { state: 'live', label: 'Live', disabled: false, title: 'Click to copy live campaign link' };
 });
 
 const isTransitioning = ref(false);
@@ -234,6 +233,21 @@ const showHistory = ref(false);
 const historyRef = ref<HTMLElement | null>(null);
 
 async function handlePrimaryCtaClick() {
+  if (primaryCta.value.state === 'live') {
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const brand = (project.value?.brand_slug || 'brand').toLowerCase();
+    const slug = project.value?.slug || '';
+    const fullUrl = `${origin}/${brand}/${slug}`;
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(fullUrl);
+      }
+      editorStore.showToast('Live link copied to clipboard!');
+    } catch {
+      editorStore.showToast(`Live link: ${fullUrl}`);
+    }
+    return;
+  }
   if (editorStore.isTemplateMode) {
     isTransitioning.value = true;
     try {

@@ -1,19 +1,9 @@
 <template>
   <div 
     v-if="editorStore.isPreviewMode || editorStore.isTestFormModalOpen" 
-    class="fixed inset-0 top-[48px] z-30 bg-[#0d0d0f]/85 backdrop-blur-md flex items-center justify-center p-3 md:p-6 overflow-hidden animate-apple-fade select-none"
+    class="fixed inset-0 top-[48px] z-30 bg-white/80 backdrop-blur-xl flex items-center justify-center p-3 md:p-6 overflow-hidden animate-apple-fade select-none"
     @click.self="editorStore.closePreviewMode()"
   >
-    <!-- Floating Close Button (Top Right) -->
-    <button
-      type="button"
-      @click="editorStore.closePreviewMode()"
-      class="fixed top-[64px] right-[24px] z-50 size-9 rounded-full bg-white/90 hover:bg-white text-black flex items-center justify-center cursor-pointer transition-all shadow-[0_4px_20px_rgba(0,0,0,0.25)] border border-white/60 hover:scale-105 active:scale-95"
-      title="Exit Preview (Esc)"
-    >
-      <X class="w-4 h-4" />
-    </button>
-
     <!-- Scaled Fit-to-Screen Hardware Mockup Wrapper -->
     <div 
       class="flex items-center justify-center shrink-0 origin-center transition-transform duration-150 ease-out"
@@ -89,7 +79,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useEditorStore } from '../../../stores/editorStore.ts';
-import { Wifi, X } from 'lucide-vue-next';
+import { Wifi } from 'lucide-vue-next';
 import MobileArtboard from '../MobileArtboard.vue';
 
 const editorStore = useEditorStore();
