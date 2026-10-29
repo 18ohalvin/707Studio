@@ -33,7 +33,7 @@
 
     <!-- Segmented 3-Tab Control Bar (Sticky) -->
     <div class="px-[20px] pt-[12px] pb-[12px] w-full border-b border-[#f0f0f0] bg-white/70 backdrop-blur-md shrink-0 sticky top-0 z-20">
-      <div class="flex items-center p-1 bg-[#ececec]/60 rounded-[10px] w-full gap-1 border border-black/5">
+      <div class="flex items-center p-1 bg-[#ececec]/60 rounded-[10px] w-full gap-1 border-[0.5px] border-black/10">
         <button
           v-for="t in tabs"
           :key="t.id"
@@ -57,9 +57,7 @@
         <div class="flex flex-col">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Downloadable PDF Ticket</p>
           <p class="font-707 text-[11px] text-neutral-500">
-            {{ editorStore.ticketPageIndex >= 0
-              ? 'Designed on the Ticket page. Guests get it with their own details when they tap Download E-Pass.'
-              : 'Lay out the PDF guests download on its own page — same editing as any page; its height follows the content.' }}
+            Configured on the Ticket page for guests to download.
           </p>
         </div>
         <button
@@ -76,12 +74,9 @@
       <div class="content-stretch flex flex-col gap-[16px] items-start p-[24px] shrink-0 w-full">
         <!-- Headline (Responsive Multiline) -->
         <div class="flex flex-col gap-[6px] w-full">
-          <div class="flex items-center justify-between">
-            <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
-              Headline Text (H2)
-            </p>
-            <span class="text-[10px] font-707 text-neutral-400">Multiline auto-wrap</span>
-          </div>
+          <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
+            Headline
+          </p>
           <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex min-h-[68px] p-[10px] rounded-[8px] w-full bg-white transition-colors">
             <textarea 
               v-model="heading"
@@ -95,7 +90,7 @@
         <!-- Event Venue -->
         <div class="flex flex-col gap-[6px] w-full">
           <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
-            Event Venue Location
+            Venue Location
           </p>
           <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
             <input 
@@ -108,12 +103,9 @@
 
         <!-- Event Date / Access Valid For -->
         <div class="flex flex-col gap-[6px] w-full">
-          <div class="flex items-center justify-between">
-            <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
-              Event Date (Access Valid For)
-            </p>
-            <span class="text-[10px] font-707 text-neutral-400">Single-day validity</span>
-          </div>
+          <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
+            Event Date
+          </p>
           <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
             <input 
               v-model="eventDate"
@@ -121,19 +113,13 @@
               class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase tracking-tight"
             />
           </div>
-          <p class="font-707 text-[11px] leading-[15px] text-neutral-500">
-            Printed under "ACCESS VALID FOR" on passes and PDF tickets when no arrival date is selected by guests.
-          </p>
         </div>
 
         <!-- Guest Type Preset -->
         <div class="flex flex-col gap-[6px] w-full pt-1 border-t border-[#f0f0f0]">
-          <div class="flex items-center justify-between">
-            <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
-              Guest Type
-            </p>
-            <span class="text-[10px] font-707 text-neutral-400">Printed on every pass</span>
-          </div>
+          <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
+            Guest Type
+          </p>
           <div class="grid grid-cols-2 gap-1.5 w-full">
             <button
               v-for="preset in GUEST_TYPE_PRESETS"
@@ -146,17 +132,13 @@
               {{ preset.label }}
             </button>
           </div>
-          <p class="font-707 text-[11px] leading-[16px] text-neutral-500">
-            {{ guestType === 'VIP' ? 'VIP pass — door staff see a VIP guest when they scan it.' : 'Public pass — general admission.' }}
-            Use a separate campaign for each guest type.
-          </p>
         </div>
 
         <!-- Dynamic Info Notice -->
         <div class="bg-neutral-50 border border-neutral-200 p-3 rounded-[8px] w-full flex items-start gap-2">
           <div class="size-1.5 rounded-full bg-neutral-400 mt-1.5 shrink-0" />
           <p class="font-707 text-[11px] leading-[16px] text-neutral-600">
-            Guest Name and Email come from the guest's form answers. The Access ID is issued by the system for each guest when they register — the one shown here is a sample in the same format.
+            Guest name, email, and Access ID are auto-populated upon registration.
           </p>
         </div>
       </div>
@@ -167,14 +149,9 @@
       <!-- Section 0: Brand Logo (Switchable Active Toggle & Special Appearance Mode: Normal vs Black) -->
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
         <div class="flex items-center justify-between w-full">
-          <div class="flex flex-col">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Brand Logo
-            </p>
-            <p class="font-707 text-[11px] text-neutral-500">
-              {{ showBrandLogo ? (projectBrandLogoUrl ? 'Enabled: Displayed at top of pass' : 'Enabled: Uses logo from Hero Banner') : 'Disabled: Brand logo hidden from pass' }}
-            </p>
-          </div>
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Brand Logo
+          </p>
 
           <!-- Modern Elegant Apple Style Toggle Switch -->
           <button
@@ -248,9 +225,6 @@
                   <span>Black Mode</span>
                 </button>
               </div>
-              <p class="font-707 text-[10.5px] text-neutral-500 leading-snug">
-                {{ logoColorMode === 'black' ? 'Monochrome black silhouette matching 707 ticket aesthetics.' : 'Original brand logo colors without monochrome filter.' }}
-              </p>
             </div>
           </div>
         </Transition>
@@ -259,14 +233,9 @@
       <!-- Section 1: Global QR Function On/Off Toggle (Only for Standard E-Pass) -->
       <div v-if="!isLiveQueueMode" class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
         <div class="flex items-center justify-between w-full">
-          <div class="flex flex-col">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              QR Code Function
-            </p>
-            <p class="font-707 text-[11px] text-neutral-500">
-              {{ showQrCode ? 'Enabled: Positioned above pass information fields' : 'Disabled: Clean non-QR ticket summary' }}
-            </p>
-          </div>
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            QR Code Function
+          </p>
 
           <!-- Modern Elegant Apple Style Toggle Switch -->
           <button
@@ -289,18 +258,13 @@
 
       <!-- Section: Real-Time State Simulator (Live Queue Pass only) -->
       <div v-if="isLiveQueueMode" class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
-        <div class="flex flex-col gap-[4px] w-full">
-          <div class="flex items-center justify-between">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Real-Time State Simulator
-            </p>
-            <span class="text-[10px] font-mono text-neutral-400 uppercase">
-              5 Color States
-            </span>
-          </div>
-          <p class="font-707 text-[11px] text-neutral-500">
-            Preview how the live progress bar and status change dynamically as guests advance in line.
+        <div class="flex items-center justify-between w-full">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Real-Time State Simulator
           </p>
+          <span class="text-[10px] font-mono text-neutral-400 uppercase">
+            5 Color States
+          </span>
         </div>
         <div class="grid grid-cols-5 gap-1 w-full p-1 rounded-[8px] bg-black/[0.03] border border-black/5">
           <button
@@ -427,7 +391,7 @@
         >
           <div v-if="isCtaEnabled" class="flex flex-col gap-[12px] w-full pt-1">
             <!-- Button Text Input -->
-            <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+            <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
               <input 
                 v-model="buttonText"
                 placeholder="Button Text (e.g. DOWNLOAD E-PASS)"
@@ -510,7 +474,7 @@
 
             <!-- Conditional URL Input if External URL selected -->
             <div v-if="ctaActionType === 'link'" class="w-full pt-1 animate-in fade-in duration-150">
-              <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+              <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
                 <input 
                   v-model="ctaUrl" 
                   placeholder="https://..." 
@@ -678,7 +642,6 @@
             <div class="flex flex-col gap-[10px] w-full pt-1 border-t border-[#f0f0f0]">
               <div class="flex items-center justify-between">
                 <span class="font-707 text-[11px] font-medium text-neutral-600">Hyperlink Function</span>
-                <span class="font-707 text-[10px] text-neutral-400">or use [word](url) in message</span>
               </div>
 
               <!-- Action Type Segmented Control -->
@@ -697,7 +660,7 @@
                   :class="footerNoticeActionType === 'modal' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
                   class="flex-1 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center px-[12px] py-[4px] rounded-[6px] text-[11px] font-707 cursor-pointer"
                 >
-                  Open Pop Up Modal
+                  Open Modal
                 </button>
               </div>
 

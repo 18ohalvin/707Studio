@@ -22,7 +22,7 @@
             <ArrowLeft class="w-4 h-4 text-black" />
           </button>
           <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
-            Pop Up Modal Setup
+            Modal Setup
           </p>
         </div>
         <button 
@@ -37,7 +37,7 @@
 
     <!-- Segmented 3-Tab Control Bar (Sticky) -->
     <div class="px-[20px] pt-[12px] pb-[12px] w-full border-b border-[#f0f0f0] bg-white/70 backdrop-blur-md shrink-0 sticky top-0 z-20">
-      <div class="flex items-center p-1 bg-[#ececec]/60 rounded-[10px] w-full gap-1 border border-black/5">
+      <div class="flex items-center p-1 bg-[#ececec]/60 rounded-[10px] w-full gap-1 border-[0.5px] border-black/10">
         <button
           v-for="t in tabs"
           :key="t.id"
@@ -61,7 +61,7 @@
         <!-- Title Textarea -->
         <div class="flex flex-col gap-[6px] w-full">
           <p class="font-707 text-[12px] text-neutral-600 font-medium">
-            Modal Title
+            Title
           </p>
           <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex min-h-[38px] h-auto items-center px-[14px] py-[8px] rounded-[8px] w-full bg-white transition-all">
             <textarea 
@@ -77,14 +77,14 @@
         <!-- Subtitle Textarea -->
         <div class="flex flex-col gap-[6px] w-full">
           <p class="font-707 text-[12px] text-neutral-600 font-medium">
-            Modal Description
+            Description
           </p>
           <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex min-h-[38px] h-auto items-center px-[14px] py-[8px] rounded-[8px] w-full bg-white transition-all">
             <textarea 
               v-model="modalSubtitle"
               rows="2"
               @input="handleSubtitleInput"
-              placeholder="e.g. Please provide a valid email address. We will resend your E-Pass immediately."
+              placeholder="e.g. Please provide a valid email address."
               class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400 resize-none bg-transparent leading-[18px] overflow-hidden p-0 m-0"
             />
           </div>
@@ -98,13 +98,13 @@
         class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full"
       >
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Field Configuration
+          Input Field
         </p>
 
         <!-- Field Input Type -->
         <div class="flex flex-col gap-[6px] w-full">
           <p class="font-707 text-[12px] text-neutral-600">
-            Field Input Type
+            Input Type
           </p>
           <div class="flex gap-2">
             <button 
@@ -418,7 +418,7 @@
         <!-- Button Label -->
         <div class="flex flex-col gap-[6px] w-full">
           <p class="font-707 text-[12px] text-neutral-600 font-medium">
-            Button Label
+            Button Text
           </p>
           <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
             <input 

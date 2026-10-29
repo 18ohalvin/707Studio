@@ -32,7 +32,7 @@
 
     <!-- Segmented 3-Tab Control Bar (Sticky) -->
     <div class="px-[20px] pt-[12px] pb-[12px] w-full border-b border-[#f0f0f0] bg-white/70 backdrop-blur-md shrink-0 sticky top-0 z-20">
-      <div class="flex items-center p-1 bg-[#ececec]/60 rounded-[10px] w-full gap-1 border border-black/5">
+      <div class="flex items-center p-1 bg-[#ececec]/60 rounded-[10px] w-full gap-1 border-[0.5px] border-black/10">
         <button
           v-for="t in tabs"
           :key="t.id"
@@ -70,14 +70,9 @@
       <!-- Add Icon Section -->
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
         <div class="flex items-center justify-between w-full">
-          <div class="flex flex-col">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Button Icon
-            </p>
-            <span class="font-707 text-[11px] text-neutral-400">
-              Show icon alongside label
-            </span>
-          </div>
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Button Icon
+          </p>
 
           <!-- Apple Style Toggle Switch -->
           <button
@@ -185,14 +180,9 @@
       <!-- Position Layout Mode -->
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
         <div class="flex items-center justify-between w-full">
-          <div class="flex flex-col">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Position
-            </p>
-            <span class="font-707 text-[11px] text-neutral-400">
-              Standard page flow or floating bottom
-            </span>
-          </div>
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Position
+          </p>
           <div class="flex gap-[6px] items-center">
             <button 
               v-for="pos in positionModes" 

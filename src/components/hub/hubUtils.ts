@@ -271,7 +271,7 @@ export function buildCsv(rows: Submission[], extraKeys: string[], campaignTitle:
         const f = formatValue(v);
         if (f && f !== '—' && !f.includes('Single Day Admission')) return f;
       }
-      if (/^multiplechoice_|book\s*your\s*spot/i.test(k)) return '5K RUN + RAFFLE ENTRIES';
+      if (/multiplechoice|book\s*your\s*spot|spot|session/i.test(k)) return '5K RUN + RAFFLE ENTRIES';
       return formatValue(v);
     }),
     new Date(s.created_at).toISOString()

@@ -32,7 +32,7 @@
 
     <!-- Segmented 3-Tab Control Bar (Sticky) -->
     <div class="px-[20px] pt-[12px] pb-[12px] w-full border-b border-[#f0f0f0] bg-white/70 backdrop-blur-md shrink-0 sticky top-0 z-20">
-      <div class="flex items-center p-1 bg-[#ececec]/60 rounded-[10px] w-full gap-1 border border-black/5">
+      <div class="flex items-center p-1 bg-[#ececec]/60 rounded-[10px] w-full gap-1 border-[0.5px] border-black/10">
         <button
           v-for="t in tabs"
           :key="t.id"
@@ -88,10 +88,7 @@
         <!-- Grid Columns Option for Image Matrix (Directly under layout) -->
         <div v-if="variant === 'image-grid'" class="flex flex-col gap-[10px] w-full pt-3 border-t border-[#f0f0f0]">
           <div class="flex items-center justify-between w-full">
-            <div class="flex flex-col">
-              <span class="font-707 text-[12px] font-medium text-neutral-700">Grid Columns</span>
-              <span class="font-707 text-[10px] text-neutral-400">3:4 card aspect ratio</span>
-            </div>
+            <span class="font-707 text-[12px] font-medium text-neutral-700">Grid Columns</span>
             <span class="font-707 text-[11px] font-medium text-black px-2 py-0.5 bg-neutral-100 rounded-[6px]">
               {{ gridColumns }} {{ gridColumns === 1 ? 'Column' : 'Columns' }}
             </span>
@@ -137,14 +134,9 @@
         </div>
 
         <div class="flex flex-col gap-[6px] w-full">
-          <div class="flex items-center justify-between">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Subtitle Text
-            </p>
-            <span class="font-707 text-[11px] text-neutral-400">
-              Helper copy
-            </span>
-          </div>
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Subtitle Text
+          </p>
           <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
             <input 
               v-model="subtitle"
@@ -487,14 +479,9 @@
       <!-- Selection Mode & Required Rules -->
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
         <div class="flex items-center justify-between w-full">
-          <div class="flex flex-col">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Selection Rule
-            </p>
-            <span class="font-707 text-[11px] text-neutral-400">
-              Single pick or multiple selections
-            </span>
-          </div>
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Selection Rule
+          </p>
           <div class="flex gap-[6px] items-center">
             <button 
               type="button"
@@ -517,14 +504,9 @@
 
         <div class="flex flex-col gap-1 w-full pt-1">
           <div class="flex items-center justify-between w-full">
-            <div class="flex flex-col">
-              <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-                Required Field
-              </p>
-              <span class="font-707 text-[11px] text-neutral-400">
-                Must select before submission
-              </span>
-            </div>
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Required Field
+            </p>
             <div class="flex gap-[6px] items-center">
               <button 
                 type="button"
@@ -546,7 +528,7 @@
             </div>
           </div>
           <p v-if="limitPlaces" class="font-707 text-[10.5px] text-amber-700 bg-amber-50/80 px-2 py-1 rounded-[5px] border border-amber-200/60 leading-normal mt-1">
-            Required is locked on while Limit Places is active so guests cannot bypass capacity counts.
+            Locked on while Limit Places is active to prevent bypassing capacity counts.
           </p>
         </div>
       </div>
@@ -554,14 +536,9 @@
       <!-- Places (limit how many guests can take an option) -->
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
         <div class="flex items-center justify-between w-full">
-          <div class="flex flex-col">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Limit places
-            </p>
-            <span class="font-707 text-[11px] text-neutral-400">
-              Counted live from registrations
-            </span>
-          </div>
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Limit Places
+          </p>
           <!-- 707 Switch Toggle -->
           <button 
             type="button"
@@ -578,10 +555,7 @@
 
         <div v-if="limitPlaces" class="flex flex-col gap-[12px] w-full pt-1 animate-in fade-in slide-in-from-top-1 duration-150">
           <div class="flex flex-col gap-[8px]">
-            <div class="flex items-center justify-between">
-              <span class="font-707 text-[12px] font-medium text-neutral-700">Places per option</span>
-              <span class="font-707 text-[11px] text-neutral-400">Override on any option in Content</span>
-            </div>
+            <span class="font-707 text-[12px] font-medium text-neutral-700">Places per option</span>
             <div class="border border-[#aaa] focus-within:border-black rounded-[8px] px-3.5 h-[38px] flex items-center w-full bg-white transition-colors">
               <input 
                 v-model="globalSlotsCapacity"
@@ -593,10 +567,7 @@
           </div>
 
           <div class="flex items-center justify-between w-full">
-            <div class="flex flex-col">
-              <span class="font-707 text-[12px] font-medium text-neutral-700">Waitlist when full</span>
-              <span class="font-707 text-[11px] text-neutral-400">Guests may queue; a place returns when a guest is removed</span>
-            </div>
+            <span class="font-707 text-[12px] font-medium text-neutral-700">Waitlist when full</span>
             <button 
               type="button"
               @click="waitlistEnabled = !waitlistEnabled"

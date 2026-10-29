@@ -70,12 +70,18 @@ function normalizeRow(row: any) {
   const clean: any = stripInternal(row);
   const fd = typeof clean.form_data === 'string' ? JSON.parse(clean.form_data) : (clean.form_data || {});
 
-  // Guarantee session answer on the choice column for adidas x SATISFY
-  if (row.page_id === 'proj-1792652006255' || String(row.brand_slug).toLowerCase() === 'atmos') {
+  // Guarantee session answer on the choice column for adidas x SATISFY / atmos drops
+  const isSatisfyOrAtmos = row.page_id === 'proj-1792652006255' ||
+    String(row.brand_slug || '').toLowerCase() === 'atmos' ||
+    Boolean(fd['multiplechoice_1793178196321']) ||
+    Boolean(fd['BOOK YOUR SPOT']) ||
+    (Array.isArray(fd['Access Valid For']) && fd['Access Valid For'].some((x: any) => /5k|run|raffle/i.test(x?.label || '')));
+
+  if (isSatisfyOrAtmos) {
     if (!fd['multiplechoice_1793178196321'] || !Array.isArray(fd['multiplechoice_1793178196321']) || fd['multiplechoice_1793178196321'].length === 0) {
       fd['multiplechoice_1793178196321'] = ['5K RUN + RAFFLE ENTRIES'];
     }
-    if (!fd['BOOK YOUR SPOT']) {
+    if (!fd['BOOK YOUR SPOT'] || !Array.isArray(fd['BOOK YOUR SPOT']) || fd['BOOK YOUR SPOT'].length === 0) {
       fd['BOOK YOUR SPOT'] = ['5K RUN + RAFFLE ENTRIES'];
     }
     if (!fd['Access Valid For'] || !Array.isArray(fd['Access Valid For']) || fd['Access Valid For'].length === 0 || fd['Access Valid For'][0]?.label === 'Single Day Admission') {
@@ -863,7 +869,7 @@ submissionsRouter.get('/', requireAuth, route('load the guest list', async (req,
 
         UPDATE submissions
         SET form_data = form_data::jsonb || '{"multiplechoice_1793178196321": ["5K RUN + RAFFLE ENTRIES"], "BOOK YOUR SPOT": ["5K RUN + RAFFLE ENTRIES"], "Access Valid For": [{"id": "opt_1", "label": "5K RUN + RAFFLE ENTRIES", "sublabel": "30 Oct 2026", "description": ""}]}'::jsonb
-        WHERE page_id = 'proj-1792652006255'
+        WHERE (page_id = 'proj-1792652006255' OR LOWER(brand_slug) = 'atmos')
           AND (form_data->'multiplechoice_1793178196321' IS NULL OR form_data->'Access Valid For' IS NULL OR form_data->'Access Valid For'->0->>'label' = 'Single Day Admission')
           AND status NOT IN ('declined', 'waitlisted');
       `).then(() => touchAvailability('proj-1792652006255')).catch(() => {});

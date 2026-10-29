@@ -29,7 +29,7 @@
 
     <!-- Segmented 3-Tab Control Bar (Sticky) -->
     <div class="px-[20px] pt-[12px] pb-[12px] w-full border-b border-[#f0f0f0] bg-white/70 backdrop-blur-md shrink-0 sticky top-0 z-20">
-      <div class="flex items-center p-1 bg-[#ececec]/60 rounded-[10px] w-full gap-1 border border-black/5">
+      <div class="flex items-center p-1 bg-[#ececec]/60 rounded-[10px] w-full gap-1 border-[0.5px] border-black/10">
         <button
           v-for="t in tabs"
           :key="t.id"
@@ -128,10 +128,10 @@
             type="button"
             @click="editorStore.openCropStudio"
             class="w-full flex items-center justify-center gap-2 h-[38px] rounded-[8px] bg-black text-white hover:bg-neutral-800 transition-colors shadow-sm font-707 text-[12px] font-medium cursor-pointer"
-            title="Open interactive photo cropping, zooming, and free drag repositioning studio"
+            title="Open photo cropping, zooming, and repositioning studio"
           >
             <Crop class="size-3.5 text-white" />
-            <span>Interactive Crop & Move Studio</span>
+            <span>Crop & Reposition</span>
           </button>
           <button
             v-if="isCustomPositionOrZoom"
@@ -147,7 +147,7 @@
       <!-- Set Media Fits -->
       <div class="content-stretch flex items-center justify-between p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0] relative">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
-          Set Media Fits
+          Media Fit
         </p>
         <div class="relative">
           <button
@@ -293,7 +293,6 @@
                 </button>
                 <span> or Drag</span>
               </p>
-              <span class="text-[10px] font-707 text-neutral-400">Any size — set the height below</span>
             </div>
 
             <!-- Logo Height Slider -->
@@ -507,12 +506,12 @@
                 class="apple-glass-btn font-707 text-[12px] flex items-center gap-1.5 py-1.5 px-3 rounded-lg cursor-pointer"
               >
                 <Plus class="w-3.5 h-3.5 text-neutral-500" />
-                <span>Add Tag / Badge (Optional)</span>
+                <span>Add Badge</span>
               </button>
             </div>
             <div v-else class="flex flex-col gap-1.5 w-full">
               <div class="flex items-center justify-between">
-                <span class="font-707 text-[11px] font-medium text-neutral-600">Tag / Badge (Top of Headline)</span>
+                <span class="font-707 text-[11px] font-medium text-neutral-600">Badge</span>
                 <button 
                   type="button" 
                   @click="removeBadge" 
@@ -590,7 +589,7 @@
         <div class="flex items-center justify-between w-full">
           <div>
             <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Image Overlay / Scrim
+              Image Overlay
             </p>
             <p v-if="textPosition === 'center'" class="font-707 text-[10px] text-neutral-400 mt-0.5">
               Auto-disabled for center text position
@@ -608,7 +607,7 @@
               textPosition === 'center' ? 'opacity-40 cursor-not-allowed bg-[#e5e5ea]' : 
               (isOverlayEnabled ? 'bg-black cursor-pointer' : 'bg-[#e5e5ea] cursor-pointer')
             ]"
-            :title="textPosition === 'center' ? 'Image Overlay is disabled when Center text position is active' : 'Toggle Image Overlay / Scrim'"
+            :title="textPosition === 'center' ? 'Image Overlay is disabled when Center text position is active' : 'Toggle Image Overlay'"
           >
             <span
               aria-hidden="true"
@@ -629,7 +628,7 @@
         >
           <div v-if="isOverlayEnabled" class="flex flex-col gap-[10px] w-full pt-1">
             <div class="flex items-center justify-between w-full">
-              <span class="font-707 text-[12px] text-neutral-500">Scrim Opacity</span>
+              <span class="font-707 text-[12px] text-neutral-500">Opacity</span>
               <span class="font-707 text-[12px] font-medium text-black bg-neutral-100 px-2 py-0.5 rounded-[4px]">{{ overlayOpacity }}%</span>
             </div>
             <div class="flex items-center w-full">
@@ -639,7 +638,7 @@
                 max="100"
                 step="1"
                 v-model.number="overlayOpacity"
-                class="w-full h-1.5 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-black"
+                class="w-full cursor-pointer accent-black"
               />
             </div>
           </div>

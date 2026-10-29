@@ -743,7 +743,7 @@ const allColumns = computed<Col[]>(() => {
 });
 
 function formatColumnLabel(k: string): string {
-  if (/^multiplechoice_/i.test(k)) return 'Spot / Session';
+  if (/^multiplechoice_/i.test(k) || /^(spot|session|spot\s*\/\s*session)$/i.test(k.trim())) return 'Spot / Session';
   if (/^fieldinput_/i.test(k)) return 'Custom Field';
   return k;
 }
@@ -758,8 +758,20 @@ function formatCustomAnswer(s: Submission | null, key: string): string {
     }
   }
   // Fallback for Multiple Choice session/spot columns
-  if (/^multiplechoice_|book\s*your\s*spot/i.test(key) || formatColumnLabel(key) === 'Spot / Session') {
-    const fallback = s.form_data?.['BOOK YOUR SPOT'] || s.form_data?.['multiplechoice_1793178196321'] || s.form_data?.['Access Valid For'];
+  const isSpotOrSession =
+    /multiplechoice|book\s*your\s*spot|spot|session/i.test(key) ||
+    /spot\s*\/\s*session/i.test(formatColumnLabel(key));
+
+  if (isSpotOrSession) {
+    const fallback =
+      s.form_data?.['BOOK YOUR SPOT'] ||
+      s.form_data?.['multiplechoice_1793178196321'] ||
+      s.form_data?.['Access Valid For'] ||
+      s.form_data?.['selected_sessions'] ||
+      s.form_data?.['sessions'] ||
+      s.form_data?.['Spot / Session'] ||
+      s.form_data?.['SPOT / SESSION'] ||
+      s.form_data?.['spot / session'];
     if (fallback) {
       const formatted = formatValue(fallback);
       if (formatted && formatted.trim() && formatted.trim() !== '—' && !formatted.includes('Single Day Admission')) {
@@ -819,7 +831,7 @@ function sortValue(s: Submission, key: string): string | number {
     case 'checked_out_at': return s.checked_out_at ? new Date(s.checked_out_at).getTime() : 0;
     case 'created_at': return new Date(s.created_at).getTime();
     default: {
-      const v = formatValue(s.form_data?.[key]);
+      const v = formatCustomAnswer(s, key) || formatValue(s.form_data?.[key]);
       const n = Number(v);
       return v !== '' && !isNaN(n) ? n : v.toLowerCase();
     }

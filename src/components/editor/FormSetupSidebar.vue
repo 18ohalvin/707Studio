@@ -31,7 +31,7 @@
 
     <!-- Segmented 3-Tab Control Bar (Sticky) -->
     <div class="px-[20px] pt-[12px] pb-[12px] w-full border-b border-[#f0f0f0] bg-white/70 backdrop-blur-md shrink-0 sticky top-0 z-20">
-      <div class="flex items-center p-1 bg-[#ececec]/60 rounded-[10px] w-full gap-1 border border-black/5">
+      <div class="flex items-center p-1 bg-[#ececec]/60 rounded-[10px] w-full gap-1 border-[0.5px] border-black/10">
         <button
           v-for="t in tabs"
           :key="t.id"
@@ -56,9 +56,6 @@
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
             Active Fields ({{ fields.length }})
           </p>
-          <span class="font-707 text-[11px] text-neutral-400">
-            Reorder & edit labels
-          </span>
         </div>
 
         <!-- Minimalist Fields List -->
@@ -233,10 +230,10 @@
         <div class="p-3 rounded-[8px] bg-neutral-50 border border-neutral-200/60 flex flex-col gap-1.5 w-full mt-1">
           <span class="text-[11px] font-707 font-medium text-neutral-800 flex items-center gap-1.5">
             <ShieldCheck class="size-3.5 text-black" />
-            <span>Automatic Input Validation</span>
+            <span>Automatic Validation</span>
           </span>
           <p class="text-[11px] font-707 text-neutral-500 leading-relaxed font-normal">
-            Email fields automatically enforce standard RFC formats, telephone inputs include country code formatting, and required fields block incomplete form submissions on guest devices.
+            Email format, phone numbers, and required fields are validated automatically on guest devices.
           </p>
         </div>
       </div>
