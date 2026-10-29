@@ -9,8 +9,8 @@
     data-node-id="276:4722"
     data-name="Pop Up Modal Setup Sidebar"
   >
-    <!-- Widget Container & Header -->
-    <div class="content-stretch flex flex-col items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+    <!-- Header -->
+    <div class="content-stretch flex flex-col items-start p-[24px] pb-[16px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
         <div class="flex items-center gap-2">
           <button 
@@ -28,459 +28,478 @@
         <button 
           @click="$emit('close')"
           class="apple-glass-icon-btn size-7 flex items-center justify-center rounded-full cursor-pointer hover:bg-neutral-200/60 transition-colors"
+          title="Close"
         >
           <img :src="FIGMA_ASSETS.closeIcon" class="w-3.5 h-3.5" alt="Close" />
         </button>
       </div>
     </div>
 
-    <!-- Section 1: Pop-up Modal Variant Presets (Figma Node 276:4722) -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
-      <div class="flex items-center justify-between w-full">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Modal Variant
-        </p>
-        <span class="font-707 text-[11px] text-neutral-400">
-          5 Presets
-        </span>
-      </div>
-
-      <div class="grid grid-cols-2 gap-2 w-full">
-        <button 
+    <!-- Segmented 3-Tab Control Bar (Sticky) -->
+    <div class="px-[20px] pt-[12px] pb-[12px] w-full border-b border-[#f0f0f0] bg-white/70 backdrop-blur-md shrink-0 sticky top-0 z-20">
+      <div class="flex items-center p-1 bg-[#ececec]/60 rounded-[10px] w-full gap-1 border border-black/5">
+        <button
+          v-for="t in tabs"
+          :key="t.id"
           type="button"
-          v-for="v in modalVariants"
-          :key="v.id"
-          @click="selectVariant(v.id)"
-          :class="currentVariant === v.id ? 'apple-glass-btn-dark font-medium shadow-sm border-black' : 'apple-glass-btn'"
-          class="flex items-center justify-start gap-2.5 px-3 py-2.5 rounded-[8px] text-left transition-all cursor-pointer"
+          @click="activeTab = t.id"
+          :class="activeTab === t.id 
+            ? 'bg-white text-black shadow-xs font-medium' 
+            : 'text-neutral-500 hover:text-black font-normal'"
+          class="flex-1 h-[30px] rounded-[7px] text-[12px] font-707 flex items-center justify-center gap-1.5 transition-all cursor-pointer select-none"
         >
-          <component :is="v.icon" class="size-4 shrink-0" />
-          <div class="flex flex-col min-w-0">
-            <span class="font-707 text-[12px] leading-tight truncate">{{ v.label }}</span>
-            <span class="text-[10px] opacity-70 leading-tight truncate">{{ v.desc }}</span>
-          </div>
+          <component :is="t.icon" class="size-3.5" />
+          <span>{{ t.label }}</span>
         </button>
       </div>
     </div>
 
-    <!-- Section 2: Header Copywriting (Title & Subtitle) -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
-      <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-        Header Copywriting
-      </p>
-
-      <!-- Title Textarea (Multiline dynamic editing - No uppercase lock) -->
-      <div class="flex flex-col gap-[6px] w-full">
-        <p class="font-707 text-[12px] text-neutral-600">
-          Modal Title
-        </p>
-        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex min-h-[38px] h-auto items-center px-[14px] py-[8px] rounded-[8px] w-full bg-white transition-all">
-          <textarea 
-            v-model="modalTitle"
-            rows="1"
-            @input="handleTitleInput"
-            placeholder="e.g. Select Arrival Date"
-            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 tracking-tight resize-none bg-transparent leading-[20px] overflow-hidden p-0 m-0"
-          />
-        </div>
-      </div>
-
-      <!-- Subtitle Textarea (Multiline dynamic editing) -->
-      <div class="flex flex-col gap-[6px] w-full">
-        <p class="font-707 text-[12px] text-neutral-600">
-          Modal Description
-        </p>
-        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex min-h-[38px] h-auto items-center px-[14px] py-[8px] rounded-[8px] w-full bg-white transition-all">
-          <textarea 
-            v-model="modalSubtitle"
-            rows="2"
-            @input="handleSubtitleInput"
-            placeholder="e.g. Please provide a valid email address. We will resend your E-Pass immediately."
-            class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400 resize-none bg-transparent leading-[18px] overflow-hidden p-0 m-0"
-          />
-        </div>
-      </div>
-    </div>
-
-    <!-- Section 3: Variant-Specific Configuration -->
-    <!-- 3A. Message + Field Configuration -->
-    <div 
-      v-if="currentVariant === 'message-field'" 
-      class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]"
-    >
-      <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-        Field Configuration
-      </p>
-
-      <!-- 1. Field Input Type (Placed Above Placeholder) -->
-      <div class="flex flex-col gap-[6px] w-full">
-        <p class="font-707 text-[12px] text-neutral-600">
-          Field Input Type
-        </p>
-        <div class="flex gap-2">
-          <button 
-            type="button"
-            v-for="fType in (['email', 'tel', 'text'] as const)"
-            :key="fType"
-            @click="setFieldType(fType)"
-            :class="(fieldType === fType || (fType === 'tel' && (fieldType === 'whatsapp' || fieldType === 'phone'))) ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="flex-1 h-[34px] rounded-[8px] text-[12px] font-707 uppercase cursor-pointer"
-          >
-            {{ fType === 'tel' ? 'WhatsApp' : fType }}
-          </button>
-        </div>
-      </div>
-
-      <!-- 2. Input Placeholder -->
-      <div class="flex flex-col gap-[6px] w-full">
-        <p class="font-707 text-[12px] text-neutral-600">
-          Input Placeholder
-        </p>
-        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
-          <input 
-            v-model="fieldPlaceholder"
-            :placeholder="fieldType === 'tel' || fieldType === 'whatsapp' ? '81234567890' : (fieldType === 'text' ? 'Text*' : 'Email*')"
-            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400"
-          />
-        </div>
-      </div>
-    </div>
-
-    <!-- 3B. Choice Options Configuration (Strictly following MultipleChoice widget config & functions) -->
-    <div 
-      v-if="currentVariant === 'choice-detailed' || currentVariant === 'choice-simple'" 
-      class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]"
-    >
-      <!-- Selection Mode: Multiple vs Single -->
-      <div class="flex items-center justify-between w-full">
-        <div class="flex flex-col">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Selection Rule
+    <!-- TAB 1: CONTENT -->
+    <div v-show="activeTab === 'content'" class="w-full flex flex-col">
+      <!-- Header Copywriting (Title & Subtitle) -->
+      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
+        <!-- Title Textarea -->
+        <div class="flex flex-col gap-[6px] w-full">
+          <p class="font-707 text-[12px] text-neutral-600 font-medium">
+            Modal Title
           </p>
-          <span class="font-707 text-[11px] text-neutral-400">
-            Allow user to pick one or more
-          </span>
+          <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex min-h-[38px] h-auto items-center px-[14px] py-[8px] rounded-[8px] w-full bg-white transition-all">
+            <textarea 
+              v-model="modalTitle"
+              rows="1"
+              @input="handleTitleInput"
+              placeholder="e.g. Select Arrival Date"
+              class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 tracking-tight resize-none bg-transparent leading-[20px] overflow-hidden p-0 m-0"
+            />
+          </div>
         </div>
-        <div class="flex gap-[6px] items-center">
-          <button 
-            type="button"
-            @click="allowMultiple = true"
-            :class="allowMultiple ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
-          >
-            Multiple
-          </button>
-          <button 
-            type="button"
-            @click="allowMultiple = false"
-            :class="!allowMultiple ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
-          >
-            Single
-          </button>
+
+        <!-- Subtitle Textarea -->
+        <div class="flex flex-col gap-[6px] w-full">
+          <p class="font-707 text-[12px] text-neutral-600 font-medium">
+            Modal Description
+          </p>
+          <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex min-h-[38px] h-auto items-center px-[14px] py-[8px] rounded-[8px] w-full bg-white transition-all">
+            <textarea 
+              v-model="modalSubtitle"
+              rows="2"
+              @input="handleSubtitleInput"
+              placeholder="e.g. Please provide a valid email address. We will resend your E-Pass immediately."
+              class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400 resize-none bg-transparent leading-[18px] overflow-hidden p-0 m-0"
+            />
+          </div>
         </div>
       </div>
 
-      <!-- Options Manager Section Header -->
-      <div class="flex items-center justify-between w-full pt-1 border-t border-neutral-100">
+      <!-- Variant-Specific Content Items -->
+      <!-- Message + Field Configuration -->
+      <div 
+        v-if="currentVariant === 'message-field'" 
+        class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full"
+      >
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Options ({{ options.length }})
+          Field Configuration
         </p>
+
+        <!-- Field Input Type -->
+        <div class="flex flex-col gap-[6px] w-full">
+          <p class="font-707 text-[12px] text-neutral-600">
+            Field Input Type
+          </p>
+          <div class="flex gap-2">
+            <button 
+              type="button"
+              v-for="fType in (['email', 'tel', 'text'] as const)"
+              :key="fType"
+              @click="setFieldType(fType)"
+              :class="(fieldType === fType || (fType === 'tel' && (fieldType === 'whatsapp' || fieldType === 'phone'))) ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="flex-1 h-[34px] rounded-[8px] text-[12px] font-707 uppercase cursor-pointer"
+            >
+              {{ fType === 'tel' ? 'WhatsApp' : fType }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Input Placeholder -->
+        <div class="flex flex-col gap-[6px] w-full">
+          <p class="font-707 text-[12px] text-neutral-600">
+            Input Placeholder
+          </p>
+          <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+            <input 
+              v-model="fieldPlaceholder"
+              :placeholder="fieldType === 'tel' || fieldType === 'whatsapp' ? '81234567890' : (fieldType === 'text' ? 'Text*' : 'Email*')"
+              class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Choice Options Configuration -->
+      <div 
+        v-if="currentVariant === 'choice-detailed' || currentVariant === 'choice-simple'" 
+        class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full"
+      >
+        <!-- Selection Mode: Multiple vs Single -->
+        <div class="flex items-center justify-between w-full">
+          <div class="flex flex-col">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Selection Rule
+            </p>
+            <span class="font-707 text-[11px] text-neutral-400">
+              Allow user to pick one or more
+            </span>
+          </div>
+          <div class="flex gap-[6px] items-center">
+            <button 
+              type="button"
+              @click="allowMultiple = true"
+              :class="allowMultiple ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
+            >
+              Multiple
+            </button>
+            <button 
+              type="button"
+              @click="allowMultiple = false"
+              :class="!allowMultiple ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
+            >
+              Single
+            </button>
+          </div>
+        </div>
+
+        <!-- Options Manager Section Header -->
+        <div class="flex items-center justify-between w-full pt-1 border-t border-neutral-100">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Options ({{ options.length }})
+          </p>
+          <button 
+            type="button"
+            @click="addOption"
+            class="apple-glass-btn px-2.5 h-[28px] rounded-[6px] text-[11px] font-medium flex items-center gap-1 cursor-pointer"
+          >
+            <Plus class="size-3.5" />
+            <span>Add Option</span>
+          </button>
+        </div>
+
+        <!-- Options List Items -->
+        <div class="flex flex-col gap-3 w-full">
+          <div 
+            v-for="(opt, idx) in options" 
+            :key="opt.id"
+            class="p-3 bg-white border-[0.5px] border-[#d9d9d9] rounded-[8px] flex flex-col gap-2.5 shadow-sm relative group"
+          >
+            <div class="flex items-center gap-2 w-full">
+              <span class="size-5 rounded-full bg-neutral-100 flex items-center justify-center font-mono text-[10px] text-neutral-500 font-bold shrink-0">
+                {{ idx + 1 }}
+              </span>
+
+              <div class="border-[0.5px] border-[#ccc] focus-within:border-black rounded-[6px] px-2.5 h-[32px] flex items-center flex-1 bg-white transition-colors">
+                <input 
+                  v-model="opt.label" 
+                  @input="handleOptionsUpdate"
+                  :placeholder="currentVariant === 'choice-detailed' ? `Pass Option ${idx + 1}` : `Option ${idx + 1}`"
+                  class="w-full font-707 text-[12px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
+                />
+              </div>
+
+              <!-- Pre-selected Toggle -->
+              <button 
+                type="button"
+                @click="toggleOptionSelected(idx)"
+                :class="opt.selected ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-400 hover:text-black'"
+                class="size-[32px] rounded-[6px] flex items-center justify-center cursor-pointer transition-colors border-[0.5px] border-black/10 shrink-0"
+                title="Toggle Pre-selected state"
+              >
+                <Check class="w-3.5 h-3.5 stroke-[2.5]" />
+              </button>
+
+              <!-- Delete Option -->
+              <button 
+                type="button" 
+                @click="removeOption(idx)"
+                :disabled="options.length <= 1"
+                :class="options.length <= 1 ? 'opacity-30 cursor-not-allowed' : 'hover:text-red-600 hover:bg-red-50 text-neutral-400 cursor-pointer'"
+                class="size-[32px] rounded-[6px] flex items-center justify-center transition-colors shrink-0"
+                title="Remove option"
+              >
+                <Trash2 class="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <!-- Detailed Choice: Date Picker Components -->
+            <div v-if="currentVariant === 'choice-detailed'" class="flex flex-col gap-1.5 pl-7">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] font-707 font-medium text-neutral-600 flex items-center gap-1">
+                  <Calendar class="w-3 h-3 text-neutral-400" />
+                  <span>Date (DD MMM YYYY)</span>
+                </span>
+                <span class="text-[10px] font-mono text-neutral-400 font-medium">
+                  {{ parseDateComponents(opt.sublabel).day }} {{ parseDateComponents(opt.sublabel).month }} {{ parseDateComponents(opt.sublabel).year }}
+                </span>
+              </div>
+              
+              <div class="grid grid-cols-3 gap-1.5 w-full">
+                <div class="relative">
+                  <select 
+                    :value="parseDateComponents(opt.sublabel).day"
+                    @change="updateOptionDate(idx, 'day', ($event.target as HTMLSelectElement).value)"
+                    class="w-full h-[30px] px-2 appearance-none bg-white border-[0.5px] border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
+                  >
+                    <option v-for="d in DAYS" :key="d" :value="d">{{ d }}</option>
+                  </select>
+                  <ChevronDown class="w-3 h-3 text-neutral-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+
+                <div class="relative">
+                  <select 
+                    :value="parseDateComponents(opt.sublabel).month"
+                    @change="updateOptionDate(idx, 'month', ($event.target as HTMLSelectElement).value)"
+                    class="w-full h-[30px] px-2 appearance-none bg-white border-[0.5px] border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
+                  >
+                    <option v-for="m in MONTHS" :key="m" :value="m">{{ m }}</option>
+                  </select>
+                  <ChevronDown class="w-3 h-3 text-neutral-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+
+                <div class="relative">
+                  <select 
+                    :value="parseDateComponents(opt.sublabel).year"
+                    @change="updateOptionDate(idx, 'year', ($event.target as HTMLSelectElement).value)"
+                    class="w-full h-[30px] px-2 appearance-none bg-white border-[0.5px] border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
+                  >
+                    <option v-for="y in YEARS" :key="y" :value="y">{{ y }}</option>
+                  </select>
+                  <ChevronDown class="w-3 h-3 text-neutral-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Detailed Choice: Description Textarea -->
+            <div v-if="currentVariant === 'choice-detailed'" class="pl-7">
+              <textarea 
+                v-model="opt.description"
+                rows="2"
+                @input="handleOptionsUpdate"
+                placeholder="Event Description Detail..."
+                class="w-full font-707 text-[11px] text-neutral-700 focus:outline-none border-[0.5px] border-[#ccc] focus:border-black rounded-[6px] p-1.5 resize-none leading-relaxed bg-white"
+              />
+            </div>
+
+            <!-- Simple Choice: Right Sublabel -->
+            <div v-if="currentVariant === 'choice-simple'" class="pl-7">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-[11px] font-707 text-neutral-500">Right Sublabel (Optional)</span>
+              </div>
+              <div class="border-[0.5px] border-[#ccc] focus-within:border-black rounded-[6px] px-2.5 h-[30px] flex items-center bg-white">
+                <input 
+                  v-model="opt.sublabel" 
+                  @input="handleOptionsUpdate"
+                  placeholder="e.g. Indonesia / 2 Sept"
+                  class="w-full font-707 text-[11px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Add Option Button -->
         <button 
           type="button"
           @click="addOption"
-          class="apple-glass-btn px-2.5 h-[28px] rounded-[6px] text-[11px] font-medium flex items-center gap-1 cursor-pointer"
+          class="w-full h-[36px] rounded-[8px] border-[0.5px] border-dashed border-[#aaa] hover:border-black text-neutral-600 hover:text-black font-707 text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer bg-white/50 mt-1"
         >
-          <Plus class="size-3.5" />
+          <Plus class="w-3.5 h-3.5" />
           <span>Add Option</span>
         </button>
       </div>
 
-      <!-- Options List Items -->
-      <div class="flex flex-col gap-3 w-full">
-        <div 
-          v-for="(opt, idx) in options" 
-          :key="opt.id"
-          class="p-3 bg-white border-[0.5px] border-[#d9d9d9] rounded-[8px] flex flex-col gap-2.5 shadow-sm relative group"
-        >
-          <!-- Top Row: Index, Option Title, Pre-selected Checkbox, Delete -->
-          <div class="flex items-center gap-2 w-full">
-            <span class="size-5 rounded-full bg-neutral-100 flex items-center justify-center font-mono text-[10px] text-neutral-500 font-bold shrink-0">
-              {{ idx + 1 }}
-            </span>
-
-            <div class="border-[0.5px] border-[#ccc] focus-within:border-black rounded-[6px] px-2.5 h-[32px] flex items-center flex-1 bg-white transition-colors">
-              <input 
-                v-model="opt.label" 
-                @input="handleOptionsUpdate"
-                :placeholder="currentVariant === 'choice-detailed' ? `Pass Option ${idx + 1}` : `Option ${idx + 1}`"
-                class="w-full font-707 text-[12px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
-              />
-            </div>
-
-            <!-- Pre-selected Toggle -->
-            <button 
-              type="button"
-              @click="toggleOptionSelected(idx)"
-              :class="opt.selected ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-400 hover:text-black'"
-              class="size-[32px] rounded-[6px] flex items-center justify-center cursor-pointer transition-colors border-[0.5px] border-black/10 shrink-0"
-              title="Toggle Pre-selected state"
-            >
-              <Check class="w-3.5 h-3.5 stroke-[2.5]" />
-            </button>
-
-            <!-- Delete Option -->
-            <button 
-              type="button" 
-              @click="removeOption(idx)"
-              :disabled="options.length <= 1"
-              :class="options.length <= 1 ? 'opacity-30 cursor-not-allowed' : 'hover:text-red-600 hover:bg-red-50 text-neutral-400 cursor-pointer'"
-              class="size-[32px] rounded-[6px] flex items-center justify-center transition-colors shrink-0"
-              title="Remove option"
-            >
-              <Trash2 class="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          <!-- Variant Specific Fields -->
-          <!-- Detailed Choice: Date Picker Components (DD MMM YYYY) -->
-          <div v-if="currentVariant === 'choice-detailed'" class="flex flex-col gap-1.5 pl-7">
-            <div class="flex items-center justify-between">
-              <span class="text-[11px] font-707 font-medium text-neutral-600 flex items-center gap-1">
-                <Calendar class="w-3 h-3 text-neutral-400" />
-                <span>Date (DD MMM YYYY)</span>
-              </span>
-              <span class="text-[10px] font-mono text-neutral-400 font-medium">
-                {{ parseDateComponents(opt.sublabel).day }} {{ parseDateComponents(opt.sublabel).month }} {{ parseDateComponents(opt.sublabel).year }}
-              </span>
-            </div>
-            
-            <div class="grid grid-cols-3 gap-1.5 w-full">
-              <!-- Day Select -->
-              <div class="relative">
-                <select 
-                  :value="parseDateComponents(opt.sublabel).day"
-                  @change="updateOptionDate(idx, 'day', ($event.target as HTMLSelectElement).value)"
-                  class="w-full h-[30px] px-2 appearance-none bg-white border-[0.5px] border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
-                >
-                  <option v-for="d in DAYS" :key="d" :value="d">{{ d }}</option>
-                </select>
-                <ChevronDown class="w-3 h-3 text-neutral-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              </div>
-
-              <!-- Month Select -->
-              <div class="relative">
-                <select 
-                  :value="parseDateComponents(opt.sublabel).month"
-                  @change="updateOptionDate(idx, 'month', ($event.target as HTMLSelectElement).value)"
-                  class="w-full h-[30px] px-2 appearance-none bg-white border-[0.5px] border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
-                >
-                  <option v-for="m in MONTHS" :key="m" :value="m">{{ m }}</option>
-                </select>
-                <ChevronDown class="w-3 h-3 text-neutral-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              </div>
-
-              <!-- Year Select -->
-              <div class="relative">
-                <select 
-                  :value="parseDateComponents(opt.sublabel).year"
-                  @change="updateOptionDate(idx, 'year', ($event.target as HTMLSelectElement).value)"
-                  class="w-full h-[30px] px-2 appearance-none bg-white border-[0.5px] border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
-                >
-                  <option v-for="y in YEARS" :key="y" :value="y">{{ y }}</option>
-                </select>
-                <ChevronDown class="w-3 h-3 text-neutral-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              </div>
-            </div>
-          </div>
-
-          <!-- Detailed Choice: Event Description Textarea -->
-          <div v-if="currentVariant === 'choice-detailed'" class="pl-7">
-            <textarea 
-              v-model="opt.description"
-              rows="2"
-              @input="handleOptionsUpdate"
-              placeholder="Event Description Detail..."
-              class="w-full font-707 text-[11px] text-neutral-700 focus:outline-none border-[0.5px] border-[#ccc] focus:border-black rounded-[6px] p-1.5 resize-none leading-relaxed bg-white"
-            />
-          </div>
-
-          <!-- Simple Choice: Right Sublabel -->
-          <div v-if="currentVariant === 'choice-simple'" class="pl-7">
-            <div class="flex items-center justify-between mb-1">
-              <span class="text-[11px] font-707 text-neutral-500">Right Sublabel (Optional)</span>
-            </div>
-            <div class="border-[0.5px] border-[#ccc] focus-within:border-black rounded-[6px] px-2.5 h-[30px] flex items-center bg-white">
-              <input 
-                v-model="opt.sublabel" 
-                @input="handleOptionsUpdate"
-                placeholder="e.g. Indonesia / 2 Sept"
-                class="w-full font-707 text-[11px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Quick Add Option Button -->
-      <button 
-        type="button"
-        @click="addOption"
-        class="w-full h-[36px] rounded-[8px] border-[0.5px] border-dashed border-[#aaa] hover:border-black text-neutral-600 hover:text-black font-707 text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer bg-white/50 mt-1"
+      <!-- Image Matrix Configuration -->
+      <div 
+        v-if="currentVariant === 'image-matrix'" 
+        class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full"
       >
-        <Plus class="w-3.5 h-3.5" />
-        <span>Add Option</span>
-      </button>
-    </div>
+        <div class="flex items-center justify-between w-full">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Image Matrix (3:4)
+          </p>
+          <span class="text-[11px] text-neutral-400 font-mono">4 Slots</span>
+        </div>
 
-    <!-- 3C. Image Matrix Configuration (3:4 Ratio) -->
-    <div 
-      v-if="currentVariant === 'image-matrix'" 
-      class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]"
-    >
-      <div class="flex items-center justify-between w-full">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Image Matrix (3:4)
-        </p>
-        <span class="text-[11px] text-neutral-400 font-mono">4 Slots</span>
-      </div>
-
-      <div class="grid grid-cols-2 gap-3 w-full">
-        <div 
-          v-for="(slot, sIdx) in imageSlots" 
-          :key="slot.id"
-          class="flex flex-col gap-1.5 p-2 bg-white border-[0.5px] border-neutral-200 rounded-[8px]"
-        >
-          <div class="aspect-[3/4] bg-[#ededed] rounded-[6px] overflow-hidden relative group flex items-center justify-center border-[0.5px] border-black/5">
-            <img 
-              v-if="slot.url" 
-              :src="sizedUrl(slot.url, 320)" 
-              class="w-full h-full object-cover" 
-              alt="Slot" 
-            />
-            <div v-else class="size-6 text-neutral-400">
-              <svg viewBox="0 0 94 94" fill="none" class="size-full stroke-current">
-                <path d="M70.0242 83.1312H20.0926C18.868 83.1338 17.655 82.8946 16.5232 82.4273C15.3913 81.96 14.3628 81.2738 13.4968 80.4081C12.6307 79.5424 11.9441 78.5143 11.4763 77.3826C11.0086 76.2509 10.7688 75.038 10.7709 73.8135V23.9602" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M77.1348 10.8668H32.947C29.5812 10.8668 26.8527 13.5953 26.8527 16.9611V61.149C26.8527 64.5148 29.5812 67.2433 32.947 67.2433H77.1348C80.5006 67.2433 83.2292 64.5148 83.2292 61.149V16.9611C83.2292 13.5953 80.5006 10.8668 77.1348 10.8668Z" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M34.6312 55.2544H74.8554L61.0061 37.7802L51.939 49.4029L45.594 42.0669L34.6312 55.2544Z" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            
-            <button 
-              type="button"
-              @click="openGalleryForSlot(slot.id)"
-              class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[11px] font-medium transition-opacity cursor-pointer"
-            >
-              Change
-            </button>
-          </div>
-
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] font-mono text-neutral-500">Slot {{ sIdx + 1 }}</span>
-            <label class="flex items-center gap-1 text-[10px] text-neutral-600 cursor-pointer">
-              <input 
-                type="checkbox" 
-                :checked="slot.selected" 
-                @change="toggleSlotSelected(sIdx)"
-                class="accent-black rounded scale-90"
+        <div class="grid grid-cols-2 gap-3 w-full">
+          <div 
+            v-for="(slot, sIdx) in imageSlots" 
+            :key="slot.id"
+            class="flex flex-col gap-1.5 p-2 bg-white border-[0.5px] border-neutral-200 rounded-[8px]"
+          >
+            <div class="aspect-[3/4] bg-[#ededed] rounded-[6px] overflow-hidden relative group flex items-center justify-center border-[0.5px] border-black/5">
+              <img 
+                v-if="slot.url" 
+                :src="sizedUrl(slot.url, 320)" 
+                class="w-full h-full object-cover" 
+                alt="Slot" 
               />
-              Select
-            </label>
+              <div v-else class="size-6 text-neutral-400">
+                <svg viewBox="0 0 94 94" fill="none" class="size-full stroke-current">
+                  <path d="M70.0242 83.1312H20.0926C18.868 83.1338 17.655 82.8946 16.5232 82.4273C15.3913 81.96 14.3628 81.2738 13.4968 80.4081C12.6307 79.5424 11.9441 78.5143 11.4763 77.3826C11.0086 76.2509 10.7688 75.038 10.7709 73.8135V23.9602" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M77.1348 10.8668H32.947C29.5812 10.8668 26.8527 13.5953 26.8527 16.9611V61.149C26.8527 64.5148 29.5812 67.2433 32.947 67.2433H77.1348C80.5006 67.2433 83.2292 64.5148 83.2292 61.149V16.9611C83.2292 13.5953 80.5006 10.8668 77.1348 10.8668Z" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M34.6312 55.2544H74.8554L61.0061 37.7802L51.939 49.4029L45.594 42.0669L34.6312 55.2544Z" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              
+              <button 
+                type="button"
+                @click="openGalleryForSlot(slot.id)"
+                class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[11px] font-medium transition-opacity cursor-pointer"
+              >
+                Change
+              </button>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-mono text-neutral-500">Slot {{ sIdx + 1 }}</span>
+              <label class="flex items-center gap-1 text-[10px] text-neutral-600 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  :checked="slot.selected" 
+                  @change="toggleSlotSelected(sIdx)"
+                  class="accent-black rounded scale-90"
+                />
+                Select
+              </label>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Section 4: Action Button CTA Setup -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
-      <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-        Action CTA Button
-      </p>
-
-      <!-- 1. Button Label -->
-      <div class="flex flex-col gap-[6px] w-full">
-        <p class="font-707 text-[12px] text-neutral-600">
-          Button Label
-        </p>
-        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
-          <input 
-            v-model="buttonText"
-            placeholder="e.g. Done"
-            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 tracking-tight"
-          />
+    <!-- TAB 2: VARIANT PRESETS -->
+    <div v-show="activeTab === 'variant'" class="w-full flex flex-col">
+      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
+        <div class="flex items-center justify-between w-full">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Modal Variant
+          </p>
+          <span class="font-707 text-[11px] text-neutral-400">
+            5 Presets
+          </span>
         </div>
-      </div>
 
-      <!-- 2. Button Action / Function -->
-      <div class="flex flex-col gap-[6px] w-full">
-        <p class="font-707 text-[12px] text-neutral-600">
-          Button Action
-        </p>
-        <div class="grid grid-cols-3 gap-1.5 w-full">
+        <div class="grid grid-cols-2 gap-2 w-full">
           <button 
             type="button"
-            v-for="act in ([
-              { label: 'Submit & Close', value: 'submit-close' },
-              { label: 'Next Page', value: 'next_page' },
-              { label: 'External URL', value: 'link' }
-            ] as const)"
-            :key="act.value"
-            @click="buttonAction = act.value"
-            :class="buttonAction === act.value ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="h-[34px] rounded-[8px] text-[11px] font-707 flex items-center justify-center text-center px-1 cursor-pointer transition-all"
+            v-for="v in modalVariants" 
+            :key="v.id"
+            @click="selectVariant(v.id)"
+            :class="currentVariant === v.id ? 'apple-glass-btn-dark font-medium shadow-sm border-black' : 'apple-glass-btn'"
+            class="flex items-center justify-start gap-2.5 px-3 py-2.5 rounded-[8px] text-left transition-all cursor-pointer"
           >
-            {{ act.label }}
+            <component :is="v.icon" class="size-4 shrink-0" />
+            <div class="flex flex-col min-w-0">
+              <span class="font-707 text-[12px] leading-tight truncate">{{ v.label }}</span>
+              <span class="text-[10px] opacity-70 leading-tight truncate">{{ v.desc }}</span>
+            </div>
           </button>
         </div>
       </div>
-
-      <!-- 3. External URL input if Link is active -->
-      <div v-if="buttonAction === 'link'" class="flex flex-col gap-[6px] w-full animate-in fade-in duration-150">
-        <p class="font-707 text-[12px] text-neutral-600">
-          Target URL
-        </p>
-        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
-          <input 
-            v-model="buttonUrl"
-            placeholder="https://..."
-            class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
-          />
-        </div>
-        <label class="flex items-center gap-2 text-[11px] font-707 text-neutral-600 cursor-pointer pt-1">
-          <input 
-            type="checkbox" 
-            v-model="buttonOpenInNewTab" 
-            class="rounded accent-black scale-95"
-          />
-          <span>Open link in new tab</span>
-        </label>
-      </div>
     </div>
 
-    <!-- Section 5: Modal Dismiss Behavior -->
-    <div class="content-stretch flex items-center justify-between p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
-      <div class="flex flex-col">
+    <!-- TAB 3: ACTION CTA & RULES -->
+    <div v-show="activeTab === 'action'" class="w-full flex flex-col">
+      <!-- Action Button CTA Setup -->
+      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Dismiss on Backdrop Click
+          Action CTA Button
         </p>
-        <p class="font-707 text-[11px] text-neutral-500">
-          Close bottom sheet when tapping outside
-        </p>
+
+        <!-- Button Label -->
+        <div class="flex flex-col gap-[6px] w-full">
+          <p class="font-707 text-[12px] text-neutral-600 font-medium">
+            Button Label
+          </p>
+          <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+            <input 
+              v-model="buttonText"
+              placeholder="e.g. Done"
+              class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 tracking-tight"
+            />
+          </div>
+        </div>
+
+        <!-- Button Action -->
+        <div class="flex flex-col gap-[6px] w-full">
+          <p class="font-707 text-[12px] text-neutral-600 font-medium">
+            Button Action
+          </p>
+          <div class="grid grid-cols-3 gap-1.5 w-full">
+            <button 
+              type="button"
+              v-for="act in ([
+                { label: 'Submit & Close', value: 'submit-close' },
+                { label: 'Next Page', value: 'next_page' },
+                { label: 'External URL', value: 'link' }
+              ] as const)"
+              :key="act.value"
+              @click="buttonAction = act.value"
+              :class="buttonAction === act.value ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="h-[34px] rounded-[8px] text-[11px] font-707 flex items-center justify-center text-center px-1 cursor-pointer transition-all"
+            >
+              {{ act.label }}
+            </button>
+          </div>
+        </div>
+
+        <!-- External URL input if Link is active -->
+        <div v-if="buttonAction === 'link'" class="flex flex-col gap-[6px] w-full animate-in fade-in duration-150">
+          <p class="font-707 text-[12px] text-neutral-600 font-medium">
+            Target URL
+          </p>
+          <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+            <input 
+              v-model="buttonUrl" 
+              placeholder="https://..." 
+              class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
+            />
+          </div>
+          <label class="flex items-center gap-2 text-[11px] font-707 text-neutral-600 cursor-pointer pt-1">
+            <input 
+              type="checkbox" 
+              v-model="buttonOpenInNewTab" 
+              class="rounded accent-black scale-95"
+            />
+            <span>Open link in new tab</span>
+          </label>
+        </div>
       </div>
-      <button 
-        type="button"
-        role="switch"
-        :aria-checked="dismissible"
-        @click="dismissible = !dismissible"
-        class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
-        :class="dismissible ? 'bg-black' : 'bg-neutral-200'"
-        title="Toggle Dismiss on Backdrop Click"
-      >
-        <span 
-          class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
-          :class="dismissible ? 'translate-x-[18px]' : 'translate-x-0'"
-        />
-      </button>
+
+      <!-- Modal Dismiss Behavior -->
+      <div class="content-stretch flex items-center justify-between p-[24px] shrink-0 w-full">
+        <div class="flex flex-col">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Dismiss on Backdrop Click
+          </p>
+          <p class="font-707 text-[11px] text-neutral-500">
+            Close bottom sheet when tapping outside
+          </p>
+        </div>
+        <button 
+          type="button"
+          role="switch"
+          :aria-checked="dismissible"
+          @click="dismissible = !dismissible"
+          class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+          :class="dismissible ? 'bg-black' : 'bg-neutral-200'"
+          title="Toggle Dismiss on Backdrop Click"
+        >
+          <span 
+            class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+            :class="dismissible ? 'translate-x-[18px]' : 'translate-x-0'"
+          />
+        </button>
+      </div>
     </div>
   </aside>
 </template>
@@ -502,7 +521,9 @@ import {
   ArrowLeft,
   Check,
   Calendar,
-  ChevronDown
+  ChevronDown,
+  FileText,
+  Sliders
 } from 'lucide-vue-next';
 
 defineProps<{
@@ -512,6 +533,15 @@ defineProps<{
 defineEmits<{
   (e: 'close'): void;
 }>();
+
+// 3-Tab Segment Navigation
+type TabType = 'content' | 'variant' | 'action';
+const activeTab = ref<TabType>('content');
+const tabs = [
+  { id: 'content' as const, label: 'Content', icon: FileText },
+  { id: 'variant' as const, label: 'Variant', icon: LayoutGrid },
+  { id: 'action' as const, label: 'Action & Rules', icon: Sliders }
+];
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const DAYS = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
@@ -609,13 +639,6 @@ const modalTitle = computed({
   }
 });
 
-const titleTypographyStyle = computed<'heading-3' | 'heading-2'>({
-  get: () => targetModalData.value.titleTypographyStyle || 'heading-3',
-  set: (val: 'heading-3' | 'heading-2') => {
-    updateModalData({ titleTypographyStyle: val });
-  }
-});
-
 const modalSubtitle = computed({
   get: () => targetModalData.value.subtitle || '',
   set: (val: string) => {
@@ -691,13 +714,6 @@ const buttonOpenInNewTab = computed({
   get: () => targetModalData.value.buttonOpenInNewTab ?? true,
   set: (val: boolean) => {
     updateModalData({ buttonOpenInNewTab: val });
-  }
-});
-
-const buttonVariant = computed({
-  get: () => targetModalData.value.buttonVariant || 'black',
-  set: (val: string) => {
-    updateModalData({ buttonVariant: val });
   }
 });
 

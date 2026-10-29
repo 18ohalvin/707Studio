@@ -6,795 +6,821 @@
     class="absolute right-[24px] top-1/2 -translate-y-1/2 w-[464px] h-auto max-h-[calc(100vh-140px)] backdrop-blur-2xl bg-[rgba(255,255,255,0.92)] border border-black/8 content-stretch flex flex-col items-start overflow-y-auto pb-[32px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] z-40 select-none transition-all animate-apple-slide-right-center no-scrollbar"
     data-node-id="113:3887"
   >
-    <!-- Widget Container & Header -->
-    <div class="content-stretch flex flex-col items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+    <!-- Header -->
+    <div class="content-stretch flex flex-col items-start p-[24px] pb-[16px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
-        <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
-          Media/Banners Setup
-        </p>
+        <div class="flex items-center gap-2">
+          <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
+            Media & Banner Setup
+          </p>
+          <span class="font-707 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-black/5 text-neutral-600 font-medium">
+            {{ formatRatioLabel(selectedRatio) }}
+          </span>
+        </div>
         <button 
           @click="$emit('close')"
-          class="apple-glass-icon-btn size-7 flex items-center justify-center rounded-full cursor-pointer"
+          class="apple-glass-icon-btn size-7 flex items-center justify-center rounded-full cursor-pointer hover:bg-neutral-200/60 transition-colors"
+          title="Close"
         >
           <img :src="FIGMA_ASSETS.closeIcon" class="w-3.5 h-3.5" alt="Close" />
         </button>
       </div>
     </div>
 
-    <!-- Upload or Drag Media Section -->
-    <div class="content-stretch flex flex-col items-start p-[24px] shrink-0 w-full">
-      <input 
-        type="file" 
-        ref="fileInputRef" 
-        accept="image/*" 
-        @change="handleFileChange" 
-        class="hidden" 
-      />
-      <div 
-        @click="triggerUpload"
-        @dragover.prevent="isDragOverMedia = true"
-        @dragleave="isDragOverMedia = false"
-        @drop.prevent="handleMediaDrop"
-        :class="[
-          isDragOverMedia ? 'border-black bg-neutral-100 scale-[0.99]' : 'bg-[#f5f5f5] hover:bg-[#efefef] border-[#d9d9d9]',
-          'border border-dashed content-stretch flex flex-col gap-[10px] h-[150px] items-center justify-center rounded-[8px] shrink-0 w-full cursor-pointer transition-all relative overflow-hidden group'
-        ]"
-      >
-        <!-- If media already uploaded, show thumbnail preview with replace overlay -->
-        <template v-if="currentImageUrl && !isCurrentSolidSpace">
-          <img 
-            :src="sizedUrl(currentImageUrl, 640)" 
-            class="size-full object-cover absolute inset-0" 
-            alt="Uploaded Media" 
-            @error="handleUploadThumbError"
-          />
-          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity text-white gap-1.5 p-2 text-center">
-            <span class="font-707 font-medium text-[12px]">Click or drop to replace</span>
-            <button 
-              @click.stop="removeUploadedMedia"
-              class="apple-glass-btn px-2.5 py-1 rounded-full text-[11px] font-707 text-black shadow-sm"
-            >
-              Reset to space block
-            </button>
-          </div>
-        </template>
-
-        <!-- Default upload placeholder -->
-        <template v-else>
-          <div class="size-[64px] flex items-center justify-center pointer-events-none">
-            <img :src="FIGMA_ASSETS.mediaPicker" class="size-full object-contain" alt="Media Picker" />
-          </div>
-          <p class="font-707 font-normal text-[12px] text-black text-center">
-            <button 
-              type="button" 
-              @click.stop="openMediaGallery"
-              class="font-medium underline hover:text-neutral-700 cursor-pointer"
-            >
-              Select From Media Gallery
-            </button>
-            <span> or Drag</span>
-          </p>
-        </template>
-      </div>
-    </div>
-
-    <!-- Ratio Presets -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
-      <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-        Ratio Presets
-      </p>
-      <div class="flex flex-nowrap overflow-x-auto gap-[8px] items-center -mx-[24px] px-[24px] w-[calc(100%+48px)] pb-1 no-scrollbar">
-        <button 
-          v-for="ratio in availableRatios" 
-          :key="ratio"
-          @click="selectedRatio = ratio"
-          :class="selectedRatio === ratio ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-          class="shrink-0 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[13px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
-        >
-          {{ formatRatioLabel(ratio) }}
-        </button>
-      </div>
-
-      <!-- Merged Interactive Crop & Move Studio Button (Under Ratio Presets) -->
-      <div v-if="currentImageUrl && !isCurrentSolidSpace" class="w-full flex flex-col gap-2 pt-1">
+    <!-- Segmented 3-Tab Control Bar (Sticky) -->
+    <div class="px-[20px] pt-[12px] pb-[12px] w-full border-b border-[#f0f0f0] bg-white/70 backdrop-blur-md shrink-0 sticky top-0 z-20">
+      <div class="flex items-center p-1 bg-[#ececec]/60 rounded-[10px] w-full gap-1 border border-black/5">
         <button
+          v-for="t in tabs"
+          :key="t.id"
           type="button"
-          @click="editorStore.openCropStudio"
-          class="w-full flex items-center justify-center gap-2 h-[38px] rounded-[8px] bg-black text-white hover:bg-neutral-800 transition-colors shadow-sm font-707 text-[12px] font-medium cursor-pointer"
-          title="Open interactive photo cropping, zooming, and free drag repositioning studio"
+          @click="activeTab = t.id"
+          :class="activeTab === t.id 
+            ? 'bg-white text-black shadow-xs font-medium' 
+            : 'text-neutral-500 hover:text-black font-normal'"
+          class="flex-1 h-[30px] rounded-[7px] text-[12px] font-707 flex items-center justify-center gap-1.5 transition-all cursor-pointer select-none"
         >
-          <Crop class="size-3.5 text-white" />
-          <span>Interactive Crop & Move Studio</span>
-        </button>
-        <button
-          v-if="isCustomPositionOrZoom"
-          type="button"
-          @click="resetImagePositionAndZoom"
-          class="self-center font-707 text-[11px] text-neutral-500 hover:text-black transition-colors underline cursor-pointer"
-        >
-          Reset Framing
+          <component :is="t.icon" class="size-3.5" />
+          <span>{{ t.label }}</span>
         </button>
       </div>
     </div>
 
-    <!-- Set Media Fits -->
-    <div class="content-stretch flex items-center justify-between p-[24px] shrink-0 w-full border-t border-[#f0f0f0] relative">
-      <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
-        Set Media Fits
-      </p>
-      <div class="relative">
-        <button
-          type="button"
-          @click="isMediaFitDropdownOpen = !isMediaFitDropdownOpen"
-          class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-[240px] cursor-pointer text-left"
-        >
-          <span class="font-707 text-[13px] text-black">{{ selectedMediaFit }}</span>
-          <ChevronDown 
-            class="size-[15px] text-black transition-transform duration-200" 
-            :class="isMediaFitDropdownOpen ? 'rotate-180' : ''"
-          />
-        </button>
-
-        <!-- Dropdown Menu -->
+    <!-- TAB 1: MEDIA & BRAND -->
+    <div v-show="activeTab === 'media'" class="w-full flex flex-col">
+      <!-- Upload or Drag Media Section -->
+      <div class="content-stretch flex flex-col items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
+        <input 
+          type="file" 
+          ref="fileInputRef" 
+          accept="image/*" 
+          @change="handleFileChange" 
+          class="hidden" 
+        />
         <div 
-          v-if="isMediaFitDropdownOpen" 
-          class="absolute right-0 top-[44px] w-[240px] bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-lg py-1 z-30 flex flex-col"
-        >
-          <button
-            v-for="fit in mediaFitOptions"
-            :key="fit"
-            type="button"
-            @click="selectMediaFit(fit)"
-            class="flex items-center justify-between px-[14px] py-[8px] text-left hover:bg-black/5 transition-colors cursor-pointer"
-            :class="selectedMediaFit === fit ? 'font-medium text-black bg-black/5' : 'text-neutral-700'"
-          >
-            <span class="font-707 text-[13px]">{{ fit }}</span>
-            <Check v-if="selectedMediaFit === fit" class="size-[15px] text-black" />
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Add Brand Logo Section (Maximum height 32px, Select from media gallery / drag) -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
-      <!-- Title row with Apple Style Toggle Switch -->
-      <div class="flex items-center justify-between w-full">
-        <div class="flex flex-col gap-0.5">
-          <p 
-            class="font-707 font-medium text-[13px] leading-[18px]"
-            :class="isTopPosition ? 'text-black' : 'text-neutral-400'"
-          >
-            Add Brand Logo
-          </p>
-          <p v-if="!isTopPosition" class="text-[10px] font-707 text-neutral-400">
-            Available only for top banner
-          </p>
-        </div>
-
-        <!-- Modern Elegant Apple Style Toggle Switch -->
-        <button
-          type="button"
-          role="switch"
-          :disabled="!isTopPosition"
-          :aria-checked="isTopPosition && isBrandLogoEnabled"
-          @click="toggleBrandLogo"
-          class="relative inline-flex h-[22px] w-[40px] shrink-0 rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+          @click="triggerUpload"
+          @dragover.prevent="isDragOverMedia = true"
+          @dragleave="isDragOverMedia = false"
+          @drop.prevent="handleMediaDrop"
           :class="[
-            !isTopPosition 
-              ? 'opacity-40 cursor-not-allowed bg-[#e5e5ea]' 
-              : ((isBrandLogoEnabled) ? 'bg-black cursor-pointer' : 'bg-[#e5e5ea] cursor-pointer')
+            isDragOverMedia ? 'border-black bg-neutral-100 scale-[0.99]' : 'bg-[#f5f5f5] hover:bg-[#efefef] border-[#d9d9d9]',
+            'border border-dashed content-stretch flex flex-col gap-[10px] h-[150px] items-center justify-center rounded-[8px] shrink-0 w-full cursor-pointer transition-all relative overflow-hidden group'
           ]"
-          :title="isTopPosition ? 'Toggle Brand Logo' : 'Brand logo is only available when banner is positioned at the top of the canvas'"
         >
-          <span
-            aria-hidden="true"
-            class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
-            :class="(isTopPosition && isBrandLogoEnabled) ? 'translate-x-[18px]' : 'translate-x-0'"
-          />
-        </button>
-      </div>
-
-      <!-- Brand Logo Presets (appear only if banner is top AND toggle is on) -->
-      <Transition
-        enter-active-class="transition duration-200 ease-out"
-        enter-from-class="transform opacity-0 -translate-y-2"
-        enter-to-class="transform opacity-100 translate-y-0"
-        leave-active-class="transition duration-150 ease-in"
-        leave-from-class="transform opacity-100 translate-y-0"
-        leave-to-class="transform opacity-0 -translate-y-2"
-      >
-        <div v-if="isTopPosition && isBrandLogoEnabled" class="flex flex-col gap-[12px] w-full pt-1">
-          <!-- Logo Preview or Drop/Select Area -->
-          <div 
-            v-if="brandLogoUrl" 
-            class="relative border border-[#d9d9d9] rounded-[8px] p-3 flex items-center justify-between bg-white hover:border-black transition-colors"
-          >
-            <div class="flex items-center gap-3">
-              <div class="h-[52px] min-w-[52px] max-w-[150px] flex items-center justify-center bg-neutral-50 px-2 rounded border border-neutral-200">
-                <img :src="sizedUrl(brandLogoUrl, 640)" alt="Brand Logo" class="max-h-[48px] w-auto max-w-full object-contain" />
-              </div>
-              <div class="flex flex-col">
-                <span class="text-[12px] font-707 font-medium text-black truncate max-w-[130px]">Brand Logo</span>
-                <span class="text-[10px] font-707 text-neutral-400">Height: {{ brandLogoHeight }}px • Top: {{ brandLogoVerticalPosition }}px</span>
-              </div>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <button 
-                type="button"
-                @click="openMediaGalleryForLogo"
-                class="apple-glass-btn text-[11px] font-707 px-2.5 py-1 rounded-[6px] cursor-pointer"
-                title="Change Logo"
-              >
-                Change
-              </button>
-              <button 
-                type="button"
-                @click="removeBrandLogo" 
-                class="apple-glass-icon-btn size-7 rounded-[6px] flex items-center justify-center text-neutral-500 hover:text-red-600 cursor-pointer"
-                title="Remove Logo"
-              >
-                <Trash2 class="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-
-          <div 
-            v-else
-            @click="triggerLogoUpload"
-            @dragover.prevent="isDragOverLogo = true"
-            @dragleave="isDragOverLogo = false"
-            @drop.prevent="handleLogoDrop"
-            :class="[
-              isDragOverLogo ? 'border-black bg-neutral-100' : 'bg-[#f5f5f5] hover:bg-[#efefef] border-[#d9d9d9]',
-              'border border-dashed content-stretch flex flex-col gap-[4px] py-[14px] px-[14px] items-center justify-center rounded-[8px] shrink-0 w-full cursor-pointer transition-all relative group'
-            ]"
-          >
-            <input 
-              type="file" 
-              ref="logoInputRef" 
-              accept="image/*" 
-              @change="handleLogoFileChange" 
-              class="hidden" 
+          <!-- If media already uploaded, show thumbnail preview with replace overlay -->
+          <template v-if="currentImageUrl && !isCurrentSolidSpace">
+            <img 
+              :src="sizedUrl(currentImageUrl, 640)" 
+              class="size-full object-cover absolute inset-0" 
+              alt="Uploaded Media" 
+              @error="handleUploadThumbError"
             />
-            <p class="font-707 text-[12px] text-neutral-700 text-center">
+            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity text-white gap-1.5 p-2 text-center">
+              <span class="font-707 font-medium text-[12px]">Click or drop to replace</span>
+              <button 
+                @click.stop="removeUploadedMedia"
+                class="apple-glass-btn px-2.5 py-1 rounded-full text-[11px] font-707 text-black shadow-sm"
+              >
+                Reset to space block
+              </button>
+            </div>
+          </template>
+
+          <!-- Default upload placeholder -->
+          <template v-else>
+            <div class="size-[64px] flex items-center justify-center pointer-events-none">
+              <img :src="FIGMA_ASSETS.mediaPicker" class="size-full object-contain" alt="Media Picker" />
+            </div>
+            <p class="font-707 font-normal text-[12px] text-black text-center">
               <button 
                 type="button" 
-                @click.stop="openMediaGalleryForLogo"
-                class="font-medium text-black underline hover:text-neutral-700 cursor-pointer"
+                @click.stop="openMediaGallery"
+                class="font-medium underline hover:text-neutral-700 cursor-pointer"
               >
                 Select From Media Gallery
               </button>
               <span> or Drag</span>
             </p>
-            <span class="text-[10px] font-707 text-neutral-400">Any size — set the height below</span>
-          </div>
-
-          <!-- Logo Height: whatever size was uploaded, the editor sets how tall it shows -->
-          <div v-if="brandLogoUrl" class="flex flex-col gap-[8px] w-full pt-1">
-            <div class="flex items-center justify-between w-full">
-              <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Logo Height</p>
-              <div class="flex items-center gap-1.5">
-                <div class="border-[0.5px] border-[#aaa] focus-within:border-black flex h-[28px] items-center px-2 rounded-[6px] bg-white transition-colors">
-                  <input
-                    type="number"
-                    :min="LOGO_HEIGHT.min"
-                    :max="LOGO_HEIGHT.max"
-                    :value="brandLogoHeight"
-                    @change="brandLogoHeight = clampLogoHeight(($event.target as HTMLInputElement).value)"
-                    class="w-[44px] text-[12px] font-707 text-black text-right outline-none tabular-nums bg-transparent"
-                    aria-label="Logo height in pixels"
-                  />
-                  <span class="text-[11px] font-707 text-neutral-400 ml-0.5">px</span>
-                </div>
-                <button
-                  v-if="brandLogoHeight !== LOGO_HEIGHT.default"
-                  type="button"
-                  @click="brandLogoHeight = LOGO_HEIGHT.default"
-                  class="h-[28px] px-2 rounded-[6px] text-[11px] font-707 text-neutral-600 hover:text-black hover:bg-black/5 cursor-pointer"
-                  title="Back to the default height"
-                >
-                  Reset
-                </button>
-              </div>
-            </div>
-            <input
-              type="range"
-              :min="LOGO_HEIGHT.min"
-              :max="LOGO_HEIGHT.max"
-              step="1"
-              v-model.number="brandLogoHeight"
-              class="w-full accent-black cursor-pointer"
-              aria-label="Logo height"
-            />
-            <div class="flex justify-between text-[10px] font-707 text-neutral-400 tabular-nums">
-              <span>{{ LOGO_HEIGHT.min }}px</span>
-              <span>{{ LOGO_HEIGHT.max }}px</span>
-            </div>
-          </div>
-
-          <!-- Logo Vertical Position: manual slider for vertical position in hero banner -->
-          <div v-if="brandLogoUrl" class="flex flex-col gap-[8px] w-full pt-1">
-            <div class="flex items-center justify-between w-full">
-              <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Vertical Position</p>
-              <div class="flex items-center gap-1.5">
-                <div class="border-[0.5px] border-[#aaa] focus-within:border-black flex h-[28px] items-center px-2 rounded-[6px] bg-white transition-colors">
-                  <input
-                    type="number"
-                    :min="LOGO_VERTICAL_POSITION.min"
-                    :max="LOGO_VERTICAL_POSITION.max"
-                    :value="brandLogoVerticalPosition"
-                    @change="brandLogoVerticalPosition = clampLogoVerticalPosition(($event.target as HTMLInputElement).value)"
-                    class="w-[44px] text-[12px] font-707 text-black text-right outline-none tabular-nums bg-transparent"
-                    aria-label="Logo vertical position in pixels"
-                  />
-                  <span class="text-[11px] font-707 text-neutral-400 ml-0.5">px</span>
-                </div>
-                <button
-                  v-if="brandLogoVerticalPosition !== LOGO_VERTICAL_POSITION.default"
-                  type="button"
-                  @click="brandLogoVerticalPosition = LOGO_VERTICAL_POSITION.default"
-                  class="h-[28px] px-2 rounded-[6px] text-[11px] font-707 text-neutral-600 hover:text-black hover:bg-black/5 cursor-pointer"
-                  title="Back to default position (16px)"
-                >
-                  Reset
-                </button>
-              </div>
-            </div>
-            <input
-              type="range"
-              :min="LOGO_VERTICAL_POSITION.min"
-              :max="LOGO_VERTICAL_POSITION.max"
-              step="1"
-              v-model.number="brandLogoVerticalPosition"
-              class="w-full accent-black cursor-pointer"
-              aria-label="Logo vertical position"
-            />
-            <div class="flex justify-between text-[10px] font-707 text-neutral-400 tabular-nums">
-              <span>{{ LOGO_VERTICAL_POSITION.min }}px (Top)</span>
-              <span>{{ LOGO_VERTICAL_POSITION.max }}px</span>
-            </div>
-            <p class="font-707 text-[10.5px] text-neutral-400 leading-tight">
-              Freely position the brand logo vertically based on logo size and banner composition.
-            </p>
-          </div>
-
-          <!-- Logo Alignment (Left, Center, Right) -->
-          <div class="flex items-center justify-between w-full pt-1">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Logo Alignment
-            </p>
-            <div class="flex gap-[6px] items-center">
-              <button 
-                v-for="align in (['left', 'center', 'right'] as const)" 
-                :key="align"
-                @click="brandLogoAlign = align"
-                :class="brandLogoAlign === align ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] capitalize cursor-pointer"
-              >
-                {{ align }}
-              </button>
-            </div>
-          </div>
+          </template>
         </div>
-      </Transition>
-    </div>
-
-    <!-- Add Banner Text Section with Apple Style Toggle Switch -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
-      <!-- Title row with Apple Style Toggle Switch -->
-      <div class="flex items-center justify-between w-full">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Add Banner Text
-        </p>
-
-        <!-- Modern Elegant Apple Style Toggle Switch -->
-        <button
-          type="button"
-          role="switch"
-          :aria-checked="isBannerTextEnabled"
-          @click="toggleBannerText"
-          class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
-          :class="isBannerTextEnabled ? 'bg-black' : 'bg-[#e5e5ea]'"
-          title="Toggle Banner Text Presets"
-        >
-          <span
-            aria-hidden="true"
-            class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
-            :class="isBannerTextEnabled ? 'translate-x-[18px]' : 'translate-x-0'"
-          />
-        </button>
       </div>
 
-      <!-- Presets (Headline, Subheadline, Text Position, Text Alignment) - appear only if toggle is on -->
-      <Transition
-        enter-active-class="transition duration-200 ease-out"
-        enter-from-class="transform opacity-0 -translate-y-2"
-        enter-to-class="transform opacity-100 translate-y-0"
-        leave-active-class="transition duration-150 ease-in"
-        leave-from-class="transform opacity-100 translate-y-0"
-        leave-to-class="transform opacity-0 -translate-y-2"
-      >
-        <div v-if="isBannerTextEnabled" class="flex flex-col gap-[12px] w-full pt-1">
-          <!-- Headline (Single line default, auto-expands if multiline) -->
-          <div class="border border-[#aaa] focus-within:border-black border-solid flex min-h-[38px] h-auto items-center px-[14px] py-[6px] rounded-[8px] w-full bg-white transition-all">
-            <textarea 
-              ref="headlineRef"
-              v-model="headline"
-              rows="1"
-              @input="handleHeadlineInput"
-              placeholder="Headline"
-              class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 resize-none bg-transparent leading-[20px] overflow-hidden p-0 m-0"
+      <!-- Ratio Presets -->
+      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
+        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+          Ratio Presets
+        </p>
+        <div class="flex flex-nowrap overflow-x-auto gap-[8px] items-center -mx-[24px] px-[24px] w-[calc(100%+48px)] pb-1 no-scrollbar">
+          <button 
+            v-for="ratio in availableRatios" 
+            :key="ratio"
+            @click="selectedRatio = ratio"
+            :class="selectedRatio === ratio ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+            class="shrink-0 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[13px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+          >
+            {{ formatRatioLabel(ratio) }}
+          </button>
+        </div>
+
+        <!-- Interactive Crop & Move Studio Button -->
+        <div v-if="currentImageUrl && !isCurrentSolidSpace" class="w-full flex flex-col gap-2 pt-1">
+          <button
+            type="button"
+            @click="editorStore.openCropStudio"
+            class="w-full flex items-center justify-center gap-2 h-[38px] rounded-[8px] bg-black text-white hover:bg-neutral-800 transition-colors shadow-sm font-707 text-[12px] font-medium cursor-pointer"
+            title="Open interactive photo cropping, zooming, and free drag repositioning studio"
+          >
+            <Crop class="size-3.5 text-white" />
+            <span>Interactive Crop & Move Studio</span>
+          </button>
+          <button
+            v-if="isCustomPositionOrZoom"
+            type="button"
+            @click="resetImagePositionAndZoom"
+            class="self-center font-707 text-[11px] text-neutral-500 hover:text-black transition-colors underline cursor-pointer"
+          >
+            Reset Framing
+          </button>
+        </div>
+      </div>
+
+      <!-- Set Media Fits -->
+      <div class="content-stretch flex items-center justify-between p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0] relative">
+        <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
+          Set Media Fits
+        </p>
+        <div class="relative">
+          <button
+            type="button"
+            @click="isMediaFitDropdownOpen = !isMediaFitDropdownOpen"
+            class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-[240px] cursor-pointer text-left"
+          >
+            <span class="font-707 text-[13px] text-black">{{ selectedMediaFit }}</span>
+            <ChevronDown 
+              class="size-[15px] text-black transition-transform duration-200" 
+              :class="isMediaFitDropdownOpen ? 'rotate-180' : ''"
             />
-          </div>
+          </button>
 
-          <!-- Head Title Font Style Option (H1 Display / H2 Heading / H3 Sub-heading) -->
-          <div class="flex items-center justify-between w-full pt-0.5">
-            <span class="font-707 text-[12px] text-neutral-500">Title Font Style</span>
-            <div class="flex gap-[6px] items-center">
-              <button 
-                type="button"
-                @click="setHeadlineStyle('h1')"
-                :class="currentHeadlineStyle === 'h1' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                class="px-3 h-[30px] rounded-[6px] flex items-center justify-center font-707 text-[11.5px] cursor-pointer transition-all"
-                title="H1 Display Headline (32px)"
-              >
-                H1
-              </button>
-              <button 
-                type="button"
-                @click="setHeadlineStyle('h2')"
-                :class="currentHeadlineStyle === 'h2' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                class="px-3 h-[30px] rounded-[6px] flex items-center justify-center font-707 text-[11.5px] cursor-pointer transition-all"
-                title="H2 Section Header (22px)"
-              >
-                H2
-              </button>
-              <button 
-                type="button"
-                @click="setHeadlineStyle('h3')"
-                :class="currentHeadlineStyle === 'h3' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                class="px-3 h-[30px] rounded-[6px] flex items-center justify-center font-707 text-[11.5px] cursor-pointer transition-all"
-                title="H3 Sub-section Heading (18px)"
-              >
-                H3
-              </button>
-            </div>
-          </div>
-
-          <!-- Subheadline (Single line default, auto-expands if multiline) -->
-          <div class="border border-[#aaa] focus-within:border-black border-solid flex min-h-[38px] h-auto items-center px-[14px] py-[6px] rounded-[8px] w-full bg-white transition-all">
-            <textarea 
-              ref="subheadlineRef"
-              v-model="subheadline"
-              rows="1"
-              @input="handleSubheadlineInput"
-              placeholder="Sub Headline"
-              class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 resize-none bg-transparent leading-[20px] overflow-hidden p-0 m-0"
-            />
-          </div>
-
-          <!-- Tag / Badge (Optional, placed under Sub Headline) -->
-          <div v-if="!isBadgeOptionOpen && !badge" class="flex items-center w-full pt-0.5">
-            <button 
-              type="button" 
-              @click="showBadgeInput"
-              class="apple-glass-btn font-707 text-[12px] flex items-center gap-1.5 py-1.5 px-3 rounded-lg cursor-pointer"
+          <!-- Dropdown Menu -->
+          <div 
+            v-if="isMediaFitDropdownOpen" 
+            class="absolute right-0 top-[44px] w-[240px] bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-lg py-1 z-30 flex flex-col"
+          >
+            <button
+              v-for="fit in mediaFitOptions"
+              :key="fit"
+              type="button"
+              @click="selectMediaFit(fit)"
+              class="flex items-center justify-between px-[14px] py-[8px] text-left hover:bg-black/5 transition-colors cursor-pointer"
+              :class="selectedMediaFit === fit ? 'font-medium text-black bg-black/5' : 'text-neutral-700'"
             >
-              <Plus class="w-3.5 h-3.5 text-neutral-500" />
-              <span>Add Tag / Badge (Optional)</span>
+              <span class="font-707 text-[13px]">{{ fit }}</span>
+              <Check v-if="selectedMediaFit === fit" class="size-[15px] text-black" />
             </button>
           </div>
-          <div v-else class="flex flex-col gap-1.5 w-full">
-            <div class="flex items-center justify-between">
-              <span class="font-707 text-[11px] font-medium text-neutral-600">Tag / Badge (Top of Headline)</span>
+        </div>
+      </div>
+
+      <!-- Add Brand Logo Section -->
+      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
+        <!-- Title row with Apple Style Toggle Switch -->
+        <div class="flex items-center justify-between w-full">
+          <div class="flex flex-col gap-0.5">
+            <p 
+              class="font-707 font-medium text-[13px] leading-[18px]"
+              :class="isTopPosition ? 'text-black' : 'text-neutral-400'"
+            >
+              Add Brand Logo
+            </p>
+            <p v-if="!isTopPosition" class="text-[10px] font-707 text-neutral-400">
+              Available only for top banner
+            </p>
+          </div>
+
+          <!-- Apple Style Toggle Switch -->
+          <button
+            type="button"
+            role="switch"
+            :disabled="!isTopPosition"
+            :aria-checked="isTopPosition && isBrandLogoEnabled"
+            @click="toggleBrandLogo"
+            class="relative inline-flex h-[22px] w-[40px] shrink-0 rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+            :class="[
+              !isTopPosition 
+                ? 'opacity-40 cursor-not-allowed bg-[#e5e5ea]' 
+                : ((isBrandLogoEnabled) ? 'bg-black cursor-pointer' : 'bg-[#e5e5ea] cursor-pointer')
+            ]"
+            :title="isTopPosition ? 'Toggle Brand Logo' : 'Brand logo is only available when banner is positioned at the top of the canvas'"
+          >
+            <span
+              aria-hidden="true"
+              class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+              :class="(isTopPosition && isBrandLogoEnabled) ? 'translate-x-[18px]' : 'translate-x-0'"
+            />
+          </button>
+        </div>
+
+        <!-- Brand Logo Controls (appear only if banner is top AND toggle is on) -->
+        <Transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="transform opacity-0 -translate-y-2"
+          enter-to-class="transform opacity-100 translate-y-0"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="transform opacity-100 translate-y-0"
+          leave-to-class="transform opacity-0 -translate-y-2"
+        >
+          <div v-if="isTopPosition && isBrandLogoEnabled" class="flex flex-col gap-[12px] w-full pt-1">
+            <!-- Logo Preview or Drop/Select Area -->
+            <div 
+              v-if="brandLogoUrl" 
+              class="relative border border-[#d9d9d9] rounded-[8px] p-3 flex items-center justify-between bg-white hover:border-black transition-colors"
+            >
+              <div class="flex items-center gap-3">
+                <div class="h-[52px] min-w-[52px] max-w-[150px] flex items-center justify-center bg-neutral-50 px-2 rounded border border-neutral-200">
+                  <img :src="sizedUrl(brandLogoUrl, 640)" alt="Brand Logo" class="max-h-[48px] w-auto max-w-full object-contain" />
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-[12px] font-707 font-medium text-black truncate max-w-[130px]">Brand Logo</span>
+                  <span class="text-[10px] font-707 text-neutral-400">Height: {{ brandLogoHeight }}px • Top: {{ brandLogoVerticalPosition }}px</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button 
+                  type="button"
+                  @click="openMediaGalleryForLogo"
+                  class="apple-glass-btn text-[11px] font-707 px-2.5 py-1 rounded-[6px] cursor-pointer"
+                  title="Change Logo"
+                >
+                  Change
+                </button>
+                <button 
+                  type="button"
+                  @click="removeBrandLogo" 
+                  class="apple-glass-icon-btn size-7 rounded-[6px] flex items-center justify-center text-neutral-500 hover:text-red-600 cursor-pointer"
+                  title="Remove Logo"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            <div 
+              v-else
+              @click="triggerLogoUpload"
+              @dragover.prevent="isDragOverLogo = true"
+              @dragleave="isDragOverLogo = false"
+              @drop.prevent="handleLogoDrop"
+              :class="[
+                isDragOverLogo ? 'border-black bg-neutral-100' : 'bg-[#f5f5f5] hover:bg-[#efefef] border-[#d9d9d9]',
+                'border border-dashed content-stretch flex flex-col gap-[4px] py-[14px] px-[14px] items-center justify-center rounded-[8px] shrink-0 w-full cursor-pointer transition-all relative group'
+              ]"
+            >
+              <input 
+                type="file" 
+                ref="logoInputRef" 
+                accept="image/*" 
+                @change="handleLogoFileChange" 
+                class="hidden" 
+              />
+              <p class="font-707 text-[12px] text-neutral-700 text-center">
+                <button 
+                  type="button" 
+                  @click.stop="openMediaGalleryForLogo"
+                  class="font-medium text-black underline hover:text-neutral-700 cursor-pointer"
+                >
+                  Select From Media Gallery
+                </button>
+                <span> or Drag</span>
+              </p>
+              <span class="text-[10px] font-707 text-neutral-400">Any size — set the height below</span>
+            </div>
+
+            <!-- Logo Height Slider -->
+            <div v-if="brandLogoUrl" class="flex flex-col gap-[8px] w-full pt-1">
+              <div class="flex items-center justify-between w-full">
+                <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Logo Height</p>
+                <div class="flex items-center gap-1.5">
+                  <div class="border-[0.5px] border-[#aaa] focus-within:border-black flex h-[28px] items-center px-2 rounded-[6px] bg-white transition-colors">
+                    <input
+                      type="number"
+                      :min="LOGO_HEIGHT.min"
+                      :max="LOGO_HEIGHT.max"
+                      :value="brandLogoHeight"
+                      @change="brandLogoHeight = clampLogoHeight(($event.target as HTMLInputElement).value)"
+                      class="w-[44px] text-[12px] font-707 text-black text-right outline-none tabular-nums bg-transparent"
+                      aria-label="Logo height in pixels"
+                    />
+                    <span class="text-[11px] font-707 text-neutral-400 ml-0.5">px</span>
+                  </div>
+                  <button
+                    v-if="brandLogoHeight !== LOGO_HEIGHT.default"
+                    type="button"
+                    @click="brandLogoHeight = LOGO_HEIGHT.default"
+                    class="h-[28px] px-2 rounded-[6px] text-[11px] font-707 text-neutral-600 hover:text-black hover:bg-black/5 cursor-pointer"
+                    title="Back to the default height"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+              <input
+                type="range"
+                :min="LOGO_HEIGHT.min"
+                :max="LOGO_HEIGHT.max"
+                step="1"
+                v-model.number="brandLogoHeight"
+                class="w-full accent-black cursor-pointer"
+                aria-label="Logo height"
+              />
+              <div class="flex justify-between text-[10px] font-707 text-neutral-400 tabular-nums">
+                <span>{{ LOGO_HEIGHT.min }}px</span>
+                <span>{{ LOGO_HEIGHT.max }}px</span>
+              </div>
+            </div>
+
+            <!-- Logo Vertical Position Slider -->
+            <div v-if="brandLogoUrl" class="flex flex-col gap-[8px] w-full pt-1">
+              <div class="flex items-center justify-between w-full">
+                <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Vertical Position</p>
+                <div class="flex items-center gap-1.5">
+                  <div class="border-[0.5px] border-[#aaa] focus-within:border-black flex h-[28px] items-center px-2 rounded-[6px] bg-white transition-colors">
+                    <input
+                      type="number"
+                      :min="LOGO_VERTICAL_POSITION.min"
+                      :max="LOGO_VERTICAL_POSITION.max"
+                      :value="brandLogoVerticalPosition"
+                      @change="brandLogoVerticalPosition = clampLogoVerticalPosition(($event.target as HTMLInputElement).value)"
+                      class="w-[44px] text-[12px] font-707 text-black text-right outline-none tabular-nums bg-transparent"
+                      aria-label="Logo vertical position in pixels"
+                    />
+                    <span class="text-[11px] font-707 text-neutral-400 ml-0.5">px</span>
+                  </div>
+                  <button
+                    v-if="brandLogoVerticalPosition !== LOGO_VERTICAL_POSITION.default"
+                    type="button"
+                    @click="brandLogoVerticalPosition = LOGO_VERTICAL_POSITION.default"
+                    class="h-[28px] px-2 rounded-[6px] text-[11px] font-707 text-neutral-600 hover:text-black hover:bg-black/5 cursor-pointer"
+                    title="Back to default position (16px)"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+              <input
+                type="range"
+                :min="LOGO_VERTICAL_POSITION.min"
+                :max="LOGO_VERTICAL_POSITION.max"
+                step="1"
+                v-model.number="brandLogoVerticalPosition"
+                class="w-full accent-black cursor-pointer"
+                aria-label="Logo vertical position"
+              />
+              <div class="flex justify-between text-[10px] font-707 text-neutral-400 tabular-nums">
+                <span>{{ LOGO_VERTICAL_POSITION.min }}px (Top)</span>
+                <span>{{ LOGO_VERTICAL_POSITION.max }}px</span>
+              </div>
+            </div>
+
+            <!-- Logo Alignment (Left, Center, Right) -->
+            <div class="flex items-center justify-between w-full pt-1">
+              <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+                Logo Alignment
+              </p>
+              <div class="flex gap-[6px] items-center">
+                <button 
+                  v-for="align in (['left', 'center', 'right'] as const)" 
+                  :key="align"
+                  @click="brandLogoAlign = align"
+                  :class="brandLogoAlign === align ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                  class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] capitalize cursor-pointer"
+                >
+                  {{ align }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </Transition>
+      </div>
+    </div>
+
+    <!-- TAB 2: TEXT & SCRIM -->
+    <div v-show="activeTab === 'style'" class="w-full flex flex-col">
+      <!-- Add Banner Text Section with Apple Style Toggle Switch -->
+      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
+        <div class="flex items-center justify-between w-full">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Add Banner Text
+          </p>
+
+          <!-- Apple Style Toggle Switch -->
+          <button
+            type="button"
+            role="switch"
+            :aria-checked="isBannerTextEnabled"
+            @click="toggleBannerText"
+            class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+            :class="isBannerTextEnabled ? 'bg-black' : 'bg-[#e5e5ea]'"
+            title="Toggle Banner Text Presets"
+          >
+            <span
+              aria-hidden="true"
+              class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+              :class="isBannerTextEnabled ? 'translate-x-[18px]' : 'translate-x-0'"
+            />
+          </button>
+        </div>
+
+        <!-- Presets (Headline, Subheadline, Text Position, Text Alignment) -->
+        <Transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="transform opacity-0 -translate-y-2"
+          enter-to-class="transform opacity-100 translate-y-0"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="transform opacity-100 translate-y-0"
+          leave-to-class="transform opacity-0 -translate-y-2"
+        >
+          <div v-if="isBannerTextEnabled" class="flex flex-col gap-[12px] w-full pt-1">
+            <!-- Headline -->
+            <div class="border border-[#aaa] focus-within:border-black border-solid flex min-h-[38px] h-auto items-center px-[14px] py-[6px] rounded-[8px] w-full bg-white transition-all">
+              <textarea 
+                ref="headlineRef"
+                v-model="headline"
+                rows="1"
+                @input="handleHeadlineInput"
+                placeholder="Headline"
+                class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 resize-none bg-transparent leading-[20px] overflow-hidden p-0 m-0"
+              />
+            </div>
+
+            <!-- Head Title Font Style Option (H1 Display / H2 Heading / H3 Sub-heading) -->
+            <div class="flex items-center justify-between w-full pt-0.5">
+              <span class="font-707 text-[12px] text-neutral-500">Title Font Style</span>
+              <div class="flex gap-[6px] items-center">
+                <button 
+                  type="button"
+                  @click="setHeadlineStyle('h1')"
+                  :class="currentHeadlineStyle === 'h1' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                  class="px-3 h-[30px] rounded-[6px] flex items-center justify-center font-707 text-[11.5px] cursor-pointer transition-all"
+                  title="H1 Display Headline (32px)"
+                >
+                  H1
+                </button>
+                <button 
+                  type="button"
+                  @click="setHeadlineStyle('h2')"
+                  :class="currentHeadlineStyle === 'h2' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                  class="px-3 h-[30px] rounded-[6px] flex items-center justify-center font-707 text-[11.5px] cursor-pointer transition-all"
+                  title="H2 Section Header (22px)"
+                >
+                  H2
+                </button>
+                <button 
+                  type="button"
+                  @click="setHeadlineStyle('h3')"
+                  :class="currentHeadlineStyle === 'h3' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                  class="px-3 h-[30px] rounded-[6px] flex items-center justify-center font-707 text-[11.5px] cursor-pointer transition-all"
+                  title="H3 Sub-section Heading (18px)"
+                >
+                  H3
+                </button>
+              </div>
+            </div>
+
+            <!-- Subheadline -->
+            <div class="border border-[#aaa] focus-within:border-black border-solid flex min-h-[38px] h-auto items-center px-[14px] py-[6px] rounded-[8px] w-full bg-white transition-all">
+              <textarea 
+                ref="subheadlineRef"
+                v-model="subheadline"
+                rows="1"
+                @input="handleSubheadlineInput"
+                placeholder="Sub Headline"
+                class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 resize-none bg-transparent leading-[20px] overflow-hidden p-0 m-0"
+              />
+            </div>
+
+            <!-- Tag / Badge (Optional) -->
+            <div v-if="!isBadgeOptionOpen && !badge" class="flex items-center w-full pt-0.5">
               <button 
                 type="button" 
-                @click="removeBadge" 
-                class="apple-glass-btn font-707 text-[11px] px-2 py-0.5 rounded-[4px] text-neutral-500 hover:text-red-500 cursor-pointer"
+                @click="showBadgeInput"
+                class="apple-glass-btn font-707 text-[12px] flex items-center gap-1.5 py-1.5 px-3 rounded-lg cursor-pointer"
               >
-                Remove
+                <Plus class="w-3.5 h-3.5 text-neutral-500" />
+                <span>Add Tag / Badge (Optional)</span>
               </button>
             </div>
-            <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
-              <input 
-                ref="badgeInputRef"
-                v-model="badge"
-                placeholder="e.g. ONLINE EXCLUSIVE, SPECIAL RELEASE"
-                class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400"
-              />
-            </div>
-          </div>
-
-          <!-- Text Position -->
-          <div class="flex items-center justify-between w-full pt-1">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Text Position
-            </p>
-            <div class="flex gap-[6px] items-center">
-              <button 
-                v-for="pos in textPositions" 
-                :key="pos.value"
-                @click="textPosition = pos.value"
-                :class="textPosition === pos.value ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                class="px-3.5 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
-              >
-                {{ pos.label }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Text Alignment -->
-          <div class="flex items-center justify-between w-full pt-1">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Text Alignment
-            </p>
-            <div class="flex gap-[6px] items-center">
-              <button 
-                @click="textAlign = 'left'"
-                :class="textAlign === 'left' ? 'apple-glass-btn-dark' : 'apple-glass-btn'"
-                class="rounded-[6px] size-[32px] flex items-center justify-center cursor-pointer"
-                title="Align Left"
-              >
-                <AlignLeft class="size-3.5" />
-              </button>
-              <button 
-                @click="textAlign = 'center'"
-                :class="textAlign === 'center' ? 'apple-glass-btn-dark' : 'apple-glass-btn'"
-                class="rounded-[6px] size-[32px] flex items-center justify-center cursor-pointer"
-                title="Align Center"
-              >
-                <AlignCenter class="size-3.5" />
-              </button>
-              <button 
-                @click="textAlign = 'right'"
-                :class="textAlign === 'right' ? 'apple-glass-btn-dark' : 'apple-glass-btn'"
-                class="rounded-[6px] size-[32px] flex items-center justify-center cursor-pointer"
-                title="Align Right"
-              >
-                <AlignRight class="size-3.5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </div>
-
-    <!-- Image Overlay / Scrim Section with Apple Style Toggle Switch & Slider -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
-      <!-- Title row with Apple Style Toggle Switch -->
-      <div class="flex items-center justify-between w-full">
-        <div>
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Image Overlay / Scrim
-          </p>
-          <p v-if="textPosition === 'center'" class="font-707 text-[10px] text-neutral-400 mt-0.5">
-            Auto-disabled for center text position
-          </p>
-        </div>
-
-        <!-- Modern Elegant Apple Style Toggle Switch (auto-disabled if Center) -->
-        <button
-          type="button"
-          role="switch"
-          :aria-checked="isOverlayEnabled && textPosition !== 'center'"
-          :disabled="textPosition === 'center'"
-          @click="toggleOverlay"
-          class="relative inline-flex h-[22px] w-[40px] shrink-0 rounded-full p-[2px] transition-all duration-200 ease-in-out focus:outline-none"
-          :class="[
-            textPosition === 'center' ? 'opacity-40 cursor-not-allowed bg-[#e5e5ea]' : 
-            (isOverlayEnabled ? 'bg-black cursor-pointer' : 'bg-[#e5e5ea] cursor-pointer')
-          ]"
-          :title="textPosition === 'center' ? 'Image Overlay is disabled when Center text position is active' : 'Toggle Image Overlay / Scrim'"
-        >
-          <span
-            aria-hidden="true"
-            class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
-            :class="(isOverlayEnabled && textPosition !== 'center') ? 'translate-x-[18px]' : 'translate-x-0'"
-          />
-        </button>
-      </div>
-
-      <!-- Scrim Intensity / Opacity Slider (appears when toggle is ON) -->
-      <Transition
-        enter-active-class="transition duration-200 ease-out"
-        enter-from-class="transform opacity-0 -translate-y-2"
-        enter-to-class="transform opacity-100 translate-y-0"
-        leave-active-class="transition duration-150 ease-in"
-        leave-from-class="transform opacity-100 translate-y-0"
-        leave-to-class="transform opacity-0 -translate-y-2"
-      >
-        <div v-if="isOverlayEnabled" class="flex flex-col gap-[10px] w-full pt-1">
-          <div class="flex items-center justify-between w-full">
-            <span class="font-707 text-[12px] text-neutral-500">Scrim Opacity</span>
-            <span class="font-707 text-[12px] font-medium text-black bg-neutral-100 px-2 py-0.5 rounded-[4px]">{{ overlayOpacity }}%</span>
-          </div>
-          <div class="flex items-center w-full">
-            <input 
-              type="range"
-              min="0"
-              max="100"
-              step="1"
-              v-model.number="overlayOpacity"
-              class="w-full h-1.5 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-black"
-            />
-          </div>
-        </div>
-      </Transition>
-    </div>
-
-    <!-- Add CTA Button with Apple Style Toggle Switch -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
-      <!-- Title row with Apple Style Toggle Switch -->
-      <div class="flex items-center justify-between w-full">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Add CTA Button
-        </p>
-
-        <!-- Modern Elegant Apple Style Toggle Switch -->
-        <button
-          type="button"
-          role="switch"
-          :aria-checked="isCtaEnabled"
-          @click="toggleCta"
-          class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
-          :class="isCtaEnabled ? 'bg-black' : 'bg-[#e5e5ea]'"
-          title="Toggle CTA Button"
-        >
-          <span
-            aria-hidden="true"
-            class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
-            :class="isCtaEnabled ? 'translate-x-[18px]' : 'translate-x-0'"
-          />
-        </button>
-      </div>
-
-      <!-- CTA Button Settings (Appears only when toggle is on) -->
-      <Transition
-        enter-active-class="transition duration-200 ease-out"
-        enter-from-class="transform opacity-0 -translate-y-2"
-        enter-to-class="transform opacity-100 translate-y-0"
-        leave-active-class="transition duration-150 ease-in"
-        leave-from-class="transform opacity-100 translate-y-0"
-        leave-to-class="transform opacity-0 -translate-y-2"
-      >
-        <div v-if="isCtaEnabled" class="flex flex-col gap-[12px] w-full pt-1">
-          <!-- Button Text Input -->
-          <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
-            <input 
-              v-model="buttonText"
-              placeholder="Button Text (e.g. Enter Raffle)"
-              class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
-            />
-          </div>
-
-          <!-- Button Style Preset (Primary Black vs Primary White) -->
-          <div class="content-stretch flex flex-col gap-[10px] items-start w-full pt-1">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Button Style Preset
-            </p>
-            <div class="flex gap-[8px] items-center w-full">
-              <button 
-                type="button"
-                @click="setButtonVariant('black')"
-                :class="buttonVariant === 'black' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[16px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
-              >
-                Primary Black
-              </button>
-              <button 
-                type="button"
-                @click="setButtonVariant('white')"
-                :class="buttonVariant === 'white' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[16px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
-              >
-                Primary White
-              </button>
-            </div>
-          </div>
-
-          <!-- Position Selector (Standard vs Sticky Bottom) -->
-          <div class="flex items-center justify-between w-full pt-1">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Position
-            </p>
-            <div class="flex gap-[6px] items-center">
-              <button 
-                v-for="pos in ctaPositionModes" 
-                :key="pos.value"
-                type="button"
-                @click="setCtaPositionMode(pos.value)"
-                :class="ctaPositionMode === pos.value ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                class="px-3.5 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
-              >
-                {{ pos.label }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Sticky Notice (Appears when Sticky Bottom is active - strictly applied to this page only) -->
-          <Transition
-            enter-active-class="transition duration-200 ease-out"
-            enter-from-class="transform opacity-0 -translate-y-2"
-            enter-to-class="transform opacity-100 translate-y-0"
-            leave-active-class="transition duration-150 ease-in"
-            leave-from-class="transform opacity-100 translate-y-0"
-            leave-to-class="transform opacity-0 -translate-y-2"
-          >
-            <div v-if="ctaPositionMode === 'sticky-bottom'" class="flex items-center justify-between w-full pt-1">
-              <span class="font-707 text-[12px] text-neutral-500">
-                Applied to this page only
-              </span>
-              <span class="font-707 text-[10px] text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-[4px] border border-neutral-200">
-                Current Page Only
-              </span>
-            </div>
-          </Transition>
-
-          <!-- Link to Dropdown (Matching Set Media Fits style) -->
-          <div class="content-stretch flex items-center justify-between w-full pt-1 relative">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
-              Link to
-            </p>
-            <div class="relative">
-              <button
-                type="button"
-                @click="isLinkToDropdownOpen = !isLinkToDropdownOpen"
-                class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-[240px] cursor-pointer text-left"
-              >
-                <span class="font-707 text-[13px] text-black">{{ selectedActionLabel }}</span>
-                <ChevronDown 
-                  class="size-[15px] text-black transition-transform duration-200" 
-                  :class="isLinkToDropdownOpen ? 'rotate-180' : ''"
-                />
-              </button>
-
-              <!-- Dropdown Menu -->
-              <div 
-                v-if="isLinkToDropdownOpen" 
-                class="absolute right-0 top-[44px] w-[240px] bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-lg py-1 z-30 flex flex-col"
-              >
-                <button
-                  v-for="opt in linkToOptions"
-                  :key="opt.value"
-                  type="button"
-                  @click="selectLinkTo(opt.value)"
-                  class="flex items-center justify-between px-[14px] py-[8px] text-left hover:bg-black/5 transition-colors cursor-pointer"
-                  :class="ctaActionType === opt.value ? 'font-medium text-black bg-black/5' : 'text-neutral-700'"
+            <div v-else class="flex flex-col gap-1.5 w-full">
+              <div class="flex items-center justify-between">
+                <span class="font-707 text-[11px] font-medium text-neutral-600">Tag / Badge (Top of Headline)</span>
+                <button 
+                  type="button" 
+                  @click="removeBadge" 
+                  class="apple-glass-btn font-707 text-[11px] px-2 py-0.5 rounded-[4px] text-neutral-500 hover:text-red-500 cursor-pointer"
                 >
-                  <span class="font-707 text-[13px]">{{ opt.label }}</span>
-                  <Check v-if="ctaActionType === opt.value" class="size-[15px] text-black" />
+                  Remove
+                </button>
+              </div>
+              <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+                <input 
+                  ref="badgeInputRef"
+                  v-model="badge"
+                  placeholder="e.g. ONLINE EXCLUSIVE, SPECIAL RELEASE"
+                  class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400"
+                />
+              </div>
+            </div>
+
+            <!-- Text Position -->
+            <div class="flex items-center justify-between w-full pt-1">
+              <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+                Text Position
+              </p>
+              <div class="flex gap-[6px] items-center">
+                <button 
+                  v-for="pos in textPositions" 
+                  :key="pos.value"
+                  @click="textPosition = pos.value"
+                  :class="textPosition === pos.value ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                  class="px-3.5 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
+                >
+                  {{ pos.label }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Text Alignment -->
+            <div class="flex items-center justify-between w-full pt-1">
+              <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+                Text Alignment
+              </p>
+              <div class="flex gap-[6px] items-center">
+                <button 
+                  @click="textAlign = 'left'"
+                  :class="textAlign === 'left' ? 'apple-glass-btn-dark' : 'apple-glass-btn'"
+                  class="rounded-[6px] size-[32px] flex items-center justify-center cursor-pointer"
+                  title="Align Left"
+                >
+                  <AlignLeft class="size-3.5" />
+                </button>
+                <button 
+                  @click="textAlign = 'center'"
+                  :class="textAlign === 'center' ? 'apple-glass-btn-dark' : 'apple-glass-btn'"
+                  class="rounded-[6px] size-[32px] flex items-center justify-center cursor-pointer"
+                  title="Align Center"
+                >
+                  <AlignCenter class="size-3.5" />
+                </button>
+                <button 
+                  @click="textAlign = 'right'"
+                  :class="textAlign === 'right' ? 'apple-glass-btn-dark' : 'apple-glass-btn'"
+                  class="rounded-[6px] size-[32px] flex items-center justify-center cursor-pointer"
+                  title="Align Right"
+                >
+                  <AlignRight class="size-3.5" />
                 </button>
               </div>
             </div>
           </div>
+        </Transition>
+      </div>
 
-          <!-- Conditional URL Input if External URL is selected -->
-          <div v-if="ctaActionType === 'link'" class="w-full pt-1 animate-in fade-in duration-150">
-            <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+      <!-- Image Overlay / Scrim Section -->
+      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
+        <div class="flex items-center justify-between w-full">
+          <div>
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Image Overlay / Scrim
+            </p>
+            <p v-if="textPosition === 'center'" class="font-707 text-[10px] text-neutral-400 mt-0.5">
+              Auto-disabled for center text position
+            </p>
+          </div>
+
+          <button
+            type="button"
+            role="switch"
+            :aria-checked="isOverlayEnabled && textPosition !== 'center'"
+            :disabled="textPosition === 'center'"
+            @click="toggleOverlay"
+            class="relative inline-flex h-[22px] w-[40px] shrink-0 rounded-full p-[2px] transition-all duration-200 ease-in-out focus:outline-none"
+            :class="[
+              textPosition === 'center' ? 'opacity-40 cursor-not-allowed bg-[#e5e5ea]' : 
+              (isOverlayEnabled ? 'bg-black cursor-pointer' : 'bg-[#e5e5ea] cursor-pointer')
+            ]"
+            :title="textPosition === 'center' ? 'Image Overlay is disabled when Center text position is active' : 'Toggle Image Overlay / Scrim'"
+          >
+            <span
+              aria-hidden="true"
+              class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+              :class="(isOverlayEnabled && textPosition !== 'center') ? 'translate-x-[18px]' : 'translate-x-0'"
+            />
+          </button>
+        </div>
+
+        <!-- Scrim Intensity / Opacity Slider -->
+        <Transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="transform opacity-0 -translate-y-2"
+          enter-to-class="transform opacity-100 translate-y-0"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="transform opacity-100 translate-y-0"
+          leave-to-class="transform opacity-0 -translate-y-2"
+        >
+          <div v-if="isOverlayEnabled" class="flex flex-col gap-[10px] w-full pt-1">
+            <div class="flex items-center justify-between w-full">
+              <span class="font-707 text-[12px] text-neutral-500">Scrim Opacity</span>
+              <span class="font-707 text-[12px] font-medium text-black bg-neutral-100 px-2 py-0.5 rounded-[4px]">{{ overlayOpacity }}%</span>
+            </div>
+            <div class="flex items-center w-full">
               <input 
-                v-model="ctaUrl" 
-                placeholder="https://..." 
-                class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                v-model.number="overlayOpacity"
+                class="w-full h-1.5 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-black"
               />
             </div>
           </div>
+        </Transition>
+      </div>
+    </div>
 
-          <!-- Conditional Modal Setup Button if Popup Modal is selected -->
-          <div v-if="ctaActionType === 'modal'" class="w-full pt-1 animate-in fade-in duration-150">
-            <button 
-              type="button"
-              @click="openModalSetup"
-              class="apple-glass-btn-dark w-full h-[38px] rounded-[8px] flex items-center justify-between px-3.5 font-707 font-medium text-[12px] cursor-pointer transition-all shadow-sm"
-            >
-              <span class="flex items-center gap-2">
-                <SlidersHorizontal class="size-3.5" />
-                <span>Configure Pop Up Modal</span>
-              </span>
-              <ArrowRight class="size-3.5 opacity-80" />
-            </button>
-          </div>
+    <!-- TAB 3: ACTION CTA -->
+    <div v-show="activeTab === 'cta'" class="w-full flex flex-col">
+      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
+        <!-- Title row with Apple Style Toggle Switch -->
+        <div class="flex items-center justify-between w-full">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Add CTA Button
+          </p>
+
+          <!-- Modern Elegant Apple Style Toggle Switch -->
+          <button
+            type="button"
+            role="switch"
+            :aria-checked="isCtaEnabled"
+            @click="toggleCta"
+            class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+            :class="isCtaEnabled ? 'bg-black' : 'bg-[#e5e5ea]'"
+            title="Toggle CTA Button"
+          >
+            <span
+              aria-hidden="true"
+              class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+              :class="isCtaEnabled ? 'translate-x-[18px]' : 'translate-x-0'"
+            />
+          </button>
         </div>
-      </Transition>
+
+        <!-- CTA Options Container -->
+        <Transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="transform opacity-0 -translate-y-2"
+          enter-to-class="transform opacity-100 translate-y-0"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="transform opacity-100 translate-y-0"
+          leave-to-class="transform opacity-0 -translate-y-2"
+        >
+          <div v-if="isCtaEnabled" class="flex flex-col gap-[12px] w-full pt-1">
+            <!-- Button Text Input -->
+            <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+              <input 
+                v-model="buttonText"
+                placeholder="Button Text (e.g. Enter Raffle)"
+                class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
+              />
+            </div>
+
+            <!-- Button Style Preset (Primary Black vs Primary White) -->
+            <div class="content-stretch flex flex-col gap-[10px] items-start w-full pt-1">
+              <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+                Button Style Preset
+              </p>
+              <div class="flex gap-[8px] items-center w-full">
+                <button 
+                  type="button"
+                  @click="setButtonVariant('black')"
+                  :class="buttonVariant === 'black' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                  class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[16px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+                >
+                  Primary Black
+                </button>
+                <button 
+                  type="button"
+                  @click="setButtonVariant('white')"
+                  :class="buttonVariant === 'white' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                  class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[16px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+                >
+                  Primary White
+                </button>
+              </div>
+            </div>
+
+            <!-- Position Selector (Standard vs Sticky Bottom) -->
+            <div class="flex items-center justify-between w-full pt-1">
+              <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+                Position
+              </p>
+              <div class="flex gap-[6px] items-center">
+                <button 
+                  v-for="pos in ctaPositionModes" 
+                  :key="pos.value"
+                  @click="setCtaPositionMode(pos.value)"
+                  :class="ctaPositionMode === pos.value ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                  class="px-3.5 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
+                >
+                  {{ pos.label }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Sticky Notice -->
+            <Transition
+              enter-active-class="transition duration-200 ease-out"
+              enter-from-class="transform opacity-0 -translate-y-2"
+              enter-to-class="transform opacity-100 translate-y-0"
+              leave-active-class="transition duration-150 ease-in"
+              leave-from-class="transform opacity-100 translate-y-0"
+              leave-to-class="transform opacity-0 -translate-y-2"
+            >
+              <div v-if="ctaPositionMode === 'sticky-bottom'" class="flex items-center justify-between w-full pt-1">
+                <span class="font-707 text-[12px] text-neutral-500">
+                  Applied to this page only
+                </span>
+                <span class="font-707 text-[10px] text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-[4px] border border-neutral-200">
+                  Current Page Only
+                </span>
+              </div>
+            </Transition>
+
+            <!-- Link to Dropdown -->
+            <div class="content-stretch flex items-center justify-between w-full pt-1 relative">
+              <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
+                Link to
+              </p>
+              <div class="relative">
+                <button
+                  type="button"
+                  @click="isLinkToDropdownOpen = !isLinkToDropdownOpen"
+                  class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-[240px] cursor-pointer text-left"
+                >
+                  <span class="font-707 text-[13px] text-black">{{ selectedActionLabel }}</span>
+                  <ChevronDown 
+                    class="size-[15px] text-black transition-transform duration-200" 
+                    :class="isLinkToDropdownOpen ? 'rotate-180' : ''"
+                  />
+                </button>
+
+                <!-- Dropdown Menu -->
+                <div 
+                  v-if="isLinkToDropdownOpen" 
+                  class="absolute right-0 top-[44px] w-[240px] bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-lg py-1 z-30 flex flex-col"
+                >
+                  <button
+                    v-for="opt in linkToOptions"
+                    :key="opt.value"
+                    type="button"
+                    @click="selectLinkTo(opt.value)"
+                    class="flex items-center justify-between px-[14px] py-[8px] text-left hover:bg-black/5 transition-colors cursor-pointer"
+                    :class="ctaActionType === opt.value ? 'font-medium text-black bg-black/5' : 'text-neutral-700'"
+                  >
+                    <span class="font-707 text-[13px]">{{ opt.label }}</span>
+                    <Check v-if="ctaActionType === opt.value" class="size-[15px] text-black" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Conditional URL Input if External URL is selected -->
+            <div v-if="ctaActionType === 'link'" class="w-full pt-1 animate-in fade-in duration-150">
+              <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+                <input 
+                  v-model="ctaUrl" 
+                  placeholder="https://..." 
+                  class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
+                />
+              </div>
+            </div>
+
+            <!-- Conditional Modal Setup Button if Popup Modal is selected -->
+            <div v-if="ctaActionType === 'modal'" class="w-full pt-1 animate-in fade-in duration-150">
+              <button 
+                type="button"
+                @click="openModalSetup"
+                class="apple-glass-btn-dark w-full h-[38px] rounded-[8px] flex items-center justify-between px-3.5 font-707 font-medium text-[12px] cursor-pointer transition-all shadow-sm"
+              >
+                <span class="flex items-center gap-2">
+                  <SlidersHorizontal class="size-3.5" />
+                  <span>Configure Pop Up Modal</span>
+                </span>
+                <ArrowRight class="size-3.5 opacity-80" />
+              </button>
+            </div>
+          </div>
+        </Transition>
+      </div>
     </div>
   </aside>
 </template>
@@ -806,7 +832,7 @@ import { CTA_ACTION_OPTIONS, normalizeCtaAction } from './ctaActions.ts';
 import { ref, computed, watch, nextTick } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
-import { AlignLeft, AlignCenter, AlignRight, ChevronDown, Check, Trash2, Plus, SlidersHorizontal, ArrowRight, Crop, Move } from 'lucide-vue-next';
+import { AlignLeft, AlignCenter, AlignRight, ChevronDown, Check, Trash2, Plus, SlidersHorizontal, ArrowRight, Crop, Image as ImageIcon, Type, MousePointerClick } from 'lucide-vue-next';
 import { uploadMediaDirectly } from '../../services/mediaService.ts';
 import type { WidgetItem } from '../../types/editor.ts';
 
@@ -817,6 +843,15 @@ const props = defineProps<{
 defineEmits<{
   (e: 'close'): void;
 }>();
+
+// 3-Tab Segment Navigation
+type TabType = 'media' | 'style' | 'cta';
+const activeTab = ref<TabType>('media');
+const tabs = [
+  { id: 'media' as const, label: 'Media & Brand', icon: ImageIcon },
+  { id: 'style' as const, label: 'Text & Scrim', icon: Type },
+  { id: 'cta' as const, label: 'Action CTA', icon: MousePointerClick }
+];
 
 const editorStore = useEditorStore();
 
@@ -1026,26 +1061,11 @@ const isCtaModalDisallowed = computed(() => {
   return ctaPositionMode.value === 'sticky-bottom' && ctaStickyScope.value === 'all';
 });
 
-const hasNextPage = computed(() => {
-  return editorStore.activePageIndex < editorStore.pages.length - 1;
-});
-
-const hasFormFields = computed(() => {
-  return editorStore.pages.flatMap(p => p.widget_tree).some(w => 
-    w.type === 'RegistrationForm' || 
-    w.type === 'FieldInput' ||
-    (w.props?.modalProps && (w.props.modalProps.variant === 'message-field' || w.props.modalProps.fieldType)) ||
-    (w.type === 'ModalOverlay' && (w.props?.variant === 'message-field' || w.props?.fieldType))
-  );
-});
-
-const hasEPassInProject = computed(() => {
-  return editorStore.pages.flatMap(p => p.widget_tree).some(w => w.type === 'GuestEPass' || w.type === 'LiveQueuePass');
-});
-
 const linkToOptions = computed(() => {
   return allLinkToOptions.filter(opt => {
-    if (opt.value === 'download-pass') return hasEPassInProject.value;
+    if (opt.value === 'download-pass') {
+      return editorStore.pages.flatMap(p => p.widget_tree).some(w => w.type === 'GuestEPass' || w.type === 'LiveQueuePass');
+    }
     if (opt.value === 'modal') return !isCtaModalDisallowed.value;
     return true;
   });
@@ -1117,44 +1137,6 @@ function setCtaPositionMode(mode: 'in-flow' | 'sticky-bottom') {
   });
 }
 
-function setCtaStickyScope(scope: 'current' | 'all' | 'custom') {
-  ctaStickyScope.value = scope;
-  if (scope === 'all' && ctaActionType.value === 'modal') {
-    ctaActionType.value = 'submit';
-  }
-  const defaultPageIds = scope === 'all' 
-    ? editorStore.pages.map(p => p.id) 
-    : [editorStore.currentPage.id];
-  ctaStickyPageIds.value = defaultPageIds;
-  updateHeroProps({ 
-    stickyScope: scope,
-    ctaStickyScope: scope,
-    actionType: ctaActionType.value,
-    ctaActionType: ctaActionType.value,
-    stickyPageIds: defaultPageIds,
-    ctaStickyPageIds: defaultPageIds
-  });
-}
-
-function isPageStickySelected(pageId: string): boolean {
-  return ctaStickyPageIds.value.includes(pageId);
-}
-
-function togglePageSticky(pageId: string) {
-  const currentList = [...ctaStickyPageIds.value];
-  const idx = currentList.indexOf(pageId);
-  if (idx >= 0) {
-    currentList.splice(idx, 1);
-  } else {
-    currentList.push(pageId);
-  }
-  ctaStickyPageIds.value = currentList;
-  updateHeroProps({ 
-    stickyPageIds: currentList,
-    ctaStickyPageIds: currentList
-  });
-}
-
 function toggleBrandLogo() {
   if (!isTopPosition.value) return;
   isBrandLogoEnabled.value = !isBrandLogoEnabled.value;
@@ -1210,7 +1192,6 @@ function processLogoFile(file: File) {
         isBrandLogoEnabled: true
       });
       
-      // Upload to server directly
       const savedMedia = await uploadMediaDirectly({
         dataUrl: result,
         title: file.name.replace(/\.[^/.]+$/, ""),
@@ -1458,8 +1439,6 @@ watch(brandLogoHeight, (height) => {
     brandLogoHeight.value = clamped;
     return;
   }
-  // Only when it actually differs from the stored value: selecting a banner
-  // syncs this ref from its props and must not count as an edit.
   if (clamped !== clampLogoHeight(targetWidget.value?.props?.brandLogoHeight)) {
     updateHeroProps({ brandLogoHeight: clamped });
   }

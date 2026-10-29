@@ -1,7 +1,7 @@
 <template>
   <!-- Button Setup Sidebar Menu (Matching TextSetupSidebar.vue vertical centering) -->
   <aside 
-    v-if="isOpen"
+    v-if="isOpen && targetWidget"
     ref="sidebarRef"
     @click.stop
     @wheel.stop
@@ -9,296 +9,349 @@
     data-node-id="244:11560"
     data-name="Button Setup Sidebar"
   >
-    <!-- Widget Container & Header -->
-    <div class="content-stretch flex flex-col items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+    <!-- Header -->
+    <div class="content-stretch flex flex-col items-start p-[24px] pb-[16px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
-        <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
-          Button Setup
-        </p>
+        <div class="flex items-center gap-2">
+          <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
+            Button Setup
+          </p>
+          <span class="font-707 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-black/5 text-neutral-600 font-medium">
+            {{ currentVariant === 'black' ? 'Solid Black' : 'Solid White' }}
+          </span>
+        </div>
         <button 
           @click="$emit('close')"
-          class="apple-glass-icon-btn size-7 flex items-center justify-center rounded-full cursor-pointer"
+          class="apple-glass-icon-btn size-7 flex items-center justify-center rounded-full cursor-pointer hover:bg-neutral-200/60 transition-colors"
+          title="Close"
         >
           <img :src="FIGMA_ASSETS.closeIcon" class="w-3.5 h-3.5" alt="Close" />
         </button>
       </div>
     </div>
 
-    <!-- Section 1: Button Text Input -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
-      <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-        Button Text
-      </p>
-      <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
-        <input 
-          v-model="buttonLabel"
-          placeholder="Button Text (e.g. Enter Raffle)"
-          class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
-        />
-      </div>
-    </div>
-
-    <!-- Section 2: Style Presets (Removed on other pages if button is configured for several or all pages) -->
-    <div 
-      v-if="shouldShowStylePresets"
-      class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]"
-    >
-      <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-        Button Style Preset
-      </p>
-      <div class="flex gap-[8px] items-center w-full">
-        <button 
+    <!-- Segmented 3-Tab Control Bar (Sticky) -->
+    <div class="px-[20px] pt-[12px] pb-[12px] w-full border-b border-[#f0f0f0] bg-white/70 backdrop-blur-md shrink-0 sticky top-0 z-20">
+      <div class="flex items-center p-1 bg-[#ececec]/60 rounded-[10px] w-full gap-1 border border-black/5">
+        <button
+          v-for="t in tabs"
+          :key="t.id"
           type="button"
-          @click="setVariant('black')"
-          :class="currentVariant === 'black' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-          class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[16px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+          @click="activeTab = t.id"
+          :class="activeTab === t.id 
+            ? 'bg-white text-black shadow-xs font-medium' 
+            : 'text-neutral-500 hover:text-black font-normal'"
+          class="flex-1 h-[30px] rounded-[7px] text-[12px] font-707 flex items-center justify-center gap-1.5 transition-all cursor-pointer select-none"
         >
-          Primary Black
-        </button>
-        <button 
-          type="button"
-          @click="setVariant('white')"
-          :class="currentVariant === 'white' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-          class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[16px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
-        >
-          Primary White
+          <component :is="t.icon" class="size-3.5" />
+          <span>{{ t.label }}</span>
         </button>
       </div>
     </div>
 
-    <!-- Section 3: Position Layout Mode (Following Text position layout on hero banner modal) -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
-      <div class="flex items-center justify-between w-full">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Position
-        </p>
-        <div class="flex gap-[6px] items-center">
-          <button 
-            v-for="pos in positionModes" 
-            :key="pos.value"
-            @click="setPositionMode(pos.value)"
-            :class="currentPositionMode === pos.value ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="px-3.5 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
-          >
-            {{ pos.label }}
-          </button>
+    <!-- TAB 1: CONTENT -->
+    <div v-show="activeTab === 'content'" class="w-full flex flex-col">
+      <!-- Button Text Input -->
+      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
+        <div class="flex flex-col gap-[6px] w-full">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Button Text
+          </p>
+          <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+            <input 
+              v-model="buttonLabel"
+              placeholder="Button Text (e.g. Enter Raffle)"
+              class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
+            />
+          </div>
         </div>
       </div>
 
-      <!-- Sticky Page Targeting (Appears when Sticky Bottom is active) -->
-      <Transition
-        enter-active-class="transition duration-200 ease-out"
-        enter-from-class="transform opacity-0 -translate-y-2"
-        enter-to-class="transform opacity-100 translate-y-0"
-        leave-active-class="transition duration-150 ease-in"
-        leave-from-class="transform opacity-100 translate-y-0"
-        leave-to-class="transform opacity-0 -translate-y-2"
-      >
-        <div v-if="currentPositionMode === 'sticky-bottom'" class="flex flex-col gap-[10px] w-full pt-1">
-          <div class="flex items-center justify-between w-full">
-            <p class="font-707 font-medium text-[12px] text-neutral-600">
-              Apply to Pages
+      <!-- Add Icon Section -->
+      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
+        <div class="flex items-center justify-between w-full">
+          <div class="flex flex-col">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Button Icon
             </p>
-            <div class="flex gap-[6px] items-center">
-              <button 
-                type="button"
-                @click="setStickyScope('current')"
-                :class="currentStickyScope === 'current' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer"
-              >
-                Current Page
-              </button>
-              <button 
-                type="button"
-                @click="setStickyScope('all')"
-                :class="currentStickyScope === 'all' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer"
-              >
-                All Pages
-              </button>
-              <button 
-                type="button"
-                @click="setStickyScope('custom')"
-                :class="currentStickyScope === 'custom' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer"
-              >
-                Select
-              </button>
-            </div>
+            <span class="font-707 text-[11px] text-neutral-400">
+              Show icon alongside label
+            </span>
           </div>
 
-          <!-- Page checklist when 'Select' is active -->
-          <div v-if="currentStickyScope === 'custom'" class="flex flex-col gap-1.5 pt-1">
-            <div 
-              v-for="(page, idx) in editorStore.pages" 
-              :key="page.id"
-              @click="togglePageSticky(page.id)"
-              class="flex items-center justify-between p-2 rounded-[6px] bg-white/80 border border-neutral-200 hover:border-black/40 cursor-pointer transition-colors"
-            >
-              <div class="flex items-center gap-2">
-                <input 
-                  type="checkbox" 
-                  :checked="isPageStickySelected(page.id)" 
-                  @click.stop="togglePageSticky(page.id)"
-                  class="rounded accent-black cursor-pointer"
-                />
-                <span class="font-707 text-[12px] text-black">
-                  Page {{ idx + 1 }}: {{ page.page_name || page.title || 'Untitled' }}
-                </span>
-              </div>
-              <span v-if="editorStore.currentPage.id === page.id" class="text-[9px] font-mono uppercase bg-neutral-100 text-neutral-600 px-1.5 py-0.5 rounded">
-                Active
-              </span>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </div>
-
-    <!-- Section 4: Action Button Link to (Matching Set Media Fits style) -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
-      <div class="content-stretch flex items-center justify-between w-full relative">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
-          Link to
-        </p>
-        <div class="relative">
+          <!-- Apple Style Toggle Switch -->
           <button
             type="button"
-            @click="isLinkToDropdownOpen = !isLinkToDropdownOpen"
-            class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-[240px] cursor-pointer text-left"
+            role="switch"
+            :aria-checked="showIcon"
+            @click="toggleIcon"
+            class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+            :class="showIcon ? 'bg-black' : 'bg-[#e5e5ea]'"
+            title="Toggle Icon"
           >
-            <span class="font-707 text-[13px] text-black">{{ selectedActionLabel }}</span>
-            <ChevronDown 
-              class="size-[15px] text-black transition-transform duration-200" 
-              :class="isLinkToDropdownOpen ? 'rotate-180' : ''"
+            <span
+              aria-hidden="true"
+              class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+              :class="showIcon ? 'translate-x-[18px]' : 'translate-x-0'"
             />
           </button>
+        </div>
 
-          <!-- Dropdown Menu -->
-          <div 
-            v-if="isLinkToDropdownOpen" 
-            class="absolute right-0 top-[44px] w-[240px] bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-lg py-1 z-30 flex flex-col"
-          >
-            <button
-              v-for="opt in linkToOptions"
-              :key="opt.value"
+        <!-- Icon Presets -->
+        <Transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="transform opacity-0 -translate-y-2"
+          enter-to-class="transform opacity-100 translate-y-0"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="transform opacity-100 translate-y-0"
+          leave-to-class="transform opacity-0 -translate-y-2"
+        >
+          <div v-if="showIcon" class="flex flex-nowrap overflow-x-auto gap-[8px] items-center -mx-[24px] px-[24px] w-[calc(100%+48px)] pt-1 no-scrollbar">
+            <button 
               type="button"
-              @click="selectLinkTo(opt.value)"
-              class="flex items-center justify-between px-[14px] py-[8px] text-left hover:bg-black/5 transition-colors cursor-pointer"
-              :class="actionType === opt.value ? 'font-medium text-black bg-black/5' : 'text-neutral-700'"
+              @click="setIconName('arrow-right')"
+              :class="iconName === 'arrow-right' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="shrink-0 whitespace-nowrap content-stretch flex h-[34px] items-center justify-center gap-1.5 px-[14px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
             >
-              <span class="font-707 text-[13px]">{{ opt.label }}</span>
-              <Check v-if="actionType === opt.value" class="size-[15px] text-black" />
+              <ArrowRight class="size-3.5" /> Arrow
+            </button>
+            <button 
+              type="button"
+              @click="setIconName('grid')"
+              :class="iconName === 'grid' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="shrink-0 whitespace-nowrap content-stretch flex h-[34px] items-center justify-center gap-1.5 px-[14px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+            >
+              <LayoutGrid class="size-3.5" /> Grid
+            </button>
+            <button 
+              type="button"
+              @click="setIconName('ticket')"
+              :class="iconName === 'ticket' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="shrink-0 whitespace-nowrap content-stretch flex h-[34px] items-center justify-center gap-1.5 px-[14px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+            >
+              <Ticket class="size-3.5" /> Pass
+            </button>
+            <button 
+              type="button"
+              @click="setIconName('whatsapp')"
+              :class="iconName === 'whatsapp' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="shrink-0 whitespace-nowrap content-stretch flex h-[34px] items-center justify-center gap-1.5 px-[14px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+            >
+              <Phone class="size-3.5" /> WhatsApp
+            </button>
+            <button 
+              type="button"
+              @click="setIconName('instagram')"
+              :class="iconName === 'instagram' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="shrink-0 whitespace-nowrap content-stretch flex h-[34px] items-center justify-center gap-1.5 px-[14px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+            >
+              <Instagram class="size-3.5" /> Instagram
+            </button>
+          </div>
+        </Transition>
+      </div>
+    </div>
+
+    <!-- TAB 2: STYLE & LAYOUT -->
+    <div v-show="activeTab === 'style'" class="w-full flex flex-col">
+      <!-- Style Presets -->
+      <div 
+        v-if="shouldShowStylePresets"
+        class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]"
+      >
+        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+          Button Style Preset
+        </p>
+        <div class="flex gap-[8px] items-center w-full">
+          <button 
+            type="button"
+            @click="setVariant('black')"
+            :class="currentVariant === 'black' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+            class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[16px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+          >
+            Primary Black
+          </button>
+          <button 
+            type="button"
+            @click="setVariant('white')"
+            :class="currentVariant === 'white' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+            class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[16px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+          >
+            Primary White
+          </button>
+        </div>
+      </div>
+
+      <!-- Position Layout Mode -->
+      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
+        <div class="flex items-center justify-between w-full">
+          <div class="flex flex-col">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Position
+            </p>
+            <span class="font-707 text-[11px] text-neutral-400">
+              Standard page flow or floating bottom
+            </span>
+          </div>
+          <div class="flex gap-[6px] items-center">
+            <button 
+              v-for="pos in positionModes" 
+              :key="pos.value"
+              @click="setPositionMode(pos.value)"
+              :class="currentPositionMode === pos.value ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="px-3.5 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
+            >
+              {{ pos.label }}
             </button>
           </div>
         </div>
-      </div>
 
-      <!-- Conditional URL Input if Link selected -->
-      <div v-if="actionType === 'link'" class="w-full pt-1 animate-in fade-in duration-150">
-        <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
-          <input 
-            v-model="actionUrl" 
-            placeholder="https://..." 
-            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
-          />
-        </div>
-      </div>
-
-      <!-- Conditional Modal Setup Button if Popup Modal is selected (Consistent with Hero Banner) -->
-      <div v-if="actionType === 'modal'" class="w-full pt-1 animate-in fade-in duration-150">
-        <button 
-          type="button"
-          @click="openModalSetup"
-          class="apple-glass-btn-dark w-full h-[38px] rounded-[8px] flex items-center justify-between px-3.5 font-707 font-medium text-[12px] cursor-pointer transition-all shadow-sm"
+        <!-- Sticky Page Targeting -->
+        <Transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="transform opacity-0 -translate-y-2"
+          enter-to-class="transform opacity-100 translate-y-0"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="transform opacity-100 translate-y-0"
+          leave-to-class="transform opacity-0 -translate-y-2"
         >
-          <span class="flex items-center gap-2">
-            <SlidersHorizontal class="size-3.5" />
-            <span>Configure Pop Up Modal</span>
-          </span>
-          <ArrowRight class="size-3.5 opacity-80" />
-        </button>
+          <div v-if="currentPositionMode === 'sticky-bottom'" class="flex flex-col gap-[10px] w-full pt-1">
+            <div class="flex items-center justify-between w-full">
+              <p class="font-707 font-medium text-[12px] text-neutral-600">
+                Apply to Pages
+              </p>
+              <div class="flex gap-[6px] items-center">
+                <button 
+                  type="button"
+                  @click="setStickyScope('current')"
+                  :class="currentStickyScope === 'current' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                  class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer"
+                >
+                  Current Page
+                </button>
+                <button 
+                  type="button"
+                  @click="setStickyScope('all')"
+                  :class="currentStickyScope === 'all' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                  class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer"
+                >
+                  All Pages
+                </button>
+                <button 
+                  type="button"
+                  @click="setStickyScope('custom')"
+                  :class="currentStickyScope === 'custom' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                  class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer"
+                >
+                  Select
+                </button>
+              </div>
+            </div>
+
+            <!-- Page checklist when 'Select' is active -->
+            <div v-if="currentStickyScope === 'custom'" class="flex flex-col gap-1.5 pt-1">
+              <div 
+                v-for="(page, idx) in editorStore.pages" 
+                :key="page.id"
+                @click="togglePageSticky(page.id)"
+                class="flex items-center justify-between p-2 rounded-[6px] bg-white/80 border border-neutral-200 hover:border-black/40 cursor-pointer transition-colors"
+              >
+                <div class="flex items-center gap-2">
+                  <input 
+                    type="checkbox" 
+                    :checked="isPageStickySelected(page.id)" 
+                    @click.stop="togglePageSticky(page.id)"
+                    class="rounded accent-black cursor-pointer"
+                  />
+                  <span class="font-707 text-[12px] text-black">
+                    Page {{ idx + 1 }}: {{ page.page_name || page.title || 'Untitled' }}
+                  </span>
+                </div>
+                <span v-if="editorStore.currentPage.id === page.id" class="text-[9px] font-mono uppercase bg-neutral-100 text-neutral-600 px-1.5 py-0.5 rounded">
+                  Active
+                </span>
+              </div>
+            </div>
+          </div>
+        </Transition>
       </div>
     </div>
 
-    <!-- Section 5: Enable Icon Section with Apple Style Toggle Switch -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
-      <!-- Title row with Apple Style Toggle Switch -->
-      <div class="flex items-center justify-between w-full">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Add Icon
-        </p>
+    <!-- TAB 3: ACTION & LINK -->
+    <div v-show="activeTab === 'action'" class="w-full flex flex-col">
+      <!-- Action Button Link to -->
+      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
+        <div class="content-stretch flex items-center justify-between w-full relative">
+          <div class="flex flex-col">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
+              Action Trigger
+            </p>
+            <span class="font-707 text-[11px] text-neutral-400">
+              When clicked by guest
+            </span>
+          </div>
+          <div class="relative">
+            <button
+              type="button"
+              @click="isLinkToDropdownOpen = !isLinkToDropdownOpen"
+              class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-[230px] cursor-pointer text-left"
+            >
+              <span class="font-707 text-[13px] text-black truncate">{{ selectedActionLabel }}</span>
+              <ChevronDown 
+                class="size-[15px] text-black transition-transform duration-200 shrink-0 ml-1.5" 
+                :class="isLinkToDropdownOpen ? 'rotate-180' : ''"
+              />
+            </button>
 
-        <!-- Modern Elegant Apple Style Toggle Switch -->
-        <button
-          type="button"
-          role="switch"
-          :aria-checked="showIcon"
-          @click="toggleIcon"
-          class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
-          :class="showIcon ? 'bg-black' : 'bg-[#e5e5ea]'"
-          title="Toggle Icon"
-        >
-          <span
-            aria-hidden="true"
-            class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
-            :class="showIcon ? 'translate-x-[18px]' : 'translate-x-0'"
-          />
-        </button>
-      </div>
+            <!-- Dropdown Menu -->
+            <div 
+              v-if="isLinkToDropdownOpen" 
+              class="absolute right-0 top-[44px] w-[240px] bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-lg py-1 z-30 flex flex-col animate-in fade-in slide-in-from-top-1 duration-150"
+            >
+              <button
+                v-for="opt in linkToOptions"
+                :key="opt.value"
+                type="button"
+                @click="selectLinkTo(opt.value)"
+                class="flex items-center justify-between px-[14px] py-[8px] text-left hover:bg-black/5 transition-colors cursor-pointer"
+                :class="actionType === opt.value ? 'font-medium text-black bg-black/5' : 'text-neutral-700'"
+              >
+                <span class="font-707 text-[13px]">{{ opt.label }}</span>
+                <Check v-if="actionType === opt.value" class="size-[15px] text-black" />
+              </button>
+            </div>
+          </div>
+        </div>
 
-      <!-- Icon Presets (Appear only when toggle is on) -->
-      <Transition
-        enter-active-class="transition duration-200 ease-out"
-        enter-from-class="transform opacity-0 -translate-y-2"
-        enter-to-class="transform opacity-100 translate-y-0"
-        leave-active-class="transition duration-150 ease-in"
-        leave-from-class="transform opacity-100 translate-y-0"
-        leave-to-class="transform opacity-0 -translate-y-2"
-      >
-        <div v-if="showIcon" class="flex flex-nowrap overflow-x-auto gap-[8px] items-center -mx-[24px] px-[24px] w-[calc(100%+48px)] pt-1 no-scrollbar">
+        <!-- Conditional URL Input if Link selected -->
+        <div v-if="actionType === 'link'" class="w-full pt-1 animate-in fade-in duration-150">
+          <div class="flex flex-col gap-1.5 w-full">
+            <span class="font-707 text-[12px] font-medium text-neutral-600">Destination URL</span>
+            <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+              <input 
+                v-model="actionUrl" 
+                placeholder="https://..." 
+                class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Conditional Modal Setup Button if Popup Modal is selected -->
+        <div v-if="actionType === 'modal'" class="w-full pt-1 animate-in fade-in duration-150">
           <button 
             type="button"
-            @click="setIconName('arrow-right')"
-            :class="iconName === 'arrow-right' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="shrink-0 whitespace-nowrap content-stretch flex h-[34px] items-center justify-center gap-1.5 px-[14px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+            @click="openModalSetup"
+            class="apple-glass-btn-dark w-full h-[38px] rounded-[8px] flex items-center justify-between px-3.5 font-707 font-medium text-[12px] cursor-pointer transition-all shadow-sm"
           >
-            <ArrowRight class="size-3.5" /> Arrow
-          </button>
-          <button 
-            type="button"
-            @click="setIconName('grid')"
-            :class="iconName === 'grid' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="shrink-0 whitespace-nowrap content-stretch flex h-[34px] items-center justify-center gap-1.5 px-[14px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
-          >
-            <LayoutGrid class="size-3.5" /> Grid
-          </button>
-          <button 
-            type="button"
-            @click="setIconName('ticket')"
-            :class="iconName === 'ticket' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="shrink-0 whitespace-nowrap content-stretch flex h-[34px] items-center justify-center gap-1.5 px-[14px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
-          >
-            <Ticket class="size-3.5" /> Pass
-          </button>
-          <button 
-            type="button"
-            @click="setIconName('whatsapp')"
-            :class="iconName === 'whatsapp' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="shrink-0 whitespace-nowrap content-stretch flex h-[34px] items-center justify-center gap-1.5 px-[14px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
-          >
-            <Phone class="size-3.5" /> WhatsApp
-          </button>
-          <button 
-            type="button"
-            @click="setIconName('instagram')"
-            :class="iconName === 'instagram' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="shrink-0 whitespace-nowrap content-stretch flex h-[34px] items-center justify-center gap-1.5 px-[14px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
-          >
-            <Instagram class="size-3.5" /> Instagram
+            <span class="flex items-center gap-2">
+              <SlidersHorizontal class="size-3.5" />
+              <span>Configure Pop Up Modal</span>
+            </span>
+            <ArrowRight class="size-3.5 opacity-80" />
           </button>
         </div>
-      </Transition>
+      </div>
     </div>
   </aside>
 </template>
@@ -320,7 +373,10 @@ import {
   Bell,
   TextCursorInput,
   ListOrdered,
-  ListFilter
+  ListFilter,
+  Type,
+  Layout,
+  Link2
 } from 'lucide-vue-next';
 import type { ModalVariant } from '../../types/editor.ts';
 
@@ -331,6 +387,15 @@ defineProps<{
 defineEmits<{
   (e: 'close'): void;
 }>();
+
+// 3-Tab Segment Navigation
+type TabType = 'content' | 'style' | 'action';
+const activeTab = ref<TabType>('content');
+const tabs = [
+  { id: 'content' as const, label: 'Content', icon: Type },
+  { id: 'style' as const, label: 'Style & Layout', icon: Layout },
+  { id: 'action' as const, label: 'Action & Link', icon: Link2 }
+];
 
 const editorStore = useEditorStore();
 const sidebarRef = ref<HTMLElement | null>(null);

@@ -10,13 +10,16 @@
     data-name="Guest E-Pass Setup Sidebar"
   >
     <!-- Header -->
-    <div class="content-stretch flex flex-col items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+    <div class="content-stretch flex flex-col items-start p-[24px] pb-[16px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
         <div class="flex items-center gap-2">
           <component :is="isLiveQueueMode ? Users : Ticket" class="size-4 text-black" />
           <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
             {{ isLiveQueueMode ? 'Live Queue Pass Setup' : 'Guest E-Pass Setup' }}
           </p>
+          <span class="font-707 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-black/5 text-neutral-600 font-medium">
+            {{ guestType }}
+          </span>
         </div>
         <button 
           @click="$emit('close')"
@@ -26,48 +29,279 @@
           <img :src="FIGMA_ASSETS.closeIcon" class="w-3.5 h-3.5" alt="Close" />
         </button>
       </div>
-      <p class="font-707 text-[12px] text-neutral-500 mt-1">
-        {{ isLiveQueueMode 
-          ? 'Configure real-time queue states, sample gate calling, headline, venue, and troubleshooter notice.' 
-          : 'Configure QR code visibility, headline, venue location, troubleshoot notice, and entry rules.' }}
-      </p>
     </div>
 
-    <!-- PDF ticket design (Ticket page) -->
-    <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
-      <div class="flex flex-col">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Downloadable PDF ticket</p>
-        <p class="font-707 text-[11px] text-neutral-500">
-          {{ editorStore.ticketPageIndex >= 0
-            ? 'Designed on the Ticket page. Guests get it with their own details when they tap Download E-Pass.'
-            : 'Lay out the PDF guests download on its own page — same editing as any page; its height follows the content.' }}
-        </p>
+    <!-- Segmented 3-Tab Control Bar (Sticky) -->
+    <div class="px-[20px] pt-[12px] pb-[12px] w-full border-b border-[#f0f0f0] bg-white/70 backdrop-blur-md shrink-0 sticky top-0 z-20">
+      <div class="flex items-center p-1 bg-[#ececec]/60 rounded-[10px] w-full gap-1 border border-black/5">
+        <button
+          v-for="t in tabs"
+          :key="t.id"
+          type="button"
+          @click="activeTab = t.id"
+          :class="activeTab === t.id 
+            ? 'bg-white text-black shadow-xs font-medium' 
+            : 'text-neutral-500 hover:text-black font-normal'"
+          class="flex-1 h-[30px] rounded-[7px] text-[12px] font-707 flex items-center justify-center gap-1.5 transition-all cursor-pointer select-none"
+        >
+          <component :is="t.icon" class="size-3.5" />
+          <span>{{ t.label }}</span>
+        </button>
       </div>
-      <button
-        type="button"
-        @click="openTicketDesign"
-        class="apple-glass-btn-dark w-full h-[38px] rounded-[8px] flex items-center justify-between px-3.5 font-707 font-medium text-[12px] cursor-pointer transition-all shadow-sm"
-      >
-        <span>{{ editorStore.ticketPageIndex >= 0 ? 'Open Ticket page' : 'Design PDF Ticket' }}</span>
-        <ChevronRight class="w-3.5 h-3.5" />
-      </button>
     </div>
 
-    <!-- Section: Real-Time State Simulator (Live Queue Pass only) -->
-    <div v-if="isLiveQueueMode" class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
-      <div class="flex flex-col gap-[4px] w-full">
-        <div class="flex items-center justify-between">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Real-Time State Simulator
+    <!-- TAB 1: PASS DETAILS -->
+    <div v-show="activeTab === 'details'" class="w-full flex flex-col">
+      <!-- PDF ticket design (Ticket page) -->
+      <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
+        <div class="flex flex-col">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Downloadable PDF Ticket</p>
+          <p class="font-707 text-[11px] text-neutral-500">
+            {{ editorStore.ticketPageIndex >= 0
+              ? 'Designed on the Ticket page. Guests get it with their own details when they tap Download E-Pass.'
+              : 'Lay out the PDF guests download on its own page — same editing as any page; its height follows the content.' }}
           </p>
-          <span class="text-[10px] font-mono text-neutral-400 uppercase">
-            5 Color States
-          </span>
         </div>
-        <p class="font-707 text-[11px] text-neutral-500">
-          Preview how the live progress bar and status change dynamically as guests advance in line.
-        </p>
+        <button
+          type="button"
+          @click="openTicketDesign"
+          class="apple-glass-btn-dark w-full h-[38px] rounded-[8px] flex items-center justify-between px-3.5 font-707 font-medium text-[12px] cursor-pointer transition-all shadow-sm"
+        >
+          <span>{{ editorStore.ticketPageIndex >= 0 ? 'Open Ticket page' : 'Design PDF Ticket' }}</span>
+          <ChevronRight class="w-3.5 h-3.5" />
+        </button>
       </div>
+
+      <!-- Pass Headline & Event Venue Setup -->
+      <div class="content-stretch flex flex-col gap-[16px] items-start p-[24px] shrink-0 w-full">
+        <!-- Headline (Responsive Multiline) -->
+        <div class="flex flex-col gap-[6px] w-full">
+          <div class="flex items-center justify-between">
+            <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
+              Headline Text (H2)
+            </p>
+            <span class="text-[10px] font-707 text-neutral-400">Multiline auto-wrap</span>
+          </div>
+          <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex min-h-[68px] p-[10px] rounded-[8px] w-full bg-white transition-colors">
+            <textarea 
+              v-model="heading"
+              rows="3"
+              :placeholder="passMode === 'queue' ? 'SUCCESS.\nYOU ARE IN QUEUE.' : 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.'"
+              class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase tracking-tight resize-y leading-[18px]"
+            />
+          </div>
+        </div>
+
+        <!-- Event Venue -->
+        <div class="flex flex-col gap-[6px] w-full">
+          <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
+            Event Venue Location
+          </p>
+          <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+            <input 
+              v-model="venue"
+              placeholder="e.g. PLAZA SENAYAN 4th FLOOR"
+              class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase tracking-tight"
+            />
+          </div>
+        </div>
+
+        <!-- Event Date / Access Valid For -->
+        <div class="flex flex-col gap-[6px] w-full">
+          <div class="flex items-center justify-between">
+            <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
+              Event Date (Access Valid For)
+            </p>
+            <span class="text-[10px] font-707 text-neutral-400">Single-day validity</span>
+          </div>
+          <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+            <input 
+              v-model="eventDate"
+              placeholder="e.g. 24 October 2026"
+              class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase tracking-tight"
+            />
+          </div>
+          <p class="font-707 text-[11px] leading-[15px] text-neutral-500">
+            Printed under "ACCESS VALID FOR" on passes and PDF tickets when no arrival date is selected by guests.
+          </p>
+        </div>
+
+        <!-- Guest Type Preset -->
+        <div class="flex flex-col gap-[6px] w-full pt-1 border-t border-[#f0f0f0]">
+          <div class="flex items-center justify-between">
+            <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
+              Guest Type
+            </p>
+            <span class="text-[10px] font-707 text-neutral-400">Printed on every pass</span>
+          </div>
+          <div class="grid grid-cols-2 gap-1.5 w-full">
+            <button
+              v-for="preset in GUEST_TYPE_PRESETS"
+              :key="preset.value"
+              type="button"
+              @click="guestType = preset.value"
+              :class="guestType === preset.value ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="h-[38px] rounded-[8px] text-[12px] font-707 flex flex-col items-center justify-center cursor-pointer transition-all"
+            >
+              {{ preset.label }}
+            </button>
+          </div>
+          <p class="font-707 text-[11px] leading-[16px] text-neutral-500">
+            {{ guestType === 'VIP' ? 'VIP pass — door staff see a VIP guest when they scan it.' : 'Public pass — general admission.' }}
+            Use a separate campaign for each guest type.
+          </p>
+        </div>
+
+        <!-- Dynamic Info Notice -->
+        <div class="bg-neutral-50 border border-neutral-200 p-3 rounded-[8px] w-full flex items-start gap-2">
+          <div class="size-1.5 rounded-full bg-neutral-400 mt-1.5 shrink-0" />
+          <p class="font-707 text-[11px] leading-[16px] text-neutral-600">
+            Guest Name and Email come from the guest's form answers. The Access ID is issued by the system for each guest when they register — the one shown here is a sample in the same format.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: DISPLAY & QR / QUEUE -->
+    <div v-show="activeTab === 'display'" class="w-full flex flex-col">
+      <!-- Section 0: Brand Logo (Switchable Active Toggle & Special Appearance Mode: Normal vs Black) -->
+      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
+        <div class="flex items-center justify-between w-full">
+          <div class="flex flex-col">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Brand Logo
+            </p>
+            <p class="font-707 text-[11px] text-neutral-500">
+              {{ showBrandLogo ? (projectBrandLogoUrl ? 'Enabled: Displayed at top of pass' : 'Enabled: Uses logo from Hero Banner') : 'Disabled: Brand logo hidden from pass' }}
+            </p>
+          </div>
+
+          <!-- Modern Elegant Apple Style Toggle Switch -->
+          <button
+            type="button"
+            role="switch"
+            :aria-checked="showBrandLogo"
+            @click="toggleBrandLogo"
+            class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+            :class="showBrandLogo ? 'bg-black' : 'bg-[#e5e5ea]'"
+            title="Toggle Brand Logo"
+          >
+            <span
+              aria-hidden="true"
+              class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+              :class="showBrandLogo ? 'translate-x-[18px]' : 'translate-x-0'"
+            />
+          </button>
+        </div>
+
+        <!-- Visible when toggle is active -->
+        <Transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="transform opacity-0 -translate-y-2"
+          enter-to-class="transform opacity-100 translate-y-0"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="transform opacity-100 translate-y-0"
+          leave-to-class="transform opacity-0 -translate-y-2"
+        >
+          <div v-if="showBrandLogo" class="flex flex-col gap-[12px] w-full pt-1">
+            <!-- Logo Preview Card -->
+            <div v-if="projectBrandLogoUrl" class="border-[0.5px] border-neutral-200 p-3 rounded-[8px] bg-neutral-50 flex items-center justify-between">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <img 
+                  :src="sizedUrl(projectBrandLogoUrl, 320)" 
+                  alt="Brand Logo" 
+                  class="max-h-[32px] h-[24px] w-auto object-contain transition-all"
+                  :class="{ 'brightness-0': logoColorMode === 'black' }"
+                  :style="{ filter: logoColorMode === 'black' ? 'brightness(0)' : 'none' }"
+                />
+                <span class="font-707 text-[11px] font-medium text-neutral-600 truncate">
+                  {{ logoColorMode === 'black' ? 'Black Mode' : 'Normal Mode' }}
+                </span>
+              </div>
+              <span class="font-707 text-[11px] text-emerald-600 font-medium shrink-0">● Visible</span>
+            </div>
+            <p v-else class="font-707 text-[11px] text-neutral-400 leading-normal">
+              Upload a brand logo in your Hero Banner setup to automatically display it at the top of this pass.
+            </p>
+
+            <!-- Appearance Mode Control: Normal vs Black Mode -->
+            <div class="flex flex-col gap-[6px] w-full pt-1">
+              <div class="flex items-center justify-between">
+                <span class="font-707 text-[11px] font-medium text-neutral-700">Logo Appearance Mode</span>
+                <span class="font-707 text-[10px] text-neutral-400 uppercase font-mono">{{ logoColorMode }}</span>
+              </div>
+              <div class="grid grid-cols-2 gap-1.5 w-full p-1 rounded-[8px] bg-black/[0.04] border border-black/5">
+                <button
+                  type="button"
+                  @click="logoColorMode = 'normal'"
+                  :class="logoColorMode === 'normal' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                  class="h-[34px] rounded-[6px] text-[11.5px] font-707 flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+                >
+                  <span>Normal (Original)</span>
+                </button>
+                <button
+                  type="button"
+                  @click="logoColorMode = 'black'"
+                  :class="logoColorMode === 'black' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                  class="h-[34px] rounded-[6px] text-[11.5px] font-707 flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+                >
+                  <span>Black Mode</span>
+                </button>
+              </div>
+              <p class="font-707 text-[10.5px] text-neutral-500 leading-snug">
+                {{ logoColorMode === 'black' ? 'Monochrome black silhouette matching 707 ticket aesthetics.' : 'Original brand logo colors without monochrome filter.' }}
+              </p>
+            </div>
+          </div>
+        </Transition>
+      </div>
+
+      <!-- Section 1: Global QR Function On/Off Toggle (Only for Standard E-Pass) -->
+      <div v-if="!isLiveQueueMode" class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
+        <div class="flex items-center justify-between w-full">
+          <div class="flex flex-col">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              QR Code Function
+            </p>
+            <p class="font-707 text-[11px] text-neutral-500">
+              {{ showQrCode ? 'Enabled: Positioned above pass information fields' : 'Disabled: Clean non-QR ticket summary' }}
+            </p>
+          </div>
+
+          <!-- Modern Elegant Apple Style Toggle Switch -->
+          <button
+            type="button"
+            role="switch"
+            :aria-checked="showQrCode"
+            @click="toggleQrCode"
+            class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+            :class="showQrCode ? 'bg-black' : 'bg-[#e5e5ea]'"
+            title="Toggle QR Code"
+          >
+            <span
+              aria-hidden="true"
+              class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+              :class="showQrCode ? 'translate-x-[18px]' : 'translate-x-0'"
+            />
+          </button>
+        </div>
+      </div>
+
+      <!-- Section: Real-Time State Simulator (Live Queue Pass only) -->
+      <div v-if="isLiveQueueMode" class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
+        <div class="flex flex-col gap-[4px] w-full">
+          <div class="flex items-center justify-between">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Real-Time State Simulator
+            </p>
+            <span class="text-[10px] font-mono text-neutral-400 uppercase">
+              5 Color States
+            </span>
+          </div>
+          <p class="font-707 text-[11px] text-neutral-500">
+            Preview how the live progress bar and status change dynamically as guests advance in line.
+          </p>
+        </div>
         <div class="grid grid-cols-5 gap-1 w-full p-1 rounded-[8px] bg-black/[0.03] border border-black/5">
           <button
             type="button"
@@ -147,583 +381,368 @@
           </div>
         </div>
       </div>
+    </div>
 
-
-    <!-- Section 0: Brand Logo (Switchable Active Toggle & Special Appearance Mode: Normal vs Black) -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
-      <div class="flex items-center justify-between w-full">
-        <div class="flex flex-col">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Brand Logo
-          </p>
-          <p class="font-707 text-[11px] text-neutral-500">
-            {{ showBrandLogo ? (projectBrandLogoUrl ? 'Enabled: Displayed at top of pass' : 'Enabled: Uses logo from Hero Banner') : 'Disabled: Brand logo hidden from pass' }}
-          </p>
-        </div>
-
-        <!-- Modern Elegant Apple Style Toggle Switch -->
-        <button
-          type="button"
-          role="switch"
-          :aria-checked="showBrandLogo"
-          @click="toggleBrandLogo"
-          class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
-          :class="showBrandLogo ? 'bg-black' : 'bg-[#e5e5ea]'"
-          title="Toggle Brand Logo"
-        >
-          <span
-            aria-hidden="true"
-            class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
-            :class="showBrandLogo ? 'translate-x-[18px]' : 'translate-x-0'"
-          />
-        </button>
-      </div>
-
-      <!-- Visible when toggle is active -->
-      <Transition
-        enter-active-class="transition duration-200 ease-out"
-        enter-from-class="transform opacity-0 -translate-y-2"
-        enter-to-class="transform opacity-100 translate-y-0"
-        leave-active-class="transition duration-150 ease-in"
-        leave-from-class="transform opacity-100 translate-y-0"
-        leave-to-class="transform opacity-0 -translate-y-2"
-      >
-        <div v-if="showBrandLogo" class="flex flex-col gap-[12px] w-full pt-1">
-          <!-- Logo Preview Card -->
-          <div v-if="projectBrandLogoUrl" class="border-[0.5px] border-neutral-200 p-3 rounded-[8px] bg-neutral-50 flex items-center justify-between">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <img 
-                :src="sizedUrl(projectBrandLogoUrl, 320)" 
-                alt="Brand Logo" 
-                class="max-h-[32px] h-[24px] w-auto object-contain transition-all"
-                :class="{ 'brightness-0': logoColorMode === 'black' }"
-                :style="{ filter: logoColorMode === 'black' ? 'brightness(0)' : 'none' }"
-              />
-              <span class="font-707 text-[11px] font-medium text-neutral-600 truncate">
-                {{ logoColorMode === 'black' ? 'Black Mode' : 'Normal Mode' }}
-              </span>
-            </div>
-            <span class="font-707 text-[11px] text-emerald-600 font-medium shrink-0">● Visible</span>
-          </div>
-          <p v-else class="font-707 text-[11px] text-neutral-400 leading-normal">
-            Upload a brand logo in your Hero Banner setup to automatically display it at the top of this pass.
-          </p>
-
-          <!-- Appearance Mode Control: Normal vs Black Mode -->
-          <div class="flex flex-col gap-[6px] w-full pt-1">
-            <div class="flex items-center justify-between">
-              <span class="font-707 text-[11px] font-medium text-neutral-700">Logo Appearance Mode</span>
-              <span class="font-707 text-[10px] text-neutral-400 uppercase font-mono">{{ logoColorMode }}</span>
-            </div>
-            <div class="grid grid-cols-2 gap-1.5 w-full p-1 rounded-[8px] bg-black/[0.04] border border-black/5">
-              <button
-                type="button"
-                @click="logoColorMode = 'normal'"
-                :class="logoColorMode === 'normal' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                class="h-[34px] rounded-[6px] text-[11.5px] font-707 flex items-center justify-center gap-1.5 cursor-pointer transition-all"
-              >
-                <span>Normal (Original)</span>
-              </button>
-              <button
-                type="button"
-                @click="logoColorMode = 'black'"
-                :class="logoColorMode === 'black' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                class="h-[34px] rounded-[6px] text-[11.5px] font-707 flex items-center justify-center gap-1.5 cursor-pointer transition-all"
-              >
-                <span>Black Mode</span>
-              </button>
-            </div>
-            <p class="font-707 text-[10.5px] text-neutral-500 leading-snug">
-              {{ logoColorMode === 'black' ? 'Monochrome black silhouette matching 707 ticket aesthetics.' : 'Original brand logo colors without monochrome filter.' }}
+    <!-- TAB 3: ACTION & NOTICE -->
+    <div v-show="activeTab === 'action'" class="w-full flex flex-col">
+      <!-- Section 3: Action Button Function (Sticky Bottom Only) -->
+      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
+        <!-- Title row with Apple Style Toggle Switch -->
+        <div class="flex items-center justify-between w-full">
+          <div class="flex flex-col">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Add Action Button
+            </p>
+            <p class="font-707 text-[11px] text-neutral-500">
+              Sticky bottom viewport button
             </p>
           </div>
-        </div>
-      </Transition>
-    </div>
 
-    <!-- Section 1: Global QR Function On/Off Toggle (Only for Standard E-Pass) -->
-    <div v-if="!isLiveQueueMode" class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
-      <div class="flex items-center justify-between w-full">
-        <div class="flex flex-col">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            QR Code Function
-          </p>
-          <p class="font-707 text-[11px] text-neutral-500">
-            {{ showQrCode ? 'Enabled: Positioned above pass information fields' : 'Disabled: Clean non-QR ticket summary' }}
-          </p>
-        </div>
-
-        <!-- Modern Elegant Apple Style Toggle Switch -->
-        <button
-          type="button"
-          role="switch"
-          :aria-checked="showQrCode"
-          @click="toggleQrCode"
-          class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
-          :class="showQrCode ? 'bg-black' : 'bg-[#e5e5ea]'"
-          title="Toggle QR Code"
-        >
-          <span
-            aria-hidden="true"
-            class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
-            :class="showQrCode ? 'translate-x-[18px]' : 'translate-x-0'"
-          />
-        </button>
-      </div>
-    </div>
-
-    <!-- Section 2: Pass Headline & Event Venue Setup -->
-    <div class="content-stretch flex flex-col gap-[16px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
-      <div class="flex items-center justify-between w-full">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Pass Information & Headline
-        </p>
-      </div>
-
-      <!-- Headline (Responsive Multiline) -->
-      <div class="flex flex-col gap-[6px] w-full">
-        <div class="flex items-center justify-between">
-          <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
-            Headline Text (H2)
-          </p>
-          <span class="text-[10px] font-707 text-neutral-400">Multiline auto-wrap</span>
-        </div>
-        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex min-h-[68px] p-[10px] rounded-[8px] w-full bg-white transition-colors">
-          <textarea 
-            v-model="heading"
-            rows="3"
-            :placeholder="passMode === 'queue' ? 'SUCCESS.\nYOU ARE IN QUEUE.' : 'SUCCESS.\nYOUR PASS HAS\nBEEN SENT.'"
-            class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase tracking-tight resize-y leading-[18px]"
-          />
-        </div>
-      </div>
-
-      <!-- Event Venue -->
-      <div class="flex flex-col gap-[6px] w-full">
-        <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
-          Event Venue Location
-        </p>
-        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
-          <input 
-            v-model="venue"
-            placeholder="e.g. PLAZA SENAYAN 4th FLOOR"
-            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase tracking-tight"
-          />
-        </div>
-      </div>
-
-      <!-- Event Date / Access Valid For -->
-      <div class="flex flex-col gap-[6px] w-full">
-        <div class="flex items-center justify-between">
-          <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
-            Event Date (Access Valid For)
-          </p>
-          <span class="text-[10px] font-707 text-neutral-400">Single-day validity</span>
-        </div>
-        <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
-          <input 
-            v-model="eventDate"
-            placeholder="e.g. 24 October 2026"
-            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase tracking-tight"
-          />
-        </div>
-        <p class="font-707 text-[11px] leading-[15px] text-neutral-500">
-          Printed under "ACCESS VALID FOR" on passes and PDF tickets when no arrival date is selected by guests.
-        </p>
-      </div>
-
-      <!-- Guest Type Preset -->
-      <div class="flex flex-col gap-[6px] w-full">
-        <div class="flex items-center justify-between">
-          <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
-            Guest Type
-          </p>
-          <span class="text-[10px] font-707 text-neutral-400">Printed on every pass</span>
-        </div>
-        <div class="grid grid-cols-2 gap-1.5 w-full">
+          <!-- Modern Elegant Apple Style Toggle Switch -->
           <button
-            v-for="preset in GUEST_TYPE_PRESETS"
-            :key="preset.value"
             type="button"
-            @click="guestType = preset.value"
-            :class="guestType === preset.value ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="h-[38px] rounded-[8px] text-[12px] font-707 flex flex-col items-center justify-center cursor-pointer transition-all"
+            role="switch"
+            :aria-checked="isCtaEnabled"
+            @click="toggleCta"
+            class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+            :class="showCtaButtonClass"
+            title="Toggle Action Button"
           >
-            {{ preset.label }}
+            <span
+              aria-hidden="true"
+              class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+              :class="isCtaEnabled ? 'translate-x-[18px]' : 'translate-x-0'"
+            />
           </button>
         </div>
-        <p class="font-707 text-[11px] leading-[16px] text-neutral-500">
-          {{ guestType === 'VIP' ? 'VIP pass — door staff see a VIP guest when they scan it.' : 'Public pass — general admission.' }}
-          Use a separate campaign for each guest type.
-        </p>
-      </div>
 
-      <!-- Dynamic Info Notice -->
-      <div class="bg-neutral-50 border border-neutral-200 p-3 rounded-[8px] w-full flex items-start gap-2">
-        <div class="size-1.5 rounded-full bg-neutral-400 mt-1.5 shrink-0" />
-        <p class="font-707 text-[11px] leading-[16px] text-neutral-600">
-          Guest Name and Email come from the guest's form answers. The Access ID is issued by the system for each guest when they register — the one shown here is a sample in the same format.
-        </p>
-      </div>
-    </div>
-
-    <!-- Section 3: Action Button Function (Sticky Bottom Only) -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
-      <!-- Title row with Apple Style Toggle Switch -->
-      <div class="flex items-center justify-between w-full">
-        <div class="flex flex-col">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Add Action Button
-          </p>
-          <p class="font-707 text-[11px] text-neutral-500">
-            Sticky bottom viewport button
-          </p>
-        </div>
-
-        <!-- Modern Elegant Apple Style Toggle Switch -->
-        <button
-          type="button"
-          role="switch"
-          :aria-checked="isCtaEnabled"
-          @click="toggleCta"
-          class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
-          :class="isCtaEnabled ? 'bg-black' : 'bg-[#e5e5ea]'"
-          title="Toggle Action Button"
+        <!-- Action Button Settings (Appears only when toggle is on) -->
+        <Transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="transform opacity-0 -translate-y-2"
+          enter-to-class="transform opacity-100 translate-y-0"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="transform opacity-100 translate-y-0"
+          leave-to-class="transform opacity-0 -translate-y-2"
         >
-          <span
-            aria-hidden="true"
-            class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
-            :class="isCtaEnabled ? 'translate-x-[18px]' : 'translate-x-0'"
-          />
-        </button>
-      </div>
-
-      <!-- Action Button Settings (Appears only when toggle is on) -->
-      <Transition
-        enter-active-class="transition duration-200 ease-out"
-        enter-from-class="transform opacity-0 -translate-y-2"
-        enter-to-class="transform opacity-100 translate-y-0"
-        leave-active-class="transition duration-150 ease-in"
-        leave-from-class="transform opacity-100 translate-y-0"
-        leave-to-class="transform opacity-0 -translate-y-2"
-      >
-        <div v-if="isCtaEnabled" class="flex flex-col gap-[12px] w-full pt-1">
-          <!-- Button Text Input -->
-          <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
-            <input 
-              v-model="buttonText"
-              placeholder="Button Text (e.g. DOWNLOAD E-PASS)"
-              class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
-            />
-          </div>
-
-          <!-- Button Style Preset (Primary Black vs Primary White) -->
-          <div class="content-stretch flex flex-col gap-[10px] items-start w-full pt-1">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Button Style Preset
-            </p>
-            <div class="flex gap-[8px] items-center w-full">
-              <button 
-                type="button"
-                @click="setButtonVariant('black')"
-                :class="buttonVariant === 'black' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[16px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
-              >
-                Primary Black
-              </button>
-              <button 
-                type="button"
-                @click="setButtonVariant('white')"
-                :class="buttonVariant === 'white' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[16px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
-              >
-                Primary White
-              </button>
-            </div>
-          </div>
-
-          <!-- Position Indicator: Sticky Bottom Only -->
-          <div class="flex items-center justify-between w-full pt-1">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Position
-            </p>
-            <span class="font-707 text-[11px] text-neutral-600 bg-neutral-100 border border-neutral-200 px-3 py-1 rounded-[6px]">
-              Sticky Bottom Only
-            </span>
-          </div>
-
-          <!-- Link to Dropdown -->
-          <div class="content-stretch flex items-center justify-between w-full pt-1 relative">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
-              Link to
-            </p>
-            <div class="relative">
-              <button
-                type="button"
-                @click="isLinkToDropdownOpen = !isLinkToDropdownOpen"
-                class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-[240px] cursor-pointer text-left"
-              >
-                <span class="font-707 text-[13px] text-black truncate">{{ selectedActionLabel }}</span>
-                <ChevronDown 
-                  class="size-[15px] text-black transition-transform duration-200 shrink-0 ml-1" 
-                  :class="isLinkToDropdownOpen ? 'rotate-180' : ''"
-                />
-              </button>
-
-              <!-- Dropdown Menu -->
-              <div 
-                v-if="isLinkToDropdownOpen" 
-                class="absolute right-0 top-[44px] w-[240px] bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-lg py-1 z-30 flex flex-col"
-              >
-                <button
-                  v-for="opt in linkToOptions"
-                  :key="opt.value"
-                  type="button"
-                  @click="selectLinkTo(opt.value)"
-                  class="flex items-center justify-between px-[14px] py-[8px] text-left hover:bg-black/5 transition-colors cursor-pointer"
-                  :class="ctaActionType === opt.value ? 'font-medium text-black bg-black/5' : 'text-neutral-700'"
-                >
-                  <span class="font-707 text-[13px]">{{ opt.label }}</span>
-                  <Check v-if="ctaActionType === opt.value" class="size-[15px] text-black" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Conditional URL Input if External URL selected -->
-          <div v-if="ctaActionType === 'link'" class="w-full pt-1 animate-in fade-in duration-150">
+          <div v-if="isCtaEnabled" class="flex flex-col gap-[12px] w-full pt-1">
+            <!-- Button Text Input -->
             <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
               <input 
-                v-model="ctaUrl" 
-                placeholder="https://..." 
-                class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
+                v-model="buttonText"
+                placeholder="Button Text (e.g. DOWNLOAD E-PASS)"
+                class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
               />
             </div>
-          </div>
 
-          <!-- Conditional Modal Setup Button if Popup Modal selected -->
-          <div v-if="ctaActionType === 'modal'" class="w-full pt-1 animate-in fade-in duration-150">
-            <button 
-              type="button"
-              @click="openModalSetup"
-              class="apple-glass-btn-dark w-full h-[38px] rounded-[8px] flex items-center justify-between px-3.5 font-707 font-medium text-[12px] cursor-pointer transition-all shadow-sm"
-            >
-              <span class="flex items-center gap-2">
-                <SlidersHorizontal class="size-3.5" />
-                <span>Configure Pop Up Modal</span>
-              </span>
-              <ArrowRight class="size-3.5 opacity-80" />
-            </button>
-          </div>
-
-          <!-- Add Icon Toggle -->
-          <div class="content-stretch flex flex-col gap-[10px] items-start w-full pt-2 border-t border-[#f0f0f0]">
-            <div class="flex items-center justify-between w-full">
+            <!-- Button Style Preset (Primary Black vs Primary White) -->
+            <div class="content-stretch flex flex-col gap-[10px] items-start w-full pt-1">
               <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-                Add Icon
+                Button Style Preset
               </p>
-              <button
-                type="button"
-                role="switch"
-                :aria-checked="showIcon"
-                @click="toggleIcon"
-                class="relative inline-flex h-[20px] w-[36px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
-                :class="showIcon ? 'bg-black' : 'bg-[#e5e5ea]'"
-                title="Toggle Button Icon"
-              >
-                <span
-                  aria-hidden="true"
-                  class="pointer-events-none inline-block h-[16px] w-[16px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
-                  :class="showIcon ? 'translate-x-[16px]' : 'translate-x-0'"
-                />
-              </button>
-            </div>
-
-            <Transition
-              enter-active-class="transition duration-200 ease-out"
-              enter-from-class="transform opacity-0 -translate-y-2"
-              enter-to-class="transform opacity-100 translate-y-0"
-              leave-active-class="transition duration-150 ease-in"
-              leave-from-class="transform opacity-100 translate-y-0"
-              leave-to-class="transform opacity-0 -translate-y-2"
-            >
-              <div v-if="showIcon" class="flex flex-nowrap overflow-x-auto gap-[8px] items-center -mx-[24px] px-[24px] w-[calc(100%+48px)] pt-1 no-scrollbar">
+              <div class="flex gap-[8px] items-center w-full">
                 <button 
                   type="button"
-                  @click="setIconName('ticket')"
-                  :class="iconName === 'ticket' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                  class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[6px] rounded-[8px] text-[11px] font-707 cursor-pointer"
+                  @click="setButtonVariant('black')"
+                  :class="buttonVariant === 'black' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                  class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[16px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
                 >
-                  <Ticket class="size-3.5" /> Pass
+                  Primary Black
                 </button>
                 <button 
                   type="button"
-                  @click="setIconName('arrow-right')"
-                  :class="iconName === 'arrow-right' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                  class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[6px] rounded-[8px] text-[11px] font-707 cursor-pointer"
+                  @click="setButtonVariant('white')"
+                  :class="buttonVariant === 'white' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                  class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[16px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
                 >
-                  <ArrowRight class="size-3.5" /> Arrow
-                </button>
-                <button 
-                  type="button"
-                  @click="setIconName('grid')"
-                  :class="iconName === 'grid' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                  class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[6px] rounded-[8px] text-[11px] font-707 cursor-pointer"
-                >
-                  <LayoutGrid class="size-3.5" /> Grid
-                </button>
-                <button 
-                  type="button"
-                  @click="setIconName('whatsapp')"
-                  :class="iconName === 'whatsapp' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                  class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[6px] rounded-[8px] text-[11px] font-707 cursor-pointer"
-                >
-                  <Phone class="size-3.5" /> WhatsApp
-                </button>
-                <button 
-                  type="button"
-                  @click="setIconName('instagram')"
-                  :class="iconName === 'instagram' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                  class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[6px] rounded-[8px] text-[11px] font-707 cursor-pointer"
-                >
-                  <Instagram class="size-3.5" /> Instagram
+                  Primary White
                 </button>
               </div>
-            </Transition>
-          </div>
-        </div>
-      </Transition>
-    </div>
-
-    <!-- Section 4: Troubleshoot / Disclaimer Notice Section -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
-      <div class="flex items-center justify-between w-full">
-        <div class="flex flex-col">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Troubleshoot & Help Notice
-          </p>
-          <p class="font-707 text-[11px] text-neutral-500">
-            {{ showFooterNotice ? 'Visible under valid sessions list' : 'Hidden from ticket' }}
-          </p>
-        </div>
-
-        <!-- Modern Elegant Apple Style Toggle Switch -->
-        <button
-          type="button"
-          role="switch"
-          :aria-checked="showFooterNotice"
-          @click="toggleFooterNotice"
-          class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
-          :class="showFooterNotice ? 'bg-black' : 'bg-[#e5e5ea]'"
-          title="Toggle Help Notice"
-        >
-          <span
-            aria-hidden="true"
-            class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
-            :class="showFooterNotice ? 'translate-x-[18px]' : 'translate-x-0'"
-          />
-        </button>
-      </div>
-
-      <!-- Troubleshoot Notice Inputs (Visible only when toggle is on) -->
-      <Transition
-        enter-active-class="transition duration-200 ease-out"
-        enter-from-class="transform opacity-0 -translate-y-2"
-        enter-to-class="transform opacity-100 translate-y-0"
-        leave-active-class="transition duration-150 ease-in"
-        leave-from-class="transform opacity-100 translate-y-0"
-        leave-to-class="transform opacity-0 -translate-y-2"
-      >
-        <div v-if="showFooterNotice" class="flex flex-col gap-[12px] w-full pt-1">
-          <div class="flex flex-col gap-1 w-full">
-            <span class="font-707 text-[11px] font-medium text-neutral-600">Notice Title</span>
-            <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[34px] items-center px-[12px] rounded-[6px] w-full bg-white transition-colors">
-              <input 
-                v-model="footerNoticeTitle"
-                placeholder="DIDN'T RECEIVE THE EMAIL?"
-                class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
-              />
-            </div>
-          </div>
-          <div class="flex flex-col gap-1 w-full">
-            <span class="font-707 text-[11px] font-medium text-neutral-600">Notice Message</span>
-            <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[34px] items-center px-[12px] rounded-[6px] w-full bg-white transition-colors">
-              <input 
-                v-model="footerNoticeText"
-                placeholder="Check your spam folder or contact support"
-                class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400"
-              />
-            </div>
-          </div>
-
-          <!-- Hyperlink on Selected Word -->
-          <div class="flex flex-col gap-[10px] w-full pt-1 border-t border-[#f0f0f0]">
-            <div class="flex items-center justify-between">
-              <span class="font-707 text-[11px] font-medium text-neutral-600">Hyperlink Function</span>
-              <span class="font-707 text-[10px] text-neutral-400">or use [word](url) in message</span>
             </div>
 
-            <!-- Action Type Segmented Control -->
-            <div class="flex gap-[8px] items-center w-full">
-              <button 
-                type="button"
-                @click="setFooterNoticeActionType('link')"
-                :class="footerNoticeActionType === 'link' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                class="flex-1 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center px-[12px] py-[4px] rounded-[6px] text-[11px] font-707 cursor-pointer"
-              >
-                Open URL
-              </button>
-              <button 
-                type="button"
-                @click="setFooterNoticeActionType('modal')"
-                :class="footerNoticeActionType === 'modal' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                class="flex-1 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center px-[12px] py-[4px] rounded-[6px] text-[11px] font-707 cursor-pointer"
-              >
-                Open Pop Up Modal
-              </button>
+            <!-- Position Indicator: Sticky Bottom Only -->
+            <div class="flex items-center justify-between w-full pt-1">
+              <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+                Position
+              </p>
+              <span class="font-707 text-[11px] text-neutral-600 bg-neutral-100 border border-neutral-200 px-3 py-1 rounded-[6px]">
+                Sticky Bottom Only
+              </span>
             </div>
 
-            <!-- Word(s) to Hyperlink -->
-            <div class="flex flex-col gap-1 w-full">
-              <span class="font-707 text-[10px] text-neutral-500">Selected Word(s) to Hyperlink</span>
-              <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[32px] items-center px-[10px] rounded-[6px] w-full bg-white transition-colors">
+            <!-- Link to Dropdown -->
+            <div class="content-stretch flex items-center justify-between w-full pt-1 relative">
+              <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
+                Link to
+              </p>
+              <div class="relative">
+                <button
+                  type="button"
+                  @click="isLinkToDropdownOpen = !isLinkToDropdownOpen"
+                  class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-[240px] cursor-pointer text-left"
+                >
+                  <span class="font-707 text-[13px] text-black truncate">{{ selectedActionLabel }}</span>
+                  <ChevronDown 
+                    class="size-[15px] text-black transition-transform duration-200 shrink-0 ml-1" 
+                    :class="isLinkToDropdownOpen ? 'rotate-180' : ''"
+                  />
+                </button>
+
+                <!-- Dropdown Menu -->
+                <div 
+                  v-if="isLinkToDropdownOpen" 
+                  class="absolute right-0 top-[44px] w-[240px] bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-lg py-1 z-30 flex flex-col"
+                >
+                  <button
+                    v-for="opt in linkToOptions"
+                    :key="opt.value"
+                    type="button"
+                    @click="selectLinkTo(opt.value)"
+                    class="flex items-center justify-between px-[14px] py-[8px] text-left hover:bg-black/5 transition-colors cursor-pointer"
+                    :class="ctaActionType === opt.value ? 'font-medium text-black bg-black/5' : 'text-neutral-700'"
+                  >
+                    <span class="font-707 text-[13px]">{{ opt.label }}</span>
+                    <Check v-if="ctaActionType === opt.value" class="size-[15px] text-black" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Conditional URL Input if External URL selected -->
+            <div v-if="ctaActionType === 'link'" class="w-full pt-1 animate-in fade-in duration-150">
+              <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
                 <input 
-                  v-model="footerNoticeLinkWords"
-                  placeholder="contact support"
-                  class="w-full text-[11px] font-707 text-black focus:outline-none placeholder:text-neutral-400"
+                  v-model="ctaUrl" 
+                  placeholder="https://..." 
+                  class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
                 />
               </div>
             </div>
 
-            <!-- Conditional URL input if 'link' -->
-            <div v-if="footerNoticeActionType === 'link'" class="flex flex-col gap-1 w-full animate-in fade-in duration-150">
-              <span class="font-707 text-[10px] text-neutral-500">Link Destination URL</span>
-              <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[32px] items-center px-[10px] rounded-[6px] w-full bg-white transition-colors">
-                <input 
-                  v-model="footerNoticeLinkUrl"
-                  placeholder="https://... or mailto:..."
-                  class="w-full text-[11px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
-                />
-              </div>
-            </div>
-
-            <!-- Conditional Configure Modal Button if 'modal' -->
-            <div v-if="footerNoticeActionType === 'modal'" class="w-full pt-1 animate-in fade-in duration-150">
+            <!-- Conditional Modal Setup Button if Popup Modal selected -->
+            <div v-if="ctaActionType === 'modal'" class="w-full pt-1 animate-in fade-in duration-150">
               <button 
                 type="button"
-                @click="openNoticeModalSetup"
-                class="apple-glass-btn-dark w-full h-[34px] rounded-[6px] flex items-center justify-between px-3 font-707 font-medium text-[11px] cursor-pointer transition-all shadow-sm"
+                @click="openModalSetup"
+                class="apple-glass-btn-dark w-full h-[38px] rounded-[8px] flex items-center justify-between px-3.5 font-707 font-medium text-[12px] cursor-pointer transition-all shadow-sm"
               >
-                <span class="flex items-center gap-1.5">
-                  <SlidersHorizontal class="size-3" />
+                <span class="flex items-center gap-2">
+                  <SlidersHorizontal class="size-3.5" />
                   <span>Configure Pop Up Modal</span>
                 </span>
-                <ArrowRight class="size-3 opacity-80" />
+                <ArrowRight class="size-3.5 opacity-80" />
               </button>
             </div>
+
+            <!-- Add Icon Toggle -->
+            <div class="content-stretch flex flex-col gap-[10px] items-start w-full pt-2 border-t border-[#f0f0f0]">
+              <div class="flex items-center justify-between w-full">
+                <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+                  Add Icon
+                </p>
+                <button
+                  type="button"
+                  role="switch"
+                  :aria-checked="showIcon"
+                  @click="toggleIcon"
+                  class="relative inline-flex h-[20px] w-[36px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+                  :class="showIcon ? 'bg-black' : 'bg-[#e5e5ea]'"
+                  title="Toggle Button Icon"
+                >
+                  <span
+                    aria-hidden="true"
+                    class="pointer-events-none inline-block h-[16px] w-[16px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+                    :class="showIcon ? 'translate-x-[16px]' : 'translate-x-0'"
+                  />
+                </button>
+              </div>
+
+              <Transition
+                enter-active-class="transition duration-200 ease-out"
+                enter-from-class="transform opacity-0 -translate-y-2"
+                enter-to-class="transform opacity-100 translate-y-0"
+                leave-active-class="transition duration-150 ease-in"
+                leave-from-class="transform opacity-100 translate-y-0"
+                leave-to-class="transform opacity-0 -translate-y-2"
+              >
+                <div v-if="showIcon" class="flex flex-nowrap overflow-x-auto gap-[8px] items-center -mx-[24px] px-[24px] w-[calc(100%+48px)] pt-1 no-scrollbar">
+                  <button 
+                    type="button"
+                    @click="setIconName('ticket')"
+                    :class="iconName === 'ticket' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                    class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[6px] rounded-[8px] text-[11px] font-707 cursor-pointer"
+                  >
+                    <Ticket class="size-3.5" /> Pass
+                  </button>
+                  <button 
+                    type="button"
+                    @click="setIconName('arrow-right')"
+                    :class="iconName === 'arrow-right' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                    class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[6px] rounded-[8px] text-[11px] font-707 cursor-pointer"
+                  >
+                    <ArrowRight class="size-3.5" /> Arrow
+                  </button>
+                  <button 
+                    type="button"
+                    @click="setIconName('grid')"
+                    :class="iconName === 'grid' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                    class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[6px] rounded-[8px] text-[11px] font-707 cursor-pointer"
+                  >
+                    <LayoutGrid class="size-3.5" /> Grid
+                  </button>
+                  <button 
+                    type="button"
+                    @click="setIconName('whatsapp')"
+                    :class="iconName === 'whatsapp' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                    class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[6px] rounded-[8px] text-[11px] font-707 cursor-pointer"
+                  >
+                    <Phone class="size-3.5" /> WhatsApp
+                  </button>
+                  <button 
+                    type="button"
+                    @click="setIconName('instagram')"
+                    :class="iconName === 'instagram' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                    class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[6px] rounded-[8px] text-[11px] font-707 cursor-pointer"
+                  >
+                    <Instagram class="size-3.5" /> Instagram
+                  </button>
+                </div>
+              </Transition>
+            </div>
           </div>
+        </Transition>
+      </div>
+
+      <!-- Section 4: Troubleshoot / Disclaimer Notice Section -->
+      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
+        <div class="flex items-center justify-between w-full">
+          <div class="flex flex-col">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Troubleshoot & Help Notice
+            </p>
+            <p class="font-707 text-[11px] text-neutral-500">
+              {{ showFooterNotice ? 'Visible under valid sessions list' : 'Hidden from ticket' }}
+            </p>
+          </div>
+
+          <!-- Modern Elegant Apple Style Toggle Switch -->
+          <button
+            type="button"
+            role="switch"
+            :aria-checked="showFooterNotice"
+            @click="toggleFooterNotice"
+            class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+            :class="showFooterNotice ? 'bg-black' : 'bg-[#e5e5ea]'"
+            title="Toggle Help Notice"
+          >
+            <span
+              aria-hidden="true"
+              class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+              :class="showFooterNotice ? 'translate-x-[18px]' : 'translate-x-0'"
+            />
+          </button>
         </div>
-      </Transition>
+
+        <!-- Troubleshoot Notice Inputs (Visible only when toggle is on) -->
+        <Transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="transform opacity-0 -translate-y-2"
+          enter-to-class="transform opacity-100 translate-y-0"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="transform opacity-100 translate-y-0"
+          leave-to-class="transform opacity-0 -translate-y-2"
+        >
+          <div v-if="showFooterNotice" class="flex flex-col gap-[12px] w-full pt-1">
+            <div class="flex flex-col gap-1 w-full">
+              <span class="font-707 text-[11px] font-medium text-neutral-600">Notice Title</span>
+              <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[34px] items-center px-[12px] rounded-[6px] w-full bg-white transition-colors">
+                <input 
+                  v-model="footerNoticeTitle"
+                  placeholder="DIDN'T RECEIVE THE EMAIL?"
+                  class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
+                />
+              </div>
+            </div>
+            <div class="flex flex-col gap-1 w-full">
+              <span class="font-707 text-[11px] font-medium text-neutral-600">Notice Message</span>
+              <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[34px] items-center px-[12px] rounded-[6px] w-full bg-white transition-colors">
+                <input 
+                  v-model="footerNoticeText"
+                  placeholder="Check your spam folder or contact support"
+                  class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400"
+                />
+              </div>
+            </div>
+
+            <!-- Hyperlink on Selected Word -->
+            <div class="flex flex-col gap-[10px] w-full pt-1 border-t border-[#f0f0f0]">
+              <div class="flex items-center justify-between">
+                <span class="font-707 text-[11px] font-medium text-neutral-600">Hyperlink Function</span>
+                <span class="font-707 text-[10px] text-neutral-400">or use [word](url) in message</span>
+              </div>
+
+              <!-- Action Type Segmented Control -->
+              <div class="flex gap-[8px] items-center w-full">
+                <button 
+                  type="button"
+                  @click="setFooterNoticeActionType('link')"
+                  :class="footerNoticeActionType === 'link' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                  class="flex-1 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center px-[12px] py-[4px] rounded-[6px] text-[11px] font-707 cursor-pointer"
+                >
+                  Open URL
+                </button>
+                <button 
+                  type="button"
+                  @click="setFooterNoticeActionType('modal')"
+                  :class="footerNoticeActionType === 'modal' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                  class="flex-1 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center px-[12px] py-[4px] rounded-[6px] text-[11px] font-707 cursor-pointer"
+                >
+                  Open Pop Up Modal
+                </button>
+              </div>
+
+              <!-- Word(s) to Hyperlink -->
+              <div class="flex flex-col gap-1 w-full">
+                <span class="font-707 text-[10px] text-neutral-500">Selected Word(s) to Hyperlink</span>
+                <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[32px] items-center px-[10px] rounded-[6px] w-full bg-white transition-colors">
+                  <input 
+                    v-model="footerNoticeLinkWords"
+                    placeholder="contact support"
+                    class="w-full text-[11px] font-707 text-black focus:outline-none placeholder:text-neutral-400"
+                  />
+                </div>
+              </div>
+
+              <!-- Conditional URL input if 'link' -->
+              <div v-if="footerNoticeActionType === 'link'" class="flex flex-col gap-1 w-full animate-in fade-in duration-150">
+                <span class="font-707 text-[10px] text-neutral-500">Link Destination URL</span>
+                <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[32px] items-center px-[10px] rounded-[6px] w-full bg-white transition-colors">
+                  <input 
+                    v-model="footerNoticeLinkUrl"
+                    placeholder="https://... or mailto:..."
+                    class="w-full text-[11px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
+                  />
+                </div>
+              </div>
+
+              <!-- Conditional Configure Modal Button if 'modal' -->
+              <div v-if="footerNoticeActionType === 'modal'" class="w-full pt-1 animate-in fade-in duration-150">
+                <button 
+                  type="button"
+                  @click="openNoticeModalSetup"
+                  class="apple-glass-btn-dark w-full h-[34px] rounded-[6px] flex items-center justify-between px-3 font-707 font-medium text-[11px] cursor-pointer transition-all shadow-sm"
+                >
+                  <span class="flex items-center gap-1.5">
+                    <SlidersHorizontal class="size-3" />
+                    <span>Configure Pop Up Modal</span>
+                  </span>
+                  <ArrowRight class="size-3 opacity-80" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </Transition>
+      </div>
     </div>
   </aside>
 </template>
@@ -737,8 +756,6 @@ import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { 
   Ticket, 
   Users,
-  Plus, 
-  Trash2, 
   ChevronDown, 
   Check, 
   ArrowRight, 
@@ -746,7 +763,9 @@ import {
   LayoutGrid, 
   Phone, 
   Instagram,
-  ChevronRight
+  ChevronRight,
+  FileText,
+  QrCode
 } from 'lucide-vue-next';
 
 defineProps<{
@@ -760,6 +779,9 @@ defineEmits<{
 const editorStore = useEditorStore();
 const sidebarRef = ref<HTMLElement | null>(null);
 
+type EPassTabId = 'details' | 'display' | 'action';
+const activeTab = ref<EPassTabId>('details');
+
 const currentWidget = computed(() => {
   const selected = editorStore.currentPage.widget_tree.find(w => w.id === editorStore.selectedWidgetId);
   if (selected && (selected.type === 'GuestEPass' || selected.type === 'LiveQueuePass')) return selected;
@@ -770,6 +792,15 @@ const isLiveQueueMode = computed(() => {
   return currentWidget.value?.type === 'LiveQueuePass' || currentWidget.value?.props?.passMode === 'queue';
 });
 
+const tabs = computed(() => [
+  { id: 'details' as const, label: 'Pass Details', icon: FileText },
+  { id: 'display' as const, label: isLiveQueueMode.value ? 'Display & Queue' : 'Display & QR', icon: isLiveQueueMode.value ? Users : QrCode },
+  { id: 'action' as const, label: 'Action & Notice', icon: SlidersHorizontal }
+]);
+
+const showCtaButtonClass = computed(() => {
+  return isCtaEnabled.value ? 'bg-black' : 'bg-[#e5e5ea]';
+});
 
 const sampleQueueNumber = computed({
   get: () => currentWidget.value?.props?.sampleQueueNumber ?? 42,
@@ -817,7 +848,6 @@ const queuePreviewState = computed<'green' | 'yellow' | 'calling' | 'red' | 'bla
     }
   }
 });
-
 
 // Brand Logo Toggle & Color Mode
 const showBrandLogo = computed({
@@ -981,10 +1011,6 @@ function setButtonVariant(variant: 'black' | 'white') {
 const isLinkToDropdownOpen = ref(false);
 
 const allLinkToOptions = CTA_ACTION_OPTIONS;
-
-const hasNextPage = computed(() => {
-  return editorStore.activePageIndex < editorStore.pages.length - 1;
-});
 
 const linkToOptions = computed(() => {
   return allLinkToOptions;

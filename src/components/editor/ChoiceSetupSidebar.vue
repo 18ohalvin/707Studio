@@ -1,5 +1,5 @@
 <template>
-  <!-- Choice Setup Sidebar Drawer (Matching 707 Global UI Style & Apple Glass Standards) -->
+  <!-- Choice Setup Sidebar Menu (Figma Node 276:4224) -->
   <aside 
     v-if="isOpen && currentWidget"
     ref="sidebarRef"
@@ -9,568 +9,607 @@
     data-node-id="276:4224"
     data-name="Choice Setup Sidebar"
   >
-    <!-- Widget Container & Header -->
-    <div class="content-stretch flex flex-col items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+    <!-- Header -->
+    <div class="content-stretch flex flex-col items-start p-[24px] pb-[16px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
-        <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
-          Choice Setup
-        </p>
+        <div class="flex items-center gap-2">
+          <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
+            Choice Setup
+          </p>
+          <span class="font-707 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-black/5 text-neutral-600 font-medium">
+            {{ variantLabel }}
+          </span>
+        </div>
         <button 
           @click="$emit('close')"
           class="apple-glass-icon-btn size-7 flex items-center justify-center rounded-full cursor-pointer hover:bg-neutral-200/60 transition-colors"
+          title="Close"
         >
           <img :src="FIGMA_ASSETS.closeIcon" class="w-3.5 h-3.5" alt="Close" />
         </button>
       </div>
     </div>
 
-    <!-- Section 1: Title & Subtitle Input (Figma Node 276:4224) -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
-      <div class="flex flex-col gap-[6px] w-full">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Widget Title
-        </p>
-        <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
-          <input 
-            v-model="title"
-            placeholder="e.g. SELECT ARRIVALS"
-            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase tracking-tight"
-          />
-        </div>
-      </div>
-
-      <!-- Title Typography Preset Dropdown -->
-      <div class="flex flex-col gap-[6px] w-full">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Title Font Style
-        </p>
-        <div class="relative w-full" ref="titleDropdownRef">
-          <button 
-            type="button"
-            @click="isTitleDropdownOpen = !isTitleDropdownOpen"
-            class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-full cursor-pointer bg-white"
-          >
-            <span class="font-707 font-normal text-[12px] leading-[18px] text-black whitespace-nowrap truncate">
-              {{ currentTitleTypographyLabel }}
-            </span>
-            <ChevronDown 
-              class="w-4 h-4 text-black transition-transform duration-150 shrink-0 ml-2" 
-              :class="isTitleDropdownOpen ? 'rotate-180' : ''" 
-            />
-          </button>
-
-          <!-- Dropdown Options Menu -->
-          <div 
-            v-if="isTitleDropdownOpen"
-            class="absolute top-full left-0 right-0 mt-1.5 bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-[0px_4px_20px_rgba(0,0,0,0.12)] z-50 overflow-y-auto max-h-[220px] py-1 animate-in fade-in slide-in-from-top-1 duration-150"
-          >
-            <button 
-              v-for="opt in typographyOptions"
-              :key="opt.id"
-              @click="selectTitleTypography(opt.id)"
-              :class="currentTitleTypographyId === opt.id ? 'bg-black/5 font-medium text-black' : 'text-neutral-700 hover:bg-black/5'"
-              class="w-full text-left px-4 py-2 text-[12px] font-707 flex items-center justify-between transition-colors cursor-pointer border-b border-neutral-100 last:border-b-0"
-            >
-              <div class="flex flex-col">
-                <span :class="opt.previewClass">{{ opt.label }}</span>
-                <span class="text-[10px] text-neutral-400 font-normal">{{ opt.desc }}</span>
-              </div>
-              <span class="text-[11px] text-neutral-400 font-mono shrink-0 ml-2">{{ opt.size }}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Subtitle (Uses Body Text style 12px) -->
-      <div class="flex flex-col gap-[6px] w-full">
-        <div class="flex items-center justify-between">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Subtitle Text
-          </p>
-          <span class="font-707 text-[11px] text-neutral-400">
-            Body Text (12px)
-          </span>
-        </div>
-        <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
-          <input 
-            v-model="subtitle"
-            placeholder="e.g. Choose your preferred attendance day below."
-            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400"
-          />
-        </div>
-      </div>
-    </div>
-
-    <!-- Section 2: Option Tile Font Style Preset -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
-      <div class="flex flex-col gap-[6px] w-full">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Option Tile Font Style
-        </p>
-        <div class="relative w-full" ref="optionDropdownRef">
-          <button 
-            type="button"
-            @click="isOptionDropdownOpen = !isOptionDropdownOpen"
-            class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-full cursor-pointer bg-white"
-          >
-            <span class="font-707 font-normal text-[12px] leading-[18px] text-black whitespace-nowrap truncate">
-              {{ currentOptionTypographyLabel }}
-            </span>
-            <ChevronDown 
-              class="w-4 h-4 text-black transition-transform duration-150 shrink-0 ml-2" 
-              :class="isOptionDropdownOpen ? 'rotate-180' : ''" 
-            />
-          </button>
-
-          <!-- Dropdown Options Menu -->
-          <div 
-            v-if="isOptionDropdownOpen"
-            class="absolute top-full left-0 right-0 mt-1.5 bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-[0px_4px_20px_rgba(0,0,0,0.12)] z-50 overflow-y-auto max-h-[220px] py-1 animate-in fade-in slide-in-from-top-1 duration-150"
-          >
-            <button 
-              v-for="opt in typographyOptions"
-              :key="opt.id"
-              @click="selectOptionTypography(opt.id)"
-              :class="currentOptionTypographyId === opt.id ? 'bg-black/5 font-medium text-black' : 'text-neutral-700 hover:bg-black/5'"
-              class="w-full text-left px-4 py-2 text-[12px] font-707 flex items-center justify-between transition-colors cursor-pointer border-b border-neutral-100 last:border-b-0"
-            >
-              <div class="flex flex-col">
-                <span :class="opt.previewClass">{{ opt.label }}</span>
-                <span class="text-[10px] text-neutral-400 font-normal">{{ opt.desc }}</span>
-              </div>
-              <span class="text-[11px] text-neutral-400 font-mono shrink-0 ml-2">{{ opt.size }}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Section 3: Style Presets (4 Figma Variants with Minimal Icons) -->
-    <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
-      <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-        Choice Style Variant
-      </p>
-      <div class="grid grid-cols-4 gap-[8px] w-full pt-1">
-        <button 
-          v-for="v in variants" 
-          :key="v.id"
+    <!-- Segmented 3-Tab Control Bar (Sticky) -->
+    <div class="px-[20px] pt-[12px] pb-[12px] w-full border-b border-[#f0f0f0] bg-white/70 backdrop-blur-md shrink-0 sticky top-0 z-20">
+      <div class="flex items-center p-1 bg-[#ececec]/60 rounded-[10px] w-full gap-1 border border-black/5">
+        <button
+          v-for="t in tabs"
+          :key="t.id"
           type="button"
-          @click="setVariant(v.id)"
-          class="flex flex-col gap-[6px] items-center p-2 rounded-[8px] border transition-all cursor-pointer group"
-          :class="variant === v.id ? 'bg-black text-white border-black shadow-sm ring-1 ring-black' : 'bg-white hover:bg-neutral-50 text-black border-[#d9d9d9]'"
+          @click="activeTab = t.id"
+          :class="activeTab === t.id 
+            ? 'bg-white text-black shadow-xs font-medium' 
+            : 'text-neutral-500 hover:text-black font-normal'"
+          class="flex-1 h-[30px] rounded-[7px] text-[12px] font-707 flex items-center justify-center gap-1.5 transition-all cursor-pointer select-none"
         >
-          <div 
-            class="size-[36px] rounded-full flex items-center justify-center transition-all duration-150 shadow-sm shrink-0"
-            :class="variant === v.id ? 'bg-white text-black' : 'bg-[#f5f5f5] group-hover:bg-black group-hover:text-white text-black border border-[#d9d9d9]'"
-          >
-            <component :is="v.icon" class="size-4 stroke-[1.75]" />
-          </div>
-          <span 
-            class="font-707 text-[10px] leading-tight text-center truncate w-full"
-            :class="variant === v.id ? 'font-medium text-white' : 'font-normal text-black group-hover:font-medium'"
-          >
-            {{ v.label }}
-          </span>
+          <component :is="t.icon" class="size-3.5" />
+          <span>{{ t.label }}</span>
         </button>
       </div>
     </div>
 
-    <!-- Section 4: Selection Mode & Required Rules -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
-      <div class="flex items-center justify-between w-full">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Selection Rule
-        </p>
-        <div class="flex gap-[6px] items-center">
+    <!-- TAB 1: CONTENT -->
+    <div v-show="activeTab === 'content'" class="w-full flex flex-col">
+      <!-- Title & Subtitle Input -->
+      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
+        <div class="flex flex-col gap-[6px] w-full">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Widget Title
+          </p>
+          <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+            <input 
+              v-model="title"
+              placeholder="e.g. SELECT ARRIVALS"
+              class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase tracking-tight"
+            />
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-[6px] w-full">
+          <div class="flex items-center justify-between">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Subtitle Text
+            </p>
+            <span class="font-707 text-[11px] text-neutral-400">
+              Helper copy
+            </span>
+          </div>
+          <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+            <input 
+              v-model="subtitle"
+              placeholder="e.g. Choose your preferred attendance day below."
+              class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Options Manager -->
+      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pt-[20px] shrink-0 w-full">
+        <div class="flex items-center justify-between w-full">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Options ({{ options.length }})
+          </p>
           <button 
             type="button"
-            @click="setAllowMultiple(true)"
-            :class="allowMultiple ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
+            @click="addOption"
+            class="apple-glass-btn px-2.5 h-[28px] rounded-[6px] text-[11px] font-medium flex items-center gap-1 cursor-pointer"
           >
-            Multiple
+            <Plus class="w-3 h-3" />
+            <span>Add Option</span>
           </button>
-          <button 
-            type="button"
-            @click="setAllowMultiple(false)"
-            :class="!allowMultiple ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-            class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
+        </div>
+
+        <!-- Options items list -->
+        <div class="flex flex-col gap-[10px] w-full">
+          <div 
+            v-for="(opt, idx) in options" 
+            :key="opt.id"
+            class="flex flex-col gap-2 p-3 bg-white rounded-[8px] border border-[#d9d9d9] shadow-sm transition-all group"
           >
-            Single
+            <!-- Top Row: Order Index, Custom Option Title Input, Default Selected Checkbox, and Delete -->
+            <div class="flex items-center gap-2 w-full">
+              <span class="size-5 rounded-full bg-neutral-100 flex items-center justify-center font-mono text-[10px] text-neutral-500 font-bold shrink-0">
+                {{ idx + 1 }}
+              </span>
+
+              <!-- Editable Custom Option Title Input -->
+              <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2.5 h-[32px] flex items-center flex-1 bg-white transition-colors">
+                <input 
+                  :value="opt.label"
+                  @input="updateOptionLabel(idx, ($event.target as HTMLInputElement).value)"
+                  :placeholder="getAutomaticOptionLabel(variant, idx)"
+                  class="w-full font-707 text-[12px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
+                />
+              </div>
+
+              <!-- Default Selected Toggle Button -->
+              <button 
+                type="button"
+                @click="toggleOptionSelected(opt.id)"
+                :class="isOptionSelected(opt.id) ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-400 hover:text-black'"
+                class="size-[32px] rounded-[6px] flex items-center justify-center cursor-pointer transition-colors border border-black/10 shrink-0"
+                title="Toggle Pre-selected state"
+              >
+                <Check class="w-3.5 h-3.5 stroke-[2.5]" />
+              </button>
+
+              <!-- Delete Option -->
+              <button 
+                type="button"
+                @click="removeOption(idx)"
+                :disabled="options.length <= 1"
+                :class="options.length <= 1 ? 'opacity-30 cursor-not-allowed' : 'hover:text-red-600 hover:bg-red-50 text-neutral-400 cursor-pointer'"
+                class="size-[32px] rounded-[6px] flex items-center justify-center transition-colors shrink-0"
+                title="Remove Option"
+              >
+                <Trash2 class="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <!-- Places for this option (when limitPlaces active) -->
+            <div v-if="limitPlaces" class="flex items-center gap-2 pl-7">
+              <span class="font-707 text-[11px] font-medium text-neutral-600 shrink-0">Places</span>
+              <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2.5 h-[28px] flex items-center flex-1 bg-white transition-colors">
+                <input 
+                  :value="opt.slotsCapacity ?? ''"
+                  @input="updateOptionField(idx, { slotsCapacity: ($event.target as HTMLInputElement).value.replace(/[^\d]/g, '') })"
+                  inputmode="numeric"
+                  :placeholder="globalSlotsCapacity ? `${globalSlotsCapacity} (shared)` : 'No limit'"
+                  class="w-full font-707 text-[11px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
+                />
+              </div>
+              <button 
+                type="button"
+                @click="updateOptionField(idx, { disabled: !opt.disabled })"
+                :class="opt.disabled ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-500 hover:text-black'"
+                class="h-[28px] px-2.5 rounded-[6px] font-707 text-[11px] font-medium cursor-pointer transition-colors shrink-0"
+                title="Close this option to new registrations"
+              >
+                {{ opt.disabled ? 'Closed' : 'Close' }}
+              </button>
+            </div>
+
+            <!-- Variant Specific Fields: Detailed Card Date Field -->
+            <div v-if="variant === 'detailed-card'" class="flex flex-col gap-1.5 pl-7">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] font-707 font-medium text-neutral-600 flex items-center gap-1">
+                  <Calendar class="w-3 h-3 text-neutral-400" />
+                  <span>Date (DD MMM YYYY)</span>
+                </span>
+                <span class="text-[10px] font-mono text-neutral-400 font-medium">
+                  {{ parseDateComponents(opt.sublabel).day }} {{ parseDateComponents(opt.sublabel).month }} {{ parseDateComponents(opt.sublabel).year }}
+                </span>
+              </div>
+              
+              <div class="grid grid-cols-3 gap-1.5 w-full">
+                <!-- Day Select -->
+                <div class="relative">
+                  <select 
+                    :value="parseDateComponents(opt.sublabel).day"
+                    @change="updateOptionDate(idx, 'day', ($event.target as HTMLSelectElement).value)"
+                    class="w-full h-[30px] px-2 appearance-none bg-white border border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
+                  >
+                    <option v-for="d in DAYS" :key="d" :value="d">{{ d }}</option>
+                  </select>
+                  <ChevronDown class="w-3 h-3 text-neutral-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+
+                <!-- Month Select -->
+                <div class="relative">
+                  <select 
+                    :value="parseDateComponents(opt.sublabel).month"
+                    @change="updateOptionDate(idx, 'month', ($event.target as HTMLSelectElement).value)"
+                    class="w-full h-[30px] px-2 appearance-none bg-white border border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
+                  >
+                    <option v-for="m in MONTHS" :key="m" :value="m">{{ m }}</option>
+                  </select>
+                  <ChevronDown class="w-3 h-3 text-neutral-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+
+                <!-- Year Select -->
+                <div class="relative">
+                  <select 
+                    :value="parseDateComponents(opt.sublabel).year"
+                    @change="updateOptionDate(idx, 'year', ($event.target as HTMLSelectElement).value)"
+                    class="w-full h-[30px] px-2 appearance-none bg-white border border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
+                  >
+                    <option v-for="y in YEARS" :key="y" :value="y">{{ y }}</option>
+                  </select>
+                  <ChevronDown class="w-3 h-3 text-neutral-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Description field (for detailed-card) -->
+            <div v-if="variant === 'detailed-card'" class="pl-7">
+              <textarea 
+                v-model="opt.description"
+                rows="2"
+                placeholder="Event Description Detail..."
+                class="w-full font-707 text-[11px] text-neutral-700 focus:outline-none border border-[#ccc] focus:border-black rounded-[6px] p-1.5 resize-none leading-relaxed bg-white"
+              />
+            </div>
+
+            <!-- Image Selector & Dropzone (for image-grid) -->
+            <div v-if="variant === 'image-grid'" class="pl-7 w-full flex flex-col gap-2">
+              <div 
+                v-if="opt.imageUrl" 
+                class="relative border border-[#d9d9d9] rounded-[8px] p-2 flex items-center justify-between bg-white hover:border-black transition-colors"
+              >
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="size-[44px] rounded bg-neutral-50 overflow-hidden border border-neutral-200 shrink-0">
+                    <img :src="sizedUrl(opt.imageUrl, 320)" :alt="opt.label" class="size-full object-cover" />
+                  </div>
+                  <div class="flex flex-col min-w-0">
+                    <span class="text-[11px] font-707 font-medium text-black truncate">{{ opt.label || 'Model Image' }}</span>
+                    <span class="text-[9px] font-707 text-neutral-400">3:4 aspect ratio</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <button 
+                    type="button"
+                    @click="openMediaGalleryForOption(opt.id)"
+                    class="apple-glass-btn text-[10px] font-707 px-2 py-1 rounded-[6px] cursor-pointer"
+                    title="Select from Media Gallery"
+                  >
+                    Gallery
+                  </button>
+                  <button 
+                    type="button"
+                    @click="triggerOptionFileUpload(idx)"
+                    class="apple-glass-btn text-[10px] font-707 px-2 py-1 rounded-[6px] cursor-pointer"
+                    title="Upload from computer"
+                  >
+                    Upload
+                  </button>
+                  <button 
+                    type="button"
+                    @click="removeOptionImage(idx)"
+                    class="apple-glass-icon-btn size-6 rounded-[6px] flex items-center justify-center text-neutral-500 hover:text-red-600 cursor-pointer"
+                    title="Remove Image"
+                  >
+                    <Trash2 class="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+
+              <div 
+                v-else
+                @click="triggerOptionFileUpload(idx)"
+                @dragover.prevent="activeDragOptionIdx = idx"
+                @dragleave="activeDragOptionIdx = null"
+                @drop.prevent="handleOptionImageDrop($event, idx)"
+                :class="[
+                  activeDragOptionIdx === idx ? 'border-black bg-neutral-100' : 'bg-[#f5f5f5] hover:bg-[#efefef] border-[#d9d9d9]',
+                  'border border-dashed flex flex-col gap-1 py-3 px-3 items-center justify-center rounded-[8px] w-full cursor-pointer transition-all'
+                ]"
+              >
+                <p class="font-707 text-[11px] text-neutral-700 text-center">
+                  <button 
+                    type="button" 
+                    @click.stop="openMediaGalleryForOption(opt.id)"
+                    class="font-medium text-black underline hover:text-neutral-700 cursor-pointer"
+                  >
+                    Select From Media Gallery
+                  </button>
+                  <span> or Drag</span>
+                </p>
+                <span class="text-[9px] font-707 text-neutral-400">Fixed 3:4 ratio</span>
+              </div>
+
+              <!-- Hidden File Input for this option -->
+              <input 
+                type="file" 
+                :ref="(el) => setFileInputRef(el, idx)" 
+                accept="image/*" 
+                @change="handleOptionFileChange($event, idx)" 
+                class="hidden" 
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Add Option Button -->
+        <button 
+          type="button"
+          @click="addOption"
+          class="w-full h-[36px] rounded-[8px] border border-dashed border-[#aaa] hover:border-black text-neutral-600 hover:text-black font-707 text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer bg-white/50"
+        >
+          <Plus class="w-3.5 h-3.5" />
+          <span>Add Option</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 2: DESIGN & STYLE -->
+    <div v-show="activeTab === 'style'" class="w-full flex flex-col">
+      <!-- Title Typography Preset Dropdown -->
+      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
+        <div class="flex flex-col gap-[6px] w-full">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Title Font Style
+          </p>
+          <div class="relative w-full" ref="titleDropdownRef">
+            <button 
+              type="button"
+              @click="isTitleDropdownOpen = !isTitleDropdownOpen"
+              class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-full cursor-pointer bg-white"
+            >
+              <span class="font-707 font-normal text-[12px] leading-[18px] text-black whitespace-nowrap truncate">
+                {{ currentTitleTypographyLabel }}
+              </span>
+              <ChevronDown 
+                class="w-4 h-4 text-black transition-transform duration-150 shrink-0 ml-2" 
+                :class="isTitleDropdownOpen ? 'rotate-180' : ''" 
+              />
+            </button>
+
+            <!-- Dropdown Options Menu -->
+            <div 
+              v-if="isTitleDropdownOpen"
+              class="absolute top-full left-0 right-0 mt-1.5 bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-[0px_4px_20px_rgba(0,0,0,0.12)] z-50 overflow-y-auto max-h-[220px] py-1 animate-in fade-in slide-in-from-top-1 duration-150"
+            >
+              <button 
+                v-for="opt in typographyOptions"
+                :key="opt.id"
+                @click="selectTitleTypography(opt.id)"
+                :class="currentTitleTypographyId === opt.id ? 'bg-black/5 font-medium text-black' : 'text-neutral-700 hover:bg-black/5'"
+                class="w-full text-left px-4 py-2 text-[12px] font-707 flex items-center justify-between transition-colors cursor-pointer border-b border-neutral-100 last:border-b-0"
+              >
+                <div class="flex flex-col">
+                  <span :class="opt.previewClass">{{ opt.label }}</span>
+                  <span class="text-[10px] text-neutral-400 font-normal">{{ opt.desc }}</span>
+                </div>
+                <span class="text-[11px] text-neutral-400 font-mono shrink-0 ml-2">{{ opt.size }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Option Tile Font Style Dropdown -->
+        <div class="flex flex-col gap-[6px] w-full pt-1">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Option Tile Font Style
+          </p>
+          <div class="relative w-full" ref="optionDropdownRef">
+            <button 
+              type="button"
+              @click="isOptionDropdownOpen = !isOptionDropdownOpen"
+              class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-full cursor-pointer bg-white"
+            >
+              <span class="font-707 font-normal text-[12px] leading-[18px] text-black whitespace-nowrap truncate">
+                {{ currentOptionTypographyLabel }}
+              </span>
+              <ChevronDown 
+                class="w-4 h-4 text-black transition-transform duration-150 shrink-0 ml-2" 
+                :class="isOptionDropdownOpen ? 'rotate-180' : ''" 
+              />
+            </button>
+
+            <!-- Dropdown Options Menu -->
+            <div 
+              v-if="isOptionDropdownOpen"
+              class="absolute top-full left-0 right-0 mt-1.5 bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-[0px_4px_20px_rgba(0,0,0,0.12)] z-50 overflow-y-auto max-h-[220px] py-1 animate-in fade-in slide-in-from-top-1 duration-150"
+            >
+              <button 
+                v-for="opt in typographyOptions"
+                :key="opt.id"
+                @click="selectOptionTypography(opt.id)"
+                :class="currentOptionTypographyId === opt.id ? 'bg-black/5 font-medium text-black' : 'text-neutral-700 hover:bg-black/5'"
+                class="w-full text-left px-4 py-2 text-[12px] font-707 flex items-center justify-between transition-colors cursor-pointer border-b border-neutral-100 last:border-b-0"
+              >
+                <div class="flex flex-col">
+                  <span :class="opt.previewClass">{{ opt.label }}</span>
+                  <span class="text-[10px] text-neutral-400 font-normal">{{ opt.desc }}</span>
+                </div>
+                <span class="text-[11px] text-neutral-400 font-mono shrink-0 ml-2">{{ opt.size }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Choice Style Variant (4 Figma Variants with Minimal Icons) -->
+      <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
+        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+          Choice Style Variant
+        </p>
+        <div class="grid grid-cols-4 gap-[8px] w-full pt-1">
+          <button 
+            v-for="v in variants" 
+            :key="v.id"
+            type="button"
+            @click="setVariant(v.id)"
+            class="flex flex-col gap-[6px] items-center p-2 rounded-[8px] border transition-all cursor-pointer group"
+            :class="variant === v.id ? 'bg-black text-white border-black shadow-sm ring-1 ring-black' : 'bg-white hover:bg-neutral-50 text-black border-[#d9d9d9]'"
+          >
+            <div 
+              class="size-[36px] rounded-full flex items-center justify-center transition-all duration-150 shadow-sm shrink-0"
+              :class="variant === v.id ? 'bg-white text-black' : 'bg-[#f5f5f5] group-hover:bg-black group-hover:text-white text-black border border-[#d9d9d9]'"
+            >
+              <component :is="v.icon" class="size-4 stroke-[1.75]" />
+            </div>
+            <span 
+              class="font-707 text-[10px] leading-tight text-center truncate w-full"
+              :class="variant === v.id ? 'font-medium text-white' : 'font-normal text-black group-hover:font-medium'"
+            >
+              {{ v.label }}
+            </span>
           </button>
         </div>
       </div>
 
-      <div class="flex flex-col gap-1 w-full">
+      <!-- Grid Columns Option for Image Matrix -->
+      <div v-if="variant === 'image-grid'" class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
         <div class="flex items-center justify-between w-full">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Required Field
-          </p>
+          <div class="flex flex-col">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Grid Columns
+            </p>
+            <span class="font-707 text-[11px] text-neutral-400">
+              3:4 card aspect ratio
+            </span>
+          </div>
+          <span class="font-707 text-[12px] font-medium text-black px-2.5 py-1 bg-neutral-100 rounded-[6px]">
+            {{ gridColumns }} {{ gridColumns === 1 ? 'Column' : 'Columns' }}
+          </span>
+        </div>
+
+        <!-- Block Table Selector (1, 2, 3, 4 Columns) -->
+        <div class="grid grid-cols-4 gap-[8px] w-full pt-1">
+          <button 
+            v-for="col in [1, 2, 3, 4]" 
+            :key="col"
+            type="button"
+            @click="setGridColumns(col)"
+            :class="gridColumns === col ? 'bg-black text-white border-black shadow-sm ring-1 ring-black' : 'bg-white text-neutral-700 hover:bg-neutral-50 hover:border-black/40 border-[#d9d9d9]'"
+            class="h-[44px] rounded-[8px] border flex flex-col items-center justify-center gap-1 cursor-pointer transition-all font-707"
+          >
+            <div class="flex gap-[2px] items-center h-[10px]">
+              <div 
+                v-for="b in col" 
+                :key="b" 
+                class="w-[4px] h-[9px] rounded-[1px]" 
+                :class="gridColumns === col ? 'bg-white' : 'bg-neutral-400'"
+              />
+            </div>
+            <span class="text-[11px] font-medium">{{ col }} Col</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: RULES & LIMITS -->
+    <div v-show="activeTab === 'rules'" class="w-full flex flex-col">
+      <!-- Selection Mode & Required Rules -->
+      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
+        <div class="flex items-center justify-between w-full">
+          <div class="flex flex-col">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Selection Rule
+            </p>
+            <span class="font-707 text-[11px] text-neutral-400">
+              Single pick or multiple selections
+            </span>
+          </div>
           <div class="flex gap-[6px] items-center">
             <button 
               type="button"
-              @click="setRequired(false)"
-              :disabled="limitPlaces"
-              :class="[!required ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn', limitPlaces ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer']"
-              class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px]"
+              @click="setAllowMultiple(true)"
+              :class="allowMultiple ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
             >
-              Optional
+              Multiple
             </button>
             <button 
               type="button"
-              @click="setRequired(true)"
-              :class="required ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              @click="setAllowMultiple(false)"
+              :class="!allowMultiple ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
               class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
             >
-              Required
+              Single
             </button>
           </div>
         </div>
-        <p v-if="limitPlaces" class="font-707 text-[10.5px] text-amber-700 bg-amber-50/80 px-2 py-1 rounded-[5px] border border-amber-200/60 leading-normal">
-          Required is locked on while Limit Places is active so guests cannot bypass capacity counts.
-        </p>
-      </div>
-    </div>
 
-    <!-- Section 5: Grid Columns Option for Image Matrix -->
-    <div v-if="variant === 'image-grid'" class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
-      <div class="flex items-center justify-between w-full">
-        <div class="flex flex-col">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Grid Columns
+        <div class="flex flex-col gap-1 w-full pt-1">
+          <div class="flex items-center justify-between w-full">
+            <div class="flex flex-col">
+              <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+                Required Field
+              </p>
+              <span class="font-707 text-[11px] text-neutral-400">
+                Must select before submission
+              </span>
+            </div>
+            <div class="flex gap-[6px] items-center">
+              <button 
+                type="button"
+                @click="setRequired(false)"
+                :disabled="limitPlaces"
+                :class="[!required ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn', limitPlaces ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer']"
+                class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px]"
+              >
+                Optional
+              </button>
+              <button 
+                type="button"
+                @click="setRequired(true)"
+                :class="required ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
+              >
+                Required
+              </button>
+            </div>
+          </div>
+          <p v-if="limitPlaces" class="font-707 text-[10.5px] text-amber-700 bg-amber-50/80 px-2 py-1 rounded-[5px] border border-amber-200/60 leading-normal mt-1">
+            Required is locked on while Limit Places is active so guests cannot bypass capacity counts.
           </p>
-          <span class="font-707 text-[11px] text-neutral-400">
-            3:4 card aspect ratio
-          </span>
         </div>
-        <span class="font-707 text-[12px] font-medium text-black px-2.5 py-1 bg-neutral-100 rounded-[6px]">
-          {{ gridColumns }} {{ gridColumns === 1 ? 'Column' : 'Columns' }}
-        </span>
       </div>
 
-      <!-- Block Table Selector (1, 2, 3, 4 Columns) -->
-      <div class="grid grid-cols-4 gap-[8px] w-full pt-1">
-        <button 
-          v-for="col in [1, 2, 3, 4]" 
-          :key="col"
-          type="button"
-          @click="setGridColumns(col)"
-          :class="gridColumns === col ? 'bg-black text-white border-black shadow-sm ring-1 ring-black' : 'bg-white text-neutral-700 hover:bg-neutral-50 hover:border-black/40 border-[#d9d9d9]'"
-          class="h-[44px] rounded-[8px] border flex flex-col items-center justify-center gap-1 cursor-pointer transition-all font-707"
-        >
-          <!-- Visual Block Representation of Columns -->
-          <div class="flex gap-[2px] items-center h-[10px]">
-            <div 
-              v-for="b in col" 
-              :key="b" 
-              class="w-[4px] h-[9px] rounded-[1px]" 
-              :class="gridColumns === col ? 'bg-white' : 'bg-neutral-400'"
-            />
-          </div>
-          <span class="text-[11px] font-medium">{{ col }} Col</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Section 6: Places (limit how many guests can take an option) -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
-      <div class="flex items-center justify-between w-full">
-        <div class="flex flex-col">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Limit places
-          </p>
-          <span class="font-707 text-[11px] text-neutral-400">
-            Counted live from registrations
-          </span>
-        </div>
-        <!-- 707 Switch Toggle -->
-        <button 
-          type="button"
-          @click="limitPlaces = !limitPlaces"
-          :class="limitPlaces ? 'bg-black' : 'bg-neutral-200'"
-          class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
-        >
-          <span 
-            :class="limitPlaces ? 'translate-x-[18px]' : 'translate-x-0'"
-            class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
-          />
-        </button>
-      </div>
-
-      <div v-if="limitPlaces" class="flex flex-col gap-[12px] w-full pt-1 animate-in fade-in slide-in-from-top-1 duration-150">
-        <div class="flex flex-col gap-[8px]">
-          <div class="flex items-center justify-between">
-            <span class="font-707 text-[12px] font-medium text-neutral-700">Places per option</span>
-            <span class="font-707 text-[11px] text-neutral-400">Override on any option below</span>
-          </div>
-          <div class="border border-[#aaa] focus-within:border-black rounded-[8px] px-3.5 h-[38px] flex items-center w-full bg-white transition-colors">
-            <input 
-              v-model="globalSlotsCapacity"
-              inputmode="numeric"
-              placeholder="e.g. 500"
-              class="w-full font-707 text-[13px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
-            />
-          </div>
-        </div>
-
+      <!-- Places (limit how many guests can take an option) -->
+      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
         <div class="flex items-center justify-between w-full">
           <div class="flex flex-col">
-            <span class="font-707 text-[12px] font-medium text-neutral-700">Waitlist when full</span>
-            <span class="font-707 text-[11px] text-neutral-400">Guests may queue; a place returns when a guest is removed</span>
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Limit places
+            </p>
+            <span class="font-707 text-[11px] text-neutral-400">
+              Counted live from registrations
+            </span>
           </div>
+          <!-- 707 Switch Toggle -->
           <button 
             type="button"
-            @click="waitlistEnabled = !waitlistEnabled"
-            :class="waitlistEnabled ? 'bg-black' : 'bg-neutral-200'"
+            @click="limitPlaces = !limitPlaces"
+            :class="limitPlaces ? 'bg-black' : 'bg-neutral-200'"
             class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
           >
             <span 
-              :class="waitlistEnabled ? 'translate-x-[18px]' : 'translate-x-0'"
+              :class="limitPlaces ? 'translate-x-[18px]' : 'translate-x-0'"
               class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
             />
           </button>
         </div>
-      </div>
-    </div>
 
-    <!-- Section 5: Options Manager -->
-    <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-t border-[#f0f0f0]">
-      <div class="flex items-center justify-between w-full">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Options ({{ options.length }})
-        </p>
-        <button 
-          type="button"
-          @click="addOption"
-          class="apple-glass-btn px-2.5 h-[28px] rounded-[6px] text-[11px] font-medium flex items-center gap-1 cursor-pointer"
-        >
-          <Plus class="w-3 h-3" />
-          <span>Add Option</span>
-        </button>
-      </div>
-
-      <!-- Options items list -->
-      <div class="flex flex-col gap-[10px] w-full">
-        <div 
-          v-for="(opt, idx) in options" 
-          :key="opt.id"
-          class="flex flex-col gap-2 p-3 bg-white rounded-[8px] border border-[#d9d9d9] shadow-sm transition-all group"
-        >
-          <!-- Top Row: Order Index, Custom Option Title Input, Default Selected Checkbox, and Delete -->
-          <div class="flex items-center gap-2 w-full">
-            <span class="size-5 rounded-full bg-neutral-100 flex items-center justify-center font-mono text-[10px] text-neutral-500 font-bold shrink-0">
-              {{ idx + 1 }}
-            </span>
-
-            <!-- Editable Custom Option Title Input -->
-            <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2.5 h-[32px] flex items-center flex-1 bg-white transition-colors">
-              <input 
-                :value="opt.label"
-                @input="updateOptionLabel(idx, ($event.target as HTMLInputElement).value)"
-                :placeholder="getAutomaticOptionLabel(variant, idx)"
-                class="w-full font-707 text-[12px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
-              />
-            </div>
-
-            <!-- Default Selected Toggle Button -->
-            <button 
-              type="button"
-              @click="toggleOptionSelected(opt.id)"
-              :class="isOptionSelected(opt.id) ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-400 hover:text-black'"
-              class="size-[32px] rounded-[6px] flex items-center justify-center cursor-pointer transition-colors border border-black/10 shrink-0"
-              title="Toggle Pre-selected state"
-            >
-              <Check class="w-3.5 h-3.5 stroke-[2.5]" />
-            </button>
-
-            <!-- Delete Option -->
-            <button 
-              type="button"
-              @click="removeOption(idx)"
-              :disabled="options.length <= 1"
-              :class="options.length <= 1 ? 'opacity-30 cursor-not-allowed' : 'hover:text-red-600 hover:bg-red-50 text-neutral-400 cursor-pointer'"
-              class="size-[32px] rounded-[6px] flex items-center justify-center transition-colors shrink-0"
-              title="Remove Option"
-            >
-              <Trash2 class="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          <!-- Places for this option -->
-          <div v-if="limitPlaces" class="flex items-center gap-2 pl-7">
-            <span class="font-707 text-[11px] font-medium text-neutral-600 shrink-0">Places</span>
-            <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2.5 h-[28px] flex items-center flex-1 bg-white transition-colors">
-              <input 
-                :value="opt.slotsCapacity ?? ''"
-                @input="updateOptionField(idx, { slotsCapacity: ($event.target as HTMLInputElement).value.replace(/[^\d]/g, '') })"
-                inputmode="numeric"
-                :placeholder="globalSlotsCapacity ? `${globalSlotsCapacity} (shared)` : 'No limit'"
-                class="w-full font-707 text-[11px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
-              />
-            </div>
-            <button 
-              type="button"
-              @click="updateOptionField(idx, { disabled: !opt.disabled })"
-              :class="opt.disabled ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-500 hover:text-black'"
-              class="h-[28px] px-2.5 rounded-[6px] font-707 text-[11px] font-medium cursor-pointer transition-colors shrink-0"
-              title="Close this option to new registrations"
-            >
-              {{ opt.disabled ? 'Closed' : 'Close' }}
-            </button>
-          </div>
-
-          <!-- Variant Specific Fields -->
-          <!-- Sublabel / Date field (for detailed-card - locked to DD MMM YYYY 3-select picker) -->
-          <div v-if="variant === 'detailed-card'" class="flex flex-col gap-1.5 pl-7">
+        <div v-if="limitPlaces" class="flex flex-col gap-[12px] w-full pt-1 animate-in fade-in slide-in-from-top-1 duration-150">
+          <div class="flex flex-col gap-[8px]">
             <div class="flex items-center justify-between">
-              <span class="text-[11px] font-707 font-medium text-neutral-600 flex items-center gap-1">
-                <Calendar class="w-3 h-3 text-neutral-400" />
-                <span>Date (DD MMM YYYY)</span>
-              </span>
-              <span class="text-[10px] font-mono text-neutral-400 font-medium">
-                {{ parseDateComponents(opt.sublabel).day }} {{ parseDateComponents(opt.sublabel).month }} {{ parseDateComponents(opt.sublabel).year }}
-              </span>
+              <span class="font-707 text-[12px] font-medium text-neutral-700">Places per option</span>
+              <span class="font-707 text-[11px] text-neutral-400">Override on any option in Content</span>
             </div>
-            
-            <div class="grid grid-cols-3 gap-1.5 w-full">
-              <!-- Day Select -->
-              <div class="relative">
-                <select 
-                  :value="parseDateComponents(opt.sublabel).day"
-                  @change="updateOptionDate(idx, 'day', ($event.target as HTMLSelectElement).value)"
-                  class="w-full h-[30px] px-2 appearance-none bg-white border border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
-                >
-                  <option v-for="d in DAYS" :key="d" :value="d">{{ d }}</option>
-                </select>
-                <ChevronDown class="w-3 h-3 text-neutral-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              </div>
-
-              <!-- Month Select -->
-              <div class="relative">
-                <select 
-                  :value="parseDateComponents(opt.sublabel).month"
-                  @change="updateOptionDate(idx, 'month', ($event.target as HTMLSelectElement).value)"
-                  class="w-full h-[30px] px-2 appearance-none bg-white border border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
-                >
-                  <option v-for="m in MONTHS" :key="m" :value="m">{{ m }}</option>
-                </select>
-                <ChevronDown class="w-3 h-3 text-neutral-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              </div>
-
-              <!-- Year Select -->
-              <div class="relative">
-                <select 
-                  :value="parseDateComponents(opt.sublabel).year"
-                  @change="updateOptionDate(idx, 'year', ($event.target as HTMLSelectElement).value)"
-                  class="w-full h-[30px] px-2 appearance-none bg-white border border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] font-medium text-black focus:outline-none cursor-pointer pr-5"
-                >
-                  <option v-for="y in YEARS" :key="y" :value="y">{{ y }}</option>
-                </select>
-                <ChevronDown class="w-3 h-3 text-neutral-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              </div>
+            <div class="border border-[#aaa] focus-within:border-black rounded-[8px] px-3.5 h-[38px] flex items-center w-full bg-white transition-colors">
+              <input 
+                v-model="globalSlotsCapacity"
+                inputmode="numeric"
+                placeholder="e.g. 500"
+                class="w-full font-707 text-[13px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
+              />
             </div>
           </div>
 
-          <!-- Description field (for detailed-card) -->
-          <div v-if="variant === 'detailed-card'" class="pl-7">
-            <textarea 
-              v-model="opt.description"
-              rows="2"
-              placeholder="Event Description Detail..."
-              class="w-full font-707 text-[11px] text-neutral-700 focus:outline-none border border-[#ccc] focus:border-black rounded-[6px] p-1.5 resize-none leading-relaxed bg-white"
-            />
-          </div>
-
-          <!-- Image Selector & Dropzone (for image-grid) -->
-          <div v-if="variant === 'image-grid'" class="pl-7 w-full flex flex-col gap-2">
-            <!-- If image exists: preview with Gallery, Upload, and Remove buttons -->
-            <div 
-              v-if="opt.imageUrl" 
-              class="relative border border-[#d9d9d9] rounded-[8px] p-2 flex items-center justify-between bg-white hover:border-black transition-colors"
-            >
-              <div class="flex items-center gap-2.5 min-w-0">
-                <div class="size-[44px] rounded bg-neutral-50 overflow-hidden border border-neutral-200 shrink-0">
-                  <img :src="sizedUrl(opt.imageUrl, 320)" :alt="opt.label" class="size-full object-cover" />
-                </div>
-                <div class="flex flex-col min-w-0">
-                  <span class="text-[11px] font-707 font-medium text-black truncate">{{ opt.label || 'Model Image' }}</span>
-                  <span class="text-[9px] font-707 text-neutral-400">3:4 aspect ratio</span>
-                </div>
-              </div>
-              <div class="flex items-center gap-1 shrink-0">
-                <button 
-                  type="button"
-                  @click="openMediaGalleryForOption(opt.id)"
-                  class="apple-glass-btn text-[10px] font-707 px-2 py-1 rounded-[6px] cursor-pointer"
-                  title="Select from Media Gallery"
-                >
-                  Gallery
-                </button>
-                <button 
-                  type="button"
-                  @click="triggerOptionFileUpload(idx)"
-                  class="apple-glass-btn text-[10px] font-707 px-2 py-1 rounded-[6px] cursor-pointer"
-                  title="Upload from computer"
-                >
-                  Upload
-                </button>
-                <button 
-                  type="button"
-                  @click="removeOptionImage(idx)"
-                  class="apple-glass-icon-btn size-6 rounded-[6px] flex items-center justify-center text-neutral-500 hover:text-red-600 cursor-pointer"
-                  title="Remove Image"
-                >
-                  <Trash2 class="w-3 h-3" />
-                </button>
-              </div>
+          <div class="flex items-center justify-between w-full">
+            <div class="flex flex-col">
+              <span class="font-707 text-[12px] font-medium text-neutral-700">Waitlist when full</span>
+              <span class="font-707 text-[11px] text-neutral-400">Guests may queue; a place returns when a guest is removed</span>
             </div>
-
-            <!-- If no image: Drag & Drop / Select From Media Gallery area -->
-            <div 
-              v-else
-              @click="triggerOptionFileUpload(idx)"
-              @dragover.prevent="activeDragOptionIdx = idx"
-              @dragleave="activeDragOptionIdx = null"
-              @drop.prevent="handleOptionImageDrop($event, idx)"
-              :class="[
-                activeDragOptionIdx === idx ? 'border-black bg-neutral-100' : 'bg-[#f5f5f5] hover:bg-[#efefef] border-[#d9d9d9]',
-                'border border-dashed flex flex-col gap-1 py-3 px-3 items-center justify-center rounded-[8px] w-full cursor-pointer transition-all'
-              ]"
+            <button 
+              type="button"
+              @click="waitlistEnabled = !waitlistEnabled"
+              :class="waitlistEnabled ? 'bg-black' : 'bg-neutral-200'"
+              class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
             >
-              <p class="font-707 text-[11px] text-neutral-700 text-center">
-                <button 
-                  type="button" 
-                  @click.stop="openMediaGalleryForOption(opt.id)"
-                  class="font-medium text-black underline hover:text-neutral-700 cursor-pointer"
-                >
-                  Select From Media Gallery
-                </button>
-                <span> or Drag</span>
-              </p>
-              <span class="text-[9px] font-707 text-neutral-400">Fixed 3:4 ratio</span>
-            </div>
-
-            <!-- Hidden File Input for this option -->
-            <input 
-              type="file" 
-              :ref="(el) => setFileInputRef(el, idx)" 
-              accept="image/*" 
-              @change="handleOptionFileChange($event, idx)" 
-              class="hidden" 
-            />
+              <span 
+                :class="waitlistEnabled ? 'translate-x-[18px]' : 'translate-x-0'"
+                class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+              />
+            </button>
           </div>
         </div>
       </div>
-
-      <!-- Quick Add Option Button -->
-      <button 
-        type="button"
-        @click="addOption"
-        class="w-full h-[36px] rounded-[8px] border border-dashed border-[#aaa] hover:border-black text-neutral-600 hover:text-black font-707 text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer bg-white/50"
-      >
-        <Plus class="w-3.5 h-3.5" />
-        <span>Add Option</span>
-      </button>
     </div>
   </aside>
 </template>
@@ -587,12 +626,14 @@ import {
   Trash2, 
   Check, 
   ChevronDown, 
-  Lock, 
   Calendar, 
   Ticket, 
   ListChecks, 
   LayoutGrid, 
-  Image as ImageIcon 
+  Image as ImageIcon,
+  FileText,
+  Palette,
+  Sliders
 } from 'lucide-vue-next';
 
 defineProps<{
@@ -602,6 +643,15 @@ defineProps<{
 defineEmits<{
   (e: 'close'): void;
 }>();
+
+// 3-Tab Segment Navigation
+type TabType = 'content' | 'style' | 'rules';
+const activeTab = ref<TabType>('content');
+const tabs = [
+  { id: 'content' as const, label: 'Content', icon: FileText },
+  { id: 'style' as const, label: 'Style', icon: Palette },
+  { id: 'rules' as const, label: 'Rules & Limits', icon: Sliders }
+];
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const DAYS = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
@@ -684,6 +734,11 @@ const currentWidget = computed(() => {
     return editorStore.selectedWidget;
   }
   return editorStore.currentPage.widget_tree.find(w => w.type === 'MultipleChoice') || null;
+});
+
+const variantLabel = computed(() => {
+  const match = variants.find(v => v.id === variant.value);
+  return match ? match.label : 'Choice Block';
 });
 
 const title = computed({
