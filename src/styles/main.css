@@ -558,12 +558,17 @@ input[type="range"]::-moz-range-thumb {
   transform: none !important;
 }
 
-/* Enforce 0.5px outline/border weight across Apple glass controls only */
+/* Enforce 0.5px outline/border weight across all Apple glass controls, pills, badges, and buttons */
 .apple-glass-btn,
 .apple-glass-btn-dark,
 .apple-glass-icon-btn,
-.apple-glass-pill {
-  border-width: 0.5px;
+.apple-glass-pill,
+.apple-glass,
+.apple-glass-modal,
+.bar-05,
+.border-thin-bar,
+.border-05 {
+  border-width: 0.5px !important;
 }
 
 .apple-glass-btn:hover,
@@ -582,6 +587,23 @@ input[type="range"]::-moz-range-thumb {
 .apple-glass-pill:active,
 .apple-glass-pill:focus,
 .apple-glass-pill:disabled {
+  border-width: 0.5px !important;
+}
+
+/* Global 0.5px Token Border rule for any button, pill, tab, input, or card that has a border */
+button.border,
+button[class*="border-solid"],
+button[class*="border-[#"],
+button[class*="border-black"],
+button[class*="border-neutral"],
+div.border[class*="rounded-full"],
+div.border[class*="rounded-[8px]"],
+div.border[class*="rounded-[6px]"],
+span.border[class*="rounded-full"],
+input[type="text"].border,
+input[type="email"].border,
+input[type="tel"].border,
+textarea.border {
   border-width: 0.5px;
 }
 

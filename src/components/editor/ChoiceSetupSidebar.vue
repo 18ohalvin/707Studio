@@ -65,7 +65,7 @@
             type="button"
             @click="setVariant(v.id)"
             class="flex flex-col gap-[6px] items-center p-2 rounded-[8px] border transition-all cursor-pointer group"
-            :class="variant === v.id ? 'bg-black text-white border-black shadow-sm ring-1 ring-black' : 'bg-white hover:bg-neutral-50 text-black border-[#d9d9d9]'"
+            :class="variant === v.id ? 'bg-black text-white border-black shadow-sm' : 'bg-white hover:bg-neutral-50 text-black border-[#d9d9d9]'"
           >
             <div 
               class="size-[36px] rounded-full flex items-center justify-center transition-all duration-150 shadow-sm shrink-0"
@@ -98,7 +98,7 @@
               :key="col"
               type="button"
               @click="setGridColumns(col)"
-              :class="gridColumns === col ? 'bg-black text-white border-black shadow-sm ring-1 ring-black' : 'bg-white text-neutral-700 hover:bg-neutral-50 hover:border-black/40 border-[#d9d9d9]'"
+              :class="gridColumns === col ? 'bg-black text-white border-black shadow-sm' : 'bg-white text-neutral-700 hover:bg-neutral-50 hover:border-black/40 border-[#d9d9d9]'"
               class="h-[40px] rounded-[8px] border flex flex-col items-center justify-center gap-1 cursor-pointer transition-all font-707"
             >
               <div class="flex gap-[2px] items-center h-[10px]">

@@ -304,7 +304,7 @@
         <!-- 1. Headline & Story -->
         <div 
           draggable="true"
-          @dragstart="handleDragStart($event, { type: 'TextBanner', label: 'Headline & Story', customProps: { title: 'EVENT TITLE', subtitle: 'Add your story, instructions, or campaign details.', variant: 'editorial' } })"
+          @dragstart="handleDragStart($event, { type: 'TextBanner', label: 'Headline & Story', customProps: { text: 'EXCLUSIVE ACCESS DROP\nReserve your spot for the community run and raffle pass.', placeholder: 'EXCLUSIVE ACCESS DROP', typographyStyle: 'headline-1', variant: 'editorial', textAlign: 'left' } })"
           @dragend="handleDragEnd"
           @click="addTextWidget('headline')"
           class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[84px] cursor-grab active:cursor-grabbing group"
@@ -329,7 +329,7 @@
         <!-- 2. Minimal Bold Title -->
         <div 
           draggable="true"
-          @dragstart="handleDragStart($event, { type: 'TextBanner', label: 'Bold Title', customProps: { title: 'LIMITED ACCESS DROP', subtitle: '', variant: 'editorial' } })"
+          @dragstart="handleDragStart($event, { type: 'TextBanner', label: 'Bold Title', customProps: { text: 'LIMITED ACCESS DROP', placeholder: 'LIMITED ACCESS DROP', typographyStyle: 'headline-1', variant: 'editorial', textAlign: 'left' } })"
           @dragend="handleDragEnd"
           @click="addTextWidget('title')"
           class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[84px] cursor-grab active:cursor-grabbing group"
@@ -349,7 +349,7 @@
         <!-- 3. Story / Paragraph -->
         <div 
           draggable="true"
-          @dragstart="handleDragStart($event, { type: 'TextBanner', label: 'Paragraph Copy', customProps: { title: '', subtitle: 'Share the event details, rules, or background story with your guests.', variant: 'editorial' } })"
+          @dragstart="handleDragStart($event, { type: 'TextBanner', label: 'Paragraph Copy', customProps: { text: 'Entries close 24 hours prior to launch. Winners will be contacted via WhatsApp with a personalized QR e-pass for priority venue entry.', placeholder: 'Write your story or instructions here...', typographyStyle: 'body-text', variant: 'editorial', textAlign: 'left' } })"
           @dragend="handleDragEnd"
           @click="addTextWidget('body')"
           class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[84px] cursor-grab active:cursor-grabbing group"
@@ -372,7 +372,7 @@
         <!-- 4. Notice / Scrim -->
         <div 
           draggable="true"
-          @dragstart="handleDragStart($event, { type: 'TextBanner', label: 'Notice / Scrim', customProps: { title: 'EVENT NOTICE', subtitle: 'Please arrive 15 minutes before your scheduled entry time.', variant: 'scrim' } })"
+          @dragstart="handleDragStart($event, { type: 'TextBanner', label: 'Notice / Scrim', customProps: { text: 'EVENT NOTICE\nPlease arrive 15 minutes before your scheduled entry time. Valid government ID required upon check-in.', placeholder: 'EVENT NOTICE', typographyStyle: 'heading-3', variant: 'scrim', textAlign: 'left' } })"
           @dragend="handleDragEnd"
           @click="addTextWidget('scrim')"
           class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[84px] cursor-grab active:cursor-grabbing group"
@@ -1013,27 +1013,35 @@ function addMediaWidget(ratio: string) {
 
 function addTextWidget(variant: 'headline' | 'body' | 'title' | 'scrim' = 'headline') {
   let props: Record<string, any> = {
-    title: 'EVENT TITLE',
-    subtitle: 'Add your story, instructions, or campaign details.',
+    text: 'EXCLUSIVE ACCESS DROP\nReserve your spot for the community run and raffle pass.',
+    placeholder: 'EXCLUSIVE ACCESS DROP',
+    typographyStyle: 'headline-1',
     variant: 'editorial',
+    textAlign: 'left'
   };
-  if (variant === 'body') {
+  if (variant === 'title') {
     props = {
-      title: '',
-      subtitle: 'Share the event details, rules, or background story with your guests.',
+      text: 'LIMITED ACCESS DROP',
+      placeholder: 'LIMITED ACCESS DROP',
+      typographyStyle: 'headline-1',
       variant: 'editorial',
+      textAlign: 'left'
     };
-  } else if (variant === 'title') {
+  } else if (variant === 'body') {
     props = {
-      title: 'LIMITED ACCESS DROP',
-      subtitle: '',
+      text: 'Entries close 24 hours prior to launch. Winners will be contacted via WhatsApp with a personalized QR e-pass for priority venue entry.',
+      placeholder: 'Write your story or instructions here...',
+      typographyStyle: 'body-text',
       variant: 'editorial',
+      textAlign: 'left'
     };
   } else if (variant === 'scrim') {
     props = {
-      title: 'EVENT NOTICE',
-      subtitle: 'Please arrive 15 minutes before your scheduled entry time.',
+      text: 'EVENT NOTICE\nPlease arrive 15 minutes before your scheduled entry time. Valid government ID required upon check-in.',
+      placeholder: 'EVENT NOTICE',
+      typographyStyle: 'heading-3',
       variant: 'scrim',
+      textAlign: 'left'
     };
   }
   const widget = editorStore.addWidget('TextBanner', undefined, props);

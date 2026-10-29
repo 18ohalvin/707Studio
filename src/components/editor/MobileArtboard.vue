@@ -589,8 +589,9 @@
             >
               <!-- Container with dynamic dashed border (Zero padding so text starts directly on 16px global line) -->
               <div 
-                class="w-full relative flex flex-col justify-center rounded-[8px] transition-all p-0"
+                class="w-full relative flex flex-col justify-center rounded-[8px] transition-all"
                 :class="[
+                  widget.props.variant === 'scrim' ? 'bg-black/90 text-white p-4 shadow-sm' : 'p-0',
                   !isMiniPreview && !isPreviewModal && (editorStore.selectedWidgetId === widget.id || hoveredWidgetId === widget.id)
                     ? 'border-[0.5px] border-black border-dashed bg-transparent' 
                     : 'border-[0.5px] border-transparent'
@@ -638,11 +639,11 @@
                 <!-- Live Preview in Mini Preview Mode & Preview Mode (Pure Semantic Paragraph, Zero JS race conditions, true UI testing) -->
                 <p 
                   v-if="isMiniPreview || isPreviewModal"
-                  class="w-full min-w-0 max-w-full bg-transparent font-707 p-0 m-0 whitespace-pre-wrap break-words [overflow-wrap:anywhere] select-none pointer-events-none"
+                  class="w-full min-w-0 max-w-full bg-transparent font-707 m-0 whitespace-pre-wrap break-words [overflow-wrap:anywhere] select-none pointer-events-none"
                   :class="[
                     getTextTypographyClass(widget),
                     widget.props.textAlign === 'center' ? 'text-center' : (widget.props.textAlign === 'right' ? 'text-right' : 'text-left'),
-                    !widget.props.text ? 'text-neutral-400 opacity-60' : 'text-black'
+                    widget.props.variant === 'scrim' ? 'text-white' : (!widget.props.text ? 'text-neutral-400 opacity-60' : 'text-black')
                   ]"
                 >
                   {{ widget.props.text || widget.props.placeholder || 'WRITE YOUR TEXT HERE' }}
@@ -2688,25 +2689,27 @@ function handleTextBlur(_widget: any) {
 
 function getTextTypographyClass(widget: any) {
   const style = widget.props.typographyStyle || 'headline-1';
+  const isScrim = widget.props.variant === 'scrim';
+  const textColor = isScrim ? 'text-white placeholder:text-white/60' : 'text-black placeholder:text-black';
   switch (style) {
     case 'heading-2':
-      return 'text-[22px] md:text-[24px] font-medium leading-[1.15] text-black placeholder:text-black';
+      return `text-[22px] md:text-[24px] font-medium leading-[1.15] ${textColor}`;
     case 'heading-3':
-      return 'text-[17px] md:text-[18px] font-medium leading-[1.2] text-black placeholder:text-black';
+      return `text-[17px] md:text-[18px] font-medium leading-[1.2] ${textColor}`;
     case 'subtext-lead':
-      return 'text-[15px] md:text-[16px] font-medium leading-[1.3] text-black placeholder:text-black';
+      return `text-[15px] md:text-[16px] font-medium leading-[1.3] ${textColor}`;
     case 'body-text-medium':
     case 'body-text-bold':
-      return 'text-[12px] font-medium leading-[1.4] text-black placeholder:text-black';
+      return `text-[12px] font-medium leading-[1.4] ${textColor}`;
     case 'body-text':
-      return 'text-[12px] font-normal leading-[1.4] text-black placeholder:text-black';
+      return `text-[12px] font-normal leading-[1.4] ${textColor}`;
     case 'caption':
-      return 'text-[11px] font-normal leading-[1.4] text-black placeholder:text-black';
+      return `text-[11px] font-normal leading-[1.4] ${textColor}`;
     case 'legal-micro':
-      return 'text-[11px] font-normal leading-[1.4] text-neutral-500 placeholder:text-neutral-500';
+      return isScrim ? 'text-[11px] font-normal leading-[1.4] text-white/70 placeholder:text-white/50' : 'text-[11px] font-normal leading-[1.4] text-neutral-500 placeholder:text-neutral-500';
     case 'headline-1':
     default:
-      return 'text-[28px] md:text-[32px] font-medium leading-[1.08] text-black placeholder:text-black';
+      return `text-[28px] md:text-[32px] font-medium leading-[1.08] ${textColor}`;
   }
 }
 

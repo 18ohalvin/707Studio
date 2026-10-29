@@ -100,6 +100,15 @@ export default {
         'subtle': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
         'modal': '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
       },
+      borderWidth: {
+        DEFAULT: '0.5px',
+        '0': '0px',
+        '0.5': '0.5px',
+        '1': '1px',
+        '2': '2px',
+        '3': '3px',
+        '4': '4px',
+      },
       animation: {
         'pulse-subtle': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       }
