@@ -13,10 +13,11 @@
   >
     <!-- Center Artboard Area: Adobe Transform Container (Supports Infinite Pan & Zoom) -->
     <div 
+      @click.self="handleCanvasClick"
       class="flex-1 w-full flex items-center justify-center relative overflow-visible pointer-events-auto"
     >
       <div 
-        @click.stop
+        @click.self="handleCanvasClick"
         class="origin-center flex items-center justify-center my-auto shrink-0 select-none relative"
         :class="[
           (isPanning || isModeTransitioning) ? 'transition-none' : 'transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]'
@@ -301,6 +302,10 @@ function isInputElement(target: EventTarget | null): boolean {
 }
 
 function handleKeyDown(e: KeyboardEvent) {
+  if (e.key === 'Escape' || e.code === 'Escape') {
+    editorStore.closeAllSidebars();
+    editorStore.selectWidget(null);
+  }
   if (e.code === 'Space' && !isInputElement(e.target)) {
     if (!isSpacePressed.value) {
       isSpacePressed.value = true;

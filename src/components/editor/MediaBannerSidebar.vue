@@ -13,9 +13,6 @@
           <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
             Media & Banner Setup
           </p>
-          <span class="font-707 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-black/5 text-neutral-600 font-medium">
-            {{ formatRatioLabel(selectedRatio) }}
-          </span>
         </div>
         <button 
           @click="$emit('close')"
@@ -183,7 +180,7 @@
       </div>
 
       <!-- Add Brand Logo Section -->
-      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
+      <div class="content-stretch flex flex-col gap-[16px] items-start p-[24px] shrink-0 w-full">
         <!-- Title row with Apple Style Toggle Switch -->
         <div class="flex items-center justify-between w-full">
           <div class="flex flex-col gap-0.5">
@@ -230,7 +227,7 @@
           leave-from-class="transform opacity-100 translate-y-0"
           leave-to-class="transform opacity-0 -translate-y-2"
         >
-          <div v-if="isTopPosition && isBrandLogoEnabled" class="flex flex-col gap-[12px] w-full pt-1">
+          <div v-if="isTopPosition && isBrandLogoEnabled" class="flex flex-col gap-[16px] w-full">
             <!-- Logo Preview or Drop/Select Area -->
             <div 
               v-if="brandLogoUrl" 
@@ -296,7 +293,7 @@
             </div>
 
             <!-- Logo Height Slider -->
-            <div v-if="brandLogoUrl" class="flex flex-col gap-[8px] w-full pt-1">
+            <div v-if="brandLogoUrl" class="flex flex-col gap-[8px] w-full">
               <div class="flex items-center justify-between w-full">
                 <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Logo Height</p>
                 <div class="flex items-center gap-1.5">
@@ -329,7 +326,7 @@
                 :max="LOGO_HEIGHT.max"
                 step="1"
                 v-model.number="brandLogoHeight"
-                class="w-full accent-black cursor-pointer"
+                class="w-full cursor-pointer"
                 aria-label="Logo height"
               />
               <div class="flex justify-between text-[10px] font-707 text-neutral-400 tabular-nums">
@@ -339,7 +336,7 @@
             </div>
 
             <!-- Logo Vertical Position Slider -->
-            <div v-if="brandLogoUrl" class="flex flex-col gap-[8px] w-full pt-1">
+            <div v-if="brandLogoUrl" class="flex flex-col gap-[8px] w-full">
               <div class="flex items-center justify-between w-full">
                 <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Vertical Position</p>
                 <div class="flex items-center gap-1.5">
@@ -372,7 +369,7 @@
                 :max="LOGO_VERTICAL_POSITION.max"
                 step="1"
                 v-model.number="brandLogoVerticalPosition"
-                class="w-full accent-black cursor-pointer"
+                class="w-full cursor-pointer"
                 aria-label="Logo vertical position"
               />
               <div class="flex justify-between text-[10px] font-707 text-neutral-400 tabular-nums">
@@ -382,7 +379,7 @@
             </div>
 
             <!-- Logo Alignment (Left, Center, Right) -->
-            <div class="flex items-center justify-between w-full pt-1">
+            <div class="flex items-center justify-between w-full">
               <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
                 Logo Alignment
               </p>
@@ -392,7 +389,7 @@
                   :key="align"
                   @click="brandLogoAlign = align"
                   :class="brandLogoAlign === align ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                  class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] capitalize cursor-pointer"
+                  class="w-[64px] h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] capitalize cursor-pointer"
                 >
                   {{ align }}
                 </button>
@@ -460,7 +457,7 @@
                   type="button"
                   @click="setHeadlineStyle('h1')"
                   :class="currentHeadlineStyle === 'h1' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                  class="px-3 h-[30px] rounded-[6px] flex items-center justify-center font-707 text-[11.5px] cursor-pointer transition-all"
+                  class="w-[44px] h-[30px] rounded-[6px] flex items-center justify-center font-707 text-[11.5px] cursor-pointer transition-all"
                   title="H1 Display Headline (32px)"
                 >
                   H1
@@ -469,7 +466,7 @@
                   type="button"
                   @click="setHeadlineStyle('h2')"
                   :class="currentHeadlineStyle === 'h2' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                  class="px-3 h-[30px] rounded-[6px] flex items-center justify-center font-707 text-[11.5px] cursor-pointer transition-all"
+                  class="w-[44px] h-[30px] rounded-[6px] flex items-center justify-center font-707 text-[11.5px] cursor-pointer transition-all"
                   title="H2 Section Header (22px)"
                 >
                   H2
@@ -478,7 +475,7 @@
                   type="button"
                   @click="setHeadlineStyle('h3')"
                   :class="currentHeadlineStyle === 'h3' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                  class="px-3 h-[30px] rounded-[6px] flex items-center justify-center font-707 text-[11.5px] cursor-pointer transition-all"
+                  class="w-[44px] h-[30px] rounded-[6px] flex items-center justify-center font-707 text-[11.5px] cursor-pointer transition-all"
                   title="H3 Sub-section Heading (18px)"
                 >
                   H3
@@ -541,7 +538,7 @@
                   :key="pos.value"
                   @click="textPosition = pos.value"
                   :class="textPosition === pos.value ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                  class="px-3.5 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
+                  class="w-[64px] h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
                 >
                   {{ pos.label }}
                 </button>
@@ -638,7 +635,7 @@
                 max="100"
                 step="1"
                 v-model.number="overlayOpacity"
-                class="w-full cursor-pointer accent-black"
+                class="w-full cursor-pointer"
               />
             </div>
           </div>
@@ -728,7 +725,7 @@
                   :key="pos.value"
                   @click="setCtaPositionMode(pos.value)"
                   :class="ctaPositionMode === pos.value ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                  class="px-3.5 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
+                  class="w-[96px] h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
                 >
                   {{ pos.label }}
                 </button>

@@ -16,9 +16,6 @@
           <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
             Button Setup
           </p>
-          <span class="font-707 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-black/5 text-neutral-600 font-medium">
-            {{ currentVariant === 'black' ? 'Solid Black' : 'Solid White' }}
-          </span>
         </div>
         <button 
           @click="$emit('close')"
@@ -189,7 +186,7 @@
               :key="pos.value"
               @click="setPositionMode(pos.value)"
               :class="currentPositionMode === pos.value ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-              class="px-3.5 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
+              class="w-[96px] h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
             >
               {{ pos.label }}
             </button>
@@ -215,7 +212,7 @@
                   type="button"
                   @click="setStickyScope('current')"
                   :class="currentStickyScope === 'current' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                  class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer"
+                  class="w-[84px] h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer"
                 >
                   Current Page
                 </button>
@@ -223,7 +220,7 @@
                   type="button"
                   @click="setStickyScope('all')"
                   :class="currentStickyScope === 'all' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                  class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer"
+                  class="w-[84px] h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer"
                 >
                   All Pages
                 </button>
@@ -231,7 +228,7 @@
                   type="button"
                   @click="setStickyScope('custom')"
                   :class="currentStickyScope === 'custom' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                  class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer"
+                  class="w-[84px] h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer"
                 >
                   Select
                 </button>

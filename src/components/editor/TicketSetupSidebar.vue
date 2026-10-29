@@ -67,8 +67,8 @@
       </div>
     </div>
 
-    <!-- Logo height & appearance mode (only for a block that shows the brand logo) -->
-    <div v-if="fields.includes('brandLogo')" class="flex flex-col gap-[14px] items-start p-[24px] w-full border-b border-[#f0f0f0]">
+    <!-- Logo height & appearance mode (only for a block that shows the brand logo or when brand logo exists) -->
+    <div v-if="fields.includes('brandLogo') || projectBrandLogoUrl" class="flex flex-col gap-[16px] items-start p-[24px] w-full border-b border-[#f0f0f0]">
       <!-- Logo Preview Card if logo exists -->
       <div v-if="projectBrandLogoUrl" class="border-[0.5px] border-neutral-200 p-3 rounded-[8px] bg-neutral-50 flex items-center justify-between w-full">
         <div class="flex items-center gap-2.5 min-w-0">
@@ -83,7 +83,7 @@
             {{ logoColorMode === 'black' ? 'Black Mode' : 'Normal Mode' }}
           </span>
         </div>
-        <span class="font-707 text-[11px] text-emerald-600 font-medium shrink-0">● On Ticket</span>
+        <span class="font-707 text-[11px] text-emerald-600 font-medium shrink-0">● On Ticket PDF</span>
       </div>
 
       <!-- Appearance Mode: Normal vs Black Mode -->
@@ -115,8 +115,8 @@
         </p>
       </div>
 
-      <!-- Logo Height Slider -->
-      <div class="flex flex-col gap-[10px] w-full pt-1">
+      <!-- Logo Height Slider (only if current block contains the brand logo) -->
+      <div v-if="fields.includes('brandLogo')" class="flex flex-col gap-[10px] w-full">
         <div class="flex items-center justify-between w-full">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Logo Height</p>
           <div class="flex items-center gap-1.5">
@@ -136,7 +136,7 @@
           step="1"
           :value="logoHeight"
           @input="update({ logoHeight: clampLogoHeight(($event.target as HTMLInputElement).value, TICKET_LOGO_HEIGHT) })"
-          class="w-full accent-black cursor-pointer"
+          class="w-full cursor-pointer"
           aria-label="Ticket logo height"
         />
       </div>
@@ -252,6 +252,17 @@ const logoColorMode = computed<'normal' | 'black'>({
   },
   set: (val) => {
     update({ logoColorMode: val });
+    // Also propagate to all pass widgets and other ticket logo widgets so on-screen pass and passPdf stay in sync!
+    for (const page of editorStore.pages) {
+      for (const w of page.widget_tree || []) {
+        if (w.type === 'GuestEPass' || w.type === 'LiveQueuePass') {
+          editorStore.updateWidgetProps(w.id, { logoColorMode: val });
+        }
+        if (w.type === 'TicketField' && (Array.isArray(w.props?.fields) ? w.props.fields.includes('brandLogo') : w.props?.field === 'brandLogo')) {
+          editorStore.updateWidgetProps(w.id, { logoColorMode: val });
+        }
+      }
+    }
   }
 });
 

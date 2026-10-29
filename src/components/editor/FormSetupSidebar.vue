@@ -15,9 +15,6 @@
           <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
             Form Setup
           </p>
-          <span class="font-707 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-black/5 text-neutral-600 font-medium">
-            {{ fields.length }} {{ fields.length === 1 ? 'Field' : 'Fields' }}
-          </span>
         </div>
         <button 
           @click="$emit('close')"

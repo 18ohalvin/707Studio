@@ -16,9 +16,6 @@
           <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
             Choice Setup
           </p>
-          <span class="font-707 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-black/5 text-neutral-600 font-medium">
-            {{ variantLabel }}
-          </span>
         </div>
         <button 
           @click="$emit('close')"
@@ -477,7 +474,7 @@
     <!-- TAB 3: RULES & LIMITS -->
     <div v-show="activeTab === 'rules'" class="w-full flex flex-col">
       <!-- Selection Mode & Required Rules -->
-      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
+      <div class="content-stretch flex flex-col gap-[16px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
         <div class="flex items-center justify-between w-full">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
             Selection Rule
@@ -487,7 +484,7 @@
               type="button"
               @click="setAllowMultiple(true)"
               :class="allowMultiple ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-              class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
+              class="w-[76px] h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
             >
               Multiple
             </button>
@@ -495,14 +492,14 @@
               type="button"
               @click="setAllowMultiple(false)"
               :class="!allowMultiple ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-              class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
+              class="w-[76px] h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
             >
               Single
             </button>
           </div>
         </div>
 
-        <div class="flex flex-col gap-1 w-full pt-1">
+        <div class="flex flex-col gap-1 w-full">
           <div class="flex items-center justify-between w-full">
             <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
               Required Field
@@ -513,7 +510,7 @@
                 @click="setRequired(false)"
                 :disabled="limitPlaces"
                 :class="[!required ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn', limitPlaces ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer']"
-                class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px]"
+                class="w-[76px] h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px]"
               >
                 Optional
               </button>
@@ -521,7 +518,7 @@
                 type="button"
                 @click="setRequired(true)"
                 :class="required ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                class="px-3 h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
+                class="w-[76px] h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
               >
                 Required
               </button>
@@ -534,7 +531,7 @@
       </div>
 
       <!-- Places (limit how many guests can take an option) -->
-      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
+      <div class="content-stretch flex flex-col gap-[16px] items-start p-[24px] shrink-0 w-full">
         <div class="flex items-center justify-between w-full">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
             Limit Places

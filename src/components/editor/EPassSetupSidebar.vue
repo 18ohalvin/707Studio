@@ -17,9 +17,6 @@
           <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
             {{ isLiveQueueMode ? 'Live Queue Pass Setup' : 'Guest E-Pass Setup' }}
           </p>
-          <span class="font-707 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-black/5 text-neutral-600 font-medium">
-            {{ guestType }}
-          </span>
         </div>
         <button 
           @click="$emit('close')"
@@ -180,7 +177,7 @@
           leave-from-class="transform opacity-100 translate-y-0"
           leave-to-class="transform opacity-0 -translate-y-2"
         >
-          <div v-if="showBrandLogo" class="flex flex-col gap-[12px] w-full pt-1">
+          <div v-if="showBrandLogo" class="flex flex-col gap-[16px] w-full">
             <!-- Logo Preview Card -->
             <div v-if="projectBrandLogoUrl" class="border-[0.5px] border-neutral-200 p-3 rounded-[8px] bg-neutral-50 flex items-center justify-between">
               <div class="flex items-center gap-2.5 min-w-0">
@@ -202,7 +199,7 @@
             </p>
 
             <!-- Appearance Mode Control: Normal vs Black Mode -->
-            <div class="flex flex-col gap-[6px] w-full pt-1">
+            <div class="flex flex-col gap-[6px] w-full">
               <div class="flex items-center justify-between">
                 <span class="font-707 text-[11px] font-medium text-neutral-700">Logo Appearance Mode</span>
                 <span class="font-707 text-[10px] text-neutral-400 uppercase font-mono">{{ logoColorMode }}</span>
@@ -389,7 +386,7 @@
           leave-from-class="transform opacity-100 translate-y-0"
           leave-to-class="transform opacity-0 -translate-y-2"
         >
-          <div v-if="isCtaEnabled" class="flex flex-col gap-[12px] w-full pt-1">
+          <div v-if="isCtaEnabled" class="flex flex-col gap-[16px] w-full">
             <!-- Button Text Input -->
             <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
               <input 
@@ -400,7 +397,7 @@
             </div>
 
             <!-- Button Style Preset (Primary Black vs Primary White) -->
-            <div class="content-stretch flex flex-col gap-[10px] items-start w-full pt-1">
+            <div class="content-stretch flex flex-col gap-[10px] items-start w-full">
               <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
                 Button Style Preset
               </p>
@@ -425,7 +422,7 @@
             </div>
 
             <!-- Position Indicator: Sticky Bottom Only -->
-            <div class="flex items-center justify-between w-full pt-1">
+            <div class="flex items-center justify-between w-full">
               <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
                 Position
               </p>
@@ -435,7 +432,7 @@
             </div>
 
             <!-- Link to Dropdown -->
-            <div class="content-stretch flex items-center justify-between w-full pt-1 relative">
+            <div class="content-stretch flex items-center justify-between w-full relative">
               <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
                 Link to
               </p>
@@ -480,6 +477,32 @@
                   placeholder="https://..." 
                   class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
                 />
+              </div>
+            </div>
+
+            <!-- Conditional Brand Logo Mode for Download E-Pass -->
+            <div v-if="ctaActionType === 'download-pass' && projectBrandLogoUrl" class="w-full flex flex-col gap-[8px] p-3 rounded-[8px] bg-black/[0.03] border border-black/5 animate-in fade-in duration-150">
+              <div class="flex items-center justify-between">
+                <span class="font-707 text-[11px] font-medium text-neutral-700">PDF Brand Logo Mode</span>
+                <span class="font-707 text-[10px] text-neutral-400 uppercase font-mono">{{ logoColorMode }}</span>
+              </div>
+              <div class="grid grid-cols-2 gap-1.5 w-full">
+                <button
+                  type="button"
+                  @click="logoColorMode = 'normal'"
+                  :class="logoColorMode === 'normal' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                  class="h-[32px] rounded-[6px] text-[11.5px] font-707 flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+                >
+                  <span>Normal (Original)</span>
+                </button>
+                <button
+                  type="button"
+                  @click="logoColorMode = 'black'"
+                  :class="logoColorMode === 'black' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                  class="h-[32px] rounded-[6px] text-[11.5px] font-707 flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+                >
+                  <span>Black Mode</span>
+                </button>
               </div>
             </div>
 
@@ -831,6 +854,14 @@ const logoColorMode = computed<'normal' | 'black'>({
   set: (val: 'normal' | 'black') => {
     if (currentWidget.value) {
       editorStore.updateWidgetProps(currentWidget.value.id, { logoColorMode: val });
+    }
+    // Also propagate to all TicketField widgets (on the Ticket / PDF page) so the PDF stays in sync!
+    for (const page of editorStore.pages) {
+      for (const w of page.widget_tree || []) {
+        if (w.type === 'TicketField' && (Array.isArray(w.props?.fields) ? w.props.fields.includes('brandLogo') : w.props?.field === 'brandLogo')) {
+          editorStore.updateWidgetProps(w.id, { logoColorMode: val });
+        }
+      }
     }
   }
 });
