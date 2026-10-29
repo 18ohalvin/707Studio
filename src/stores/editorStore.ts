@@ -134,8 +134,9 @@ export const useEditorStore = defineStore('editor', () => {
 
   function updateFitZoom(containerWidth: number, containerHeight: number) {
     if (!containerHeight || !containerWidth) return;
-    const availableH = Math.max(300, containerHeight - 110);
-    const availableW = Math.max(300, containerWidth - 80);
+    // Guaranteed non-overlapping safe viewport: 48px header + 24px top margin + 54px floating dock + 20px bottom margin + 34px clearance = 180px
+    const availableH = Math.max(300, containerHeight - 180);
+    const availableW = Math.max(300, containerWidth - 96);
     
     // iPhone 16/17 Pro dimensions: 393 x 852
     const scaleH = availableH / 852;

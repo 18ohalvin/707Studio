@@ -14,7 +14,7 @@
     <!-- Center Artboard Area: Adobe Transform Container (Supports Infinite Pan & Zoom) -->
     <div 
       @click.self="handleCanvasClick"
-      class="flex-1 w-full flex items-center justify-center relative overflow-visible pointer-events-auto"
+      class="flex-1 w-full flex items-center justify-center relative overflow-visible pointer-events-auto pt-[48px] pb-[96px]"
     >
       <div 
         @click.self="handleCanvasClick"

@@ -293,6 +293,107 @@
       </div>
     </div>
 
+    <!-- Section 1.5: Typography & Text Blocks -->
+    <div v-if="(activeCategory === 'all' || activeCategory === 'text') && !isTicketPage" class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+      <div class="content-stretch flex items-center justify-between shrink-0 w-full">
+        <p class="flex-[1_0_0] font-707 font-medium text-[13px] leading-[18px] text-black">
+          Typography & Text
+        </p>
+      </div>
+      <div class="content-stretch flex gap-[14px] items-start overflow-x-auto -mx-[24px] px-[24px] w-[calc(100%+48px)] pb-2 no-scrollbar">
+        <!-- 1. Headline & Story -->
+        <div 
+          draggable="true"
+          @dragstart="handleDragStart($event, { type: 'TextBanner', label: 'Headline & Story', customProps: { title: 'EVENT TITLE', subtitle: 'Add your story, instructions, or campaign details.', variant: 'editorial' } })"
+          @dragend="handleDragEnd"
+          @click="addTextWidget('headline')"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[84px] cursor-grab active:cursor-grabbing group"
+          title="Drag to canvas or click to add (Editorial title + subtitle)"
+        >
+          <div class="bg-white group-hover:bg-neutral-50 h-[130px] rounded-[8px] shrink-0 w-[72px] transition-all border border-black/10 group-hover:border-black shadow-sm overflow-hidden flex flex-col justify-between p-2.5">
+            <div class="flex flex-col gap-1.5 w-full pt-1">
+              <div class="w-full h-2.5 bg-black rounded-[1px]" />
+              <div class="w-3/4 h-2 bg-black/75 rounded-[1px]" />
+            </div>
+            <div class="flex flex-col gap-1 w-full pb-1">
+              <div class="w-full h-1 bg-black/30 rounded-full" />
+              <div class="w-4/5 h-1 bg-black/25 rounded-full" />
+              <div class="w-3/5 h-1 bg-black/20 rounded-full" />
+            </div>
+          </div>
+          <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
+            Headline & Story
+          </p>
+        </div>
+
+        <!-- 2. Minimal Bold Title -->
+        <div 
+          draggable="true"
+          @dragstart="handleDragStart($event, { type: 'TextBanner', label: 'Bold Title', customProps: { title: 'LIMITED ACCESS DROP', subtitle: '', variant: 'editorial' } })"
+          @dragend="handleDragEnd"
+          @click="addTextWidget('title')"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[84px] cursor-grab active:cursor-grabbing group"
+          title="Drag to canvas or click to add (Bold header without subtitle)"
+        >
+          <div class="bg-white group-hover:bg-neutral-50 h-[130px] rounded-[8px] shrink-0 w-[72px] transition-all border border-black/10 group-hover:border-black shadow-sm overflow-hidden flex flex-col justify-center items-center p-2.5">
+            <div class="flex flex-col gap-2 w-full items-center">
+              <div class="w-full h-3 bg-black rounded-[1px]" />
+              <div class="w-4/5 h-2.5 bg-black/80 rounded-[1px]" />
+            </div>
+          </div>
+          <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
+            Bold Title
+          </p>
+        </div>
+
+        <!-- 3. Story / Paragraph -->
+        <div 
+          draggable="true"
+          @dragstart="handleDragStart($event, { type: 'TextBanner', label: 'Paragraph Copy', customProps: { title: '', subtitle: 'Share the event details, rules, or background story with your guests.', variant: 'editorial' } })"
+          @dragend="handleDragEnd"
+          @click="addTextWidget('body')"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[84px] cursor-grab active:cursor-grabbing group"
+          title="Drag to canvas or click to add (Multi-line editorial paragraph)"
+        >
+          <div class="bg-white group-hover:bg-neutral-50 h-[130px] rounded-[8px] shrink-0 w-[72px] transition-all border border-black/10 group-hover:border-black shadow-sm overflow-hidden flex flex-col justify-center p-2.5">
+            <div class="flex flex-col gap-1.5 w-full">
+              <div class="w-full h-1 bg-black/40 rounded-full" />
+              <div class="w-5/6 h-1 bg-black/35 rounded-full" />
+              <div class="w-full h-1 bg-black/30 rounded-full" />
+              <div class="w-4/5 h-1 bg-black/25 rounded-full" />
+              <div class="w-2/3 h-1 bg-black/20 rounded-full" />
+            </div>
+          </div>
+          <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
+            Story / Body
+          </p>
+        </div>
+
+        <!-- 4. Notice / Scrim -->
+        <div 
+          draggable="true"
+          @dragstart="handleDragStart($event, { type: 'TextBanner', label: 'Notice / Scrim', customProps: { title: 'EVENT NOTICE', subtitle: 'Please arrive 15 minutes before your scheduled entry time.', variant: 'scrim' } })"
+          @dragend="handleDragEnd"
+          @click="addTextWidget('scrim')"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[84px] cursor-grab active:cursor-grabbing group"
+          title="Drag to canvas or click to add (Translucent dark card banner)"
+        >
+          <div class="bg-white group-hover:bg-neutral-50 h-[130px] rounded-[8px] shrink-0 w-[72px] transition-all border border-black/10 group-hover:border-black shadow-sm overflow-hidden flex flex-col justify-center p-1.5">
+            <div class="w-full h-[80px] bg-black/90 rounded-[4px] p-2 flex flex-col justify-between">
+              <div class="w-3/4 h-2 bg-white/90 rounded-[1px]" />
+              <div class="flex flex-col gap-1 w-full">
+                <div class="w-full h-1 bg-white/50 rounded-full" />
+                <div class="w-2/3 h-1 bg-white/40 rounded-full" />
+              </div>
+            </div>
+          </div>
+          <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
+            Notice / Scrim
+          </p>
+        </div>
+      </div>
+    </div>
+
     <!-- Section 2: Add Form Inputs & Choices -->
     <div v-if="(activeCategory === 'all' || activeCategory === 'forms') && !isTicketPage" class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
@@ -842,10 +943,11 @@ const emit = defineEmits<{
 
 const editorStore = useEditorStore();
 
-const activeCategory = ref<'all' | 'banners' | 'forms' | 'actions' | 'interactive'>('all');
+const activeCategory = ref<'all' | 'banners' | 'text' | 'forms' | 'actions' | 'interactive'>('all');
 const categories = [
   { id: 'all' as const, label: 'All' },
   { id: 'banners' as const, label: 'Banners' },
+  { id: 'text' as const, label: 'Text' },
   { id: 'forms' as const, label: 'Forms' },
   { id: 'actions' as const, label: 'Buttons' },
   { id: 'interactive' as const, label: 'Pass & Queue' }
@@ -909,8 +1011,36 @@ function addMediaWidget(ratio: string) {
   editorStore.addMediaBannerWidget(ratio);
 }
 
-function addTextWidget() {
-  editorStore.addWidget('TextBanner', undefined, { text: '', placeholder: 'WRITE YOUR TEXT HERE' });
+function addTextWidget(variant: 'headline' | 'body' | 'title' | 'scrim' = 'headline') {
+  let props: Record<string, any> = {
+    title: 'EVENT TITLE',
+    subtitle: 'Add your story, instructions, or campaign details.',
+    variant: 'editorial',
+  };
+  if (variant === 'body') {
+    props = {
+      title: '',
+      subtitle: 'Share the event details, rules, or background story with your guests.',
+      variant: 'editorial',
+    };
+  } else if (variant === 'title') {
+    props = {
+      title: 'LIMITED ACCESS DROP',
+      subtitle: '',
+      variant: 'editorial',
+    };
+  } else if (variant === 'scrim') {
+    props = {
+      title: 'EVENT NOTICE',
+      subtitle: 'Please arrive 15 minutes before your scheduled entry time.',
+      variant: 'scrim',
+    };
+  }
+  const widget = editorStore.addWidget('TextBanner', undefined, props);
+  if (widget) {
+    editorStore.openTextSidebar();
+  }
+  editorStore.showToast('Text block added to page');
 }
 
 function addRegistrationFormWidget(templateType: 'registration' | 'contact' | 'waitlist' = 'registration') {
