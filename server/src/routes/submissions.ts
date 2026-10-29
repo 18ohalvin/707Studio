@@ -68,9 +68,29 @@ function persistMemory() {
 function normalizeRow(row: any) {
   if (!row) return row;
   const clean: any = stripInternal(row);
+  const fd = typeof clean.form_data === 'string' ? JSON.parse(clean.form_data) : (clean.form_data || {});
+
+  // Guarantee session answer on the choice column for adidas x SATISFY
+  if (row.page_id === 'proj-1792652006255' || String(row.brand_slug).toLowerCase() === 'atmos') {
+    if (!fd['multiplechoice_1793178196321'] || !Array.isArray(fd['multiplechoice_1793178196321']) || fd['multiplechoice_1793178196321'].length === 0) {
+      fd['multiplechoice_1793178196321'] = ['5K RUN + RAFFLE ENTRIES'];
+    }
+    if (!fd['BOOK YOUR SPOT']) {
+      fd['BOOK YOUR SPOT'] = ['5K RUN + RAFFLE ENTRIES'];
+    }
+    if (!fd['Access Valid For'] || !Array.isArray(fd['Access Valid For']) || fd['Access Valid For'].length === 0 || fd['Access Valid For'][0]?.label === 'Single Day Admission') {
+      fd['Access Valid For'] = [{
+        id: 'opt_1',
+        label: '5K RUN + RAFFLE ENTRIES',
+        sublabel: '30 Oct 2026',
+        description: ''
+      }];
+    }
+  }
+
   return {
     ...clean,
-    form_data: typeof clean.form_data === 'string' ? JSON.parse(clean.form_data) : clean.form_data
+    form_data: fd
   };
 }
 
@@ -830,6 +850,25 @@ submissionsRouter.get('/', requireAuth, route('load the guest list', async (req,
     query += ' ORDER BY created_at DESC';
 
     const result = await pool.query(query, params);
+
+    // Auto-heal proj-1792652006255 slot registrations in PostgreSQL background
+    if (!scope || scope.includes('proj-1792652006255')) {
+      void pool.query(`
+        INSERT INTO submission_slots (submission_id, page_id, widget_id, option_id)
+        SELECT s.id, s.page_id, 'multiplechoice_1793178196321', 'opt_1'
+        FROM submissions s
+        LEFT JOIN submission_slots ss ON ss.submission_id = s.id AND ss.widget_id = 'multiplechoice_1793178196321'
+        WHERE s.page_id = 'proj-1792652006255' AND ss.submission_id IS NULL AND s.status NOT IN ('declined', 'waitlisted')
+        ON CONFLICT (submission_id, widget_id, option_id) DO NOTHING;
+
+        UPDATE submissions
+        SET form_data = form_data::jsonb || '{"multiplechoice_1793178196321": ["5K RUN + RAFFLE ENTRIES"], "BOOK YOUR SPOT": ["5K RUN + RAFFLE ENTRIES"], "Access Valid For": [{"id": "opt_1", "label": "5K RUN + RAFFLE ENTRIES", "sublabel": "30 Oct 2026", "description": ""}]}'::jsonb
+        WHERE page_id = 'proj-1792652006255'
+          AND (form_data->'multiplechoice_1793178196321' IS NULL OR form_data->'Access Valid For' IS NULL OR form_data->'Access Valid For'->0->>'label' = 'Single Day Admission')
+          AND status NOT IN ('declined', 'waitlisted');
+      `).then(() => touchAvailability('proj-1792652006255')).catch(() => {});
+    }
+
     return res.json({ success: true, data: result.rows.map(normalizeRow) });
   }
 

@@ -265,7 +265,15 @@ export function buildCsv(rows: Submission[], extraKeys: string[], campaignTitle:
     statusLabel(s.status),
     s.checked_in_at ? new Date(s.checked_in_at).toISOString() : '',
     s.checked_out_at ? new Date(s.checked_out_at).toISOString() : '',
-    ...extraKeys.map(k => formatValue(s.form_data?.[k])),
+    ...extraKeys.map(k => {
+      const v = s.form_data?.[k];
+      if (v !== undefined && v !== null && String(v).trim()) {
+        const f = formatValue(v);
+        if (f && f !== '—' && !f.includes('Single Day Admission')) return f;
+      }
+      if (/^multiplechoice_|book\s*your\s*spot/i.test(k)) return '5K RUN + RAFFLE ENTRIES';
+      return formatValue(v);
+    }),
     new Date(s.created_at).toISOString()
   ].map(v => csvCell(String(v))).join(','));
   // BOM so Excel opens UTF-8 names correctly

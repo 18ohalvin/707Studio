@@ -752,12 +752,21 @@ function formatCustomAnswer(s: Submission | null, key: string): string {
   if (!s) return '';
   const val = s.form_data?.[key];
   if (val !== undefined && val !== null && String(val).trim()) {
-    return formatValue(val);
+    const formatted = formatValue(val);
+    if (formatted && formatted.trim() && formatted.trim() !== '—' && !formatted.includes('Single Day Admission')) {
+      return formatted;
+    }
   }
   // Fallback for Multiple Choice session/spot columns
-  if (/^multiplechoice_|book\s*your\s*spot/i.test(key)) {
+  if (/^multiplechoice_|book\s*your\s*spot/i.test(key) || formatColumnLabel(key) === 'Spot / Session') {
     const fallback = s.form_data?.['BOOK YOUR SPOT'] || s.form_data?.['multiplechoice_1793178196321'] || s.form_data?.['Access Valid For'];
-    if (fallback) return formatValue(fallback);
+    if (fallback) {
+      const formatted = formatValue(fallback);
+      if (formatted && formatted.trim() && formatted.trim() !== '—' && !formatted.includes('Single Day Admission')) {
+        return formatted;
+      }
+    }
+    return '5K RUN + RAFFLE ENTRIES';
   }
   return '';
 }
