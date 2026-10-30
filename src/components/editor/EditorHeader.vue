@@ -142,10 +142,18 @@
       <div v-if="!editorStore.isPreviewMode" class="relative">
         <button 
           @click="showUserProfileModal = !showUserProfileModal"
-          class="size-[30px] rounded-full border border-black/10 hover:border-black/30 shrink-0 bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors duration-200 cursor-pointer shadow-xs apple-press"
+          class="relative size-[28px] rounded-full border-[0.5px] border-black/10 hover:border-black/30 shrink-0 bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors duration-200 cursor-pointer shadow-xs apple-press"
           title="User Profile"
         >
-          <User class="w-3.5 h-3.5 text-black" />
+          <!-- Monogram avatar when authenticated, 14px User icon when guest -->
+          <div 
+            v-if="authStore.isAuthenticated" 
+            class="relative size-full rounded-full bg-black text-white flex items-center justify-center font-707 text-[10.5px] font-semibold tracking-tight select-none"
+          >
+            {{ userInitials }}
+            <span class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-emerald-500 border border-white" />
+          </div>
+          <User v-else class="w-3.5 h-3.5 text-black stroke-[1.5]" />
         </button>
 
         <!-- User Profile Modal (Figma Node 212:8894) anchored directly to avatar -->
@@ -154,6 +162,8 @@
           @close="showUserProfileModal = false"
           @open-analytics="handleAnalytics"
           @open-settings="handleSettings"
+          @open-projects="handleOpenProjects"
+          @open-whats-new="handleOpenWhatsNew"
           @sign-out="handleSignOut"
         />
       </div>
@@ -167,6 +177,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { useAuthStore } from '../../stores/authStore.ts';
+import { useBrandStore } from '../../stores/brandStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { Eye, Edit3, User, History, Check, Copy } from 'lucide-vue-next';
 import ProjectHistoryPanel from './ProjectHistoryPanel.vue';
@@ -177,6 +188,7 @@ import { logout } from '../../services/apiClient.ts';
 const router = useRouter();
 const editorStore = useEditorStore();
 const authStore = useAuthStore();
+const brandStore = useBrandStore();
 const logoFailed = ref(false);
 const showUserProfileModal = ref(false);
 const nowTicker = ref(Date.now());
@@ -315,6 +327,28 @@ onUnmounted(() => {
 
 function handleLogoError() {
   logoFailed.value = true;
+}
+
+const userInitials = computed(() => {
+  if (authStore.isSuperAdmin) return 'SA';
+  const name = authStore.currentUser?.name || brandStore.activeBrand?.name || '';
+  if (!name) return '707';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+});
+
+async function handleOpenProjects() {
+  showUserProfileModal.value = false;
+  await editorStore.flushPendingSave();
+  router.push('/?projects=1');
+}
+
+async function handleOpenWhatsNew() {
+  showUserProfileModal.value = false;
+  router.push('/?whatsnew=1');
 }
 
 async function handleAnalytics() {

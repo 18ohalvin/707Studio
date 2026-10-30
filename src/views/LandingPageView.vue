@@ -47,10 +47,21 @@
         <div class="relative flex items-center">
           <button 
             @click="authStore.isAuthenticated ? (showUserProfileModal = !showUserProfileModal) : (showSignInModal = true)"
-            class="relative size-[24px] flex items-center justify-center apple-press cursor-pointer hover:opacity-75 transition-opacity border-0 border-none outline-none bg-transparent shadow-none p-0 shrink-0 text-black group"
+            class="relative size-[24px] flex items-center justify-center apple-press cursor-pointer hover:opacity-80 transition-opacity border-0 border-none outline-none bg-transparent shadow-none p-0 shrink-0 text-black group"
             :title="authStore.isAuthenticated ? 'User Profile' : 'Sign In'"
           >
-            <User class="w-[18px] h-[18px] text-black stroke-[1.35] transition-transform duration-200 group-hover:scale-105" />
+            <!-- Monogram badge when authenticated, 18px User icon when guest -->
+            <div 
+              v-if="authStore.isAuthenticated" 
+              class="relative size-[22px] rounded-full bg-black text-white flex items-center justify-center font-707 text-[10px] font-semibold tracking-tight shadow-xs select-none transition-transform duration-200 group-hover:scale-105"
+            >
+              {{ userInitials }}
+              <span class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-emerald-500 border border-white" />
+            </div>
+            <User 
+              v-else 
+              class="w-[18px] h-[18px] text-black stroke-[1.35] transition-transform duration-200 group-hover:scale-105" 
+            />
           </button>
 
           <!-- User Profile Pop Up Modal anchored directly to profile button -->
@@ -60,6 +71,8 @@
             @close="showUserProfileModal = false"
             @open-analytics="handleAnalytics"
             @open-settings="handleOpenSettings"
+            @open-projects="handleViewAllProjects"
+            @open-whats-new="handleOpenWhatsNew"
             @sign-out="handleSignOut"
           />
         </div>
@@ -368,7 +381,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useEditorStore } from '../stores/editorStore.ts';
 import { useBrandStore } from '../stores/brandStore.ts';
@@ -407,6 +420,22 @@ let toastTimer: any = null;
 const projectsSectionRef = ref<HTMLElement | null>(null);
 
 
+const userInitials = computed(() => {
+  if (authStore.isSuperAdmin) return 'SA';
+  const name = authStore.currentUser?.name || brandStore.activeBrand?.name || '';
+  if (!name) return '707';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+});
+
+function handleOpenWhatsNew() {
+  showUserProfileModal.value = false;
+  showWhatsNewModal.value = true;
+}
+
 function handleOpenSettings() {
   if (authStore.isSuperAdmin) {
     router.push('/settings');
@@ -439,6 +468,22 @@ onMounted(() => {
 // changes without a remount.
 watch(() => route.query.signin, (v) => {
   if (v === '1') showSignInModal.value = true;
+});
+
+watch(() => route.query.whatsnew, (v) => {
+  if (v === '1') {
+    showWhatsNewModal.value = true;
+    router.replace({ query: { ...route.query, whatsnew: undefined } });
+  }
+});
+
+watch(() => route.query.projects, (v) => {
+  if (v === '1') {
+    requireAuth(() => {
+      showAllProjectsModal.value = true;
+    });
+    router.replace({ query: { ...route.query, projects: undefined } });
+  }
 });
 
 async function handleSignedIn(brandName: string) {

@@ -7,24 +7,24 @@
     >
       <!-- Modal Box (Figma Node 212:7461) -->
       <div 
-        class="apple-frost border border-white/60 flex flex-col items-start p-[24px] rounded-[14px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] w-full max-w-[420px] apple-modal-box animate-apple-pop"
+        class="bg-white/95 backdrop-blur-2xl border-[0.5px] border-black/10 flex flex-col items-start p-[24px] rounded-[20px] shadow-[0px_30px_90px_0px_rgba(0,0,0,0.18),0_1px_3px_rgba(0,0,0,0.04)] w-full max-w-[420px] apple-modal-box animate-apple-pop"
         data-node-id="212:7461"
         data-name="Access your Brand Account Modal"
       >
         <!-- Modal Header -->
         <div class="flex flex-col gap-[8px] items-start w-full mb-[20px]">
           <div class="flex items-center justify-between w-full">
-            <h2 class="font-707 text-[22px] font-normal leading-[28px] text-black whitespace-nowrap">
+            <h2 class="font-707 text-[20px] font-normal leading-[26px] text-black whitespace-nowrap">
               {{ activeRoleTab === 'brand' ? 'Access Brand Account' : 'Superadmin Access' }}
             </h2>
             <!-- Close Button -->
             <button 
               type="button"
               @click="emit('close')"
-              class="size-[24px] bg-[#ededed] hover:bg-[#d9d9d9] active:bg-[#ccc] rounded-full flex items-center justify-center apple-press cursor-pointer transition-colors shrink-0"
+              class="size-[24px] bg-[#ededed] hover:bg-[#d9d9d9] active:bg-[#ccc] rounded-full flex items-center justify-center apple-press cursor-pointer transition-colors shrink-0 border-0 outline-none"
               title="Close"
             >
-              <X class="w-3.5 h-3.5 text-black" />
+              <X class="w-3.5 h-3.5 text-black stroke-[1.75]" />
             </button>
           </div>
           <p class="font-707 text-[13px] font-normal leading-[18px] text-neutral-500 w-full">
@@ -33,15 +33,15 @@
         </div>
 
         <!-- Role Segmented Switcher -->
-        <div class="w-full bg-black/[0.04] p-1 rounded-[10px] flex items-center gap-1 mb-5">
+        <div class="w-full bg-neutral-100 p-1 rounded-[10px] flex items-center gap-1 mb-5 border-[0.5px] border-black/5">
           <button
             type="button"
             @click="activeRoleTab = 'brand'"
             :class="[
-              'flex-1 py-1.5 px-3 rounded-[7px] text-[13px] font-707 font-medium transition-all text-center cursor-pointer border-none',
+              'flex-1 py-1.5 px-3 rounded-[7px] text-[12.5px] font-707 transition-all text-center cursor-pointer border-none',
               activeRoleTab === 'brand' 
-                ? 'bg-white text-black shadow-xs font-semibold' 
-                : 'bg-transparent text-neutral-500 hover:text-black'
+                ? 'bg-white text-black shadow-xs font-medium' 
+                : 'bg-transparent text-neutral-500 hover:text-black font-normal'
             ]"
           >
             Brand / Team Account
@@ -50,10 +50,10 @@
             type="button"
             @click="activeRoleTab = 'superadmin'"
             :class="[
-              'flex-1 py-1.5 px-3 rounded-[7px] text-[13px] font-707 font-medium transition-all text-center cursor-pointer border-none',
+              'flex-1 py-1.5 px-3 rounded-[7px] text-[12.5px] font-707 transition-all text-center cursor-pointer border-none',
               activeRoleTab === 'superadmin' 
-                ? 'bg-white text-black shadow-xs font-semibold' 
-                : 'bg-transparent text-neutral-500 hover:text-black'
+                ? 'bg-white text-black shadow-xs font-medium' 
+                : 'bg-transparent text-neutral-500 hover:text-black font-normal'
             ]"
           >
             Superadmin PIN
@@ -65,7 +65,7 @@
           <div class="flex flex-col gap-[14px] w-full">
             <!-- Field 1: Brand Email or Username -->
             <div class="w-full">
-              <label class="font-707 text-[11px] font-medium text-neutral-600 uppercase tracking-wider mb-1 block">
+              <label class="font-707 text-[11px] font-medium text-neutral-600 uppercase tracking-wider mb-1.5 block">
                 Brand Account / Email
               </label>
               <input 
@@ -76,10 +76,10 @@
                 placeholder="e.g. sarah.chen@atmos.co.id or atmos"
                 required
                 :class="[
-                  'focus:outline-none rounded-[8px] h-[48px] px-[16px] py-[8px] font-707 text-[14px] transition-all placeholder:text-[#aaa] w-full focus:bg-white',
+                  'focus:outline-none rounded-[10px] h-[44px] px-[14px] py-[8px] font-707 text-[13.5px] transition-all placeholder:text-neutral-400 w-full focus:bg-white',
                   errorMessage 
                     ? 'border border-red-400 bg-red-50/20 text-red-900 focus:border-red-500' 
-                    : 'border border-[#aaa]/60 focus:border-black text-black bg-white/70'
+                    : 'border-[0.5px] border-black/15 focus:border-black text-black bg-white/80'
                 ]"
                 @input="errorMessage = ''"
               />
@@ -87,24 +87,24 @@
 
             <!-- Field 2: Password / PIN with show/hide and forgot -->
             <div class="w-full">
-              <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center justify-between mb-1.5">
                 <label class="font-707 text-[11px] font-medium text-neutral-600 uppercase tracking-wider block">
                   Password / PIN
                 </label>
                 <button 
                   type="button"
                   @click="handleForgotPin"
-                  class="font-707 text-[12px] text-neutral-400 hover:text-black transition-colors select-none cursor-pointer border-none bg-transparent"
+                  class="font-707 text-[11.5px] text-neutral-400 hover:text-black transition-colors select-none cursor-pointer border-none bg-transparent"
                 >
                   Forgot?
                 </button>
               </div>
               <div 
                 :class="[
-                  'rounded-[8px] h-[48px] px-[16px] py-[8px] flex items-center justify-between transition-all w-full focus-within:bg-white',
+                  'rounded-[10px] h-[44px] px-[14px] py-[8px] flex items-center justify-between transition-all w-full focus-within:bg-white',
                   errorMessage 
                     ? 'border border-red-400 bg-red-50/20 focus-within:border-red-500' 
-                    : 'border border-[#aaa]/60 focus-within:border-black bg-white/70'
+                    : 'border-[0.5px] border-black/15 focus-within:border-black bg-white/80'
                 ]"
               >
                 <input 
@@ -113,7 +113,7 @@
                   autocomplete="current-password"
                   placeholder="Enter your password / PIN"
                   required
-                  class="flex-1 min-w-0 bg-transparent font-707 text-[14px] text-black focus:outline-none placeholder:text-[#aaa] p-0 m-0 border-none"
+                  class="flex-1 min-w-0 bg-transparent font-707 text-[13.5px] text-black focus:outline-none placeholder:text-neutral-400 p-0 m-0 border-none"
                   @input="errorMessage = ''"
                 />
                 <button 
@@ -130,17 +130,17 @@
           </div>
 
           <!-- Error Alert -->
-          <div v-if="errorMessage" class="mt-3 p-2.5 rounded-[8px] bg-red-50 border border-red-200 text-red-600 text-[12px] font-707 flex items-center gap-1.5 animate-apple-pop">
+          <div v-if="errorMessage" class="mt-3.5 p-2.5 rounded-[10px] bg-red-50/80 border-[0.5px] border-red-200 text-red-600 text-[12px] font-707 flex items-center gap-1.5 animate-apple-pop">
             <AlertCircle class="w-3.5 h-3.5 shrink-0" />
             <span>{{ errorMessage }}</span>
           </div>
 
           <!-- Sign In Button -->
-          <div class="mt-[24px] w-full">
+          <div class="mt-[20px] w-full">
             <button 
               type="submit"
               :disabled="!brandId.trim() || !brandPin.trim()"
-              class="bg-black hover:bg-neutral-800 active:bg-neutral-900 text-white font-707 font-medium text-[14px] leading-[18px] h-[48px] flex items-center justify-center rounded-[8px] cursor-pointer apple-press w-full transition-all shadow-sm disabled:bg-[#e0e0e0] disabled:text-[#888] disabled:cursor-not-allowed disabled:pointer-events-none"
+              class="bg-black hover:bg-neutral-800 active:bg-neutral-900 text-white font-707 font-medium text-[13.5px] h-[44px] flex items-center justify-center rounded-[10px] cursor-pointer apple-press w-full transition-all shadow-sm disabled:bg-[#e0e0e0] disabled:text-[#888] disabled:cursor-not-allowed disabled:pointer-events-none"
             >
               Sign In as Brand PIC
             </button>
@@ -151,15 +151,15 @@
         <form v-else @submit.prevent="handleSuperadminSignIn" class="flex flex-col w-full">
           <div class="flex flex-col gap-[14px] w-full">
             <div class="w-full">
-              <label class="font-707 text-[11px] font-medium text-neutral-600 uppercase tracking-wider mb-1 block">
+              <label class="font-707 text-[11px] font-medium text-neutral-600 uppercase tracking-wider mb-1.5 block">
                 Superadmin Passkey / Master PIN
               </label>
               <div 
                 :class="[
-                  'rounded-[8px] h-[48px] px-[16px] py-[8px] flex items-center justify-between transition-all w-full focus-within:bg-white',
+                  'rounded-[10px] h-[44px] px-[14px] py-[8px] flex items-center justify-between transition-all w-full focus-within:bg-white',
                   errorMessage 
                     ? 'border border-red-400 bg-red-50/20 focus-within:border-red-500' 
-                    : 'border border-[#aaa]/60 focus-within:border-black bg-white/70'
+                    : 'border-[0.5px] border-black/15 focus-within:border-black bg-white/80'
                 ]"
               >
                 <input 
@@ -169,7 +169,7 @@
                   autocomplete="current-password"
                   placeholder="Enter superadmin passkey"
                   required
-                  class="flex-1 min-w-0 bg-transparent font-707 text-[14px] text-black focus:outline-none placeholder:text-[#aaa] p-0 m-0 border-none"
+                  class="flex-1 min-w-0 bg-transparent font-707 text-[13.5px] text-black focus:outline-none placeholder:text-neutral-400 p-0 m-0 border-none"
                   @input="errorMessage = ''"
                 />
                 <button 
@@ -186,17 +186,17 @@
           </div>
 
           <!-- Error Alert -->
-          <div v-if="errorMessage" class="mt-3 p-2.5 rounded-[8px] bg-red-50 border border-red-200 text-red-600 text-[12px] font-707 flex items-center gap-1.5 animate-apple-pop">
+          <div v-if="errorMessage" class="mt-3.5 p-2.5 rounded-[10px] bg-red-50/80 border-[0.5px] border-red-200 text-red-600 text-[12px] font-707 flex items-center gap-1.5 animate-apple-pop">
             <AlertCircle class="w-3.5 h-3.5 shrink-0" />
             <span>{{ errorMessage }}</span>
           </div>
 
           <!-- Superadmin Submit Button -->
-          <div class="mt-[24px] w-full">
+          <div class="mt-[20px] w-full">
             <button 
               type="submit"
               :disabled="!superadminPin.trim()"
-              class="bg-black hover:bg-neutral-800 active:bg-neutral-900 text-white font-707 font-medium text-[14px] leading-[18px] h-[48px] flex items-center justify-center rounded-[8px] cursor-pointer apple-press w-full transition-all shadow-sm disabled:bg-[#e0e0e0] disabled:text-[#888] disabled:cursor-not-allowed disabled:pointer-events-none"
+              class="bg-black hover:bg-neutral-800 active:bg-neutral-900 text-white font-707 font-medium text-[13.5px] h-[44px] flex items-center justify-center rounded-[10px] cursor-pointer apple-press w-full transition-all shadow-sm disabled:bg-[#e0e0e0] disabled:text-[#888] disabled:cursor-not-allowed disabled:pointer-events-none"
             >
               Verify & Enter Superadmin
             </button>
