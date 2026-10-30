@@ -46,7 +46,7 @@
         <!-- 3. Minimal Profile / User Icon (18px, matching logo height) -->
         <div class="relative flex items-center">
           <button 
-            @click="authStore.isAuthenticated ? (showUserProfileModal = !showUserProfileModal) : (showSignInModal = true)"
+            @click="authStore.isAuthenticated ? (showUserProfileModal = !showUserProfileModal) : router.push('/login')"
             class="relative size-[24px] flex items-center justify-center apple-press cursor-pointer hover:opacity-80 transition-opacity border-0 border-none outline-none bg-transparent shadow-none p-0 shrink-0 text-black group"
             :title="authStore.isAuthenticated ? 'User Profile' : 'Sign In'"
           >
@@ -351,20 +351,6 @@
       @close="showSetupModal = false"
     />
 
-    <!-- Brand Sign In Modal (Figma Node 212:7461) -->
-    <BrandSignInModal
-      :is-open="showSignInModal"
-      @close="showSignInModal = false"
-      @signed-in="handleSignedIn"
-    />
-
-    <!-- Superadmin Auth Gate Modal -->
-    <SuperAdminAuthModal 
-      :is-open="showSuperAdminModal"
-      @close="showSuperAdminModal = false"
-      @verified="handleSuperAdminVerified"
-    />
-
     <!-- All Projects Hub Modal (Option A) -->
     <AllProjectsModal
       :is-open="showAllProjectsModal"
@@ -390,9 +376,7 @@ import { FIGMA_ASSETS } from '../constants/figmaAssets.ts';
 import { User, X } from 'lucide-vue-next';
 import NotificationsMenu from '../components/common/NotificationsMenu.vue';
 import SetupProjectModal from '../components/modals/SetupProjectModal.vue';
-import BrandSignInModal from '../components/modals/BrandSignInModal.vue';
 import UserProfileModal from '../components/modals/UserProfileModal.vue';
-import SuperAdminAuthModal from '../components/modals/SuperAdminAuthModal.vue';
 import AllProjectsModal from '../components/modals/AllProjectsModal.vue';
 import WhatsNewModal from '../components/modals/WhatsNewModal.vue';
 
@@ -409,10 +393,8 @@ const logoFailed = ref(false);
 const showSetupModal = ref(false);
 const showUserProfileModal = ref(false);
 const showWhatsNewModal = ref(false);
-const showSignInModal = ref(false);
 const showContactModal = ref(false);
 const showSettingsModal = ref(false);
-const showSuperAdminModal = ref(false);
 const showAllProjectsModal = ref(false);
 const showNotificationToast = ref(false);
 const toastMessage = ref('All design systems and cloud sync are up to date.');
@@ -440,12 +422,8 @@ function handleOpenSettings() {
   if (authStore.isSuperAdmin) {
     router.push('/settings');
   } else {
-    showSuperAdminModal.value = true;
+    router.push('/dev');
   }
-}
-
-function handleSuperAdminVerified() {
-  router.push('/settings');
 }
 
 function triggerToast(msg: string) {
@@ -460,14 +438,16 @@ function triggerToast(msg: string) {
 onMounted(() => {
   editorStore.loadProjects();
   if (route.query.signin === '1') {
-    showSignInModal.value = true;
+    router.replace({ path: '/login', query: route.query.redirect ? { redirect: route.query.redirect } : {} });
   }
 });
 
 // A session can expire while this page is already open; the query then
 // changes without a remount.
 watch(() => route.query.signin, (v) => {
-  if (v === '1') showSignInModal.value = true;
+  if (v === '1') {
+    router.replace({ path: '/login', query: route.query.redirect ? { redirect: route.query.redirect } : {} });
+  }
 });
 
 watch(() => route.query.whatsnew, (v) => {
@@ -512,7 +492,7 @@ function handleSignOut() {
 
 function requireAuth(action: () => void) {
   if (!authStore.isAuthenticated) {
-    showSignInModal.value = true;
+    router.push({ path: '/login', query: { redirect: route.fullPath } });
     return;
   }
   action();

@@ -46,13 +46,23 @@ const routes = [
     meta: { public: true }
   },
   {
+    path: '/dev',
+    name: 'DevAccess',
+    component: () => import('../views/DevAccessView.vue'),
+    meta: { public: true }
+  },
+  {
+    path: '/superadmin',
+    redirect: '/dev'
+  },
+  {
     path: '/settings',
     name: 'SuperAdminSettings',
     component: SuperAdminSettingsView
   },
   {
     path: '/admin',
-    redirect: '/settings'
+    redirect: '/dev'
   },
   {
     path: '/:brandSlug/:pageSlug',
@@ -81,13 +91,13 @@ router.beforeEach((to) => {
   
   if (to.path === '/settings' || to.path === '/admin') {
     if (!authStore.isSuperAdmin) {
-      return { name: 'Login', query: { tab: 'superadmin', redirect: to.fullPath } };
+      return { path: '/dev', query: { redirect: to.fullPath } };
     }
   }
 
   if (to.path === '/editor' || to.path.startsWith('/editor/') || to.path === '/hub' || to.path.startsWith('/hub/')) {
     if (!authStore.isAuthenticated) {
-      return { path: '/', query: { signin: '1', redirect: to.fullPath } };
+      return { path: '/login', query: { redirect: to.fullPath } };
     }
   }
 
