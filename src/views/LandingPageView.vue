@@ -17,9 +17,14 @@
           />
           <span v-if="logoFailed" class="font-black text-black text-xs tracking-tighter leading-none">707 DESIGN STUDIO</span>
         </router-link>
-        <span class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white border border-black/10 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10.5px] font-707 font-medium text-black leading-none whitespace-nowrap">
+        <button 
+          type="button"
+          @click="showWhatsNewModal = true"
+          class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white hover:bg-neutral-50 border-[0.5px] border-black/10 hover:border-black/30 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10.5px] font-707 font-medium text-black leading-none whitespace-nowrap cursor-pointer transition-all apple-press"
+          title="What's New in Design Studio 1.5"
+        >
           1.5
-        </span>
+        </button>
       </div>
 
       <!-- Right: Contact Link CTA, Bell Notification, Profile Icon Container -->
@@ -353,6 +358,12 @@
       @close="showAllProjectsModal = false"
       @open-setup-modal="showSetupModal = true"
     />
+
+    <!-- What's New in Design Studio 1.5 Introduction Modal -->
+    <WhatsNewModal
+      :is-open="showWhatsNewModal"
+      @close="showWhatsNewModal = false"
+    />
   </div>
 </template>
 
@@ -370,6 +381,7 @@ import BrandSignInModal from '../components/modals/BrandSignInModal.vue';
 import UserProfileModal from '../components/modals/UserProfileModal.vue';
 import SuperAdminAuthModal from '../components/modals/SuperAdminAuthModal.vue';
 import AllProjectsModal from '../components/modals/AllProjectsModal.vue';
+import WhatsNewModal from '../components/modals/WhatsNewModal.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -383,6 +395,7 @@ const APP_VERSION = '1.5';
 const logoFailed = ref(false);
 const showSetupModal = ref(false);
 const showUserProfileModal = ref(false);
+const showWhatsNewModal = ref(false);
 const showSignInModal = ref(false);
 const showContactModal = ref(false);
 const showSettingsModal = ref(false);

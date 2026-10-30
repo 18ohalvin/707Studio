@@ -11,9 +11,14 @@
             class="h-[18px] w-auto object-contain pointer-events-none"
           />
         </router-link>
-        <span class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white border border-black/10 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10.5px] font-707 font-medium text-black leading-none whitespace-nowrap">
+        <button 
+          type="button"
+          @click="showWhatsNewModal = true"
+          class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white hover:bg-neutral-50 border-[0.5px] border-black/10 hover:border-black/30 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10.5px] font-707 font-medium text-black leading-none whitespace-nowrap cursor-pointer transition-all apple-press"
+          title="What's New in Design Studio 1.5"
+        >
           1.5
-        </span>
+        </button>
       </div>
 
       <!-- Right: Back to Studio & Exit Superadmin -->
@@ -1478,6 +1483,12 @@
         </div>
       </div>
     </Transition>
+
+    <!-- What's New in Design Studio 1.5 Introduction Modal -->
+    <WhatsNewModal
+      :is-open="showWhatsNewModal"
+      @close="showWhatsNewModal = false"
+    />
   </div>
 </template>
 
@@ -1487,6 +1498,7 @@ import { sizedUrl } from '../services/responsiveImage.ts';
 import { glassConfirm, glassPrompt } from '../services/glassDialog.ts';
 import { ref, computed, reactive, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import WhatsNewModal from '../components/modals/WhatsNewModal.vue';
 import { 
   ArrowLeft, 
   LogOut, 
@@ -1508,6 +1520,7 @@ import type { Brand, GlobalTemplate, WidgetItem, ProjectItem } from '../types/ed
 
 const router = useRouter();
 const route = useRoute();
+const showWhatsNewModal = ref(false);
 const authStore = useAuthStore();
 const editorStore = useEditorStore();
 const brandStore = useBrandStore();
