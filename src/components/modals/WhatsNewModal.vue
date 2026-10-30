@@ -107,7 +107,7 @@
                   >
                     <!-- Commercial Photography Background -->
                     <img 
-                      src="/uploads/upload_1790330483282_2ptb1q.jpeg" 
+                      src="/assets/whats-new/drop-campaign.jpeg" 
                       alt="Commercial Drop Preview" 
                       class="absolute inset-0 size-full object-cover object-center scale-105 group-hover:scale-100 transition-transform duration-700 pointer-events-none" 
                     />
