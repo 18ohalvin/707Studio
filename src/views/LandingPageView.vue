@@ -38,29 +38,19 @@
         <!-- 2. Bell Notification Icon -->
         <NotificationsMenu v-if="authStore.isAuthenticated" />
 
-        <!-- 3. Profile icon / User Info Container (When Authenticated) -->
-        <div v-if="authStore.isAuthenticated" class="relative flex items-center">
+        <!-- 3. Minimal Profile / User Icon (18px, matching logo height) -->
+        <div class="relative flex items-center">
           <button 
-            @click="showUserProfileModal = !showUserProfileModal"
-            class="flex items-center gap-[8px] cursor-pointer hover:opacity-80 transition-opacity apple-press bg-transparent border-none p-0 outline-none" 
-            data-name="User Info Container"
-            data-node-id="210:6972"
-            title="User Profile"
+            @click="authStore.isAuthenticated ? (showUserProfileModal = !showUserProfileModal) : (showSignInModal = true)"
+            class="relative size-[24px] flex items-center justify-center apple-press cursor-pointer hover:opacity-75 transition-opacity border-0 border-none outline-none bg-transparent shadow-none p-0 shrink-0 text-black group"
+            :title="authStore.isAuthenticated ? 'User Profile' : 'Sign In'"
           >
-            <!-- Avatar (Figma Node 198:6801) -->
-            <div class="size-[27px] rounded-full overflow-hidden shrink-0 bg-[#d9d9d9] flex items-center justify-center" data-node-id="198:6801">
-              <User class="w-3.5 h-3.5 text-black" />
-            </div>
-            <!-- Brand Badge (Figma Node 210:6969) -->
-            <div class="border-black/10 border-[0.5px] border-solid flex h-[26px] items-center justify-center px-[8px] rounded-[10px] shrink-0 bg-transparent" data-node-id="210:6969" data-name="Save Info Container">
-              <p class="font-707 text-[12px] text-black font-light leading-[16px] whitespace-nowrap" data-node-id="210:6970">
-                {{ authStore.isSuperAdmin ? 'Superadmin ID' : (brandStore.activeBrand?.slug ? brandStore.activeBrand.slug + ' ID' : (authStore.currentUser?.assignedBrands?.[0] ? authStore.currentUser.assignedBrands[0] + ' ID' : (authStore.currentUser?.name ? authStore.currentUser.name + ' ID' : 'Brand ID'))) }}
-              </p>
-            </div>
+            <User class="w-[18px] h-[18px] text-black stroke-[1.35] transition-transform duration-200 group-hover:scale-105" />
           </button>
 
           <!-- User Profile Pop Up Modal anchored directly to profile button -->
           <UserProfileModal
+            v-if="authStore.isAuthenticated"
             :is-open="showUserProfileModal"
             @close="showUserProfileModal = false"
             @open-analytics="handleAnalytics"
@@ -68,17 +58,6 @@
             @sign-out="handleSignOut"
           />
         </div>
-
-        <!-- State 2: When Logged Out -> Sign In Button substituting the user button on the right -->
-        <button 
-          v-else
-          @click="showSignInModal = true"
-          class="border-black/10 hover:border-black border-[0.5px] border-solid flex h-[28px] items-center justify-center px-[12px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[12px] font-medium text-black gap-1.5 whitespace-nowrap shadow-xs apple-press"
-          title="Sign in to Brand or Superadmin Account"
-        >
-          <User class="w-3.5 h-3.5" />
-          <span>Sign In</span>
-        </button>
       </div>
     </header>
 
