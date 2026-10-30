@@ -3,7 +3,7 @@
     v-if="isOpen"
     @click.stop
     @wheel.stop
-    class="absolute right-[24px] top-1/2 -translate-y-1/2 w-[464px] h-auto max-h-[calc(100vh-140px)] backdrop-blur-2xl bg-[rgba(255,255,255,0.92)] border border-black/8 content-stretch flex flex-col items-start overflow-y-auto pb-[32px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] z-40 select-none transition-all animate-apple-slide-right-center no-scrollbar"
+    class="absolute right-[24px] top-1/2 -translate-y-1/2 w-[464px] min-h-[460px] h-auto max-h-[calc(100vh-140px)] backdrop-blur-2xl bg-[rgba(255,255,255,0.92)] border border-black/8 content-stretch flex flex-col items-start overflow-y-auto pb-[32px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] z-40 select-none transition-all animate-apple-slide-right-center no-scrollbar"
     data-node-id="113:3887"
   >
     <!-- Header -->
@@ -146,7 +146,7 @@
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
           Media Fit
         </p>
-        <div class="relative">
+        <div class="relative" ref="mediaFitBtnRef">
           <button
             type="button"
             @click="isMediaFitDropdownOpen = !isMediaFitDropdownOpen"
@@ -159,23 +159,27 @@
             />
           </button>
 
-          <!-- Dropdown Menu -->
-          <div 
-            v-if="isMediaFitDropdownOpen" 
-            class="absolute right-0 top-[44px] w-[240px] bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-lg py-1 z-30 flex flex-col"
-          >
-            <button
-              v-for="fit in mediaFitOptions"
-              :key="fit"
-              type="button"
-              @click="selectMediaFit(fit)"
-              class="flex items-center justify-between px-[14px] py-[8px] text-left hover:bg-black/5 transition-colors cursor-pointer"
-              :class="selectedMediaFit === fit ? 'font-medium text-black bg-black/5' : 'text-neutral-700'"
+          <!-- Dropdown Menu (Teleported to body to eliminate frame bleeding) -->
+          <Teleport to="body">
+            <div 
+              v-if="isMediaFitDropdownOpen" 
+              ref="mediaFitMenuRef"
+              :style="mediaFitPopoverStyle"
+              class="bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-[0px_8px_30px_rgba(0,0,0,0.15)] py-1 z-50 flex flex-col overflow-y-auto animate-in fade-in duration-150 select-none"
             >
-              <span class="font-707 text-[13px]">{{ fit }}</span>
-              <Check v-if="selectedMediaFit === fit" class="size-[15px] text-black" />
-            </button>
-          </div>
+              <button
+                v-for="fit in mediaFitOptions"
+                :key="fit"
+                type="button"
+                @click="selectMediaFit(fit)"
+                class="flex items-center justify-between px-[14px] py-[8px] text-left hover:bg-black/5 transition-colors cursor-pointer"
+                :class="selectedMediaFit === fit ? 'font-medium text-black bg-black/5' : 'text-neutral-700'"
+              >
+                <span class="font-707 text-[13px]">{{ fit }}</span>
+                <Check v-if="selectedMediaFit === fit" class="size-[15px] text-black" />
+              </button>
+            </div>
+          </Teleport>
         </div>
       </div>
 
@@ -756,7 +760,7 @@
               <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
                 Link to
               </p>
-              <div class="relative">
+              <div class="relative" ref="linkToBtnRef">
                 <button
                   type="button"
                   @click="isLinkToDropdownOpen = !isLinkToDropdownOpen"
@@ -769,23 +773,27 @@
                   />
                 </button>
 
-                <!-- Dropdown Menu -->
-                <div 
-                  v-if="isLinkToDropdownOpen" 
-                  class="absolute right-0 top-[44px] w-[240px] bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-lg py-1 z-30 flex flex-col"
-                >
-                  <button
-                    v-for="opt in linkToOptions"
-                    :key="opt.value"
-                    type="button"
-                    @click="selectLinkTo(opt.value)"
-                    class="flex items-center justify-between px-[14px] py-[8px] text-left hover:bg-black/5 transition-colors cursor-pointer"
-                    :class="ctaActionType === opt.value ? 'font-medium text-black bg-black/5' : 'text-neutral-700'"
+                <!-- Dropdown Menu (Teleported to body to eliminate frame bleeding) -->
+                <Teleport to="body">
+                  <div 
+                    v-if="isLinkToDropdownOpen" 
+                    ref="linkToMenuRef"
+                    :style="linkToPopoverStyle"
+                    class="bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-[0px_8px_30px_rgba(0,0,0,0.15)] py-1 z-50 flex flex-col overflow-y-auto animate-in fade-in duration-150 select-none"
                   >
-                    <span class="font-707 text-[13px]">{{ opt.label }}</span>
-                    <Check v-if="ctaActionType === opt.value" class="size-[15px] text-black" />
-                  </button>
-                </div>
+                    <button
+                      v-for="opt in linkToOptions"
+                      :key="opt.value"
+                      type="button"
+                      @click="selectLinkTo(opt.value)"
+                      class="flex items-center justify-between px-[14px] py-[8px] text-left hover:bg-black/5 transition-colors cursor-pointer"
+                      :class="ctaActionType === opt.value ? 'font-medium text-black bg-black/5' : 'text-neutral-700'"
+                    >
+                      <span class="font-707 text-[13px]">{{ opt.label }}</span>
+                      <Check v-if="ctaActionType === opt.value" class="size-[15px] text-black" />
+                    </button>
+                  </div>
+                </Teleport>
               </div>
             </div>
 
@@ -830,6 +838,7 @@ import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { AlignLeft, AlignCenter, AlignRight, ChevronDown, Check, Trash2, Plus, SlidersHorizontal, ArrowRight, Crop, Image as ImageIcon, Type, MousePointerClick } from 'lucide-vue-next';
 import { uploadMediaDirectly } from '../../services/mediaService.ts';
+import { useModalPopover } from '../common/modalPopover.ts';
 import type { WidgetItem } from '../../types/editor.ts';
 
 const props = defineProps<{
@@ -939,6 +948,8 @@ function formatRatioLabel(ratio: string): string {
 const mediaFitOptions = ['Fill the screen', 'Fit to screen', 'Center'] as const;
 const selectedMediaFit = ref<'Fill the screen' | 'Fit to screen' | 'Center'>('Fill the screen');
 const isMediaFitDropdownOpen = ref(false);
+const mediaFitBtnRef = ref<HTMLElement | null>(null);
+const { style: mediaFitPopoverStyle, menuRef: mediaFitMenuRef } = useModalPopover(mediaFitBtnRef, isMediaFitDropdownOpen, { align: 'right', width: 240 });
 
 function selectMediaFit(fit: 'Fill the screen' | 'Fit to screen' | 'Center') {
   selectedMediaFit.value = fit;
@@ -1050,6 +1061,8 @@ const ctaPositionMode = ref<'in-flow' | 'sticky-bottom'>('in-flow');
 const ctaStickyScope = ref<'current' | 'all' | 'custom'>('current');
 const ctaStickyPageIds = ref<string[]>([]);
 const isLinkToDropdownOpen = ref(false);
+const linkToBtnRef = ref<HTMLElement | null>(null);
+const { style: linkToPopoverStyle, menuRef: linkToMenuRef } = useModalPopover(linkToBtnRef, isLinkToDropdownOpen, { align: 'right', width: 240 });
 
 const allLinkToOptions = CTA_ACTION_OPTIONS;
 

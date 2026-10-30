@@ -5,7 +5,7 @@
     ref="sidebarRef"
     @click.stop
     @wheel.stop
-    class="absolute right-[24px] top-1/2 -translate-y-1/2 w-[464px] h-auto max-h-[calc(100vh-140px)] backdrop-blur-2xl bg-[rgba(255,255,255,0.92)] border border-black/8 content-stretch flex flex-col items-start overflow-y-auto pb-[20px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] z-40 select-none transition-all animate-apple-slide-right-center no-scrollbar"
+    class="absolute right-[24px] top-1/2 -translate-y-1/2 w-[464px] min-h-[460px] h-auto max-h-[calc(100vh-140px)] backdrop-blur-2xl bg-[rgba(255,255,255,0.92)] border border-black/8 content-stretch flex flex-col items-start overflow-y-auto pb-[20px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] z-40 select-none transition-all animate-apple-slide-right-center no-scrollbar"
     data-node-id="244:11560"
     data-name="Button Setup Sidebar"
   >
@@ -277,7 +277,7 @@
               When clicked by guest
             </span>
           </div>
-          <div class="relative">
+          <div class="relative" ref="linkToBtnRef">
             <button
               type="button"
               @click="isLinkToDropdownOpen = !isLinkToDropdownOpen"
@@ -290,23 +290,27 @@
               />
             </button>
 
-            <!-- Dropdown Menu -->
-            <div 
-              v-if="isLinkToDropdownOpen" 
-              class="absolute right-0 top-[44px] w-[240px] bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-lg py-1 z-30 flex flex-col animate-in fade-in slide-in-from-top-1 duration-150"
-            >
-              <button
-                v-for="opt in linkToOptions"
-                :key="opt.value"
-                type="button"
-                @click="selectLinkTo(opt.value)"
-                class="flex items-center justify-between px-[14px] py-[8px] text-left hover:bg-black/5 transition-colors cursor-pointer"
-                :class="actionType === opt.value ? 'font-medium text-black bg-black/5' : 'text-neutral-700'"
+            <!-- Dropdown Menu (Teleported to body to eliminate frame bleeding) -->
+            <Teleport to="body">
+              <div 
+                v-if="isLinkToDropdownOpen" 
+                ref="linkToMenuRef"
+                :style="linkToPopoverStyle"
+                class="bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-[0px_8px_30px_rgba(0,0,0,0.15)] py-1 z-50 flex flex-col overflow-y-auto animate-in fade-in duration-150 select-none"
               >
-                <span class="font-707 text-[13px]">{{ opt.label }}</span>
-                <Check v-if="actionType === opt.value" class="size-[15px] text-black" />
-              </button>
-            </div>
+                <button
+                  v-for="opt in linkToOptions"
+                  :key="opt.value"
+                  type="button"
+                  @click="selectLinkTo(opt.value)"
+                  class="flex items-center justify-between px-[14px] py-[8px] text-left hover:bg-black/5 transition-colors cursor-pointer"
+                  :class="actionType === opt.value ? 'font-medium text-black bg-black/5' : 'text-neutral-700'"
+                >
+                  <span class="font-707 text-[13px]">{{ opt.label }}</span>
+                  <Check v-if="actionType === opt.value" class="size-[15px] text-black" />
+                </button>
+              </div>
+            </Teleport>
           </div>
         </div>
 
@@ -348,6 +352,7 @@ import { CTA_ACTION_OPTIONS, normalizeCtaAction } from './ctaActions.ts';
 import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
+import { useModalPopover } from '../common/modalPopover.ts';
 import { 
   ChevronDown, 
   Check, 
@@ -547,6 +552,8 @@ const currentStickyScope = computed(() => {
 });
 
 const isLinkToDropdownOpen = ref(false);
+const linkToBtnRef = ref<HTMLElement | null>(null);
+const { style: linkToPopoverStyle, menuRef: linkToMenuRef } = useModalPopover(linkToBtnRef, isLinkToDropdownOpen, { align: 'right', width: 240 });
 
 const allLinkToOptions = CTA_ACTION_OPTIONS;
 

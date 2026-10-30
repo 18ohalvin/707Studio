@@ -5,7 +5,7 @@
     ref="sidebarRef"
     @click.stop
     @wheel.stop
-    class="absolute right-[24px] top-1/2 -translate-y-1/2 w-[464px] max-h-[calc(100vh-140px)] backdrop-blur-2xl bg-[rgba(255,255,255,0.92)] border border-black/8 content-stretch flex flex-col items-start overflow-y-auto pb-[32px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] z-40 select-none transition-all animate-apple-slide-right-center no-scrollbar"
+    class="absolute right-[24px] top-1/2 -translate-y-1/2 w-[464px] min-h-[460px] max-h-[calc(100vh-140px)] backdrop-blur-2xl bg-[rgba(255,255,255,0.92)] border border-black/8 content-stretch flex flex-col items-start overflow-y-auto pb-[32px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] z-40 select-none transition-all animate-apple-slide-right-center no-scrollbar"
     data-node-id="181:5929"
     data-name="Text Tool Sidebar"
   >
@@ -70,25 +70,30 @@
             />
           </button>
 
-          <!-- Dropdown Options Menu -->
-          <div 
-            v-if="isDropdownOpen"
-            class="absolute top-full left-0 right-0 mt-1.5 bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-[0px_4px_20px_rgba(0,0,0,0.12)] z-50 overflow-y-auto max-h-[260px] py-1 animate-in fade-in slide-in-from-top-1 duration-150"
-          >
-            <button 
-              v-for="opt in typographyOptions"
-              :key="opt.id"
-              @click="selectTypography(opt.id)"
-              :class="currentTypographyId === opt.id ? 'bg-black/5 font-medium text-black' : 'text-neutral-700 hover:bg-black/5'"
-              class="w-full text-left px-4 py-2 text-[13px] font-707 flex items-center justify-between transition-colors cursor-pointer border-b border-neutral-100 last:border-b-0"
+          <!-- Dropdown Options Menu (Teleported to body to eliminate frame bleeding) -->
+          <Teleport to="body">
+            <div 
+              v-if="isDropdownOpen"
+              ref="menuRef"
+              :style="popoverStyle"
+              class="bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-[0px_8px_30px_rgba(0,0,0,0.15)] overflow-y-auto py-1 animate-in fade-in duration-150 select-none"
             >
-              <div class="flex flex-col">
-                <span :class="opt.previewClass">{{ opt.label }}</span>
-                <span class="text-[10px] text-neutral-400 font-normal">{{ opt.desc }}</span>
-              </div>
-              <span class="text-[11px] text-neutral-400 font-mono shrink-0 ml-2">{{ opt.size }}</span>
-            </button>
-          </div>
+              <button 
+                v-for="opt in typographyOptions"
+                :key="opt.id"
+                type="button"
+                @click="selectTypography(opt.id)"
+                :class="currentTypographyId === opt.id ? 'bg-black/5 font-medium text-black' : 'text-neutral-700 hover:bg-black/5'"
+                class="w-full text-left px-4 py-2 text-[13px] font-707 flex items-center justify-between transition-colors cursor-pointer border-b border-neutral-100 last:border-b-0"
+              >
+                <div class="flex flex-col">
+                  <span :class="opt.previewClass">{{ opt.label }}</span>
+                  <span class="text-[10px] text-neutral-400 font-normal">{{ opt.desc }}</span>
+                </div>
+                <span class="text-[11px] text-neutral-400 font-mono shrink-0 ml-2">{{ opt.size }}</span>
+              </button>
+            </div>
+          </Teleport>
         </div>
       </div>
     </div>
@@ -139,10 +144,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { ChevronDown, AlignLeft, AlignCenter, AlignRight } from 'lucide-vue-next';
+import { useModalPopover } from '../common/modalPopover.ts';
 
 defineProps<{
   isOpen: boolean;
@@ -156,6 +162,8 @@ const editorStore = useEditorStore();
 const isDropdownOpen = ref(false);
 const dropdownRef = ref<HTMLElement | null>(null);
 const sidebarTextareaRef = ref<HTMLTextAreaElement | null>(null);
+
+const { style: popoverStyle, menuRef } = useModalPopover(dropdownRef, isDropdownOpen, { matchWidth: true });
 
 const textContent = computed({
   get: () => targetWidget.value?.props?.text || '',
@@ -210,18 +218,4 @@ function setAlignment(align: 'left' | 'center' | 'right') {
     editorStore.updateWidgetProps(targetWidget.value.id, { textAlign: align });
   }
 }
-
-function handleClickOutside(event: MouseEvent) {
-  if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
-    isDropdownOpen.value = false;
-  }
-}
-
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside);
-});
-
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside);
-});
 </script>

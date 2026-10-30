@@ -5,7 +5,7 @@
     ref="sidebarRef"
     @click.stop
     @wheel.stop
-    class="absolute right-[24px] top-1/2 -translate-y-1/2 w-[464px] h-auto max-h-[calc(100vh-140px)] backdrop-blur-2xl bg-[rgba(255,255,255,0.92)] border border-black/8 content-stretch flex flex-col items-start overflow-y-auto pb-[24px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] z-40 select-none transition-all animate-apple-slide-right-center no-scrollbar"
+    class="absolute right-[24px] top-1/2 -translate-y-1/2 w-[464px] min-h-[460px] h-auto max-h-[calc(100vh-140px)] backdrop-blur-2xl bg-[rgba(255,255,255,0.92)] border border-black/8 content-stretch flex flex-col items-start overflow-y-auto pb-[24px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] z-40 select-none transition-all animate-apple-slide-right-center no-scrollbar"
     data-node-id="276:4224"
     data-name="Choice Setup Sidebar"
   >
@@ -405,25 +405,30 @@
               />
             </button>
 
-            <!-- Dropdown Options Menu -->
-            <div 
-              v-if="isTitleDropdownOpen"
-              class="absolute top-full left-0 right-0 mt-1.5 bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-[0px_4px_20px_rgba(0,0,0,0.12)] z-50 overflow-y-auto max-h-[220px] py-1 animate-in fade-in slide-in-from-top-1 duration-150"
-            >
-              <button 
-                v-for="opt in typographyOptions"
-                :key="opt.id"
-                @click="selectTitleTypography(opt.id)"
-                :class="currentTitleTypographyId === opt.id ? 'bg-black/5 font-medium text-black' : 'text-neutral-700 hover:bg-black/5'"
-                class="w-full text-left px-4 py-2 text-[12px] font-707 flex items-center justify-between transition-colors cursor-pointer border-b border-neutral-100 last:border-b-0"
+            <!-- Dropdown Options Menu (Teleported to body to eliminate frame bleeding) -->
+            <Teleport to="body">
+              <div 
+                v-if="isTitleDropdownOpen"
+                ref="titleMenuRef"
+                :style="titlePopoverStyle"
+                class="bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-[0px_8px_30px_rgba(0,0,0,0.15)] overflow-y-auto py-1 animate-in fade-in duration-150 select-none"
               >
-                <div class="flex flex-col">
-                  <span :class="opt.previewClass">{{ opt.label }}</span>
-                  <span class="text-[10px] text-neutral-400 font-normal">{{ opt.desc }}</span>
-                </div>
-                <span class="text-[11px] text-neutral-400 font-mono shrink-0 ml-2">{{ opt.size }}</span>
-              </button>
-            </div>
+                <button 
+                  v-for="opt in typographyOptions"
+                  :key="opt.id"
+                  type="button"
+                  @click="selectTitleTypography(opt.id)"
+                  :class="currentTitleTypographyId === opt.id ? 'bg-black/5 font-medium text-black' : 'text-neutral-700 hover:bg-black/5'"
+                  class="w-full text-left px-4 py-2 text-[12px] font-707 flex items-center justify-between transition-colors cursor-pointer border-b border-neutral-100 last:border-b-0"
+                >
+                  <div class="flex flex-col">
+                    <span :class="opt.previewClass">{{ opt.label }}</span>
+                    <span class="text-[10px] text-neutral-400 font-normal">{{ opt.desc }}</span>
+                  </div>
+                  <span class="text-[11px] text-neutral-400 font-mono shrink-0 ml-2">{{ opt.size }}</span>
+                </button>
+              </div>
+            </Teleport>
           </div>
         </div>
 
@@ -447,25 +452,30 @@
               />
             </button>
 
-            <!-- Dropdown Options Menu -->
-            <div 
-              v-if="isOptionDropdownOpen"
-              class="absolute top-full left-0 right-0 mt-1.5 bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-[0px_4px_20px_rgba(0,0,0,0.12)] z-50 overflow-y-auto max-h-[220px] py-1 animate-in fade-in slide-in-from-top-1 duration-150"
-            >
-              <button 
-                v-for="opt in typographyOptions"
-                :key="opt.id"
-                @click="selectOptionTypography(opt.id)"
-                :class="currentOptionTypographyId === opt.id ? 'bg-black/5 font-medium text-black' : 'text-neutral-700 hover:bg-black/5'"
-                class="w-full text-left px-4 py-2 text-[12px] font-707 flex items-center justify-between transition-colors cursor-pointer border-b border-neutral-100 last:border-b-0"
+            <!-- Dropdown Options Menu (Teleported to body to eliminate frame bleeding) -->
+            <Teleport to="body">
+              <div 
+                v-if="isOptionDropdownOpen"
+                ref="optionMenuRef"
+                :style="optionPopoverStyle"
+                class="bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-[0px_8px_30px_rgba(0,0,0,0.15)] overflow-y-auto py-1 animate-in fade-in duration-150 select-none"
               >
-                <div class="flex flex-col">
-                  <span :class="opt.previewClass">{{ opt.label }}</span>
-                  <span class="text-[10px] text-neutral-400 font-normal">{{ opt.desc }}</span>
-                </div>
-                <span class="text-[11px] text-neutral-400 font-mono shrink-0 ml-2">{{ opt.size }}</span>
-              </button>
-            </div>
+                <button 
+                  v-for="opt in typographyOptions"
+                  :key="opt.id"
+                  type="button"
+                  @click="selectOptionTypography(opt.id)"
+                  :class="currentOptionTypographyId === opt.id ? 'bg-black/5 font-medium text-black' : 'text-neutral-700 hover:bg-black/5'"
+                  class="w-full text-left px-4 py-2 text-[12px] font-707 flex items-center justify-between transition-colors cursor-pointer border-b border-neutral-100 last:border-b-0"
+                >
+                  <div class="flex flex-col">
+                    <span :class="opt.previewClass">{{ opt.label }}</span>
+                    <span class="text-[10px] text-neutral-400 font-normal">{{ opt.desc }}</span>
+                  </div>
+                  <span class="text-[11px] text-neutral-400 font-mono shrink-0 ml-2">{{ opt.size }}</span>
+                </button>
+              </div>
+            </Teleport>
           </div>
         </div>
       </div>
@@ -585,11 +595,12 @@
 
 <script setup lang="ts">
 import { sizedUrl } from '../../services/responsiveImage.ts';
-import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { computed, ref } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { uploadMediaDirectly } from '../../services/mediaService.ts';
 import type { ChoiceVariant, ChoiceOption } from '../../types/editor.ts';
+import { useModalPopover } from '../common/modalPopover.ts';
 import { 
   Plus, 
   Trash2, 
@@ -679,6 +690,9 @@ const titleDropdownRef = ref<HTMLElement | null>(null);
 const optionDropdownRef = ref<HTMLElement | null>(null);
 const isTitleDropdownOpen = ref(false);
 const isOptionDropdownOpen = ref(false);
+
+const { style: titlePopoverStyle, menuRef: titleMenuRef } = useModalPopover(titleDropdownRef, isTitleDropdownOpen, { matchWidth: true });
+const { style: optionPopoverStyle, menuRef: optionMenuRef } = useModalPopover(optionDropdownRef, isOptionDropdownOpen, { matchWidth: true });
 
 const typographyOptions = [
   { id: 'headline-1', label: 'Headline 1', size: '32px', desc: 'Display title / primary punchy headline', previewClass: 'font-medium text-[15px]' },
@@ -1097,22 +1111,4 @@ async function processOptionImageFile(file: File, idx: number) {
   };
   reader.readAsDataURL(file);
 }
-
-function handleClickOutside(event: MouseEvent) {
-  const target = event.target as Node;
-  if (titleDropdownRef.value && !titleDropdownRef.value.contains(target)) {
-    isTitleDropdownOpen.value = false;
-  }
-  if (optionDropdownRef.value && !optionDropdownRef.value.contains(target)) {
-    isOptionDropdownOpen.value = false;
-  }
-}
-
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside);
-});
-
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside);
-});
 </script>
