@@ -9,7 +9,7 @@
 
       <!-- Pop Up Modal Box - Anchored cleanly below the profile button -->
       <div 
-        class="absolute top-[calc(100%+8px)] right-0 z-50 bg-white/95 backdrop-blur-2xl border-[0.5px] border-black/10 flex flex-col items-start pb-[10px] rounded-[18px] shadow-[0px_24px_60px_0px_rgba(0,0,0,0.14),0_1px_3px_rgba(0,0,0,0.04)] w-[320px] select-none apple-popover-box overflow-hidden"
+        class="absolute top-[calc(100%+8px)] right-0 z-50 bg-white/95 backdrop-blur-2xl border-[0.5px] border-black/10 flex flex-col items-start pb-[10px] rounded-[18px] shadow-[0px_24px_60px_0px_rgba(0,0,0,0.14),0_1px_3px_rgba(0,0,0,0.04)] w-[300px] select-none apple-popover-box overflow-hidden"
         data-node-id="212:8894"
         data-name="User Profile Pop Up Modal"
       >
@@ -59,29 +59,6 @@
           >
             <X class="w-3.5 h-3.5 text-black stroke-[1.75]" />
           </button>
-        </div>
-
-        <!-- Active Brand / Workspace Card (Cleaned without Master Access label) -->
-        <div class="w-full px-[10px] pt-[10px] pb-[4px]">
-          <div class="px-[12px] py-[9px] rounded-[10px] bg-neutral-50/80 border-[0.5px] border-black/8 flex items-center justify-between">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <div class="size-[22px] rounded-[6px] bg-black text-white flex items-center justify-center text-[10.5px] font-707 font-semibold shrink-0">
-                {{ activeBrandInitial }}
-              </div>
-              <div class="flex flex-col min-w-0">
-                <span v-if="!authStore.isSuperAdmin" class="text-[9.5px] uppercase font-707 font-semibold tracking-wider text-neutral-400 leading-none">
-                  Active Workspace
-                </span>
-                <span class="text-[12px] font-707 font-medium text-black truncate leading-tight" :class="authStore.isSuperAdmin ? 'py-0.5' : 'mt-0.5'">
-                  {{ activeBrandName }}
-                </span>
-              </div>
-            </div>
-
-            <span v-if="!authStore.isSuperAdmin && brandStore.activeBrand?.slug" class="text-[10px] font-mono text-neutral-500 bg-white px-1.5 py-0.5 rounded-[4px] border-[0.5px] border-black/10 shrink-0">
-              /{{ brandStore.activeBrand.slug }}
-            </span>
-          </div>
         </div>
 
         <!-- Menu Action Items Container -->
@@ -224,17 +201,6 @@ const userInitials = computed(() => {
     return (parts[0][0] + parts[1][0]).toUpperCase();
   }
   return name.slice(0, 2).toUpperCase();
-});
-
-const activeBrandName = computed(() => {
-  if (authStore.isSuperAdmin) return 'All Brand Workspaces';
-  return brandStore.activeBrand?.name || 'Independent Studio';
-});
-
-const activeBrandInitial = computed(() => {
-  if (authStore.isSuperAdmin) return '★';
-  const name = brandStore.activeBrand?.name || brandStore.activeBrand?.slug || '7';
-  return name.charAt(0).toUpperCase();
 });
 
 function handleOpenProjects() {
