@@ -2,22 +2,17 @@
   <div class="h-screen w-screen flex flex-col items-center justify-between bg-[#f5f5f5] text-black font-sans relative select-none p-6">
     <!-- Header: 707 Logo -->
     <header class="w-full flex items-center justify-between max-w-[1100px] py-2">
-      <div class="flex items-end gap-[16px] h-[16px]">
-        <router-link to="/" class="h-[16px] w-[51px] relative shrink-0 flex items-end cursor-pointer hover:opacity-80 transition-opacity" title="Back to 707 Home">
+      <div class="flex items-center gap-[10px] h-[20px]">
+        <router-link to="/" class="h-[18px] relative shrink-0 flex items-center cursor-pointer hover:opacity-85 transition-opacity" title="Back to 707 Home">
           <img 
             :src="FIGMA_ASSETS.logo707" 
-            alt="707 Logo" 
-            class="inset-0 object-contain pointer-events-none size-full"
+            alt="707 Design Studio" 
+            class="h-[18px] w-auto object-contain pointer-events-none"
           />
         </router-link>
-        <div class="flex items-center gap-[8px]">
-          <span class="font-707 text-[13px] text-black font-medium uppercase tracking-normal whitespace-nowrap leading-none">
-            DESIGN STUDIO
-          </span>
-          <span class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white border border-black/10 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10.5px] font-707 font-medium text-black leading-none whitespace-nowrap">
-            1.5
-          </span>
-        </div>
+        <span class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white border border-black/10 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10.5px] font-707 font-medium text-black leading-none whitespace-nowrap">
+          1.5
+        </span>
       </div>
 
       <router-link 

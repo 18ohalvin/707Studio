@@ -92,7 +92,7 @@
       >
         <div class="h-[15px] w-[48px] relative flex items-center justify-end">
           <img 
-            :src="FIGMA_ASSETS.logo707" 
+            :src="FIGMA_ASSETS.logo707Mark" 
             alt="707 Logo" 
             class="size-full object-contain pointer-events-none" 
             @error="handleLogoError"

@@ -2,14 +2,13 @@
   <div class="h-full w-full bg-white text-black font-707 flex flex-col overflow-y-auto overflow-x-hidden hub-root" data-name="Campaign Hub">
     <!-- Top Header (matches Studio / Settings 48px header) -->
     <header class="w-full h-[48px] px-[16px] md:px-[20px] flex items-center justify-between border-b border-black/10 bg-white/90 backdrop-blur-md shrink-0 sticky top-0 z-30 select-none">
-      <div class="flex items-end gap-[16px] h-[16px]">
-        <router-link to="/" class="h-[16px] w-[51px] relative shrink-0 flex items-end cursor-pointer hover:opacity-80 transition-opacity" title="Back to 707 Home">
-          <img :src="FIGMA_ASSETS.logo707" alt="707 Logo" class="inset-0 object-contain pointer-events-none size-full" />
+      <div class="flex items-center gap-[10px] h-[20px]">
+        <router-link to="/" class="h-[18px] relative shrink-0 flex items-center cursor-pointer hover:opacity-85 transition-opacity" title="Back to 707 Home">
+          <img :src="FIGMA_ASSETS.logo707" alt="707 Design Studio" class="h-[18px] w-auto object-contain pointer-events-none" />
         </router-link>
-        <p class="hidden sm:flex font-707 text-[14px] text-black font-normal uppercase whitespace-nowrap leading-none items-baseline translate-y-[2px]">
-          <span class="tracking-[0.24em] mr-2">CAMPAIGN HUB</span>
-          <span class="tracking-normal font-normal">1.0</span>
-        </p>
+        <span class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white border border-black/10 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10.5px] font-707 font-medium text-black leading-none whitespace-nowrap">
+          HUB 1.0
+        </span>
       </div>
 
       <div class="flex items-center gap-2 md:gap-3">

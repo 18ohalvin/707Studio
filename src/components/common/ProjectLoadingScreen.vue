@@ -13,11 +13,11 @@
         <div class="h-[64px] w-full shrink-0" />
 
         <!-- Center: 707 Official Logo (Black) -->
-        <div class="h-[32px] w-[102px] relative shrink-0 flex items-center justify-center">
+        <div class="h-[32px] w-auto max-w-[240px] relative shrink-0 flex items-center justify-center">
           <img 
             :src="FIGMA_ASSETS.logo707" 
             alt="707 Logo" 
-            class="h-[32px] w-[102px] object-contain pointer-events-none"
+            class="h-[32px] w-auto object-contain pointer-events-none"
           />
         </div>
 
@@ -47,11 +47,11 @@
         <div class="h-[64px] w-full shrink-0" />
 
         <!-- Center: 707 Official Logo (White) -->
-        <div class="h-[32px] w-[102px] relative shrink-0 flex items-center justify-center">
+        <div class="h-[32px] w-auto max-w-[240px] relative shrink-0 flex items-center justify-center">
           <img 
             :src="FIGMA_ASSETS.logo707" 
             alt="707 Logo White" 
-            class="h-[32px] w-[102px] object-contain pointer-events-none brightness-0 invert"
+            class="h-[32px] w-auto object-contain pointer-events-none brightness-0 invert"
           />
         </div>
 

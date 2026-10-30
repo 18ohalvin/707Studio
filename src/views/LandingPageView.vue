@@ -7,24 +7,19 @@
       data-name="Header"
     >
       <!-- Left: 707 Logo & Sub-Brand Studio Identifier -->
-      <div class="flex items-center gap-[14px] h-[20px]" data-node-id="198:6792" data-name="Logo">
-        <router-link to="/" class="h-[16px] w-[51px] relative shrink-0 flex items-center cursor-pointer" title="707 Home" data-node-id="198:6793" data-name="Logo 707">
+      <div class="flex items-center gap-[10px] h-[20px]" data-node-id="198:6792" data-name="Logo">
+        <router-link to="/" class="h-[18px] relative shrink-0 flex items-center cursor-pointer hover:opacity-85 transition-opacity" title="707 Design Studio" data-node-id="198:6793" data-name="Logo 707">
           <img 
             :src="FIGMA_ASSETS.logo707" 
-            alt="707 Logo" 
-            class="inset-0 object-contain pointer-events-none size-full"
+            alt="707 Design Studio" 
+            class="h-[18px] w-auto object-contain pointer-events-none"
             @error="handleLogoError"
           />
-          <span v-if="logoFailed" class="font-black text-black text-xs tracking-tighter leading-none">707</span>
+          <span v-if="logoFailed" class="font-black text-black text-xs tracking-tighter leading-none">707 DESIGN STUDIO</span>
         </router-link>
-        <div class="flex items-center gap-[8px]" data-node-id="212:7031">
-          <span class="font-707 text-[13px] text-black font-medium uppercase tracking-normal whitespace-nowrap leading-none">
-            DESIGN STUDIO
-          </span>
-          <span class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white border border-black/10 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10.5px] font-707 font-medium text-black leading-none whitespace-nowrap">
-            1.5
-          </span>
-        </div>
+        <span class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white border border-black/10 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10.5px] font-707 font-medium text-black leading-none whitespace-nowrap">
+          1.5
+        </span>
       </div>
 
       <!-- Right: Contact Link CTA, Bell Notification, Profile Icon Container -->

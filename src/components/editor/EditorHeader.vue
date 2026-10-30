@@ -10,17 +10,17 @@
       <a 
         href="/"
         @click.prevent="navigateHome" 
-        class="h-[15px] w-[48px] relative shrink-0 flex items-center cursor-pointer hover:opacity-80 transition-opacity" 
+        class="h-[18px] relative shrink-0 flex items-center cursor-pointer hover:opacity-85 transition-opacity" 
         :title="editorStore.isTemplateMode ? 'Back to Superadmin Templates' : 'Back to Design Studio'"
       >
         <img 
           :src="FIGMA_ASSETS.logo707" 
-          alt="707 Logo" 
-          class="inset-0 object-contain pointer-events-none size-full"
+          alt="707 Design Studio" 
+          class="h-[18px] w-auto object-contain pointer-events-none"
           @error="handleLogoError"
         />
         <!-- Fallback if localhost asset server isn't running -->
-        <span v-if="logoFailed" class="font-black text-black text-xs tracking-tighter">707</span>
+        <span v-if="logoFailed" class="font-black text-black text-xs tracking-tighter">707 DESIGN STUDIO</span>
       </a>
 
       <!-- Title Container & Save Status -->
