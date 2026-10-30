@@ -2,10 +2,14 @@
 // Saved permanently to public/assets/ to ensure offline persistence and prevent ephemeral 404 cache loss
 
 export const FIGMA_ASSETS = {
-  // Brand Logo & Avatar
-  logo707: "/assets/707-figma-logo.svg",
+  // Brand Logo (Original 707 Brand mark used for mobile page forms, live guest views, tickets, passes)
+  logo707: "/assets/4167315cdf415e01405730dfafaea3aaf13ea2e9.png",
+  logo707Brand: "/assets/4167315cdf415e01405730dfafaea3aaf13ea2e9.png",
   logo707Mark: "/assets/4167315cdf415e01405730dfafaea3aaf13ea2e9.png",
+
+  // 707 Design Studio Vector Logo (App desktop headers: Landing Page, Login, SuperAdmin, Editor, Hub)
   logoDesignStudio: "/assets/707-figma-logo.svg",
+  logo707Studio: "/assets/707-figma-logo.svg",
   avatar: "/assets/3d191f85939d15d1bc2d992e5c13998c63f74ed0.svg",
   
   // Center Bottom Toolbar Icons (Node 63:3395)

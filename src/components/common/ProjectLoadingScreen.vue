@@ -15,7 +15,7 @@
         <!-- Center: 707 Official Logo (Black) -->
         <div class="h-[32px] w-auto max-w-[240px] relative shrink-0 flex items-center justify-center">
           <img 
-            :src="FIGMA_ASSETS.logo707" 
+            :src="FIGMA_ASSETS.logoDesignStudio" 
             alt="707 Logo" 
             class="h-[32px] w-auto object-contain pointer-events-none"
           />
@@ -49,7 +49,7 @@
         <!-- Center: 707 Official Logo (White) -->
         <div class="h-[32px] w-auto max-w-[240px] relative shrink-0 flex items-center justify-center">
           <img 
-            :src="FIGMA_ASSETS.logo707" 
+            :src="FIGMA_ASSETS.logoDesignStudio" 
             alt="707 Logo White" 
             class="h-[32px] w-auto object-contain pointer-events-none brightness-0 invert"
           />

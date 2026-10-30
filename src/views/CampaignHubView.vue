@@ -4,7 +4,7 @@
     <header class="w-full h-[48px] px-[16px] md:px-[20px] flex items-center justify-between border-b border-black/10 bg-white/90 backdrop-blur-md shrink-0 sticky top-0 z-30 select-none">
       <div class="flex items-center gap-[10px] h-[20px]">
         <router-link to="/" class="h-[18px] relative shrink-0 flex items-center cursor-pointer hover:opacity-85 transition-opacity" title="Back to 707 Home">
-          <img :src="FIGMA_ASSETS.logo707" alt="707 Design Studio" class="h-[18px] w-auto object-contain pointer-events-none" />
+          <img :src="FIGMA_ASSETS.logoDesignStudio" alt="707 Design Studio" class="h-[18px] w-auto object-contain pointer-events-none" />
         </router-link>
         <span class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white border border-black/10 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10.5px] font-707 font-medium text-black leading-none whitespace-nowrap">
           HUB 1.0

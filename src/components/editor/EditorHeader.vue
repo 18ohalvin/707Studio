@@ -14,7 +14,7 @@
         :title="editorStore.isTemplateMode ? 'Back to Superadmin Templates' : 'Back to Design Studio'"
       >
         <img 
-          :src="FIGMA_ASSETS.logo707" 
+          :src="FIGMA_ASSETS.logoDesignStudio" 
           alt="707 Design Studio" 
           class="h-[18px] w-auto object-contain pointer-events-none"
           @error="handleLogoError"

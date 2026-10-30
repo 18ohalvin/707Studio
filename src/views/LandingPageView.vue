@@ -10,7 +10,7 @@
       <div class="flex items-center gap-[10px] h-[20px]" data-node-id="198:6792" data-name="Logo">
         <router-link to="/" class="h-[18px] relative shrink-0 flex items-center cursor-pointer hover:opacity-85 transition-opacity" title="707 Design Studio" data-node-id="198:6793" data-name="Logo 707">
           <img 
-            :src="FIGMA_ASSETS.logo707" 
+            :src="FIGMA_ASSETS.logoDesignStudio" 
             alt="707 Design Studio" 
             class="h-[18px] w-auto object-contain pointer-events-none"
             @error="handleLogoError"
