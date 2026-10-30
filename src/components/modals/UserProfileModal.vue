@@ -7,7 +7,7 @@
         @click="emit('close')"
       />
 
-      <!-- Pop Up Modal Box (Figma Node 212:8894) - Anchored cleanly below the profile button -->
+      <!-- Pop Up Modal Box - Anchored cleanly below the profile button -->
       <div 
         class="absolute top-[calc(100%+8px)] right-0 z-50 bg-white/95 backdrop-blur-2xl border-[0.5px] border-black/10 flex flex-col items-start pb-[10px] rounded-[18px] shadow-[0px_24px_60px_0px_rgba(0,0,0,0.14),0_1px_3px_rgba(0,0,0,0.04)] w-[320px] select-none apple-popover-box overflow-hidden"
         data-node-id="212:8894"
@@ -61,7 +61,7 @@
           </button>
         </div>
 
-        <!-- Active Brand / Workspace Pill Card -->
+        <!-- Active Brand / Workspace Card (Cleaned without Master Access label) -->
         <div class="w-full px-[10px] pt-[10px] pb-[4px]">
           <div class="px-[12px] py-[9px] rounded-[10px] bg-neutral-50/80 border-[0.5px] border-black/8 flex items-center justify-between">
             <div class="flex items-center gap-2.5 min-w-0">
@@ -69,10 +69,10 @@
                 {{ activeBrandInitial }}
               </div>
               <div class="flex flex-col min-w-0">
-                <span class="text-[9.5px] uppercase font-707 font-semibold tracking-wider text-neutral-400 leading-none">
-                  {{ authStore.isSuperAdmin ? 'Master Access' : 'Active Workspace' }}
+                <span v-if="!authStore.isSuperAdmin" class="text-[9.5px] uppercase font-707 font-semibold tracking-wider text-neutral-400 leading-none">
+                  Active Workspace
                 </span>
-                <span class="text-[12px] font-707 font-medium text-black truncate mt-0.5 leading-tight">
+                <span class="text-[12px] font-707 font-medium text-black truncate leading-tight" :class="authStore.isSuperAdmin ? 'py-0.5' : 'mt-0.5'">
                   {{ activeBrandName }}
                 </span>
               </div>
@@ -142,16 +142,11 @@
             v-if="authStore.isSuperAdmin"
             type="button"
             @click="handleAccountSettings"
-            class="w-full text-left px-[12px] py-[8.5px] rounded-[8px] hover:bg-black/5 active:bg-black/10 transition-colors cursor-pointer border-0 outline-none bg-transparent flex items-center justify-between text-black apple-press group"
+            class="w-full text-left px-[12px] py-[8.5px] rounded-[8px] hover:bg-black/5 active:bg-black/10 transition-colors cursor-pointer border-0 outline-none bg-transparent flex items-center gap-2.5 text-black apple-press group"
           >
-            <div class="flex items-center gap-2.5 min-w-0">
-              <Settings class="w-4 h-4 text-neutral-500 group-hover:text-black transition-colors" />
-              <span class="font-707 text-[13px] font-normal">
-                Superadmin Portal
-              </span>
-            </div>
-            <span class="text-[11px] font-707 text-neutral-400 group-hover:text-neutral-600 transition-colors">
-              Master
+            <Settings class="w-4 h-4 text-neutral-500 group-hover:text-black transition-colors" />
+            <span class="font-707 text-[13px] font-normal">
+              Superadmin Settings
             </span>
           </button>
 
