@@ -8,8 +8,8 @@ export const FIGMA_ASSETS = {
   logo707Mark: "/assets/4167315cdf415e01405730dfafaea3aaf13ea2e9.png",
 
   // 707 Design Studio Vector Logo (App desktop headers: Landing Page, Login, SuperAdmin, Editor, Hub)
-  logoDesignStudio: "/assets/707-figma-logo_new.svg",
-  logo707Studio: "/assets/707-figma-logo_new.svg",
+  logoDesignStudio: "/assets/707-figma-logo1.5.svg",
+  logo707Studio: "/assets/707-figma-logo1.5.svg",
   avatar: "/assets/3d191f85939d15d1bc2d992e5c13998c63f74ed0.svg",
   
   // Center Bottom Toolbar Icons (Node 63:3395)
