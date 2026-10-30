@@ -6,9 +6,9 @@
       data-node-id="198:6791"
       data-name="Header"
     >
-      <!-- Left: 707 Logo & Sub-Brand Studio Identifier (Figma Node 198:6792 - Bottom Aligned) -->
-      <div class="flex items-end gap-[16px] h-[16px]" data-node-id="198:6792" data-name="Logo">
-        <router-link to="/" class="h-[16px] w-[51px] relative shrink-0 flex items-end cursor-pointer" title="707 Home" data-node-id="198:6793" data-name="Logo 707">
+      <!-- Left: 707 Logo & Sub-Brand Studio Identifier -->
+      <div class="flex items-center gap-[14px] h-[20px]" data-node-id="198:6792" data-name="Logo">
+        <router-link to="/" class="h-[16px] w-[51px] relative shrink-0 flex items-center cursor-pointer" title="707 Home" data-node-id="198:6793" data-name="Logo 707">
           <img 
             :src="FIGMA_ASSETS.logo707" 
             alt="707 Logo" 
@@ -17,18 +17,33 @@
           />
           <span v-if="logoFailed" class="font-black text-black text-xs tracking-tighter leading-none">707</span>
         </router-link>
-        <p class="font-707 text-[14px] text-black font-normal uppercase whitespace-nowrap leading-none flex items-baseline translate-y-[2px]" data-node-id="212:7031">
-          <span class="tracking-[0.24em] mr-2">DESIGN STUDIO</span>
-          <span class="tracking-normal font-normal">1.0</span>
-        </p>
+        <div class="flex items-center gap-[8px]" data-node-id="212:7031">
+          <span class="font-707 text-[13px] text-black font-medium uppercase tracking-normal whitespace-nowrap leading-none">
+            DESIGN STUDIO
+          </span>
+          <span class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white border border-black/10 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10.5px] font-707 font-medium text-black leading-none whitespace-nowrap">
+            1.5
+          </span>
+        </div>
       </div>
 
-      <!-- Right: Notification, User Info Container, Contact Button (Figma Node 198:6798) -->
-      <div class="flex items-center gap-[32px]" data-node-id="198:6798" data-name="Icons Container">
-        <!-- Notification Icon with Minimal Outline Style & State Modes (Figma Node 210:6959) -->
+      <!-- Right: Contact Link CTA, Bell Notification, Profile Icon Container -->
+      <div class="flex items-center gap-[24px]" data-node-id="198:6798" data-name="Icons Container">
+        <!-- 1. Contact Team Hyperlink CTA (Not a button anymore) -->
+        <button 
+          v-if="!authStore.isSuperAdmin"
+          type="button"
+          @click="showContactModal = true"
+          class="font-707 text-[13px] text-neutral-600 hover:text-black transition-colors cursor-pointer bg-transparent border-0 p-0 whitespace-nowrap hover:underline underline-offset-4"
+          title="Contact 707 Team"
+        >
+          Contact Team
+        </button>
+
+        <!-- 2. Bell Notification Icon -->
         <NotificationsMenu v-if="authStore.isAuthenticated" />
 
-        <!-- State 1: When Authenticated -> User Info Container (Avatar + Brand ID Pill) (Figma Node 210:6972) -->
+        <!-- 3. Profile icon / User Info Container (When Authenticated) -->
         <div v-if="authStore.isAuthenticated" class="relative flex items-center">
           <button 
             @click="showUserProfileModal = !showUserProfileModal"
@@ -68,18 +83,6 @@
         >
           <User class="w-3.5 h-3.5" />
           <span>Sign In</span>
-        </button>
-
-        <!-- Contact Team Button -->
-        <button 
-          v-if="!authStore.isSuperAdmin"
-          @click="showContactModal = true"
-          class="bg-black border border-black border-solid flex h-[32px] items-center justify-center px-[14px] py-[6px] rounded-[8px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] shrink-0 apple-press cursor-pointer hover:bg-neutral-800 transition-colors whitespace-nowrap"
-          title="Contact 707 Team"
-        >
-          <span class="font-707 font-medium text-[13px] leading-[18px] text-white whitespace-nowrap">
-            Contact Team
-          </span>
         </button>
       </div>
     </header>
@@ -401,7 +404,7 @@ const brandStore = useBrandStore();
 const authStore = useAuthStore();
 
 // App Version constant (easily bumped for future releases)
-const APP_VERSION = '1.0';
+const APP_VERSION = '1.5';
 
 const logoFailed = ref(false);
 const showSetupModal = ref(false);
