@@ -42,7 +42,7 @@
               <User class="w-3.5 h-3.5 text-black" />
             </div>
             <!-- Brand Badge (Figma Node 210:6969) -->
-            <div class="border-[#d9d9d9] border-[0.5px] border-solid flex h-[26px] items-center justify-center px-[8px] rounded-[10px] shrink-0 bg-transparent" data-node-id="210:6969" data-name="Save Info Container">
+            <div class="border-black/10 border-[0.5px] border-solid flex h-[26px] items-center justify-center px-[8px] rounded-[10px] shrink-0 bg-transparent" data-node-id="210:6969" data-name="Save Info Container">
               <p class="font-707 text-[12px] text-black font-light leading-[16px] whitespace-nowrap" data-node-id="210:6970">
                 {{ authStore.isSuperAdmin ? 'Superadmin ID' : (brandStore.activeBrand?.slug ? brandStore.activeBrand.slug + ' ID' : (authStore.currentUser?.assignedBrands?.[0] ? authStore.currentUser.assignedBrands[0] + ' ID' : (authStore.currentUser?.name ? authStore.currentUser.name + ' ID' : 'Brand ID'))) }}
               </p>
@@ -63,23 +63,22 @@
         <button 
           v-else
           @click="showSignInModal = true"
-          class="border-[#d9d9d9] hover:border-black border-[0.5px] border-solid flex h-[28px] items-center justify-center px-[12px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[12px] font-medium text-black gap-1.5 whitespace-nowrap shadow-xs apple-press"
+          class="border-black/10 hover:border-black border-[0.5px] border-solid flex h-[28px] items-center justify-center px-[12px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[12px] font-medium text-black gap-1.5 whitespace-nowrap shadow-xs apple-press"
           title="Sign in to Brand or Superadmin Account"
         >
           <User class="w-3.5 h-3.5" />
           <span>Sign In</span>
         </button>
 
-        <!-- Contact UI/UX Team Button (Figma Node 198:6800 - appears by default if Superadmin is not logged in) -->
+        <!-- Contact Team Button -->
         <button 
           v-if="!authStore.isSuperAdmin"
           @click="showContactModal = true"
-          class="bg-black border border-black border-solid flex h-[32px] items-center justify-center px-[14px] py-[8px] rounded-[4px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] shrink-0 apple-press cursor-pointer hover:bg-neutral-800 transition-colors whitespace-nowrap"
-          data-node-id="198:6800"
-          data-name="Buttons/Button"
+          class="bg-black border border-black border-solid flex h-[32px] items-center justify-center px-[14px] py-[6px] rounded-[8px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] shrink-0 apple-press cursor-pointer hover:bg-neutral-800 transition-colors whitespace-nowrap"
+          title="Contact 707 Team"
         >
-          <span class="font-707 font-medium text-[14px] leading-[18px] text-white whitespace-nowrap">
-            Contact UI/UX Team
+          <span class="font-707 font-medium text-[13px] leading-[18px] text-white whitespace-nowrap">
+            Contact Team
           </span>
         </button>
       </div>
@@ -96,7 +95,7 @@
         <!-- Intro Greeting & 5 Action Cards (Figma Node 212:7033) -->
         <section class="flex flex-col items-center gap-[28px] md:gap-[32px] w-full shrink-0" data-node-id="212:7033" data-name="Intro Container">
           <h1 class="font-707 text-[28px] md:text-[30px] font-normal text-black text-center tracking-[-0.56px] leading-[34px] whitespace-nowrap" data-node-id="198:6839">
-            Hello Fellas! Let’s build something cool.
+            Build your next brand activation.
           </h1>
 
           <!-- Superadmin Shortcut Buttons (Strictly 3 items when Superadmin) -->
@@ -113,7 +112,7 @@
                 </div>
               </button>
               <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal">
-                Create a new template
+                New Template
               </p>
             </div>
 
@@ -129,7 +128,7 @@
                 </div>
               </button>
               <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal">
-                Browse templates
+                Templates
               </p>
             </div>
 
@@ -145,7 +144,7 @@
                 </div>
               </button>
               <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal">
-                View all projects
+                All Projects
               </p>
             </div>
           </div>
@@ -161,11 +160,11 @@
                 title="Create a fresh blank project"
               >
                 <div class="size-[32px] relative shrink-0 flex items-center justify-center">
-                  <img :src="FIGMA_ASSETS.landingCreateProject" alt="Create new project" class="size-full object-contain pointer-events-none" />
+                  <img :src="FIGMA_ASSETS.landingCreateProject" alt="New project" class="size-full object-contain pointer-events-none" />
                 </div>
               </button>
               <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal" data-node-id="198:6931">
-                Create a new project
+                New Project
               </p>
             </div>
 
@@ -173,13 +172,13 @@
             <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-node-id="198:6869" data-name="Button Container">
               <div class="relative size-[88px]">
                 <button 
-                  @click="triggerToast('Browse Templates feature is coming soon in the next update.')"
+                  @click="triggerToast('Templates feature is coming soon in the next update.')"
                   class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.45)] border-[0.5px] border-black/5 flex items-center justify-center p-[8px] rounded-[8px] size-full cursor-not-allowed opacity-60 hover:opacity-75 transition-all group"
                   data-node-id="198:6863"
-                  title="Browse Templates (Coming Soon)"
+                  title="Templates (Coming Soon)"
                 >
                   <div class="size-[32px] relative shrink-0 flex items-center justify-center grayscale opacity-50">
-                    <img :src="FIGMA_ASSETS.landingBrowseTemplates" alt="Browse Templates" class="size-full object-contain pointer-events-none" />
+                    <img :src="FIGMA_ASSETS.landingBrowseTemplates" alt="Templates" class="size-full object-contain pointer-events-none" />
                   </div>
                 </button>
                 <span class="absolute -top-1.5 -right-1.5 bg-black/80 text-white font-707 text-[8.5px] tracking-wider uppercase px-1.5 py-0.5 rounded-[4px] pointer-events-none shadow-xs font-medium">
@@ -187,7 +186,7 @@
                 </span>
               </div>
               <p class="font-707 text-[13px] md:text-[14px] text-neutral-400 text-center leading-[18px] font-normal" data-node-id="198:6868">
-                Browse Templates
+                Templates
               </p>
             </div>
 
@@ -195,13 +194,13 @@
             <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-node-id="198:6933" data-name="Button Container">
               <div class="relative size-[88px]">
                 <button 
-                  @click="triggerToast('Event Registration presets are coming soon in the next update.')"
+                  @click="triggerToast('Event RSVP presets are coming soon in the next update.')"
                   class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.45)] border-[0.5px] border-black/5 flex items-center justify-center p-[8px] rounded-[8px] size-full cursor-not-allowed opacity-60 hover:opacity-75 transition-all group"
                   data-node-id="198:6934"
-                  title="Event Registration (Coming Soon)"
+                  title="Event RSVP (Coming Soon)"
                 >
                   <div class="h-[32px] w-[28.5px] relative shrink-0 flex items-center justify-center grayscale opacity-50">
-                    <img :src="FIGMA_ASSETS.landingEventRegistration" alt="Event Registration" class="size-full object-contain pointer-events-none" />
+                    <img :src="FIGMA_ASSETS.landingEventRegistration" alt="Event RSVP" class="size-full object-contain pointer-events-none" />
                   </div>
                 </button>
                 <span class="absolute -top-1.5 -right-1.5 bg-black/80 text-white font-707 text-[8.5px] tracking-wider uppercase px-1.5 py-0.5 rounded-[4px] pointer-events-none shadow-xs font-medium">
@@ -209,7 +208,7 @@
                 </span>
               </div>
               <p class="font-707 text-[13px] md:text-[14px] text-neutral-400 text-center leading-[18px] font-normal" data-node-id="198:6938">
-                Create Event Registration
+                Event RSVP
               </p>
             </div>
 
@@ -217,13 +216,13 @@
             <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-node-id="212:7004" data-name="Button Container">
               <div class="relative size-[88px]">
                 <button 
-                  @click="triggerToast('e-Pass QR Ticketing module is coming soon in the next update.')"
+                  @click="triggerToast('e-Pass Ticketing module is coming soon in the next update.')"
                   class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.45)] border-[0.5px] border-black/5 flex items-center justify-center p-[8px] rounded-[8px] size-full cursor-not-allowed opacity-60 hover:opacity-75 transition-all group"
                   data-node-id="212:7005"
-                  title="e-Pass QR Ticketing (Coming Soon)"
+                  title="e-Pass Ticketing (Coming Soon)"
                 >
                   <div class="size-[32px] relative shrink-0 flex items-center justify-center grayscale opacity-50">
-                    <img :src="FIGMA_ASSETS.landingTicket" alt="e-Pass QR Ticketing" class="size-full object-contain pointer-events-none" />
+                    <img :src="FIGMA_ASSETS.landingTicket" alt="e-Pass Ticketing" class="size-full object-contain pointer-events-none" />
                   </div>
                 </button>
                 <span class="absolute -top-1.5 -right-1.5 bg-black/80 text-white font-707 text-[8.5px] tracking-wider uppercase px-1.5 py-0.5 rounded-[4px] pointer-events-none shadow-xs font-medium">
@@ -231,7 +230,7 @@
                 </span>
               </div>
               <p class="font-707 text-[13px] md:text-[14px] text-neutral-400 text-center leading-[18px] font-normal" data-node-id="212:7009">
-                e-Pass QR Ticketing
+                e-Pass Ticketing
               </p>
             </div>
 
@@ -244,11 +243,11 @@
                 title="View all projects"
               >
                 <div class="size-[32px] relative shrink-0 flex items-center justify-center">
-                  <img :src="FIGMA_ASSETS.landingAllProjects" alt="View all projects" class="size-full object-contain pointer-events-none" />
+                  <img :src="FIGMA_ASSETS.landingAllProjects" alt="All projects" class="size-full object-contain pointer-events-none" />
                 </div>
               </button>
               <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal" data-node-id="212:7042">
-                View all projects
+                All Projects
               </p>
             </div>
           </div>
@@ -280,7 +279,7 @@
                   {{ editorStore.formatRelativeTime(project.updated_at) }}
                 </p>
                 <button 
-                  class="border-[#d9d9d9] hover:border-black/30 border-[0.5px] border-solid flex h-[32px] items-center justify-center px-[14px] rounded-[8px] shrink-0 bg-white/90 hover:bg-black hover:text-white transition-all apple-cta-btn cursor-pointer shadow-sm"
+                  class="border-black/10 hover:border-black/30 border-[0.5px] border-solid flex h-[32px] items-center justify-center px-[14px] rounded-[8px] shrink-0 bg-white/90 hover:bg-black hover:text-white transition-all apple-cta-btn cursor-pointer shadow-sm"
                   data-name="Save Info Container"
                   @click.stop="openProject(project.id)"
                 >
@@ -293,7 +292,7 @@
 
             <!-- Empty state fallback if no projects or signed out -->
             <div v-if="!editorStore.userProjects.length" class="h-full flex items-center justify-center text-neutral-400 font-707 text-[13px]">
-              {{ authStore.isAuthenticated ? 'No brand projects found yet. Click "Create a new project" to begin.' : 'Sign in to access your brand activations and projects.' }}
+              {{ authStore.isAuthenticated ? 'No brand projects found yet. Start with a new project above.' : 'Sign in to access your brand activations and projects.' }}
             </div>
           </div>
         </section>
@@ -303,17 +302,24 @@
     <!-- Footer Space -->
     <footer class="h-[24px] shrink-0 pointer-events-none" />
 
-    <!-- Contact UI/UX Modal -->
+    <!-- Contact Team Modal -->
     <Transition name="apple-dock-fade">
       <div 
         v-if="showContactModal" 
         class="fixed inset-0 z-50 apple-frost-backdrop flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showContactModal = false"
       >
-        <div class="apple-frost rounded-[16px] border border-white/60 p-6 w-full max-w-[420px] shadow-[0px_20px_50px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] flex flex-col gap-4 animate-apple-pop">
+        <div class="apple-frost rounded-[12px] border border-black/10 p-6 w-full max-w-[420px] shadow-[0px_20px_50px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] flex flex-col gap-4 animate-apple-pop">
           <div class="flex items-center justify-between">
-            <h3 class="font-707 font-medium text-[16px] text-black">Contact UI/UX Team</h3>
-            <button @click="showContactModal = false" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
+            <h3 class="font-707 font-medium text-[16px] text-black">Contact Team</h3>
+            <button 
+              type="button"
+              @click="showContactModal = false" 
+              class="size-[24px] bg-black/5 hover:bg-black/10 active:bg-black/15 rounded-full flex items-center justify-center cursor-pointer transition-colors"
+              title="Close"
+            >
+              <X class="w-3.5 h-3.5 text-black" />
+            </button>
           </div>
           <p class="font-707 text-[13px] text-neutral-600 leading-relaxed">
             Need custom widgets, tailored brand activations, or design review? Reach out directly to the 707 Design Systems team.
@@ -324,7 +330,7 @@
           </div>
           <button 
             @click="showContactModal = false" 
-            class="w-full bg-black text-white font-707 font-medium text-[13px] h-[36px] rounded-lg apple-press cursor-pointer"
+            class="w-full bg-black text-white font-707 font-medium text-[13px] h-[36px] rounded-[8px] apple-press cursor-pointer hover:bg-neutral-800 transition-colors"
           >
             Got it
           </button>
@@ -380,7 +386,7 @@ import { useEditorStore } from '../stores/editorStore.ts';
 import { useBrandStore } from '../stores/brandStore.ts';
 import { useAuthStore } from '../stores/authStore.ts';
 import { FIGMA_ASSETS } from '../constants/figmaAssets.ts';
-import { User } from 'lucide-vue-next';
+import { User, X } from 'lucide-vue-next';
 import NotificationsMenu from '../components/common/NotificationsMenu.vue';
 import SetupProjectModal from '../components/modals/SetupProjectModal.vue';
 import BrandSignInModal from '../components/modals/BrandSignInModal.vue';

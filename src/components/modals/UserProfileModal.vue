@@ -7,9 +7,9 @@
         @click="emit('close')"
       />
 
-      <!-- Pop Up Modal Box (Figma Node 212:8894) - Anchored directly over the profile button -->
+      <!-- Pop Up Modal Box (Figma Node 212:8894) - Anchored cleanly below the profile button -->
       <div 
-        class="absolute top-[-6px] right-0 z-50 apple-frost border border-white/60 flex flex-col items-start pb-[24px] rounded-[12px] shadow-[0px_16px_45px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] w-[320px] select-none apple-popover-box"
+        class="absolute top-[calc(100%+8px)] right-0 z-50 apple-frost border border-black/10 flex flex-col items-start pb-[16px] rounded-[12px] shadow-[0px_16px_45px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] w-[320px] select-none apple-popover-box"
         data-node-id="212:8894"
         data-name="User Profile Pop Up Modal"
       >
