@@ -6,12 +6,12 @@
       :style="backgroundStyle"
     />
 
-    <!-- Top Header -->
-    <header class="w-full flex items-center justify-between max-w-[1200px] mx-auto py-2 relative z-10">
+    <!-- Top Header: Centered 707 Design Studio Logo (Clickable to Home, No Back Button) -->
+    <header class="w-full flex items-center justify-center py-4 sm:py-6 relative z-10">
       <div class="flex items-center gap-[10px] h-[20px]">
         <router-link 
           to="/" 
-          class="h-[18px] relative shrink-0 flex items-center cursor-pointer hover:opacity-85 transition-opacity" 
+          class="h-[18px] relative shrink-0 flex items-center cursor-pointer hover:opacity-80 transition-opacity" 
           title="Back to 707 Home"
           @click="handleLogoClick"
         >
@@ -30,35 +30,14 @@
           1.5
         </button>
       </div>
-
-      <router-link 
-        to="/" 
-        class="flex items-center gap-1.5 px-3 h-[30px] rounded-[6px] border-[0.5px] border-black/15 text-[12px] font-707 font-medium hover:bg-black/5 transition-colors text-black apple-press"
-      >
-        <ArrowLeft class="w-3.5 h-3.5" />
-        <span>Back to Studio</span>
-      </router-link>
     </header>
 
-    <!-- Center Stage: Editorial Minimal Sign In (Savee-inspired) -->
-    <main class="w-full flex-1 flex items-center justify-center py-8 relative z-10">
-      <div class="w-full max-w-[380px] bg-white/80 backdrop-blur-2xl border-[0.5px] border-black/[0.08] p-8 sm:p-9 rounded-[24px] shadow-[0px_20px_60px_rgba(0,0,0,0.05),0_1px_3px_rgba(0,0,0,0.03)] flex flex-col gap-6 animate-apple-pop">
-        <!-- Brand Emblem & Editorial Heading -->
-        <div class="flex flex-col items-center text-center gap-3">
-          <router-link 
-            to="/" 
-            class="inline-flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity mb-1" 
-            title="707 Design Studio"
-            @click="handleLogoClick"
-          >
-            <img 
-              :src="FIGMA_ASSETS.logoDesignStudio" 
-              alt="707" 
-              class="h-[20px] w-auto object-contain pointer-events-none"
-            />
-          </router-link>
-
-          <h1 class="font-707 text-[28px] sm:text-[32px] font-normal tracking-tight text-black leading-[34px] sm:leading-[38px]">
+    <!-- Center Stage: Minimal Seamless Sign In (No Container Box) -->
+    <main class="w-full flex-1 flex items-center justify-center py-6 relative z-10">
+      <div class="w-full max-w-[360px] flex flex-col gap-6 animate-apple-pop">
+        <!-- Editorial Heading -->
+        <div class="flex flex-col items-center text-center gap-2">
+          <h1 class="font-707 text-[30px] sm:text-[34px] font-normal tracking-tight text-black leading-[36px] sm:leading-[40px]">
             Let's get you inside.
           </h1>
           <p class="font-707 text-[13px] text-neutral-400">
@@ -67,7 +46,7 @@
         </div>
 
         <!-- Sign In Form -->
-        <form class="flex flex-col gap-4" @submit.prevent="handleBrandSubmit">
+        <form class="flex flex-col gap-4 mt-2" @submit.prevent="handleBrandSubmit">
           <!-- Email / Username Input -->
           <div class="flex flex-col gap-1.5">
             <label class="font-707 text-[10.5px] font-medium text-neutral-500 tracking-wider uppercase">
@@ -83,12 +62,8 @@
               spellcheck="false"
               placeholder="name@company.com"
               required
-              :class="[
-                'w-full h-[46px] px-3.5 rounded-[12px] font-707 text-[13.5px] outline-none transition-all placeholder:text-neutral-400 focus:bg-white',
-                errorMessage 
-                  ? 'border border-red-400 bg-red-50/20 text-red-900 focus:border-red-500' 
-                  : 'bg-white border-[0.5px] border-black/15 text-black focus:border-black shadow-[0_1px_2px_rgba(0,0,0,0.02)]'
-              ]"
+              class="ganni-input"
+              :class="{ 'ganni-input-error': errorMessage }"
               :disabled="isLoading"
               @input="errorMessage = ''"
             />
@@ -103,33 +78,27 @@
               <button 
                 type="button" 
                 @click="handleForgotPin"
-                class="font-707 text-[11px] text-neutral-400 hover:text-black transition-colors border-none bg-transparent cursor-pointer"
+                class="font-707 text-[11px] text-[#8a8d8d] hover:text-black transition-colors border-none bg-transparent cursor-pointer"
               >
                 Forgot?
               </button>
             </div>
-            <div 
-              :class="[
-                'relative flex items-center rounded-[12px] transition-all bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)]',
-                errorMessage 
-                  ? 'border border-red-400 bg-red-50/20 focus-within:border-red-500' 
-                  : 'border-[0.5px] border-black/15 focus-within:border-black'
-              ]"
-            >
+            <div class="relative w-full flex items-center">
               <input
                 v-model="brandPassword"
                 :type="showBrandPassword ? 'text' : 'password'"
                 autocomplete="current-password"
                 placeholder="••••••••"
                 required
-                class="w-full h-[46px] px-3.5 pr-10 bg-transparent text-black font-707 text-[13.5px] outline-none placeholder:text-neutral-400 border-none"
+                class="ganni-input pr-[2.5rem]"
+                :class="{ 'ganni-input-error': errorMessage }"
                 :disabled="isLoading"
                 @input="errorMessage = ''"
               />
               <button 
                 type="button" 
                 @click="showBrandPassword = !showBrandPassword"
-                class="absolute right-3 text-neutral-400 hover:text-black cursor-pointer bg-transparent border-none p-1"
+                class="absolute right-[0.8125rem] text-[#8a8d8d] hover:text-black cursor-pointer bg-transparent border-none p-1 transition-colors"
                 tabindex="-1"
                 :title="showBrandPassword ? 'Hide password' : 'Show password'"
               >
@@ -140,17 +109,17 @@
           </div>
 
           <!-- Error Feedback -->
-          <div v-if="errorMessage" class="p-2.5 rounded-[10px] bg-red-50/80 border-[0.5px] border-red-200 text-red-600 text-[12px] font-707 flex items-center gap-1.5 animate-apple-pop">
-            <AlertCircle class="w-3.5 h-3.5 shrink-0" />
+          <div v-if="errorMessage" class="p-2.5 rounded-[4px] bg-red-50/80 border-[0.5px] border-red-200 text-[rgb(179,0,0)] text-[12px] font-707 flex items-center gap-1.5 animate-apple-pop">
+            <AlertCircle class="w-3.5 h-3.5 shrink-0 text-[rgb(179,0,0)]" />
             <span>{{ errorMessage }}</span>
           </div>
 
-          <!-- Continue Pill Button -->
+          <!-- Continue Button -->
           <div class="mt-2">
             <button
               type="submit"
               :disabled="isLoading || !brandId.trim() || !brandPassword.trim()"
-              class="w-full h-[46px] rounded-full bg-[#18181b] text-white font-707 font-medium text-[13.5px] hover:bg-black active:bg-neutral-900 transition-all flex items-center justify-center gap-2 apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
+              class="w-full h-[2.75rem] rounded-none bg-black text-white font-707 font-medium text-[13.5px] hover:bg-neutral-800 active:bg-neutral-900 transition-all flex items-center justify-center gap-2 apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <span v-if="isLoading" class="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               <span v-else>Continue</span>
@@ -159,7 +128,7 @@
         </form>
 
         <!-- Minimal Terms & Privacy Notice -->
-        <p class="font-707 text-[11px] text-neutral-400 text-center leading-relaxed -mt-1">
+        <p class="font-707 text-[11px] text-neutral-400 text-center leading-relaxed">
           By continuing, you agree to our Terms of Service and Privacy Policy.
         </p>
       </div>
@@ -183,7 +152,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { ArrowLeft, Eye, EyeOff, AlertCircle } from 'lucide-vue-next';
+import { Eye, EyeOff, AlertCircle } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/authStore.ts';
 import { useBrandStore } from '../stores/brandStore.ts';
 import { useEditorStore } from '../stores/editorStore.ts';
@@ -306,3 +275,50 @@ async function handleBrandSubmit() {
   }
 }
 </script>
+
+<style scoped>
+.ganni-input {
+  -webkit-font-smoothing: antialiased;
+  text-size-adjust: 100%;
+  overflow-wrap: break-word;
+  box-sizing: border-box;
+  appearance: none;
+  box-shadow: none;
+  margin: 0px;
+  outline: none;
+  transition: 0.15s ease-in;
+  font-size: 0.875rem;
+  font-weight: 400;
+  max-width: 100%;
+  width: 100%;
+  border-radius: 0px;
+  font-family: var(--font-primary, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif);
+  height: 2.75rem;
+  background: rgb(241, 241, 241);
+  padding: 0px 0.8125rem;
+  color: #222222;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: #dddddd;
+}
+
+.ganni-input::placeholder {
+  color: #8a8d8d;
+  font-weight: 400;
+}
+
+.ganni-input:focus {
+  outline: none;
+  border-color: #000000;
+  background: rgb(241, 241, 241);
+}
+
+.ganni-input-error {
+  color: rgb(179, 0, 0) !important;
+  border-color: rgb(179, 0, 0) !important;
+}
+
+.ganni-input-error::placeholder {
+  color: rgba(179, 0, 0, 0.6) !important;
+}
+</style>
