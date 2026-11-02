@@ -171,6 +171,36 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function checkEmail(email: string): Promise<{ exists: boolean; name?: string; error?: string }> {
+    const clean = (email || '').trim().toLowerCase();
+    if (!clean) return { exists: false, error: 'Please enter your email.' };
+
+    try {
+      const res = await fetch('/api/auth/check-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: clean })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data?.success) {
+        return { exists: Boolean(data.exists), name: data.name };
+      }
+    } catch (e) {
+      console.warn('[AuthStore] checkEmail server query failed, checking client data:', e);
+    }
+
+    if (users.value.length === 0) {
+      await loadUsers();
+    }
+    const matched = users.value.find(u => 
+      (u.email || '').toLowerCase() === clean ||
+      (u.id || '').toLowerCase() === clean ||
+      (u.name || '').toLowerCase() === clean ||
+      (u.assignedBrands && u.assignedBrands.some(b => b.toLowerCase() === clean))
+    );
+    return { exists: Boolean(matched), name: matched?.name };
+  }
+
   /** Superadmin tab: no account id, only the studio passkey. */
   async function verifySuperAdmin(passkey: string): Promise<boolean> {
     const res = await signIn('', passkey);
@@ -315,6 +345,7 @@ export const useAuthStore = defineStore('auth', () => {
     loadUsers,
     verifySuperAdmin,
     signIn,
+    checkEmail,
     signOut,
     exitSuperAdmin,
     addUser,

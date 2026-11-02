@@ -45,69 +45,111 @@
           </p>
         </div>
 
-        <!-- Sign In Form -->
-        <form class="flex flex-col gap-3 mt-2" @submit.prevent="handleBrandSubmit">
-          <!-- Email / Username Floating Field -->
-          <div class="relative w-full">
+        <!-- Step 1: Identifier / Email Screen -->
+        <form 
+          v-if="currentStep === 'email'" 
+          class="flex flex-col gap-4 mt-2" 
+          @submit.prevent="handleEmailSubmit"
+        >
+          <!-- Email Floating Field (Label moves to the top of the box) -->
+          <div class="relative w-full mt-5">
             <input
-              id="brand-id"
-              ref="brandIdInput"
-              v-model="brandId"
+              id="user-email"
+              ref="emailInput"
+              v-model="email"
               type="text"
-              autocomplete="username"
+              autocomplete="email"
               autocapitalize="none"
               autocorrect="off"
               spellcheck="false"
               placeholder=" "
-              required
               class="ganni-floating-input peer"
               :class="{ 'ganni-input-error': errorMessage }"
               :disabled="isLoading"
               @input="errorMessage = ''"
             />
             <label
-              for="brand-id"
+              for="user-email"
               class="ganni-floating-label"
-              :class="{ 'ganni-floating-label-active': brandId.length > 0 }"
+              :class="{ 'ganni-floating-label-active': email.length > 0 }"
             >
-              Email or username
+              Your email *
             </label>
+            <!-- Error message below box matching Ganni screenshot -->
+            <p v-if="errorMessage" class="text-[12px] text-[rgb(179,0,0)] font-normal mt-1.5 text-left animate-apple-pop">
+              {{ errorMessage }}
+            </p>
           </div>
 
-          <!-- Password Floating Field -->
-          <div class="flex flex-col gap-1.5">
+          <!-- Continue Button -->
+          <div class="mt-2">
+            <button
+              type="submit"
+              :disabled="isLoading || !email.trim()"
+              class="w-full h-[2.75rem] rounded-none bg-black text-white font-707 font-medium text-[13.5px] hover:bg-neutral-800 active:bg-neutral-900 transition-all flex items-center justify-center gap-2 apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <span v-if="isLoading" class="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span v-else>Continue</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Step 2A: Password Screen (For verified registered accounts) -->
+        <form 
+          v-else-if="currentStep === 'password'" 
+          class="flex flex-col gap-4 mt-2" 
+          @submit.prevent="handlePasswordSubmit"
+        >
+          <!-- Verified Email Display / Edit Action -->
+          <div class="flex items-center justify-between text-[12.5px] font-mono text-neutral-600 pb-1.5 border-b-[0.5px] border-black/15">
+            <span class="truncate">{{ email }}</span>
+            <button 
+              type="button" 
+              @click="editEmail" 
+              class="text-black font-semibold hover:underline ml-2 text-[11.5px] cursor-pointer"
+            >
+              Edit
+            </button>
+          </div>
+
+          <!-- Password Floating Field (Label moves to the top of the box) -->
+          <div class="relative w-full mt-5">
             <div class="relative w-full flex items-center">
               <input
-                id="brand-password"
-                v-model="brandPassword"
-                :type="showBrandPassword ? 'text' : 'password'"
+                id="user-password"
+                ref="passwordInput"
+                v-model="password"
+                :type="showPassword ? 'text' : 'password'"
                 autocomplete="current-password"
                 placeholder=" "
-                required
                 class="ganni-floating-input peer pr-[2.5rem]"
                 :class="{ 'ganni-input-error': errorMessage }"
                 :disabled="isLoading"
                 @input="errorMessage = ''"
               />
               <label
-                for="brand-password"
+                for="user-password"
                 class="ganni-floating-label"
-                :class="{ 'ganni-floating-label-active': brandPassword.length > 0 }"
+                :class="{ 'ganni-floating-label-active': password.length > 0 }"
               >
-                Password
+                Password *
               </label>
               <button 
                 type="button" 
-                @click="showBrandPassword = !showBrandPassword"
+                @click="showPassword = !showPassword"
                 class="absolute right-[0.8125rem] text-[#8a8d8d] hover:text-black cursor-pointer bg-transparent border-none p-1 transition-colors z-10"
                 tabindex="-1"
-                :title="showBrandPassword ? 'Hide password' : 'Show password'"
+                :title="showPassword ? 'Hide password' : 'Show password'"
               >
-                <EyeOff v-if="showBrandPassword" class="w-4 h-4" />
+                <EyeOff v-if="showPassword" class="w-4 h-4" />
                 <Eye v-else class="w-4 h-4" />
               </button>
             </div>
-            <div class="flex justify-end">
+            <!-- Error message below box -->
+            <p v-if="errorMessage" class="text-[12px] text-[rgb(179,0,0)] font-normal mt-1.5 text-left animate-apple-pop">
+              {{ errorMessage }}
+            </p>
+            <div class="flex justify-end mt-1.5">
               <button 
                 type="button" 
                 @click="handleForgotPin"
@@ -118,21 +160,15 @@
             </div>
           </div>
 
-          <!-- Error Feedback -->
-          <div v-if="errorMessage" class="p-2.5 rounded-[4px] bg-red-50/80 border-[0.5px] border-red-200 text-[rgb(179,0,0)] text-[12px] font-707 flex items-center gap-1.5 animate-apple-pop">
-            <AlertCircle class="w-3.5 h-3.5 shrink-0 text-[rgb(179,0,0)]" />
-            <span>{{ errorMessage }}</span>
-          </div>
-
-          <!-- Continue Button -->
+          <!-- Sign In Button -->
           <div class="mt-2">
             <button
               type="submit"
-              :disabled="isLoading || !brandId.trim() || !brandPassword.trim()"
+              :disabled="isLoading || !password.trim()"
               class="w-full h-[2.75rem] rounded-none bg-black text-white font-707 font-medium text-[13.5px] hover:bg-neutral-800 active:bg-neutral-900 transition-all flex items-center justify-center gap-2 apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <span v-if="isLoading" class="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              <span v-else>Continue</span>
+              <span v-else>Sign In</span>
             </button>
           </div>
         </form>
@@ -160,9 +196,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { Eye, EyeOff, AlertCircle } from 'lucide-vue-next';
+import { Eye, EyeOff } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/authStore.ts';
 import { useBrandStore } from '../stores/brandStore.ts';
 import { useEditorStore } from '../stores/editorStore.ts';
@@ -175,12 +211,17 @@ const authStore = useAuthStore();
 const brandStore = useBrandStore();
 const editorStore = useEditorStore();
 
-const brandId = ref('');
-const brandPassword = ref('');
-const showBrandPassword = ref(false);
+// Step state: 'email' (Step 1) or 'password' (Step 2A)
+const currentStep = ref<'email' | 'password'>('email');
+
+const email = ref('');
+const password = ref('');
+const showPassword = ref(false);
 const errorMessage = ref('');
 const isLoading = ref(false);
-const brandIdInput = ref<HTMLInputElement | null>(null);
+
+const emailInput = ref<HTMLInputElement | null>(null);
+const passwordInput = ref<HTMLInputElement | null>(null);
 const showWhatsNewModal = ref(false);
 
 // Custom background slot (ready for user-provided background)
@@ -221,7 +262,7 @@ function handleKeydown(e: KeyboardEvent) {
 }
 
 onMounted(() => {
-  brandIdInput.value?.focus();
+  emailInput.value?.focus();
   window.addEventListener('keydown', handleKeydown);
 });
 
@@ -234,36 +275,67 @@ function handleForgotPin() {
   editorStore.showToast('Please contact your administrator or team lead to reset credentials.');
 }
 
-async function handleBrandSubmit() {
+function editEmail() {
+  currentStep.value = 'email';
   errorMessage.value = '';
+  nextTick(() => {
+    emailInput.value?.focus();
+  });
+}
+
+// Step 1: Check Email
+async function handleEmailSubmit() {
+  errorMessage.value = '';
+  const cleanEmail = email.value.trim().toLowerCase();
+
+  if (!cleanEmail) {
+    errorMessage.value = 'Please fill out this field.';
+    emailInput.value?.focus();
+    return;
+  }
+
   isLoading.value = true;
-  
-  const inputId = brandId.value.trim();
-
   try {
-    if (authStore.users.length === 0) {
-      await authStore.loadUsers();
+    const res = await authStore.checkEmail(cleanEmail);
+    if (res.exists) {
+      currentStep.value = 'password';
+      await nextTick();
+      passwordInput.value?.focus();
+    } else {
+      // Option B: Unregistered email review notice
+      errorMessage.value = 'No account found. 707 Studio is invite-only; new accounts must be approved by Superadmin.';
     }
-    if (brandStore.brands.length === 0) {
-      await brandStore.loadBrands();
-    }
+  } catch (err: any) {
+    errorMessage.value = err?.message || 'Verification failed. Please try again.';
+  } finally {
+    isLoading.value = false;
+  }
+}
 
-    let res = await authStore.signIn(inputId, brandPassword.value);
-    if (!res.success) {
-      await authStore.loadUsers();
-      res = await authStore.signIn(inputId, brandPassword.value);
-    }
+// Step 2A: Verify Password & Sign In
+async function handlePasswordSubmit() {
+  errorMessage.value = '';
+  if (!password.value) {
+    errorMessage.value = 'Please fill out this field.';
+    passwordInput.value?.focus();
+    return;
+  }
 
+  isLoading.value = true;
+  try {
+    const res = await authStore.signIn(email.value.trim(), password.value);
     if (!res.success) {
-      errorMessage.value = res.error || 'Invalid account identifier or password.';
+      errorMessage.value = res.error || 'Incorrect password. Please verify your credentials and try again.';
       return;
     }
 
     // Auto-match or activate brand
+    if (brandStore.brands.length === 0) {
+      await brandStore.loadBrands();
+    }
     const found = brandStore.brands.find(b => 
-      b.slug.toLowerCase() === inputId.toLowerCase() || 
-      b.name.toLowerCase().includes(inputId.toLowerCase()) ||
-      (authStore.currentUser?.assignedBrands && authStore.currentUser.assignedBrands.some(ub => ub.toLowerCase() === b.slug.toLowerCase() || ub.toLowerCase() === b.name.toLowerCase()))
+      b.slug.toLowerCase() === email.value.trim().toLowerCase() || 
+      (authStore.currentUser?.assignedBrands && authStore.currentUser.assignedBrands.some(ub => ub.toLowerCase() === b.slug.toLowerCase()))
     );
     if (found) {
       brandStore.setActiveBrand(found);
@@ -296,7 +368,6 @@ async function handleBrandSubmit() {
   box-shadow: none;
   margin: 0px;
   outline: none;
-  transition: border-color 0.15s ease-in, background-color 0.15s ease-in;
   font-size: 0.875rem;
   font-weight: 400;
   max-width: 100%;
@@ -304,18 +375,16 @@ async function handleBrandSubmit() {
   border-radius: 0px;
   font-family: var(--font-primary, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif);
   height: 2.75rem;
-  background: rgb(241, 241, 241);
-  padding: 1.05rem 0.8125rem 0.2rem 0.8125rem;
+  background: transparent;
+  padding: 0px 0.8125rem;
   color: #222222;
-  border-width: 0.0625rem;
-  border-style: solid;
-  border-color: #dddddd;
+  border: 0.5px solid #000000;
+  transition: border-color 0.15s ease-in;
 }
 
 .ganni-floating-input:focus {
   outline: none;
-  border-color: #000000;
-  background: rgb(241, 241, 241);
+  border: 0.5px solid #000000;
 }
 
 .ganni-floating-label {
@@ -333,24 +402,21 @@ async function handleBrandSubmit() {
   font-family: var(--font-primary, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif);
 }
 
-/* Active State: When input has focus OR already has a typed value */
+/* Float to the TOP of the box (above the border, left aligned) */
 .ganni-floating-label-active,
 .peer:focus ~ .ganni-floating-label {
-  top: 0.42rem;
+  top: -1.35rem;
+  left: 0px;
   transform: translateY(0);
-  font-size: 0.65rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  color: #8a8d8d;
-}
-
-.peer:focus ~ .ganni-floating-label {
+  font-size: 0.8125rem;
+  font-weight: 400;
   color: #000000;
 }
 
+/* Error state matching Ganni screenshot */
 .ganni-input-error {
   color: rgb(179, 0, 0) !important;
-  border-color: rgb(179, 0, 0) !important;
+  border: 0.5px solid rgb(179, 0, 0) !important;
 }
 
 .ganni-input-error ~ .ganni-floating-label {

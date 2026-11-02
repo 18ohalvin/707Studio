@@ -307,6 +307,34 @@ const SUPERADMIN_USER = {
   createdAt: new Date().toISOString()
 };
 
+authRouter.post('/check-email', async (req: Request, res: Response) => {
+  const email = String(req.body?.email ?? '').trim().toLowerCase();
+  if (!email) {
+    return res.status(400).json({ success: false, error: 'Email is required.' });
+  }
+
+  const candidates = await findAccounts(email);
+  const matched = candidates.find(
+    (c) =>
+      String(c.email || '').toLowerCase() === email ||
+      String(c.id || '').toLowerCase() === email
+  );
+
+  if (matched) {
+    return res.json({
+      success: true,
+      exists: true,
+      name: matched.name,
+      email: matched.email
+    });
+  }
+
+  return res.json({
+    success: true,
+    exists: false
+  });
+});
+
 authRouter.post('/signin', async (req: Request, res: Response) => {
   const identifier = String(req.body?.identifier ?? '').trim();
   const password = String(req.body?.password ?? '').trim();
