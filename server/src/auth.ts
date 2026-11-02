@@ -335,6 +335,79 @@ authRouter.post('/check-email', async (req: Request, res: Response) => {
   });
 });
 
+authRouter.post('/register-request', async (req: Request, res: Response) => {
+  const name = String(req.body?.name ?? '').trim();
+  const email = String(req.body?.email ?? '').trim().toLowerCase();
+  const password = String(req.body?.password ?? '').trim();
+  const role = String(req.body?.role ?? 'Brand PIC').trim();
+  const brand = String(req.body?.brand ?? '').trim();
+
+  if (!name || !email || !password) {
+    return res.status(400).json({ success: false, error: 'Name, email, and password are required.' });
+  }
+
+  // Check if account already exists
+  const candidates = await findAccounts(email);
+  if (candidates.length) {
+    return res.status(409).json({ success: false, error: 'An account with this email already exists. Please sign in instead.' });
+  }
+
+  const newUser = {
+    id: `user_${Date.now()}`,
+    name,
+    email,
+    phone: '',
+    password: hashPassword(password),
+    role: 'editor',
+    assignedBrands: brand ? [brand] : ['all'],
+    avatarUrl: '',
+    status: 'pending',
+    createdAt: new Date().toISOString(),
+    lastActiveAt: 'Pending review'
+  };
+
+  if (getDbStatus().isConnected) {
+    try {
+      await pool.query(
+        `INSERT INTO users (id, name, email, phone, password, role, assigned_brands, avatar_url, status, created_at, last_active_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+         ON CONFLICT (email) DO NOTHING`,
+        [
+          newUser.id,
+          newUser.name,
+          newUser.email,
+          newUser.phone,
+          newUser.password,
+          newUser.role,
+          JSON.stringify(newUser.assignedBrands),
+          newUser.avatarUrl,
+          newUser.status,
+          newUser.createdAt,
+          newUser.lastActiveAt
+        ]
+      );
+    } catch (err: any) {
+      console.warn('[Auth] DB register request error:', err.message);
+    }
+  }
+
+  const stored = readDataFile<any[]>('users.json', []);
+  stored.unshift(newUser);
+  writeDataFile('users.json', stored);
+
+  return res.status(201).json({
+    success: true,
+    data: {
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      role,
+      brand,
+      status: 'pending'
+    }
+  });
+});
+
 authRouter.post('/signin', async (req: Request, res: Response) => {
   const identifier = String(req.body?.identifier ?? '').trim();
   const password = String(req.body?.password ?? '').trim();

@@ -201,6 +201,36 @@ export const useAuthStore = defineStore('auth', () => {
     return { exists: Boolean(matched), name: matched?.name };
   }
 
+  async function registerRequest(payload: { name: string; email: string; password: string; role?: string; brand?: string }): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      const res = await fetch('/api/auth/register-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data?.success) {
+        return { success: true, data: data.data };
+      }
+      return { success: false, error: data?.error || 'Failed to submit registration request.' };
+    } catch (e: any) {
+      console.warn('[AuthStore] registerRequest server error, creating in local state:', e);
+      const newUser: UserAccount = {
+        id: `user_${Date.now()}`,
+        name: payload.name,
+        email: payload.email.trim().toLowerCase(),
+        password: payload.password,
+        role: 'editor',
+        assignedBrands: payload.brand ? [payload.brand] : ['all'],
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        lastActiveAt: 'Pending review'
+      };
+      users.value.unshift(newUser);
+      return { success: true, data: newUser };
+    }
+  }
+
   /** Superadmin tab: no account id, only the studio passkey. */
   async function verifySuperAdmin(passkey: string): Promise<boolean> {
     const res = await signIn('', passkey);
@@ -346,6 +376,7 @@ export const useAuthStore = defineStore('auth', () => {
     verifySuperAdmin,
     signIn,
     checkEmail,
+    registerRequest,
     signOut,
     exitSuperAdmin,
     addUser,
