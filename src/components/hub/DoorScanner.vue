@@ -19,21 +19,27 @@
       <!-- Camera panel -->
       <section class="min-h-0 rounded-[16px] bg-editor-bg text-white border border-editor-border overflow-hidden flex flex-col">
         <div class="flex items-center justify-between gap-2 px-3 h-[48px] shrink-0 border-b border-white/10">
-          <div class="flex items-center gap-2 p-1 rounded-[10px] bg-white/[0.08] border border-white/10 text-[13px]">
-            <span class="flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] font-medium tracking-[0.04em] text-[11px]" :class="mode === 'in' ? 'bg-moss-600 text-white' : 'bg-neutral-800 text-white'">
-              <component :is="mode === 'in' ? LogIn : LogOut" class="w-3.5 h-3.5" />
-              <span class="font-semibold">{{ deviceName || 'Tab 1' }}</span>
-              <span class="text-white/40">·</span>
-              <span class="text-[10px] uppercase tracking-wider">{{ mode === 'in' ? 'Entrance' : 'Exit' }}</span>
-            </span>
+          <!-- Borderless Station Mode Switcher (Entrance vs Exit) -->
+          <div class="flex items-center p-0.5 rounded-[8px] bg-white/[0.08] text-[11px]">
             <button
-              id="scanner-switch-station"
               type="button"
-              @click="openStationModal"
-              class="px-2 py-1 text-[11px] text-white/70 hover:text-white cursor-pointer underline underline-offset-2 transition-colors"
-              title="Configure tablet label (Tab 1, Tab 2) and station role"
+              @click="setMode('in')"
+              class="flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] font-medium tracking-[0.03em] transition-all cursor-pointer"
+              :class="mode === 'in' ? 'bg-moss-600 text-white shadow-2xs' : 'text-white/60 hover:text-white'"
+              title="Set scanner station to Entrance (Admit incoming guests)"
             >
-              Configure
+              <LogIn class="w-3.5 h-3.5" />
+              <span>Entrance</span>
+            </button>
+            <button
+              type="button"
+              @click="setMode('out')"
+              class="flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] font-medium tracking-[0.03em] transition-all cursor-pointer"
+              :class="mode === 'out' ? 'bg-neutral-800 text-white shadow-2xs' : 'text-white/60 hover:text-white'"
+              title="Set scanner station to Exit (Check-out guests)"
+            >
+              <LogOut class="w-3.5 h-3.5" />
+              <span>Exit</span>
             </button>
           </div>
 
@@ -547,113 +553,6 @@
         <div class="absolute bottom-0 left-0 h-[4px] bg-white/70 hud-countdown" :style="{ animationDuration: `${result.hold}ms` }" />
       </div>
     </Transition>
-
-    <!-- ============ Station & Device Selection Modal ============ -->
-    <Transition name="hud-result">
-      <div v-if="showStationModal" class="absolute inset-0 z-50 rounded-[16px] bg-white/95 backdrop-blur-md border border-black/10 flex flex-col items-center justify-center p-6 text-center select-none overflow-y-auto">
-        <div class="max-w-[540px] w-full flex flex-col items-center gap-4 py-2">
-          <div class="size-13 rounded-full bg-black text-white flex items-center justify-center shadow-md">
-            <ArrowRightLeft class="w-6 h-6" />
-          </div>
-          <div>
-            <p class="text-[11px] uppercase tracking-[0.2em] text-neutral-500 font-medium">Gate Scanner Setup</p>
-            <h2 class="text-[24px] font-medium text-black mt-0.5">Configure Scanner & Station</h2>
-            <p class="text-[13px] text-neutral-500 mt-1 max-w-[440px]">
-              Identify this tablet device and role so check-ins and capacity sync across all tablets in real-time.
-            </p>
-          </div>
-
-          <!-- Device / Tablet Identifier Selection -->
-          <div class="w-full flex flex-col items-start gap-2 text-left bg-black/[0.03] border border-black/10 p-3.5 rounded-[12px]">
-            <label class="text-[11px] uppercase tracking-[0.1em] font-semibold text-neutral-600 flex items-center justify-between w-full">
-              <span>Device / Tablet Label</span>
-              <span class="text-[10.5px] font-normal text-neutral-400">Shows in admission log</span>
-            </label>
-            <input
-              v-model="deviceNameInput"
-              type="text"
-              placeholder="e.g. Tab 1, Tab 2, Gate A"
-              maxlength="30"
-              class="w-full h-[40px] px-3 rounded-[8px] bg-white border border-black/15 text-[14px] font-medium text-black outline-none focus:border-black transition-colors"
-            />
-            <div class="flex items-center gap-1.5 flex-wrap mt-0.5">
-              <span class="text-[11px] text-neutral-400 mr-1">Quick pick:</span>
-              <button
-                v-for="preset in ['Tab 1', 'Tab 2', 'Tab 3', 'Gate 1', 'Gate 2', 'Exit Tab']"
-                :key="preset"
-                type="button"
-                @click="deviceNameInput = preset"
-                class="px-2.5 py-1 rounded-[6px] text-[11.5px] font-medium border cursor-pointer transition-colors"
-                :class="deviceNameInput === preset ? 'bg-black text-white border-black' : 'bg-white text-neutral-700 border-black/15 hover:bg-black/5'"
-              >
-                {{ preset }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Station Role Selection -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
-            <button
-              type="button"
-              @click="stationModeInput = 'in'"
-              class="p-4 rounded-[14px] border-2 text-left cursor-pointer transition-all flex flex-col justify-between gap-3 group"
-              :class="stationModeInput === 'in' ? 'border-black bg-black/[0.04]' : 'border-black/15 hover:border-black/40 bg-white'"
-            >
-              <div class="flex items-center justify-between">
-                <div class="size-9 rounded-[10px] bg-moss-600 text-white flex items-center justify-center shadow-sm">
-                  <LogIn class="w-4 h-4" />
-                </div>
-                <span v-if="stationModeInput === 'in'" class="text-[10.5px] font-medium px-2 py-0.5 rounded-full bg-black text-white">Selected</span>
-              </div>
-              <div>
-                <p class="text-[16px] font-medium text-black">Entrance Gate</p>
-                <p class="text-[11.5px] text-neutral-500 mt-0.5 leading-snug">
-                  Admit incoming guests & update live capacity.
-                </p>
-              </div>
-            </button>
-
-            <button
-              type="button"
-              @click="stationModeInput = 'out'"
-              class="p-4 rounded-[14px] border-2 text-left cursor-pointer transition-all flex flex-col justify-between gap-3 group"
-              :class="stationModeInput === 'out' ? 'border-black bg-black/[0.04]' : 'border-black/15 hover:border-black/40 bg-white'"
-            >
-              <div class="flex items-center justify-between">
-                <div class="size-9 rounded-[10px] bg-neutral-800 text-white flex items-center justify-center shadow-sm">
-                  <LogOut class="w-4 h-4" />
-                </div>
-                <span v-if="stationModeInput === 'out'" class="text-[10.5px] font-medium px-2 py-0.5 rounded-full bg-black text-white">Selected</span>
-              </div>
-              <div>
-                <p class="text-[16px] font-medium text-black">Exit Gate</p>
-                <p class="text-[11.5px] text-neutral-500 mt-0.5 leading-snug">
-                  Check out guests to release capacity spots.
-                </p>
-              </div>
-            </button>
-          </div>
-
-          <div class="flex items-center gap-2.5 w-full mt-1">
-            <button
-              type="button"
-              @click="saveStationAndDevice"
-              class="flex-1 h-[44px] rounded-[10px] bg-black text-white text-[14px] font-medium hover:bg-neutral-800 active:bg-neutral-700 cursor-pointer transition-colors shadow-2xs"
-            >
-              Save Configuration
-            </button>
-            <button
-              v-if="hasSavedStation"
-              type="button"
-              @click="showStationModal = false"
-              class="px-4 h-[44px] rounded-[10px] border border-black/15 text-[14px] font-medium hover:bg-black/5 active:bg-black/10 cursor-pointer transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      </div>
-    </Transition>
   </div>
 </template>
 
@@ -662,7 +561,7 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import {
   LogIn, LogOut, Volume2, VolumeX, Maximize2, Minimize2, ScanLine, KeyRound, Camera,
   CircleCheck, TriangleAlert, OctagonX, DoorOpen, Undo2, X, Delete, Hourglass, Search, ListChecks, ArrowLeft,
-  ArrowRightLeft, ChevronRight
+  ChevronRight
 } from 'lucide-vue-next';
 import type { EventConfig } from '../../types/editor.ts';
 import {
@@ -714,37 +613,19 @@ const soundOn = ref(true);
 const isFullscreen = ref(false);
 const systemKeyboard = ref(false);
 
-/* ---------- Station & Device Selection (Tab 1 / Tab 2 & Entrance / Exit) ---------- */
-const showStationModal = ref(false);
-const hasSavedStation = ref(false);
-const deviceName = ref<string>('Tab 1');
-const deviceNameInput = ref<string>('Tab 1');
-const stationModeInput = ref<'in' | 'out'>('in');
+/* ---------- Station Mode (Entrance vs Exit) ---------- */
 const isSyncingLog = ref(false);
 
-function openStationModal() {
-  deviceNameInput.value = deviceName.value;
-  stationModeInput.value = mode.value;
-  showStationModal.value = true;
-}
-
-function saveStationAndDevice() {
-  const cleanName = deviceNameInput.value.trim() || 'Tab 1';
-  deviceName.value = cleanName;
-  mode.value = stationModeInput.value;
+function setMode(newMode: 'in' | 'out') {
+  mode.value = newMode;
   try {
-    localStorage.setItem('707_scanner_station', stationModeInput.value);
-    localStorage.setItem('707_scanner_device_name', cleanName);
-  } catch { /* quota/incognito */ }
-  hasSavedStation.value = true;
-  showStationModal.value = false;
-  emit('toast', `Configured as ${cleanName} · ${mode.value === 'in' ? 'Entrance Gate' : 'Exit Gate'}`);
+    localStorage.setItem('707_scanner_station', newMode);
+  } catch {}
+  emit('toast', `Switched to ${newMode === 'in' ? 'Entrance Gate (Admit)' : 'Exit Gate (Check-out)'}`);
   nextTick(() => inputRef.value?.focus());
 }
 
 const effectiveOperator = computed(() => {
-  const custom = deviceName.value.trim();
-  if (custom) return custom;
   return props.operator || 'Door staff';
 });
 
@@ -1418,25 +1299,10 @@ function onKeydown(e: KeyboardEvent) {
 onMounted(() => {
   try {
     const saved = localStorage.getItem('707_scanner_station');
-    const savedDev = localStorage.getItem('707_scanner_device_name');
     if (saved === 'in' || saved === 'out') {
       mode.value = saved;
-      stationModeInput.value = saved;
-      hasSavedStation.value = true;
     }
-    if (savedDev && savedDev.trim()) {
-      deviceName.value = savedDev.trim();
-      deviceNameInput.value = savedDev.trim();
-    } else {
-      deviceName.value = 'Tab 1';
-      deviceNameInput.value = 'Tab 1';
-    }
-    if (!saved || !savedDev) {
-      showStationModal.value = true;
-    }
-  } catch {
-    showStationModal.value = true;
-  }
+  } catch {}
   void loadCapacitySettings();
   if (queuePollTimer) clearInterval(queuePollTimer);
   queuePollTimer = setInterval(() => {

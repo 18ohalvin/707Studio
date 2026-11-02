@@ -165,20 +165,6 @@
             <RefreshCw class="w-3.5 h-3.5" :class="isLoading ? 'animate-spin' : ''" />
           </button>
 
-          <!-- Door Scanner Button -->
-          <a
-            id="hub-open-scanner"
-            :href="scannerHref"
-            target="_blank"
-            rel="noopener"
-            class="shrink-0 flex items-center gap-1.5 h-[32px] px-3 rounded-[8px] border border-black/15 bg-white hover:bg-black/5 text-black text-[12px] font-707 font-medium transition-colors"
-            title="Open entrance Door Scanner in a new tab"
-          >
-            <ScanLine class="w-3.5 h-3.5 text-neutral-700" />
-            <span class="hidden sm:inline">Door Scanner</span>
-            <ArrowUpRight class="w-3 h-3 text-neutral-400" />
-          </a>
-
           <!-- Primary: Open Campaign Editor -->
           <router-link
             :to="editorHref"
@@ -192,98 +178,96 @@
         </div>
       </header>
 
-      <!-- Main Workspace -->
-      <main class="flex-1 w-full py-[20px] md:py-[24px] flex flex-col gap-[20px] md:gap-[24px]">
-        <!-- 1. Live Campaign HUD / Metric Ribbon (Harmonious Calm Cards, Earth Green) -->
-        <div class="px-[24px] w-full">
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <!-- Card 1: Total Registered -->
-            <div class="p-4 rounded-[14px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between gap-1 shadow-2xs">
-              <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Total Registered</span>
-              <div class="flex items-baseline gap-2 mt-1">
-                <span class="text-[26px] sm:text-[30px] font-medium font-mono tabular-nums leading-none text-black">{{ rows.length }}</span>
-                <span class="text-[12px] text-neutral-400 font-normal">Pax</span>
-              </div>
+      <!-- 1. Live Campaign HUD / Metric Ribbon (Harmonious Calm Cards, Earth Green) -->
+      <div class="px-[24px] w-full pt-[20px] md:pt-[24px] pb-[16px] shrink-0">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <!-- Card 1: Total Registered -->
+          <div class="p-4 rounded-[14px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between gap-1 shadow-2xs">
+            <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Total Registered</span>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-[26px] sm:text-[30px] font-medium font-mono tabular-nums leading-none text-black">{{ rows.length }}</span>
+              <span class="text-[12px] text-neutral-400 font-normal">Pax</span>
             </div>
+          </div>
 
-            <!-- Card 2: Live Checked In -->
-            <div class="p-4 rounded-[14px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between gap-1 shadow-2xs">
-              <div class="flex items-center justify-between">
-                <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Checked In</span>
-                <span class="text-[11px] font-mono font-medium text-moss-700 bg-moss-50 px-1.5 py-0.2 rounded-full border border-moss-200 tabular-nums">
-                  {{ checkedInPct }}%
-                </span>
-              </div>
-              <div class="flex items-baseline gap-2 mt-1">
-                <span class="text-[26px] sm:text-[30px] font-medium font-mono tabular-nums leading-none text-black">{{ checkedInCount }}</span>
-                <span class="text-[12px] text-neutral-400 font-normal">/ {{ rows.length }}</span>
-              </div>
-              <!-- Mini progress bar (Earth Green) -->
-              <div class="w-full h-[4px] rounded-full bg-black/10 overflow-hidden mt-1.5">
-                <div class="h-full bg-moss-700 rounded-full transition-all duration-500" :style="{ width: `${checkedInPct}%` }" />
-              </div>
+          <!-- Card 2: Live Checked In -->
+          <div class="p-4 rounded-[14px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between gap-1 shadow-2xs">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Checked In</span>
+              <span class="text-[11px] font-mono font-medium text-moss-700 bg-moss-50 px-1.5 py-0.2 rounded-full border border-moss-200 tabular-nums">
+                {{ checkedInPct }}%
+              </span>
             </div>
-
-            <!-- Card 3: Pending Arrival -->
-            <div class="p-4 rounded-[14px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between gap-1 shadow-2xs">
-              <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Pending Arrival</span>
-              <div class="flex items-baseline gap-2 mt-1">
-                <span class="text-[26px] sm:text-[30px] font-medium font-mono tabular-nums leading-none text-neutral-800">{{ pendingArrivalCount }}</span>
-                <span class="text-[12px] text-neutral-400 font-normal">Remaining</span>
-              </div>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-[26px] sm:text-[30px] font-medium font-mono tabular-nums leading-none text-black">{{ checkedInCount }}</span>
+              <span class="text-[12px] text-neutral-400 font-normal">/ {{ rows.length }}</span>
             </div>
+            <!-- Mini progress bar (Earth Green) -->
+            <div class="w-full h-[4px] rounded-full bg-black/10 overflow-hidden mt-1.5">
+              <div class="h-full bg-moss-700 rounded-full transition-all duration-500" :style="{ width: `${checkedInPct}%` }" />
+            </div>
+          </div>
 
-            <!-- Card 4: Door Check-in Quick Launch (Calm & Balanced) -->
-            <div class="p-4 rounded-[14px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between gap-2 shadow-2xs">
-              <div class="flex items-center justify-between">
-                <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Door Entrance</span>
-                <span class="size-1.5 rounded-full bg-moss-600 shrink-0" />
-              </div>
-              <div class="flex flex-col gap-1.5 mt-1">
-                <a
-                  :href="scannerHref"
-                  target="_blank"
-                  rel="noopener"
-                  class="w-full h-[32px] rounded-[8px] bg-black text-white hover:bg-neutral-800 text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors apple-press cursor-pointer"
-                >
-                  <ScanLine class="w-3.5 h-3.5" />
-                  <span>Launch Scanner</span>
-                  <ArrowUpRight class="w-3 h-3 text-neutral-400" />
-                </a>
-                <button
-                  type="button"
-                  @click="gateOpen = true"
-                  class="w-full h-[24px] text-[11px] font-mono text-neutral-500 hover:text-black flex items-center justify-center gap-1 cursor-pointer transition-colors"
-                  title="Create or manage door-security accounts for this campaign"
-                >
-                  <ShieldCheck class="w-3 h-3 text-neutral-400" />
-                  <span>Staff Passwords</span>
-                </button>
-              </div>
+          <!-- Card 3: Pending Arrival -->
+          <div class="p-4 rounded-[14px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between gap-1 shadow-2xs">
+            <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Pending Arrival</span>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-[26px] sm:text-[30px] font-medium font-mono tabular-nums leading-none text-neutral-800">{{ pendingArrivalCount }}</span>
+              <span class="text-[12px] text-neutral-400 font-normal">Remaining</span>
+            </div>
+          </div>
+
+          <!-- Card 4: Door Check-in Quick Launch (Calm & Balanced) -->
+          <div class="p-4 rounded-[14px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between gap-2 shadow-2xs">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Door Entrance</span>
+              <span class="size-1.5 rounded-full bg-moss-600 shrink-0" />
+            </div>
+            <div class="flex flex-col gap-1.5 mt-1">
+              <a
+                :href="scannerHref"
+                target="_blank"
+                rel="noopener"
+                class="w-full h-[32px] rounded-[8px] bg-black text-white hover:bg-neutral-800 text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors apple-press cursor-pointer"
+              >
+                <ScanLine class="w-3.5 h-3.5" />
+                <span>Launch Scanner</span>
+                <ArrowUpRight class="w-3 h-3 text-neutral-400" />
+              </a>
+              <button
+                type="button"
+                @click="gateOpen = true"
+                class="w-full h-[24px] text-[11px] font-mono text-neutral-500 hover:text-black flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                title="Create or manage door-security accounts for this campaign"
+              >
+                <ShieldCheck class="w-3 h-3 text-neutral-400" />
+                <span>Staff Passwords</span>
+              </button>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- 2. Workspace Navigation (Sticky beneath 48px header) -->
-        <div class="sticky top-[48px] z-20 bg-white/95 backdrop-blur-md border-b border-black/10 w-full select-none -mt-2">
-          <nav class="flex gap-[28px] md:gap-[44px] items-center px-[24px] w-full whitespace-nowrap overflow-x-auto no-scrollbar py-2.5" aria-label="Campaign hub sections">
-            <button
-              v-for="t in tabs"
-              :id="`hub-tab-${t.id}`"
-              :key="t.id"
-              type="button"
-              @click="setTab(t.id)"
-              class="bg-transparent border-none p-0 cursor-pointer font-707 text-[14.5px] md:text-[15.5px] leading-[22px] transition-colors flex items-center gap-2"
-              :class="activeTab === t.id ? 'font-medium underline decoration-solid underline-offset-[10px] text-black' : 'font-normal text-neutral-500 hover:text-black'"
-            >
-              {{ t.label }}
-              <span v-if="t.badge !== undefined" class="px-1.5 py-0 rounded-full text-[10.5px] font-medium bg-black/5 text-neutral-700 no-underline tabular-nums">{{ t.badge }}</span>
-            </button>
-          </nav>
-        </div>
+      <!-- 2. Workspace Navigation (Sticky beneath 48px header) -->
+      <div class="sticky top-[48px] z-20 bg-white/95 backdrop-blur-md border-b border-black/10 w-full select-none">
+        <nav class="flex gap-[28px] md:gap-[44px] items-center px-[24px] w-full whitespace-nowrap overflow-x-auto no-scrollbar py-2.5" aria-label="Campaign hub sections">
+          <button
+            v-for="t in tabs"
+            :id="`hub-tab-${t.id}`"
+            :key="t.id"
+            type="button"
+            @click="setTab(t.id)"
+            class="bg-transparent border-none p-0 cursor-pointer font-707 text-[14.5px] md:text-[15.5px] leading-[22px] transition-colors flex items-center gap-2"
+            :class="activeTab === t.id ? 'font-medium underline decoration-solid underline-offset-[10px] text-black' : 'font-normal text-neutral-500 hover:text-black'"
+          >
+            {{ t.label }}
+            <span v-if="t.badge !== undefined" class="px-1.5 py-0 rounded-full text-[10.5px] font-medium bg-black/5 text-neutral-700 no-underline tabular-nums">{{ t.badge }}</span>
+          </button>
+        </nav>
+      </div>
 
-        <!-- 3. Workspace Content -->
-        <section class="px-[24px] w-full">
+      <!-- 3. Workspace Content (Flows naturally with sticky tab above) -->
+      <main class="flex-1 w-full px-[24px] py-[20px] md:py-[24px]">
           <div v-if="isInitialLoad" class="flex flex-col gap-3">
             <div v-for="i in 5" :key="i" class="h-[52px] rounded-[10px] bg-neutral-100 hub-shimmer" />
           </div>
@@ -327,8 +311,7 @@
               @toast="toast"
             />
           </template>
-        </section>
-      </main>
+        </main>
 
       <!-- Security / Gate Access Drawer -->
       <GateAccessPanel
