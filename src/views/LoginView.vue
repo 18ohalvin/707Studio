@@ -1,9 +1,20 @@
 <template>
-  <div class="h-screen w-screen flex flex-col items-center justify-between bg-[#f5f5f5] text-black font-sans relative select-none p-6">
+  <div class="min-h-screen w-full flex flex-col justify-between bg-[#fbfbfb] text-black font-sans relative select-none p-6 sm:p-8 overflow-hidden">
+    <!-- Future Background Container Layer (Prepared for custom background asset) -->
+    <div 
+      class="absolute inset-0 bg-[#fbfbfb] z-0 pointer-events-none transition-all duration-700" 
+      :style="backgroundStyle"
+    />
+
     <!-- Top Header -->
-    <header class="w-full flex items-center justify-between max-w-[1100px] py-2">
+    <header class="w-full flex items-center justify-between max-w-[1200px] mx-auto py-2 relative z-10">
       <div class="flex items-center gap-[10px] h-[20px]">
-        <router-link to="/" class="h-[18px] relative shrink-0 flex items-center cursor-pointer hover:opacity-85 transition-opacity" title="Back to 707 Home">
+        <router-link 
+          to="/" 
+          class="h-[18px] relative shrink-0 flex items-center cursor-pointer hover:opacity-85 transition-opacity" 
+          title="Back to 707 Home"
+          @click="handleLogoClick"
+        >
           <img 
             :src="FIGMA_ASSETS.logoDesignStudio" 
             alt="707 Design Studio" 
@@ -29,109 +40,133 @@
       </router-link>
     </header>
 
-    <!-- Center Card: Minimal Full-Page Sign In -->
-    <div class="w-full max-w-[360px] bg-white/95 backdrop-blur-2xl border-[0.5px] border-black/10 p-7 rounded-[20px] shadow-[0px_20px_60px_rgba(0,0,0,0.07),0_1px_3px_rgba(0,0,0,0.04)] flex flex-col gap-5 animate-apple-pop">
-      <!-- Title: Very Less Copy -->
-      <div class="flex flex-col items-center text-center">
-        <h1 class="font-707 text-[22px] font-normal leading-[28px] text-black">
-          Sign In
-        </h1>
-      </div>
+    <!-- Center Stage: Editorial Minimal Sign In (Savee-inspired) -->
+    <main class="w-full flex-1 flex items-center justify-center py-8 relative z-10">
+      <div class="w-full max-w-[380px] bg-white/80 backdrop-blur-2xl border-[0.5px] border-black/[0.08] p-8 sm:p-9 rounded-[24px] shadow-[0px_20px_60px_rgba(0,0,0,0.05),0_1px_3px_rgba(0,0,0,0.03)] flex flex-col gap-6 animate-apple-pop">
+        <!-- Brand Emblem & Editorial Heading -->
+        <div class="flex flex-col items-center text-center gap-3">
+          <router-link 
+            to="/" 
+            class="inline-flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity mb-1" 
+            title="707 Design Studio"
+            @click="handleLogoClick"
+          >
+            <img 
+              :src="FIGMA_ASSETS.logoDesignStudio" 
+              alt="707" 
+              class="h-[20px] w-auto object-contain pointer-events-none"
+            />
+          </router-link>
 
-      <!-- Brand / Team Sign In Form -->
-      <form class="flex flex-col gap-4" @submit.prevent="handleBrandSubmit">
-        <!-- Account / Email Field -->
-        <div class="flex flex-col gap-1.5">
-          <label class="font-707 text-[11px] font-medium text-neutral-500 tracking-wider uppercase">
-            Email or Username
-          </label>
-          <input
-            ref="brandIdInput"
-            v-model="brandId"
-            type="text"
-            autocomplete="username"
-            autocapitalize="none"
-            autocorrect="off"
-            spellcheck="false"
-            placeholder="name@company.com"
-            required
-            :class="[
-              'w-full h-[44px] px-3.5 rounded-[10px] font-707 text-[13.5px] outline-none transition-all placeholder:text-neutral-400 focus:bg-white',
-              errorMessage 
-                ? 'border border-red-400 bg-red-50/20 text-red-900 focus:border-red-500' 
-                : 'bg-white/80 border-[0.5px] border-black/15 text-black focus:border-black'
-            ]"
-            :disabled="isLoading"
-            @input="errorMessage = ''"
-          />
+          <h1 class="font-707 text-[28px] sm:text-[32px] font-normal tracking-tight text-black leading-[34px] sm:leading-[38px]">
+            Let's get you inside.
+          </h1>
+          <p class="font-707 text-[13px] text-neutral-400">
+            Sign in to your workspace.
+          </p>
         </div>
 
-        <!-- Password Field -->
-        <div class="flex flex-col gap-1.5">
-          <div class="flex items-center justify-between">
-            <label class="font-707 text-[11px] font-medium text-neutral-500 tracking-wider uppercase">
-              Password
+        <!-- Sign In Form -->
+        <form class="flex flex-col gap-4" @submit.prevent="handleBrandSubmit">
+          <!-- Email / Username Input -->
+          <div class="flex flex-col gap-1.5">
+            <label class="font-707 text-[10.5px] font-medium text-neutral-500 tracking-wider uppercase">
+              Email or Username
             </label>
-            <button 
-              type="button" 
-              @click="handleForgotPin"
-              class="font-707 text-[11.5px] text-neutral-400 hover:text-black transition-colors border-none bg-transparent cursor-pointer"
-            >
-              Forgot?
-            </button>
-          </div>
-          <div 
-            :class="[
-              'relative flex items-center rounded-[10px] transition-all focus-within:bg-white bg-white/80',
-              errorMessage 
-                ? 'border border-red-400 bg-red-50/20 focus-within:border-red-500' 
-                : 'border-[0.5px] border-black/15 focus-within:border-black'
-            ]"
-          >
             <input
-              v-model="brandPassword"
-              :type="showBrandPassword ? 'text' : 'password'"
-              autocomplete="current-password"
-              placeholder="••••••••"
+              ref="brandIdInput"
+              v-model="brandId"
+              type="text"
+              autocomplete="username"
+              autocapitalize="none"
+              autocorrect="off"
+              spellcheck="false"
+              placeholder="name@company.com"
               required
-              class="w-full h-[44px] px-3.5 pr-10 bg-transparent text-black font-707 text-[13.5px] outline-none placeholder:text-neutral-400 border-none"
+              :class="[
+                'w-full h-[46px] px-3.5 rounded-[12px] font-707 text-[13.5px] outline-none transition-all placeholder:text-neutral-400 focus:bg-white',
+                errorMessage 
+                  ? 'border border-red-400 bg-red-50/20 text-red-900 focus:border-red-500' 
+                  : 'bg-white border-[0.5px] border-black/15 text-black focus:border-black shadow-[0_1px_2px_rgba(0,0,0,0.02)]'
+              ]"
               :disabled="isLoading"
               @input="errorMessage = ''"
             />
-            <button 
-              type="button" 
-              @click="showBrandPassword = !showBrandPassword"
-              class="absolute right-3 text-neutral-400 hover:text-black cursor-pointer bg-transparent border-none p-1"
-              tabindex="-1"
+          </div>
+
+          <!-- Password Input -->
+          <div class="flex flex-col gap-1.5">
+            <div class="flex items-center justify-between">
+              <label class="font-707 text-[10.5px] font-medium text-neutral-500 tracking-wider uppercase">
+                Password
+              </label>
+              <button 
+                type="button" 
+                @click="handleForgotPin"
+                class="font-707 text-[11px] text-neutral-400 hover:text-black transition-colors border-none bg-transparent cursor-pointer"
+              >
+                Forgot?
+              </button>
+            </div>
+            <div 
+              :class="[
+                'relative flex items-center rounded-[12px] transition-all bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)]',
+                errorMessage 
+                  ? 'border border-red-400 bg-red-50/20 focus-within:border-red-500' 
+                  : 'border-[0.5px] border-black/15 focus-within:border-black'
+              ]"
             >
-              <EyeOff v-if="showBrandPassword" class="w-4 h-4" />
-              <Eye v-else class="w-4 h-4" />
+              <input
+                v-model="brandPassword"
+                :type="showBrandPassword ? 'text' : 'password'"
+                autocomplete="current-password"
+                placeholder="••••••••"
+                required
+                class="w-full h-[46px] px-3.5 pr-10 bg-transparent text-black font-707 text-[13.5px] outline-none placeholder:text-neutral-400 border-none"
+                :disabled="isLoading"
+                @input="errorMessage = ''"
+              />
+              <button 
+                type="button" 
+                @click="showBrandPassword = !showBrandPassword"
+                class="absolute right-3 text-neutral-400 hover:text-black cursor-pointer bg-transparent border-none p-1"
+                tabindex="-1"
+                :title="showBrandPassword ? 'Hide password' : 'Show password'"
+              >
+                <EyeOff v-if="showBrandPassword" class="w-4 h-4" />
+                <Eye v-else class="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          <!-- Error Feedback -->
+          <div v-if="errorMessage" class="p-2.5 rounded-[10px] bg-red-50/80 border-[0.5px] border-red-200 text-red-600 text-[12px] font-707 flex items-center gap-1.5 animate-apple-pop">
+            <AlertCircle class="w-3.5 h-3.5 shrink-0" />
+            <span>{{ errorMessage }}</span>
+          </div>
+
+          <!-- Continue Pill Button -->
+          <div class="mt-2">
+            <button
+              type="submit"
+              :disabled="isLoading || !brandId.trim() || !brandPassword.trim()"
+              class="w-full h-[46px] rounded-full bg-[#18181b] text-white font-707 font-medium text-[13.5px] hover:bg-black active:bg-neutral-900 transition-all flex items-center justify-center gap-2 apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <span v-if="isLoading" class="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span v-else>Continue</span>
             </button>
           </div>
-        </div>
+        </form>
 
-        <!-- Error Message -->
-        <div v-if="errorMessage" class="p-2.5 rounded-[10px] bg-red-50/80 border-[0.5px] border-red-200 text-red-600 text-[12px] font-707 flex items-center gap-1.5 animate-apple-pop">
-          <AlertCircle class="w-3.5 h-3.5 shrink-0" />
-          <span>{{ errorMessage }}</span>
-        </div>
+        <!-- Minimal Terms & Privacy Notice -->
+        <p class="font-707 text-[11px] text-neutral-400 text-center leading-relaxed -mt-1">
+          By continuing, you agree to our Terms of Service and Privacy Policy.
+        </p>
+      </div>
+    </main>
 
-        <!-- Submit Button -->
-        <div class="mt-2">
-          <button
-            type="submit"
-            :disabled="isLoading || !brandId.trim() || !brandPassword.trim()"
-            class="w-full h-[44px] rounded-[10px] bg-black text-white font-707 font-medium text-[13.5px] hover:bg-neutral-800 active:bg-neutral-900 transition-all flex items-center justify-center gap-2 apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <span v-if="isLoading" class="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            <span v-else>Sign In</span>
-          </button>
-        </div>
-      </form>
-    </div>
-
-    <!-- Footer: Studio Brand Mark -->
-    <footer class="w-full max-w-[1100px] flex items-center justify-center py-2">
+    <!-- Footer: Studio Mark -->
+    <footer class="w-full max-w-[1200px] mx-auto flex items-center justify-center py-2 relative z-10">
       <span class="text-[11px] font-707 text-neutral-400">
         707 Design Studio
       </span>
@@ -146,7 +181,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { ArrowLeft, Eye, EyeOff, AlertCircle } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/authStore.ts';
@@ -169,8 +204,51 @@ const isLoading = ref(false);
 const brandIdInput = ref<HTMLInputElement | null>(null);
 const showWhatsNewModal = ref(false);
 
+// Custom background slot (ready for user-provided background)
+const customBgUrl = ref<string>('');
+const backgroundStyle = computed(() => {
+  if (!customBgUrl.value) return {};
+  return {
+    backgroundImage: `url(${customBgUrl.value})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
+  };
+});
+
+// Discreet developer shortcuts to jump to /dev without public UI
+let logoClickCount = 0;
+let logoClickTimer: ReturnType<typeof setTimeout> | null = null;
+
+function handleLogoClick() {
+  logoClickCount++;
+  if (logoClickTimer) clearTimeout(logoClickTimer);
+  if (logoClickCount >= 3) {
+    logoClickCount = 0;
+    router.push('/dev');
+    return;
+  }
+  logoClickTimer = setTimeout(() => {
+    logoClickCount = 0;
+  }, 1000);
+}
+
+function handleKeydown(e: KeyboardEvent) {
+  // Cmd+Shift+D or Ctrl+Shift+D for quick /dev access
+  if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === 'D' || e.key === 'd')) {
+    e.preventDefault();
+    router.push('/dev');
+  }
+}
+
 onMounted(() => {
   brandIdInput.value?.focus();
+  window.addEventListener('keydown', handleKeydown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown);
+  if (logoClickTimer) clearTimeout(logoClickTimer);
 });
 
 function handleForgotPin() {
