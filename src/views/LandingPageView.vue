@@ -99,7 +99,7 @@
             <div class="flex flex-col gap-[10px] items-center justify-center w-[100px]">
               <button 
                 @click="handleCreateNewTemplate"
-                class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] border-[0.5px] border-black/10 hover:border-black/25 flex items-center justify-center p-[8px] rounded-[8px] size-[88px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer transition-all duration-200 group"
+                class="category-menu-btn apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group"
                 title="Create a new template preset"
               >
                 <div class="size-[32px] relative shrink-0 flex items-center justify-center">
@@ -115,7 +115,7 @@
             <div class="flex flex-col gap-[10px] items-center justify-center w-[100px]">
               <button 
                 @click="handleBrowseTemplates"
-                class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] border-[0.5px] border-black/10 hover:border-black/25 flex items-center justify-center p-[8px] rounded-[8px] size-[88px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer transition-all duration-200 group"
+                class="category-menu-btn apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group"
                 title="Browse all template presets"
               >
                 <div class="size-[32px] relative shrink-0 flex items-center justify-center">
@@ -131,7 +131,7 @@
             <div class="flex flex-col gap-[10px] items-center justify-center w-[100px]">
               <button 
                 @click="handleViewAllProjects"
-                class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] border-[0.5px] border-black/10 hover:border-black/25 flex items-center justify-center p-[8px] rounded-[8px] size-[88px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer transition-all duration-200 group"
+                class="category-menu-btn apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group"
                 title="View all projects"
               >
                 <div class="size-[32px] relative shrink-0 flex items-center justify-center">
@@ -150,7 +150,7 @@
             <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-node-id="198:6926" data-name="Button Container">
               <button 
                 @click="handleCreateNewProject"
-                class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] border-[0.5px] border-black/10 hover:border-black/25 flex items-center justify-center p-[8px] rounded-[8px] size-[88px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer transition-all duration-200 group"
+                class="category-menu-btn apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group"
                 data-node-id="198:6927"
                 title="Create a fresh blank project"
               >
@@ -168,7 +168,7 @@
               <div class="relative size-[88px]">
                 <button 
                   @click="triggerToast('Templates feature is coming soon in the next update.')"
-                  class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.45)] border-[0.5px] border-black/5 flex items-center justify-center p-[8px] rounded-[8px] size-full cursor-not-allowed opacity-60 hover:opacity-75 transition-all group"
+                  class="category-menu-btn category-menu-btn-disabled apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.45)] flex items-center justify-center p-[8px] rounded-[8px] size-full cursor-not-allowed opacity-60 hover:opacity-75 transition-all group"
                   data-node-id="198:6863"
                   title="Templates (Coming Soon)"
                 >
@@ -190,7 +190,7 @@
               <div class="relative size-[88px]">
                 <button 
                   @click="triggerToast('Event RSVP presets are coming soon in the next update.')"
-                  class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.45)] border-[0.5px] border-black/5 flex items-center justify-center p-[8px] rounded-[8px] size-full cursor-not-allowed opacity-60 hover:opacity-75 transition-all group"
+                  class="category-menu-btn category-menu-btn-disabled apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.45)] flex items-center justify-center p-[8px] rounded-[8px] size-full cursor-not-allowed opacity-60 hover:opacity-75 transition-all group"
                   data-node-id="198:6934"
                   title="Event RSVP (Coming Soon)"
                 >
@@ -212,7 +212,7 @@
               <div class="relative size-[88px]">
                 <button 
                   @click="triggerToast('e-Pass Ticketing module is coming soon in the next update.')"
-                  class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.45)] border-[0.5px] border-black/5 flex items-center justify-center p-[8px] rounded-[8px] size-full cursor-not-allowed opacity-60 hover:opacity-75 transition-all group"
+                  class="category-menu-btn category-menu-btn-disabled apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.45)] flex items-center justify-center p-[8px] rounded-[8px] size-full cursor-not-allowed opacity-60 hover:opacity-75 transition-all group"
                   data-node-id="212:7005"
                   title="e-Pass Ticketing (Coming Soon)"
                 >
@@ -233,7 +233,7 @@
             <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-node-id="212:7037" data-name="Button Container">
               <button 
                 @click="handleViewAllProjects"
-                class="apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] border-[0.5px] border-black/10 hover:border-black/25 flex items-center justify-center p-[8px] rounded-[8px] size-[88px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer transition-all duration-200 group"
+                class="category-menu-btn apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group"
                 data-node-id="212:7038"
                 title="View all projects"
               >
@@ -651,3 +651,21 @@ function openProject(projectId: string) {
   });
 }
 </script>
+
+<style scoped>
+/* Borderless default state for icon category menu (cleaner, more premium aesthetic) */
+.category-menu-btn {
+  border: 0.5px solid transparent !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.category-menu-btn:hover:not(.category-menu-btn-disabled) {
+  border-color: rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04) !important;
+}
+
+.category-menu-btn-disabled {
+  border: 0.5px solid transparent !important;
+  box-shadow: none !important;
+}
+</style>
