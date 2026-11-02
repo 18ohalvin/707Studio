@@ -148,7 +148,7 @@
           </div>
         </div>
 
-        <!-- Header Actions: Open Campaign Editor, Door Scanner, Gate Access -->
+        <!-- Header Actions: Open Campaign Editor, Door Scanner -->
         <div class="flex items-center gap-2 md:gap-2.5">
           <!-- Live sync indicator (Earth Green) -->
           <button
@@ -163,18 +163,6 @@
             </span>
             <span class="hidden lg:inline tabular-nums">{{ loadError ? 'Offline' : (isLoading ? 'Syncing…' : `Synced ${lastSyncedLabel}`) }}</span>
             <RefreshCw class="w-3.5 h-3.5" :class="isLoading ? 'animate-spin' : ''" />
-          </button>
-
-          <!-- Gate Access -->
-          <button
-            id="hub-gate-access"
-            type="button"
-            @click="gateOpen = true"
-            class="flex items-center gap-1.5 h-[32px] px-3 rounded-[8px] border border-black/15 bg-white text-black text-[12px] font-707 font-medium hover:bg-black/5 transition-colors cursor-pointer"
-            title="Create door-security accounts for this campaign"
-          >
-            <ShieldCheck class="w-3.5 h-3.5 text-neutral-600" />
-            <span class="hidden md:inline">Gate access</span>
           </button>
 
           <!-- Door Scanner Button -->
@@ -246,12 +234,12 @@
             </div>
 
             <!-- Card 4: Door Check-in Quick Launch (Calm & Balanced) -->
-            <div class="p-4 rounded-[14px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between gap-1 shadow-2xs">
+            <div class="p-4 rounded-[14px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between gap-2 shadow-2xs">
               <div class="flex items-center justify-between">
                 <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Door Entrance</span>
                 <span class="size-1.5 rounded-full bg-moss-600 shrink-0" />
               </div>
-              <div class="mt-2">
+              <div class="flex flex-col gap-1.5 mt-1">
                 <a
                   :href="scannerHref"
                   target="_blank"
@@ -262,26 +250,37 @@
                   <span>Launch Scanner</span>
                   <ArrowUpRight class="w-3 h-3 text-neutral-400" />
                 </a>
+                <button
+                  type="button"
+                  @click="gateOpen = true"
+                  class="w-full h-[24px] text-[11px] font-mono text-neutral-500 hover:text-black flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                  title="Create or manage door-security accounts for this campaign"
+                >
+                  <ShieldCheck class="w-3 h-3 text-neutral-400" />
+                  <span>Staff Passwords</span>
+                </button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 2. Workspace Navigation (Settings-page style tabs) -->
-        <nav class="flex gap-[28px] md:gap-[44px] items-center px-[24px] w-full whitespace-nowrap overflow-x-auto no-scrollbar select-none border-b border-black/5 pb-2" aria-label="Campaign hub sections">
-          <button
-            v-for="t in tabs"
-            :id="`hub-tab-${t.id}`"
-            :key="t.id"
-            type="button"
-            @click="setTab(t.id)"
-            class="bg-transparent border-none p-0 cursor-pointer font-707 text-[15px] md:text-[16px] leading-[24px] transition-colors flex items-center gap-2"
-            :class="activeTab === t.id ? 'font-medium underline decoration-solid underline-offset-[8px] text-black' : 'font-normal text-neutral-500 hover:text-black'"
-          >
-            {{ t.label }}
-            <span v-if="t.badge !== undefined" class="px-1.5 py-0 rounded-full text-[10.5px] font-medium bg-black/5 text-neutral-700 no-underline tabular-nums">{{ t.badge }}</span>
-          </button>
-        </nav>
+        <!-- 2. Workspace Navigation (Sticky beneath 48px header) -->
+        <div class="sticky top-[48px] z-20 bg-white/95 backdrop-blur-md border-b border-black/10 w-full select-none -mt-2">
+          <nav class="flex gap-[28px] md:gap-[44px] items-center px-[24px] w-full whitespace-nowrap overflow-x-auto no-scrollbar py-2.5" aria-label="Campaign hub sections">
+            <button
+              v-for="t in tabs"
+              :id="`hub-tab-${t.id}`"
+              :key="t.id"
+              type="button"
+              @click="setTab(t.id)"
+              class="bg-transparent border-none p-0 cursor-pointer font-707 text-[14.5px] md:text-[15.5px] leading-[22px] transition-colors flex items-center gap-2"
+              :class="activeTab === t.id ? 'font-medium underline decoration-solid underline-offset-[10px] text-black' : 'font-normal text-neutral-500 hover:text-black'"
+            >
+              {{ t.label }}
+              <span v-if="t.badge !== undefined" class="px-1.5 py-0 rounded-full text-[10.5px] font-medium bg-black/5 text-neutral-700 no-underline tabular-nums">{{ t.badge }}</span>
+            </button>
+          </nav>
+        </div>
 
         <!-- 3. Workspace Content -->
         <section class="px-[24px] w-full">

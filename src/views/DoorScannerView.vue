@@ -8,8 +8,18 @@
         </router-link>
         <div class="flex items-baseline gap-2.5 min-w-0">
           <span class="text-[11px] uppercase tracking-[0.16em] text-neutral-500 shrink-0">Door Scanner</span>
-          <span class="text-[15px] font-medium truncate max-w-[40vw]" :title="selectedProject?.title || ''">{{ selectedProject?.title || 'No campaign selected' }}</span>
-          <button v-if="selectedProject && !isGate" type="button" @click="pickerOpen = true" class="shrink-0 px-2.5 h-[30px] rounded-[8px] border border-black/15 text-[12px] font-medium active:bg-black/10 cursor-pointer">Change</button>
+          <span class="text-[15px] font-medium truncate max-w-[40vw]" :title="selectedProject?.title || ''">{{ selectedProject?.title || 'Loading campaign…' }}</span>
+          <!-- Staff Accounts (Gate Access) setup trigger for Brand Admins only -->
+          <button
+            v-if="selectedProject && !isGate"
+            type="button"
+            @click="gateOpen = true"
+            class="shrink-0 px-2.5 h-[30px] rounded-[8px] border border-black/15 text-[12px] font-medium active:bg-black/10 hover:bg-black/5 flex items-center gap-1.5 cursor-pointer transition-colors"
+            title="Manage door-security staff credentials for this campaign"
+          >
+            <ShieldCheck class="w-3.5 h-3.5 text-neutral-600" />
+            <span class="hidden sm:inline">Staff Accounts</span>
+          </button>
         </div>
         <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-black/5 border border-black/10 text-[11.5px] font-mono text-neutral-700 shrink-0">
           <Calendar class="w-3.5 h-3.5 text-neutral-500" />
@@ -18,8 +28,8 @@
       </div>
 
       <div class="flex items-center gap-3 shrink-0 min-w-0">
-        <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-emerald-50 border border-emerald-200 text-[11px] font-mono text-emerald-800 shrink-0" title="Real-time sync active across all gate scanners">
-          <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-moss-50 border border-moss-200 text-[11px] font-mono text-moss-800 shrink-0" title="Real-time sync active across all gate scanners">
+          <span class="size-1.5 rounded-full bg-moss-600" />
           <span>Sync · 2.5s</span>
         </div>
         <button v-if="loadError" type="button" @click="refresh()" class="flex items-center gap-1.5 px-2.5 h-[32px] rounded-[8px] bg-oxblood-50 border border-oxblood-200 text-[12px] text-oxblood-700 font-medium cursor-pointer" title="The guest list could not be refreshed. Scans still go straight to the server.">
@@ -45,35 +55,19 @@
         @toast="toast"
       />
 
-      <!-- One campaign at a time: nothing is scanned until the door has chosen which one. -->
-      <div v-if="!selectedProject || (pickerOpen && !isGate)" class="absolute inset-3 z-40 rounded-[16px] border border-black/10 bg-white flex flex-col items-center justify-center px-6 py-6 overflow-y-auto">
-        <div class="w-full max-w-[560px] flex flex-col gap-4">
-          <div>
-            <p class="text-[10.5px] uppercase tracking-[0.12em] text-neutral-500">Door Scanner</p>
-            <p class="text-[26px] font-medium leading-tight">Which campaign are you scanning for?</p>
-            <p class="text-[13px] text-neutral-500 mt-1">One campaign at a time, so a guest from another event can never be admitted here.</p>
-          </div>
-          <div class="flex flex-col gap-2">
-            <button
-              v-for="p in projects"
-              :key="p.id"
-              type="button"
-              @click="chooseCampaign(p.id)"
-              class="w-full flex items-center gap-3 px-4 h-[64px] rounded-[12px] border text-left cursor-pointer active:bg-black/10 transition-colors"
-              :class="selectedProject?.id === p.id ? 'border-black bg-black/[0.04]' : 'border-black/15'"
-            >
-              <div class="min-w-0 flex-1">
-                <p class="text-[17px] font-medium leading-tight truncate">{{ p.title }}</p>
-                <p class="text-[12.5px] text-neutral-500 truncate">/{{ p.brand_slug }}/{{ p.slug }}</p>
-              </div>
-              <span v-if="selectedProject?.id === p.id" class="text-[12px] text-neutral-500">Current</span>
-            </button>
-            <p v-if="!projects.length" class="text-[14px] text-neutral-500 py-4">No campaign is available to this account yet.</p>
-          </div>
-          <button v-if="selectedProject" type="button" @click="pickerOpen = false" class="self-start h-[44px] px-4 rounded-[10px] border border-black/15 text-[14px] font-medium active:bg-black/10 cursor-pointer">Back to scanner</button>
-        </div>
+      <div v-else class="h-full w-full flex items-center justify-center">
+        <div class="size-6 border-2 border-black/20 border-t-black rounded-full animate-spin" />
       </div>
     </main>
+
+    <!-- Staff Accounts / Gate Access Drawer (Admins Only) -->
+    <GateAccessPanel
+      v-if="gateOpen && selectedProject && !isGate"
+      :project-id="selectedProject.id"
+      :project-title="selectedProject.title"
+      @close="gateOpen = false"
+      @toast="toast"
+    />
 
     <!-- Toast -->
     <Transition name="scanner-pop">
@@ -92,24 +86,25 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { ArrowLeft, AlertTriangle, Calendar } from 'lucide-vue-next';
+import { ArrowLeft, AlertTriangle, Calendar, ShieldCheck } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/authStore.ts';
 import { useCampaignGuests } from '../components/hub/useCampaignGuests.ts';
 import { getTodayDateStrings } from '../components/hub/hubUtils.ts';
 import DoorScanner from '../components/hub/DoorScanner.vue';
+import GateAccessPanel from '../components/hub/GateAccessPanel.vue';
 
 /**
  * The Door Scanner on its own page, for the tablet (10", landscape) or phone at the entrance:
- * one screen with nothing to scroll, nothing else on it, the campaign remembered in the URL
- * (/hub/scanner?project=…), and a fast poll so counts from other doors show up.
+ * Strictly locked to the selected campaign passed via URL query (/hub/scanner?project=…),
+ * with fast polling so counts from other doors sync in real-time.
  */
 const router = useRouter();
 const authStore = useAuthStore();
 
 const todayFormatted = computed(() => getTodayDateStrings().formattedShort);
 
-const { rows, loadError, selectedProjectId, selectedProject, projects, pageIds, refresh, mergeRows } = useCampaignGuests({ pollMs: 2500, requireProject: true });
-const pickerOpen = ref(false);
+const { rows, loadError, selectedProjectId, selectedProject, pageIds, refresh, mergeRows } = useCampaignGuests({ pollMs: 2500, requireProject: true });
+const gateOpen = ref(false);
 
 /** Door security is tied to one campaign by the server; here it is simply fixed and the way out is signing out. */
 const isGate = computed(() => authStore.currentUser?.role === 'gate');
@@ -119,16 +114,13 @@ function leave() {
   router.replace('/login');
 }
 
-function chooseCampaign(id: string) {
-  selectedProjectId.value = id;
-  pickerOpen.value = false;
-}
-
-const operatorName = computed(() => authStore.currentUser?.name || 'Door staff');
+const operatorName = computed(() => authStore.currentUser?.name || (isGate.value ? 'Gate security' : 'Brand Admin'));
 const hubLink = computed(() => ({ path: '/hub', query: selectedProject.value ? { project: selectedProject.value.id } : {} }));
 
 watch(selectedProject, (project) => {
-  router.replace({ query: project ? { project: project.id } : {} });
+  if (project) {
+    router.replace({ query: { project: project.id } });
+  }
 });
 
 const toastMessage = ref('');
@@ -141,6 +133,10 @@ function toast(msg: string) {
 
 onMounted(() => {
   document.title = 'Door Scanner | 707 Design Studio';
+  // If not authenticated as gate account and no campaign was selected, return to Hub
+  if (!selectedProjectId.value && !isGate.value) {
+    router.replace('/hub');
+  }
 });
 
 onUnmounted(() => {
