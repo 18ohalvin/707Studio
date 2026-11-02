@@ -344,14 +344,14 @@
             </p>
           </div>
 
-          <!-- Quick Partner Pills -->
-          <div class="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 w-full max-w-[360px]">
+          <!-- Quick Partner Pills (Direct from Superadmin settings) -->
+          <div class="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 w-full max-w-[420px]">
             <button
               v-for="b in partnerBrandOptions"
               :key="b"
               type="button"
               @click="onboardingBrand = b"
-              class="px-4 py-2 rounded-full text-[12.5px] font-707 transition-all apple-press cursor-pointer"
+              class="px-5 py-2.5 rounded-full text-[13px] font-707 transition-all apple-press cursor-pointer"
               :class="onboardingBrand === b 
                 ? 'bg-white text-black font-medium shadow-sm' 
                 : 'bg-white/10 hover:bg-white/20 text-white border-[0.5px] border-white/20 hover:border-white/40'"
@@ -359,30 +359,10 @@
               {{ b }}
             </button>
           </div>
-
-          <!-- Custom Company / Brand Input -->
-          <div class="relative w-full max-w-[380px] mt-2">
-            <input
-              id="onboarding-brand-input"
-              v-model="onboardingBrand"
-              type="text"
-              placeholder=" "
-              class="ganni-floating-input peer"
-              :disabled="isLoading"
-              @keydown.enter.prevent="handleOnboardingBrandSubmit"
-            />
-            <label
-              for="onboarding-brand-input"
-              class="ganni-floating-label"
-              :class="{ 'ganni-floating-label-active': onboardingBrand.length > 0 }"
-            >
-              Company or brand name *
-            </label>
-          </div>
         </div>
 
-        <!-- Bottom Action Buttons -->
-        <div class="flex flex-col items-center gap-3 w-full pt-8 pb-2 shrink-0">
+        <!-- Bottom Action Button -->
+        <div class="w-full flex justify-center pt-8 pb-2 shrink-0">
           <button
             type="button"
             @click="handleOnboardingBrandSubmit"
@@ -390,14 +370,7 @@
             class="px-12 h-[46px] rounded-full bg-white text-black font-707 font-medium text-[13.5px] hover:bg-neutral-200 active:bg-neutral-300 transition-all flex items-center justify-center apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <span v-if="isLoading" class="size-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-            <span v-else>Submit Application</span>
-          </button>
-          <button
-            type="button"
-            @click="skipBrandAndSubmit"
-            class="text-center text-[12px] font-707 text-white/50 hover:text-white py-1 cursor-pointer bg-transparent border-none"
-          >
-            Skip for now
+            <span v-else>Continue</span>
           </button>
         </div>
       </div>
@@ -407,56 +380,33 @@
       <!-- ========================================== -->
       <div 
         v-else-if="currentStep === 'onboarding_success'" 
-        class="flex flex-col items-center gap-6 animate-apple-pop w-full max-w-[440px] text-center my-auto"
+        class="flex flex-col items-center gap-6 animate-apple-pop w-full max-w-[420px] text-center my-auto"
       >
         <div class="size-12 rounded-full bg-amber-500/10 border border-amber-400/30 text-amber-400 flex items-center justify-center shadow-xs">
           <Clock class="w-5 h-5" />
         </div>
-        <div class="flex flex-col gap-1.5">
-          <h2 class="font-707 text-[28px] sm:text-[32px] font-normal tracking-tight text-white">
+        <div class="flex flex-col gap-2">
+          <h2 class="font-707 text-[28px] sm:text-[32px] font-normal tracking-tight text-white leading-tight">
             Application Received.
           </h2>
-          <p class="font-707 text-[13px] text-white/60">
-            Your workspace request is with 707 Governance.
+          <p class="font-707 text-[13px] text-white/60 leading-relaxed px-2">
+            Your workspace request is with 707 Governance. Superadmin (Alvin) has been notified. You will be able to sign in as soon as access is approved.
           </p>
         </div>
 
-        <!-- Application details summary card -->
-        <div class="w-full border-[0.5px] border-white/20 p-5 text-left flex flex-col gap-2.5 font-mono text-[12px] bg-white/5 backdrop-blur-xs">
-          <div class="flex justify-between py-1 border-b-[0.5px] border-white/10">
-            <span class="text-white/50">Applicant:</span>
-            <span class="text-white font-semibold">{{ onboardingName }}</span>
-          </div>
-          <div class="flex justify-between py-1 border-b-[0.5px] border-white/10">
-            <span class="text-white/50">Email:</span>
-            <span class="text-white truncate max-w-[220px]">{{ email }}</span>
-          </div>
-          <div class="flex justify-between py-1 border-b-[0.5px] border-white/10">
-            <span class="text-white/50">Role:</span>
-            <span class="text-white">Brand & Marketing</span>
-          </div>
-          <div class="flex justify-between py-1 border-b-[0.5px] border-white/10">
-            <span class="text-white/50">Affiliation:</span>
-            <span class="text-white">{{ onboardingBrand || 'General' }}</span>
-          </div>
-          <div class="flex items-center justify-between pt-1">
-            <span class="text-white/50">Status:</span>
-            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-500/20 text-amber-300 text-[11px] font-medium rounded-full border border-amber-400/30">
-              <span class="size-1.5 rounded-full bg-amber-400 animate-pulse" />
-              Pending Superadmin Review
-            </span>
-          </div>
-        </div>
-
-        <p class="font-707 text-[12.5px] text-white/70 leading-relaxed px-2">
-          Superadmin (Alvin) has been notified. You will be able to sign in as soon as access is approved.
-        </p>
-
-        <div class="w-full mt-2">
+        <div class="w-full mt-3 flex flex-col items-center gap-3">
+          <a
+            :href="whatsappUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="w-full h-[2.75rem] rounded-none bg-white text-black font-707 font-medium text-[13.5px] hover:bg-neutral-200 active:bg-neutral-300 transition-all flex items-center justify-center gap-2 apple-press cursor-pointer shadow-xs no-underline"
+          >
+            <span>Contact Superadmin</span>
+          </a>
           <button
             type="button"
             @click="resetToLogin"
-            class="w-full h-[2.75rem] rounded-none bg-white text-black font-707 font-medium text-[13.5px] hover:bg-neutral-200 apple-press cursor-pointer"
+            class="text-[12px] font-707 text-white/50 hover:text-white py-1 cursor-pointer bg-transparent border-none transition-colors"
           >
             Return to Studio
           </button>
@@ -710,10 +660,13 @@ async function handleOnboardingBrandSubmit() {
   await submitOnboardingApplication();
 }
 
-async function skipBrandAndSubmit() {
-  onboardingBrand.value = '';
-  await submitOnboardingApplication();
-}
+// WhatsApp direct link to Superadmin Alvin (+6281277208270)
+const whatsappUrl = computed(() => {
+  const applicantInfo = onboardingName.value ? `(${onboardingName.value} - ${email.value})` : `(${email.value})`;
+  const brandInfo = onboardingBrand.value ? ` for ${onboardingBrand.value}` : '';
+  const text = encodeURIComponent(`Hi Alvin, I have submitted my 707 Design Studio workspace application ${applicantInfo}${brandInfo}.`);
+  return `https://wa.me/6281277208270?text=${text}`;
+});
 
 // Submit Application (Option B: Superadmin Review Gate)
 async function submitOnboardingApplication() {
