@@ -342,8 +342,8 @@ authRouter.post('/register-request', async (req: Request, res: Response) => {
   const role = String(req.body?.role ?? 'Brand PIC').trim();
   const brand = String(req.body?.brand ?? '').trim();
 
-  if (!name || !email || !password) {
-    return res.status(400).json({ success: false, error: 'Name, email, and password are required.' });
+  if (!name || !email) {
+    return res.status(400).json({ success: false, error: 'Name and email are required.' });
   }
 
   // Check if account already exists
@@ -357,7 +357,7 @@ authRouter.post('/register-request', async (req: Request, res: Response) => {
     name,
     email,
     phone: '',
-    password: hashPassword(password),
+    password: password ? hashPassword(password) : '', // Generated/set by Superadmin upon review
     role: 'editor',
     assignedBrands: brand ? [brand] : ['all'],
     avatarUrl: '',

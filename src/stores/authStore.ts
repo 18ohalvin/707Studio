@@ -201,7 +201,7 @@ export const useAuthStore = defineStore('auth', () => {
     return { exists: Boolean(matched), name: matched?.name };
   }
 
-  async function registerRequest(payload: { name: string; email: string; password: string; role?: string; brand?: string }): Promise<{ success: boolean; data?: any; error?: string }> {
+  async function registerRequest(payload: { name: string; email: string; password?: string; role?: string; brand?: string }): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
       const res = await fetch('/api/auth/register-request', {
         method: 'POST',
@@ -219,7 +219,7 @@ export const useAuthStore = defineStore('auth', () => {
         id: `user_${Date.now()}`,
         name: payload.name,
         email: payload.email.trim().toLowerCase(),
-        password: payload.password,
+        password: payload.password || '',
         role: 'editor',
         assignedBrands: payload.brand ? [payload.brand] : ['all'],
         status: 'pending',
