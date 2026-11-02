@@ -17,6 +17,8 @@ export interface UserAccount {
   /** Gate accounts: the one campaign (project id) they may scan, and when the account stops working. */
   assignedProject?: string;
   expiresAt?: string | null;
+  stationMode?: 'in' | 'out' | 'both';
+  deviceLabel?: string;
   avatarUrl?: string;
   status: 'active' | 'pending' | 'suspended';
   createdAt: string;

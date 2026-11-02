@@ -265,7 +265,9 @@ function toClientUser(account: Account) {
     createdAt: account.created_at ?? account.createdAt,
     lastActiveAt: account.last_active_at ?? account.lastActiveAt ?? 'Recently',
     assignedProject: account.assigned_project ?? account.assignedProject ?? '',
-    expiresAt: account.expires_at ?? account.expiresAt ?? null
+    expiresAt: account.expires_at ?? account.expiresAt ?? null,
+    stationMode: account.station_mode ?? account.stationMode ?? 'both',
+    deviceLabel: account.device_label ?? account.deviceLabel ?? ''
   });
 }
 

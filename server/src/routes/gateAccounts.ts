@@ -30,7 +30,9 @@ function clientAccount(r: any) {
     status: r.status || 'active',
     expiresAt: r.expires_at || null,
     createdAt: r.created_at,
-    project: r.assigned_project
+    project: r.assigned_project,
+    stationMode: r.station_mode || 'both',
+    deviceLabel: r.device_label || ''
   };
 }
 
@@ -74,15 +76,15 @@ gateAccountsRouter.get('/', async (req: Request, res: Response) => {
   return res.json({ success: true, data: result.rows.map(clientAccount) });
 });
 
-// POST /api/gate-accounts { project, username, expiresAt } -> the password is returned once, here
+// POST /api/gate-accounts { project, username, expiresAt, stationMode?, deviceLabel? } -> the password is returned once, here
 gateAccountsRouter.post('/', async (req: Request, res: Response) => {
-  const { project: projectId, username, expiresAt } = req.body || {};
+  const { project: projectId, username, expiresAt, stationMode, deviceLabel } = req.body || {};
   const project = await campaignFor(req, res, String(projectId || ''));
   if (!project) return;
 
   const name = String(username || '').trim().replace(/\s+/g, ' ');
   if (!USERNAME_RE.test(name)) {
-    return res.status(400).json({ success: false, error: 'Username: 3–40 characters, letters, numbers, spaces, dot, dash or underscore.' });
+    return res.status(400).json({ success: false, error: 'Staff / Username: 3–40 characters, letters, numbers, spaces, dot, dash or underscore.' });
   }
   const at = new Date(String(expiresAt || '')).getTime();
   if (!expiresAt || Number.isNaN(at) || at <= Date.now()) {
@@ -91,6 +93,10 @@ gateAccountsRouter.post('/', async (req: Request, res: Response) => {
   if (at > Date.now() + MAX_VALID_DAYS * 86_400_000) {
     return res.status(400).json({ success: false, error: `A gate account can be valid for at most ${MAX_VALID_DAYS} days.` });
   }
+
+  const validModes = ['in', 'out', 'both'];
+  const mode = validModes.includes(String(stationMode)) ? String(stationMode) : 'both';
+  const device = String(deviceLabel || '').trim().slice(0, 100);
 
   // The username is what they sign in with, so it must not be anyone else's name, email or id.
   const clash = await pool.query('SELECT 1 FROM users WHERE LOWER(name) = LOWER($1) OR LOWER(email) = LOWER($1) OR LOWER(id) = LOWER($1) LIMIT 1', [name]);
@@ -101,10 +107,10 @@ gateAccountsRouter.post('/', async (req: Request, res: Response) => {
   const id = `gate_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`;
   const password = randomPassword();
   const result = await pool.query(
-    `INSERT INTO users (id, name, email, phone, password, role, assigned_brands, avatar_url, status, created_at, last_active_at, assigned_project, expires_at)
-     VALUES ($1, $2, $3, '', $4, 'gate', '[]'::jsonb, '', 'active', NOW(), 'Never', $5, $6)
+    `INSERT INTO users (id, name, email, phone, password, role, assigned_brands, avatar_url, status, created_at, last_active_at, assigned_project, expires_at, station_mode, device_label)
+     VALUES ($1, $2, $3, '', $4, 'gate', '[]'::jsonb, '', 'active', NOW(), 'Never', $5, $6, $7, $8)
      RETURNING *`,
-    [id, name, `${id}@gate.707.internal`, hashPassword(password), String(project.id), new Date(at).toISOString()]
+    [id, name, `${id}@gate.707.internal`, hashPassword(password), String(project.id), new Date(at).toISOString(), mode, device]
   );
   return res.status(201).json({ success: true, data: clientAccount(result.rows[0]), password });
 });
@@ -118,11 +124,11 @@ gateAccountsRouter.post('/:id/reset-password', async (req: Request, res: Respons
   return res.json({ success: true, password });
 });
 
-// PATCH /api/gate-accounts/:id { status?, expiresAt? }
+// PATCH /api/gate-accounts/:id { status?, expiresAt?, stationMode?, deviceLabel? }
 gateAccountsRouter.patch('/:id', async (req: Request, res: Response) => {
   const row = await accountFor(req, res);
   if (!row) return;
-  const { status, expiresAt } = req.body || {};
+  const { status, expiresAt, stationMode, deviceLabel } = req.body || {};
   const sets: string[] = [];
   const params: any[] = [];
 
@@ -137,6 +143,15 @@ gateAccountsRouter.patch('/:id', async (req: Request, res: Response) => {
     if (at > Date.now() + MAX_VALID_DAYS * 86_400_000) return res.status(400).json({ success: false, error: `A gate account can be valid for at most ${MAX_VALID_DAYS} days.` });
     params.push(new Date(at).toISOString());
     sets.push(`expires_at = $${params.length}`);
+  }
+  if (stationMode !== undefined) {
+    if (!['in', 'out', 'both'].includes(stationMode)) return res.status(400).json({ success: false, error: 'Station mode must be in, out, or both.' });
+    params.push(stationMode);
+    sets.push(`station_mode = $${params.length}`);
+  }
+  if (deviceLabel !== undefined) {
+    params.push(String(deviceLabel || '').trim().slice(0, 100));
+    sets.push(`device_label = $${params.length}`);
   }
   if (!sets.length) return res.status(400).json({ success: false, error: 'Nothing to change.' });
 

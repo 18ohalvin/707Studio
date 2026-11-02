@@ -48,6 +48,7 @@
         :rows="rows"
         :page-ids="pageIds"
         :operator="operatorName"
+        :assigned-mode="authStore.currentUser?.stationMode"
         :event-config="selectedProject.event_config || selectedProject.pages?.[0]?.page_settings?.eventConfig"
         standalone
         @updated="mergeRows"
@@ -114,7 +115,14 @@ function leave() {
   router.replace('/login');
 }
 
-const operatorName = computed(() => authStore.currentUser?.name || (isGate.value ? 'Gate security' : 'Brand Admin'));
+const operatorName = computed(() => {
+  if (authStore.currentUser) {
+    const parts = [authStore.currentUser.name];
+    if (authStore.currentUser.deviceLabel) parts.push(authStore.currentUser.deviceLabel);
+    return parts.join(' · ');
+  }
+  return isGate.value ? 'Gate security' : 'Brand Admin';
+});
 const hubLink = computed(() => ({ path: '/hub', query: selectedProject.value ? { project: selectedProject.value.id } : {} }));
 
 watch(selectedProject, (project) => {

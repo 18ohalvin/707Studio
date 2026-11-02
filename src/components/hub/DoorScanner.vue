@@ -19,8 +19,12 @@
       <!-- Camera panel -->
       <section class="min-h-0 rounded-[16px] bg-editor-bg text-white border border-editor-border overflow-hidden flex flex-col">
         <div class="flex items-center justify-between gap-2 px-3 h-[48px] shrink-0 border-b border-white/10">
-          <!-- Borderless Station Mode Switcher (Entrance vs Exit) -->
-          <div class="flex items-center p-0.5 rounded-[8px] bg-white/[0.08] text-[11px]">
+          <!-- Borderless Station Mode Indicator / Switcher -->
+          <div v-if="props.assignedMode === 'in' || props.assignedMode === 'out'" class="flex items-center gap-1.5 px-3 py-1 rounded-[8px] bg-white/[0.08] text-[11px] font-medium tracking-[0.03em] text-white">
+            <component :is="props.assignedMode === 'in' ? LogIn : LogOut" class="w-3.5 h-3.5" :class="props.assignedMode === 'in' ? 'text-moss-400' : 'text-neutral-400'" />
+            <span>{{ props.assignedMode === 'in' ? 'Entrance Gate' : 'Exit Gate' }}</span>
+          </div>
+          <div v-else class="flex items-center p-0.5 rounded-[8px] bg-white/[0.08] text-[11px]">
             <button
               type="button"
               @click="setMode('in')"
@@ -578,6 +582,7 @@ const props = defineProps<{
   eventConfig?: EventConfig;
   /** On its own page (/hub/scanner): fullscreen covers the whole page. */
   standalone?: boolean;
+  assignedMode?: 'in' | 'out' | 'both';
 }>();
 
 const emit = defineEmits<{
@@ -1297,12 +1302,16 @@ function onKeydown(e: KeyboardEvent) {
 }
 
 onMounted(() => {
-  try {
-    const saved = localStorage.getItem('707_scanner_station');
-    if (saved === 'in' || saved === 'out') {
-      mode.value = saved;
-    }
-  } catch {}
+  if (props.assignedMode === 'in' || props.assignedMode === 'out') {
+    mode.value = props.assignedMode;
+  } else {
+    try {
+      const saved = localStorage.getItem('707_scanner_station');
+      if (saved === 'in' || saved === 'out') {
+        mode.value = saved;
+      }
+    } catch {}
+  }
   void loadCapacitySettings();
   if (queuePollTimer) clearInterval(queuePollTimer);
   queuePollTimer = setInterval(() => {

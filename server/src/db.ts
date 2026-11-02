@@ -177,6 +177,8 @@ export async function initDbSchema(): Promise<void> {
       -- Gate-security accounts (door scanner only): the one campaign they may scan and when the account stops working.
       ALTER TABLE users ADD COLUMN IF NOT EXISTS assigned_project VARCHAR(100);
       ALTER TABLE users ADD COLUMN IF NOT EXISTS expires_at TIMESTAMP WITH TIME ZONE;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS station_mode VARCHAR(20) DEFAULT 'both';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS device_label VARCHAR(150) DEFAULT '';
 
       ALTER TABLE pages ADD COLUMN IF NOT EXISTS brand_slug VARCHAR(100) NOT NULL DEFAULT 'atmos';
       ALTER TABLE pages ADD COLUMN IF NOT EXISTS pages JSONB DEFAULT '[]'::jsonb;
