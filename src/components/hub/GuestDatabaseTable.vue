@@ -133,8 +133,8 @@
     <div class="w-full border border-black/[0.06] rounded-[12px] overflow-hidden bg-white shadow-2xs">
       <div class="overflow-x-auto w-full">
         <table class="w-full text-left border-collapse min-w-[760px]">
-          <thead class="sticky top-[93px] z-10 bg-white/95 backdrop-blur-md">
-            <tr class="border-b border-black/[0.06] text-[10.5px] uppercase tracking-[0.08em] text-neutral-400 select-none">
+          <thead class="bg-neutral-50/60 border-b border-black/[0.06]">
+            <tr class="text-[10.5px] uppercase tracking-[0.08em] text-neutral-400 select-none">
               <th class="w-[40px] pl-4 pr-1 py-3">
                 <input
                   type="checkbox"
