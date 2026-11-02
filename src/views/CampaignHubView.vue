@@ -29,11 +29,12 @@
       <!-- Center Stage: Minimalist Launchpad -->
       <main class="w-full flex-1 flex flex-col items-center justify-center px-[24px] py-[32px] sm:py-[48px] max-w-[620px] mx-auto my-auto">
         <div class="flex flex-col items-center gap-6 w-full text-center my-auto animate-apple-pop">
-          <!-- Title Section (No sub-description) -->
+          <!-- Title Section -->
           <div class="flex flex-col items-center text-center gap-2">
             <span class="text-[12.5px] uppercase tracking-[0.14em] text-neutral-400 font-medium">Campaign Hub</span>
-            <h1 class="font-707 text-[32px] sm:text-[40px] font-normal tracking-tight text-black leading-[38px] sm:leading-[46px]">
-              Which campaign are you <span class="font-medium">managing today?</span>
+            <h1 class="font-707 text-[32px] sm:text-[40px] tracking-tight leading-[38px] sm:leading-[46px]">
+              <span class="font-light text-black/60">Which campaign are you </span>
+              <span class="font-medium text-black">managing today?</span>
             </h1>
           </div>
 
@@ -56,24 +57,6 @@
                 <ChevronsUpDown class="w-4 h-4 text-neutral-400 group-hover:text-black transition-colors" />
               </div>
             </button>
-          </div>
-
-          <!-- Quick Access Campaign Pills (1-click direct enter, no enter button needed) -->
-          <div v-if="projects.length" class="flex flex-wrap items-center justify-center gap-2 w-full max-w-[520px] pt-1">
-            <button
-              v-for="p in projects.slice(0, 8)"
-              :key="p.id"
-              type="button"
-              @click="selectProjectAndEnter(p.id)"
-              class="px-4 py-2 rounded-full text-[12.5px] font-707 bg-neutral-100 hover:bg-black hover:text-white text-black border border-black/5 hover:border-black transition-all apple-press cursor-pointer flex items-center gap-2 shadow-2xs"
-              :title="`Open ${p.title} Hub`"
-            >
-              <span class="font-medium truncate max-w-[200px]">{{ p.title }}</span>
-              <span v-if="p.status === 'approved' || p.status === 'published'" class="size-1.5 rounded-full bg-moss-600 shrink-0" />
-            </button>
-          </div>
-          <div v-else-if="!isLoading" class="text-[13px] text-neutral-400 pt-2">
-            No campaigns available. Create a project in the Studio first.
           </div>
         </div>
       </main>
@@ -375,7 +358,7 @@
       <Transition name="hub-fade">
         <div 
           v-if="isLaunchpadModalOpen" 
-          class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-start justify-center pt-[12vh] sm:pt-[15vh] px-4 font-707 select-none"
+          class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 font-707 select-none"
           @click.self="isLaunchpadModalOpen = false"
         >
           <div class="w-full max-w-[500px] bg-white rounded-[18px] shadow-[0_24px_70px_rgba(0,0,0,0.22)] border border-black/10 overflow-hidden flex flex-col animate-apple-pop">
@@ -402,7 +385,7 @@
             </div>
 
             <!-- Campaign Results List -->
-            <div class="max-h-[320px] overflow-y-auto divide-y divide-black/[0.04] p-1.5">
+            <div class="max-h-[360px] overflow-y-auto divide-y divide-black/[0.04] p-1.5">
               <button
                 v-for="p in filteredLaunchpadProjects"
                 :key="p.id"
@@ -432,12 +415,6 @@
               <div v-if="!filteredLaunchpadProjects.length" class="py-8 text-center text-[13px] text-neutral-400">
                 No campaigns match "{{ launchpadSearch }}"
               </div>
-            </div>
-
-            <!-- Modal Footer Hint -->
-            <div class="px-4 py-2 bg-neutral-50/80 border-t border-black/5 flex items-center justify-between text-[11px] text-neutral-400 font-mono">
-              <span>Click campaign to open Hub</span>
-              <span>ESC to exit</span>
             </div>
           </div>
         </div>
