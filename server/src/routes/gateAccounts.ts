@@ -124,13 +124,20 @@ gateAccountsRouter.post('/:id/reset-password', async (req: Request, res: Respons
   return res.json({ success: true, password });
 });
 
-// PATCH /api/gate-accounts/:id { status?, expiresAt?, stationMode?, deviceLabel? }
+// PATCH /api/gate-accounts/:id { status?, expiresAt?, stationMode?, deviceLabel?, username? }
 gateAccountsRouter.patch('/:id', async (req: Request, res: Response) => {
   const row = await accountFor(req, res);
   if (!row) return;
-  const { status, expiresAt, stationMode, deviceLabel } = req.body || {};
+  const { status, expiresAt, stationMode, deviceLabel, username } = req.body || {};
   const sets: string[] = [];
   const params: any[] = [];
+
+  if (username !== undefined) {
+    const name = String(username || '').trim().replace(/\s+/g, ' ');
+    if (name.length < 2) return res.status(400).json({ success: false, error: 'PIC / Staff name must be at least 2 characters.' });
+    params.push(name);
+    sets.push(`name = $${params.length}`);
+  }
 
   if (status !== undefined) {
     if (!['active', 'suspended'].includes(status)) return res.status(400).json({ success: false, error: 'Status must be active or suspended.' });

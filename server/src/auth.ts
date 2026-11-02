@@ -196,7 +196,7 @@ async function findAccounts(identifier: string): Promise<Account[]> {
     try {
       const result = await pool.query(
         `SELECT * FROM users
-          WHERE LOWER(email) = $1 OR LOWER(name) = $1 OR LOWER(id) = $1
+          WHERE LOWER(email) = $1 OR LOWER(name) = $1 OR LOWER(id) = $1 OR LOWER(COALESCE(device_label, '')) = $1
           ORDER BY (LOWER(email) = $1) DESC, (LOWER(id) = $1) DESC, created_at ASC
           LIMIT 20`,
         [needle]
