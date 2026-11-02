@@ -20,7 +20,7 @@ export function useCampaignGuests(opts: { pollMs?: number; requireProject?: bool
   const isInitialLoad = ref(true);
   const loadError = ref('');
   const lastSyncedAt = ref<number | null>(null);
-  const selectedProjectId = ref<string>(String(route.query.project || 'all'));
+  const selectedProjectId = ref<string>(String(route.query.project || ''));
 
   const projects = computed<ProjectItem[]>(() => editorStore.userProjects);
   const selectedProject = computed(() => projects.value.find(p => p.id === selectedProjectId.value) || null);
@@ -32,8 +32,8 @@ export function useCampaignGuests(opts: { pollMs?: number; requireProject?: bool
   /** null = no filter (superadmin, all campaigns). [] = nothing this account may see. */
   const pageIds = computed<string[] | null>(() => {
     if (selectedProject.value) return idsForProject(selectedProject.value);
-    // The door scanner works on exactly one campaign: with none chosen it loads and scans nothing.
-    if (opts.requireProject) return [];
+    // When no specific campaign is selected, don't query submissions
+    if (opts.requireProject || !selectedProjectId.value) return [];
     if (authStore.isSuperAdmin) return null;
     return projects.value.flatMap(idsForProject);
   });

@@ -109,6 +109,19 @@
           </Transition>
         </div>
 
+        <!-- Add Guest -->
+        <button
+          v-if="pageId"
+          id="guest-add-walkin"
+          type="button"
+          @click="openAddGuestModal"
+          class="h-[32px] px-3 rounded-[8px] border border-black/15 bg-white hover:bg-black/5 flex items-center gap-1.5 text-[11.5px] font-medium cursor-pointer transition-colors"
+          title="Manually register a walk-in guest or VIP"
+        >
+          <UserPlus class="w-3.5 h-3.5 text-neutral-700" />
+          <span class="hidden sm:inline">Add Guest</span>
+        </button>
+
         <!-- Export -->
         <button
           id="guest-export-csv"
@@ -584,6 +597,84 @@
         </aside>
       </Transition>
     </Teleport>
+
+    <!-- Add Walk-In Guest Modal -->
+    <Teleport to="body">
+      <Transition name="hub-fade">
+        <div v-if="isAddGuestOpen" class="fixed inset-0 z-[80] bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 select-none font-707" @click.self="isAddGuestOpen = false">
+          <div class="relative w-full max-w-[420px] bg-white rounded-[20px] border border-black/10 shadow-[0_24px_60px_rgba(0,0,0,0.18)] p-6 flex flex-col gap-4 animate-apple-pop text-black">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-[17px] font-medium tracking-tight">Add Walk-In Guest</h3>
+                <p class="text-[12px] text-neutral-500 mt-0.5">Quickly register an on-site attendee or VIP.</p>
+              </div>
+              <button type="button" @click="isAddGuestOpen = false" class="size-7 rounded-full bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center cursor-pointer transition-colors">
+                <X class="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <form @submit.prevent="handleAddGuestSubmit" class="flex flex-col gap-3.5 mt-1">
+              <div class="flex flex-col gap-1">
+                <label class="text-[11px] uppercase tracking-[0.1em] text-neutral-500 font-medium">Guest Name *</label>
+                <input
+                  v-model="newGuest.name"
+                  type="text"
+                  required
+                  placeholder="Full name"
+                  class="h-[38px] px-3 rounded-[8px] border border-black/15 text-[13px] outline-none focus:border-black"
+                />
+              </div>
+
+              <div class="grid grid-cols-2 gap-2.5">
+                <div class="flex flex-col gap-1">
+                  <label class="text-[11px] uppercase tracking-[0.1em] text-neutral-500 font-medium">Email</label>
+                  <input
+                    v-model="newGuest.email"
+                    type="email"
+                    placeholder="guest@example.com"
+                    class="h-[38px] px-3 rounded-[8px] border border-black/15 text-[13px] outline-none focus:border-black"
+                  />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-[11px] uppercase tracking-[0.1em] text-neutral-500 font-medium">WhatsApp / Phone</label>
+                  <input
+                    v-model="newGuest.phone"
+                    type="tel"
+                    placeholder="+62 8..."
+                    class="h-[38px] px-3 rounded-[8px] border border-black/15 text-[13px] outline-none focus:border-black"
+                  />
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between p-3 rounded-[10px] bg-neutral-50 border border-black/5">
+                <div class="flex flex-col">
+                  <span class="text-[12.5px] font-medium">Check in immediately</span>
+                  <span class="text-[11px] text-neutral-400">Mark as present at venue right now</span>
+                </div>
+                <input type="checkbox" v-model="newGuest.checkInNow" class="size-4 accent-black rounded cursor-pointer" />
+              </div>
+
+              <div class="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  @click="isAddGuestOpen = false"
+                  class="h-[36px] px-4 rounded-[8px] border border-black/15 text-[12.5px] font-medium hover:bg-black/5 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  :disabled="isAddingGuest || !newGuest.name.trim()"
+                  class="h-[36px] px-5 rounded-[8px] bg-black text-white text-[12.5px] font-medium hover:bg-neutral-800 disabled:opacity-40 cursor-pointer apple-press flex items-center gap-1.5"
+                >
+                  <span>{{ isAddingGuest ? 'Adding…' : 'Register Guest' }}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -592,9 +683,10 @@ import { glassConfirm } from '../../services/glassDialog.ts';
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import {
   Search, X, Download, Columns3, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, ChevronRight,
-  Check, Circle, CircleCheck, Users, Trash2, Copy, LogIn, LogOut, Mail, RotateCw, Calendar
+  Check, Circle, CircleCheck, Users, Trash2, Copy, LogIn, LogOut, Mail, RotateCw, Calendar, UserPlus
 } from 'lucide-vue-next';
 import { useTicketSender } from './useTicketSender.ts';
+import { apiJson } from '../../services/apiClient.ts';
 import {
   type Submission, type GuestStatus, STATUS_OPTIONS, normalizeStatus, statusLabel, statusBadgeClass, statusDotClass,
   guestName, guestEmail, guestPhone, normalizeWhatsAppNumber, customFieldKeys, formatValue, initials, accessId, formatDateTime, formatTime,
@@ -607,6 +699,7 @@ const props = withDefaults(defineProps<{
   showCampaignColumn: boolean;
   exportName: string;
   hasLiveQueue?: boolean;
+  pageId?: string;
 }>(), {
   hasLiveQueue: false
 });
@@ -616,6 +709,68 @@ const emit = defineEmits<{
   (e: 'removed', ids: string[]): void;
   (e: 'toast', msg: string): void;
 }>();
+
+/* ---------- Walk-In Guest Modal ---------- */
+const isAddGuestOpen = ref(false);
+const isAddingGuest = ref(false);
+const newGuest = ref({
+  name: '',
+  email: '',
+  phone: '',
+  partySize: 1,
+  status: 'confirmed',
+  checkInNow: true
+});
+
+function openAddGuestModal() {
+  newGuest.value = {
+    name: '',
+    email: '',
+    phone: '',
+    partySize: 1,
+    status: 'confirmed',
+    checkInNow: true
+  };
+  isAddGuestOpen.value = true;
+}
+
+async function handleAddGuestSubmit() {
+  if (!newGuest.value.name.trim() || !props.pageId) return;
+  isAddingGuest.value = true;
+  try {
+    const payload = {
+      page_id: props.pageId,
+      submission_type: 'raffle',
+      status: newGuest.value.status,
+      checked_in_at: newGuest.value.checkInNow ? new Date().toISOString() : null,
+      party_size: Number(newGuest.value.partySize) || 1,
+      form_data: {
+        name: newGuest.value.name.trim(),
+        full_name: newGuest.value.name.trim(),
+        email: newGuest.value.email.trim(),
+        phone: newGuest.value.phone.trim(),
+        party_size: Number(newGuest.value.partySize) || 1
+      }
+    };
+    const res = await apiJson<{ success: boolean; data: Submission }>('/api/submissions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (res?.data) {
+      emit('updated', [res.data]);
+      emit('toast', `${newGuest.value.name.trim()} added${newGuest.value.checkInNow ? ' and checked in' : ''}.`);
+      isAddGuestOpen.value = false;
+    } else {
+      emit('toast', 'Guest registered.');
+      isAddGuestOpen.value = false;
+    }
+  } catch (err: any) {
+    emit('toast', `Failed to add guest: ${err?.message || 'Network error'}`);
+  } finally {
+    isAddingGuest.value = false;
+  }
+}
 
 /* ---------- Filters ---------- */
 const search = ref('');
