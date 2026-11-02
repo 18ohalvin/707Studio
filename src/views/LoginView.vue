@@ -46,13 +46,11 @@
         </div>
 
         <!-- Sign In Form -->
-        <form class="flex flex-col gap-4 mt-2" @submit.prevent="handleBrandSubmit">
-          <!-- Email / Username Input -->
-          <div class="flex flex-col gap-1.5">
-            <label class="font-707 text-[10.5px] font-medium text-neutral-500 tracking-wider uppercase">
-              Email or Username
-            </label>
+        <form class="flex flex-col gap-3 mt-2" @submit.prevent="handleBrandSubmit">
+          <!-- Email / Username Floating Field -->
+          <div class="relative w-full">
             <input
+              id="brand-id"
               ref="brandIdInput"
               v-model="brandId"
               type="text"
@@ -60,50 +58,62 @@
               autocapitalize="none"
               autocorrect="off"
               spellcheck="false"
-              placeholder="name@company.com"
+              placeholder=" "
               required
-              class="ganni-input"
+              class="ganni-floating-input peer"
               :class="{ 'ganni-input-error': errorMessage }"
               :disabled="isLoading"
               @input="errorMessage = ''"
             />
+            <label
+              for="brand-id"
+              class="ganni-floating-label"
+              :class="{ 'ganni-floating-label-active': brandId.length > 0 }"
+            >
+              Email or username
+            </label>
           </div>
 
-          <!-- Password Input -->
+          <!-- Password Floating Field -->
           <div class="flex flex-col gap-1.5">
-            <div class="flex items-center justify-between">
-              <label class="font-707 text-[10.5px] font-medium text-neutral-500 tracking-wider uppercase">
-                Password
-              </label>
-              <button 
-                type="button" 
-                @click="handleForgotPin"
-                class="font-707 text-[11px] text-[#8a8d8d] hover:text-black transition-colors border-none bg-transparent cursor-pointer"
-              >
-                Forgot?
-              </button>
-            </div>
             <div class="relative w-full flex items-center">
               <input
+                id="brand-password"
                 v-model="brandPassword"
                 :type="showBrandPassword ? 'text' : 'password'"
                 autocomplete="current-password"
-                placeholder="••••••••"
+                placeholder=" "
                 required
-                class="ganni-input pr-[2.5rem]"
+                class="ganni-floating-input peer pr-[2.5rem]"
                 :class="{ 'ganni-input-error': errorMessage }"
                 :disabled="isLoading"
                 @input="errorMessage = ''"
               />
+              <label
+                for="brand-password"
+                class="ganni-floating-label"
+                :class="{ 'ganni-floating-label-active': brandPassword.length > 0 }"
+              >
+                Password
+              </label>
               <button 
                 type="button" 
                 @click="showBrandPassword = !showBrandPassword"
-                class="absolute right-[0.8125rem] text-[#8a8d8d] hover:text-black cursor-pointer bg-transparent border-none p-1 transition-colors"
+                class="absolute right-[0.8125rem] text-[#8a8d8d] hover:text-black cursor-pointer bg-transparent border-none p-1 transition-colors z-10"
                 tabindex="-1"
                 :title="showBrandPassword ? 'Hide password' : 'Show password'"
               >
                 <EyeOff v-if="showBrandPassword" class="w-4 h-4" />
                 <Eye v-else class="w-4 h-4" />
+              </button>
+            </div>
+            <div class="flex justify-end">
+              <button 
+                type="button" 
+                @click="handleForgotPin"
+                class="font-707 text-[11px] text-[#8a8d8d] hover:text-black transition-colors border-none bg-transparent cursor-pointer"
+              >
+                Forgot password?
               </button>
             </div>
           </div>
@@ -277,7 +287,7 @@ async function handleBrandSubmit() {
 </script>
 
 <style scoped>
-.ganni-input {
+.ganni-floating-input {
   -webkit-font-smoothing: antialiased;
   text-size-adjust: 100%;
   overflow-wrap: break-word;
@@ -286,7 +296,7 @@ async function handleBrandSubmit() {
   box-shadow: none;
   margin: 0px;
   outline: none;
-  transition: 0.15s ease-in;
+  transition: border-color 0.15s ease-in, background-color 0.15s ease-in;
   font-size: 0.875rem;
   font-weight: 400;
   max-width: 100%;
@@ -295,22 +305,47 @@ async function handleBrandSubmit() {
   font-family: var(--font-primary, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif);
   height: 2.75rem;
   background: rgb(241, 241, 241);
-  padding: 0px 0.8125rem;
+  padding: 1.05rem 0.8125rem 0.2rem 0.8125rem;
   color: #222222;
   border-width: 0.0625rem;
   border-style: solid;
   border-color: #dddddd;
 }
 
-.ganni-input::placeholder {
-  color: #8a8d8d;
-  font-weight: 400;
-}
-
-.ganni-input:focus {
+.ganni-floating-input:focus {
   outline: none;
   border-color: #000000;
   background: rgb(241, 241, 241);
+}
+
+.ganni-floating-label {
+  position: absolute;
+  left: 0.8125rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: #8a8d8d;
+  pointer-events: none;
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  line-height: 1;
+  font-family: var(--font-primary, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif);
+}
+
+/* Active State: When input has focus OR already has a typed value */
+.ganni-floating-label-active,
+.peer:focus ~ .ganni-floating-label {
+  top: 0.42rem;
+  transform: translateY(0);
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: #8a8d8d;
+}
+
+.peer:focus ~ .ganni-floating-label {
+  color: #000000;
 }
 
 .ganni-input-error {
@@ -318,7 +353,7 @@ async function handleBrandSubmit() {
   border-color: rgb(179, 0, 0) !important;
 }
 
-.ganni-input-error::placeholder {
-  color: rgba(179, 0, 0, 0.6) !important;
+.ganni-input-error ~ .ganni-floating-label {
+  color: rgb(179, 0, 0) !important;
 }
 </style>
