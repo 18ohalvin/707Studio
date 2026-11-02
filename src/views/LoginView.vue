@@ -382,8 +382,20 @@
         v-else-if="currentStep === 'onboarding_success'" 
         class="flex flex-col items-center gap-6 animate-apple-pop w-full max-w-[420px] text-center my-auto"
       >
-        <div class="size-12 rounded-full bg-amber-500/10 border border-amber-400/30 text-amber-400 flex items-center justify-center shadow-xs">
-          <Clock class="w-5 h-5" />
+        <!-- Minimalist animated white badge -->
+        <div class="relative size-12 rounded-full border-[0.5px] border-white/30 bg-white/5 backdrop-blur-xs flex items-center justify-center shadow-[0_0_24px_rgba(255,255,255,0.08)]">
+          <div class="absolute inset-0 rounded-full border border-white/20 animate-ping opacity-25 pointer-events-none" />
+          <svg 
+            class="w-5 h-5 text-white" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            stroke-width="1.75" 
+            stroke-linecap="round" 
+            stroke-linejoin="round"
+          >
+            <polyline points="20 6 9 17 4 12" class="checkmark-path" />
+          </svg>
         </div>
         <div class="flex flex-col gap-2">
           <h2 class="font-707 text-[28px] sm:text-[32px] font-normal tracking-tight text-white leading-tight">
@@ -440,7 +452,7 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { Eye, EyeOff, Clock } from 'lucide-vue-next';
+import { Eye, EyeOff } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/authStore.ts';
 import { useBrandStore } from '../stores/brandStore.ts';
 import { useEditorStore } from '../stores/editorStore.ts';
@@ -754,5 +766,18 @@ async function submitOnboardingApplication() {
 
 .ganni-input-error ~ .ganni-floating-label {
   color: rgb(251, 113, 133) !important;
+}
+
+/* Animated minimalist white checkmark */
+.checkmark-path {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: drawCheck 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.2s;
+}
+
+@keyframes drawCheck {
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 </style>
