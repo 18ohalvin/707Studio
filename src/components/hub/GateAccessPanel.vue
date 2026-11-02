@@ -24,31 +24,41 @@
           </button>
         </div>
 
-        <!-- 2 Concept C Tabs: Scanner Stations vs Add Device -->
+        <!-- 2 Concept C Tabs: Assigned Devices vs Add Device -->
         <div class="flex items-center gap-6 px-6 border-b border-black/10 bg-white">
           <button
             type="button"
             @click="activeTab = 'stations'"
-            class="py-2.5 text-[12.5px] transition-colors relative cursor-pointer flex items-center gap-1.5"
-            :class="activeTab === 'stations' ? 'text-black font-semibold border-b-2 border-black -mb-[1px]' : 'text-neutral-500 hover:text-black font-normal'"
+            style="outline: none; box-shadow: none; -webkit-tap-highlight-color: transparent;"
+            class="py-2.5 text-[12.5px] transition-colors relative cursor-pointer flex items-center gap-1.5 outline-none focus:outline-none focus-visible:outline-none ring-0 focus:ring-0 border-0 bg-transparent select-none"
+            :class="activeTab === 'stations' ? 'text-black font-semibold' : 'text-neutral-500 hover:text-black font-normal'"
           >
-            <span>Scanner Stations</span>
+            <span>Assigned Devices</span>
             <span
               class="px-1.5 py-0.2 rounded-full text-[10.5px] tabular-nums"
               :class="activeTab === 'stations' ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-600'"
             >
               {{ accounts.length }}
             </span>
+            <span
+              v-if="activeTab === 'stations'"
+              class="absolute bottom-0 left-0 right-0 h-[2px] bg-black rounded-full pointer-events-none"
+            />
           </button>
 
           <button
             type="button"
             @click="activeTab = 'create'"
-            class="py-2.5 text-[12.5px] transition-colors relative cursor-pointer flex items-center gap-1"
-            :class="activeTab === 'create' ? 'text-black font-semibold border-b-2 border-black -mb-[1px]' : 'text-neutral-500 hover:text-black font-normal'"
+            style="outline: none; box-shadow: none; -webkit-tap-highlight-color: transparent;"
+            class="py-2.5 text-[12.5px] transition-colors relative cursor-pointer flex items-center gap-1 outline-none focus:outline-none focus-visible:outline-none ring-0 focus:ring-0 border-0 bg-transparent select-none"
+            :class="activeTab === 'create' ? 'text-black font-semibold' : 'text-neutral-500 hover:text-black font-normal'"
           >
             <Plus class="w-3.5 h-3.5" />
             <span>Add Device & Assign PIC</span>
+            <span
+              v-if="activeTab === 'create'"
+              class="absolute bottom-0 left-0 right-0 h-[2px] bg-black rounded-full pointer-events-none"
+            />
           </button>
         </div>
 

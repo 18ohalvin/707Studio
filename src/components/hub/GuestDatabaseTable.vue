@@ -130,14 +130,19 @@
     </div>
 
     <!-- Smart Sticky Header: Appears on Scroll-Up, Disappears on Scroll-Down -->
-    <div class="sticky top-[92px] z-20 h-0 overflow-visible pointer-events-none">
-      <div
-        class="w-full border border-black/10 rounded-[10px] bg-white/95 backdrop-blur-md shadow-[0_4px_16px_rgba(0,0,0,0.08)] overflow-hidden transition-all duration-200 ease-out"
-        :class="showStickyHeader ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-2 pointer-events-none'"
-      >
+    <div
+      class="fixed z-20 transition-all duration-200 ease-out"
+      :style="{
+        top: `${navBottom}px`,
+        left: `${tableContainerRect.left}px`,
+        width: `${tableContainerRect.width}px`
+      }"
+      :class="showStickyHeader ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-3 pointer-events-none'"
+    >
+      <div class="w-full border border-black/10 rounded-[10px] bg-white/95 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.08)] overflow-hidden pointer-events-auto">
         <div ref="floatingScrollRef" class="overflow-x-auto w-full no-scrollbar" @scroll="onFloatingScroll">
           <table class="w-full text-left border-collapse min-w-[760px]" :style="{ width: tableWidth ? `${tableWidth}px` : '100%' }">
-            <thead class="bg-neutral-50/80 border-b border-black/[0.06]">
+            <thead class="bg-neutral-50/90 border-b border-black/[0.08]">
               <tr class="text-[10.5px] uppercase tracking-normal text-neutral-400 select-none">
                 <th class="w-[40px] pl-4 pr-1 py-2.5" :style="getColStyle(0)">
                   <input
@@ -178,7 +183,7 @@
     </div>
 
     <!-- Table Container (Clean Editorial Ledger) -->
-    <div class="w-full border border-black/[0.06] rounded-[12px] overflow-hidden bg-white shadow-2xs">
+    <div ref="tableContainerRef" class="w-full border border-black/[0.06] rounded-[12px] overflow-hidden bg-white shadow-2xs">
       <div class="overflow-x-auto w-full" ref="tableScrollRef" @scroll="onMainTableScroll">
         <table class="w-full text-left border-collapse min-w-[760px]" ref="tableRef">
           <thead class="bg-neutral-50/60 border-b border-black/[0.06]">
@@ -198,7 +203,7 @@
                   v-if="col.sortable"
                   type="button"
                   @click="toggleSort(col.key)"
-                  class="inline-flex items-center gap-1 uppercase tracking-[0.08em] hover:text-black cursor-pointer font-normal"
+                  class="inline-flex items-center gap-1 uppercase tracking-normal hover:text-black cursor-pointer font-normal"
                   :class="sortKey === col.key ? 'text-black font-medium' : ''"
                 >
                   {{ col.label }}
@@ -1316,11 +1321,36 @@ function closeFloating() {
 
 /* ---------- Smart Scroll-Up Sticky Table Header ---------- */
 const tableRef = ref<HTMLTableElement | null>(null);
+const tableContainerRef = ref<HTMLElement | null>(null);
 const tableScrollRef = ref<HTMLElement | null>(null);
 const floatingScrollRef = ref<HTMLElement | null>(null);
 const showStickyHeader = ref(false);
 const colWidths = ref<number[]>([]);
 const tableWidth = ref<number>(0);
+const navBottom = ref<number>(92);
+const tableContainerRect = ref<{ left: number; width: number }>({ left: 24, width: 1000 });
+
+function updateNavBottom() {
+  const nav = document.getElementById('hub-workspace-nav');
+  if (nav) {
+    const r = nav.getBoundingClientRect();
+    if (r.bottom > 0) {
+      navBottom.value = Math.round(r.bottom);
+      return;
+    }
+  }
+  navBottom.value = 92;
+}
+
+function updateTableContainerRect() {
+  if (tableContainerRef.value) {
+    const r = tableContainerRef.value.getBoundingClientRect();
+    tableContainerRect.value = {
+      left: Math.round(r.left),
+      width: Math.round(r.width)
+    };
+  }
+}
 
 function getColStyle(idx: number) {
   const w = colWidths.value[idx];
@@ -1343,6 +1373,7 @@ function measureColumns() {
   });
   colWidths.value = widths;
   tableWidth.value = tableRef.value.getBoundingClientRect().width;
+  updateTableContainerRect();
 }
 
 let isSyncingScroll = false;
@@ -1368,86 +1399,97 @@ function onFloatingScroll() {
   }
 }
 
-function findScrollContainer(): HTMLElement | Window {
-  let el: HTMLElement | null = tableRef.value?.parentElement ?? null;
-  while (el && el !== document.body) {
-    const style = window.getComputedStyle(el);
-    if (style.overflowY === 'auto' || style.overflowY === 'scroll') {
-      return el;
-    }
-    el = el.parentElement;
-  }
-  return window;
+function getScrollTop(): number {
+  const hubRoot = document.querySelector('.hub-root') as HTMLElement | null;
+  if (hubRoot) return hubRoot.scrollTop;
+  return window.scrollY || document.documentElement.scrollTop || 0;
 }
 
-function getScrollTop(target: HTMLElement | Window): number {
-  if (target === window) return window.scrollY || document.documentElement.scrollTop;
-  return (target as HTMLElement).scrollTop;
-}
-
-let scrollContainerEl: HTMLElement | Window | null = null;
 let resizeObserver: ResizeObserver | null = null;
 let lastScrollTop = 0;
-const SCROLL_THRESHOLD = 6;
+const SCROLL_THRESHOLD = 4;
 
-function handleScroll() {
+function handleScroll(e?: Event) {
   closeFloating();
 
+  // Ignore horizontal scroll events from the table itself
+  if (e && (e.target === tableScrollRef.value || e.target === floatingScrollRef.value)) {
+    return;
+  }
+
   if (!tableRef.value) return;
-  const target = scrollContainerEl || window;
-  const currentScrollTop = getScrollTop(target);
 
+  updateNavBottom();
+  updateTableContainerRect();
+
+  const currentScrollTop = getScrollTop();
   const tableRect = tableRef.value.getBoundingClientRect();
-  const scrollerRect =
-    target === window
-      ? { top: 0, bottom: window.innerHeight }
-      : (target as HTMLElement).getBoundingClientRect();
 
-  // Table top relative to the viewport top
-  const tableTopRelativeToViewport = tableRect.top - scrollerRect.top;
-
-  // The sticky workspace tab bar sits at top: 48px with height ~44px -> total ~92px
-  const STICKY_BAR_HEIGHT = 92;
-
-  // If the natural table header is still in view (user is at or near top of table)
-  if (tableTopRelativeToViewport > STICKY_BAR_HEIGHT - 6) {
+  // Boundary 1: If table's natural header is still visible below the sticky nav bar
+  if (tableRect.top >= navBottom.value - 6) {
     showStickyHeader.value = false;
     lastScrollTop = currentScrollTop;
     return;
   }
 
-  // If user scrolled past the bottom of the table
-  if (tableRect.bottom < STICKY_BAR_HEIGHT + 60) {
+  // Boundary 2: If user scrolled completely past the table
+  if (tableRect.bottom <= navBottom.value + 40) {
     showStickyHeader.value = false;
     lastScrollTop = currentScrollTop;
     return;
   }
 
+  // Custom behavior: Reveal header when scrolling UP, hide when scrolling DOWN
   const delta = currentScrollTop - lastScrollTop;
   if (Math.abs(delta) >= SCROLL_THRESHOLD) {
     if (delta < 0) {
-      // User is scrolling UP -> Show the sticky header!
+      // User is scrolling UP -> reveal sticky header!
       if (!showStickyHeader.value) {
         measureColumns();
+        if (tableScrollRef.value && floatingScrollRef.value) {
+          floatingScrollRef.value.scrollLeft = tableScrollRef.value.scrollLeft;
+        }
       }
       showStickyHeader.value = true;
     } else {
-      // User is scrolling DOWN -> Hide the sticky header!
+      // User is scrolling DOWN -> hide sticky header!
       showStickyHeader.value = false;
     }
     lastScrollTop = currentScrollTop;
   }
 }
 
+function onWindowResize() {
+  updateNavBottom();
+  updateTableContainerRect();
+  measureColumns();
+}
+
+watch(visibleColumns, () => {
+  nextTick(() => {
+    measureColumns();
+  });
+});
+
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown);
   document.addEventListener('mousedown', handleDocClick);
+  window.addEventListener('resize', onWindowResize);
 
-  scrollContainerEl = findScrollContainer();
-  scrollContainerEl.addEventListener('scroll', handleScroll, { passive: true });
+  // Capture phase listener guarantees catching scroll on .hub-root or window
+  window.addEventListener('scroll', handleScroll, { capture: true, passive: true });
+
+  const hubRoot = document.querySelector('.hub-root');
+  if (hubRoot) {
+    hubRoot.addEventListener('scroll', handleScroll, { passive: true });
+  }
 
   nextTick(() => {
+    updateNavBottom();
+    updateTableContainerRect();
     measureColumns();
+    lastScrollTop = getScrollTop();
+
     if (typeof ResizeObserver !== 'undefined' && tableRef.value) {
       resizeObserver = new ResizeObserver(() => {
         measureColumns();
@@ -1460,9 +1502,14 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown);
   document.removeEventListener('mousedown', handleDocClick);
-  if (scrollContainerEl) {
-    scrollContainerEl.removeEventListener('scroll', handleScroll);
+  window.removeEventListener('resize', onWindowResize);
+  window.removeEventListener('scroll', handleScroll, { capture: true } as any);
+
+  const hubRoot = document.querySelector('.hub-root');
+  if (hubRoot) {
+    hubRoot.removeEventListener('scroll', handleScroll);
   }
+
   if (resizeObserver) {
     resizeObserver.disconnect();
     resizeObserver = null;

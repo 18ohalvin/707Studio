@@ -68,7 +68,7 @@
     <!-- ============================================================== -->
     <template v-else>
       <!-- Top 48px Header with Campaign Switcher -->
-      <header class="w-full h-[48px] px-[24px] py-[8px] flex items-center justify-between border-b border-black/10 bg-white/95 backdrop-blur-md shrink-0 sticky top-0 z-30 select-none">
+      <header class="w-full h-[48px] px-[24px] py-[8px] flex items-center justify-between border-b border-black/10 bg-white/95 backdrop-blur-md shrink-0 sticky top-0 z-40 select-none">
         <div class="flex items-center gap-[12px] h-[24px]">
           <!-- 707 Logo + 1.5 Badge -->
           <router-link to="/" class="h-[18px] relative shrink-0 flex items-center cursor-pointer hover:opacity-85 transition-opacity" title="Back to 707 Home">
@@ -249,7 +249,7 @@
       </div>
 
       <!-- 2. Workspace Navigation (Sticky beneath 48px header) -->
-      <div class="sticky top-[48px] z-20 bg-white/95 backdrop-blur-md border-b border-black/10 w-full select-none">
+      <div id="hub-workspace-nav" class="sticky top-[48px] z-30 bg-white/95 backdrop-blur-md border-b border-black/10 w-full select-none">
         <nav class="flex gap-[28px] md:gap-[44px] items-center px-[24px] w-full whitespace-nowrap overflow-x-auto no-scrollbar py-2.5" aria-label="Campaign hub sections">
           <button
             v-for="t in tabs"
@@ -257,7 +257,7 @@
             :key="t.id"
             type="button"
             @click="setTab(t.id)"
-            class="bg-transparent border-none p-0 cursor-pointer font-707 text-[14.5px] md:text-[15.5px] leading-[22px] transition-colors flex items-center gap-2"
+            class="bg-transparent border-none p-0 cursor-pointer font-707 text-[14.5px] md:text-[15.5px] leading-[22px] transition-colors flex items-center gap-2 outline-none focus:outline-none focus-visible:outline-none ring-0 select-none"
             :class="activeTab === t.id ? 'font-medium underline decoration-solid underline-offset-[10px] text-black' : 'font-normal text-neutral-500 hover:text-black'"
           >
             {{ t.label }}
