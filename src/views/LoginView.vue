@@ -94,24 +94,12 @@
           </div>
         </form>
 
-        <!-- Step 2A: Password Screen (For verified registered accounts) -->
+        <!-- Step 2A: Password Screen (Pure clean state with password box only) -->
         <form 
           v-else-if="currentStep === 'password'" 
           class="flex flex-col gap-4 mt-2" 
           @submit.prevent="handlePasswordSubmit"
         >
-          <!-- Verified Email Display / Edit Action -->
-          <div class="flex items-center justify-between text-[12.5px] font-mono text-neutral-600 pb-1.5 border-b-[0.5px] border-black/15">
-            <span class="truncate">{{ email }}</span>
-            <button 
-              type="button" 
-              @click="editEmail" 
-              class="text-black font-semibold hover:underline ml-2 text-[11.5px] cursor-pointer"
-            >
-              Edit
-            </button>
-          </div>
-
           <!-- Password Floating Field (Label moves to the top of the box) -->
           <div class="relative w-full mt-5">
             <div class="relative w-full flex items-center">
