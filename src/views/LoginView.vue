@@ -277,14 +277,14 @@
           <label class="text-[13.5px] text-neutral-400 font-707">
             Create a password
           </label>
-          <div class="relative w-full max-w-[420px] flex items-center justify-center mx-auto">
+          <div class="relative w-full flex items-center justify-center">
             <input
               ref="passwordStepInput"
               v-model="onboardingPassword"
               :type="showOnboardingPassword ? 'text' : 'password'"
               autocomplete="new-password"
               placeholder="••••••••"
-              class="font-707 text-[40px] sm:text-[48px] text-black text-center tracking-tight outline-none border-b-[0.5px] border-black/25 focus:border-black bg-transparent w-full py-2 placeholder:text-neutral-300 transition-colors pr-10"
+              class="font-707 text-[40px] sm:text-[48px] text-black text-center tracking-tight outline-none border-b-[0.5px] border-black/25 focus:border-black bg-transparent w-full py-2 placeholder:text-neutral-300 transition-colors px-12"
               @keydown.enter.prevent="handleOnboardingPasswordSubmit"
               @input="onboardingError = ''"
             />
