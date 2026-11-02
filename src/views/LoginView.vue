@@ -247,43 +247,52 @@
         </div>
 
         <!-- ========================================== -->
-        <!-- STEP 2B-2: ROLE / WHAT DO YOU DO?          -->
+        <!-- STEP 2B-2: CREATE A PASSWORD               -->
         <!-- ========================================== -->
         <div 
-          v-else-if="currentStep === 'onboarding_role'" 
-          class="flex flex-col items-center gap-8 sm:gap-12 animate-apple-pop w-full py-4"
+          v-else-if="currentStep === 'onboarding_password'" 
+          class="flex flex-col items-center gap-12 sm:gap-16 animate-apple-pop w-full py-4"
         >
-          <div class="flex flex-col items-center text-center gap-2">
-            <h2 class="font-707 text-[30px] sm:text-[36px] font-normal tracking-tight leading-[36px] sm:leading-[42px]">
-              <span class="text-black font-medium">Hi {{ onboardingName }}. </span>
-              <span class="text-neutral-400">What do you do?</span>
-            </h2>
-            <p class="font-707 text-[13px] text-neutral-400 text-center max-w-[360px] mt-1">
-              So the workspace permissions and activations we configure fit your role.
+          <div class="flex flex-col items-center gap-4 w-full">
+            <label class="text-[13.5px] text-neutral-400 font-707">
+              Create a password
+            </label>
+            <div class="relative w-full max-w-[420px] flex items-center justify-center">
+              <input
+                ref="passwordStepInput"
+                v-model="onboardingPassword"
+                :type="showOnboardingPassword ? 'text' : 'password'"
+                autocomplete="new-password"
+                placeholder="••••••••"
+                class="font-707 text-[40px] sm:text-[48px] text-black text-center tracking-tight outline-none border-b-[0.5px] border-black/25 focus:border-black bg-transparent w-full py-2 placeholder:text-neutral-300 transition-colors pr-10"
+                @keydown.enter.prevent="handleOnboardingPasswordSubmit"
+                @input="onboardingError = ''"
+              />
+              <button 
+                type="button" 
+                @click="showOnboardingPassword = !showOnboardingPassword"
+                class="absolute right-2 top-1/2 -translate-y-1/2 text-[#8a8d8d] hover:text-black cursor-pointer bg-transparent border-none p-1 transition-colors"
+                tabindex="-1"
+                :title="showOnboardingPassword ? 'Hide password' : 'Show password'"
+              >
+                <EyeOff v-if="showOnboardingPassword" class="w-5 h-5" />
+                <Eye v-else class="w-5 h-5" />
+              </button>
+            </div>
+            <p class="text-[11.5px] text-neutral-400 font-mono text-center mt-1">
+              Press Enter ↵
             </p>
-          </div>
-
-          <!-- Role Chips/Pills -->
-          <div class="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 w-full max-w-[440px] my-2">
-            <button
-              v-for="r in roleOptions"
-              :key="r"
-              type="button"
-              @click="onboardingRole = r"
-              class="px-5 py-2.5 rounded-full text-[13px] font-707 transition-all apple-press cursor-pointer"
-              :class="onboardingRole === r 
-                ? 'bg-black text-white shadow-xs' 
-                : 'bg-transparent text-neutral-800 border-[0.5px] border-black/20 hover:border-black'"
-            >
-              {{ r }}
-            </button>
+            <p v-if="onboardingError" class="text-[12px] text-[rgb(179,0,0)] font-normal mt-1 animate-apple-pop">
+              {{ onboardingError }}
+            </p>
           </div>
 
           <div class="w-full flex justify-center mt-4 sm:mt-8">
             <button
               type="button"
-              @click="currentStep = 'onboarding_brand'"
-              class="px-12 h-[46px] rounded-full bg-black text-white font-707 font-medium text-[13.5px] hover:bg-neutral-800 active:bg-neutral-900 transition-all flex items-center justify-center apple-press cursor-pointer shadow-xs"
+              @click="handleOnboardingPasswordSubmit"
+              :disabled="!onboardingPassword.trim()"
+              class="px-12 h-[46px] rounded-full bg-black text-white font-707 font-medium text-[13.5px] hover:bg-neutral-800 active:bg-neutral-900 transition-all flex items-center justify-center apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Continue
             </button>
@@ -394,7 +403,7 @@
             </div>
             <div class="flex justify-between py-1 border-b-[0.5px] border-black/10">
               <span class="text-neutral-500">Role:</span>
-              <span class="text-black">{{ onboardingRole }}</span>
+              <span class="text-black">Brand & Marketing</span>
             </div>
             <div class="flex justify-between py-1 border-b-[0.5px] border-black/10">
               <span class="text-neutral-500">Affiliation:</span>
@@ -466,7 +475,7 @@ const brandStore = useBrandStore();
 const editorStore = useEditorStore();
 
 // Main flow state
-type FlowStep = 'email' | 'password' | 'onboarding_name' | 'onboarding_role' | 'onboarding_brand' | 'onboarding_success';
+type FlowStep = 'email' | 'password' | 'onboarding_name' | 'onboarding_password' | 'onboarding_brand' | 'onboarding_success';
 const currentStep = ref<FlowStep>('email');
 
 const isOnboarding = computed(() => currentStep.value.startsWith('onboarding_'));
@@ -474,7 +483,7 @@ const isOnboarding = computed(() => currentStep.value.startsWith('onboarding_'))
 const currentOnboardingStepIndex = computed(() => {
   switch (currentStep.value) {
     case 'onboarding_name': return 1;
-    case 'onboarding_role': return 2;
+    case 'onboarding_password': return 2;
     case 'onboarding_brand': return 3;
     default: return 3;
   }
@@ -489,19 +498,10 @@ const isLoading = ref(false);
 
 // Onboarding details
 const onboardingName = ref('');
-const onboardingRole = ref('Brand PIC / Manager');
+const onboardingPassword = ref('');
+const showOnboardingPassword = ref(false);
 const onboardingBrand = ref('');
 const onboardingError = ref('');
-
-const roleOptions = [
-  'Brand PIC / Manager',
-  'Creative Director',
-  'Event Producer',
-  'Motion Designer',
-  'Gate / Door Lead',
-  'Retail Partner',
-  'Other'
-];
 
 const partnerBrandOptions = [
   'atmos',
@@ -513,6 +513,7 @@ const partnerBrandOptions = [
 const emailInput = ref<HTMLInputElement | null>(null);
 const passwordInput = ref<HTMLInputElement | null>(null);
 const nameInput = ref<HTMLInputElement | null>(null);
+const passwordStepInput = ref<HTMLInputElement | null>(null);
 const showWhatsNewModal = ref(false);
 
 // Custom background slot (ready for user-provided background)
@@ -667,7 +668,26 @@ function handleOnboardingNameSubmit() {
     nameInput.value?.focus();
     return;
   }
-  currentStep.value = 'onboarding_role';
+  currentStep.value = 'onboarding_password';
+  nextTick(() => {
+    passwordStepInput.value?.focus();
+  });
+}
+
+// STEP 2B-2: Password Handler
+function handleOnboardingPasswordSubmit() {
+  onboardingError.value = '';
+  if (!onboardingPassword.value.trim()) {
+    onboardingError.value = 'Please create a password.';
+    passwordStepInput.value?.focus();
+    return;
+  }
+  if (onboardingPassword.value.trim().length < 4) {
+    onboardingError.value = 'Password should be at least 4 characters.';
+    passwordStepInput.value?.focus();
+    return;
+  }
+  currentStep.value = 'onboarding_brand';
 }
 
 // STEP 2B-3: Submit Onboarding Application
@@ -677,7 +697,8 @@ async function handleOnboardingBrandSubmit() {
     await authStore.registerRequest({
       name: onboardingName.value.trim(),
       email: email.value.trim().toLowerCase(),
-      role: onboardingRole.value,
+      password: onboardingPassword.value.trim(),
+      role: 'Brand & Marketing',
       brand: onboardingBrand.value.trim() || 'General'
     });
     currentStep.value = 'onboarding_success';
