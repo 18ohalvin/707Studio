@@ -129,12 +129,60 @@
       <span class="hidden md:inline">Click any guest row to view full pass details</span>
     </div>
 
+    <!-- Smart Sticky Header: Appears on Scroll-Up, Disappears on Scroll-Down -->
+    <div class="sticky top-[92px] z-20 h-0 overflow-visible pointer-events-none">
+      <div
+        class="w-full border border-black/10 rounded-[10px] bg-white/95 backdrop-blur-md shadow-[0_4px_16px_rgba(0,0,0,0.08)] overflow-hidden transition-all duration-200 ease-out"
+        :class="showStickyHeader ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-2 pointer-events-none'"
+      >
+        <div ref="floatingScrollRef" class="overflow-x-auto w-full no-scrollbar" @scroll="onFloatingScroll">
+          <table class="w-full text-left border-collapse min-w-[760px]" :style="{ width: tableWidth ? `${tableWidth}px` : '100%' }">
+            <thead class="bg-neutral-50/80 border-b border-black/[0.06]">
+              <tr class="text-[10.5px] uppercase tracking-normal text-neutral-400 select-none">
+                <th class="w-[40px] pl-4 pr-1 py-2.5" :style="getColStyle(0)">
+                  <input
+                    type="checkbox"
+                    class="accent-black rounded cursor-pointer"
+                    :checked="allVisibleSelected"
+                    :indeterminate.prop="someVisibleSelected && !allVisibleSelected"
+                    @change="toggleSelectAll"
+                    aria-label="Select all"
+                  />
+                </th>
+                <th
+                  v-for="(col, idx) in visibleColumns"
+                  :key="col.key"
+                  class="px-3.5 py-2.5 font-normal whitespace-nowrap"
+                  :class="col.thClass"
+                  :style="getColStyle(idx + 1)"
+                >
+                  <button
+                    v-if="col.sortable"
+                    type="button"
+                    @click="toggleSort(col.key)"
+                    class="inline-flex items-center gap-1 uppercase tracking-normal hover:text-black cursor-pointer font-normal"
+                    :class="sortKey === col.key ? 'text-black font-medium' : ''"
+                  >
+                    {{ col.label }}
+                    <ArrowUpDown v-if="sortKey !== col.key" class="w-3 h-3 opacity-30" />
+                    <ArrowUp v-else-if="sortDir === 'asc'" class="w-3 h-3 text-black" />
+                    <ArrowDown v-else class="w-3 h-3 text-black" />
+                  </button>
+                  <span v-else>{{ col.label }}</span>
+                </th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- Table Container (Clean Editorial Ledger) -->
     <div class="w-full border border-black/[0.06] rounded-[12px] overflow-hidden bg-white shadow-2xs">
-      <div class="overflow-x-auto w-full">
-        <table class="w-full text-left border-collapse min-w-[760px]">
+      <div class="overflow-x-auto w-full" ref="tableScrollRef" @scroll="onMainTableScroll">
+        <table class="w-full text-left border-collapse min-w-[760px]" ref="tableRef">
           <thead class="bg-neutral-50/60 border-b border-black/[0.06]">
-            <tr class="text-[10.5px] uppercase tracking-[0.08em] text-neutral-400 select-none">
+            <tr class="text-[10.5px] uppercase tracking-normal text-neutral-400 select-none">
               <th class="w-[40px] pl-4 pr-1 py-3">
                 <input
                   type="checkbox"
@@ -658,7 +706,7 @@
 
 <script setup lang="ts">
 import { glassConfirm } from '../../services/glassDialog.ts';
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import {
   Search, X, Download, Columns3, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, ChevronRight,
   Check, Circle, CircleCheck, Users, Trash2, Copy, LogIn, LogOut, Mail, RotateCw, Calendar, UserPlus, SlidersHorizontal
@@ -1266,16 +1314,159 @@ function closeFloating() {
   statusMenu.value = null;
 }
 
+/* ---------- Smart Scroll-Up Sticky Table Header ---------- */
+const tableRef = ref<HTMLTableElement | null>(null);
+const tableScrollRef = ref<HTMLElement | null>(null);
+const floatingScrollRef = ref<HTMLElement | null>(null);
+const showStickyHeader = ref(false);
+const colWidths = ref<number[]>([]);
+const tableWidth = ref<number>(0);
+
+function getColStyle(idx: number) {
+  const w = colWidths.value[idx];
+  if (!w) return undefined;
+  return {
+    width: `${w}px`,
+    minWidth: `${w}px`,
+    maxWidth: `${w}px`,
+    boxSizing: 'border-box' as const
+  };
+}
+
+function measureColumns() {
+  if (!tableRef.value) return;
+  const ths = tableRef.value.querySelectorAll('thead tr th');
+  if (!ths || !ths.length) return;
+  const widths: number[] = [];
+  ths.forEach(th => {
+    widths.push((th as HTMLElement).getBoundingClientRect().width);
+  });
+  colWidths.value = widths;
+  tableWidth.value = tableRef.value.getBoundingClientRect().width;
+}
+
+let isSyncingScroll = false;
+function onMainTableScroll() {
+  if (isSyncingScroll) return;
+  if (tableScrollRef.value && floatingScrollRef.value) {
+    isSyncingScroll = true;
+    floatingScrollRef.value.scrollLeft = tableScrollRef.value.scrollLeft;
+    requestAnimationFrame(() => {
+      isSyncingScroll = false;
+    });
+  }
+}
+
+function onFloatingScroll() {
+  if (isSyncingScroll) return;
+  if (tableScrollRef.value && floatingScrollRef.value) {
+    isSyncingScroll = true;
+    tableScrollRef.value.scrollLeft = floatingScrollRef.value.scrollLeft;
+    requestAnimationFrame(() => {
+      isSyncingScroll = false;
+    });
+  }
+}
+
+function findScrollContainer(): HTMLElement | Window {
+  let el: HTMLElement | null = tableRef.value?.parentElement ?? null;
+  while (el && el !== document.body) {
+    const style = window.getComputedStyle(el);
+    if (style.overflowY === 'auto' || style.overflowY === 'scroll') {
+      return el;
+    }
+    el = el.parentElement;
+  }
+  return window;
+}
+
+function getScrollTop(target: HTMLElement | Window): number {
+  if (target === window) return window.scrollY || document.documentElement.scrollTop;
+  return (target as HTMLElement).scrollTop;
+}
+
+let scrollContainerEl: HTMLElement | Window | null = null;
+let resizeObserver: ResizeObserver | null = null;
+let lastScrollTop = 0;
+const SCROLL_THRESHOLD = 6;
+
+function handleScroll() {
+  closeFloating();
+
+  if (!tableRef.value) return;
+  const target = scrollContainerEl || window;
+  const currentScrollTop = getScrollTop(target);
+
+  const tableRect = tableRef.value.getBoundingClientRect();
+  const scrollerRect =
+    target === window
+      ? { top: 0, bottom: window.innerHeight }
+      : (target as HTMLElement).getBoundingClientRect();
+
+  // Table top relative to the viewport top
+  const tableTopRelativeToViewport = tableRect.top - scrollerRect.top;
+
+  // The sticky workspace tab bar sits at top: 48px with height ~44px -> total ~92px
+  const STICKY_BAR_HEIGHT = 92;
+
+  // If the natural table header is still in view (user is at or near top of table)
+  if (tableTopRelativeToViewport > STICKY_BAR_HEIGHT - 6) {
+    showStickyHeader.value = false;
+    lastScrollTop = currentScrollTop;
+    return;
+  }
+
+  // If user scrolled past the bottom of the table
+  if (tableRect.bottom < STICKY_BAR_HEIGHT + 60) {
+    showStickyHeader.value = false;
+    lastScrollTop = currentScrollTop;
+    return;
+  }
+
+  const delta = currentScrollTop - lastScrollTop;
+  if (Math.abs(delta) >= SCROLL_THRESHOLD) {
+    if (delta < 0) {
+      // User is scrolling UP -> Show the sticky header!
+      if (!showStickyHeader.value) {
+        measureColumns();
+      }
+      showStickyHeader.value = true;
+    } else {
+      // User is scrolling DOWN -> Hide the sticky header!
+      showStickyHeader.value = false;
+    }
+    lastScrollTop = currentScrollTop;
+  }
+}
+
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown);
   document.addEventListener('mousedown', handleDocClick);
-  window.addEventListener('scroll', closeFloating, true);
+
+  scrollContainerEl = findScrollContainer();
+  scrollContainerEl.addEventListener('scroll', handleScroll, { passive: true });
+
+  nextTick(() => {
+    measureColumns();
+    if (typeof ResizeObserver !== 'undefined' && tableRef.value) {
+      resizeObserver = new ResizeObserver(() => {
+        measureColumns();
+      });
+      resizeObserver.observe(tableRef.value);
+    }
+  });
 });
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown);
   document.removeEventListener('mousedown', handleDocClick);
-  window.removeEventListener('scroll', closeFloating, true);
+  if (scrollContainerEl) {
+    scrollContainerEl.removeEventListener('scroll', handleScroll);
+  }
+  if (resizeObserver) {
+    resizeObserver.disconnect();
+    resizeObserver = null;
+  }
 });
 </script>
 
