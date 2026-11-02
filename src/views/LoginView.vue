@@ -15,11 +15,11 @@
       <!-- Onboarding Step 2B Header (Savee-style segmented progress bar) -->
       <div 
         v-if="isOnboarding && currentStep !== 'onboarding_success'" 
-        class="w-full flex items-center justify-between"
+        class="w-full h-full flex items-center justify-between relative"
       >
         <router-link 
           to="/" 
-          class="h-[18px] relative shrink-0 flex items-center cursor-pointer hover:opacity-80 transition-opacity" 
+          class="h-[18px] relative shrink-0 flex items-center cursor-pointer hover:opacity-80 transition-opacity z-10" 
           title="Back to 707 Home"
           @click="resetToLogin"
         >
@@ -30,8 +30,8 @@
           />
         </router-link>
 
-        <!-- Segmented 3-part progress line -->
-        <div class="flex items-center gap-1.5 w-[140px] sm:w-[180px]">
+        <!-- Segmented 3-part progress line (Strictly centered to viewport/screen) -->
+        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1.5 w-[140px] sm:w-[180px] pointer-events-none">
           <div 
             v-for="s in 3" 
             :key="s"
@@ -41,7 +41,7 @@
         </div>
 
         <!-- Step counter -->
-        <span class="text-[12px] font-mono text-neutral-400 font-medium">
+        <span class="text-[12px] font-mono text-neutral-400 font-medium z-10">
           {{ currentOnboardingStepIndex }} / 3
         </span>
       </div>
