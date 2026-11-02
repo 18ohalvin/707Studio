@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen w-full flex flex-col justify-between bg-[#fbfbfb] text-black font-sans relative select-none p-6 sm:p-8 overflow-hidden">
+  <div class="h-screen w-full flex flex-col justify-between bg-[#fbfbfb] text-black font-sans relative select-none overflow-hidden">
     <!-- Future Background Container Layer (Prepared for custom background asset) -->
     <div 
       class="absolute inset-0 bg-[#fbfbfb] z-0 pointer-events-none transition-all duration-700" 
@@ -7,7 +7,11 @@
     />
 
     <!-- Header: Dynamic (Centered on login, Segmented progress bar during onboarding) -->
-    <header class="w-full px-[24px] py-[16px] sm:py-[20px] relative z-10">
+    <header 
+      class="w-full h-[48px] px-[24px] py-[8px] flex items-center justify-between shrink-0 relative z-10"
+      data-node-id="198:6791"
+      data-name="Header"
+    >
       <!-- Onboarding Step 2B Header (Savee-style segmented progress bar) -->
       <div 
         v-if="isOnboarding && currentStep !== 'onboarding_success'" 
@@ -69,14 +73,15 @@
       </div>
     </header>
 
-    <!-- Center Stage: Minimal Seamless Sign In & Onboarding -->
-    <main class="w-full flex-1 flex items-center justify-center py-8 relative z-10">
-      <div class="w-full max-w-[420px] flex flex-col gap-8 animate-apple-pop">
+    <!-- Center Stage: Minimal Seamless Sign In & Onboarding strictly following global padding -->
+    <main class="w-full flex-1 flex flex-col items-center justify-center px-[24px] py-[24px] sm:py-[40px] relative z-10 overflow-y-auto">
+      <!-- STEP 1 & STEP 2A: LOGIN CARD -->
+      <div 
+        v-if="currentStep === 'email' || currentStep === 'password'" 
+        class="w-full max-w-[380px] flex flex-col gap-6 animate-apple-pop my-auto"
+      >
         <!-- Editorial Heading (Step 1 & Step 2A) -->
-        <div 
-          v-if="currentStep === 'email' || currentStep === 'password'" 
-          class="flex flex-col items-center text-center gap-2 mb-2"
-        >
+        <div class="flex flex-col items-center text-center gap-2 mb-2">
           <h1 class="font-707 text-[30px] sm:text-[34px] font-normal tracking-tight text-black leading-[36px] sm:leading-[40px]">
             Let's get you inside.
           </h1>
@@ -205,107 +210,128 @@
           </div>
         </form>
 
-        <!-- ========================================== -->
-        <!-- STEP 2B-1: ONBOARDING NAME (NO PASSWORD)   -->
-        <!-- ========================================== -->
-        <div 
-          v-else-if="currentStep === 'onboarding_name'" 
-          class="flex flex-col items-center gap-12 sm:gap-16 animate-apple-pop w-full py-4"
-        >
-          <div class="flex flex-col items-center gap-4 w-full">
-            <label class="text-[13.5px] text-neutral-400 font-707">
-              First, what should we call you?
-            </label>
+        <!-- Terms & Privacy Notice for Login -->
+        <p class="font-707 text-[11px] text-neutral-400 text-center leading-relaxed mt-2">
+          By continuing, you agree to our Terms of Service and Privacy Policy.
+        </p>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- STEP 2B-1: ONBOARDING NAME                 -->
+      <!-- ========================================== -->
+      <div 
+        v-else-if="currentStep === 'onboarding_name'" 
+        class="flex flex-col items-center justify-between w-full h-full max-w-[560px] animate-apple-pop my-auto"
+      >
+        <!-- Top spacer for balanced optical centering -->
+        <div class="hidden sm:block shrink-0 h-4" />
+
+        <!-- Center Name Input Section -->
+        <div class="flex flex-col items-center gap-6 w-full text-center my-auto">
+          <label class="text-[13.5px] text-neutral-400 font-707">
+            First, what should we call you?
+          </label>
+          <input
+            ref="nameInput"
+            v-model="onboardingName"
+            type="text"
+            placeholder="Your name"
+            autocomplete="name"
+            class="font-707 text-[40px] sm:text-[48px] text-black text-center tracking-tight outline-none border-b-[0.5px] border-black/25 focus:border-black bg-transparent w-full py-2 placeholder:text-neutral-300 transition-colors"
+            @keydown.enter.prevent="handleOnboardingNameSubmit"
+            @input="onboardingError = ''"
+          />
+          <p class="text-[11.5px] text-neutral-400 font-mono text-center mt-1">
+            Press Enter ↵
+          </p>
+          <p v-if="onboardingError" class="text-[12px] text-[rgb(179,0,0)] font-normal mt-1 animate-apple-pop">
+            {{ onboardingError }}
+          </p>
+        </div>
+
+        <!-- Bottom Continue Pill Button -->
+        <div class="w-full flex justify-center pt-8 pb-2 shrink-0">
+          <button
+            type="button"
+            @click="handleOnboardingNameSubmit"
+            :disabled="!onboardingName.trim()"
+            class="px-12 h-[46px] rounded-full bg-black text-white font-707 font-medium text-[13.5px] hover:bg-neutral-800 active:bg-neutral-900 transition-all flex items-center justify-center apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Continue
+          </button>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- STEP 2B-2: CREATE A PASSWORD               -->
+      <!-- ========================================== -->
+      <div 
+        v-else-if="currentStep === 'onboarding_password'" 
+        class="flex flex-col items-center justify-between w-full h-full max-w-[560px] animate-apple-pop my-auto"
+      >
+        <!-- Top spacer for balanced optical centering -->
+        <div class="hidden sm:block shrink-0 h-4" />
+
+        <!-- Center Password Creation Section -->
+        <div class="flex flex-col items-center gap-6 w-full text-center my-auto">
+          <label class="text-[13.5px] text-neutral-400 font-707">
+            Create a password
+          </label>
+          <div class="relative w-full max-w-[420px] flex items-center justify-center mx-auto">
             <input
-              ref="nameInput"
-              v-model="onboardingName"
-              type="text"
-              placeholder="Your name"
-              autocomplete="name"
-              class="font-707 text-[40px] sm:text-[48px] text-black text-center tracking-tight outline-none border-b-[0.5px] border-black/25 focus:border-black bg-transparent w-full py-2 placeholder:text-neutral-300 transition-colors"
-              @keydown.enter.prevent="handleOnboardingNameSubmit"
+              ref="passwordStepInput"
+              v-model="onboardingPassword"
+              :type="showOnboardingPassword ? 'text' : 'password'"
+              autocomplete="new-password"
+              placeholder="••••••••"
+              class="font-707 text-[40px] sm:text-[48px] text-black text-center tracking-tight outline-none border-b-[0.5px] border-black/25 focus:border-black bg-transparent w-full py-2 placeholder:text-neutral-300 transition-colors pr-10"
+              @keydown.enter.prevent="handleOnboardingPasswordSubmit"
               @input="onboardingError = ''"
             />
-            <p class="text-[11.5px] text-neutral-400 font-mono text-center mt-1">
-              Press Enter ↵
-            </p>
-            <p v-if="onboardingError" class="text-[12px] text-[rgb(179,0,0)] font-normal mt-1 animate-apple-pop">
-              {{ onboardingError }}
-            </p>
-          </div>
-
-          <div class="w-full flex justify-center mt-4 sm:mt-8">
-            <button
-              type="button"
-              @click="handleOnboardingNameSubmit"
-              :disabled="!onboardingName.trim()"
-              class="px-12 h-[46px] rounded-full bg-black text-white font-707 font-medium text-[13.5px] hover:bg-neutral-800 active:bg-neutral-900 transition-all flex items-center justify-center apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
+            <button 
+              type="button" 
+              @click="showOnboardingPassword = !showOnboardingPassword"
+              class="absolute right-2 top-1/2 -translate-y-1/2 text-[#8a8d8d] hover:text-black cursor-pointer bg-transparent border-none p-1 transition-colors"
+              tabindex="-1"
+              :title="showOnboardingPassword ? 'Hide password' : 'Show password'"
             >
-              Continue
+              <EyeOff v-if="showOnboardingPassword" class="w-5 h-5" />
+              <Eye v-else class="w-5 h-5" />
             </button>
           </div>
+          <p class="text-[11.5px] text-neutral-400 font-mono text-center mt-1">
+            Press Enter ↵
+          </p>
+          <p v-if="onboardingError" class="text-[12px] text-[rgb(179,0,0)] font-normal mt-1 animate-apple-pop">
+            {{ onboardingError }}
+          </p>
         </div>
 
-        <!-- ========================================== -->
-        <!-- STEP 2B-2: CREATE A PASSWORD               -->
-        <!-- ========================================== -->
-        <div 
-          v-else-if="currentStep === 'onboarding_password'" 
-          class="flex flex-col items-center gap-12 sm:gap-16 animate-apple-pop w-full py-4"
-        >
-          <div class="flex flex-col items-center gap-4 w-full">
-            <label class="text-[13.5px] text-neutral-400 font-707">
-              Create a password
-            </label>
-            <div class="relative w-full max-w-[420px] flex items-center justify-center">
-              <input
-                ref="passwordStepInput"
-                v-model="onboardingPassword"
-                :type="showOnboardingPassword ? 'text' : 'password'"
-                autocomplete="new-password"
-                placeholder="••••••••"
-                class="font-707 text-[40px] sm:text-[48px] text-black text-center tracking-tight outline-none border-b-[0.5px] border-black/25 focus:border-black bg-transparent w-full py-2 placeholder:text-neutral-300 transition-colors pr-10"
-                @keydown.enter.prevent="handleOnboardingPasswordSubmit"
-                @input="onboardingError = ''"
-              />
-              <button 
-                type="button" 
-                @click="showOnboardingPassword = !showOnboardingPassword"
-                class="absolute right-2 top-1/2 -translate-y-1/2 text-[#8a8d8d] hover:text-black cursor-pointer bg-transparent border-none p-1 transition-colors"
-                tabindex="-1"
-                :title="showOnboardingPassword ? 'Hide password' : 'Show password'"
-              >
-                <EyeOff v-if="showOnboardingPassword" class="w-5 h-5" />
-                <Eye v-else class="w-5 h-5" />
-              </button>
-            </div>
-            <p class="text-[11.5px] text-neutral-400 font-mono text-center mt-1">
-              Press Enter ↵
-            </p>
-            <p v-if="onboardingError" class="text-[12px] text-[rgb(179,0,0)] font-normal mt-1 animate-apple-pop">
-              {{ onboardingError }}
-            </p>
-          </div>
-
-          <div class="w-full flex justify-center mt-4 sm:mt-8">
-            <button
-              type="button"
-              @click="handleOnboardingPasswordSubmit"
-              :disabled="!onboardingPassword.trim()"
-              class="px-12 h-[46px] rounded-full bg-black text-white font-707 font-medium text-[13.5px] hover:bg-neutral-800 active:bg-neutral-900 transition-all flex items-center justify-center apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              Continue
-            </button>
-          </div>
+        <!-- Bottom Continue Pill Button -->
+        <div class="w-full flex justify-center pt-8 pb-2 shrink-0">
+          <button
+            type="button"
+            @click="handleOnboardingPasswordSubmit"
+            :disabled="!onboardingPassword.trim()"
+            class="px-12 h-[46px] rounded-full bg-black text-white font-707 font-medium text-[13.5px] hover:bg-neutral-800 active:bg-neutral-900 transition-all flex items-center justify-center apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Continue
+          </button>
         </div>
+      </div>
 
-        <!-- ========================================== -->
-        <!-- STEP 2B-3: BRAND / COMPANY AFFILIATION     -->
-        <!-- ========================================== -->
-        <div 
-          v-else-if="currentStep === 'onboarding_brand'" 
-          class="flex flex-col items-center gap-8 sm:gap-12 animate-apple-pop w-full py-4"
-        >
+      <!-- ========================================== -->
+      <!-- STEP 2B-3: BRAND / COMPANY AFFILIATION     -->
+      <!-- ========================================== -->
+      <div 
+        v-else-if="currentStep === 'onboarding_brand'" 
+        class="flex flex-col items-center justify-between w-full h-full max-w-[560px] animate-apple-pop my-auto"
+      >
+        <!-- Top spacer for balanced optical centering -->
+        <div class="hidden sm:block shrink-0 h-4" />
+
+        <!-- Center Brand Selection Section -->
+        <div class="flex flex-col items-center gap-8 w-full text-center my-auto">
           <div class="flex flex-col items-center text-center gap-2">
             <h2 class="font-707 text-[30px] sm:text-[36px] font-normal tracking-tight leading-[36px] sm:leading-[42px]">
               <span class="text-black font-medium">Which brand </span>
@@ -351,100 +377,101 @@
               Company or brand name *
             </label>
           </div>
-
-          <div class="flex flex-col items-center gap-3 w-full mt-2">
-            <button
-              type="button"
-              @click="handleOnboardingBrandSubmit"
-              :disabled="isLoading || !onboardingBrand.trim()"
-              class="px-12 h-[46px] rounded-full bg-black text-white font-707 font-medium text-[13.5px] hover:bg-neutral-800 active:bg-neutral-900 transition-all flex items-center justify-center apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <span v-if="isLoading" class="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              <span v-else>Submit Application</span>
-            </button>
-            <button
-              type="button"
-              @click="skipBrandAndSubmit"
-              class="text-center text-[12px] font-707 text-neutral-400 hover:text-black py-1 cursor-pointer bg-transparent border-none"
-            >
-              Skip for now
-            </button>
-          </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- STEP 2B-SUCCESS: OPTION B SUPERADMIN GATE   -->
-        <!-- ========================================== -->
-        <div 
-          v-else-if="currentStep === 'onboarding_success'" 
-          class="flex flex-col items-center gap-6 animate-apple-pop w-full text-center py-4"
-        >
-          <div class="size-12 rounded-full bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center shadow-xs">
-            <Clock class="w-5 h-5" />
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <h2 class="font-707 text-[28px] sm:text-[32px] font-normal tracking-tight text-black">
-              Application Received.
-            </h2>
-            <p class="font-707 text-[13px] text-neutral-400">
-              Your workspace request is with 707 Governance.
-            </p>
-          </div>
+        <!-- Bottom Action Buttons -->
+        <div class="flex flex-col items-center gap-3 w-full pt-8 pb-2 shrink-0">
+          <button
+            type="button"
+            @click="handleOnboardingBrandSubmit"
+            :disabled="isLoading || !onboardingBrand.trim()"
+            class="px-12 h-[46px] rounded-full bg-black text-white font-707 font-medium text-[13.5px] hover:bg-neutral-800 active:bg-neutral-900 transition-all flex items-center justify-center apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <span v-if="isLoading" class="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <span v-else>Submit Application</span>
+          </button>
+          <button
+            type="button"
+            @click="skipBrandAndSubmit"
+            class="text-center text-[12px] font-707 text-neutral-400 hover:text-black py-1 cursor-pointer bg-transparent border-none"
+          >
+            Skip for now
+          </button>
+        </div>
+      </div>
 
-          <!-- Application details summary card -->
-          <div class="w-full border-[0.5px] border-black/15 p-5 text-left flex flex-col gap-2.5 font-mono text-[12px] bg-black/[0.02]">
-            <div class="flex justify-between py-1 border-b-[0.5px] border-black/10">
-              <span class="text-neutral-500">Applicant:</span>
-              <span class="text-black font-semibold">{{ onboardingName }}</span>
-            </div>
-            <div class="flex justify-between py-1 border-b-[0.5px] border-black/10">
-              <span class="text-neutral-500">Email:</span>
-              <span class="text-black truncate max-w-[220px]">{{ email }}</span>
-            </div>
-            <div class="flex justify-between py-1 border-b-[0.5px] border-black/10">
-              <span class="text-neutral-500">Role:</span>
-              <span class="text-black">Brand & Marketing</span>
-            </div>
-            <div class="flex justify-between py-1 border-b-[0.5px] border-black/10">
-              <span class="text-neutral-500">Affiliation:</span>
-              <span class="text-black">{{ onboardingBrand || 'General' }}</span>
-            </div>
-            <div class="flex items-center justify-between pt-1">
-              <span class="text-neutral-500">Status:</span>
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-100/80 text-amber-800 text-[11px] font-medium rounded-full">
-                <span class="size-1.5 rounded-full bg-amber-500 animate-pulse" />
-                Pending Superadmin Review
-              </span>
-            </div>
-          </div>
-
-          <p class="font-707 text-[12.5px] text-neutral-500 leading-relaxed px-2">
-            Superadmin (Alvin) has been notified. You will be able to sign in as soon as access is approved.
+      <!-- ========================================== -->
+      <!-- STEP 2B-SUCCESS: OPTION B SUPERADMIN GATE   -->
+      <!-- ========================================== -->
+      <div 
+        v-else-if="currentStep === 'onboarding_success'" 
+        class="flex flex-col items-center gap-6 animate-apple-pop w-full max-w-[440px] text-center my-auto"
+      >
+        <div class="size-12 rounded-full bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center shadow-xs">
+          <Clock class="w-5 h-5" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <h2 class="font-707 text-[28px] sm:text-[32px] font-normal tracking-tight text-black">
+            Application Received.
+          </h2>
+          <p class="font-707 text-[13px] text-neutral-400">
+            Your workspace request is with 707 Governance.
           </p>
+        </div>
 
-          <div class="w-full mt-2">
-            <button
-              type="button"
-              @click="resetToLogin"
-              class="w-full h-[2.75rem] rounded-none bg-black text-white font-707 font-medium text-[13.5px] hover:bg-neutral-800 apple-press cursor-pointer"
-            >
-              Return to Studio
-            </button>
+        <!-- Application details summary card -->
+        <div class="w-full border-[0.5px] border-black/15 p-5 text-left flex flex-col gap-2.5 font-mono text-[12px] bg-black/[0.02]">
+          <div class="flex justify-between py-1 border-b-[0.5px] border-black/10">
+            <span class="text-neutral-500">Applicant:</span>
+            <span class="text-black font-semibold">{{ onboardingName }}</span>
+          </div>
+          <div class="flex justify-between py-1 border-b-[0.5px] border-black/10">
+            <span class="text-neutral-500">Email:</span>
+            <span class="text-black truncate max-w-[220px]">{{ email }}</span>
+          </div>
+          <div class="flex justify-between py-1 border-b-[0.5px] border-black/10">
+            <span class="text-neutral-500">Role:</span>
+            <span class="text-black">Brand & Marketing</span>
+          </div>
+          <div class="flex justify-between py-1 border-b-[0.5px] border-black/10">
+            <span class="text-neutral-500">Affiliation:</span>
+            <span class="text-black">{{ onboardingBrand || 'General' }}</span>
+          </div>
+          <div class="flex items-center justify-between pt-1">
+            <span class="text-neutral-500">Status:</span>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-100/80 text-amber-800 text-[11px] font-medium rounded-full">
+              <span class="size-1.5 rounded-full bg-amber-500 animate-pulse" />
+              Pending Superadmin Review
+            </span>
           </div>
         </div>
 
-        <!-- Minimal Terms & Privacy Notice -->
-        <p 
-          v-if="!isOnboarding || currentStep === 'onboarding_success'" 
-          class="font-707 text-[11px] text-neutral-400 text-center leading-relaxed"
-        >
+        <p class="font-707 text-[12.5px] text-neutral-500 leading-relaxed px-2">
+          Superadmin (Alvin) has been notified. You will be able to sign in as soon as access is approved.
+        </p>
+
+        <div class="w-full mt-2">
+          <button
+            type="button"
+            @click="resetToLogin"
+            class="w-full h-[2.75rem] rounded-none bg-black text-white font-707 font-medium text-[13.5px] hover:bg-neutral-800 apple-press cursor-pointer"
+          >
+            Return to Studio
+          </button>
+        </div>
+
+        <!-- Terms notice on success -->
+        <p class="font-707 text-[11px] text-neutral-400 text-center leading-relaxed">
           By continuing, you agree to our Terms of Service and Privacy Policy.
         </p>
       </div>
     </main>
 
-    <!-- Footer: Studio Mark -->
-    <footer class="w-full px-[24px] flex items-center justify-center py-4 relative z-10">
+    <!-- Footer: Studio Mark strictly following global 48px header/footer height & 24px side padding -->
+    <footer 
+      class="w-full h-[48px] px-[24px] py-[8px] flex items-center justify-center shrink-0 relative z-10"
+      data-name="Footer"
+    >
       <span class="text-[11px] font-707 text-neutral-400">
         707 Design Studio
       </span>
