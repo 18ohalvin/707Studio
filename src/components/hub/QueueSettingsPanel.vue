@@ -4,14 +4,14 @@
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 rounded-[16px] border border-black/10 bg-white">
       <div>
         <div class="flex items-center gap-2">
-          <p class="text-[11px] uppercase tracking-[0.14em] text-neutral-500 font-medium">Traffic & Capacity Architecture</p>
+          <p class="text-[11px] uppercase tracking-[0.14em] text-neutral-500 font-medium">Venue Capacity & Access</p>
           <span class="px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-moss-50 text-moss-700 border border-moss-200">
             Queue System Active
           </span>
         </div>
-        <h2 class="text-[24px] font-medium tracking-tight mt-1">Live Capacity & Queue Settings</h2>
+        <h2 class="text-[24px] font-medium tracking-tight mt-1">Queue & Capacity Management</h2>
         <p class="text-[13.5px] text-neutral-500 max-w-[640px] mt-1 leading-relaxed">
-          Manage real-time venue capacity limits, advance queue progression, and configure automated WhatsApp messaging.
+          Manage real-time venue capacity, advance guest queues, and automate WhatsApp alerts.
         </p>
       </div>
 

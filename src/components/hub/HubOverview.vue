@@ -49,7 +49,7 @@
             v-for="a in actions"
             :key="a.tab"
             type="button"
-            @click="emit('go', a.tab)"
+            @click="handleActionClick(a.tab)"
             class="w-full flex items-center gap-3 px-3 py-2.5 rounded-[10px] border border-black/10 hover:border-black/30 hover:bg-black/[0.02] cursor-pointer text-left transition-colors"
           >
             <div class="size-8 rounded-[8px] bg-black text-white flex items-center justify-center shrink-0">
@@ -91,16 +91,26 @@ import {
   guestName, initials, formatDateTime
 } from './hubUtils.ts';
 
-type TabId = 'overview' | 'guests' | 'scanner' | 'raffle';
+type TabId = 'overview' | 'guests' | 'scanner' | 'raffle' | 'queue';
 
 const props = defineProps<{
   rows: Submission[];
   campaignTitle: (pageId: string) => string;
+  scannerHref?: string;
 }>();
 
 const emit = defineEmits<{
   (e: 'go', tab: TabId): void;
+  (e: 'openScanner'): void;
 }>();
+
+function handleActionClick(tab: TabId) {
+  if (tab === 'scanner') {
+    emit('openScanner');
+  } else {
+    emit('go', tab);
+  }
+}
 
 const pct = (n: number, total: number) => (total ? Math.round((n / total) * 100) : 0);
 

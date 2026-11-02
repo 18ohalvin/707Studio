@@ -1,14 +1,19 @@
 <template>
   <div class="h-full w-full bg-white text-black font-707 flex flex-col overflow-y-auto overflow-x-hidden hub-root" data-name="Campaign Hub">
     <!-- Top Header (matches Studio / Settings 48px header) -->
-    <header class="w-full h-[48px] px-[16px] md:px-[20px] flex items-center justify-between border-b border-black/10 bg-white/90 backdrop-blur-md shrink-0 sticky top-0 z-30 select-none">
+    <header class="w-full h-[48px] px-[24px] py-[8px] flex items-center justify-between border-b border-black/10 bg-white/90 backdrop-blur-md shrink-0 sticky top-0 z-30 select-none">
       <div class="flex items-center gap-[10px] h-[20px]">
         <router-link to="/" class="h-[18px] relative shrink-0 flex items-center cursor-pointer hover:opacity-85 transition-opacity" title="Back to 707 Home">
           <img :src="FIGMA_ASSETS.logoDesignStudio" alt="707 Design Studio" class="h-[18px] w-auto object-contain pointer-events-none" />
         </router-link>
-        <span class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white border border-black/10 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10.5px] font-707 font-medium text-black leading-none whitespace-nowrap">
-          HUB 1.0
-        </span>
+        <button 
+          type="button"
+          @click="showWhatsNewModal = true"
+          class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white hover:bg-neutral-50 border-[0.5px] border-black/10 hover:border-black/30 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10.5px] font-707 font-medium text-black leading-none whitespace-nowrap cursor-pointer transition-all apple-press"
+          title="What's New in Design Studio 1.5"
+        >
+          1.5
+        </button>
       </div>
 
       <div class="flex items-center gap-2 md:gap-3">
@@ -40,7 +45,7 @@
 
     <main class="flex-1 w-full py-[24px] md:py-[36px] flex flex-col gap-[24px] md:gap-[32px]">
       <!-- Intro + Campaign Selector -->
-      <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-5 px-[16px] md:px-[20px] w-full">
+      <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-5 px-[24px] w-full">
         <div class="flex flex-col gap-[8px] items-start">
           <h1 class="font-707 text-[24px] md:text-[28px] leading-[34px] tracking-[-0.56px] text-black font-normal">
             Campaign Hub
@@ -124,7 +129,7 @@
       </div>
 
       <!-- Text Navigation (Settings-page style) -->
-      <nav class="flex gap-[28px] md:gap-[44px] items-center px-[16px] md:px-[20px] w-full whitespace-nowrap overflow-x-auto no-scrollbar select-none" aria-label="Campaign hub sections">
+      <nav class="flex gap-[28px] md:gap-[44px] items-center px-[24px] w-full whitespace-nowrap overflow-x-auto no-scrollbar select-none" aria-label="Campaign hub sections">
         <button
           v-for="t in tabs"
           :id="`hub-tab-${t.id}`"
@@ -162,7 +167,7 @@
       </nav>
 
       <!-- Content -->
-      <section class="px-[16px] md:px-[20px] w-full">
+      <section class="px-[24px] w-full">
         <div v-if="isInitialLoad" class="flex flex-col gap-3">
           <div v-for="i in 5" :key="i" class="h-[52px] rounded-[10px] bg-neutral-100 hub-shimmer" />
         </div>
@@ -178,7 +183,9 @@
             v-if="activeTab === 'overview'"
             :rows="rows"
             :campaign-title="campaignTitle"
+            :scanner-href="scannerHref"
             @go="setTab"
+            @open-scanner="openScanner"
           />
           <!-- Guest Database and Raffle Draw act on guests, so they work on exactly one campaign. -->
           <div v-else-if="needsCampaign" class="rounded-[16px] border border-black/10 bg-white p-6 max-w-[640px] flex flex-col gap-4">
@@ -225,6 +232,7 @@
             v-else-if="activeTab === 'raffle'"
             :rows="rows"
             :export-name="exportBaseName"
+            :campaign-title="selectedProject?.title"
             @updated="mergeRows"
             @toast="toast"
           />
@@ -251,6 +259,12 @@
         <p class="font-707 text-[12px] text-black font-medium">{{ toastMessage }}</p>
       </div>
     </Transition>
+
+    <!-- Design Studio 1.5 What's New Modal -->
+    <WhatsNewModal
+      :is-open="showWhatsNewModal"
+      @close="showWhatsNewModal = false"
+    />
   </div>
 </template>
 
@@ -260,6 +274,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ArrowLeft, RefreshCw, ChevronDown, Layers, LayoutGrid, Check, Search, AlertTriangle, ScanLine, ArrowUpRight, ShieldCheck } from 'lucide-vue-next';
 import GateAccessPanel from '../components/hub/GateAccessPanel.vue';
+import WhatsNewModal from '../components/modals/WhatsNewModal.vue';
 import { FIGMA_ASSETS } from '../constants/figmaAssets.ts';
 import type { ProjectItem } from '../types/editor.ts';
 import { useCampaignGuests } from '../components/hub/useCampaignGuests.ts';
@@ -275,6 +290,7 @@ const TAB_IDS: TabId[] = ['overview', 'guests', 'queue', 'raffle'];
 const route = useRoute();
 const router = useRouter();
 const editorStore = useEditorStore();
+const showWhatsNewModal = ref(false);
 
 const {
   rows, isLoading, isInitialLoad, loadError, lastSyncedAt,

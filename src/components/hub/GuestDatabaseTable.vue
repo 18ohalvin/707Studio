@@ -358,33 +358,33 @@
     <!-- Floating bulk action bar (editor-style dark glass) -->
     <Teleport to="body">
       <Transition name="hub-bar">
-        <div v-if="selected.size" class="fixed bottom-[24px] inset-x-0 z-[70] flex justify-center pointer-events-none px-4 font-707">
-          <div class="pointer-events-auto flex items-center gap-1 pl-4 pr-1.5 py-1.5 rounded-[14px] bg-[#0c0d0e]/[0.92] backdrop-blur-2xl border border-white/10 text-white shadow-[0_24px_60px_rgba(0,0,0,0.35)] max-w-full overflow-x-auto no-scrollbar">
-            <span class="text-[12px] font-medium whitespace-nowrap tabular-nums pr-2">{{ selected.size }} selected</span>
-            <div class="w-px h-5 bg-white/15 mx-1" />
+        <div v-if="selected.size" class="fixed bottom-[24px] inset-x-0 z-[70] flex justify-center pointer-events-none px-3 sm:px-4 font-707">
+          <div class="pointer-events-auto flex items-center gap-1 pl-3.5 sm:pl-4 pr-1.5 py-1.5 rounded-[14px] bg-[#0c0d0e]/[0.94] backdrop-blur-2xl border border-white/10 text-white shadow-[0_24px_60px_rgba(0,0,0,0.4)] max-w-[calc(100vw-24px)] sm:max-w-[calc(100vw-32px)] overflow-x-auto no-scrollbar scroll-smooth">
+            <span class="text-[12px] font-medium whitespace-nowrap tabular-nums pr-1.5 sm:pr-2 shrink-0">{{ selected.size }} <span class="hidden xs:inline">selected</span></span>
+            <div class="w-px h-5 bg-white/15 mx-0.5 sm:mx-1 shrink-0" />
             <button
               v-for="o in STATUS_OPTIONS"
               :key="o.value"
               type="button"
               @click="applyStatus([...selected], o.value)"
-              class="px-2.5 h-[30px] rounded-[8px] text-[11.5px] hover:bg-white/10 cursor-pointer whitespace-nowrap transition-colors"
+              class="px-2 sm:px-2.5 h-[30px] rounded-[8px] text-[11px] sm:text-[11.5px] hover:bg-white/10 cursor-pointer whitespace-nowrap transition-colors shrink-0"
             >
               {{ o.label }}
             </button>
-            <div class="w-px h-5 bg-white/15 mx-1" />
-            <button type="button" @click="sendTickets(selectedRows)" :disabled="!!ticketSender.progress.value && !ticketSender.progress.value.finished" class="px-2.5 h-[30px] rounded-[8px] text-[11.5px] hover:bg-white/10 cursor-pointer flex items-center gap-1.5 whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed" title="Email each selected guest their e-ticket PDF">
-              <Mail class="w-3.5 h-3.5" /> Send ticket
+            <div class="w-px h-5 bg-white/15 mx-0.5 sm:mx-1 shrink-0" />
+            <button type="button" @click="sendTickets(selectedRows)" :disabled="!!ticketSender.progress.value && !ticketSender.progress.value.finished" class="px-2 sm:px-2.5 h-[30px] rounded-[8px] text-[11px] sm:text-[11.5px] hover:bg-white/10 cursor-pointer flex items-center gap-1 sm:gap-1.5 whitespace-nowrap shrink-0 disabled:opacity-40 disabled:cursor-not-allowed" title="Email each selected guest their e-ticket PDF">
+              <Mail class="w-3.5 h-3.5" /> <span class="hidden sm:inline">Send ticket</span><span class="sm:hidden">Send</span>
             </button>
-            <button type="button" @click="sendTickets(selectedRows, true)" :disabled="!!ticketSender.progress.value && !ticketSender.progress.value.finished" class="px-2.5 h-[30px] rounded-[8px] text-[11.5px] hover:bg-white/10 cursor-pointer flex items-center gap-1.5 whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed" title="Send the ticket again, also to guests who already received it">
-              <RotateCw class="w-3.5 h-3.5" /> Resend ticket
+            <button type="button" @click="sendTickets(selectedRows, true)" :disabled="!!ticketSender.progress.value && !ticketSender.progress.value.finished" class="px-2 sm:px-2.5 h-[30px] rounded-[8px] text-[11px] sm:text-[11.5px] hover:bg-white/10 cursor-pointer flex items-center gap-1 sm:gap-1.5 whitespace-nowrap shrink-0 disabled:opacity-40 disabled:cursor-not-allowed" title="Send the ticket again, also to guests who already received it">
+              <RotateCw class="w-3.5 h-3.5" /> <span class="hidden sm:inline">Resend ticket</span><span class="sm:hidden">Resend</span>
             </button>
-            <button type="button" @click="exportCsv(selectedRows)" class="px-2.5 h-[30px] rounded-[8px] text-[11.5px] hover:bg-white/10 cursor-pointer flex items-center gap-1.5 whitespace-nowrap">
-              <Download class="w-3.5 h-3.5" /> Export
+            <button type="button" @click="exportCsv(selectedRows)" class="px-2 sm:px-2.5 h-[30px] rounded-[8px] text-[11px] sm:text-[11.5px] hover:bg-white/10 cursor-pointer flex items-center gap-1 sm:gap-1.5 whitespace-nowrap shrink-0">
+              <Download class="w-3.5 h-3.5" /> <span class="hidden xs:inline">Export</span>
             </button>
-            <button type="button" @click="deleteRows([...selected])" class="px-2.5 h-[30px] rounded-[8px] text-[11.5px] text-oxblood-200 hover:bg-oxblood-600/20 hover:text-oxblood-200 cursor-pointer flex items-center gap-1.5 whitespace-nowrap">
-              <Trash2 class="w-3.5 h-3.5" /> Delete
+            <button type="button" @click="deleteRows([...selected])" class="px-2 sm:px-2.5 h-[30px] rounded-[8px] text-[11px] sm:text-[11.5px] text-oxblood-200 hover:bg-oxblood-600/20 hover:text-oxblood-200 cursor-pointer flex items-center gap-1 sm:gap-1.5 whitespace-nowrap shrink-0">
+              <Trash2 class="w-3.5 h-3.5" /> <span>Delete</span>
             </button>
-            <button type="button" @click="selected = new Set()" class="size-[30px] rounded-[8px] hover:bg-white/10 flex items-center justify-center cursor-pointer shrink-0" title="Clear selection (Esc)">
+            <button type="button" @click="selected = new Set()" class="size-[30px] rounded-[8px] hover:bg-white/10 flex items-center justify-center cursor-pointer shrink-0 ml-1" title="Clear selection (Esc)">
               <X class="w-4 h-4" />
             </button>
           </div>
@@ -784,16 +784,31 @@ function formatCustomAnswer(s: Submission | null, key: string): string {
 }
 
 const STORAGE_KEY = 'hub_guest_table_prefs';
+const DEFAULT_HIDDEN = ['party_size', 'checked_out_at', 'created_at'];
 const savedPrefs = (() => {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+  try {
+    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    if (!parsed.v || parsed.v < 2) {
+      return { hidden: DEFAULT_HIDDEN, compact: parsed.compact, v: 2 };
+    }
+    return parsed;
+  } catch {
+    return { hidden: DEFAULT_HIDDEN, v: 2 };
+  }
 })();
-const hiddenColumns = ref<Set<string>>(new Set(savedPrefs.hidden || []));
+const hiddenColumns = ref<Set<string>>(new Set(savedPrefs.hidden ?? DEFAULT_HIDDEN));
 const compact = ref<boolean>(!!savedPrefs.compact);
 const isColumnsOpen = ref(false);
 const columnsMenuRef = ref<HTMLElement | null>(null);
 
 watch([hiddenColumns, compact], () => {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ hidden: [...hiddenColumns.value], compact: compact.value })); } catch { /* ignore */ }
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      hidden: [...hiddenColumns.value],
+      compact: compact.value,
+      v: 2
+    }));
+  } catch { /* ignore */ }
 }, { deep: true });
 
 const toggleableColumns = computed(() => allColumns.value.filter(c => c.key !== 'guest'));
