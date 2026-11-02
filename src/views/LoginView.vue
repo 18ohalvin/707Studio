@@ -532,12 +532,13 @@ const showOnboardingPassword = ref(false);
 const onboardingBrand = ref('');
 const onboardingError = ref('');
 
-const partnerBrandOptions = [
-  'atmos',
-  'Fred Perry',
-  '707 Store',
-  'Independent'
-];
+// Dynamically connected to Superadmin Governance Brands Directory (/api/brands)
+const partnerBrandOptions = computed(() => {
+  if (brandStore.brands && brandStore.brands.length > 0) {
+    return brandStore.brands.map(b => b.name);
+  }
+  return ['Fred Perry', 'Stanley Indonesia', 'atmos Indonesia'];
+});
 
 const emailInput = ref<HTMLInputElement | null>(null);
 const passwordInput = ref<HTMLInputElement | null>(null);
@@ -585,6 +586,7 @@ function handleKeydown(e: KeyboardEvent) {
 onMounted(() => {
   emailInput.value?.focus();
   window.addEventListener('keydown', handleKeydown);
+  brandStore.loadBrands();
 });
 
 onUnmounted(() => {
