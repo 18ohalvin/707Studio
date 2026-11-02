@@ -1,74 +1,106 @@
 <template>
   <Teleport to="body">
-    <div class="fixed inset-0 z-[80] bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4 font-707" @click.self="$emit('close')">
-      <div class="w-full max-w-[700px] max-h-[90vh] rounded-[18px] bg-white border border-black/10 shadow-[0px_24px_60px_rgba(0,0,0,0.25)] flex flex-col overflow-hidden">
+    <div
+      class="fixed inset-0 z-[80] bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4 font-['Helvetica_Neue',Helvetica,Arial,sans-serif] tracking-normal"
+      @click.self="$emit('close')"
+    >
+      <div class="w-full max-w-[660px] max-h-[88vh] rounded-[16px] bg-white border border-black/10 shadow-[0px_20px_50px_rgba(0,0,0,0.2)] flex flex-col overflow-hidden">
         <!-- Header -->
         <div class="flex items-start justify-between gap-4 px-6 pt-5 pb-3.5 border-b border-black/5">
           <div class="min-w-0">
-            <div class="flex items-center gap-2">
-              <Shield class="w-4 h-4 text-moss-700" />
-              <p class="text-[11px] uppercase tracking-[0.14em] font-semibold text-neutral-500">Staff & Gate Management</p>
+            <div class="flex items-center gap-1.5 text-neutral-500 text-[11px] font-medium">
+              <Shield class="w-3.5 h-3.5 text-moss-700" />
+              <span>Gate Access & Device Management</span>
             </div>
-            <p class="text-[20px] font-medium leading-tight truncate text-black mt-0.5">{{ projectTitle }}</p>
-            <p class="text-[12.5px] text-neutral-500 mt-1">Assign field staff to specific scanner tablets, restrict station roles (Entrance / Exit), and control shift validity.</p>
+            <p class="text-[19px] font-medium leading-tight truncate text-black mt-1">{{ projectTitle }}</p>
+            <p class="text-[12px] text-neutral-500 mt-0.5">Assign door staff to specific tablets, enforce station roles, and control shift validity.</p>
           </div>
           <button
             type="button"
             @click="$emit('close')"
-            class="size-[34px] rounded-[9px] hover:bg-black/5 flex items-center justify-center cursor-pointer shrink-0 text-neutral-500 hover:text-black transition-colors"
+            class="size-[30px] rounded-[8px] hover:bg-neutral-100 flex items-center justify-center cursor-pointer shrink-0 text-neutral-400 hover:text-black transition-colors"
             title="Close"
           >
             <X class="w-4 h-4" />
           </button>
         </div>
 
-        <div class="px-6 py-5 overflow-y-auto flex flex-col gap-5">
-          <!-- Credentials Alert Card: Shown once upon account create or password reset -->
-          <div v-if="credentials" class="rounded-[14px] border border-black bg-black text-white p-4 flex flex-col gap-3 shadow-lg">
+        <!-- Two Tabs Navigation: 707 Design Token Pattern -->
+        <div class="flex items-center gap-6 px-6 border-b border-black/10 select-none bg-white">
+          <button
+            type="button"
+            @click="activeTab = 'assigned'"
+            class="py-2.5 text-[12.5px] transition-colors relative cursor-pointer flex items-center gap-1.5"
+            :class="activeTab === 'assigned' ? 'text-black font-medium border-b-2 border-black -mb-[1px]' : 'text-neutral-500 hover:text-black font-normal'"
+          >
+            <span>Assigned Staff & Devices</span>
+            <span
+              class="px-1.5 py-0.2 rounded-full text-[10.5px] font-normal tabular-nums"
+              :class="activeTab === 'assigned' ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-600'"
+            >
+              {{ accounts.length }}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            @click="activeTab = 'create'"
+            class="py-2.5 text-[12.5px] transition-colors relative cursor-pointer flex items-center gap-1"
+            :class="activeTab === 'create' ? 'text-black font-medium border-b-2 border-black -mb-[1px]' : 'text-neutral-500 hover:text-black font-normal'"
+          >
+            <Plus class="w-3.5 h-3.5" />
+            <span>New Staff Assignment</span>
+          </button>
+        </div>
+
+        <!-- Tab Content Body -->
+        <div class="px-6 py-4 overflow-y-auto flex flex-col gap-4">
+          <!-- Credentials Alert Card: Shown upon account creation or password reset -->
+          <div v-if="credentials" class="rounded-[12px] border border-black bg-black text-white p-3.5 flex flex-col gap-2.5 shadow-md">
             <div class="flex items-center justify-between">
-              <p class="text-[12px] uppercase tracking-wider text-moss-400 font-semibold flex items-center gap-1.5">
+              <p class="text-[11.5px] text-moss-400 font-medium flex items-center gap-1.5">
                 <Check class="w-3.5 h-3.5" />
-                {{ credentials.reset ? 'Password Reset Successful' : 'Staff Passcode Generated' }}
+                <span>{{ credentials.reset ? 'Password Reset Successful' : 'Staff Passcode Generated' }}</span>
               </p>
-              <span class="text-[11px] text-white/50">Shown once only</span>
+              <span class="text-[10.5px] text-white/50">Shown once only</span>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-white/[0.07] rounded-[10px] p-3 text-[13px]">
+            <div class="grid grid-cols-2 gap-2 bg-white/[0.08] rounded-[8px] p-2.5 text-[12px]">
               <div>
-                <span class="text-white/50 text-[10.5px] uppercase tracking-wider block">Staff / Operator</span>
+                <span class="text-white/50 text-[10px] block">Staff / Operator</span>
                 <span class="font-medium text-white select-all">{{ credentials.username }}</span>
               </div>
               <div>
-                <span class="text-white/50 text-[10.5px] uppercase tracking-wider block">Assigned Device / Tag</span>
+                <span class="text-white/50 text-[10px] block">Assigned Device / Tag</span>
                 <span class="text-white select-all">{{ credentials.deviceLabel || 'Unassigned tag' }}</span>
               </div>
               <div>
-                <span class="text-white/50 text-[10.5px] uppercase tracking-wider block">Station Role</span>
+                <span class="text-white/50 text-[10px] block">Station Role</span>
                 <span class="font-medium text-moss-300">
                   {{ credentials.stationMode === 'in' ? 'Entrance Gate (In Only)' : credentials.stationMode === 'out' ? 'Exit Gate (Out Only)' : 'Dual Station (In & Out)' }}
                 </span>
               </div>
               <div>
-                <span class="text-white/50 text-[10.5px] uppercase tracking-wider block">One-time Password</span>
-                <span class="font-mono font-bold tracking-wider text-white select-all">{{ credentials.password }}</span>
+                <span class="text-white/50 text-[10px] block">One-time Password</span>
+                <span class="font-mono font-medium text-white select-all">{{ credentials.password }}</span>
               </div>
             </div>
 
-            <div class="flex items-center justify-between gap-3 text-[12px] text-white/70 pt-0.5">
+            <div class="flex items-center justify-between gap-3 text-[11.5px] text-white/70 pt-0.5">
               <span class="truncate">Sign in at <strong class="text-white font-mono select-all">{{ loginUrl }}</strong></span>
-              <div class="flex items-center gap-2 shrink-0">
+              <div class="flex items-center gap-1.5 shrink-0">
                 <button
                   type="button"
                   @click="copyCredentials"
-                  class="h-[32px] px-3.5 rounded-[8px] bg-white text-black font-medium hover:bg-neutral-200 flex items-center gap-1.5 cursor-pointer transition-colors"
+                  class="h-[28px] px-3 rounded-[6px] bg-white text-black font-medium hover:bg-neutral-200 flex items-center gap-1.5 cursor-pointer transition-colors text-[11.5px]"
                 >
-                  <Copy class="w-3.5 h-3.5" />
+                  <Copy class="w-3 h-3" />
                   <span>Copy Details</span>
                 </button>
                 <button
                   type="button"
                   @click="credentials = null"
-                  class="h-[32px] px-3 rounded-[8px] border border-white/20 text-white/80 hover:bg-white/10 cursor-pointer transition-colors"
+                  class="h-[28px] px-2.5 rounded-[6px] border border-white/20 text-white/80 hover:bg-white/10 cursor-pointer transition-colors text-[11.5px]"
                 >
                   Done
                 </button>
@@ -76,13 +108,10 @@
             </div>
           </div>
 
-          <!-- Active Staff Accounts List -->
-          <div class="flex flex-col gap-2.5">
+          <!-- TAB 1: ASSIGNED STAFF & DEVICES -->
+          <div v-if="activeTab === 'assigned'" class="flex flex-col gap-2.5">
             <div class="flex items-center justify-between">
-              <p class="text-[11px] uppercase tracking-[0.14em] font-semibold text-neutral-500">
-                Assigned Staff & Devices
-                <span class="ml-1.5 px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-700 text-[11px] font-semibold tabular-nums">{{ accounts.length }}</span>
-              </p>
+              <p class="text-[12px] font-medium text-neutral-600">Active Staff Accounts</p>
               <button
                 type="button"
                 @click="load"
@@ -94,98 +123,112 @@
               </button>
             </div>
 
-            <p v-if="loading" class="text-[13px] text-neutral-400 py-3 text-center">Loading assigned accounts…</p>
-            <p v-else-if="!accounts.length" class="text-[13px] text-neutral-500 py-4 text-center rounded-[12px] border border-dashed border-black/15 bg-neutral-50/50">
-              No staff account assigned yet for this campaign. Assign one using the form below.
-            </p>
+            <p v-if="loading" class="text-[12.5px] text-neutral-400 py-6 text-center">Loading assigned accounts…</p>
 
-            <div v-for="a in accounts" :key="a.id" class="rounded-[12px] border border-black/10 bg-white p-3.5 flex flex-col gap-2.5 shadow-sm hover:border-black/20 transition-all">
-              <!-- Top Row: Staff Name, Device Tag, Role Selector, Status -->
-              <div class="flex items-start justify-between gap-3">
-                <div class="min-w-0 flex-1">
-                  <div class="flex items-center gap-2 flex-wrap">
-                    <span class="text-[14.5px] font-semibold text-black tracking-tight">{{ a.username }}</span>
-                    <span class="px-2 py-0.5 rounded-full text-[10.5px] font-medium border" :class="statusClass(a)">
-                      {{ statusLabel(a) }}
-                    </span>
-                  </div>
+            <div
+              v-else-if="!accounts.length"
+              class="py-8 px-4 text-center rounded-[10px] border border-dashed border-black/15 bg-neutral-50/50 flex flex-col items-center gap-2"
+            >
+              <p class="text-[13px] text-neutral-700 font-medium">No staff or devices assigned yet</p>
+              <p class="text-[11.5px] text-neutral-500 max-w-[320px]">Assign door staff to tablets to enable ticket scanning for this campaign.</p>
+              <button
+                type="button"
+                @click="activeTab = 'create'"
+                class="mt-1 h-[30px] px-3.5 rounded-[6px] bg-black text-white text-[11.5px] font-medium hover:bg-neutral-800 transition-colors flex items-center gap-1.5 cursor-pointer"
+              >
+                <Plus class="w-3.5 h-3.5" />
+                <span>Assign First Staff Member</span>
+              </button>
+            </div>
 
-                  <div class="flex items-center gap-2.5 mt-1.5 text-[12px] text-neutral-600 flex-wrap">
-                    <!-- Device / Tag -->
-                    <span v-if="a.deviceLabel" class="inline-flex items-center gap-1 font-medium text-neutral-800 bg-neutral-100 px-2 py-0.5 rounded-[5px]">
-                      <Tablet class="w-3.5 h-3.5 text-neutral-500" />
-                      {{ a.deviceLabel }}
-                    </span>
-                    <span v-else class="text-neutral-400 italic">No device tag</span>
-
-                    <span class="text-neutral-300">·</span>
-
-                    <!-- Expiry countdown -->
-                    <span class="inline-flex items-center gap-1 text-[11.5px]" :class="expiryUrgencyClass(a)">
-                      <Clock class="w-3.5 h-3.5" />
-                      <span>{{ formatRemaining(a.expiresAt).text }}</span>
-                      <span class="text-neutral-400">({{ formatWhen(a.expiresAt) }})</span>
-                    </span>
-                  </div>
+            <!-- Sleek Compact Account Cards -->
+            <div
+              v-for="a in accounts"
+              :key="a.id"
+              class="rounded-[10px] border border-black/10 bg-white p-3 flex flex-col gap-2 hover:border-black/20 transition-all shadow-2xs"
+            >
+              <!-- Top Row: Staff Name, Status Dot, Device Tag, Role Selector -->
+              <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2 min-w-0 flex-1 flex-wrap">
+                  <span class="text-[13.5px] font-medium text-black truncate">{{ a.username }}</span>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-medium border" :class="statusClass(a)">
+                    <span class="size-1.5 rounded-full" :class="statusDotClass(a)" />
+                    {{ statusLabel(a) }}
+                  </span>
+                  <span v-if="a.deviceLabel" class="inline-flex items-center gap-1 text-[11px] text-neutral-700 bg-neutral-100 px-2 py-0.5 rounded-[4px]">
+                    <Tablet class="w-3 h-3 text-neutral-500" />
+                    {{ a.deviceLabel }}
+                  </span>
+                  <span v-else class="text-[11px] text-neutral-400 italic">No device tag</span>
                 </div>
 
                 <!-- Station Role Selector -->
-                <div class="shrink-0 flex items-center gap-1.5">
-                  <label class="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold mr-0.5">Role</label>
+                <div class="shrink-0 flex items-center gap-1">
+                  <span class="text-[11px] text-neutral-400 font-normal">Role:</span>
                   <select
                     :value="a.stationMode"
                     :disabled="busy"
                     @change="updateStationMode(a, ($event.target as HTMLSelectElement).value)"
-                    class="h-[28px] px-2 rounded-[7px] text-[11.5px] font-medium border border-black/15 bg-white hover:border-black/30 outline-none cursor-pointer disabled:opacity-50 transition-colors"
+                    class="h-[25px] px-2 rounded-[5px] text-[11px] font-medium border border-black/15 bg-neutral-50 hover:bg-white outline-none cursor-pointer disabled:opacity-50 transition-colors"
                   >
-                    <option value="in">Entrance Only</option>
-                    <option value="out">Exit Only</option>
+                    <option value="in">Entrance Only (In)</option>
+                    <option value="out">Exit Only (Out)</option>
                     <option value="both">Dual (In & Out)</option>
                   </select>
                 </div>
               </div>
 
-              <!-- Bottom Action Bar -->
-              <div class="flex items-center justify-between gap-2 pt-2 border-t border-black/5 text-[12px]">
-                <!-- Quick Shift Extensions -->
-                <div class="flex items-center gap-1.5">
-                  <span class="text-[11px] text-neutral-400">Extend shift:</span>
-                  <button
-                    type="button"
-                    @click="extendHours(a, 4)"
-                    :disabled="busy"
-                    class="h-[26px] px-2 rounded-[6px] bg-neutral-100 hover:bg-neutral-200 text-neutral-800 text-[11.5px] font-medium transition-colors cursor-pointer disabled:opacity-40"
-                    title="Add 4 hours to this shift"
-                  >
-                    +4h
-                  </button>
-                  <button
-                    type="button"
-                    @click="extendHours(a, 24)"
-                    :disabled="busy"
-                    class="h-[26px] px-2 rounded-[6px] bg-neutral-100 hover:bg-neutral-200 text-neutral-800 text-[11.5px] font-medium transition-colors cursor-pointer disabled:opacity-40"
-                    title="Add 1 day to this shift"
-                  >
-                    +1d
-                  </button>
+              <!-- Bottom Row: Expiry Info, Quick Extensions, Actions -->
+              <div class="flex items-center justify-between gap-2 pt-2 border-t border-black/5 text-[11.5px]">
+                <div class="flex items-center gap-2 min-w-0 flex-wrap">
+                  <span class="inline-flex items-center gap-1 text-[11px]" :class="expiryUrgencyClass(a)">
+                    <Clock class="w-3 h-3" />
+                    <span>{{ formatRemaining(a.expiresAt).text }}</span>
+                    <span class="text-neutral-400">({{ formatWhen(a.expiresAt) }})</span>
+                  </span>
+
+                  <span class="text-neutral-300">·</span>
+
+                  <!-- Quick Extension Pills -->
+                  <div class="flex items-center gap-1">
+                    <span class="text-neutral-400 text-[10.5px]">Extend:</span>
+                    <button
+                      type="button"
+                      @click="extendHours(a, 4)"
+                      :disabled="busy"
+                      class="h-[22px] px-1.5 rounded-[4px] bg-neutral-100 hover:bg-neutral-200 text-neutral-800 text-[10.5px] font-medium transition-colors cursor-pointer disabled:opacity-40"
+                      title="Extend shift by 4 hours"
+                    >
+                      +4h
+                    </button>
+                    <button
+                      type="button"
+                      @click="extendHours(a, 24)"
+                      :disabled="busy"
+                      class="h-[22px] px-1.5 rounded-[4px] bg-neutral-100 hover:bg-neutral-200 text-neutral-800 text-[10.5px] font-medium transition-colors cursor-pointer disabled:opacity-40"
+                      title="Extend shift by 24 hours"
+                    >
+                      +1d
+                    </button>
+                  </div>
                 </div>
 
-                <!-- Account Management Actions -->
-                <div class="flex items-center gap-1.5">
+                <!-- Account Actions -->
+                <div class="flex items-center gap-1 shrink-0">
                   <template v-if="removing === a.id">
                     <button
                       type="button"
                       @click="removing = null"
-                      class="h-[26px] px-2.5 rounded-[6px] border border-black/15 text-[11.5px] font-medium cursor-pointer hover:bg-black/5"
+                      class="h-[24px] px-2 rounded-[5px] border border-black/15 text-[11px] font-medium cursor-pointer hover:bg-black/5"
                     >
                       Cancel
                     </button>
                     <button
                       type="button"
                       @click="remove(a)"
-                      class="h-[26px] px-2.5 rounded-[6px] bg-oxblood-700 text-white text-[11.5px] font-medium cursor-pointer hover:bg-oxblood-800"
+                      class="h-[24px] px-2 rounded-[5px] bg-oxblood-700 text-white text-[11px] font-medium cursor-pointer hover:bg-oxblood-800"
                     >
-                      Confirm Delete
+                      Confirm
                     </button>
                   </template>
                   <template v-else>
@@ -193,8 +236,8 @@
                       type="button"
                       @click="toggleSuspend(a)"
                       :disabled="busy"
-                      class="h-[26px] px-2.5 rounded-[6px] border text-[11.5px] font-medium cursor-pointer transition-colors disabled:opacity-40"
-                      :class="a.status === 'suspended' ? 'text-moss-700 border-moss-300 bg-moss-50 hover:bg-moss-100' : 'text-neutral-700 border-black/15 hover:bg-black/5'"
+                      class="h-[24px] px-2 rounded-[5px] border text-[11px] font-medium cursor-pointer transition-colors disabled:opacity-40"
+                      :class="a.status === 'suspended' ? 'text-moss-700 border-moss-300 bg-moss-50 hover:bg-moss-100' : 'text-neutral-600 border-black/15 hover:bg-black/5'"
                     >
                       {{ a.status === 'suspended' ? 'Activate' : 'Suspend' }}
                     </button>
@@ -202,14 +245,14 @@
                       type="button"
                       @click="resetPassword(a)"
                       :disabled="busy"
-                      class="h-[26px] px-2.5 rounded-[6px] border border-black/15 text-[11.5px] font-medium text-neutral-700 hover:bg-black/5 cursor-pointer disabled:opacity-40"
+                      class="h-[24px] px-2 rounded-[5px] border border-black/15 text-[11px] font-medium text-neutral-600 hover:bg-black/5 cursor-pointer disabled:opacity-40"
                     >
                       New Passcode
                     </button>
                     <button
                       type="button"
                       @click="removing = a.id"
-                      class="size-[26px] rounded-[6px] hover:bg-oxblood-50 text-neutral-400 hover:text-oxblood-700 flex items-center justify-center cursor-pointer transition-colors"
+                      class="size-[24px] rounded-[5px] hover:bg-oxblood-50 text-neutral-400 hover:text-oxblood-700 flex items-center justify-center cursor-pointer transition-colors"
                       title="Delete account"
                     >
                       <Trash2 class="w-3.5 h-3.5" />
@@ -220,17 +263,17 @@
             </div>
           </div>
 
-          <!-- Assign New Staff & Station Form -->
-          <form class="rounded-[14px] border border-black/10 bg-neutral-50/70 p-4 flex flex-col gap-3.5" @submit.prevent="create">
+          <!-- TAB 2: ASSIGN NEW STAFF & STATION FORM -->
+          <form v-else-if="activeTab === 'create'" class="flex flex-col gap-4 py-1" @submit.prevent="create">
             <div>
-              <p class="text-[11px] uppercase tracking-[0.14em] font-semibold text-neutral-700">Assign New Staff & Station</p>
-              <p class="text-[12px] text-neutral-500 mt-0.5">Generate single-event credentials bound to this campaign and station.</p>
+              <p class="text-[13.5px] font-medium text-black">New Staff Member & Station</p>
+              <p class="text-[11.5px] text-neutral-500 mt-0.5">Generate single-event credentials bound to this campaign and station.</p>
             </div>
 
-            <!-- Row 1: Name and Device -->
+            <!-- Row 1: Name and Device Tag -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label class="flex flex-col gap-1">
-                <span class="text-[11px] font-semibold text-neutral-700 uppercase tracking-wider">Staff Member Name / ID</span>
+                <span class="text-[11.5px] font-medium text-neutral-700">Staff Member Name / ID</span>
                 <input
                   v-model="username"
                   type="text"
@@ -238,52 +281,55 @@
                   autocapitalize="none"
                   spellcheck="false"
                   placeholder="e.g. Budi Santoso, Guard #1"
-                  class="h-[38px] px-3 rounded-[8px] bg-white border border-black/15 text-[13px] outline-none focus:border-black transition-colors"
+                  class="h-[36px] px-3 rounded-[7px] bg-white border border-black/15 text-[12.5px] outline-none focus:border-black transition-colors"
                 />
               </label>
+
               <label class="flex flex-col gap-1">
-                <span class="text-[11px] font-semibold text-neutral-700 uppercase tracking-wider">Device / Gate Location Tag</span>
+                <span class="text-[11.5px] font-medium text-neutral-700">Device / Location Tag</span>
                 <input
                   v-model="deviceLabel"
                   type="text"
                   autocomplete="off"
                   spellcheck="false"
-                  placeholder="e.g. North Gate · Tablet A, VIP Desk"
-                  class="h-[38px] px-3 rounded-[8px] bg-white border border-black/15 text-[13px] outline-none focus:border-black transition-colors"
+                  placeholder="e.g. North Gate · Tab 1, VIP Desk"
+                  class="h-[36px] px-3 rounded-[7px] bg-white border border-black/15 text-[12.5px] outline-none focus:border-black transition-colors"
                 />
               </label>
             </div>
 
-            <!-- Row 2: Station Role Segmented Radio -->
+            <!-- Row 2: Station Role Segmented Control -->
             <div class="flex flex-col gap-1.5">
-              <span class="text-[11px] font-semibold text-neutral-700 uppercase tracking-wider">Station Role</span>
+              <span class="text-[11.5px] font-medium text-neutral-700">Station Role</span>
               <div class="grid grid-cols-3 gap-2">
                 <button
                   type="button"
                   @click="stationMode = 'in'"
-                  class="h-[36px] px-2 rounded-[8px] border text-[12px] font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                  :class="stationMode === 'in' ? 'bg-moss-700 text-white border-moss-700 shadow-sm' : 'bg-white text-neutral-700 border-black/15 hover:border-black/30'"
+                  class="h-[34px] px-2 rounded-[7px] border text-[11.5px] font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  :class="stationMode === 'in' ? 'bg-moss-700 text-white border-moss-700 shadow-2xs' : 'bg-white text-neutral-700 border-black/15 hover:border-black/30'"
                 >
                   <LogIn class="w-3.5 h-3.5" />
                   <span>Entrance (In)</span>
                 </button>
+
                 <button
                   type="button"
                   @click="stationMode = 'out'"
-                  class="h-[36px] px-2 rounded-[8px] border text-[12px] font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                  :class="stationMode === 'out' ? 'bg-neutral-800 text-white border-neutral-800 shadow-sm' : 'bg-white text-neutral-700 border-black/15 hover:border-black/30'"
+                  class="h-[34px] px-2 rounded-[7px] border text-[11.5px] font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  :class="stationMode === 'out' ? 'bg-neutral-800 text-white border-neutral-800 shadow-2xs' : 'bg-white text-neutral-700 border-black/15 hover:border-black/30'"
                 >
                   <LogOut class="w-3.5 h-3.5" />
                   <span>Exit (Out)</span>
                 </button>
+
                 <button
                   type="button"
                   @click="stationMode = 'both'"
-                  class="h-[36px] px-2 rounded-[8px] border text-[12px] font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                  :class="stationMode === 'both' ? 'bg-neutral-800 text-white border-neutral-800 shadow-sm' : 'bg-white text-neutral-700 border-black/15 hover:border-black/30'"
+                  class="h-[34px] px-2 rounded-[7px] border text-[11.5px] font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  :class="stationMode === 'both' ? 'bg-neutral-800 text-white border-neutral-800 shadow-2xs' : 'bg-white text-neutral-700 border-black/15 hover:border-black/30'"
                 >
                   <ArrowLeftRight class="w-3.5 h-3.5" />
-                  <span>Dual (Both)</span>
+                  <span>Dual (In & Out)</span>
                 </button>
               </div>
             </div>
@@ -291,40 +337,41 @@
             <!-- Row 3: Shift Validity Duration Presets -->
             <div class="flex flex-col gap-1.5">
               <div class="flex items-center justify-between">
-                <span class="text-[11px] font-semibold text-neutral-700 uppercase tracking-wider">Shift Validity Duration</span>
-                <span class="text-[11.5px] text-moss-700 font-medium">{{ expiryPreviewText }}</span>
+                <span class="text-[11.5px] font-medium text-neutral-700">Shift Validity Duration</span>
+                <span class="text-[11px] text-moss-700 font-medium">{{ expiryPreviewText }}</span>
               </div>
-              <div class="flex items-center gap-2 flex-wrap">
+
+              <div class="flex items-center gap-1.5 flex-wrap">
                 <button
                   v-for="p in presets"
                   :key="p.id"
                   type="button"
                   @click="applyPreset(p.id)"
-                  class="h-[30px] px-2.5 rounded-[7px] border text-[11.5px] font-medium cursor-pointer transition-all"
-                  :class="selectedPreset === p.id ? 'bg-black text-white border-black shadow-sm' : 'bg-white text-neutral-700 border-black/15 hover:border-black/30'"
+                  class="h-[28px] px-2.5 rounded-[6px] border text-[11px] font-medium cursor-pointer transition-all"
+                  :class="selectedPreset === p.id ? 'bg-black text-white border-black' : 'bg-white text-neutral-700 border-black/15 hover:border-black/30'"
                 >
                   {{ p.label }}
                 </button>
               </div>
 
-              <!-- Custom datetime-local input shown when custom is picked -->
+              <!-- Custom datetime input -->
               <div v-if="selectedPreset === 'custom'" class="mt-1">
                 <input
                   v-model="customExpires"
                   type="datetime-local"
-                  class="h-[36px] px-3 rounded-[8px] bg-white border border-black/15 text-[12.5px] outline-none focus:border-black"
+                  class="h-[34px] px-3 rounded-[7px] bg-white border border-black/15 text-[12px] outline-none focus:border-black"
                 />
               </div>
             </div>
 
-            <p v-if="error" class="text-[12.5px] text-oxblood-700 font-medium">{{ error }}</p>
+            <p v-if="error" class="text-[12px] text-oxblood-700 font-medium">{{ error }}</p>
 
-            <div class="flex items-center justify-between gap-3 pt-1">
-              <p class="text-[11.5px] text-neutral-500">Auto-generates a secure 12-char passcode shown once.</p>
+            <div class="flex items-center justify-between gap-3 pt-3 border-t border-black/10">
+              <p class="text-[11px] text-neutral-500">Auto-generates a secure 12-char passcode shown once.</p>
               <button
                 type="submit"
                 :disabled="busy || !username.trim()"
-                class="h-[36px] px-4 rounded-[9px] bg-black text-white text-[13px] font-medium cursor-pointer hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-default shrink-0 flex items-center gap-1.5 transition-colors"
+                class="h-[34px] px-4 rounded-[8px] bg-black text-white text-[12.5px] font-medium cursor-pointer hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-default shrink-0 flex items-center gap-1.5 transition-colors"
               >
                 <Plus class="w-3.5 h-3.5" />
                 <span>Assign Staff & Generate Passcode</span>
@@ -377,6 +424,7 @@ interface CredentialsState {
   reset: boolean;
 }
 
+const activeTab = ref<'assigned' | 'create'>('assigned');
 const accounts = ref<GateAccount[]>([]);
 const loading = ref(true);
 const busy = ref(false);
@@ -477,10 +525,13 @@ const isExpired = (a: GateAccount) => Boolean(a.expiresAt) && new Date(a.expires
 const statusLabel = (a: GateAccount) => (isExpired(a) ? 'Expired' : a.status === 'suspended' ? 'Suspended' : 'Active');
 const statusClass = (a: GateAccount) =>
   isExpired(a)
-    ? 'bg-bronze-50 text-bronze-800 border-bronze-300'
+    ? 'bg-bronze-50 text-bronze-800 border-bronze-200'
     : a.status === 'suspended'
     ? 'bg-oxblood-50 text-oxblood-700 border-oxblood-200'
     : 'bg-moss-50 text-moss-800 border-moss-200';
+
+const statusDotClass = (a: GateAccount) =>
+  isExpired(a) ? 'bg-bronze-600' : a.status === 'suspended' ? 'bg-oxblood-600' : 'bg-moss-600';
 
 const expiryUrgencyClass = (a: GateAccount) => {
   const rem = formatRemaining(a.expiresAt);
@@ -539,6 +590,7 @@ async function create() {
     username.value = '';
     deviceLabel.value = '';
     await load();
+    activeTab.value = 'assigned';
   } catch (err: any) {
     error.value = err?.message || 'Could not create the account.';
   } finally {
@@ -557,6 +609,7 @@ async function resetPassword(a: GateAccount) {
       deviceLabel: a.deviceLabel,
       reset: true
     };
+    activeTab.value = 'assigned';
   } catch (err: any) {
     emit('toast', err?.message || 'Could not reset the password.');
   } finally {
