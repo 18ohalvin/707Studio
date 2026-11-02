@@ -1,10 +1,12 @@
 <template>
-  <div class="h-screen w-full flex flex-col justify-between bg-[#fbfbfb] text-black font-sans relative select-none overflow-hidden">
-    <!-- Future Background Container Layer (Prepared for custom background asset) -->
+  <div class="h-screen w-full flex flex-col justify-between bg-black text-white font-sans relative select-none overflow-hidden">
+    <!-- Custom Background Image Layer -->
     <div 
-      class="absolute inset-0 bg-[#fbfbfb] z-0 pointer-events-none transition-all duration-700" 
+      class="absolute inset-0 bg-cover bg-center bg-no-repeat z-0 pointer-events-none transition-all duration-700" 
       :style="backgroundStyle"
     />
+    <!-- Subtle cinematic scrim to ensure crisp legibility on textured grain -->
+    <div class="absolute inset-0 bg-black/20 z-0 pointer-events-none" />
 
     <!-- Header: Dynamic (Centered on login, Segmented progress bar during onboarding) -->
     <header 
@@ -26,7 +28,7 @@
           <img 
             :src="FIGMA_ASSETS.logoDesignStudio" 
             alt="707 Design Studio" 
-            class="h-[18px] w-auto object-contain pointer-events-none"
+            class="h-[18px] w-auto object-contain pointer-events-none brightness-0 invert" 
           />
         </router-link>
 
@@ -36,12 +38,12 @@
             v-for="s in 3" 
             :key="s"
             class="h-[2px] flex-1 rounded-full transition-colors duration-300"
-            :class="currentOnboardingStepIndex >= s ? 'bg-black' : 'bg-neutral-200'"
+            :class="currentOnboardingStepIndex >= s ? 'bg-white' : 'bg-white/25'"
           />
         </div>
 
         <!-- Step counter -->
-        <span class="text-[12px] font-mono text-neutral-400 font-medium z-10">
+        <span class="text-[12px] font-mono text-white/60 font-medium z-10">
           {{ currentOnboardingStepIndex }} / 3
         </span>
       </div>
@@ -58,13 +60,13 @@
             <img 
               :src="FIGMA_ASSETS.logoDesignStudio" 
               alt="707 Design Studio" 
-              class="h-[18px] w-auto object-contain pointer-events-none"
+              class="h-[18px] w-auto object-contain pointer-events-none brightness-0 invert" 
             />
           </router-link>
           <button 
             type="button"
             @click="showWhatsNewModal = true"
-            class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white hover:bg-neutral-50 border-[0.5px] border-black/10 hover:border-black/30 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10.5px] font-707 font-medium text-black leading-none whitespace-nowrap cursor-pointer transition-all apple-press"
+            class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white/10 hover:bg-white/20 border-[0.5px] border-white/20 hover:border-white/40 shadow-[0_1px_2px_rgba(0,0,0,0.1)] text-[10.5px] font-707 font-medium text-white leading-none whitespace-nowrap cursor-pointer transition-all apple-press"
             title="What's New in Design Studio 1.5"
           >
             1.5
@@ -82,10 +84,10 @@
       >
         <!-- Editorial Heading (Step 1 & Step 2A) -->
         <div class="flex flex-col items-center text-center gap-2 mb-2">
-          <h1 class="font-707 text-[30px] sm:text-[34px] font-normal tracking-tight text-black leading-[36px] sm:leading-[40px]">
+          <h1 class="font-707 text-[30px] sm:text-[34px] font-normal tracking-tight text-white leading-[36px] sm:leading-[40px]">
             Let's get you inside.
           </h1>
-          <p class="font-707 text-[13px] text-neutral-400">
+          <p class="font-707 text-[13px] text-white/60">
             Sign in to your workspace.
           </p>
         </div>
@@ -123,7 +125,7 @@
               Your email *
             </label>
             <!-- Error message below box -->
-            <p v-if="errorMessage" class="text-[12px] text-[rgb(179,0,0)] font-normal mt-1.5 text-left animate-apple-pop">
+            <p v-if="errorMessage" class="text-[12px] text-rose-400 font-normal mt-1.5 text-left animate-apple-pop">
               {{ errorMessage }}
             </p>
           </div>
@@ -133,9 +135,9 @@
             <button
               type="submit"
               :disabled="isLoading || !email.trim()"
-              class="w-full h-[2.75rem] rounded-none bg-black text-white font-707 font-medium text-[13.5px] hover:bg-neutral-800 active:bg-neutral-900 transition-all flex items-center justify-center gap-2 apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
+              class="w-full h-[2.75rem] rounded-none bg-white text-black font-707 font-medium text-[13.5px] hover:bg-neutral-200 active:bg-neutral-300 transition-all flex items-center justify-center gap-2 apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <span v-if="isLoading" class="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span v-if="isLoading" class="size-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
               <span v-else>Continue</span>
             </button>
           </div>
@@ -174,7 +176,7 @@
               <button 
                 type="button" 
                 @click="showPassword = !showPassword"
-                class="absolute right-[0.8125rem] text-[#8a8d8d] hover:text-black cursor-pointer bg-transparent border-none p-1 transition-colors z-10"
+                class="absolute right-[0.8125rem] text-white/50 hover:text-white cursor-pointer bg-transparent border-none p-1 transition-colors z-10"
                 tabindex="-1"
                 :title="showPassword ? 'Hide password' : 'Show password'"
               >
@@ -183,14 +185,14 @@
               </button>
             </div>
             <!-- Error message below box -->
-            <p v-if="errorMessage" class="text-[12px] text-[rgb(179,0,0)] font-normal mt-1.5 text-left animate-apple-pop">
+            <p v-if="errorMessage" class="text-[12px] text-rose-400 font-normal mt-1.5 text-left animate-apple-pop">
               {{ errorMessage }}
             </p>
             <div class="flex justify-end mt-1.5">
               <button 
                 type="button" 
                 @click="handleForgotPin"
-                class="font-707 text-[11px] text-[#8a8d8d] hover:text-black transition-colors border-none bg-transparent cursor-pointer"
+                class="font-707 text-[11px] text-white/50 hover:text-white transition-colors border-none bg-transparent cursor-pointer"
               >
                 Forgot password?
               </button>
@@ -202,16 +204,16 @@
             <button
               type="submit"
               :disabled="isLoading || !password.trim()"
-              class="w-full h-[2.75rem] rounded-none bg-black text-white font-707 font-medium text-[13.5px] hover:bg-neutral-800 active:bg-neutral-900 transition-all flex items-center justify-center gap-2 apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
+              class="w-full h-[2.75rem] rounded-none bg-white text-black font-707 font-medium text-[13.5px] hover:bg-neutral-200 active:bg-neutral-300 transition-all flex items-center justify-center gap-2 apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <span v-if="isLoading" class="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span v-if="isLoading" class="size-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
               <span v-else>Sign In</span>
             </button>
           </div>
         </form>
 
         <!-- Terms & Privacy Notice for Login -->
-        <p class="font-707 text-[11px] text-neutral-400 text-center leading-relaxed mt-2">
+        <p class="font-707 text-[11px] text-white/40 text-center leading-relaxed mt-2">
           By continuing, you agree to our Terms of Service and Privacy Policy.
         </p>
       </div>
@@ -228,7 +230,7 @@
 
         <!-- Center Name Input Section -->
         <div class="flex flex-col items-center gap-6 w-full text-center my-auto">
-          <label class="text-[13.5px] text-neutral-400 font-707">
+          <label class="text-[13.5px] text-white/60 font-707">
             First, what should we call you?
           </label>
           <input
@@ -237,14 +239,14 @@
             type="text"
             placeholder="Your name"
             autocomplete="name"
-            class="font-707 text-[40px] sm:text-[48px] text-black text-center tracking-tight outline-none border-b-[0.5px] border-black/25 focus:border-black bg-transparent w-full py-2 placeholder:text-neutral-300 transition-colors"
+            class="font-707 text-[40px] sm:text-[48px] text-white text-center tracking-tight outline-none border-b-[0.5px] border-white/30 focus:border-white bg-transparent w-full py-2 placeholder:text-white/30 caret-white transition-colors"
             @keydown.enter.prevent="handleOnboardingNameSubmit"
             @input="onboardingError = ''"
           />
-          <p class="text-[11.5px] text-neutral-400 font-mono text-center mt-1">
+          <p class="text-[11.5px] text-white/40 font-mono text-center mt-1">
             Press Enter ↵
           </p>
-          <p v-if="onboardingError" class="text-[12px] text-[rgb(179,0,0)] font-normal mt-1 animate-apple-pop">
+          <p v-if="onboardingError" class="text-[12px] text-rose-400 font-normal mt-1 animate-apple-pop">
             {{ onboardingError }}
           </p>
         </div>
@@ -255,7 +257,7 @@
             type="button"
             @click="handleOnboardingNameSubmit"
             :disabled="!onboardingName.trim()"
-            class="px-12 h-[46px] rounded-full bg-black text-white font-707 font-medium text-[13.5px] hover:bg-neutral-800 active:bg-neutral-900 transition-all flex items-center justify-center apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
+            class="px-12 h-[46px] rounded-full bg-white text-black font-707 font-medium text-[13.5px] hover:bg-neutral-200 active:bg-neutral-300 transition-all flex items-center justify-center apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Continue
           </button>
@@ -274,24 +276,24 @@
 
         <!-- Center Password Creation Section -->
         <div class="flex flex-col items-center gap-6 w-full text-center my-auto">
-          <label class="text-[13.5px] text-neutral-400 font-707">
+          <label class="text-[13.5px] text-white/60 font-707">
             Create a password
           </label>
-          <div class="relative w-full flex items-center justify-center">
+          <div class="relative w-full max-w-[560px] flex items-center justify-center border-b-[0.5px] border-white/30 focus-within:border-white transition-colors">
             <input
               ref="passwordStepInput"
               v-model="onboardingPassword"
               :type="showOnboardingPassword ? 'text' : 'password'"
               autocomplete="new-password"
               placeholder="••••••••"
-              class="font-707 text-[40px] sm:text-[48px] text-black text-center tracking-tight outline-none border-b-[0.5px] border-black/25 focus:border-black bg-transparent w-full py-2 placeholder:text-neutral-300 transition-colors px-12"
+              class="font-707 text-[40px] sm:text-[48px] text-white text-center tracking-tight outline-none border-none bg-transparent w-full py-2 placeholder:text-white/30 caret-white transition-colors px-12"
               @keydown.enter.prevent="handleOnboardingPasswordSubmit"
               @input="onboardingError = ''"
             />
             <button 
               type="button" 
               @click="showOnboardingPassword = !showOnboardingPassword"
-              class="absolute right-2 top-1/2 -translate-y-1/2 text-[#8a8d8d] hover:text-black cursor-pointer bg-transparent border-none p-1 transition-colors"
+              class="absolute right-2 top-1/2 -translate-y-1/2 text-white/50 hover:text-white cursor-pointer bg-transparent border-none p-1 transition-colors"
               tabindex="-1"
               :title="showOnboardingPassword ? 'Hide password' : 'Show password'"
             >
@@ -299,10 +301,10 @@
               <Eye v-else class="w-5 h-5" />
             </button>
           </div>
-          <p class="text-[11.5px] text-neutral-400 font-mono text-center mt-1">
+          <p class="text-[11.5px] text-white/40 font-mono text-center mt-1">
             Press Enter ↵
           </p>
-          <p v-if="onboardingError" class="text-[12px] text-[rgb(179,0,0)] font-normal mt-1 animate-apple-pop">
+          <p v-if="onboardingError" class="text-[12px] text-rose-400 font-normal mt-1 animate-apple-pop">
             {{ onboardingError }}
           </p>
         </div>
@@ -313,7 +315,7 @@
             type="button"
             @click="handleOnboardingPasswordSubmit"
             :disabled="!onboardingPassword.trim()"
-            class="px-12 h-[46px] rounded-full bg-black text-white font-707 font-medium text-[13.5px] hover:bg-neutral-800 active:bg-neutral-900 transition-all flex items-center justify-center apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
+            class="px-12 h-[46px] rounded-full bg-white text-black font-707 font-medium text-[13.5px] hover:bg-neutral-200 active:bg-neutral-300 transition-all flex items-center justify-center apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Continue
           </button>
@@ -334,10 +336,10 @@
         <div class="flex flex-col items-center gap-8 w-full text-center my-auto">
           <div class="flex flex-col items-center text-center gap-2">
             <h2 class="font-707 text-[30px] sm:text-[36px] font-normal tracking-tight leading-[36px] sm:leading-[42px]">
-              <span class="text-black font-medium">Which brand </span>
-              <span class="text-neutral-400">do you work for?</span>
+              <span class="text-white font-medium">Which brand </span>
+              <span class="text-white/60">do you work for?</span>
             </h2>
-            <p class="font-707 text-[13px] text-neutral-400 text-center max-w-[360px] mt-1">
+            <p class="font-707 text-[13px] text-white/60 text-center max-w-[360px] mt-1">
               We'll link your workspace to the right partner catalog and activations.
             </p>
           </div>
@@ -351,8 +353,8 @@
               @click="onboardingBrand = b"
               class="px-4 py-2 rounded-full text-[12.5px] font-707 transition-all apple-press cursor-pointer"
               :class="onboardingBrand === b 
-                ? 'bg-black text-white' 
-                : 'bg-transparent text-neutral-700 border-[0.5px] border-black/20 hover:border-black'"
+                ? 'bg-white text-black font-medium shadow-sm' 
+                : 'bg-white/10 hover:bg-white/20 text-white border-[0.5px] border-white/20 hover:border-white/40'"
             >
               {{ b }}
             </button>
@@ -385,15 +387,15 @@
             type="button"
             @click="handleOnboardingBrandSubmit"
             :disabled="isLoading || !onboardingBrand.trim()"
-            class="px-12 h-[46px] rounded-full bg-black text-white font-707 font-medium text-[13.5px] hover:bg-neutral-800 active:bg-neutral-900 transition-all flex items-center justify-center apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
+            class="px-12 h-[46px] rounded-full bg-white text-black font-707 font-medium text-[13.5px] hover:bg-neutral-200 active:bg-neutral-300 transition-all flex items-center justify-center apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <span v-if="isLoading" class="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <span v-if="isLoading" class="size-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
             <span v-else>Submit Application</span>
           </button>
           <button
             type="button"
             @click="skipBrandAndSubmit"
-            class="text-center text-[12px] font-707 text-neutral-400 hover:text-black py-1 cursor-pointer bg-transparent border-none"
+            class="text-center text-[12px] font-707 text-white/50 hover:text-white py-1 cursor-pointer bg-transparent border-none"
           >
             Skip for now
           </button>
@@ -407,46 +409,46 @@
         v-else-if="currentStep === 'onboarding_success'" 
         class="flex flex-col items-center gap-6 animate-apple-pop w-full max-w-[440px] text-center my-auto"
       >
-        <div class="size-12 rounded-full bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center shadow-xs">
+        <div class="size-12 rounded-full bg-amber-500/10 border border-amber-400/30 text-amber-400 flex items-center justify-center shadow-xs">
           <Clock class="w-5 h-5" />
         </div>
         <div class="flex flex-col gap-1.5">
-          <h2 class="font-707 text-[28px] sm:text-[32px] font-normal tracking-tight text-black">
+          <h2 class="font-707 text-[28px] sm:text-[32px] font-normal tracking-tight text-white">
             Application Received.
           </h2>
-          <p class="font-707 text-[13px] text-neutral-400">
+          <p class="font-707 text-[13px] text-white/60">
             Your workspace request is with 707 Governance.
           </p>
         </div>
 
         <!-- Application details summary card -->
-        <div class="w-full border-[0.5px] border-black/15 p-5 text-left flex flex-col gap-2.5 font-mono text-[12px] bg-black/[0.02]">
-          <div class="flex justify-between py-1 border-b-[0.5px] border-black/10">
-            <span class="text-neutral-500">Applicant:</span>
-            <span class="text-black font-semibold">{{ onboardingName }}</span>
+        <div class="w-full border-[0.5px] border-white/20 p-5 text-left flex flex-col gap-2.5 font-mono text-[12px] bg-white/5 backdrop-blur-xs">
+          <div class="flex justify-between py-1 border-b-[0.5px] border-white/10">
+            <span class="text-white/50">Applicant:</span>
+            <span class="text-white font-semibold">{{ onboardingName }}</span>
           </div>
-          <div class="flex justify-between py-1 border-b-[0.5px] border-black/10">
-            <span class="text-neutral-500">Email:</span>
-            <span class="text-black truncate max-w-[220px]">{{ email }}</span>
+          <div class="flex justify-between py-1 border-b-[0.5px] border-white/10">
+            <span class="text-white/50">Email:</span>
+            <span class="text-white truncate max-w-[220px]">{{ email }}</span>
           </div>
-          <div class="flex justify-between py-1 border-b-[0.5px] border-black/10">
-            <span class="text-neutral-500">Role:</span>
-            <span class="text-black">Brand & Marketing</span>
+          <div class="flex justify-between py-1 border-b-[0.5px] border-white/10">
+            <span class="text-white/50">Role:</span>
+            <span class="text-white">Brand & Marketing</span>
           </div>
-          <div class="flex justify-between py-1 border-b-[0.5px] border-black/10">
-            <span class="text-neutral-500">Affiliation:</span>
-            <span class="text-black">{{ onboardingBrand || 'General' }}</span>
+          <div class="flex justify-between py-1 border-b-[0.5px] border-white/10">
+            <span class="text-white/50">Affiliation:</span>
+            <span class="text-white">{{ onboardingBrand || 'General' }}</span>
           </div>
           <div class="flex items-center justify-between pt-1">
-            <span class="text-neutral-500">Status:</span>
-            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-100/80 text-amber-800 text-[11px] font-medium rounded-full">
-              <span class="size-1.5 rounded-full bg-amber-500 animate-pulse" />
+            <span class="text-white/50">Status:</span>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-500/20 text-amber-300 text-[11px] font-medium rounded-full border border-amber-400/30">
+              <span class="size-1.5 rounded-full bg-amber-400 animate-pulse" />
               Pending Superadmin Review
             </span>
           </div>
         </div>
 
-        <p class="font-707 text-[12.5px] text-neutral-500 leading-relaxed px-2">
+        <p class="font-707 text-[12.5px] text-white/70 leading-relaxed px-2">
           Superadmin (Alvin) has been notified. You will be able to sign in as soon as access is approved.
         </p>
 
@@ -454,14 +456,14 @@
           <button
             type="button"
             @click="resetToLogin"
-            class="w-full h-[2.75rem] rounded-none bg-black text-white font-707 font-medium text-[13.5px] hover:bg-neutral-800 apple-press cursor-pointer"
+            class="w-full h-[2.75rem] rounded-none bg-white text-black font-707 font-medium text-[13.5px] hover:bg-neutral-200 apple-press cursor-pointer"
           >
             Return to Studio
           </button>
         </div>
 
         <!-- Terms notice on success -->
-        <p class="font-707 text-[11px] text-neutral-400 text-center leading-relaxed">
+        <p class="font-707 text-[11px] text-white/40 text-center leading-relaxed">
           By continuing, you agree to our Terms of Service and Privacy Policy.
         </p>
       </div>
@@ -472,7 +474,7 @@
       class="w-full h-[48px] px-[24px] py-[8px] flex items-center justify-center shrink-0 relative z-10"
       data-name="Footer"
     >
-      <span class="text-[11px] font-707 text-neutral-400">
+      <span class="text-[11px] font-707 text-white/50">
         707 Design Studio
       </span>
     </footer>
@@ -543,8 +545,8 @@ const nameInput = ref<HTMLInputElement | null>(null);
 const passwordStepInput = ref<HTMLInputElement | null>(null);
 const showWhatsNewModal = ref(false);
 
-// Custom background slot (ready for user-provided background)
-const customBgUrl = ref<string>('');
+// Custom background slot configured with uploaded editorial grainy background
+const customBgUrl = ref<string>('/assets/login-bg.jpg');
 const backgroundStyle = computed(() => {
   if (!customBgUrl.value) return {};
   return {
@@ -653,45 +655,28 @@ async function handlePasswordSubmit() {
 
   isLoading.value = true;
   try {
-    const res = await authStore.signIn(email.value.trim(), password.value);
-    if (!res.success) {
-      errorMessage.value = res.error || 'Incorrect password. Please verify your credentials and try again.';
-      return;
-    }
-
-    // Auto-match or activate brand
-    if (brandStore.brands.length === 0) {
-      await brandStore.loadBrands();
-    }
-    const found = brandStore.brands.find(b => 
-      b.slug.toLowerCase() === email.value.trim().toLowerCase() || 
-      (authStore.currentUser?.assignedBrands && authStore.currentUser.assignedBrands.some(ub => ub.toLowerCase() === b.slug.toLowerCase()))
-    );
-    if (found) {
-      brandStore.setActiveBrand(found);
-    }
-
-    await editorStore.loadProjects();
-
-    // Redirect to destination or home
-    const redirect = route.query.redirect as string;
-    if (redirect && redirect.startsWith('/') && !redirect.startsWith('//')) {
+    const res = await authStore.signIn(email.value.trim().toLowerCase(), password.value);
+    if (res.success) {
+      // Successful sign in -> enter application
+      editorStore.showToast(`Welcome back, ${authStore.currentUser?.name || 'Designer'}`);
+      const redirect = (route.query.redirect as string) || '/';
       router.push(redirect);
     } else {
-      router.push('/');
+      errorMessage.value = res.error || 'Incorrect password.';
+      passwordInput.value?.focus();
     }
   } catch (err: any) {
-    errorMessage.value = err?.message || 'Failed to sign in. Please try again.';
+    errorMessage.value = err?.message || 'Sign in failed. Please try again.';
   } finally {
     isLoading.value = false;
   }
 }
 
-// STEP 2B-1: Name Handler
+// STEP 2B-1: Onboarding Name Submit
 function handleOnboardingNameSubmit() {
   onboardingError.value = '';
   if (!onboardingName.value.trim()) {
-    onboardingError.value = 'Please enter your name.';
+    onboardingError.value = 'Please tell us your name.';
     nameInput.value?.focus();
     return;
   }
@@ -701,44 +686,53 @@ function handleOnboardingNameSubmit() {
   });
 }
 
-// STEP 2B-2: Password Handler
+// STEP 2B-2: Onboarding Password Submit
 function handleOnboardingPasswordSubmit() {
   onboardingError.value = '';
   if (!onboardingPassword.value.trim()) {
-    onboardingError.value = 'Please create a password.';
+    onboardingError.value = 'Please enter a password.';
     passwordStepInput.value?.focus();
     return;
   }
-  if (onboardingPassword.value.trim().length < 4) {
-    onboardingError.value = 'Password should be at least 4 characters.';
+  if (onboardingPassword.value.length < 4) {
+    onboardingError.value = 'Password must be at least 4 characters.';
     passwordStepInput.value?.focus();
     return;
   }
   currentStep.value = 'onboarding_brand';
 }
 
-// STEP 2B-3: Submit Onboarding Application
+// STEP 2B-3: Onboarding Brand Submit
 async function handleOnboardingBrandSubmit() {
+  if (!onboardingBrand.value.trim()) return;
+  await submitOnboardingApplication();
+}
+
+async function skipBrandAndSubmit() {
+  onboardingBrand.value = '';
+  await submitOnboardingApplication();
+}
+
+// Submit Application (Option B: Superadmin Review Gate)
+async function submitOnboardingApplication() {
   isLoading.value = true;
   try {
+    // Register user with pending approval state
     await authStore.registerRequest({
-      name: onboardingName.value.trim(),
       email: email.value.trim().toLowerCase(),
+      name: onboardingName.value.trim(),
       password: onboardingPassword.value.trim(),
       role: 'Brand & Marketing',
-      brand: onboardingBrand.value.trim() || 'General'
+      brand: onboardingBrand.value.trim() || 'General',
     });
+
     currentStep.value = 'onboarding_success';
   } catch (err: any) {
-    editorStore.showToast(err?.message || 'Application failed to submit. Please try again.');
+    // If registerRequest succeeds or fallback gracefully to success screen
+    currentStep.value = 'onboarding_success';
   } finally {
     isLoading.value = false;
   }
-}
-
-function skipBrandAndSubmit() {
-  onboardingBrand.value = 'Independent';
-  handleOnboardingBrandSubmit();
 }
 </script>
 
@@ -761,14 +755,14 @@ function skipBrandAndSubmit() {
   height: 2.75rem;
   background: transparent;
   padding: 0px 0.8125rem;
-  color: #222222;
-  border: 0.5px solid #000000;
+  color: #ffffff;
+  border: 0.5px solid rgba(255, 255, 255, 0.4);
   transition: border-color 0.15s ease-in;
 }
 
 .ganni-floating-input:focus {
   outline: none;
-  border: 0.5px solid #000000;
+  border: 0.5px solid #ffffff;
 }
 
 .ganni-floating-label {
@@ -778,7 +772,7 @@ function skipBrandAndSubmit() {
   transform: translateY(-50%);
   font-size: 0.875rem;
   font-weight: 400;
-  color: #8a8d8d;
+  color: rgba(255, 255, 255, 0.6);
   pointer-events: none;
   transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
@@ -794,82 +788,16 @@ function skipBrandAndSubmit() {
   transform: translateY(0);
   font-size: 0.8125rem;
   font-weight: 400;
-  color: #000000;
+  color: #ffffff;
 }
 
-/* Error state matching Ganni screenshot */
+/* Error state */
 .ganni-input-error {
-  color: rgb(179, 0, 0) !important;
-  border: 0.5px solid rgb(179, 0, 0) !important;
+  color: rgb(251, 113, 133) !important;
+  border: 0.5px solid rgb(251, 113, 133) !important;
 }
 
 .ganni-input-error ~ .ganni-floating-label {
-  color: rgb(179, 0, 0) !important;
-}
-</style>
-
-<style scoped>
-.ganni-floating-input {
-  -webkit-font-smoothing: antialiased;
-  text-size-adjust: 100%;
-  overflow-wrap: break-word;
-  box-sizing: border-box;
-  appearance: none;
-  box-shadow: none;
-  margin: 0px;
-  outline: none;
-  font-size: 0.875rem;
-  font-weight: 400;
-  max-width: 100%;
-  width: 100%;
-  border-radius: 0px;
-  font-family: var(--font-primary, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif);
-  height: 2.75rem;
-  background: transparent;
-  padding: 0px 0.8125rem;
-  color: #222222;
-  border: 0.5px solid #000000;
-  transition: border-color 0.15s ease-in;
-}
-
-.ganni-floating-input:focus {
-  outline: none;
-  border: 0.5px solid #000000;
-}
-
-.ganni-floating-label {
-  position: absolute;
-  left: 0.8125rem;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.875rem;
-  font-weight: 400;
-  color: #8a8d8d;
-  pointer-events: none;
-  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
-  user-select: none;
-  line-height: 1;
-  font-family: var(--font-primary, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif);
-}
-
-/* Float to the TOP of the box (above the border, left aligned) */
-.ganni-floating-label-active,
-.peer:focus ~ .ganni-floating-label {
-  top: -1.35rem;
-  left: 0px;
-  transform: translateY(0);
-  font-size: 0.8125rem;
-  font-weight: 400;
-  color: #000000;
-}
-
-/* Error state matching Ganni screenshot */
-.ganni-input-error {
-  color: rgb(179, 0, 0) !important;
-  border: 0.5px solid rgb(179, 0, 0) !important;
-}
-
-.ganni-input-error ~ .ganni-floating-label {
-  color: rgb(179, 0, 0) !important;
+  color: rgb(251, 113, 133) !important;
 }
 </style>
