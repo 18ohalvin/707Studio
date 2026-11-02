@@ -27,66 +27,54 @@
       </header>
 
       <!-- Center Stage: Minimalist Launchpad -->
-      <main class="w-full flex-1 flex flex-col items-center justify-between px-[24px] py-[32px] sm:py-[48px] max-w-[620px] mx-auto my-auto">
-        <!-- Top spacer for balanced optical centering -->
-        <div class="hidden sm:block shrink-0 h-4" />
-
-        <div class="flex flex-col items-center gap-7 w-full text-center my-auto animate-apple-pop">
+      <main class="w-full flex-1 flex flex-col items-center justify-center px-[24px] py-[32px] sm:py-[48px] max-w-[620px] mx-auto my-auto">
+        <div class="flex flex-col items-center gap-6 w-full text-center my-auto animate-apple-pop">
+          <!-- Title Section (No sub-description) -->
           <div class="flex flex-col items-center text-center gap-2">
             <span class="text-[12.5px] uppercase tracking-[0.14em] text-neutral-400 font-medium">Campaign Hub</span>
             <h1 class="font-707 text-[32px] sm:text-[40px] font-normal tracking-tight text-black leading-[38px] sm:leading-[46px]">
               Which campaign are you <span class="font-medium">managing today?</span>
             </h1>
-            <p class="font-707 text-[13.5px] text-neutral-500 text-center max-w-[440px] mt-1 leading-relaxed">
-              Select an active campaign to access real-time door check-in, guest database, and event suite.
-            </p>
           </div>
 
-          <!-- Quick Search Bar -->
-          <div class="w-full max-w-[440px] relative mt-1">
-            <Search class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-            <input
-              v-model="launchpadSearch"
-              type="text"
-              placeholder="Search campaign by name or brand…"
-              class="w-full h-[44px] pl-10 pr-4 rounded-[12px] bg-neutral-100/80 border border-black/10 focus:border-black focus:bg-white text-[13.5px] outline-none transition-all placeholder:text-neutral-400"
-              @keydown.enter.prevent="handleLaunchpadEnter"
-            />
-          </div>
-
-          <!-- Campaign Pills -->
-          <div class="flex flex-wrap items-center justify-center gap-2.5 w-full max-w-[540px]">
+          <!-- Compact Selection Trigger Bar -->
+          <div class="w-full max-w-[460px] relative mt-1">
             <button
-              v-for="p in filteredLaunchpadProjects"
+              type="button"
+              @click="openLaunchpadModal"
+              class="w-full h-[50px] px-4 rounded-[14px] bg-neutral-50 hover:bg-neutral-100 border border-black/10 hover:border-black/25 flex items-center justify-between text-left transition-all apple-press cursor-pointer group shadow-2xs"
+              title="Click to search and select campaign (⌘K)"
+            >
+              <div class="flex items-center gap-3 min-w-0">
+                <Search class="w-4 h-4 text-neutral-400 group-hover:text-black transition-colors shrink-0" />
+                <span class="text-[13.5px] text-neutral-500 font-normal truncate">
+                  Select or search campaign…
+                </span>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <kbd class="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded-[5px] bg-black/[0.04] border border-black/10 text-[11px] font-mono text-neutral-400">⌘K</kbd>
+                <ChevronsUpDown class="w-4 h-4 text-neutral-400 group-hover:text-black transition-colors" />
+              </div>
+            </button>
+          </div>
+
+          <!-- Quick Access Campaign Pills (1-click direct enter, no enter button needed) -->
+          <div v-if="projects.length" class="flex flex-wrap items-center justify-center gap-2 w-full max-w-[520px] pt-1">
+            <button
+              v-for="p in projects.slice(0, 8)"
               :key="p.id"
               type="button"
-              @click="selectedLaunchpadId = p.id"
-              @dblclick="selectProjectAndEnter(p.id)"
-              class="px-4 py-2.5 rounded-full text-[13px] font-707 transition-all apple-press cursor-pointer flex items-center gap-2"
-              :class="selectedLaunchpadId === p.id
-                ? 'bg-black text-white font-medium shadow-sm ring-2 ring-black/10'
-                : 'bg-neutral-100 hover:bg-neutral-200/80 text-black border border-black/5'"
+              @click="selectProjectAndEnter(p.id)"
+              class="px-4 py-2 rounded-full text-[12.5px] font-707 bg-neutral-100 hover:bg-black hover:text-white text-black border border-black/5 hover:border-black transition-all apple-press cursor-pointer flex items-center gap-2 shadow-2xs"
+              :title="`Open ${p.title} Hub`"
             >
-              <span class="font-medium truncate max-w-[220px]">{{ p.title }}</span>
+              <span class="font-medium truncate max-w-[200px]">{{ p.title }}</span>
               <span v-if="p.status === 'approved' || p.status === 'published'" class="size-1.5 rounded-full bg-moss-600 shrink-0" />
             </button>
-            <p v-if="!filteredLaunchpadProjects.length" class="text-[13px] text-neutral-400 py-4">
-              No campaigns found matching "{{ launchpadSearch }}".
-            </p>
           </div>
-        </div>
-
-        <!-- Bottom Action Pill Button -->
-        <div class="w-full flex flex-col items-center gap-2 pt-8 pb-2 shrink-0">
-          <button
-            type="button"
-            @click="confirmLaunchpadSelection"
-            :disabled="!selectedLaunchpadId"
-            class="px-12 h-[46px] rounded-full bg-black text-white font-707 font-medium text-[13.5px] hover:bg-neutral-800 active:bg-neutral-900 transition-all flex items-center justify-center apple-press cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <span>Enter Campaign Hub</span>
-          </button>
-          <span class="text-[11px] text-neutral-400 font-mono">Press Enter ↵</span>
+          <div v-else-if="!isLoading" class="text-[13px] text-neutral-400 pt-2">
+            No campaigns available. Create a project in the Studio first.
+          </div>
         </div>
       </main>
     </div>
@@ -382,6 +370,80 @@
       </div>
     </Transition>
 
+    <!-- Launchpad Campaign Search & Selection Modal (⌘K Command Palette) -->
+    <Teleport to="body">
+      <Transition name="hub-fade">
+        <div 
+          v-if="isLaunchpadModalOpen" 
+          class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-start justify-center pt-[12vh] sm:pt-[15vh] px-4 font-707 select-none"
+          @click.self="isLaunchpadModalOpen = false"
+        >
+          <div class="w-full max-w-[500px] bg-white rounded-[18px] shadow-[0_24px_70px_rgba(0,0,0,0.22)] border border-black/10 overflow-hidden flex flex-col animate-apple-pop">
+            <!-- Modal Header / Live Search Bar -->
+            <div class="relative flex items-center px-4 h-[52px] border-b border-black/10 shrink-0">
+              <Search class="w-4 h-4 text-neutral-400 shrink-0 mr-3" />
+              <input
+                ref="launchpadModalInputRef"
+                v-model="launchpadSearch"
+                type="text"
+                placeholder="Search campaign by title or slug…"
+                class="flex-1 h-full text-[13.5px] bg-transparent outline-none placeholder:text-neutral-400 text-black"
+                @keydown.esc="isLaunchpadModalOpen = false"
+                @keydown.enter.prevent="handleModalEnter"
+              />
+              <button
+                type="button"
+                @click="isLaunchpadModalOpen = false"
+                class="size-7 rounded-[6px] hover:bg-black/5 flex items-center justify-center text-neutral-400 hover:text-black cursor-pointer transition-colors"
+                title="Close (Esc)"
+              >
+                <X class="w-4 h-4" />
+              </button>
+            </div>
+
+            <!-- Campaign Results List -->
+            <div class="max-h-[320px] overflow-y-auto divide-y divide-black/[0.04] p-1.5">
+              <button
+                v-for="p in filteredLaunchpadProjects"
+                :key="p.id"
+                type="button"
+                @click="selectProjectAndEnter(p.id)"
+                class="w-full px-3.5 py-3 rounded-[10px] hover:bg-neutral-100/90 active:bg-neutral-200/70 flex items-center justify-between text-left transition-colors cursor-pointer group"
+              >
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="size-8 rounded-[8px] bg-black/[0.04] border border-black/5 flex items-center justify-center shrink-0">
+                    <span class="font-bold text-[11px] text-neutral-700 uppercase">{{ (p.title || 'C').charAt(0) }}</span>
+                  </div>
+                  <div class="min-w-0 flex flex-col">
+                    <span class="text-[13.5px] font-medium text-black truncate group-hover:text-black">{{ p.title }}</span>
+                    <span class="text-[11px] text-neutral-400 font-mono truncate">/{{ p.slug }}</span>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2 shrink-0">
+                  <span v-if="p.status === 'approved' || p.status === 'published'" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-moss-50 border border-moss-200 text-[10.5px] font-mono text-moss-800">
+                    <span class="size-1.5 rounded-full bg-moss-600" />
+                    <span>Active</span>
+                  </span>
+                  <span v-else class="text-[11px] text-neutral-400 capitalize">{{ p.status || 'Draft' }}</span>
+                </div>
+              </button>
+
+              <div v-if="!filteredLaunchpadProjects.length" class="py-8 text-center text-[13px] text-neutral-400">
+                No campaigns match "{{ launchpadSearch }}"
+              </div>
+            </div>
+
+            <!-- Modal Footer Hint -->
+            <div class="px-4 py-2 bg-neutral-50/80 border-t border-black/5 flex items-center justify-between text-[11px] text-neutral-400 font-mono">
+              <span>Click campaign to open Hub</span>
+              <span>ESC to exit</span>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
     <!-- Design Studio 1.5 What's New Modal -->
     <WhatsNewModal
       :is-open="showWhatsNewModal"
@@ -391,11 +453,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
-  RefreshCw, ChevronDown, Check, Search, AlertTriangle, ScanLine, ArrowUpRight,
-  ShieldCheck, SquarePen
+  RefreshCw, ChevronDown, ChevronsUpDown, Check, Search, AlertTriangle, ScanLine, ArrowUpRight,
+  ShieldCheck, SquarePen, X
 } from 'lucide-vue-next';
 import GateAccessPanel from '../components/hub/GateAccessPanel.vue';
 import WhatsNewModal from '../components/modals/WhatsNewModal.vue';
@@ -438,8 +500,9 @@ const pickerProjects = computed(() => {
 });
 
 /* ---------- Launchpad (Pre-Hub State) ---------- */
+const isLaunchpadModalOpen = ref(false);
 const launchpadSearch = ref('');
-const selectedLaunchpadId = ref<string>('');
+const launchpadModalInputRef = ref<HTMLInputElement | null>(null);
 
 const filteredLaunchpadProjects = computed(() => {
   const q = launchpadSearch.value.trim().toLowerCase();
@@ -451,18 +514,26 @@ const filteredLaunchpadProjects = computed(() => {
   );
 });
 
-// Auto-select first active campaign on launchpad if available
-watch(projects, (pList) => {
-  if (!selectedLaunchpadId.value && pList.length > 0) {
-    const active = pList.find(p => p.status === 'approved' || p.status === 'published') || pList[0];
-    selectedLaunchpadId.value = active.id;
+function openLaunchpadModal() {
+  isLaunchpadModalOpen.value = true;
+  launchpadSearch.value = '';
+  nextTick(() => {
+    launchpadModalInputRef.value?.focus();
+  });
+}
+
+function handleModalEnter() {
+  if (filteredLaunchpadProjects.value.length) {
+    selectProjectAndEnter(filteredLaunchpadProjects.value[0].id);
   }
-}, { immediate: true });
+}
 
 function selectProjectAndEnter(id: string) {
   selectedProjectId.value = id;
   isPickerOpen.value = false;
+  isLaunchpadModalOpen.value = false;
   pickerQuery.value = '';
+  launchpadSearch.value = '';
   router.replace({ query: { ...route.query, project: id } });
 }
 
@@ -470,24 +541,10 @@ function selectProject(id: string) {
   selectProjectAndEnter(id);
 }
 
-function handleLaunchpadEnter() {
-  if (selectedLaunchpadId.value) {
-    selectProjectAndEnter(selectedLaunchpadId.value);
-  } else if (filteredLaunchpadProjects.value.length === 1) {
-    selectProjectAndEnter(filteredLaunchpadProjects.value[0].id);
-  }
-}
-
-function confirmLaunchpadSelection() {
-  if (selectedLaunchpadId.value) {
-    selectProjectAndEnter(selectedLaunchpadId.value);
-  }
-}
-
 function resetToLaunchpad() {
   selectedProjectId.value = '';
-  selectedLaunchpadId.value = '';
   isPickerOpen.value = false;
+  isLaunchpadModalOpen.value = false;
   router.replace({ path: '/hub' });
 }
 
@@ -595,6 +652,25 @@ function handleOutsideClick(e: MouseEvent) {
   }
 }
 
+function handleGlobalKeydown(e: KeyboardEvent) {
+  // ⌘K or Ctrl+K opens the campaign selector / search modal
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    if (!selectedProject.value) {
+      if (isLaunchpadModalOpen.value) {
+        isLaunchpadModalOpen.value = false;
+      } else {
+        openLaunchpadModal();
+      }
+    } else {
+      isPickerOpen.value = !isPickerOpen.value;
+    }
+  } else if (e.key === 'Escape') {
+    if (isLaunchpadModalOpen.value) isLaunchpadModalOpen.value = false;
+    if (isPickerOpen.value) isPickerOpen.value = false;
+  }
+}
+
 let tickTimer: ReturnType<typeof setInterval> | null = null;
 
 onMounted(() => {
@@ -604,11 +680,13 @@ onMounted(() => {
   }
   document.title = 'Campaign Hub | 707 Design Studio';
   document.addEventListener('mousedown', handleOutsideClick);
+  window.addEventListener('keydown', handleGlobalKeydown);
   tickTimer = setInterval(() => (nowTick.value = Date.now()), 5000);
 });
 
 onUnmounted(() => {
   document.removeEventListener('mousedown', handleOutsideClick);
+  window.removeEventListener('keydown', handleGlobalKeydown);
   if (tickTimer) clearInterval(tickTimer);
   if (toastTimer) clearTimeout(toastTimer);
 });
@@ -617,6 +695,13 @@ onUnmounted(() => {
 <style scoped>
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; }
+
+.hub-fade-enter-active, .hub-fade-leave-active {
+  transition: opacity 0.18s ease;
+}
+.hub-fade-enter-from, .hub-fade-leave-to {
+  opacity: 0;
+}
 
 .hub-shimmer {
   background: linear-gradient(90deg, #f4f4f4 0%, #ececec 40%, #f4f4f4 80%);
