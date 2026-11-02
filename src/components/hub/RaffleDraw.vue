@@ -158,7 +158,7 @@
           <div class="relative z-30 flex items-center justify-between w-full border-b border-white/10 pb-4">
             <div class="flex items-center gap-3">
               <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-medium bg-white/10 border border-white/15 text-white/95">
-                <span class="size-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span class="size-2 rounded-full bg-moss-500 shrink-0" />
                 LIVE RAFFLE STAGE
               </span>
               <span class="text-[13px] text-white/30 hidden sm:inline">|</span>
@@ -223,7 +223,7 @@
                   <div class="flex flex-col min-w-0 flex-1">
                     <div class="flex items-center gap-2">
                       <span class="text-[11px] font-mono text-amber-300 uppercase tracking-wider font-semibold">#{{ idx + 1 }} Winner</span>
-                      <span v-if="s.checked_in_at" class="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">At Venue</span>
+                      <span v-if="s.checked_in_at" class="text-[10px] px-1.5 py-0.2 rounded-full bg-moss-500/20 text-moss-300 border border-moss-500/30">At Venue</span>
                     </div>
                     <h3 class="text-[19px] font-semibold text-white truncate leading-snug">{{ guestName(s) }}</h3>
                     <p class="text-[12px] text-white/60 font-mono truncate">{{ maskEmail(guestEmail(s)) || guestPhone(s) || '—' }}</p>

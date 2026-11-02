@@ -207,7 +207,7 @@
           <div>
             <div class="flex items-center gap-2.5">
               <h3 class="text-[18px] font-medium tracking-tight text-black">Primary Email Notifications</h3>
-              <span class="text-[10.5px] uppercase tracking-[0.1em] font-mono px-2.5 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">
+              <span class="text-[10.5px] uppercase tracking-[0.1em] font-mono px-2.5 py-0.5 rounded-full border bg-moss-50 text-moss-700 border-moss-200">
                 Primary • Active
               </span>
             </div>
@@ -218,7 +218,7 @@
         </div>
 
         <div class="flex items-center gap-2 px-3 py-1.5 rounded-[10px] bg-neutral-50 border border-black/10 text-[12px] font-mono text-neutral-600 shrink-0">
-          <span class="size-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span class="size-2 rounded-full bg-moss-600" />
           <span>SMTP Delivery Active</span>
         </div>
       </div>
@@ -361,7 +361,7 @@
               <div class="flex items-center gap-1.5">
                 <span class="size-2.5 rounded-full bg-red-400/80" />
                 <span class="size-2.5 rounded-full bg-amber-400/80" />
-                <span class="size-2.5 rounded-full bg-emerald-400/80" />
+                <span class="size-2.5 rounded-full bg-moss-400/80" />
               </div>
               <span class="text-[11px] font-mono text-neutral-500 uppercase tracking-wider">Email Inbox Preview</span>
             </div>
@@ -445,7 +445,7 @@
         <div class="flex items-start gap-4">
           <div
             class="size-11 rounded-[12px] flex items-center justify-center shrink-0 mt-0.5 transition-colors"
-            :class="form.waEnabled ? 'bg-emerald-600 text-white shadow-sm' : 'bg-black/5 text-neutral-400'"
+            :class="form.waEnabled ? 'bg-moss-600 text-white shadow-sm' : 'bg-black/5 text-neutral-400'"
           >
             <MessageSquare class="w-5 h-5" />
           </div>
@@ -454,7 +454,7 @@
               <h3 class="text-[18px] font-medium tracking-tight text-black">Automated WhatsApp Notifications</h3>
               <span
                 class="text-[10.5px] uppercase tracking-[0.1em] font-mono px-2.5 py-0.5 rounded-full border transition-colors"
-                :class="form.waEnabled ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-neutral-100 text-neutral-500 border-neutral-200'"
+                :class="form.waEnabled ? 'bg-moss-50 text-moss-700 border-moss-200' : 'bg-neutral-100 text-neutral-500 border-neutral-200'"
               >
                 {{ form.waEnabled ? 'Active' : 'Disabled' }}
               </span>
@@ -499,9 +499,9 @@
               <span class="text-[11px] font-mono uppercase tracking-[0.12em] text-neutral-500 font-bold">DEFAULT WHATSAPP NUMBER</span>
               <span
                 class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-medium border transition-colors"
-                :class="form.waConnection?.connected ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-neutral-100 text-neutral-500 border-neutral-200'"
+                :class="form.waConnection?.connected ? 'bg-moss-50 text-moss-700 border-moss-200' : 'bg-neutral-100 text-neutral-500 border-neutral-200'"
               >
-                <span class="size-1.5 rounded-full" :class="form.waConnection?.connected ? 'bg-emerald-500 animate-pulse' : 'bg-neutral-400'"></span>
+                <span class="size-1.5 rounded-full" :class="form.waConnection?.connected ? 'bg-moss-600' : 'bg-neutral-400'"></span>
                 {{ form.waConnection?.connected ? 'Linked' : 'Not Linked' }}
               </span>
             </div>
@@ -555,12 +555,12 @@
 
               <!-- Connected State -->
               <div v-else class="flex flex-col gap-3">
-                <div class="p-3.5 rounded-[12px] bg-emerald-500/[0.06] border border-emerald-200 flex items-center justify-between">
+                <div class="p-3.5 rounded-[12px] bg-moss-500/[0.06] border border-moss-200 flex items-center justify-between">
                   <div class="flex items-center gap-2">
-                    <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-[12.5px] font-semibold text-emerald-800">Gateway Active</span>
+                    <span class="size-2 rounded-full bg-moss-600"></span>
+                    <span class="text-[12.5px] font-semibold text-moss-800">Gateway Active</span>
                   </div>
-                  <span class="text-[13px] font-mono font-semibold text-emerald-900">
+                  <span class="text-[13px] font-mono font-semibold text-moss-900">
                     {{ form.waConnection?.formattedNumber || (form.waConnection?.phoneNumber ? `+${form.waConnection.phoneNumber}` : '') }}
                   </span>
                 </div>
@@ -571,7 +571,7 @@
                     class="h-[38px] px-3 rounded-[10px] border border-black/15 bg-white hover:bg-black/5 text-[12.5px] font-medium text-black flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-2xs"
                     @click="openTestModal"
                   >
-                    <Send class="w-3.5 h-3.5 text-emerald-600" />
+                    <Send class="w-3.5 h-3.5 text-moss-600" />
                     <span>Test Message</span>
                   </button>
                   <button
@@ -611,7 +611,7 @@
           <div class="p-6 rounded-[20px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between h-full gap-4">
             <div>
               <div class="flex items-center gap-2 text-black font-medium text-[14.5px]">
-                <ShieldCheck class="w-4 h-4 text-emerald-600" />
+                <ShieldCheck class="w-4 h-4 text-moss-600" />
                 <span>Zero-Cost Direct WhatsApp Automation</span>
               </div>
               <p class="text-[12.5px] text-neutral-500 mt-2 leading-relaxed">
@@ -630,7 +630,7 @@
               </div>
               <div class="flex flex-col gap-0.5">
                 <span class="text-[10.5px] font-mono text-neutral-400 uppercase tracking-wider">Cost</span>
-                <span class="text-[13px] font-medium text-emerald-600 font-mono">$0 / Free</span>
+                <span class="text-[13px] font-medium text-moss-600 font-mono">$0 / Free</span>
               </div>
             </div>
           </div>
@@ -681,7 +681,7 @@
                 <span 
                   v-if="stage.id === 'ready'"
                   class="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded font-semibold shrink-0"
-                  :class="form.activeWaStage === stage.id ? 'bg-white/20 text-white' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'"
+                  :class="form.activeWaStage === stage.id ? 'bg-white/20 text-white' : 'bg-moss-50 text-moss-700 border border-moss-200'"
                 >
                   Best
                 </span>
@@ -740,7 +740,7 @@
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-1.5">
                   <span class="text-[13px] font-medium truncate">707 Activation Hub</span>
-                  <ShieldCheck class="w-3.5 h-3.5 text-emerald-300 shrink-0" />
+                  <ShieldCheck class="w-3.5 h-3.5 text-moss-300 shrink-0" />
                 </div>
                 <span class="text-[10.5px] text-white/70 block truncate">Official Verified Account</span>
               </div>
@@ -858,7 +858,7 @@
             <template v-if="waDeviceStatus.qr">
               <img :src="waDeviceStatus.qr" alt="WhatsApp Pairing QR" class="size-[220px] rounded-[10px] bg-white p-2 border border-black/10 shadow-xs object-contain" />
               <div class="mt-3 flex items-center gap-2 text-[11px] text-neutral-400 font-mono">
-                <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="size-1.5 rounded-full bg-moss-600"></span>
                 <span>Waiting for camera scan...</span>
               </div>
               <div v-if="waDeviceStatus.pairingCode" class="mt-4 w-full border-t border-black/10 pt-3">
@@ -903,7 +903,7 @@
         <!-- Header -->
         <div class="p-6 sm:p-7 border-b border-black/10 flex items-center justify-between bg-neutral-50/50">
           <div class="flex items-center gap-3.5">
-            <div class="size-10 rounded-[12px] bg-emerald-600 text-white flex items-center justify-center shadow-2xs">
+            <div class="size-10 rounded-[12px] bg-moss-600 text-white flex items-center justify-center shadow-2xs">
               <MessageSquare class="w-5 h-5" />
             </div>
             <div>
@@ -946,9 +946,9 @@
         <div class="p-6 sm:p-8 flex flex-col gap-6 overflow-y-auto max-h-[70vh]">
           <!-- TAB 1: DIRECT WHATSAPP (100% Reliable Native wa.me) -->
           <div v-if="linkTab === 'direct'" class="flex flex-col gap-5">
-            <div class="p-4 rounded-[14px] bg-emerald-500/[0.08] border border-emerald-500/20 flex items-start gap-3">
-              <CheckCircle2 class="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-              <div class="text-[12.5px] text-emerald-950 leading-relaxed">
+            <div class="p-4 rounded-[14px] bg-moss-500/[0.08] border border-moss-500/20 flex items-start gap-3">
+              <CheckCircle2 class="w-5 h-5 text-moss-600 shrink-0 mt-0.5" />
+              <div class="text-[12.5px] text-moss-950 leading-relaxed">
                 <strong>Native WhatsApp Connection:</strong> Enter your Business WhatsApp phone number.
                 No paid gateway or fragile QR pairing required — messages and test notifications launch directly in WhatsApp Web or the WhatsApp mobile app.
               </div>
@@ -966,13 +966,13 @@
                 type="text"
                 placeholder="e.g. +62 812 7070 8888 or 081234567890"
                 class="h-[44px] px-3.5 rounded-[12px] bg-black/[0.02] border text-[14px] outline-none font-mono transition-all"
-                :class="isLinkPhoneValid ? 'border-emerald-500 focus:border-emerald-600 focus:bg-white' : (linkPhone ? 'border-amber-400 focus:border-amber-500' : 'border-black/15 focus:border-black focus:bg-white')"
+                :class="isLinkPhoneValid ? 'border-moss-500 focus:border-moss-600 focus:bg-white' : (linkPhone ? 'border-amber-400 focus:border-amber-500' : 'border-black/15 focus:border-black focus:bg-white')"
               />
 
               <!-- Live Validation Feedback -->
               <div class="min-h-[20px] flex items-center justify-between text-[12px]">
-                <span v-if="isLinkPhoneValid" class="text-emerald-700 font-medium flex items-center gap-1.5 animate-in fade-in">
-                  <Check class="w-3.5 h-3.5 text-emerald-600" />
+                <span v-if="isLinkPhoneValid" class="text-moss-700 font-medium flex items-center gap-1.5 animate-in fade-in">
+                  <Check class="w-3.5 h-3.5 text-moss-600" />
                   Format: <strong>{{ displayLinkPhone }}</strong> (E.164: +{{ normalizedLinkPhone }})
                 </span>
                 <span v-else-if="linkPhone" class="text-amber-700 flex items-center gap-1.5">
@@ -988,7 +988,7 @@
                   :href="'https://wa.me/' + normalizedLinkPhone"
                   target="_blank"
                   rel="noopener"
-                  class="text-[11.5px] text-emerald-700 hover:text-emerald-800 underline font-mono flex items-center gap-1"
+                  class="text-[11.5px] text-moss-700 hover:text-moss-800 underline font-mono flex items-center gap-1"
                 >
                   <ExternalLink class="w-3 h-3" />
                   <span>Test wa.me link ↗</span>
@@ -1012,19 +1012,19 @@
             <!-- Features Included -->
             <div class="p-4 rounded-[14px] bg-neutral-50 border border-black/5 flex flex-col gap-2 text-[12px] text-neutral-600">
               <div class="flex items-center gap-2 font-medium text-black text-[12.5px] mb-0.5">
-                <ShieldCheck class="w-4 h-4 text-emerald-600" />
+                <ShieldCheck class="w-4 h-4 text-moss-600" />
                 <span>What this enables:</span>
               </div>
               <div class="flex items-start gap-2">
-                <span class="text-emerald-600 font-bold">✓</span>
+                <span class="text-moss-600 font-bold">✓</span>
                 <span>Immediate 1-tap WhatsApp chat dispatch from the Guest Database table and Gate Scanner.</span>
               </div>
               <div class="flex items-start gap-2">
-                <span class="text-emerald-600 font-bold">✓</span>
+                <span class="text-moss-600 font-bold">✓</span>
                 <span>Direct "Send Test" launches WhatsApp Web or mobile app instantly with pre-filled test notification copy.</span>
               </div>
               <div class="flex items-start gap-2">
-                <span class="text-emerald-600 font-bold">✓</span>
+                <span class="text-moss-600 font-bold">✓</span>
                 <span>Zero monthly provider subscriptions, zero bot disconnects.</span>
               </div>
             </div>
@@ -1089,7 +1089,7 @@
                 placeholder="e.g. +62 812 7070 8888 or 081234567890"
                 class="h-[40px] px-3.5 rounded-[10px] bg-black/[0.02] border border-black/15 text-[13.5px] outline-none focus:border-black focus:bg-white text-black font-mono transition-all"
               />
-              <span v-if="isLinkPhoneValid" class="text-[11.5px] text-emerald-600 font-medium">
+              <span v-if="isLinkPhoneValid" class="text-[11.5px] text-moss-600 font-medium">
                 Normalized: +{{ normalizedLinkPhone }}
               </span>
             </div>
@@ -1117,7 +1117,7 @@
                   href="https://fonnte.com"
                   target="_blank"
                   rel="noopener"
-                  class="text-[11px] text-emerald-700 hover:underline font-mono"
+                  class="text-[11px] text-moss-700 hover:underline font-mono"
                 >
                   Get token at fonnte.com ↗
                 </a>
@@ -1162,7 +1162,7 @@
       <div class="w-full max-w-[500px] bg-white rounded-[22px] shadow-2xl border border-black/10 overflow-hidden flex flex-col font-707">
         <div class="p-5 border-b border-black/10 flex items-center justify-between bg-neutral-50/50">
           <div class="flex items-center gap-3">
-            <div class="size-9 rounded-[10px] bg-emerald-600 text-white flex items-center justify-center shadow-2xs">
+            <div class="size-9 rounded-[10px] bg-moss-600 text-white flex items-center justify-center shadow-2xs">
               <Send class="w-4 h-4" />
             </div>
             <div>
@@ -1184,7 +1184,7 @@
           <div class="flex flex-col gap-1">
             <label for="test-phone-input" class="text-[12px] font-medium text-black flex items-center justify-between">
               <span>Recipient Phone Number</span>
-              <span v-if="testPhoneNormalized" class="text-[11px] text-emerald-700 font-mono">+{{ testPhoneNormalized }}</span>
+              <span v-if="testPhoneNormalized" class="text-[11px] text-moss-700 font-mono">+{{ testPhoneNormalized }}</span>
             </label>
             <input
               id="test-phone-input"
@@ -1224,7 +1224,7 @@
 
           <!-- Status / Active Mode Notice -->
           <div class="p-3 rounded-[10px] bg-black/[0.02] border border-black/5 flex items-start gap-2.5 text-[12px] text-neutral-600">
-            <MessageSquare class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+            <MessageSquare class="w-4 h-4 text-moss-600 shrink-0 mt-0.5" />
             <div class="leading-relaxed">
               <span v-if="form.waConnection?.gatewayUrl">
                 <strong>Cloud Gateway Configured:</strong> Using {{ formatProvider(form.waConnection?.provider) }}. You can send via server or open WhatsApp directly.
@@ -1250,7 +1250,7 @@
             <button
               type="button"
               @click="handleDirectWhatsAppOpen"
-              class="h-[38px] px-4 rounded-[10px] bg-emerald-600 hover:bg-emerald-700 text-white text-[12.5px] font-medium transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+              class="h-[38px] px-4 rounded-[10px] bg-moss-600 hover:bg-moss-700 text-white text-[12.5px] font-medium transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
               title="Launch WhatsApp Web or mobile app with this test message"
             >
               <ExternalLink class="w-3.5 h-3.5" />
@@ -1334,7 +1334,7 @@
               </div>
               <div class="flex items-center gap-2 text-[11px] text-neutral-400">
                 <span>{{ formatLogTime(log.timestamp) }}</span>
-                <span class="text-emerald-600 font-medium flex items-center gap-0.5">
+                <span class="text-moss-600 font-medium flex items-center gap-0.5">
                   <Check class="w-3 h-3" />
                   Delivered
                 </span>

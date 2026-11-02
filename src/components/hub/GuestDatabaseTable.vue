@@ -1,301 +1,279 @@
 <template>
   <div class="flex flex-col gap-4 w-full" @keydown.esc="handleEscape">
-    <!-- Toolbar -->
-    <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-3 w-full select-none">
+    <!-- Calm Tranquil Toolbar -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full select-none">
+      <!-- Left: Minimalist Search & Quiet Segmented View Tabs -->
       <div class="flex flex-col sm:flex-row sm:items-center gap-3 flex-1 min-w-0">
-        <!-- Search -->
-        <div class="relative w-full sm:max-w-[340px]">
+        <!-- Minimalist Search -->
+        <div class="relative w-full sm:max-w-[300px]">
           <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400" />
           <input
             id="guest-search-input"
             ref="searchRef"
             v-model="search"
             type="text"
-            placeholder="Search name, email, WhatsApp, Access ID…"
-            class="w-full h-[36px] pl-9 pr-10 rounded-[8px] bg-white border border-black/12 text-[12.5px] font-707 text-black placeholder:text-neutral-400 outline-none focus:border-black focus:ring-4 focus:ring-black/5 transition-all"
+            placeholder="Search guest, pass ID, phone…"
+            class="w-full h-[36px] pl-9 pr-8 rounded-[8px] bg-neutral-100/80 hover:bg-neutral-100 focus:bg-white border border-transparent focus:border-black/20 text-[12.5px] font-707 text-black placeholder:text-neutral-400 outline-none transition-all"
           />
-          <kbd v-if="!search" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono text-neutral-400 border border-black/10 rounded px-1.5 py-[1px]">/</kbd>
-          <button v-else type="button" @click="search = ''" class="absolute right-2 top-1/2 -translate-y-1/2 size-5 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center cursor-pointer">
-            <X class="w-3 h-3" />
+          <kbd v-if="!search" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono text-neutral-400">⌘K</kbd>
+          <button v-else type="button" @click="search = ''" class="absolute right-2 top-1/2 -translate-y-1/2 size-5 rounded-full hover:bg-black/10 flex items-center justify-center cursor-pointer">
+            <X class="w-3 h-3 text-neutral-500" />
           </button>
         </div>
 
-        <!-- Event Date Filter (For Single-Day & Daily Rolling Multi-Day Activations) -->
-        <div v-if="availableDates.length > 1" class="flex items-center gap-1.5 shrink-0">
-          <div class="flex items-center gap-1.5 h-[36px] px-2.5 rounded-[8px] bg-white border border-black/12">
-            <Calendar class="w-3.5 h-3.5 text-neutral-400 shrink-0" />
-            <select 
-              v-model="dateFilter"
-              class="bg-transparent text-[11.5px] font-707 text-black focus:outline-none cursor-pointer border-none p-0 pr-2"
-            >
-              <option value="all">All Dates ({{ props.rows.length }})</option>
-              <option v-for="d in availableDates" :key="d" :value="d">
-                {{ d }} ({{ props.rows.filter(r => matchesDate(r, d)).length }})
-              </option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Status segmented filter -->
-        <div class="flex items-center gap-1 p-0.5 rounded-[8px] bg-black/[0.04] border border-black/5 text-[11px] font-707 overflow-x-auto no-scrollbar">
+        <!-- 3 Calm Segmented Tabs (No heavy boxes) -->
+        <div class="flex items-center gap-1 text-[12px] font-707 overflow-x-auto no-scrollbar py-0.5">
           <button
-            v-for="f in statusFilters"
-            :key="f.value"
+            v-for="t in primaryTabs"
+            :key="t.id"
             type="button"
-            @click="statusFilter = f.value"
-            class="px-2.5 py-1 rounded-[6px] transition-all cursor-pointer whitespace-nowrap tabular-nums"
-            :class="statusFilter === f.value ? 'bg-white text-black font-medium shadow-[0_1px_2px_rgba(0,0,0,0.08)]' : 'text-neutral-500 hover:text-black'"
+            @click="setPrimaryView(t.id)"
+            class="px-3 py-1.5 rounded-[6px] transition-all cursor-pointer whitespace-nowrap font-medium text-[12px]"
+            :class="primaryView === t.id ? 'bg-black text-white shadow-2xs' : 'text-neutral-500 hover:text-black hover:bg-black/[0.04]'"
           >
-            {{ f.label }} <span class="text-neutral-400 ml-0.5">{{ f.count }}</span>
+            {{ t.label }} <span class="tabular-nums text-[11px] ml-1" :class="primaryView === t.id ? 'text-white/70' : 'text-neutral-400'">{{ t.count }}</span>
           </button>
         </div>
       </div>
 
+      <!-- Right: Action Buttons & Secondary Filter Menu -->
       <div class="flex items-center gap-2 shrink-0">
-        <!-- Check-in filter -->
-        <div class="flex items-center gap-1 p-0.5 rounded-[8px] bg-black/[0.04] border border-black/5 text-[11px]">
-          <button
-            v-for="c in checkFilters"
-            :key="c.value"
-            type="button"
-            @click="checkFilter = c.value"
-            class="px-2.5 py-1 rounded-[6px] transition-all cursor-pointer whitespace-nowrap"
-            :class="checkFilter === c.value ? 'bg-white text-black font-medium shadow-[0_1px_2px_rgba(0,0,0,0.08)]' : 'text-neutral-500 hover:text-black'"
-          >
-            {{ c.label }}
-          </button>
-        </div>
-
-        <!-- Entries registered twice (only when there are any) -->
-        <button
-          v-if="duplicateCount > 0"
-          type="button"
-          @click="duplicatesOnly = !duplicatesOnly"
-          class="h-[32px] px-2.5 rounded-[8px] border text-[11px] font-medium cursor-pointer whitespace-nowrap transition-colors"
-          :class="duplicatesOnly ? 'bg-bronze-100 border-bronze-300 text-bronze-800' : 'bg-white border-black/12 text-neutral-700 hover:bg-black/5'"
-          title="Guests who registered more than once"
-        >
-          Duplicates {{ duplicateCount }}
-        </button>
-
-        <!-- Columns menu -->
-        <div class="relative" ref="columnsMenuRef">
-          <button
-            type="button"
-            @click="isColumnsOpen = !isColumnsOpen"
-            class="h-[32px] px-2.5 rounded-[8px] border border-black/12 bg-white hover:bg-black/5 flex items-center gap-1.5 text-[11.5px] font-medium cursor-pointer transition-colors"
-            title="Show / hide columns"
-          >
-            <Columns3 class="w-3.5 h-3.5" />
-            <span class="hidden md:inline">Columns</span>
-          </button>
-          <Transition name="hub-pop">
-            <div v-if="isColumnsOpen" class="absolute right-0 top-[calc(100%+6px)] z-40 w-[240px] apple-frost border border-black/10 rounded-[12px] shadow-[0px_24px_60px_rgba(0,0,0,0.16)] p-1.5">
-              <p class="px-2.5 pt-1.5 pb-1 text-[10px] uppercase tracking-[0.12em] text-neutral-400">Visible columns</p>
-              <label
-                v-for="col in toggleableColumns"
-                :key="col.key"
-                class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[7px] hover:bg-black/5 cursor-pointer text-[12px]"
-              >
-                <input type="checkbox" class="hub-check" :checked="!hiddenColumns.has(col.key)" @change="toggleColumn(col.key)" />
-                <span class="truncate">{{ col.label }}</span>
-              </label>
-              <div class="h-px bg-black/5 my-1" />
-              <div class="flex items-center justify-between px-2.5 py-1.5 text-[12px]">
-                <span>Compact rows</span>
-                <button type="button" @click="compact = !compact" class="hub-switch" :class="compact ? 'is-on' : ''" role="switch" :aria-checked="compact"><span /></button>
-              </div>
-            </div>
-          </Transition>
-        </div>
-
         <!-- Add Guest -->
         <button
           v-if="pageId"
           id="guest-add-walkin"
           type="button"
           @click="openAddGuestModal"
-          class="h-[32px] px-3 rounded-[8px] border border-black/15 bg-white hover:bg-black/5 flex items-center gap-1.5 text-[11.5px] font-medium cursor-pointer transition-colors"
+          class="h-[34px] px-3.5 rounded-[8px] border border-black/15 bg-white hover:bg-neutral-50 flex items-center gap-1.5 text-[12px] font-medium cursor-pointer transition-colors apple-press"
           title="Manually register a walk-in guest or VIP"
         >
           <UserPlus class="w-3.5 h-3.5 text-neutral-700" />
-          <span class="hidden sm:inline">Add Guest</span>
+          <span>Add Guest</span>
         </button>
 
-        <!-- Export -->
+        <!-- Export CSV -->
         <button
           id="guest-export-csv"
           type="button"
           @click="exportCsv(selected.size ? selectedRows : sortedRows)"
-          class="h-[32px] px-3 rounded-[8px] bg-black text-white hover:bg-neutral-800 flex items-center gap-1.5 text-[11.5px] font-medium cursor-pointer transition-colors"
+          class="h-[34px] px-3 rounded-[8px] border border-black/15 bg-white hover:bg-neutral-50 flex items-center gap-1.5 text-[12px] font-medium cursor-pointer transition-colors text-neutral-700 hover:text-black"
           :title="selected.size ? 'Export selected guests' : 'Export filtered guests'"
         >
           <Download class="w-3.5 h-3.5" />
-          <span>Export CSV</span>
+          <span class="hidden sm:inline">Export</span>
         </button>
+
+        <!-- Secondary Filters & Display Popover -->
+        <div class="relative" ref="columnsMenuRef">
+          <button
+            type="button"
+            @click="isColumnsOpen = !isColumnsOpen"
+            class="h-[34px] px-2.5 rounded-[8px] border border-black/15 bg-white hover:bg-neutral-50 flex items-center gap-1.5 text-[12px] font-medium cursor-pointer transition-colors text-neutral-700 hover:text-black"
+            :class="hasSecondaryFilters ? 'border-moss-600 text-moss-800' : ''"
+            title="Display options & filters"
+          >
+            <SlidersHorizontal class="w-3.5 h-3.5" />
+            <span class="hidden md:inline">View</span>
+          </button>
+
+          <Transition name="hub-pop">
+            <div v-if="isColumnsOpen" class="absolute right-0 top-[calc(100%+6px)] z-40 w-[240px] apple-frost border border-black/10 rounded-[12px] shadow-[0px_24px_60px_rgba(0,0,0,0.16)] p-2 font-707">
+              <!-- Event Date Filter inside dropdown if multiple dates -->
+              <div v-if="availableDates.length > 1" class="pb-2 mb-2 border-b border-black/5">
+                <p class="px-2 text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1">Event Date</p>
+                <select 
+                  v-model="dateFilter"
+                  class="w-full h-[30px] px-2 rounded-[6px] bg-black/[0.04] text-[11.5px] font-707 text-black focus:outline-none cursor-pointer border-0"
+                >
+                  <option value="all">All Dates ({{ props.rows.length }})</option>
+                  <option v-for="d in availableDates" :key="d" :value="d">{{ d }}</option>
+                </select>
+              </div>
+
+              <!-- Duplicates only toggle -->
+              <div v-if="duplicateCount > 0" class="pb-2 mb-2 border-b border-black/5">
+                <label class="flex items-center justify-between px-2 py-1 text-[12px] cursor-pointer hover:bg-black/5 rounded-[6px]">
+                  <span>Duplicates only ({{ duplicateCount }})</span>
+                  <input type="checkbox" v-model="duplicatesOnly" class="accent-black rounded" />
+                </label>
+              </div>
+
+              <!-- Visible columns list -->
+              <p class="px-2 pt-0.5 pb-1 text-[10px] uppercase tracking-[0.12em] text-neutral-400">Columns</p>
+              <label
+                v-for="col in toggleableColumns"
+                :key="col.key"
+                class="flex items-center gap-2 px-2 py-1.5 rounded-[6px] hover:bg-black/5 cursor-pointer text-[12px]"
+              >
+                <input type="checkbox" class="accent-black rounded" :checked="!hiddenColumns.has(col.key)" @change="toggleColumn(col.key)" />
+                <span class="truncate">{{ col.label }}</span>
+              </label>
+
+              <div class="h-px bg-black/5 my-1.5" />
+              <div class="flex items-center justify-between px-2 py-1 text-[12px]">
+                <span>Compact mode</span>
+                <button type="button" @click="compact = !compact" class="hub-switch" :class="compact ? 'is-on' : ''" role="switch"><span /></button>
+              </div>
+            </div>
+          </Transition>
+        </div>
       </div>
     </div>
 
-    <!-- Result meta -->
-    <div class="flex items-center justify-between text-[11.5px] text-neutral-500 select-none -mt-1">
+    <!-- Result Meta Line -->
+    <div class="flex items-center justify-between text-[11.5px] text-neutral-400 select-none -mt-1 px-0.5">
       <span class="tabular-nums">
         Showing <b class="text-black font-medium">{{ sortedRows.length }}</b> of {{ rows.length }} guests
-        <template v-if="hasActiveFilters"> · <button type="button" @click="clearFilters" class="underline underline-offset-2 hover:text-black cursor-pointer">Clear filters</button></template>
+        <template v-if="hasActiveFilters"> · <button type="button" @click="clearFilters" class="underline underline-offset-2 hover:text-black cursor-pointer text-neutral-500">Reset</button></template>
       </span>
-      <span class="hidden md:inline">Shift-click to select a range · Click a row for details</span>
+      <span class="hidden md:inline">Click any guest row to view full pass details</span>
     </div>
 
-    <!-- Table -->
-    <div class="w-full border-[#d9d9d9] border-[0.5px] border-solid rounded-[10px] overflow-hidden bg-white">
-      <div class="overflow-x-auto max-h-[64vh] overflow-y-auto hub-table-scroll">
-        <table class="w-full text-left border-collapse min-w-[880px]">
+    <!-- Table Container (Clean Editorial Ledger) -->
+    <div class="w-full border border-black/[0.06] rounded-[12px] overflow-hidden bg-white shadow-2xs">
+      <div class="overflow-x-auto max-h-[66vh] overflow-y-auto hub-table-scroll">
+        <table class="w-full text-left border-collapse min-w-[760px]">
           <thead class="sticky top-0 z-10 bg-white/95 backdrop-blur-md">
-            <tr class="border-b border-[#e6e6e6] text-[10.5px] uppercase tracking-[0.1em] text-neutral-500 select-none">
-              <th class="w-[44px] pl-4 pr-1 py-3">
+            <tr class="border-b border-black/[0.06] text-[10.5px] uppercase tracking-[0.08em] text-neutral-400 select-none">
+              <th class="w-[40px] pl-4 pr-1 py-3">
                 <input
                   type="checkbox"
-                  class="hub-check"
+                  class="accent-black rounded cursor-pointer"
                   :checked="allVisibleSelected"
                   :indeterminate.prop="someVisibleSelected && !allVisibleSelected"
                   @change="toggleSelectAll"
                   aria-label="Select all"
                 />
               </th>
-              <th v-for="col in visibleColumns" :key="col.key" class="px-3 py-3 font-medium whitespace-nowrap" :class="col.thClass">
+              <th v-for="col in visibleColumns" :key="col.key" class="px-3.5 py-3 font-normal whitespace-nowrap" :class="col.thClass">
                 <button
                   v-if="col.sortable"
                   type="button"
                   @click="toggleSort(col.key)"
-                  class="inline-flex items-center gap-1 uppercase tracking-[0.1em] hover:text-black cursor-pointer"
-                  :class="sortKey === col.key ? 'text-black' : ''"
+                  class="inline-flex items-center gap-1 uppercase tracking-[0.08em] hover:text-black cursor-pointer font-normal"
+                  :class="sortKey === col.key ? 'text-black font-medium' : ''"
                 >
                   {{ col.label }}
-                  <ArrowUpDown v-if="sortKey !== col.key" class="w-3 h-3 opacity-40" />
-                  <ArrowUp v-else-if="sortDir === 'asc'" class="w-3 h-3" />
-                  <ArrowDown v-else class="w-3 h-3" />
+                  <ArrowUpDown v-if="sortKey !== col.key" class="w-3 h-3 opacity-30" />
+                  <ArrowUp v-else-if="sortDir === 'asc'" class="w-3 h-3 text-black" />
+                  <ArrowDown v-else class="w-3 h-3 text-black" />
                 </button>
                 <span v-else>{{ col.label }}</span>
               </th>
-              <th class="w-[44px] pr-4" />
             </tr>
           </thead>
           <tbody>
             <tr
               v-for="(s, idx) in pagedRows"
               :key="s.id"
-              class="group border-b border-[#efefef] last:border-b-0 transition-colors cursor-pointer"
+              class="group border-b border-black/[0.04] last:border-b-0 transition-colors cursor-pointer"
               :class="[
-                selected.has(s.id) ? 'bg-black/[0.035]' : 'hover:bg-neutral-50',
-                drawerId === s.id ? 'bg-black/[0.05]' : ''
+                selected.has(s.id) ? 'bg-black/[0.025]' : 'hover:bg-neutral-50/70',
+                drawerId === s.id ? 'bg-black/[0.035]' : ''
               ]"
               @click="openDrawer(s.id)"
             >
               <td class="pl-4 pr-1" :class="rowPad" @click.stop="toggleRow(s.id, idx, $event)">
-                <input type="checkbox" class="hub-check pointer-events-none" :checked="selected.has(s.id)" :aria-label="`Select ${guestName(s)}`" />
+                <input type="checkbox" class="accent-black rounded pointer-events-none" :checked="selected.has(s.id)" :aria-label="`Select ${guestName(s)}`" />
               </td>
 
               <template v-for="col in visibleColumns" :key="col.key">
-                <!-- Guest -->
-                <td v-if="col.key === 'guest'" class="px-3" :class="rowPad">
-                  <div class="flex items-center gap-2.5 min-w-0">
-                    <div
-                      class="rounded-full flex items-center justify-center text-[10.5px] font-medium shrink-0"
-                      :class="[compact ? 'size-6' : 'size-8', normalizeStatus(s.status) === 'winner' ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-700 border border-black/5']"
-                    >
-                      {{ initials(guestName(s)) }}
-                    </div>
-                    <div class="flex flex-col min-w-0">
-                      <span class="text-[12.5px] font-medium text-black truncate max-w-[220px]">{{ guestName(s) }}</span>
+                <!-- 1. Guest Name & Contact (Clean, no avatar circle noise) -->
+                <td v-if="col.key === 'guest'" class="px-3.5" :class="rowPad">
+                  <div class="flex flex-col min-w-0">
+                    <div class="flex items-center gap-2">
+                      <span class="text-[13px] font-medium text-black truncate max-w-[260px]">{{ guestName(s) }}</span>
                       <span
                         v-if="s.duplicate_of"
-                        class="shrink-0 px-1.5 py-0.5 rounded-[5px] border border-bronze-300 bg-bronze-50 text-bronze-800 text-[9.5px] font-medium tracking-wide"
-                        title="This guest registered more than once. Their pass still works at the door — review and delete the extra entry if it is a repeat."
+                        class="shrink-0 px-1.5 py-0.2 rounded-[4px] bg-bronze-50 border border-bronze-200 text-bronze-800 text-[9.5px] font-medium tracking-wide"
+                        title="Duplicate entry"
                       >Duplicate</span>
-                      <span v-if="!compact" class="text-[11px] text-neutral-500 truncate max-w-[220px]">{{ guestEmail(s) || 'No email' }}</span>
                     </div>
+                    <span v-if="!compact" class="text-[11.5px] text-neutral-400 font-normal truncate max-w-[260px] mt-0.5">
+                      {{ guestEmail(s) || (guestPhone(s) ? guestPhone(s) : '—') }}
+                    </span>
                   </div>
                 </td>
 
-                <td v-else-if="col.key === 'email'" class="px-3 text-[12px] text-neutral-700 whitespace-nowrap" :class="rowPad">{{ guestEmail(s) || '—' }}</td>
+                <td v-else-if="col.key === 'email'" class="px-3.5 text-[12px] text-neutral-600 whitespace-nowrap" :class="rowPad">{{ guestEmail(s) || '—' }}</td>
 
-                <td v-else-if="col.key === 'queue_number'" class="px-3 whitespace-nowrap" :class="rowPad">
+                <!-- 2. Queue Number (Quiet monospaced text, no solid black block) -->
+                <td v-else-if="col.key === 'queue_number'" class="px-3.5 whitespace-nowrap" :class="rowPad">
                   <span
                     v-if="s.queue_number"
-                    class="font-mono text-[11px] font-bold px-2 py-0.5 rounded-[5px] bg-black text-white tabular-nums tracking-wide"
+                    class="font-mono text-[12px] text-neutral-600 font-medium tabular-nums"
                   >
                     #{{ String(s.queue_number).padStart(3, '0') }}
                   </span>
                   <span v-else class="text-neutral-300 font-mono text-[12px]">—</span>
                 </td>
 
-                <td v-else-if="col.key === 'phone'" class="px-3 text-[12px] text-neutral-700 font-mono whitespace-nowrap" :class="rowPad">
+                <td v-else-if="col.key === 'phone'" class="px-3.5 text-[12px] text-neutral-600 font-mono whitespace-nowrap" :class="rowPad">
                   <a v-if="guestPhone(s)" :href="whatsappLink(guestPhone(s))" target="_blank" rel="noopener" @click.stop class="hover:underline underline-offset-2">{{ guestPhone(s) }}</a>
                   <span v-else class="text-neutral-300">—</span>
                 </td>
 
-                <td v-else-if="col.key === 'access'" class="px-3 whitespace-nowrap" :class="rowPad">
-                  <span class="font-mono text-[11px] px-1.5 py-0.5 rounded-[5px] bg-black/[0.04] border border-black/5 text-neutral-700">{{ accessId(s) }}</span>
+                <!-- 3. Access Pass ID (Quiet monospace) -->
+                <td v-else-if="col.key === 'access'" class="px-3.5 whitespace-nowrap" :class="rowPad">
+                  <span class="font-mono text-[11px] text-neutral-500 tracking-wider">{{ accessId(s) }}</span>
                 </td>
 
-                <td v-else-if="col.key === 'campaign'" class="px-3 text-[12px] text-neutral-700 whitespace-nowrap max-w-[180px] truncate" :class="rowPad">{{ campaignTitle(s.page_id) }}</td>
+                <td v-else-if="col.key === 'campaign'" class="px-3.5 text-[12px] text-neutral-600 whitespace-nowrap max-w-[180px] truncate" :class="rowPad">{{ campaignTitle(s.page_id) }}</td>
 
-                <td v-else-if="col.key === 'party_size'" class="px-3 text-[12px] text-neutral-700 font-mono whitespace-nowrap" :class="rowPad">
-                  <span v-if="(Number(s.party_size) || 1) > 1" class="px-1.5 py-0.5 rounded-[4px] bg-black/5 text-neutral-800 text-[11px] font-medium">
+                <td v-else-if="col.key === 'party_size'" class="px-3.5 text-[12px] text-neutral-600 font-mono whitespace-nowrap" :class="rowPad">
+                  <span v-if="(Number(s.party_size) || 1) > 1" class="px-1.5 py-0.5 rounded-[4px] bg-black/5 text-neutral-700 text-[11px] font-medium">
                     {{ s.party_size }} pax
                   </span>
                   <span v-else class="text-neutral-400 text-[11px]">1</span>
                 </td>
 
-                <td v-else-if="col.key === 'status'" class="px-3 whitespace-nowrap" :class="rowPad" @click.stop>
+                <!-- 4. Status (Quiet earth-green/neutral badge, no dropdown arrows on every row) -->
+                <td v-else-if="col.key === 'status'" class="px-3.5 whitespace-nowrap" :class="rowPad" @click.stop>
                   <button
                     type="button"
                     @click="openStatusMenu(s.id, $event)"
-                    class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-medium border cursor-pointer hover:shadow-sm transition-shadow"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium border cursor-pointer hover:shadow-2xs transition-shadow"
                     :class="statusBadgeClass(s.status)"
                   >
                     <span class="size-1.5 rounded-full" :class="statusDotClass(s.status)" />
                     {{ statusLabel(s.status) }}
-                    <ChevronDown class="w-3 h-3 opacity-60" />
                   </button>
                 </td>
 
-                <td v-else-if="col.key === 'checked_in_at'" class="px-3 whitespace-nowrap" :class="rowPad" @click.stop>
+                <!-- 5. Check-in (Quiet Earth Green indicator when checked in; text button when not in) -->
+                <td v-else-if="col.key === 'checked_in_at'" class="px-3.5 whitespace-nowrap" :class="rowPad" @click.stop>
                   <button
                     type="button"
                     @click="toggleCheckIn(s)"
-                    class="inline-flex items-center gap-1.5 text-[11.5px] px-2 py-1 rounded-[6px] cursor-pointer transition-colors"
+                    class="inline-flex items-center gap-1.5 text-[11.5px] px-2 py-0.5 rounded-[6px] cursor-pointer transition-colors"
                     :class="s.checked_in_at ? 'text-moss-700 hover:bg-moss-50' : 'text-neutral-400 hover:text-black hover:bg-black/5'"
                     :title="s.checked_in_at ? 'Undo check-in' : 'Mark as checked in'"
                   >
-                    <CircleCheck v-if="s.checked_in_at" class="w-3.5 h-3.5" />
-                    <Circle v-else class="w-3.5 h-3.5" />
-                    <span class="tabular-nums">{{ s.checked_in_at ? formatTime(s.checked_in_at) : 'Not in' }}</span>
+                    <span v-if="s.checked_in_at" class="size-1.5 rounded-full bg-moss-600" />
+                    <span class="tabular-nums font-mono">{{ s.checked_in_at ? formatTime(s.checked_in_at) : 'Check in' }}</span>
                   </button>
                 </td>
 
-                <td v-else-if="col.key === 'checked_out_at'" class="px-3 whitespace-nowrap text-[11.5px]" :class="rowPad">
-                  <span v-if="s.checked_out_at" class="text-neutral-700 font-mono tabular-nums">
+                <td v-else-if="col.key === 'checked_out_at'" class="px-3.5 whitespace-nowrap text-[11.5px]" :class="rowPad">
+                  <span v-if="s.checked_out_at" class="text-neutral-600 font-mono tabular-nums">
                     {{ formatTime(s.checked_out_at) }}
                   </span>
-                  <span v-else-if="s.checked_in_at" class="inline-flex items-center gap-1 text-[10.5px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                    <span class="size-1 rounded-full bg-emerald-500 animate-pulse" />
+                  <span v-else-if="s.checked_in_at" class="inline-flex items-center gap-1 text-[10.5px] font-medium text-moss-700 bg-moss-50 border border-moss-200 px-2 py-0.5 rounded-full">
+                    <span class="size-1 rounded-full bg-moss-600" />
                     Inside
                   </span>
+                  <span v-else-if="s.checked_in_at" class="text-neutral-300">—</span>
                   <span v-else class="text-neutral-300">—</span>
                 </td>
 
-                <td v-else-if="col.key === 'created_at'" class="px-3 text-[11.5px] text-neutral-500 whitespace-nowrap tabular-nums" :class="rowPad">{{ formatDateTime(s.created_at) }}</td>
+                <td v-else-if="col.key === 'created_at'" class="px-3.5 text-[11.5px] text-neutral-400 whitespace-nowrap tabular-nums" :class="rowPad">{{ formatDateTime(s.created_at) }}</td>
 
                 <!-- Custom answer columns -->
-                <td v-else class="px-3 text-[12px] text-neutral-700 whitespace-nowrap max-w-[200px] truncate" :class="rowPad" :title="formatCustomAnswer(s, col.key)">
+                <td v-else class="px-3.5 text-[12px] text-neutral-600 whitespace-nowrap max-w-[200px] truncate" :class="rowPad" :title="formatCustomAnswer(s, col.key)">
                   <span v-if="formatCustomAnswer(s, col.key)">{{ formatCustomAnswer(s, col.key) }}</span>
                   <span v-else class="text-neutral-300">—</span>
                 </td>
               </template>
-
-              <td class="pr-4 text-right" :class="rowPad">
-                <ChevronRight class="w-4 h-4 text-neutral-300 group-hover:text-black transition-colors inline" />
-              </td>
             </tr>
           </tbody>
         </table>
@@ -556,7 +534,7 @@
                 class="flex-1 h-[40px] rounded-[10px] text-[12.5px] font-medium flex items-center justify-center gap-2 cursor-pointer transition-colors bg-neutral-900 text-white hover:bg-black"
                 title="Mark guest as checked out and left venue"
               >
-                <LogOut class="w-4 h-4 text-emerald-400" />
+                <LogOut class="w-4 h-4 text-moss-400" />
                 Check out guest
               </button>
               <button
@@ -683,7 +661,7 @@ import { glassConfirm } from '../../services/glassDialog.ts';
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import {
   Search, X, Download, Columns3, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, ChevronRight,
-  Check, Circle, CircleCheck, Users, Trash2, Copy, LogIn, LogOut, Mail, RotateCw, Calendar, UserPlus
+  Check, Circle, CircleCheck, Users, Trash2, Copy, LogIn, LogOut, Mail, RotateCw, Calendar, UserPlus, SlidersHorizontal
 } from 'lucide-vue-next';
 import { useTicketSender } from './useTicketSender.ts';
 import { apiJson } from '../../services/apiClient.ts';
@@ -831,12 +809,48 @@ const checkFilters = computed(() => {
   ];
 });
 
-const hasActiveFilters = computed(() => !!search.value.trim() || statusFilter.value !== 'all' || checkFilter.value !== 'any' || dateFilter.value !== 'all' || duplicatesOnly.value);
+type PrimaryView = 'all' | 'checked_in' | 'pending' | 'waitlist';
+const primaryView = ref<PrimaryView>('all');
+
+const checkedInCount = computed(() => props.rows.filter(r => r.checked_in_at).length);
+const pendingCount = computed(() => Math.max(0, props.rows.length - checkedInCount.value));
+const waitlistCount = computed(() => props.rows.filter(r => normalizeStatus(r.status) === 'waitlisted').length);
+
+const primaryTabs = computed(() => {
+  const list = [
+    { id: 'all' as PrimaryView, label: 'All', count: props.rows.length },
+    { id: 'checked_in' as PrimaryView, label: 'Checked In', count: checkedInCount.value },
+    { id: 'pending' as PrimaryView, label: 'Pending', count: pendingCount.value }
+  ];
+  if (waitlistCount.value > 0) {
+    list.push({ id: 'waitlist' as PrimaryView, label: 'Waitlist', count: waitlistCount.value });
+  }
+  return list;
+});
+
+function setPrimaryView(v: PrimaryView) {
+  primaryView.value = v;
+  if (v === 'all') {
+    statusFilter.value = 'all';
+    checkFilter.value = 'any';
+  } else if (v === 'checked_in') {
+    statusFilter.value = 'all';
+    checkFilter.value = 'in';
+  } else if (v === 'pending') {
+    statusFilter.value = 'all';
+    checkFilter.value = 'out';
+  } else if (v === 'waitlist') {
+    statusFilter.value = 'waitlisted';
+    checkFilter.value = 'any';
+  }
+}
+
+const hasSecondaryFilters = computed(() => dateFilter.value !== 'all' || duplicatesOnly.value);
+const hasActiveFilters = computed(() => !!search.value.trim() || primaryView.value !== 'all' || hasSecondaryFilters.value);
 
 function clearFilters() {
   search.value = '';
-  statusFilter.value = 'all';
-  checkFilter.value = 'any';
+  setPrimaryView('all');
   dateFilter.value = 'all';
   duplicatesOnly.value = false;
 }

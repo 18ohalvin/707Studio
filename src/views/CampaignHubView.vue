@@ -67,9 +67,8 @@
                 ? 'bg-black text-white font-medium shadow-sm ring-2 ring-black/10'
                 : 'bg-neutral-100 hover:bg-neutral-200/80 text-black border border-black/5'"
             >
-              <span class="text-[11px] opacity-60 font-normal uppercase tracking-wider font-mono">{{ p.brand_slug }}</span>
-              <span class="font-medium truncate max-w-[180px]">{{ p.title }}</span>
-              <span v-if="p.status === 'approved' || p.status === 'published'" class="size-1.5 rounded-full bg-emerald-400 shrink-0" />
+              <span class="font-medium truncate max-w-[220px]">{{ p.title }}</span>
+              <span v-if="p.status === 'approved' || p.status === 'published'" class="size-1.5 rounded-full bg-moss-600 shrink-0" />
             </button>
             <p v-if="!filteredLaunchpadProjects.length" class="text-[13px] text-neutral-400 py-4">
               No campaigns found matching "{{ launchpadSearch }}".
@@ -115,7 +114,7 @@
 
           <div class="w-px h-4 bg-black/15 mx-0.5" />
 
-          <!-- Campaign Switcher Pill in Header -->
+          <!-- Campaign Switcher Pill in Header (Campaign Title only, clean earth green dot) -->
           <div class="relative" ref="headerPickerRef">
             <button
               id="hub-header-switcher"
@@ -124,10 +123,8 @@
               class="flex items-center gap-2 h-[32px] px-2.5 rounded-[8px] border border-black/12 bg-neutral-50 hover:bg-neutral-100 text-black text-[12.5px] font-medium transition-all apple-press cursor-pointer"
               title="Switch campaign or return to selector"
             >
-              <div class="size-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-              <span class="text-neutral-400 font-normal uppercase tracking-wider text-[11px] font-mono">{{ selectedProject.brand_slug }}</span>
-              <span class="text-neutral-300 font-light">/</span>
-              <span class="font-medium truncate max-w-[160px] sm:max-w-[220px]">{{ selectedProject.title }}</span>
+              <div class="size-1.5 rounded-full bg-moss-600 shrink-0" />
+              <span class="font-medium truncate max-w-[220px] sm:max-w-[300px] text-[13px] text-black">{{ selectedProject.title }}</span>
               <ChevronDown class="w-3.5 h-3.5 text-neutral-400 ml-0.5 shrink-0 transition-transform" :class="isPickerOpen ? 'rotate-180' : ''" />
             </button>
 
@@ -170,9 +167,8 @@
                   >
                     <div class="flex flex-col min-w-0 flex-1">
                       <span class="text-[12.5px] truncate">{{ p.title }}</span>
-                      <span class="text-[10.5px] text-neutral-400 font-mono uppercase truncate">{{ p.brand_slug }}</span>
                     </div>
-                    <span v-if="p.status === 'approved' || p.status === 'published'" class="text-[9.5px] px-1.5 py-0.5 rounded-full bg-moss-50 text-moss-700 border border-moss-200 shrink-0">Live</span>
+                    <span v-if="p.status === 'approved' || p.status === 'published'" class="size-1.5 rounded-full bg-moss-600 shrink-0" />
                     <Check v-if="selectedProjectId === p.id" class="w-3.5 h-3.5 text-black shrink-0" />
                   </button>
                 </div>
@@ -183,7 +179,7 @@
 
         <!-- Header Actions: Open Campaign Editor, Door Scanner, Gate Access -->
         <div class="flex items-center gap-2 md:gap-2.5">
-          <!-- Live sync indicator -->
+          <!-- Live sync indicator (Earth Green) -->
           <button
             id="hub-refresh-btn"
             type="button"
@@ -191,9 +187,8 @@
             class="flex items-center gap-1.5 px-2.5 h-[32px] rounded-[8px] text-[11.5px] font-707 text-neutral-500 hover:text-black hover:bg-black/5 transition-colors cursor-pointer"
             :title="lastSyncedAt ? `Last synced ${lastSyncedLabel}` : 'Sync now'"
           >
-            <span class="relative flex size-2">
-              <span v-if="!loadError" class="absolute inline-flex h-full w-full rounded-full bg-moss-300 opacity-60 animate-ping" />
-              <span class="relative inline-flex rounded-full size-2" :class="loadError ? 'bg-oxblood-600' : 'bg-moss-500'" />
+            <span class="relative flex size-2 items-center justify-center">
+              <span class="size-1.5 rounded-full" :class="loadError ? 'bg-oxblood-600' : 'bg-moss-600'" />
             </span>
             <span class="hidden lg:inline tabular-nums">{{ loadError ? 'Offline' : (isLoading ? 'Syncing…' : `Synced ${lastSyncedLabel}`) }}</span>
             <RefreshCw class="w-3.5 h-3.5" :class="isLoading ? 'animate-spin' : ''" />
@@ -240,7 +235,7 @@
 
       <!-- Main Workspace -->
       <main class="flex-1 w-full py-[20px] md:py-[24px] flex flex-col gap-[20px] md:gap-[24px]">
-        <!-- 1. Live Campaign HUD / Metric Ribbon (Replaces detached Overview tab) -->
+        <!-- 1. Live Campaign HUD / Metric Ribbon (Harmonious Calm Cards, Earth Green) -->
         <div class="px-[24px] w-full">
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <!-- Card 1: Total Registered -->
@@ -264,9 +259,9 @@
                 <span class="text-[26px] sm:text-[30px] font-medium font-mono tabular-nums leading-none text-black">{{ checkedInCount }}</span>
                 <span class="text-[12px] text-neutral-400 font-normal">/ {{ rows.length }}</span>
               </div>
-              <!-- Mini progress bar -->
+              <!-- Mini progress bar (Earth Green) -->
               <div class="w-full h-[4px] rounded-full bg-black/10 overflow-hidden mt-1.5">
-                <div class="h-full bg-black rounded-full transition-all duration-500" :style="{ width: `${checkedInPct}%` }" />
+                <div class="h-full bg-moss-700 rounded-full transition-all duration-500" :style="{ width: `${checkedInPct}%` }" />
               </div>
             </div>
 
@@ -279,22 +274,24 @@
               </div>
             </div>
 
-            <!-- Card 4: Door Check-in Quick Launch -->
-            <div class="p-3.5 rounded-[14px] border border-black/10 bg-black text-white flex flex-col justify-between gap-2 shadow-2xs">
+            <!-- Card 4: Door Check-in Quick Launch (Calm & Balanced) -->
+            <div class="p-4 rounded-[14px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between gap-1 shadow-2xs">
               <div class="flex items-center justify-between">
-                <span class="text-[10.5px] uppercase tracking-[0.12em] text-white/60 font-medium">Door Entrance</span>
-                <span class="size-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Door Entrance</span>
+                <span class="size-1.5 rounded-full bg-moss-600 shrink-0" />
               </div>
-              <a
-                :href="scannerHref"
-                target="_blank"
-                rel="noopener"
-                class="w-full h-[32px] rounded-[8px] bg-white text-black text-[12px] font-medium flex items-center justify-center gap-1.5 hover:bg-neutral-100 transition-colors apple-press cursor-pointer"
-              >
-                <ScanLine class="w-3.5 h-3.5" />
-                <span>Launch Scanner</span>
-                <ArrowUpRight class="w-3 h-3 text-neutral-500" />
-              </a>
+              <div class="mt-2">
+                <a
+                  :href="scannerHref"
+                  target="_blank"
+                  rel="noopener"
+                  class="w-full h-[32px] rounded-[8px] bg-black text-white hover:bg-neutral-800 text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors apple-press cursor-pointer"
+                >
+                  <ScanLine class="w-3.5 h-3.5" />
+                  <span>Launch Scanner</span>
+                  <ArrowUpRight class="w-3 h-3 text-neutral-400" />
+                </a>
+              </div>
             </div>
           </div>
         </div>

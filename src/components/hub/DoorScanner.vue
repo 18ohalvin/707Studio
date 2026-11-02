@@ -39,7 +39,7 @@
 
           <!-- Active Today Date Badge (Single Daily Rolling & Multi-Day) -->
           <div v-if="isDailyOrMultiday" class="flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-white/[0.08] border border-white/10 text-white/90 text-[11.5px] font-mono shrink-0">
-            <span class="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span class="size-1.5 rounded-full bg-moss-500 shrink-0" />
             <span>Today · {{ todayDisplay }}</span>
             <span class="text-white/40 text-[10.5px]">({{ activeRows.length }})</span>
           </div>
@@ -224,10 +224,10 @@
                       type="button"
                       @click="autoCallQueue = !autoCallQueue"
                       class="h-[28px] px-2.5 rounded-[7px] text-[11px] font-medium border flex items-center gap-1.5 cursor-pointer transition-colors"
-                      :class="autoCallQueue ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-white text-neutral-500 border-black/15 hover:bg-black/5'"
+                      :class="autoCallQueue ? 'bg-moss-50 text-moss-800 border-moss-300' : 'bg-white text-neutral-500 border-black/15 hover:bg-black/5'"
                       title="When visitors exit, automatically batch-call waiting guests to fill open spots"
                     >
-                      <span class="size-1.5 rounded-full" :class="autoCallQueue ? 'bg-emerald-500 animate-pulse' : 'bg-neutral-300'" />
+                      <span class="size-1.5 rounded-full" :class="autoCallQueue ? 'bg-moss-600' : 'bg-neutral-300'" />
                       <span>Auto-Call: <strong>{{ autoCallQueue ? 'ON' : 'OFF' }}</strong></span>
                     </button>
 
@@ -240,7 +240,7 @@
                       title="Dispatch WhatsApp notification to next guest(s) in line"
                     >
                       <RefreshCw v-if="isBatchCalling" class="w-3.5 h-3.5 animate-spin" />
-                      <BellRing v-else class="w-3.5 h-3.5 text-emerald-400" />
+                      <BellRing v-else class="w-3.5 h-3.5 text-moss-500" />
                       <span>Call Next ({{ availableSpots > 0 ? `${availableSpots} Spots` : '1 Pax' }})</span>
                     </button>
                   </div>
@@ -249,9 +249,9 @@
 
               <!-- Currently Called Guests Shelf -->
               <div v-if="currentlyCalledGuests.length" class="flex flex-col gap-1 shrink-0">
-                <div class="flex items-center justify-between px-1 text-[10.5px] uppercase tracking-[0.1em] text-emerald-800 font-medium">
+                <div class="flex items-center justify-between px-1 text-[10.5px] uppercase tracking-[0.1em] text-moss-800 font-medium">
                   <span class="flex items-center gap-1.5">
-                    <span class="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span class="size-2 rounded-full bg-moss-600" />
                     Currently Calling ({{ currentlyCalledGuests.length }})
                   </span>
                   <span class="text-[10px] text-neutral-400 font-normal">Ready for admission</span>
@@ -260,10 +260,10 @@
                   <div
                     v-for="guest in currentlyCalledGuests"
                     :key="guest.id"
-                    class="w-full flex items-center justify-between p-2 rounded-[10px] border border-emerald-300 bg-emerald-50/70 transition-colors"
+                    class="w-full flex items-center justify-between p-2 rounded-[10px] border border-moss-200 bg-moss-50/70 transition-colors"
                   >
                     <div class="flex items-center gap-2.5 min-w-0">
-                      <span class="size-7 rounded-[7px] bg-emerald-600 text-white font-mono font-bold text-[12px] flex items-center justify-center shrink-0 shadow-2xs animate-pulse">
+                      <span class="size-7 rounded-[7px] bg-moss-600 text-white font-mono font-bold text-[12px] flex items-center justify-center shrink-0 shadow-2xs">
                         #{{ getGuestQueueNumber(guest) }}
                       </span>
                       <div class="min-w-0">
@@ -304,14 +304,14 @@
                     @click="openConfirm(guest)"
                     class="w-full flex items-center justify-between p-2 rounded-[10px] border text-left transition-colors cursor-pointer"
                     :class="getGuestQueueNumber(guest) === currentCalledNumber
-                      ? 'border-emerald-500 bg-emerald-50/50 shadow-2xs'
+                      ? 'border-moss-400 bg-moss-50/50 shadow-2xs'
                       : (isGuestInside(guest) ? 'border-black/5 bg-neutral-100 opacity-60' : 'border-black/10 bg-white hover:bg-black/5 active:bg-black/10')"
                   >
                     <div class="flex items-center gap-2.5 min-w-0">
                       <span
                         class="size-7 rounded-[7px] flex items-center justify-center font-mono font-bold text-[12px] shrink-0"
                         :class="getGuestQueueNumber(guest) === currentCalledNumber
-                          ? 'bg-emerald-600 text-white shadow-2xs animate-pulse'
+                          ? 'bg-moss-600 text-white shadow-2xs'
                           : (isGuestInside(guest) ? 'bg-neutral-300 text-neutral-600' : 'bg-black/10 text-neutral-800')"
                       >
                         #{{ getGuestQueueNumber(guest) }}
@@ -339,7 +339,7 @@
                       </span>
                       <span
                         v-else-if="getGuestQueueNumber(guest) === currentCalledNumber"
-                        class="text-[10.5px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 animate-pulse"
+                        class="text-[10.5px] font-medium px-2 py-0.5 rounded-full bg-moss-100 text-moss-800 border border-moss-300"
                       >
                         Now Serving
                       </span>
@@ -400,8 +400,8 @@
           <p class="text-[10.5px] uppercase tracking-[0.12em] text-neutral-500 leading-none">Check-in log</p>
           <p class="text-[20px] font-medium leading-tight tabular-nums">{{ loggedIn.length }} <span class="text-[13px] text-neutral-500 font-normal">guests inside</span></p>
         </div>
-        <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] font-mono text-emerald-800 shrink-0">
-          <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-moss-50 border border-moss-200 text-[11px] font-mono text-moss-800 shrink-0">
+          <span class="size-1.5 rounded-full bg-moss-600" />
           <span>Live Synced</span>
         </div>
         <button
