@@ -213,7 +213,7 @@
             </div>
           </div>
 
-          <!-- State 1: Shuffling live animation -->
+          <!-- State 1: Shuffling live animation in Admin View -->
           <div v-if="isDrawing" class="flex-1 flex flex-col items-center justify-center py-10 gap-2.5">
             <div class="size-10 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-800 animate-pulse">
               <Sparkles class="w-5 h-5 animate-spin" />
@@ -222,7 +222,7 @@
             <p class="text-[11.5px] text-neutral-500 font-light">Cycling through {{ eligible.length }} verified entries…</p>
           </div>
 
-          <!-- State 2: Winner(s) Drawn -->
+          <!-- State 2: Winner(s) Drawn in Admin View -->
           <div v-else-if="drawn.length" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div
               v-for="(s, i) in drawn"
@@ -316,110 +316,207 @@
     </div>
 
     <!-- ============================================================== -->
-    <!-- CINEMATIC FULL-SCREEN STAGE MODE (For Projectors & Live Events)-->
+    <!-- CINEMATIC 3D FULL-SCREEN STAGE MODE (Apple Keynote Edition)    -->
     <!-- ============================================================== -->
     <Teleport to="body">
       <Transition name="stage-fade">
         <div
           v-if="isStageModeOpen"
-          class="fixed inset-0 z-[120] bg-[#0b0c0d] text-white flex flex-col justify-between p-6 sm:p-10 font-sans font-light tracking-normal select-none overflow-hidden"
+          @mousemove="handleStageMouseMove"
+          class="fixed inset-0 z-[120] bg-[#030305] text-white flex flex-col justify-between p-6 sm:p-10 font-sans font-light tracking-normal select-none overflow-hidden"
           role="dialog"
           aria-modal="true"
         >
-          <!-- Confetti Canvas -->
-          <canvas ref="confettiCanvas" class="absolute inset-0 pointer-events-none z-20"></canvas>
+          <!-- 3D Hardware-Accelerated Interactive Canvas (Rotating Core / Warp Vortex / Platinum Foil) -->
+          <canvas ref="stageCanvasRef" class="absolute inset-0 pointer-events-none z-10 size-full"></canvas>
 
-          <!-- Top Stage Bar -->
-          <div class="relative z-30 flex items-center justify-between w-full border-b border-white/10 pb-4">
+          <!-- Top Stage Bar: Luxury Brandmark & Live Status -->
+          <div class="relative z-30 flex items-center justify-between w-full border-b border-white/10 pb-4 backdrop-blur-sm">
             <div class="flex items-center gap-3">
-              <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-medium bg-white/10 border border-white/15 text-white/95">
-                <span class="size-2 rounded-full bg-moss-500 shrink-0" />
-                LIVE RAFFLE STAGE
+              <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10.5px] font-medium bg-white/10 border border-white/15 text-white tracking-normal">
+                <span class="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                LIVE STAGE SELECTION
               </span>
-              <span class="text-[13px] text-white/30 hidden sm:inline">|</span>
-              <span class="text-[13.5px] text-white/80 font-medium truncate max-w-[340px]">{{ campaignTitle || exportName }}</span>
+              <span class="text-[13px] text-white/20 hidden sm:inline">|</span>
+              <span class="text-[13px] text-white/70 font-medium truncate max-w-[360px] tracking-normal">
+                {{ campaignTitle || exportName }}
+              </span>
             </div>
 
             <div class="flex items-center gap-3">
-              <span class="text-[12px] text-white/50 tabular-nums hidden sm:inline">
-                {{ eligible.length }} candidate{{ eligible.length === 1 ? '' : 's' }} in pool
+              <span class="text-[11.5px] text-white/40 tabular-nums hidden sm:inline">
+                {{ eligible.length }} verified entries in pool
               </span>
               <button
                 type="button"
                 @click="closeStageMode"
-                class="h-[34px] px-3.5 rounded-[9px] bg-white/10 hover:bg-white/20 border border-white/15 text-white text-[12px] font-medium flex items-center gap-1.5 cursor-pointer transition-colors"
+                class="h-[32px] px-3.5 rounded-[8px] bg-white/10 hover:bg-white/20 border border-white/15 text-white text-[11.5px] font-medium flex items-center gap-1.5 cursor-pointer transition-colors apple-press"
                 title="Exit Stage Mode (Esc)"
               >
-                <Minimize2 class="w-3.5 h-3.5" /> <span>Exit (Esc)</span>
+                <Minimize2 class="w-3.5 h-3.5" />
+                <span>Exit (Esc)</span>
               </button>
             </div>
           </div>
 
-          <!-- Main Stage Centerpiece -->
-          <div class="relative z-30 flex-1 flex flex-col items-center justify-center text-center my-6 max-w-4xl mx-auto w-full">
-            <!-- State 1: Shuffling / In Progress -->
-            <div v-if="isDrawing" class="flex flex-col items-center justify-center gap-6 animate-pulse">
-              <div class="size-16 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
-                <Sparkles class="w-8 h-8 text-amber-300 animate-spin" />
+          <!-- Main Stage Centerpiece (With 3D Gyroscope Perspective) -->
+          <div 
+            class="relative z-30 flex-1 flex flex-col items-center justify-center text-center my-6 max-w-5xl mx-auto w-full"
+            style="perspective: 1200px;"
+          >
+            
+            <!-- ============================================================== -->
+            <!-- STAGE STATE 1: SHUFFLE & WARP SPEED VORTEX                     -->
+            <!-- ============================================================== -->
+            <div v-if="isDrawing" class="flex flex-col items-center justify-center gap-6 animate-apple-pop">
+              <!-- Radial Core Pulsing Aura -->
+              <div class="relative flex items-center justify-center">
+                <div class="size-28 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center animate-ping opacity-30 absolute pointer-events-none" />
+                <div class="size-20 rounded-full bg-white/10 border border-white/20 flex items-center justify-center shadow-[0_0_50px_rgba(255,255,255,0.2)]">
+                  <Sparkles class="w-8 h-8 text-white animate-spin" />
+                </div>
               </div>
-              <div class="flex flex-col items-center gap-2">
-                <p class="text-[12px] uppercase tracking-normal text-white/50 font-medium">Drawing Lucky Winner</p>
-                <h1 class="text-[38px] sm:text-[64px] md:text-[80px] font-medium tracking-tight text-white font-mono leading-none drop-shadow-[0_8px_30px_rgba(255,255,255,0.3)]">
+
+              <div class="flex flex-col items-center gap-3 max-w-2xl">
+                <span class="px-3 py-1 rounded-full bg-white/10 border border-white/15 text-[11px] font-medium text-white/80 uppercase tracking-normal">
+                  Cryptographic Random Selection
+                </span>
+                
+                <!-- Huge Crisp SF Pro Cycling Typography (No monospace) -->
+                <h1 class="text-[44px] sm:text-[68px] md:text-[84px] font-medium tracking-tight text-white leading-none drop-shadow-[0_12px_40px_rgba(255,255,255,0.4)]">
                   {{ shuffleName }}
                 </h1>
-                <p class="text-[13.5px] text-white/60 font-mono mt-2">Cycling {{ eligible.length }} entries...</p>
+                
+                <p class="text-[13px] text-white/50 font-light mt-1">
+                  Sampling across {{ eligible.length }} verified candidates...
+                </p>
               </div>
             </div>
 
-            <!-- State 2: Winner(s) Revealed -->
-            <div v-else-if="drawn.length" class="flex flex-col items-center justify-center w-full gap-6">
-              <div class="flex flex-col items-center gap-1.5">
-                <span class="px-3.5 py-1 rounded-full text-[11px] uppercase tracking-normal font-medium bg-amber-400/20 text-amber-300 border border-amber-400/40">
-                  🎉 Winner{{ drawn.length > 1 ? 's' : '' }} Selected
+            <!-- ============================================================== -->
+            <!-- STAGE STATE 2: WINNERS REVEALED (Interactive 3D Glass Pass)    -->
+            <!-- ============================================================== -->
+            <div v-else-if="drawn.length" class="flex flex-col items-center justify-center w-full gap-7 animate-apple-pop">
+              <div class="flex flex-col items-center gap-2">
+                <span class="px-3.5 py-1 rounded-full text-[11px] uppercase tracking-normal font-medium bg-white/15 text-white border border-white/25 shadow-sm">
+                  Official Admission · Verified
                 </span>
-                <h2 class="text-[32px] sm:text-[44px] font-medium text-white tracking-tight">
-                  Congratulations!
+                <h2 class="text-[28px] sm:text-[38px] font-medium text-white tracking-tight">
+                  Congratulations
                 </h2>
               </div>
 
-              <!-- Winners Card Grid -->
+              <!-- SINGLE WINNER MONUMENTAL 3D CARD -->
               <div 
+                v-if="drawn.length === 1" 
+                class="w-full max-w-[540px] transition-transform duration-100 ease-out"
+                :style="{
+                  transform: `rotateX(${cardRotateX}deg) rotateY(${cardRotateY}deg)`,
+                  transformStyle: 'preserve-3d'
+                }"
+              >
+                <div class="relative p-8 sm:p-9 rounded-[26px] bg-gradient-to-b from-white/[0.14] via-white/[0.07] to-white/[0.04] backdrop-blur-2xl border border-white/25 shadow-[0_30px_90px_rgba(0,0,0,0.85)] flex flex-col items-center gap-6 overflow-hidden">
+                  
+                  <!-- Dynamic Specular Lighting Glare based on mouse tilt -->
+                  <div 
+                    class="absolute inset-0 pointer-events-none opacity-40 transition-opacity"
+                    :style="{
+                      background: `radial-gradient(circle at ${glarePos.x}% ${glarePos.y}%, rgba(255,255,255,0.4) 0%, transparent 60%)`
+                    }"
+                  />
+
+                  <!-- Card Header: Pass & Status -->
+                  <div class="flex items-center justify-between w-full border-b border-white/10 pb-4 relative z-10">
+                    <div class="flex items-center gap-2">
+                      <span class="size-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                      <span class="text-[12px] font-medium text-white tracking-normal uppercase">Winner Selected</span>
+                    </div>
+                    <span class="text-[11.5px] font-mono text-white/50">#1 OF 1</span>
+                  </div>
+
+                  <!-- Winner Name & Avatar Core -->
+                  <div class="flex flex-col items-center text-center gap-3 relative z-10">
+                    <div class="size-16 rounded-full bg-gradient-to-b from-white to-neutral-300 text-black font-medium text-[22px] flex items-center justify-center shadow-[0_8px_24px_rgba(255,255,255,0.3)]">
+                      {{ initials(guestName(drawn[0])) }}
+                    </div>
+
+                    <h3 class="text-[32px] sm:text-[40px] font-medium text-white tracking-tight leading-tight drop-shadow-sm">
+                      {{ guestName(drawn[0]) }}
+                    </h3>
+
+                    <p class="text-[13px] text-white/60 font-light">
+                      {{ maskEmail(guestEmail(drawn[0])) || guestPhone(drawn[0]) || '—' }}
+                    </p>
+                  </div>
+
+                  <!-- Ticket Specimen Capsule -->
+                  <div class="w-full bg-white/5 border border-white/10 rounded-[14px] p-3.5 flex items-center justify-between text-[12px] relative z-10">
+                    <div class="flex flex-col items-start">
+                      <span class="text-[10px] text-white/40 uppercase tracking-normal">Access Code</span>
+                      <span class="text-white font-mono font-medium tracking-wide mt-0.5">{{ accessId(drawn[0]) }}</span>
+                    </div>
+
+                    <div class="flex flex-col items-end">
+                      <span class="text-[10px] text-white/40 uppercase tracking-normal">Venue Gate</span>
+                      <span class="text-emerald-300 font-medium mt-0.5">Admit 1 Guest</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- MULTIPLE WINNERS 3D GRID -->
+              <div 
+                v-else
                 class="w-full grid gap-4 max-h-[55vh] overflow-y-auto p-2"
-                :class="drawn.length === 1 ? 'grid-cols-1 max-w-[460px]' : drawn.length <= 4 ? 'grid-cols-1 sm:grid-cols-2 max-w-[760px]' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-4xl'"
+                :class="drawn.length <= 4 ? 'grid-cols-1 sm:grid-cols-2 max-w-3xl' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl'"
               >
                 <div
                   v-for="(s, idx) in drawn"
                   :key="s.id"
-                  class="relative p-5 rounded-[18px] bg-white/[0.08] backdrop-blur-xl border border-white/20 shadow-[0_16px_40px_rgba(0,0,0,0.5)] flex items-center gap-4 text-left transition-all hover:bg-white/[0.12]"
+                  class="relative p-5 rounded-[20px] bg-gradient-to-b from-white/[0.12] to-white/[0.04] backdrop-blur-xl border border-white/20 shadow-[0_16px_40px_rgba(0,0,0,0.6)] flex items-center gap-4 text-left transition-all hover:bg-white/[0.16]"
                 >
-                  <div class="size-13 rounded-full bg-gradient-to-tr from-amber-400 to-amber-200 text-black font-medium text-[17px] flex items-center justify-center shrink-0 shadow-lg">
+                  <div class="size-12 rounded-full bg-gradient-to-b from-white to-neutral-300 text-black font-medium text-[16px] flex items-center justify-center shrink-0 shadow-md">
                     {{ initials(guestName(s)) }}
                   </div>
                   <div class="flex flex-col min-w-0 flex-1">
                     <div class="flex items-center gap-2">
-                      <span class="text-[11px] font-mono text-amber-300 uppercase tracking-wider font-medium">#{{ idx + 1 }} Winner</span>
-                      <span v-if="s.checked_in_at" class="text-[10px] px-1.5 py-0.2 rounded-full bg-moss-500/20 text-moss-300 border border-moss-500/30">At Venue</span>
+                      <span class="text-[10.5px] font-mono text-white/60 uppercase tracking-normal">Winner #{{ idx + 1 }}</span>
+                      <span v-if="s.checked_in_at" class="text-[9.5px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-light">
+                        At Venue
+                      </span>
                     </div>
-                    <h3 class="text-[19px] font-medium text-white truncate leading-snug">{{ guestName(s) }}</h3>
-                    <p class="text-[12px] text-white/60 font-mono truncate">{{ maskEmail(guestEmail(s)) || guestPhone(s) || '—' }}</p>
-                    <p class="text-[11px] text-white/40 font-mono mt-0.5">Pass ID: {{ accessId(s) }}</p>
+                    <h3 class="text-[18px] font-medium text-white truncate leading-snug">{{ guestName(s) }}</h3>
+                    <p class="text-[11.5px] text-white/60 truncate font-light">{{ maskEmail(guestEmail(s)) || guestPhone(s) || '—' }}</p>
+                    <p class="text-[10.5px] text-white/40 font-mono mt-0.5">ID: {{ accessId(s) }}</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- State 3: Ready to Draw (Idle) -->
-            <div v-else class="flex flex-col items-center justify-center gap-6">
-              <div class="size-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-inner">
-                <Trophy class="w-10 h-10 text-amber-300/80" />
+            <!-- ============================================================== -->
+            <!-- STAGE STATE 3: READY / IDLE (Suspended 3D Architectural Core)  -->
+            <!-- ============================================================== -->
+            <div v-else class="flex flex-col items-center justify-center gap-6 animate-apple-pop">
+              <!-- Architectural Monolith Glyph -->
+              <div class="relative flex items-center justify-center">
+                <div class="size-24 rounded-full bg-white/[0.03] border border-white/10 flex items-center justify-center shadow-inner relative">
+                  <div class="size-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center shadow-lg">
+                    <Sparkles class="w-6 h-6 text-white" />
+                  </div>
+                </div>
               </div>
-              <div class="flex flex-col items-center gap-2">
-                <span class="text-[12px] uppercase tracking-normal text-white/50 font-medium">Ready for Live Selection</span>
-                <h1 class="text-[36px] sm:text-[54px] font-medium text-white tracking-tight leading-tight">
-                  {{ isWaitlistDraw ? 'Waitlist Draw' : 'Official Prize Draw' }}
+
+              <div class="flex flex-col items-center gap-2.5 max-w-xl">
+                <span class="px-3.5 py-1 rounded-full bg-white/10 border border-white/15 text-[11px] font-medium text-white/80 uppercase tracking-normal">
+                  Live Stage Selection
+                </span>
+
+                <h1 class="text-[38px] sm:text-[54px] font-medium text-white tracking-tight leading-tight">
+                  {{ isWaitlistDraw ? 'Waitlist Release' : 'Official Prize Draw' }}
                 </h1>
-                <p class="text-[15px] text-white/60 max-w-[480px]">
-                  Drawing <strong class="text-white font-mono">{{ winnerCount }}</strong> lucky {{ isWaitlistDraw ? 'guest' : 'winner' }}{{ winnerCount > 1 ? 's' : '' }} from a pool of <strong class="text-white font-mono">{{ eligible.length }}</strong> verified entries.
+
+                <p class="text-[14px] sm:text-[15px] text-white/60 font-light leading-relaxed max-w-[460px]">
+                  Drawing <strong class="text-white font-medium">{{ winnerCount }}</strong> verified {{ isWaitlistDraw ? 'candidate' : 'winner' }}{{ winnerCount > 1 ? 's' : '' }} from a pool of <strong class="text-white font-medium">{{ eligible.length }}</strong> verified entries.
                 </p>
               </div>
 
@@ -427,18 +524,18 @@
                 type="button"
                 :disabled="!eligible.length || isDrawing"
                 @click="draw"
-                class="apple-press h-[56px] px-10 rounded-[14px] bg-white text-black font-medium text-[17px] tracking-tight hover:bg-neutral-200 cursor-pointer shadow-[0_12px_36px_rgba(255,255,255,0.2)] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-3 mt-4"
+                class="apple-press h-[52px] px-9 rounded-[14px] bg-white text-black font-medium text-[15px] tracking-normal hover:bg-neutral-200 cursor-pointer shadow-[0_12px_40px_rgba(255,255,255,0.25)] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-2.5 mt-3"
               >
-                <Shuffle class="w-5 h-5" />
-                <span>Start Lucky Draw</span>
+                <Shuffle class="w-4 h-4" />
+                <span>Begin Live Selection</span>
               </button>
             </div>
           </div>
 
-          <!-- Bottom Stage Controls -->
-          <div class="relative z-30 flex items-center justify-between w-full border-t border-white/10 pt-4">
+          <!-- Bottom Stage Controls & Shortcuts -->
+          <div class="relative z-30 flex items-center justify-between w-full border-t border-white/10 pt-4 backdrop-blur-sm">
             <div class="flex items-center gap-2">
-              <span class="text-[12px] text-white/50">Winners:</span>
+              <span class="text-[12px] text-white/40">Winners:</span>
               <div class="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-[8px] p-1">
                 <button
                   type="button"
@@ -460,26 +557,27 @@
               </div>
             </div>
 
-            <!-- Stage Action Buttons -->
+            <!-- Action buttons in reveal state -->
             <div v-if="drawn.length && !isDrawing" class="flex items-center gap-3">
               <button
                 type="button"
                 :disabled="isSaving"
                 @click="draw"
-                class="h-[40px] px-4 rounded-[10px] bg-white/10 hover:bg-white/20 border border-white/15 text-white text-[13px] font-medium flex items-center gap-2 cursor-pointer transition-colors"
+                class="h-[38px] px-4 rounded-[10px] bg-white/10 hover:bg-white/20 border border-white/15 text-white text-[12.5px] font-medium flex items-center gap-2 cursor-pointer transition-colors"
               >
-                <RotateCcw class="w-4 h-4" /> <span>Draw Again</span>
+                <RotateCcw class="w-3.5 h-3.5" /> <span>Re-roll</span>
               </button>
               <button
                 type="button"
                 :disabled="isSaving"
                 @click="confirmWinners"
-                class="apple-press h-[40px] px-5 rounded-[10px] bg-white text-black font-medium text-[13px] hover:bg-neutral-100 flex items-center gap-2 cursor-pointer shadow-[0_8px_20px_rgba(255,255,255,0.15)] transition-all"
+                class="apple-press h-[38px] px-5 rounded-[10px] bg-white text-black font-medium text-[12.5px] hover:bg-neutral-100 flex items-center gap-2 cursor-pointer shadow-[0_8px_24px_rgba(255,255,255,0.2)] transition-all"
               >
-                <Check class="w-4 h-4" /> <span>{{ isSaving ? 'Saving…' : 'Confirm Winners' }}</span>
+                <Check class="w-4 h-4" /> <span>{{ isSaving ? 'Saving…' : 'Confirm & Save' }}</span>
               </button>
             </div>
-            <div v-else class="text-[12px] text-white/40">
+            
+            <div v-else class="text-[12px] text-white/40 font-light">
               Press <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-white/70 font-mono text-[11px]">Space</kbd> to draw · <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-white/70 font-mono text-[11px]">Esc</kbd> to exit
             </div>
           </div>
@@ -493,7 +591,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { 
   Shuffle, Check, Gift, Download, Plus, Minus, Maximize2, Minimize2, 
-  Sparkles, Trophy, RotateCcw, Info 
+  Sparkles, RotateCcw, Info 
 } from 'lucide-vue-next';
 import { glassConfirm } from '../../services/glassDialog.ts';
 import { useTicketSender } from './useTicketSender.ts';
@@ -531,89 +629,310 @@ const shuffleName = ref('');
 const showInfo = ref(false);
 
 const isStageModeOpen = ref(false);
-const confettiCanvas = ref<HTMLCanvasElement | null>(null);
-let confettiAnimId: number | null = null;
+const stageCanvasRef = ref<HTMLCanvasElement | null>(null);
+let stageAnimId: number | null = null;
 
-function openStageMode() {
-  isStageModeOpen.value = true;
+// Interactive 3D Perspective Tilt State
+const mouseX = ref(0);
+const mouseY = ref(0);
+const cardRotateX = ref(0);
+const cardRotateY = ref(0);
+const glarePos = ref({ x: 50, y: 50 });
+
+function handleStageMouseMove(e: MouseEvent) {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const x = (e.clientX - w / 2) / (w / 2); // -1 to 1
+  const y = (e.clientY - h / 2) / (h / 2); // -1 to 1
+  mouseX.value = x;
+  mouseY.value = y;
+  cardRotateY.value = Number((x * 12).toFixed(2));
+  cardRotateX.value = Number((-y * 12).toFixed(2));
+  glarePos.value = {
+    x: Math.round((e.clientX / w) * 100),
+    y: Math.round((e.clientY / h) * 100),
+  };
 }
 
-function closeStageMode() {
-  isStageModeOpen.value = false;
-  if (confettiAnimId) {
-    cancelAnimationFrame(confettiAnimId);
-    confettiAnimId = null;
+// 3D Particles Data Structures
+interface SphereNode {
+  x: number;
+  y: number;
+  z: number;
+  baseX: number;
+  baseY: number;
+  baseZ: number;
+}
+
+interface WarpStream {
+  x: number;
+  y: number;
+  z: number;
+  pz: number;
+  speed: number;
+}
+
+interface FoilParticle {
+  x: number;
+  y: number;
+  z: number;
+  vx: number;
+  vy: number;
+  vz: number;
+  w: number;
+  h: number;
+  rx: number;
+  ry: number;
+  rz: number;
+  vrx: number;
+  vry: number;
+  vrz: number;
+  colorFront: string;
+  colorBack: string;
+}
+
+let sphereNodes: SphereNode[] = [];
+let warpStreams: WarpStream[] = [];
+let foilParticles: FoilParticle[] = [];
+let sphereAngleY = 0;
+let sphereAngleX = 0;
+let shockwaveRadius = 0;
+let shockwaveAlpha = 0;
+
+function initSphereNodes() {
+  sphereNodes = [];
+  const N = 110;
+  const radius = 220;
+  for (let i = 0; i < N; i++) {
+    const phi = Math.acos(-1 + (2 * i) / N);
+    const theta = Math.sqrt(N * Math.PI) * phi;
+    const x = radius * Math.cos(theta) * Math.sin(phi);
+    const y = radius * Math.sin(theta) * Math.sin(phi);
+    const z = radius * Math.cos(phi);
+    sphereNodes.push({ x, y, z, baseX: x, baseY: y, baseZ: z });
   }
 }
 
-function triggerConfetti() {
-  if (!confettiCanvas.value) return;
-  const canvas = confettiCanvas.value;
+function initWarpStreams() {
+  warpStreams = [];
+  const count = 160;
+  for (let i = 0; i < count; i++) {
+    warpStreams.push({
+      x: (Math.random() - 0.5) * window.innerWidth * 1.5,
+      y: (Math.random() - 0.5) * window.innerHeight * 1.5,
+      z: Math.random() * 1200 + 100,
+      pz: 1200,
+      speed: Math.random() * 22 + 18,
+    });
+  }
+}
+
+function triggerPlatinumConfetti() {
+  shockwaveRadius = 10;
+  shockwaveAlpha = 0.9;
+  foilParticles = [];
+
+  const metallicColors = [
+    { front: '#ffffff', back: '#d4d4d8' },
+    { front: '#f4f4f5', back: '#a1a1aa' },
+    { front: '#e4e4e7', back: '#71717a' },
+    { front: '#fafafa', back: '#e2e8f0' },
+  ];
+
+  const count = 150;
+  for (let i = 0; i < count; i++) {
+    const col = metallicColors[Math.floor(Math.random() * metallicColors.length)];
+    foilParticles.push({
+      x: window.innerWidth / 2 + (Math.random() - 0.5) * 320,
+      y: window.innerHeight / 2 - 80,
+      z: Math.random() * 400 - 200,
+      vx: (Math.random() - 0.5) * 20,
+      vy: Math.random() * -16 - 6,
+      vz: (Math.random() - 0.5) * 8,
+      w: Math.random() * 9 + 6,
+      h: Math.random() * 6 + 4,
+      rx: Math.random() * Math.PI * 2,
+      ry: Math.random() * Math.PI * 2,
+      rz: Math.random() * Math.PI * 2,
+      vrx: (Math.random() - 0.5) * 0.2,
+      vry: (Math.random() - 0.5) * 0.25,
+      vrz: (Math.random() - 0.5) * 0.15,
+      colorFront: col.front,
+      colorBack: col.back,
+    });
+  }
+}
+
+function startStage3DEngine() {
+  if (!stageCanvasRef.value) return;
+  const canvas = stageCanvasRef.value;
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
-  const colors = ['#f59e0b', '#d97706', '#fbbf24', '#ffffff', '#10b981', '#3b82f6'];
-  const particles: Array<{
-    x: number;
-    y: number;
-    vx: number;
-    vy: number;
-    w: number;
-    h: number;
-    color: string;
-    rotation: number;
-    vrot: number;
-  }> = [];
+  initSphereNodes();
+  initWarpStreams();
 
-  for (let i = 0; i < 140; i++) {
-    particles.push({
-      x: window.innerWidth / 2 + (Math.random() - 0.5) * 260,
-      y: window.innerHeight / 2 - 120,
-      vx: (Math.random() - 0.5) * 18,
-      vy: Math.random() * -14 - 5,
-      w: Math.random() * 8 + 6,
-      h: Math.random() * 6 + 4,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      rotation: Math.random() * 360,
-      vrot: (Math.random() - 0.5) * 12
-    });
-  }
-
-  const startTime = Date.now();
   function render() {
-    if (!ctx) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const elapsed = Date.now() - startTime;
-    let alive = 0;
+    if (!ctx || !stageCanvasRef.value) return;
+    const w = canvas.width;
+    const h = canvas.height;
+    const cx = w / 2;
+    const cy = h / 2;
+    const fov = 600;
 
-    for (const p of particles) {
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vy += 0.35; // gravity
-      p.vx *= 0.98; // drag
-      p.rotation += p.vrot;
+    ctx.clearRect(0, 0, w, h);
 
-      if (p.y < canvas.height + 50) alive++;
+    // 1. Deep Obsidian Radial Ambient Spotlight Core
+    const ambientGrad = ctx.createRadialGradient(cx, cy * 0.85, 20, cx, cy * 0.85, w * 0.65);
+    ambientGrad.addColorStop(0, isDrawing.value ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.04)');
+    ambientGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = ambientGrad;
+    ctx.fillRect(0, 0, w, h);
 
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate((p.rotation * Math.PI) / 180);
-      ctx.fillStyle = p.color;
-      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-      ctx.restore();
+    // 2. STATE A: SHUFFLE & WARP SPEED VORTEX
+    if (isDrawing.value) {
+      ctx.lineWidth = 1.5;
+      for (const p of warpStreams) {
+        p.pz = p.z;
+        p.z -= p.speed;
+        if (p.z <= 10) {
+          p.z = 1200;
+          p.pz = 1200;
+          p.x = (Math.random() - 0.5) * w * 1.5;
+          p.y = (Math.random() - 0.5) * h * 1.5;
+        }
+
+        const scale1 = fov / p.z;
+        const x1 = cx + p.x * scale1;
+        const y1 = cy + p.y * scale1;
+
+        const scale2 = fov / p.pz;
+        const x2 = cx + p.x * scale2;
+        const y2 = cy + p.y * scale2;
+
+        const alpha = Math.min(1, Math.max(0.05, (1200 - p.z) / 900));
+        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.7})`;
+        ctx.beginPath();
+        ctx.moveTo(x2, y2);
+        ctx.lineTo(x1, y1);
+        ctx.stroke();
+      }
+    } 
+    // 3. STATE B: WINNER REVEALED (Shockwave + 3D Platinum Foil)
+    else if (drawn.value.length) {
+      // Shockwave ring
+      if (shockwaveAlpha > 0.01) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, shockwaveRadius, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${shockwaveAlpha})`;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        shockwaveRadius += (Math.max(w, h) * 0.7 - shockwaveRadius) * 0.08;
+        shockwaveAlpha *= 0.94;
+      }
+
+      // 3D Platinum Foil particles
+      for (const p of foilParticles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.z += p.vz;
+        p.vy += 0.32; // gravity
+        p.vx *= 0.985; // drag
+        p.rx += p.vrx;
+        p.ry += p.vry;
+        p.rz += p.vrz;
+
+        const scale = fov / (fov + p.z + 200);
+        const px = cx + (p.x - cx) * scale;
+        const py = cy + (p.y - cy) * scale;
+
+        const cosRx = Math.cos(p.rx);
+        const curW = p.w * scale;
+        const curH = p.h * Math.abs(cosRx) * scale;
+
+        ctx.save();
+        ctx.translate(px, py);
+        ctx.rotate(p.rz);
+        ctx.fillStyle = cosRx > 0 ? p.colorFront : p.colorBack;
+        ctx.fillRect(-curW / 2, -curH / 2, curW, curH);
+        ctx.restore();
+      }
+    } 
+    // 4. STATE C: IDLE (Rotating 3D Architectural Particle Sphere)
+    else {
+      sphereAngleY += 0.005;
+      sphereAngleX = mouseX.value * 0.3;
+
+      const cosY = Math.cos(sphereAngleY);
+      const sinY = Math.sin(sphereAngleY);
+      const cosX = Math.cos(sphereAngleX);
+      const sinX = Math.sin(sphereAngleX);
+
+      const projected: Array<{ px: number; py: number; z: number; alpha: number }> = [];
+
+      for (const n of sphereNodes) {
+        const x1 = n.baseX * cosY - n.baseZ * sinY;
+        const z1 = n.baseZ * cosY + n.baseX * sinY;
+        const y1 = n.baseY * cosX - z1 * sinX;
+        const z2 = z1 * cosX + n.baseY * sinX;
+
+        const scale = fov / (fov + z2 + 260);
+        const px = cx + x1 * scale;
+        const py = cy + y1 * scale;
+        const alpha = Math.max(0.08, (z2 + 220) / 440);
+
+        projected.push({ px, py, z: z2, alpha });
+
+        // Node dot
+        ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.75})`;
+        ctx.beginPath();
+        ctx.arc(px, py, 2 * scale, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Constellation hairlines between nearby nodes
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i < projected.length; i++) {
+        for (let j = i + 1; j < projected.length; j++) {
+          const dx = projected[i].px - projected[j].px;
+          const dy = projected[i].py - projected[j].py;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 46) {
+            const lineAlpha = (1 - dist / 46) * Math.min(projected[i].alpha, projected[j].alpha) * 0.3;
+            ctx.strokeStyle = `rgba(255, 255, 255, ${lineAlpha})`;
+            ctx.beginPath();
+            ctx.moveTo(projected[i].px, projected[i].py);
+            ctx.lineTo(projected[j].px, projected[j].py);
+            ctx.stroke();
+          }
+        }
+      }
     }
 
-    if (alive > 0 && elapsed < 4500) {
-      confettiAnimId = requestAnimationFrame(render);
-    } else {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
+    stageAnimId = requestAnimationFrame(render);
   }
 
-  if (confettiAnimId) cancelAnimationFrame(confettiAnimId);
-  confettiAnimId = requestAnimationFrame(render);
+  if (stageAnimId) cancelAnimationFrame(stageAnimId);
+  stageAnimId = requestAnimationFrame(render);
+}
+
+function stopStage3DEngine() {
+  if (stageAnimId) {
+    cancelAnimationFrame(stageAnimId);
+    stageAnimId = null;
+  }
+}
+
+function openStageMode() {
+  isStageModeOpen.value = true;
+  setTimeout(() => startStage3DEngine(), 60);
+}
+
+function closeStageMode() {
+  isStageModeOpen.value = false;
+  stopStage3DEngine();
 }
 
 function handleKeyDown(e: KeyboardEvent) {
@@ -645,7 +964,6 @@ const poolCounts = computed(() => {
 const eligible = computed(() =>
   props.rows.filter(s => {
     const status = normalizeStatus(s.status);
-    // One chance per person: an entry flagged as a repeat registration does not enter twice.
     if (s.duplicate_of) return false;
     if (poolRule.value === 'waitlisted') return status === 'waitlisted';
     if (status === 'declined' || status === 'waitlisted') return false;
@@ -658,7 +976,6 @@ const eligible = computed(() =>
 
 const winners = computed(() => props.rows.filter(s => normalizeStatus(s.status) === 'winner'));
 
-// A draw made against rules that have since changed is no longer valid.
 watch([poolRule, excludePastWinners], () => (drawn.value = []));
 
 let shuffleTimer: ReturnType<typeof setInterval> | null = null;
@@ -671,19 +988,19 @@ function draw() {
   drawn.value = [];
   isDrawing.value = true;
 
-  // The shuffle on screen is theatre for the room; the result is decided by secureSample alone.
   shuffleTimer = setInterval(() => {
     shuffleName.value = guestName(pool[secureRandomInt(pool.length)]);
-  }, 70);
+  }, 65);
+
   setTimeout(() => {
     if (shuffleTimer) clearInterval(shuffleTimer);
     shuffleTimer = null;
     drawn.value = secureSample(pool, count);
     isDrawing.value = false;
     if (isStageModeOpen.value) {
-      setTimeout(() => triggerConfetti(), 80);
+      setTimeout(() => triggerPlatinumConfetti(), 40);
     }
-  }, 1600);
+  }, 1750);
 }
 
 const isWaitlistDraw = computed(() => poolRule.value === 'waitlisted');
@@ -710,11 +1027,6 @@ async function confirmWinners() {
   }
 }
 
-/**
- * Takes the drawn guests off the waitlist. Their ticket PDFs are made first (in this browser,
- * one by one) so the email that goes out the moment they get a place has the PDF attached;
- * the status change is what sends those emails.
- */
 async function promoteFromWaitlist() {
   const guests = [...drawn.value];
   const prep = await ticketSender.storeTickets(guests, (done, total) => (prepStep.value = { done, total }));
@@ -745,20 +1057,29 @@ function exportWinners() {
   downloadText(`${props.exportName}-winners.csv`, csv);
 }
 
+function handleResize() {
+  if (isStageModeOpen.value && stageCanvasRef.value) {
+    stageCanvasRef.value.width = window.innerWidth;
+    stageCanvasRef.value.height = window.innerHeight;
+  }
+}
+
 onMounted(() => {
   window.addEventListener('keydown', handleKeyDown);
+  window.addEventListener('resize', handleResize);
 });
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown);
+  window.removeEventListener('resize', handleResize);
   if (shuffleTimer) clearInterval(shuffleTimer);
-  if (confettiAnimId) cancelAnimationFrame(confettiAnimId);
+  stopStage3DEngine();
 });
 </script>
 
 <style scoped>
 .stage-fade-enter-active, .stage-fade-leave-active {
-  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .stage-fade-enter-from, .stage-fade-leave-to {
   opacity: 0;
