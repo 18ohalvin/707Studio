@@ -9,17 +9,10 @@
         aria-modal="true"
         aria-labelledby="whats-new-title"
       >
-        <!-- Stacked Card Deck Container (incorporates the subtle depth peek behind active card) -->
-        <div class="relative w-full max-w-[480px]">
-          <!-- Card Deck Depth Peek (Stacked Card Shadow on the right, matching reference) -->
-          <div 
-            class="absolute -right-2.5 sm:-right-3 top-3 bottom-3 w-16 bg-neutral-100/90 rounded-[28px] border border-black/10 shadow-[0_20px_50px_rgba(0,0,0,0.12)] pointer-events-none -z-10 hidden sm:block transform translate-x-1" 
-          />
-
-          <!-- Main Active Card (Reference: TwelveLabs clean 28px rounded white card) -->
-          <div 
-            class="w-full bg-white rounded-[28px] border border-black/10 shadow-[0_24px_70px_rgba(0,0,0,0.18)] p-7 sm:p-8 flex flex-col text-black overflow-hidden relative animate-apple-pop"
-          >
+        <!-- Main Modal Window -->
+        <div 
+          class="w-full max-w-[480px] bg-white rounded-[28px] border border-black/10 shadow-[0_24px_70px_rgba(0,0,0,0.18)] p-7 sm:p-8 flex flex-col text-black overflow-hidden relative animate-apple-pop"
+        >
             <!-- 1. Hero Feature Visual Stage: Monochromatic Minimalist Vector Canvas -->
             <div class="w-full h-[210px] rounded-[20px] relative overflow-hidden border border-black/8 shadow-2xs select-none bg-[#f6f6f8]">
               
@@ -270,8 +263,7 @@
             </div>
           </div>
         </div>
-      </div>
-    </Transition>
+      </Transition>
   </Teleport>
 </template>
 
