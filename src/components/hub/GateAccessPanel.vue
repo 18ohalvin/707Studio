@@ -24,8 +24,8 @@
           </button>
         </div>
 
-        <!-- 2 Concept C Tabs: Assigned Devices vs Add Device -->
-        <div class="flex items-center gap-6 px-6 border-b border-black/10 bg-white">
+        <!-- Tabs: Assigned Devices vs Add Device (Hidden if no devices added yet) -->
+        <div v-if="accounts.length > 0" class="flex items-center gap-6 px-6 border-b border-black/10 bg-white">
           <button
             type="button"
             @click="activeTab = 'stations'"
@@ -334,156 +334,195 @@
             </div>
           </div>
 
-          <!-- TAB 2: ADD DEVICE & ASSIGN PIC (3-Step Guided Form) -->
-          <form v-else-if="activeTab === 'create'" class="flex flex-col gap-4 py-1" @submit.prevent="create">
+          <!-- TAB 2: ADD DEVICE & ASSIGN PIC (Compact Sleek Form) -->
+          <form v-else-if="activeTab === 'create'" class="flex flex-col gap-3.5 py-1" @submit.prevent="create">
             <div>
               <p class="text-[13.5px] font-medium text-black">Assign New Door PIC</p>
               <p class="text-[11.5px] text-neutral-500 mt-0.5">Register a scanner tablet and assign field staff access with station role.</p>
             </div>
 
-            <!-- Step 1: Device Selection (Tab / iPad) with Auto-Numbering -->
-            <div class="flex flex-col gap-1.5">
-              <label class="text-[11.5px] uppercase tracking-normal text-neutral-400 font-medium">1. Select Device</label>
-              <div class="flex items-center gap-2.5">
-                <!-- Segmented Device Type Selector -->
-                <div class="inline-flex p-1 rounded-[9px] bg-neutral-100 border border-black/5">
+            <!-- Row 1: Device Selection (Tab / iPad) + Staff PIC Name in a single line -->
+            <div class="flex items-end gap-3">
+              <!-- Device Selection Pill -->
+              <div class="shrink-0 flex flex-col gap-1.5">
+                <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Device</label>
+                <div class="inline-flex p-0.5 rounded-[8px] bg-neutral-100 border border-black/5 h-[38px] items-center">
                   <button
                     type="button"
                     @click="selectDeviceType('tab')"
-                    class="h-[32px] px-4 rounded-[7px] text-[12.5px] font-medium transition-all cursor-pointer flex items-center gap-1.5"
+                    class="h-[32px] px-3 rounded-[6px] text-[12px] font-medium transition-all cursor-pointer flex items-center gap-1.5 select-none"
                     :class="selectedDeviceType === 'tab' ? 'bg-white text-black shadow-2xs font-semibold' : 'text-neutral-500 hover:text-black'"
                   >
                     <Tablet class="w-3.5 h-3.5" />
-                    <span>Tab</span>
+                    <span>Tab {{ nextTabNumber }}</span>
                   </button>
                   <button
                     type="button"
                     @click="selectDeviceType('ipad')"
-                    class="h-[32px] px-4 rounded-[7px] text-[12.5px] font-medium transition-all cursor-pointer flex items-center gap-1.5"
+                    class="h-[32px] px-3 rounded-[6px] text-[12px] font-medium transition-all cursor-pointer flex items-center gap-1.5 select-none"
                     :class="selectedDeviceType === 'ipad' ? 'bg-white text-black shadow-2xs font-semibold' : 'text-neutral-500 hover:text-black'"
                   >
                     <Tablet class="w-3.5 h-3.5" />
-                    <span>iPad</span>
+                    <span>iPad {{ nextIpadNumber }}</span>
                   </button>
                 </div>
-
-                <!-- Auto-Assigned Device Tag Display with Adjuster -->
-                <div class="flex-1 h-[40px] px-3.5 rounded-[9px] bg-neutral-50 border border-black/10 flex items-center justify-between">
-                  <div class="flex items-center gap-2">
-                    <span class="text-[13px] font-semibold text-black tracking-tight">{{ deviceTag }}</span>
-                    <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-black/5 text-neutral-600 font-medium">Auto-numbered</span>
-                  </div>
-
-                  <div class="flex items-center gap-1">
-                    <button
-                      type="button"
-                      @click="deviceNumber = Math.max(1, deviceNumber - 1)"
-                      class="size-[22px] rounded-[5px] hover:bg-black/5 flex items-center justify-center text-neutral-600 font-medium cursor-pointer text-[12px]"
-                      title="Decrease device number"
-                    >
-                      –
-                    </button>
-                    <span class="font-mono text-[11px] text-neutral-400 px-0.5">#{{ deviceNumber }}</span>
-                    <button
-                      type="button"
-                      @click="deviceNumber++"
-                      class="size-[22px] rounded-[5px] hover:bg-black/5 flex items-center justify-center text-neutral-600 font-medium cursor-pointer text-[12px]"
-                      title="Increase device number"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
               </div>
-            </div>
 
-            <!-- Step 2: Assign Staff PIC Name & Store Branch Placeholders -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <div class="flex flex-col gap-1.5">
-                <label class="text-[11.5px] uppercase tracking-normal text-neutral-400 font-medium">2. Staff PIC Name *</label>
+              <!-- Staff PIC Name Input Box -->
+              <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+                <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Staff PIC Name *</label>
                 <input
                   v-model="username"
                   type="text"
                   required
                   autocomplete="off"
                   placeholder="Staff PIC Name (e.g. Budi Santoso)"
-                  class="h-[38px] px-3.5 rounded-[8px] bg-neutral-50 hover:bg-white focus:bg-white border border-black/15 focus:border-black text-[13px] outline-none transition-all"
+                  class="h-[38px] px-3.5 rounded-[8px] bg-neutral-50 hover:bg-white focus:bg-white border border-black/15 focus:border-black text-[13px] outline-none transition-all w-full"
                 />
               </div>
+            </div>
 
+            <!-- Row 2: Store Branch Guide + Station Role Selection Bar with Dropdown Popup in a single line -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <!-- Store Branch / Gate Location -->
               <div class="flex flex-col gap-1.5">
-                <label class="text-[11.5px] uppercase tracking-normal text-neutral-400 font-medium">Store Branch / Gate</label>
+                <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Store Branch / Gate</label>
                 <input
                   v-model="storeBranch"
                   type="text"
                   autocomplete="off"
                   placeholder="Store Branch (e.g. Grand Indonesia)"
-                  class="h-[38px] px-3.5 rounded-[8px] bg-neutral-50 hover:bg-white focus:bg-white border border-black/15 focus:border-black text-[13px] outline-none transition-all"
+                  class="h-[38px] px-3.5 rounded-[8px] bg-neutral-50 hover:bg-white focus:bg-white border border-black/15 focus:border-black text-[13px] outline-none transition-all w-full"
                 />
               </div>
-            </div>
 
-            <!-- Step 3: Role & Shift Validity Selection Bars -->
-            <div class="flex flex-col gap-1.5">
-              <label class="text-[11.5px] uppercase tracking-normal text-neutral-400 font-medium">3. Station Role</label>
-              <!-- Role Selection Bar -->
-              <div class="grid grid-cols-3 gap-1.5 p-1 rounded-[9px] bg-neutral-100 border border-black/5">
+              <!-- Station Role Selection Bar with Dropdown Popup -->
+              <div class="flex flex-col gap-1.5 relative role-dropdown-container">
+                <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Station Role</label>
                 <button
                   type="button"
-                  @click="stationMode = 'in'"
-                  class="h-[34px] rounded-[7px] text-[12px] font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-all"
-                  :class="stationMode === 'in' ? 'bg-black text-white shadow-2xs font-semibold' : 'text-neutral-500 hover:text-black'"
+                  @click="roleDropdownOpen = !roleDropdownOpen; shiftDropdownOpen = false"
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-neutral-50 hover:bg-neutral-100/80 border border-black/15 flex items-center justify-between gap-2 text-[13px] font-medium text-black transition-colors cursor-pointer select-none"
+                  :class="roleDropdownOpen ? 'border-black bg-white ring-1 ring-black/10' : ''"
                 >
-                  <LogIn class="w-3.5 h-3.5" />
-                  <span>Entrance</span>
+                  <div class="flex items-center gap-2 min-w-0">
+                    <component
+                      :is="stationMode === 'in' ? LogIn : stationMode === 'out' ? LogOut : ArrowLeftRight"
+                      class="w-3.5 h-3.5 shrink-0"
+                      :class="stationMode === 'in' ? 'text-moss-600' : stationMode === 'out' ? 'text-amber-600' : 'text-neutral-700'"
+                    />
+                    <span class="truncate">{{ roleLabel(stationMode) }}</span>
+                  </div>
+                  <ChevronDown class="w-3.5 h-3.5 text-neutral-400 shrink-0 transition-transform duration-200" :class="roleDropdownOpen ? 'rotate-180' : ''" />
                 </button>
-                <button
-                  type="button"
-                  @click="stationMode = 'out'"
-                  class="h-[34px] rounded-[7px] text-[12px] font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-all"
-                  :class="stationMode === 'out' ? 'bg-black text-white shadow-2xs font-semibold' : 'text-neutral-500 hover:text-black'"
-                >
-                  <LogOut class="w-3.5 h-3.5" />
-                  <span>Exit</span>
-                </button>
-                <button
-                  type="button"
-                  @click="stationMode = 'both'"
-                  class="h-[34px] rounded-[7px] text-[12px] font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-all"
-                  :class="stationMode === 'both' ? 'bg-black text-white shadow-2xs font-semibold' : 'text-neutral-500 hover:text-black'"
-                >
-                  <ArrowLeftRight class="w-3.5 h-3.5" />
-                  <span>Dual (In & Out)</span>
-                </button>
+
+                <!-- Role Dropdown Menu Popup -->
+                <Transition name="apple-pop">
+                  <div
+                    v-if="roleDropdownOpen"
+                    class="absolute top-full left-0 right-0 mt-1 z-30 rounded-[10px] bg-white border border-black/10 shadow-[0px_8px_24px_rgba(0,0,0,0.12)] p-1 flex flex-col gap-0.5"
+                  >
+                    <button
+                      type="button"
+                      @click="selectRole('in')"
+                      class="w-full px-2.5 py-2 rounded-[7px] text-left flex items-center justify-between text-[12.5px] cursor-pointer transition-colors"
+                      :class="stationMode === 'in' ? 'bg-black/5 font-semibold text-black' : 'hover:bg-neutral-50 text-neutral-700'"
+                    >
+                      <div class="flex items-center gap-2">
+                        <LogIn class="w-3.5 h-3.5 text-moss-600 shrink-0" />
+                        <div>
+                          <p class="leading-none text-[12.5px]">Entrance Gate</p>
+                          <p class="text-[10.5px] text-neutral-400 mt-0.5 leading-none">Admit incoming guests</p>
+                        </div>
+                      </div>
+                      <Check v-if="stationMode === 'in'" class="w-3.5 h-3.5 text-black shrink-0" />
+                    </button>
+
+                    <button
+                      type="button"
+                      @click="selectRole('out')"
+                      class="w-full px-2.5 py-2 rounded-[7px] text-left flex items-center justify-between text-[12.5px] cursor-pointer transition-colors"
+                      :class="stationMode === 'out' ? 'bg-black/5 font-semibold text-black' : 'hover:bg-neutral-50 text-neutral-700'"
+                    >
+                      <div class="flex items-center gap-2">
+                        <LogOut class="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                        <div>
+                          <p class="leading-none text-[12.5px]">Exit Gate</p>
+                          <p class="text-[10.5px] text-neutral-400 mt-0.5 leading-none">Check-out departing guests</p>
+                        </div>
+                      </div>
+                      <Check v-if="stationMode === 'out'" class="w-3.5 h-3.5 text-black shrink-0" />
+                    </button>
+
+                    <button
+                      type="button"
+                      @click="selectRole('both')"
+                      class="w-full px-2.5 py-2 rounded-[7px] text-left flex items-center justify-between text-[12.5px] cursor-pointer transition-colors"
+                      :class="stationMode === 'both' ? 'bg-black/5 font-semibold text-black' : 'hover:bg-neutral-50 text-neutral-700'"
+                    >
+                      <div class="flex items-center gap-2">
+                        <ArrowLeftRight class="w-3.5 h-3.5 text-neutral-700 shrink-0" />
+                        <div>
+                          <p class="leading-none text-[12.5px]">Dual Station</p>
+                          <p class="text-[10.5px] text-neutral-400 mt-0.5 leading-none">Both Entrance & Exit</p>
+                        </div>
+                      </div>
+                      <Check v-if="stationMode === 'both'" class="w-3.5 h-3.5 text-black shrink-0" />
+                    </button>
+                  </div>
+                </Transition>
               </div>
             </div>
 
-            <!-- Shift Validity Selection Bar -->
-            <div class="flex flex-col gap-1.5">
+            <!-- Row 3: Shift Validity Selection Bar with Dropdown Popup -->
+            <div class="flex flex-col gap-1.5 relative shift-dropdown-container">
               <div class="flex items-center justify-between">
-                <label class="text-[11.5px] uppercase tracking-normal text-neutral-400 font-medium">Shift Validity</label>
-                <span class="text-[11px] text-neutral-500 font-normal">{{ shiftDurationSummary }}</span>
-              </div>
-              <!-- Shift Validity Selection Bar -->
-              <div class="grid grid-cols-4 gap-1 p-1 rounded-[9px] bg-neutral-100 border border-black/5">
-                <button
-                  v-for="p in shiftPresets"
-                  :key="p.id"
-                  type="button"
-                  @click="applyPreset(p.id)"
-                  class="h-[32px] rounded-[7px] text-[11.5px] font-medium transition-all cursor-pointer flex items-center justify-center"
-                  :class="selectedPreset === p.id ? 'bg-black text-white shadow-2xs font-semibold' : 'text-neutral-500 hover:text-black'"
-                >
-                  {{ p.label }}
-                </button>
+                <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Shift Validity</label>
+                <span class="text-[11px] text-neutral-400">{{ shiftDurationSummary }}</span>
               </div>
 
-              <!-- Custom datetime picker if 'custom' selected -->
-              <div v-if="selectedPreset === 'custom'" class="mt-1 animate-apple-pop">
+              <button
+                type="button"
+                @click="shiftDropdownOpen = !shiftDropdownOpen; roleDropdownOpen = false"
+                class="w-full h-[38px] px-3 rounded-[8px] bg-neutral-50 hover:bg-neutral-100/80 border border-black/15 flex items-center justify-between gap-2 text-[13px] font-medium text-black transition-colors cursor-pointer select-none"
+                :class="shiftDropdownOpen ? 'border-black bg-white ring-1 ring-black/10' : ''"
+              >
+                <div class="flex items-center gap-2 min-w-0">
+                  <Clock class="w-3.5 h-3.5 text-neutral-500 shrink-0" />
+                  <span class="truncate">{{ shiftPresets.find(p => p.id === selectedPreset)?.label || 'Today (23:59)' }}</span>
+                </div>
+                <ChevronDown class="w-3.5 h-3.5 text-neutral-400 shrink-0 transition-transform duration-200" :class="shiftDropdownOpen ? 'rotate-180' : ''" />
+              </button>
+
+              <!-- Shift Dropdown Menu Popup -->
+              <Transition name="apple-pop">
+                <div
+                  v-if="shiftDropdownOpen"
+                  class="absolute top-full left-0 right-0 mt-1 z-30 rounded-[10px] bg-white border border-black/10 shadow-[0px_8px_24px_rgba(0,0,0,0.12)] p-1 flex flex-col gap-0.5"
+                >
+                  <button
+                    v-for="p in shiftPresets"
+                    :key="p.id"
+                    type="button"
+                    @click="selectShift(p.id)"
+                    class="w-full px-2.5 py-2 rounded-[7px] text-left flex items-center justify-between text-[12.5px] cursor-pointer transition-colors"
+                    :class="selectedPreset === p.id ? 'bg-black/5 font-semibold text-black' : 'hover:bg-neutral-50 text-neutral-700'"
+                  >
+                    <div class="flex items-center gap-2">
+                      <Clock class="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                      <span>{{ p.label }}</span>
+                    </div>
+                    <Check v-if="selectedPreset === p.id" class="w-3.5 h-3.5 text-black shrink-0" />
+                  </button>
+                </div>
+              </Transition>
+
+              <!-- Custom datetime input (if custom chosen) -->
+              <div v-if="selectedPreset === 'custom'" class="mt-1">
                 <input
                   v-model="customExpires"
                   type="datetime-local"
-                  class="h-[34px] w-full px-3 rounded-[7px] border border-black/15 text-[12px] outline-none focus:border-black bg-white"
+                  class="h-[36px] w-full px-3 rounded-[8px] border border-black/15 text-[12.5px] outline-none focus:border-black bg-white"
                 />
               </div>
             </div>
@@ -526,7 +565,8 @@ import {
   KeyRound,
   Tablet,
   User,
-  Edit3
+  Edit3,
+  ChevronDown
 } from 'lucide-vue-next';
 import { apiFetch } from '../../services/apiClient.ts';
 
@@ -552,7 +592,8 @@ interface CredentialsState {
   reset: boolean;
 }
 
-const activeTab = ref<'stations' | 'create'>('stations');
+const activeTab = ref<'stations' | 'create'>('create');
+const hasInitializedTab = ref(false);
 const accounts = ref<GateAccount[]>([]);
 const loading = ref(true);
 const busy = ref(false);
@@ -566,6 +607,8 @@ const deviceNumber = ref<number>(1);
 const storeBranch = ref('');
 const username = ref('');
 const stationMode = ref<'in' | 'out' | 'both'>('in');
+const roleDropdownOpen = ref(false);
+const shiftDropdownOpen = ref(false);
 
 // Inline edit state
 const editingPicId = ref<string | null>(null);
@@ -583,6 +626,19 @@ const selectedPreset = ref<ShiftPreset>('eod');
 const customExpires = ref(getPresetExpiry('eod'));
 
 const loginUrl = computed(() => `${window.location.origin}/login`);
+
+const nextTabNumber = computed(() => getNextDeviceNumber('tab'));
+const nextIpadNumber = computed(() => getNextDeviceNumber('ipad'));
+
+function selectRole(mode: 'in' | 'out' | 'both') {
+  stationMode.value = mode;
+  roleDropdownOpen.value = false;
+}
+
+function selectShift(preset: ShiftPreset) {
+  applyPreset(preset);
+  shiftDropdownOpen.value = false;
+}
 
 // Automatic device numbering logic
 function getNextDeviceNumber(type: 'tab' | 'ipad'): number {
@@ -720,6 +776,12 @@ async function load() {
     accounts.value = json.data;
     error.value = '';
     deviceNumber.value = getNextDeviceNumber(selectedDeviceType.value);
+    if (!hasInitializedTab.value) {
+      activeTab.value = accounts.value.length > 0 ? 'stations' : 'create';
+      hasInitializedTab.value = true;
+    } else if (accounts.value.length === 0) {
+      activeTab.value = 'create';
+    }
   } catch (err: any) {
     error.value = err?.message || 'Could not load scanner devices.';
   } finally {
@@ -878,11 +940,15 @@ async function copyCredentials() {
 }
 
 function handleDocClick(e: MouseEvent) {
-  if (openMenuId.value) {
-    const target = e.target as HTMLElement;
-    if (!target.closest('.overflow-menu-container')) {
-      openMenuId.value = null;
-    }
+  const target = e.target as HTMLElement;
+  if (openMenuId.value && !target.closest('.overflow-menu-container')) {
+    openMenuId.value = null;
+  }
+  if (roleDropdownOpen.value && !target.closest('.role-dropdown-container')) {
+    roleDropdownOpen.value = false;
+  }
+  if (shiftDropdownOpen.value && !target.closest('.shift-dropdown-container')) {
+    shiftDropdownOpen.value = false;
   }
 }
 
