@@ -9,7 +9,7 @@
   -->
   <div
     ref="rootRef"
-    class="relative h-full w-full min-h-0 font-707 touch-manipulation select-none"
+    class="relative h-full w-full min-h-0 font-sans tracking-normal touch-manipulation select-none"
   >
     <!-- ============ SCAN ============ -->
     <div
@@ -18,93 +18,69 @@
     >
       <!-- Camera panel -->
       <section class="min-h-0 rounded-[16px] bg-editor-bg text-white border border-editor-border overflow-hidden flex flex-col">
-        <div class="flex items-center justify-between gap-2 px-3 h-[48px] shrink-0 border-b border-white/10">
-          <!-- Borderless Station Mode Indicator / Switcher -->
-          <div v-if="props.assignedMode === 'in' || props.assignedMode === 'out'" class="flex items-center gap-1.5 px-3 py-1 rounded-[8px] bg-white/[0.08] text-[11px] font-medium tracking-[0.03em] text-white">
-            <component :is="props.assignedMode === 'in' ? LogIn : LogOut" class="w-3.5 h-3.5" :class="props.assignedMode === 'in' ? 'text-moss-400' : 'text-neutral-400'" />
-            <span>{{ props.assignedMode === 'in' ? 'Entrance Gate' : 'Exit Gate' }}</span>
-          </div>
-          <div v-else class="flex items-center p-0.5 rounded-[8px] bg-white/[0.08] text-[11px]">
-            <button
-              type="button"
-              @click="setMode('in')"
-              class="flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] font-medium tracking-[0.03em] transition-all cursor-pointer"
-              :class="mode === 'in' ? 'bg-moss-600 text-white shadow-2xs' : 'text-white/60 hover:text-white'"
-              title="Set scanner station to Entrance (Admit incoming guests)"
-            >
-              <LogIn class="w-3.5 h-3.5" />
-              <span>Entrance</span>
-            </button>
-            <button
-              type="button"
-              @click="setMode('out')"
-              class="flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] font-medium tracking-[0.03em] transition-all cursor-pointer"
-              :class="mode === 'out' ? 'bg-neutral-800 text-white shadow-2xs' : 'text-white/60 hover:text-white'"
-              title="Set scanner station to Exit (Check-out guests)"
-            >
-              <LogOut class="w-3.5 h-3.5" />
-              <span>Exit</span>
-            </button>
-          </div>
-
-          <!-- Active Today Date Badge (Single Daily Rolling & Multi-Day) -->
-          <div v-if="isDailyOrMultiday" class="flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-white/[0.08] border border-white/10 text-white/90 text-[11.5px] font-mono shrink-0">
-            <span class="size-1.5 rounded-full bg-moss-500 shrink-0" />
-            <span>Today · {{ todayDisplay }}</span>
-            <span class="text-white/40 text-[10.5px]">({{ activeRows.length }})</span>
+        <div class="flex items-center justify-between gap-2 px-3.5 h-[48px] shrink-0 border-b border-white/10 bg-[#0c0d0e]">
+          <!-- Station Role Badge (Read-only, based on staff assignment) -->
+          <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-white/[0.08] text-[11px] font-medium text-white/90">
+            <component :is="mode === 'out' ? LogOut : LogIn" class="w-3.5 h-3.5" :class="mode === 'out' ? 'text-amber-400' : 'text-moss-400'" />
+            <span>{{ stationModeLabel }}</span>
           </div>
 
           <div class="flex items-center gap-1">
-            <button type="button" @click="soundOn = !soundOn" class="size-[40px] rounded-[10px] active:bg-white/15 flex items-center justify-center cursor-pointer text-white/70" :title="soundOn ? 'Mute scan sounds' : 'Enable scan sounds'">
-              <Volume2 v-if="soundOn" class="w-5 h-5" />
-              <VolumeX v-else class="w-5 h-5" />
+            <button type="button" @click="soundOn = !soundOn" class="size-[36px] rounded-[8px] hover:bg-white/10 active:bg-white/15 flex items-center justify-center cursor-pointer text-white/70 hover:text-white transition-colors" :title="soundOn ? 'Mute scan sounds' : 'Enable scan sounds'">
+              <Volume2 v-if="soundOn" class="w-4 h-4" />
+              <VolumeX v-else class="w-4 h-4" />
             </button>
-            <button type="button" @click="toggleFullscreen" class="size-[40px] rounded-[10px] active:bg-white/15 flex items-center justify-center cursor-pointer text-white/70" :title="isFullscreen ? 'Exit door mode' : 'Door mode (fullscreen)'">
-              <Minimize2 v-if="isFullscreen" class="w-5 h-5" />
-              <Maximize2 v-else class="w-5 h-5" />
+            <button type="button" @click="toggleFullscreen" class="size-[36px] rounded-[8px] hover:bg-white/10 active:bg-white/15 flex items-center justify-center cursor-pointer text-white/70 hover:text-white transition-colors" :title="isFullscreen ? 'Exit fullscreen' : 'Fullscreen mode'">
+              <Minimize2 v-if="isFullscreen" class="w-4 h-4" />
+              <Maximize2 v-else class="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        <div class="relative flex-1 min-h-0 bg-black overflow-hidden">
+        <div class="relative flex-1 min-h-0 bg-[#0c0d0e] overflow-hidden flex flex-col justify-center items-center">
           <video v-show="cameraOn" ref="videoRef" class="absolute inset-0 size-full object-cover" playsinline muted />
-          <div v-if="!cameraOn" class="absolute inset-0 hud-grid opacity-[0.08]" />
-          <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.6)_100%)] pointer-events-none" />
+          <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_50%,rgba(0,0,0,0.5)_100%)] pointer-events-none" />
 
-          <div class="absolute inset-[16%] pointer-events-none">
-            <span class="hud-corner top-0 left-0 border-t-2 border-l-2 rounded-tl-[14px]" :class="frameColor" />
-            <span class="hud-corner top-0 right-0 border-t-2 border-r-2 rounded-tr-[14px]" :class="frameColor" />
-            <span class="hud-corner bottom-0 left-0 border-b-2 border-l-2 rounded-bl-[14px]" :class="frameColor" />
-            <span class="hud-corner bottom-0 right-0 border-b-2 border-r-2 rounded-br-[14px]" :class="frameColor" />
-            <div v-if="!result && !isChecking" class="hud-scanline" />
+          <!-- Minimal reticle frame -->
+          <div class="absolute inset-[16%] pointer-events-none transition-opacity duration-300" :class="cameraOn ? 'opacity-100' : 'opacity-35'">
+            <span class="hud-corner top-0 left-0 border-t-2 border-l-2 rounded-tl-[10px]" :class="frameColor" />
+            <span class="hud-corner top-0 right-0 border-t-2 border-r-2 rounded-tr-[10px]" :class="frameColor" />
+            <span class="hud-corner bottom-0 left-0 border-b-2 border-l-2 rounded-bl-[10px]" :class="frameColor" />
+            <span class="hud-corner bottom-0 right-0 border-b-2 border-r-2 rounded-br-[10px]" :class="frameColor" />
+            <div v-if="cameraOn && !result && !isChecking" class="hud-scanline" />
           </div>
 
-          <div v-if="!cameraOn" class="absolute inset-0 flex flex-col items-center justify-center text-center px-8 pointer-events-none">
-            <ScanLine class="w-9 h-9 text-white/40 mb-3" />
-            <p class="text-[15px] text-white/80 font-medium">Ready to scan</p>
-            <p class="text-[12.5px] text-white/50 mt-1 max-w-[300px]">Handheld scanner, camera, or type the last 4 of the Access ID on the right.</p>
+          <!-- Empty / Camera Off Placeholder: Simple & focused -->
+          <div v-if="!cameraOn" class="relative z-10 flex flex-col items-center justify-center text-center px-6 pointer-events-none">
+            <div class="size-12 rounded-[14px] bg-white/[0.04] border border-white/10 flex items-center justify-center text-white/40 mb-3">
+              <ScanLine class="w-6 h-6" />
+            </div>
+            <p class="text-[15px] text-white/90 font-medium font-sans">Ready to Scan</p>
+            <p class="text-[12px] text-white/40 mt-1 max-w-[260px] font-sans">Point QR code to camera, use handheld scanner, or type Access ID.</p>
           </div>
 
-          <div v-if="isChecking" class="absolute inset-0 flex items-center justify-center bg-black/40">
-            <div class="size-12 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+          <!-- Checking spinner -->
+          <div v-if="isChecking" class="absolute inset-0 z-20 flex items-center justify-center bg-black/50">
+            <div class="size-10 border-2 border-white/20 border-t-white rounded-full animate-spin" />
           </div>
 
-          <div class="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/50 border border-white/10 text-[11px] uppercase tracking-[0.12em] text-white/70 pointer-events-none">
-            <span class="size-1.5 rounded-full" :class="cameraOn ? 'bg-oxblood-300 animate-pulse' : 'bg-white/30'" />
-            {{ cameraOn ? 'Camera live' : 'Camera off' }}
+          <!-- Live camera badge (only when cameraOn is true) -->
+          <div v-if="cameraOn" class="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-xs border border-white/15 text-[11px] text-white/80 pointer-events-none animate-apple-pop">
+            <span class="size-1.5 rounded-full bg-moss-400 animate-pulse" />
+            <span>Camera Live</span>
           </div>
         </div>
 
-        <div class="flex items-center justify-between gap-3 px-3 h-[56px] shrink-0 border-t border-white/10">
+        <div class="flex items-center justify-between gap-3 px-3.5 h-[52px] shrink-0 border-t border-white/10 bg-[#0c0d0e]">
           <button
             type="button"
             @click="cameraOn ? stopCamera() : startCamera()"
-            class="h-[40px] px-4 rounded-[10px] border border-white/15 text-[14px] flex items-center gap-2 cursor-pointer active:bg-white/15 transition-colors"
+            class="h-[36px] px-3.5 rounded-[8px] border border-white/15 hover:bg-white/10 text-[12.5px] font-medium flex items-center gap-2 cursor-pointer active:bg-white/15 transition-colors"
           >
-            <Camera class="w-5 h-5" />
-            {{ cameraOn ? 'Stop camera' : 'Scan with camera' }}
+            <Camera class="w-4 h-4" />
+            <span>{{ cameraOn ? 'Stop Camera' : 'Scan with Camera' }}</span>
           </button>
-          <p class="text-[12px] text-white/45 text-right leading-tight">{{ cameraNote }}</p>
+          <span class="text-[11.5px] text-white/40 text-right">USB & Bluetooth scanners ready</span>
         </div>
       </section>
 
@@ -112,7 +88,7 @@
       <section class="min-h-0 flex flex-col gap-2">
         <!-- 707 UI Horizontal Progress Bar & Live Capacity (shown when queueEnabled) -->
         <div v-if="queueEnabled" class="shrink-0 flex flex-col gap-1.5 px-1 pt-0.5">
-          <div class="flex items-center justify-between text-[11px] uppercase tracking-[0.1em] text-neutral-500 font-medium">
+          <div class="flex items-center justify-between text-[11px] uppercase tracking-normal text-neutral-500 font-medium">
             <span class="flex items-center gap-1.5">
               <span class="size-2 rounded-full transition-colors duration-300" :style="{ backgroundColor: barColor }" />
               Live Booth Capacity
@@ -134,7 +110,7 @@
         <!-- Counts: small, one line, nothing else -->
         <div class="shrink-0 flex items-baseline justify-between gap-4 px-1 h-[26px]">
           <p v-for="stat in stats" :key="stat.label" class="flex items-baseline gap-1.5 min-w-0">
-            <span class="text-[10.5px] uppercase tracking-[0.1em] text-neutral-500 whitespace-nowrap">{{ stat.label }}</span>
+            <span class="text-[10.5px] uppercase tracking-normal text-neutral-500 whitespace-nowrap">{{ stat.label }}</span>
             <span class="text-[16px] leading-none font-medium tabular-nums" :class="stat.muted ? 'text-neutral-400' : 'text-black'">{{ stat.value }}</span>
           </p>
         </div>
@@ -153,7 +129,7 @@
                 autocapitalize="characters"
                 spellcheck="false"
                 placeholder="Last 4 of Access ID or WhatsApp"
-                class="w-full h-[52px] pl-11 pr-11 rounded-[12px] bg-black/[0.04] border border-black/15 text-[24px] font-medium font-mono tracking-[0.12em] uppercase text-black placeholder:text-neutral-400 placeholder:text-[14px] placeholder:tracking-normal placeholder:font-normal placeholder:normal-case outline-none focus:border-black focus:bg-white transition-colors"
+                class="w-full h-[52px] pl-11 pr-11 rounded-[12px] bg-black/[0.04] border border-black/15 text-[24px] font-medium font-mono tracking-normal uppercase text-black placeholder:text-neutral-400 placeholder:text-[14px] placeholder:tracking-normal placeholder:font-normal placeholder:normal-case outline-none focus:border-black focus:bg-white transition-colors"
               />
               <button v-if="codeInput" type="button" @pointerdown.prevent="clearInput" class="absolute right-2 top-1/2 -translate-y-1/2 size-[36px] rounded-[9px] active:bg-black/10 flex items-center justify-center cursor-pointer text-neutral-500" title="Clear">
                 <X class="w-5 h-5" />
@@ -185,7 +161,7 @@
                 <div class="min-w-0 flex-1">
                   <p class="text-[16px] font-medium leading-tight truncate flex items-center gap-2">
                     {{ guestName(m.guest) }}
-                    <span v-if="isVip(m.guest)" class="shrink-0 px-1.5 py-0.5 rounded-[5px] bg-black text-white text-[10px] font-medium tracking-[0.08em]">VIP</span>
+                    <span v-if="isVip(m.guest)" class="shrink-0 px-1.5 py-0.5 rounded-[5px] bg-black text-white text-[10px] font-medium tracking-normal">VIP</span>
                   </p>
                   <p class="text-[12.5px] text-neutral-500 leading-tight truncate">
                     <span :class="m.via === 'code' ? 'text-black font-semibold' : ''">ID ···<span class="font-mono">{{ codeTail(m.guest) }}</span></span>
@@ -204,7 +180,7 @@
                   <!-- Left: Serving #XX with quick -1 / +1 step -->
                   <div class="flex items-center gap-2">
                     <Volume2 class="w-3.5 h-3.5 text-neutral-600 shrink-0" />
-                    <span class="text-[11px] font-mono uppercase tracking-[0.08em] text-neutral-500">Serving</span>
+                    <span class="text-[11px] font-mono uppercase tracking-normal text-neutral-500">Serving</span>
                     <span class="px-2 py-0.5 rounded-[6px] bg-black text-white font-mono text-[13px] font-bold">#{{ currentCalledNumber }}</span>
                     <div class="flex items-center gap-1 ml-0.5">
                       <button
@@ -259,7 +235,7 @@
 
               <!-- Currently Called Guests Shelf -->
               <div v-if="currentlyCalledGuests.length" class="flex flex-col gap-1 shrink-0">
-                <div class="flex items-center justify-between px-1 text-[10.5px] uppercase tracking-[0.1em] text-moss-800 font-medium">
+                <div class="flex items-center justify-between px-1 text-[10.5px] uppercase tracking-normal text-moss-800 font-medium">
                   <span class="flex items-center gap-1.5">
                     <span class="size-2 rounded-full bg-moss-600" />
                     Currently Calling ({{ currentlyCalledGuests.length }})
@@ -279,7 +255,7 @@
                       <div class="min-w-0">
                         <p class="text-[13px] font-medium text-black truncate flex items-center gap-1.5">
                           {{ guestName(guest) }}
-                          <span v-if="isVip(guest)" class="px-1 py-0.2 rounded bg-black text-white text-[9px] font-medium tracking-wider">VIP</span>
+                          <span v-if="isVip(guest)" class="px-1 py-0.2 rounded bg-black text-white text-[9px] font-medium tracking-normal">VIP</span>
                           <span v-if="getPartySize(guest) > 1" class="px-1.5 py-0.2 rounded bg-black/10 text-neutral-700 text-[10px] font-mono font-medium">
                             {{ getPartySize(guest) }} pax
                           </span>
@@ -407,7 +383,7 @@
           <ArrowLeft class="w-5 h-5" /> Scan
         </button>
         <div class="min-w-0">
-          <p class="text-[10.5px] uppercase tracking-[0.12em] text-neutral-500 leading-none">Check-in log</p>
+          <p class="text-[10.5px] uppercase tracking-normal text-neutral-500 leading-none">Check-in log</p>
           <p class="text-[20px] font-medium leading-tight tabular-nums">{{ loggedIn.length }} <span class="text-[13px] text-neutral-500 font-normal">guests inside</span></p>
         </div>
         <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-moss-50 border border-moss-200 text-[11px] font-mono text-moss-800 shrink-0">
@@ -443,7 +419,7 @@
           <div class="min-w-0 flex-1">
             <p class="text-[17px] font-medium leading-tight truncate flex items-center gap-2">
               {{ guestName(g) }}
-              <span v-if="isVip(g)" class="shrink-0 px-1.5 py-0.5 rounded-[5px] bg-black text-white text-[10px] font-medium tracking-[0.08em]">VIP</span>
+              <span v-if="isVip(g)" class="shrink-0 px-1.5 py-0.5 rounded-[5px] bg-black text-white text-[10px] font-medium tracking-normal">VIP</span>
             </p>
             <p class="text-[13px] text-neutral-500 leading-tight truncate">
               ID ···<span class="font-mono">{{ codeTail(g) }}</span>
@@ -468,33 +444,33 @@
       <div v-if="pending" class="absolute inset-0 z-20 rounded-[16px] bg-white border border-black/10 flex flex-col overflow-hidden">
         <div class="flex-1 min-h-0 flex flex-col items-center justify-center text-center px-8 py-6 gap-2 overflow-y-auto">
           <div class="flex items-center gap-2">
-            <span class="text-[12px] uppercase tracking-[0.22em] text-neutral-500">{{ mode === 'in' ? 'Is this the guest?' : 'Check this guest out?' }}</span>
+            <span class="text-[12px] uppercase tracking-normal text-neutral-500">{{ mode === 'in' ? 'Is this the guest?' : 'Check this guest out?' }}</span>
             <span v-if="pending.queue_number" class="px-2 py-0.5 rounded-[6px] bg-black/5 border border-black/10 font-mono text-[12px] font-semibold text-black tabular-nums">
               Antrian #{{ pending.queue_number }}
             </span>
           </div>
           <p class="text-[clamp(28px,6vh,54px)] font-medium leading-tight max-w-full truncate">{{ guestName(pending) }}</p>
-          <p v-if="isVip(pending)" class="px-3 py-1 rounded-[8px] bg-black text-white text-[13px] font-medium tracking-[0.12em]">VIP</p>
+          <p v-if="isVip(pending)" class="px-3 py-1 rounded-[8px] bg-black text-white text-[13px] font-medium tracking-normal">VIP</p>
 
           <dl class="mt-2 grid grid-cols-2 gap-x-10 gap-y-2.5 text-left max-w-[640px] w-full">
             <div>
-              <dt class="text-[10.5px] uppercase tracking-[0.12em] text-neutral-500">Access ID</dt>
-              <dd class="text-[19px] font-medium font-mono tracking-[0.06em]">···{{ codeTail(pending) }}</dd>
+              <dt class="text-[10.5px] uppercase tracking-normal text-neutral-500">Access ID</dt>
+              <dd class="text-[19px] font-medium font-mono tracking-normal">···{{ codeTail(pending) }}</dd>
             </div>
             <div v-if="phoneTail(pending)">
-              <dt class="text-[10.5px] uppercase tracking-[0.12em] text-neutral-500">WhatsApp</dt>
-              <dd class="text-[19px] font-medium font-mono tracking-[0.06em]">···{{ phoneTail(pending) }}</dd>
+              <dt class="text-[10.5px] uppercase tracking-normal text-neutral-500">WhatsApp</dt>
+              <dd class="text-[19px] font-medium font-mono tracking-normal">···{{ phoneTail(pending) }}</dd>
             </div>
             <div v-if="guestEmail(pending)">
-              <dt class="text-[10.5px] uppercase tracking-[0.12em] text-neutral-500">Email</dt>
+              <dt class="text-[10.5px] uppercase tracking-normal text-neutral-500">Email</dt>
               <dd class="text-[15px] truncate">{{ maskEmail(guestEmail(pending)) }}</dd>
             </div>
             <div v-if="guestType(pending)">
-              <dt class="text-[10.5px] uppercase tracking-[0.12em] text-neutral-500">Pass</dt>
+              <dt class="text-[10.5px] uppercase tracking-normal text-neutral-500">Pass</dt>
               <dd class="text-[15px]">{{ guestType(pending) }}</dd>
             </div>
             <div v-if="pendingSessions" class="col-span-2">
-              <dt class="text-[10.5px] uppercase tracking-[0.12em] text-neutral-500">Access valid for</dt>
+              <dt class="text-[10.5px] uppercase tracking-normal text-neutral-500">Access valid for</dt>
               <dd class="text-[15px]">{{ pendingSessions }}</dd>
             </div>
           </dl>
@@ -502,7 +478,7 @@
           <!-- Party Size Stepper (Entrance Gate only) -->
           <div v-if="mode === 'in'" class="mt-2 flex items-center justify-between p-3.5 rounded-[12px] bg-black/[0.03] border border-black/10 max-w-[640px] w-full">
             <div class="text-left">
-              <p class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Party Size (Headcount)</p>
+              <p class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Party Size (Headcount)</p>
               <p class="text-[12.5px] text-neutral-500">Primary guest and accompanying party</p>
             </div>
             <div class="flex items-center gap-3">
@@ -549,11 +525,11 @@
         <div class="size-24 rounded-full flex items-center justify-center mb-4 hud-pop" :class="resultTheme.iconWrap">
           <component :is="resultTheme.icon" class="w-12 h-12" />
         </div>
-        <p class="text-[14px] uppercase tracking-[0.24em] opacity-80">{{ resultTheme.kicker }}</p>
+        <p class="text-[14px] uppercase tracking-normal opacity-80">{{ resultTheme.kicker }}</p>
         <p class="text-[clamp(30px,6vh,56px)] font-medium leading-tight mt-2 max-w-full truncate">{{ result.name || resultTheme.title }}</p>
-        <p v-if="result.vip" class="mt-2 px-3 py-1 rounded-[8px] bg-white text-black text-[14px] font-medium tracking-[0.12em]">VIP</p>
+        <p v-if="result.vip" class="mt-2 px-3 py-1 rounded-[8px] bg-white text-black text-[14px] font-medium tracking-normal">VIP</p>
         <p class="text-[17px] opacity-90 mt-3">{{ result.detail }}</p>
-        <p v-if="result.tail" class="text-[14px] opacity-70 mt-1 font-mono tracking-[0.1em]">ID ···{{ result.tail }}</p>
+        <p v-if="result.tail" class="text-[14px] opacity-70 mt-1 font-mono tracking-normal">ID ···{{ result.tail }}</p>
         <div class="absolute bottom-0 left-0 h-[4px] bg-white/70 hud-countdown" :style="{ animationDuration: `${result.hold}ms` }" />
       </div>
     </Transition>
@@ -565,7 +541,7 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import {
   LogIn, LogOut, Volume2, VolumeX, Maximize2, Minimize2, ScanLine, KeyRound, Camera,
   CircleCheck, TriangleAlert, OctagonX, DoorOpen, Undo2, X, Delete, Hourglass, Search, ListChecks, ArrowLeft,
-  ChevronRight
+  ChevronRight, RefreshCw, BellRing
 } from 'lucide-vue-next';
 import type { EventConfig } from '../../types/editor.ts';
 import {
@@ -618,8 +594,22 @@ const soundOn = ref(true);
 const isFullscreen = ref(false);
 const systemKeyboard = ref(false);
 
-/* ---------- Station Mode (Entrance vs Exit) ---------- */
+/* ---------- Station Mode (Entrance vs Exit - locked to staff assignment) ---------- */
 const isSyncingLog = ref(false);
+
+const stationModeLabel = computed(() => {
+  if (props.assignedMode === 'out' || mode.value === 'out') return 'Exit Gate';
+  if (props.assignedMode === 'both') return 'Dual Station';
+  return 'Entrance Gate';
+});
+
+watch(() => props.assignedMode, (newVal) => {
+  if (newVal === 'out') {
+    mode.value = 'out';
+  } else if (newVal === 'in') {
+    mode.value = 'in';
+  }
+});
 
 function setMode(newMode: 'in' | 'out') {
   mode.value = newMode;
@@ -1302,8 +1292,10 @@ function onKeydown(e: KeyboardEvent) {
 }
 
 onMounted(() => {
-  if (props.assignedMode === 'in' || props.assignedMode === 'out') {
-    mode.value = props.assignedMode;
+  if (props.assignedMode === 'out') {
+    mode.value = 'out';
+  } else if (props.assignedMode === 'in') {
+    mode.value = 'in';
   } else {
     try {
       const saved = localStorage.getItem('707_scanner_station');
@@ -1337,11 +1329,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.hud-grid {
-  background-image: linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px);
-  background-size: 22px 22px;
-}
-
 .hud-corner {
   position: absolute;
   width: 38px;
