@@ -1,26 +1,41 @@
 <template>
-  <div class="w-full flex flex-col gap-6 font-sans font-light tracking-normal">
+  <div class="w-full flex flex-col gap-5 font-sans font-light tracking-normal" @click="activeInfoKey = null">
     <!-- Header banner -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-[16px] border border-black/10 bg-white">
-      <div>
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 sm:p-6 rounded-[16px] border border-black/10 bg-white">
+      <div class="flex flex-col">
         <div class="flex items-center gap-2">
           <p class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Venue Capacity & Access</p>
           <span class="px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-moss-50 text-moss-700 border border-moss-200">
-            Queue System Active
+            Active
           </span>
+          <!-- Header Info Icon -->
+          <div class="relative inline-flex items-center" @click.stop>
+            <button
+              type="button"
+              @click="toggleInfo('header')"
+              class="size-4 rounded-full text-neutral-400 hover:text-black flex items-center justify-center transition-colors cursor-pointer"
+              title="About this section"
+            >
+              <Info class="w-3.5 h-3.5" />
+            </button>
+            <div
+              v-if="activeInfoKey === 'header'"
+              class="absolute top-full left-0 mt-2 w-64 p-3 rounded-[12px] bg-black text-white text-[11.5px] font-light leading-relaxed shadow-xl z-30 animate-apple-pop"
+            >
+              Live venue capacity monitoring, real-time gate line tracking, and automated guest notification rules.
+              <div class="absolute bottom-full left-4 border-4 border-transparent border-b-black" />
+            </div>
+          </div>
         </div>
-        <h2 class="text-[22px] sm:text-[24px] font-medium tracking-tight mt-1">Queue & Capacity Management</h2>
-        <p class="text-[13px] sm:text-[13.5px] text-neutral-500 max-w-[640px] mt-1 leading-relaxed">
-          Monitor live venue capacity, view gate line status, and configure automated guest notifications.
-        </p>
+        <h2 class="text-[20px] sm:text-[22px] font-medium tracking-tight mt-1 text-black">Queue & Capacity</h2>
       </div>
 
-      <div class="flex items-center gap-2.5">
+      <div class="flex items-center gap-2">
         <button
           type="button"
           @click="loadSettings"
           :disabled="isLoading"
-          class="h-[38px] px-3.5 rounded-[10px] border border-black/15 bg-white text-[12.5px] font-medium hover:bg-black/5 disabled:opacity-40 transition-colors cursor-pointer flex items-center gap-2"
+          class="h-[36px] px-3.5 rounded-[9px] border border-black/15 bg-white text-[12px] font-medium hover:bg-black/5 disabled:opacity-40 transition-colors cursor-pointer flex items-center gap-1.5"
         >
           <RefreshCw class="w-3.5 h-3.5" :class="isLoading ? 'animate-spin' : ''" />
           <span>Refresh</span>
@@ -29,16 +44,16 @@
           type="button"
           @click="saveSettings"
           :disabled="isSaving"
-          class="apple-cta-btn h-[38px] px-5 rounded-[10px] bg-black text-white text-[12.5px] font-medium cursor-pointer disabled:opacity-40 flex items-center gap-2 transition-all shadow-xs"
+          class="apple-cta-btn h-[36px] px-4 rounded-[9px] bg-black text-white text-[12px] font-medium cursor-pointer disabled:opacity-40 flex items-center gap-1.5 transition-all shadow-xs"
         >
-          <Check class="w-4 h-4" />
+          <Check class="w-3.5 h-3.5" />
           <span>{{ isSaving ? 'Saving…' : 'Save Changes' }}</span>
         </button>
       </div>
     </div>
 
     <!-- Segmented Navigation Pills: [ Live Queue & Venue ] vs [ Notification & Rules Setup ] -->
-    <div class="flex items-center gap-1.5 p-1 bg-neutral-100/80 rounded-[12px] border border-black/8 w-fit select-none">
+    <div class="flex items-center gap-1.5 p-1 bg-neutral-100 rounded-[12px] border border-black/8 w-fit select-none">
       <button
         type="button"
         @click="activePanelTab = 'operations'"
@@ -64,116 +79,138 @@
     <!-- ============================================================== -->
     <!-- TAB 1: LIVE QUEUE & VENUE (Real-Time Operations Monitor)       -->
     <!-- ============================================================== -->
-    <div v-if="activePanelTab === 'operations'" class="flex flex-col gap-5">
-      <!-- 2 Clean Grid Cards: Venue Occupancy vs Gate Queue Readout -->
+    <div v-if="activePanelTab === 'operations'" class="flex flex-col gap-4">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         
         <!-- Card 1: Venue Headcount & Capacity Meter -->
-        <div class="p-6 md:p-7 rounded-[18px] border border-black/10 bg-white flex flex-col justify-between gap-5 shadow-xs">
+        <div class="p-5 sm:p-6 rounded-[16px] border border-black/10 bg-white flex flex-col justify-between gap-5 shadow-xs">
           <div>
             <div class="flex items-center justify-between">
-              <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Venue Capacity & Headcount</span>
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-black/5 text-neutral-700 border border-black/10">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Venue Headcount</span>
+                <!-- Info Tooltip -->
+                <div class="relative inline-flex items-center" @click.stop>
+                  <button
+                    type="button"
+                    @click="toggleInfo('headcount')"
+                    class="size-4 rounded-full text-neutral-400 hover:text-black flex items-center justify-center transition-colors cursor-pointer"
+                  >
+                    <Info class="w-3 h-3" />
+                  </button>
+                  <div
+                    v-if="activeInfoKey === 'headcount'"
+                    class="absolute bottom-full left-0 mb-2 w-60 p-2.5 rounded-[10px] bg-black text-white text-[11px] font-light leading-snug shadow-xl z-30 animate-apple-pop"
+                  >
+                    Real-time guest count inside the venue compared to the safety limit. Updates instantly on door scans.
+                    <div class="absolute top-full left-4 border-4 border-transparent border-t-black" />
+                  </div>
+                </div>
+              </div>
+
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-black/5 text-neutral-700 border border-black/10">
                 <span class="size-1.5 rounded-full" :style="{ backgroundColor: barColor }" />
                 {{ capacityPercent >= 100 ? 'Venue Full' : 'Accepting Entry' }}
               </span>
             </div>
 
-            <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mt-4">
-              <div>
-                <div class="flex items-baseline gap-2">
-                  <span class="text-[36px] sm:text-[40px] leading-none font-medium font-sans tabular-nums text-black">{{ insideCount }}</span>
-                  <span class="text-[14px] text-neutral-400 font-light">/ {{ form.maxCapacity }} Pax Inside</span>
-                </div>
-                <p class="text-[12px] text-neutral-400 mt-2 leading-relaxed font-light">
-                  Real-time occupancy updated automatically as guests scan in/out.
-                </p>
+            <div class="flex items-baseline justify-between gap-2 mt-4">
+              <div class="flex items-baseline gap-2">
+                <span class="text-[34px] sm:text-[38px] leading-none font-medium font-sans tabular-nums text-black">{{ insideCount }}</span>
+                <span class="text-[13px] text-neutral-400 font-light">/ {{ form.maxCapacity }} Pax Inside</span>
               </div>
 
-              <div class="sm:text-right flex flex-col gap-0.5 sm:items-end">
-                <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Available Spots</span>
-                <span class="text-[24px] font-medium font-sans tabular-nums" :style="{ color: barColor }">
+              <div class="text-right">
+                <span class="text-[20px] sm:text-[22px] font-medium font-sans tabular-nums" :style="{ color: barColor }">
                   {{ Math.max(0, form.maxCapacity - insideCount) }}
                 </span>
+                <span class="text-[11px] text-neutral-400 block font-light">available</span>
               </div>
             </div>
 
             <!-- Capacity Progress Bar -->
-            <div class="w-full mt-4 flex flex-col gap-2">
-              <div class="w-full h-[8px] bg-black/[0.06] rounded-full overflow-hidden">
+            <div class="w-full mt-3 flex flex-col gap-1.5">
+              <div class="w-full h-[7px] bg-black/[0.06] rounded-full overflow-hidden">
                 <div
                   class="h-full rounded-full transition-all duration-500 ease-out"
                   :style="{ width: `${capacityPercent}%`, backgroundColor: barColor }"
                 />
               </div>
-              <div class="flex items-center justify-between text-[11.5px] text-neutral-500 font-light">
-                <span>{{ capacityPercent }}% Venue Occupancy</span>
-                <span v-if="capacityPercent >= 100" class="text-oxblood-600 font-medium">Limit reached — door locked</span>
-                <span v-else>{{ Math.max(0, form.maxCapacity - insideCount) }} spots remaining</span>
+              <div class="flex items-center justify-between text-[11px] text-neutral-500 font-light">
+                <span>{{ capacityPercent }}% Occupied</span>
+                <span>Limit: {{ form.maxCapacity }} pax</span>
               </div>
             </div>
           </div>
 
-          <div class="pt-3 border-t border-black/5 flex items-center justify-between text-[11.5px] text-neutral-400">
-            <span>Safety Limit: {{ form.maxCapacity }} pax</span>
+          <div class="pt-2.5 border-t border-black/5 flex items-center justify-end text-[11.5px]">
             <button 
               type="button" 
               @click="activePanelTab = 'settings'" 
-              class="text-neutral-600 hover:text-black underline underline-offset-2 cursor-pointer font-light"
+              class="text-neutral-500 hover:text-black underline underline-offset-2 cursor-pointer font-light"
             >
-              Adjust Venue Limits →
+              Adjust Limit →
             </button>
           </div>
         </div>
 
-        <!-- Card 2: Gate Queue Operations (Strictly Read-Only Monitor — No accidental caller buttons) -->
-        <div class="p-6 md:p-7 rounded-[18px] border border-black/10 bg-white flex flex-col justify-between gap-5 shadow-xs">
+        <!-- Card 2: Gate Queue Operations (Strictly Read-Only Monitor — No calling buttons) -->
+        <div class="p-5 sm:p-6 rounded-[16px] border border-black/10 bg-white flex flex-col justify-between gap-5 shadow-xs">
           <div>
             <div class="flex items-center justify-between">
-              <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Gate Queue Status</span>
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-neutral-100 text-neutral-700 border border-black/10">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Gate Line Status</span>
+                <!-- Info Tooltip -->
+                <div class="relative inline-flex items-center" @click.stop>
+                  <button
+                    type="button"
+                    @click="toggleInfo('gate_status')"
+                    class="size-4 rounded-full text-neutral-400 hover:text-black flex items-center justify-center transition-colors cursor-pointer"
+                  >
+                    <Info class="w-3 h-3" />
+                  </button>
+                  <div
+                    v-if="activeInfoKey === 'gate_status'"
+                    class="absolute bottom-full left-0 mb-2 w-64 p-2.5 rounded-[10px] bg-black text-white text-[11px] font-light leading-snug shadow-xl z-30 animate-apple-pop"
+                  >
+                    Live queue state. Number calling and check-in are operated by the Gate Scanner PIC at the door to prevent line conflicts.
+                    <div class="absolute top-full left-4 border-4 border-transparent border-t-black" />
+                  </div>
+                </div>
+              </div>
+
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-neutral-100 text-neutral-700 border border-black/10">
                 <span class="size-1.5 rounded-full bg-moss-600 animate-pulse" />
-                Live Line Monitor
+                Live Monitor
               </span>
             </div>
 
-            <div class="grid grid-cols-2 gap-4 mt-4">
+            <div class="grid grid-cols-2 gap-3 mt-4">
               <!-- Currently Serving Readout -->
-              <div class="p-4 rounded-[14px] bg-neutral-50 border border-black/5 flex flex-col gap-1">
-                <span class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Currently Serving</span>
-                <span class="text-[32px] sm:text-[36px] font-medium font-sans tabular-nums text-black leading-tight">
+              <div class="p-3.5 rounded-[12px] bg-neutral-50 border border-black/5 flex flex-col">
+                <span class="text-[10.5px] uppercase tracking-normal text-neutral-400 font-medium">Currently Serving</span>
+                <span class="text-[28px] sm:text-[32px] font-medium font-sans tabular-nums text-black leading-tight mt-0.5">
                   #{{ form.currentCalledNumber }}
                 </span>
-                <span class="text-[11px] text-neutral-500 font-light">Called at Gate Scanner</span>
               </div>
 
               <!-- Waiting in Queue Readout -->
-              <div class="p-4 rounded-[14px] bg-neutral-50 border border-black/5 flex flex-col gap-1">
-                <span class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Waiting in Line</span>
-                <span class="text-[32px] sm:text-[36px] font-medium font-sans tabular-nums text-black leading-tight">
+              <div class="p-3.5 rounded-[12px] bg-neutral-50 border border-black/5 flex flex-col">
+                <span class="text-[10.5px] uppercase tracking-normal text-neutral-400 font-medium">Waiting in Line</span>
+                <span class="text-[28px] sm:text-[32px] font-medium font-sans tabular-nums text-black leading-tight mt-0.5">
                   {{ waitingCount }}
                 </span>
-                <span class="text-[11px] text-neutral-500 font-light">Guests on standby</span>
               </div>
-            </div>
-
-            <!-- Clear hand-off note to avoid line conflicts -->
-            <div class="p-3.5 rounded-[12px] bg-black/[0.02] border border-black/5 flex items-start gap-3 text-[12px] text-neutral-600 font-light mt-4">
-              <ShieldCheck class="w-4 h-4 text-neutral-500 shrink-0 mt-0.5" />
-              <span>
-                To prevent accidental desynchronization, number calling and admissions are operated live by the <strong>Gate Scanner PIC</strong> at the door.
-              </span>
             </div>
           </div>
 
           <!-- Launch Scanner Shortcut -->
-          <div class="pt-3 border-t border-black/5 flex items-center justify-between">
+          <div class="pt-2.5 border-t border-black/5 flex items-center justify-between">
             <span class="text-[11.5px] text-neutral-400 font-light">Door Scanner Station</span>
             <a
               :href="scannerHref"
               target="_blank"
               rel="noopener"
-              class="h-[36px] px-4 rounded-[10px] bg-black text-white hover:bg-neutral-800 text-[12.5px] font-medium flex items-center gap-1.5 transition-colors apple-press cursor-pointer shadow-xs"
+              class="h-[34px] px-3.5 rounded-[9px] bg-black text-white hover:bg-neutral-800 text-[12px] font-medium flex items-center gap-1.5 transition-colors apple-press cursor-pointer shadow-xs"
             >
               <ScanLine class="w-3.5 h-3.5" />
               <span>Launch Door Scanner</span>
@@ -184,34 +221,31 @@
       </div>
 
       <!-- Card 3: Notification Readiness & Health Status -->
-      <div class="p-6 rounded-[18px] border border-black/10 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
-        <div class="flex items-center gap-4">
-          <div class="size-11 rounded-[12px] bg-neutral-100 flex items-center justify-center shrink-0">
-            <BellRing class="w-5 h-5 text-neutral-700" />
+      <div class="p-5 rounded-[16px] border border-black/10 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+        <div class="flex items-center gap-3">
+          <div class="size-9 rounded-[10px] bg-neutral-100 flex items-center justify-center shrink-0">
+            <BellRing class="w-4 h-4 text-neutral-700" />
           </div>
-          <div>
-            <h4 class="text-[14px] font-medium text-black">Automated Guest Alerts</h4>
-            <div class="flex items-center gap-3 text-[12px] text-neutral-500 font-light mt-0.5">
-              <span class="flex items-center gap-1">
-                <span class="size-1.5 rounded-full" :class="form.waEnabled && form.waConnection?.connected ? 'bg-moss-600' : 'bg-neutral-300'" />
-                WhatsApp: {{ form.waEnabled && form.waConnection?.connected ? 'Active (' + (form.waConnection.formattedNumber || form.waConnection.phoneNumber) + ')' : 'Standby / Off' }}
-              </span>
-              <span>•</span>
-              <span class="flex items-center gap-1">
-                <span class="size-1.5 rounded-full" :class="form.emailNotificationEnabled !== false ? 'bg-moss-600' : 'bg-neutral-300'" />
-                Email: {{ form.emailNotificationEnabled !== false ? 'Active (SMTP)' : 'Off' }}
-              </span>
-            </div>
+          <div class="flex items-center gap-2.5 text-[12.5px]">
+            <span class="font-medium text-black">Guest Alerts:</span>
+            <span class="flex items-center gap-1 text-neutral-600 font-light">
+              <span class="size-1.5 rounded-full" :class="form.waEnabled && form.waConnection?.connected ? 'bg-moss-600' : 'bg-neutral-300'" />
+              WhatsApp {{ form.waEnabled && form.waConnection?.connected ? 'On' : 'Off' }}
+            </span>
+            <span class="text-neutral-300">•</span>
+            <span class="flex items-center gap-1 text-neutral-600 font-light">
+              <span class="size-1.5 rounded-full" :class="form.emailNotificationEnabled !== false ? 'bg-moss-600' : 'bg-neutral-300'" />
+              Email {{ form.emailNotificationEnabled !== false ? 'On' : 'Off' }}
+            </span>
           </div>
         </div>
 
         <button
           type="button"
           @click="activePanelTab = 'settings'"
-          class="h-[36px] px-4 rounded-[9px] border border-black/15 hover:bg-black/5 text-[12.5px] font-medium text-neutral-700 flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
+          class="h-[32px] px-3 rounded-[8px] border border-black/15 hover:bg-black/5 text-[12px] font-medium text-neutral-700 flex items-center gap-1 transition-colors cursor-pointer shrink-0"
         >
-          <SlidersHorizontal class="w-3.5 h-3.5" />
-          <span>Notification & Rules Setup →</span>
+          <span>Configure Alerts →</span>
         </button>
       </div>
     </div>
@@ -219,83 +253,116 @@
     <!-- ============================================================== -->
     <!-- TAB 2: NOTIFICATION & RULES SETUP (One-Time Configuration)     -->
     <!-- ============================================================== -->
-    <div v-else class="flex flex-col gap-6">
+    <div v-else class="flex flex-col gap-5">
       
-      <!-- Card A: Venue Limits & Queue Rules (Clean, human-friendly) -->
-      <div class="p-6 md:p-7 rounded-[18px] border border-black/10 bg-white flex flex-col gap-5 shadow-xs">
-        <div class="flex items-center justify-between pb-4 border-b border-black/10">
-          <div>
-            <h3 class="text-[17px] font-medium text-black">Venue Limits & Line Rules</h3>
-            <p class="text-[12.5px] text-neutral-500 font-light mt-0.5">Define venue safety capacity and how early guests are alerted.</p>
+      <!-- Card A: Venue Limits & Queue Rules (Clean, compact, no paragraph clutter) -->
+      <div class="p-5 sm:p-6 rounded-[16px] border border-black/10 bg-white flex flex-col gap-4 shadow-xs">
+        <div class="flex items-center justify-between pb-3 border-b border-black/10">
+          <div class="flex items-center gap-1.5">
+            <h3 class="text-[15px] font-medium text-black">Venue Limits & Rules</h3>
+            <!-- Info Tooltip -->
+            <div class="relative inline-flex items-center" @click.stop>
+              <button
+                type="button"
+                @click="toggleInfo('rules')"
+                class="size-4 rounded-full text-neutral-400 hover:text-black flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <Info class="w-3 h-3" />
+              </button>
+              <div
+                v-if="activeInfoKey === 'rules'"
+                class="absolute bottom-full left-0 mb-2 w-64 p-2.5 rounded-[10px] bg-black text-white text-[11px] font-light leading-snug shadow-xl z-30 animate-apple-pop"
+              >
+                Configuration rules for physical venue safety and automatic line progression thresholds.
+                <div class="absolute top-full left-4 border-4 border-transparent border-t-black" />
+              </div>
+            </div>
           </div>
-          <span class="text-[11px] text-neutral-400 font-light">Applies to all scanner stations</span>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <!-- Rule 1: Maximum Venue Limit -->
-          <div class="p-4 rounded-[14px] bg-neutral-50/70 border border-black/5 flex flex-col justify-between gap-3">
-            <div>
-              <label for="queue-max-capacity" class="text-[13px] font-medium text-black block">Maximum Venue Limit</label>
-              <p class="text-[11.5px] text-neutral-500 font-light mt-0.5 leading-snug">
-                Safety limit of visitors inside. The door scanner locks entry when full.
-              </p>
+          <div class="p-3.5 rounded-[12px] bg-neutral-50/70 border border-black/5 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <label for="queue-max-capacity" class="text-[12.5px] font-medium text-black">Venue Limit</label>
+              <div class="relative inline-flex items-center" @click.stop>
+                <button type="button" @click="toggleInfo('rule_limit')" class="text-neutral-400 hover:text-black cursor-pointer">
+                  <Info class="w-3 h-3" />
+                </button>
+                <div v-if="activeInfoKey === 'rule_limit'" class="absolute bottom-full right-0 mb-2 w-56 p-2 rounded-[8px] bg-black text-white text-[10.5px] font-light leading-tight shadow-lg z-30 animate-apple-pop">
+                  Maximum visitors permitted inside. Door scanner locks entry when full.
+                  <div class="absolute top-full right-2 border-4 border-transparent border-t-black" />
+                </div>
+              </div>
             </div>
-            <div class="flex items-center rounded-[10px] border border-black/15 bg-white overflow-hidden shadow-2xs h-[38px] divide-x divide-black/10 focus-within:border-black transition-colors w-full">
+            <div class="flex items-center rounded-[8px] border border-black/15 bg-white overflow-hidden h-[34px] divide-x divide-black/10 focus-within:border-black transition-colors w-full">
               <input
                 id="queue-max-capacity"
                 v-model.number="form.maxCapacity"
                 type="number"
                 min="1"
                 max="2000"
-                class="flex-1 h-full min-w-0 px-3 text-[14px] font-medium font-sans tabular-nums text-black bg-transparent border-none outline-none focus:outline-none"
+                class="flex-1 h-full min-w-0 px-2.5 text-[13.5px] font-medium font-sans tabular-nums text-black bg-transparent border-none outline-none"
               />
-              <span class="px-3 h-full flex items-center justify-center text-[11px] font-medium text-neutral-400 bg-black/[0.02] select-none uppercase">
+              <span class="px-2.5 h-full flex items-center justify-center text-[10.5px] font-medium text-neutral-400 bg-black/[0.02] uppercase">
                 Pax
               </span>
             </div>
           </div>
 
           <!-- Rule 2: Standby Alert Distance -->
-          <div class="p-4 rounded-[14px] bg-neutral-50/70 border border-black/5 flex flex-col justify-between gap-3">
-            <div>
-              <label for="queue-notify-threshold" class="text-[13px] font-medium text-black block">Standby Alert Distance</label>
-              <p class="text-[11.5px] text-neutral-500 font-light mt-0.5 leading-snug">
-                Sends an alert this many numbers ahead so guests can walk to the gate.
-              </p>
+          <div class="p-3.5 rounded-[12px] bg-neutral-50/70 border border-black/5 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <label for="queue-notify-threshold" class="text-[12.5px] font-medium text-black">Standby Alert</label>
+              <div class="relative inline-flex items-center" @click.stop>
+                <button type="button" @click="toggleInfo('rule_alert')" class="text-neutral-400 hover:text-black cursor-pointer">
+                  <Info class="w-3 h-3" />
+                </button>
+                <div v-if="activeInfoKey === 'rule_alert'" class="absolute bottom-full right-0 mb-2 w-56 p-2 rounded-[8px] bg-black text-white text-[10.5px] font-light leading-tight shadow-lg z-30 animate-apple-pop">
+                  Sends an alert this many numbers in advance so guests can walk to the gate.
+                  <div class="absolute top-full right-2 border-4 border-transparent border-t-black" />
+                </div>
+              </div>
             </div>
-            <div class="flex items-center rounded-[10px] border border-black/15 bg-white overflow-hidden shadow-2xs h-[38px] divide-x divide-black/10 focus-within:border-black transition-colors w-full">
+            <div class="flex items-center rounded-[8px] border border-black/15 bg-white overflow-hidden h-[34px] divide-x divide-black/10 focus-within:border-black transition-colors w-full">
               <input
                 id="queue-notify-threshold"
                 v-model.number="form.notifyThreshold"
                 type="number"
                 min="1"
                 max="100"
-                class="flex-1 h-full min-w-0 px-3 text-[14px] font-medium font-sans tabular-nums text-black bg-transparent border-none outline-none focus:outline-none"
+                class="flex-1 h-full min-w-0 px-2.5 text-[13.5px] font-medium font-sans tabular-nums text-black bg-transparent border-none outline-none"
               />
-              <span class="px-3 h-full flex items-center justify-center text-[11px] font-medium text-neutral-400 bg-black/[0.02] select-none uppercase">
+              <span class="px-2.5 h-full flex items-center justify-center text-[10.5px] font-medium text-neutral-400 bg-black/[0.02] uppercase">
                 Ahead
               </span>
             </div>
           </div>
 
           <!-- Rule 3: Missed Turn Margin -->
-          <div class="p-4 rounded-[14px] bg-neutral-50/70 border border-black/5 flex flex-col justify-between gap-3">
-            <div>
-              <label for="queue-skipped-tolerance" class="text-[13px] font-medium text-black block">Missed Turn Margin</label>
-              <p class="text-[11.5px] text-neutral-500 font-light mt-0.5 leading-snug">
-                Grace turns allowed before skipped tickets expire to keep the line moving.
-              </p>
+          <div class="p-3.5 rounded-[12px] bg-neutral-50/70 border border-black/5 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <label for="queue-skipped-tolerance" class="text-[12.5px] font-medium text-black">Missed Turn Margin</label>
+              <div class="relative inline-flex items-center" @click.stop>
+                <button type="button" @click="toggleInfo('rule_margin')" class="text-neutral-400 hover:text-black cursor-pointer">
+                  <Info class="w-3 h-3" />
+                </button>
+                <div v-if="activeInfoKey === 'rule_margin'" class="absolute bottom-full right-0 mb-2 w-56 p-2 rounded-[8px] bg-black text-white text-[10.5px] font-light leading-tight shadow-lg z-30 animate-apple-pop">
+                  Grace turns allowed before skipped tickets expire to keep the line moving.
+                  <div class="absolute top-full right-2 border-4 border-transparent border-t-black" />
+                </div>
+              </div>
             </div>
-            <div class="flex items-center rounded-[10px] border border-black/15 bg-white overflow-hidden shadow-2xs h-[38px] divide-x divide-black/10 focus-within:border-black transition-colors w-full">
+            <div class="flex items-center rounded-[8px] border border-black/15 bg-white overflow-hidden h-[34px] divide-x divide-black/10 focus-within:border-black transition-colors w-full">
               <input
                 id="queue-skipped-tolerance"
                 v-model.number="form.skippedTolerance"
                 type="number"
                 min="1"
                 max="50"
-                class="flex-1 h-full min-w-0 px-3 text-[14px] font-medium font-sans tabular-nums text-black bg-transparent border-none outline-none focus:outline-none"
+                class="flex-1 h-full min-w-0 px-2.5 text-[13.5px] font-medium font-sans tabular-nums text-black bg-transparent border-none outline-none"
               />
-              <span class="px-3 h-full flex items-center justify-center text-[11px] font-medium text-neutral-400 bg-black/[0.02] select-none uppercase">
+              <span class="px-2.5 h-full flex items-center justify-center text-[10.5px] font-medium text-neutral-400 bg-black/[0.02] uppercase">
                 Turns
               </span>
             </div>
@@ -304,21 +371,37 @@
       </div>
 
       <!-- Card B: Notification Channels (WhatsApp vs Email Switcher) -->
-      <div class="p-6 md:p-7 rounded-[18px] border border-black/10 bg-white flex flex-col gap-6 shadow-xs">
+      <div class="p-5 sm:p-6 rounded-[16px] border border-black/10 bg-white flex flex-col gap-5 shadow-xs">
         
         <!-- Channels Sub-Tab Switcher -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-black/10">
-          <div>
-            <h3 class="text-[17px] font-medium text-black">Guest Notification Channels</h3>
-            <p class="text-[12.5px] text-neutral-500 font-light mt-0.5">Manage automated WhatsApp and Email message templates.</p>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-black/10">
+          <div class="flex items-center gap-1.5">
+            <h3 class="text-[15px] font-medium text-black">Guest Notification Channels</h3>
+            <!-- Info Tooltip -->
+            <div class="relative inline-flex items-center" @click.stop>
+              <button
+                type="button"
+                @click="toggleInfo('channels')"
+                class="size-4 rounded-full text-neutral-400 hover:text-black flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <Info class="w-3 h-3" />
+              </button>
+              <div
+                v-if="activeInfoKey === 'channels'"
+                class="absolute bottom-full left-0 mb-2 w-64 p-2.5 rounded-[10px] bg-black text-white text-[11px] font-light leading-snug shadow-xl z-30 animate-apple-pop"
+              >
+                Configure automated message templates and delivery channels sent to attendees.
+                <div class="absolute top-full left-4 border-4 border-transparent border-t-black" />
+              </div>
+            </div>
           </div>
 
           <!-- Channel Pills -->
-          <div class="flex items-center gap-1 p-1 bg-neutral-100 rounded-[10px] border border-black/5 w-fit">
+          <div class="flex items-center gap-1 p-1 bg-neutral-100 rounded-[9px] border border-black/5 w-fit">
             <button
               type="button"
               @click="activeNotificationTab = 'whatsapp'"
-              class="h-[32px] px-3.5 rounded-[7px] text-[12px] font-sans flex items-center gap-1.5 transition-all cursor-pointer"
+              class="h-[30px] px-3 rounded-[6px] text-[12px] font-sans flex items-center gap-1.5 transition-all cursor-pointer"
               :class="activeNotificationTab === 'whatsapp' ? 'bg-white text-black font-medium shadow-xs' : 'text-neutral-500 hover:text-black font-light'"
             >
               <Smartphone class="w-3.5 h-3.5" />
@@ -328,7 +411,7 @@
             <button
               type="button"
               @click="activeNotificationTab = 'email'"
-              class="h-[32px] px-3.5 rounded-[7px] text-[12px] font-sans flex items-center gap-1.5 transition-all cursor-pointer"
+              class="h-[30px] px-3 rounded-[6px] text-[12px] font-sans flex items-center gap-1.5 transition-all cursor-pointer"
               :class="activeNotificationTab === 'email' ? 'bg-white text-black font-medium shadow-xs' : 'text-neutral-500 hover:text-black font-light'"
             >
               <Mail class="w-3.5 h-3.5" />
@@ -340,152 +423,154 @@
         <!-- ============================================================== -->
         <!-- CHANNEL 1: WHATSAPP NOTIFICATIONS                              -->
         <!-- ============================================================== -->
-        <div v-if="activeNotificationTab === 'whatsapp'" class="flex flex-col gap-6">
+        <div v-if="activeNotificationTab === 'whatsapp'" class="flex flex-col gap-5">
           
-          <!-- WhatsApp Master Switch & Connection Bar -->
-          <div class="p-4 sm:p-5 rounded-[14px] bg-neutral-50 border border-black/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <!-- Master Switch & Connection Bar (Clean, no copy bloat) -->
+          <div class="p-3.5 sm:p-4 rounded-[12px] bg-neutral-50 border border-black/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-3">
               <label class="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" v-model="form.waEnabled" class="sr-only peer" />
-                <div class="w-10 h-6 bg-neutral-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                <div class="w-9 h-5 bg-neutral-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-black"></div>
               </label>
-              <div>
-                <span class="text-[13.5px] font-medium text-black">Enable Automated WhatsApp Alerts</span>
-                <p class="text-[11.5px] text-neutral-500 font-light mt-0.5">
-                  Sends automated WhatsApp notifications to guests for tickets and line updates.
-                </p>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[13px] font-medium text-black">Automated WhatsApp Alerts</span>
+                <!-- Info Tooltip -->
+                <div class="relative inline-flex items-center" @click.stop>
+                  <button type="button" @click="toggleInfo('wa_toggle')" class="text-neutral-400 hover:text-black cursor-pointer">
+                    <Info class="w-3 h-3" />
+                  </button>
+                  <div v-if="activeInfoKey === 'wa_toggle'" class="absolute bottom-full left-0 mb-2 w-56 p-2 rounded-[8px] bg-black text-white text-[10.5px] font-light leading-tight shadow-lg z-30 animate-apple-pop">
+                    Sends automated WhatsApp messages to attendees when registered or called.
+                    <div class="absolute top-full left-4 border-4 border-transparent border-t-black" />
+                  </div>
+                </div>
               </div>
             </div>
 
             <!-- Device Connection Pill / Action -->
             <div class="flex items-center gap-2">
-              <div v-if="form.waConnection?.connected" class="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-moss-50 border border-moss-200 text-[12px] text-moss-800 font-medium">
-                <span class="size-2 rounded-full bg-moss-600" />
-                <span>Linked: +{{ form.waConnection.phoneNumber }}</span>
+              <div v-if="form.waConnection?.connected" class="flex items-center gap-2 px-3 py-1 rounded-[7px] bg-moss-50 border border-moss-200 text-[11.5px] text-moss-800 font-medium">
+                <span class="size-1.5 rounded-full bg-moss-600" />
+                <span>+{{ form.waConnection.phoneNumber }}</span>
                 <button type="button" @click="disconnectWhatsAppDevice" class="ml-1 text-neutral-400 hover:text-oxblood-600 transition-colors" title="Disconnect device">
-                  <X class="w-3.5 h-3.5" />
+                  <X class="w-3 h-3" />
                 </button>
               </div>
               <button
                 v-else
                 type="button"
                 @click="openWhatsAppQrModal"
-                class="h-[34px] px-3.5 rounded-[8px] bg-black text-white hover:bg-neutral-800 text-[12px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                class="h-[32px] px-3 rounded-[7px] bg-black text-white hover:bg-neutral-800 text-[11.5px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
               >
-                <QrCode class="w-3.5 h-3.5" />
+                <QrCode class="w-3 h-3" />
                 <span>Link Device via QR</span>
               </button>
             </div>
           </div>
 
           <!-- Secondary Toolbar: Advanced Gateway, Test Message, Delivery Logs -->
-          <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
-            <span class="text-[11.5px] text-neutral-400 font-light">Technical Tools:</span>
-            <div class="flex items-center gap-2">
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+            <span class="text-[11px] text-neutral-400 font-light">Tools:</span>
+            <div class="flex items-center gap-1.5">
               <button
                 type="button"
                 @click="openLinkModal"
-                class="h-[32px] px-3 rounded-[8px] border border-black/15 hover:bg-black/5 text-[11.5px] font-medium text-neutral-700 flex items-center gap-1.5 transition-colors cursor-pointer"
-                title="Configure custom Fonnte, Wablas, or Meta Cloud gateway"
+                class="h-[30px] px-2.5 rounded-[7px] border border-black/15 hover:bg-black/5 text-[11px] font-medium text-neutral-700 flex items-center gap-1 transition-colors cursor-pointer"
+                title="Configure custom API gateway"
               >
-                <Link2 class="w-3.5 h-3.5" />
-                <span>Advanced Gateway Settings</span>
+                <Link2 class="w-3 h-3" />
+                <span>Advanced Gateway</span>
               </button>
 
               <button
                 type="button"
                 @click="openTestModal"
-                class="h-[32px] px-3 rounded-[8px] border border-black/15 hover:bg-black/5 text-[11.5px] font-medium text-neutral-700 flex items-center gap-1.5 transition-colors cursor-pointer"
+                class="h-[30px] px-2.5 rounded-[7px] border border-black/15 hover:bg-black/5 text-[11px] font-medium text-neutral-700 flex items-center gap-1 transition-colors cursor-pointer"
               >
-                <Send class="w-3.5 h-3.5" />
+                <Send class="w-3 h-3" />
                 <span>Send Test</span>
               </button>
 
               <button
                 type="button"
                 @click="openLogsModal"
-                class="h-[32px] px-3 rounded-[8px] border border-black/15 hover:bg-black/5 text-[11.5px] font-medium text-neutral-700 flex items-center gap-1.5 transition-colors cursor-pointer"
+                class="h-[30px] px-2.5 rounded-[7px] border border-black/15 hover:bg-black/5 text-[11px] font-medium text-neutral-700 flex items-center gap-1 transition-colors cursor-pointer"
               >
-                <History class="w-3.5 h-3.5" />
+                <History class="w-3 h-3" />
                 <span>Delivery Logs</span>
               </button>
             </div>
           </div>
 
           <!-- WhatsApp Message Stages & Live Chat Bubble Preview -->
-          <div class="flex flex-col gap-4 pt-2">
+          <div class="flex flex-col gap-3 pt-1">
             <!-- Stage Selector Pills -->
-            <div class="flex flex-wrap items-center gap-2">
+            <div class="flex flex-wrap items-center gap-1.5">
               <button
                 v-for="s in DEFAULT_STAGES"
                 :key="s.id"
                 type="button"
                 @click="selectActiveWaStage(s.id)"
-                class="px-3 py-1.5 rounded-[8px] text-[12px] font-sans flex items-center gap-1.5 transition-all cursor-pointer"
+                class="px-3 py-1 rounded-[7px] text-[11.5px] font-sans flex items-center gap-1 transition-all cursor-pointer"
                 :class="(form.activeWaStage || activeStageId) === s.id ? 'bg-black text-white font-medium shadow-xs' : 'bg-neutral-100 text-neutral-600 hover:text-black font-light'"
               >
-                <component :is="s.icon" class="w-3.5 h-3.5" />
+                <component :is="s.icon" class="w-3 h-3" />
                 <span>{{ s.title }}</span>
-                <span class="text-[9.5px] opacity-75 font-sans">({{ s.triggerSummary }})</span>
               </button>
             </div>
 
             <!-- 2-Column Split: Message Text Editor on Left vs Chat Preview on Right -->
-            <div class="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6 items-start">
+            <div class="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-5 items-start">
               
               <!-- Left: Text Editor -->
-              <div class="flex flex-col gap-3">
+              <div class="flex flex-col gap-2.5">
                 <div class="flex items-center justify-between">
-                  <span class="text-[12px] font-medium text-black">Message Content ({{ currentStage.title }})</span>
-                  <span class="text-[11px] text-neutral-400 font-sans">{{ (form.waTemplates[activeStageId] || '').length }} chars</span>
+                  <span class="text-[11.5px] font-medium text-black">Message Content</span>
+                  <span class="text-[10.5px] text-neutral-400 font-sans">{{ (form.waTemplates[activeStageId] || '').length }} chars</span>
                 </div>
 
                 <textarea
                   v-model="form.waTemplates[activeStageId]"
-                  rows="5"
-                  class="w-full p-3.5 rounded-[12px] bg-neutral-50 border border-black/15 text-[13px] leading-relaxed font-sans font-light text-black outline-none focus:border-black focus:bg-white transition-all resize-y placeholder:text-neutral-400"
-                  placeholder="Enter WhatsApp notification copy..."
+                  rows="4"
+                  class="w-full p-3 rounded-[10px] bg-neutral-50 border border-black/15 text-[12.5px] leading-relaxed font-sans font-light text-black outline-none focus:border-black focus:bg-white transition-all resize-y placeholder:text-neutral-400"
+                  placeholder="Enter message copy..."
                 />
 
                 <!-- Dynamic Variables Chips -->
-                <div class="flex flex-col gap-1.5">
-                  <span class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Insert Dynamic Variables:</span>
-                  <div class="flex flex-wrap gap-1.5">
-                    <button
-                      v-for="t in currentStage.tags"
-                      :key="t.key"
-                      type="button"
-                      @click="insertTag(t.key)"
-                      class="px-2.5 py-1 rounded-[6px] bg-neutral-100 hover:bg-neutral-200 text-[11px] font-medium text-neutral-800 cursor-pointer flex items-center gap-1 transition-colors"
-                      :title="t.description"
-                    >
-                      <span>+ {{ t.label }}</span>
-                      <span class="text-[9.5px] text-neutral-400 font-sans">&#123;&#123;{{ t.key }}&#125;&#125;</span>
-                    </button>
-                  </div>
+                <div class="flex flex-wrap gap-1 pt-0.5">
+                  <button
+                    v-for="t in currentStage.tags"
+                    :key="t.key"
+                    type="button"
+                    @click="insertTag(t.key)"
+                    class="px-2 py-0.5 rounded-[5px] bg-neutral-100 hover:bg-neutral-200 text-[10.5px] font-medium text-neutral-800 cursor-pointer flex items-center gap-1 transition-colors"
+                    :title="t.description"
+                  >
+                    <span>+ {{ t.label }}</span>
+                  </button>
                 </div>
               </div>
 
               <!-- Right: Live WhatsApp Chat Bubble Preview -->
-              <div class="rounded-[16px] border border-black/10 overflow-hidden bg-[#efeae2] flex flex-col shadow-xs select-none">
+              <div class="rounded-[14px] border border-black/10 overflow-hidden bg-[#efeae2] flex flex-col shadow-xs select-none">
                 <!-- Chat Header -->
-                <div class="px-4 py-2.5 bg-[#075e54] text-white flex items-center justify-between text-[12px]">
+                <div class="px-3.5 py-2 bg-[#075e54] text-white flex items-center justify-between text-[11.5px]">
                   <div class="flex items-center gap-2">
-                    <div class="size-6 rounded-full bg-white/20 flex items-center justify-center font-medium text-[10px]">
+                    <div class="size-5 rounded-full bg-white/20 flex items-center justify-center font-medium text-[9px]">
                       707
                     </div>
-                    <span class="font-medium">707 Activation Hub</span>
+                    <span class="font-medium truncate max-w-[140px]">{{ activeBrandName }}</span>
                   </div>
-                  <span class="text-[10px] text-white/70">{{ previewTime }}</span>
+                  <span class="text-[9.5px] text-white/70">{{ previewTime }}</span>
                 </div>
 
                 <!-- Chat Canvas & Message Bubble -->
-                <div class="p-4 min-h-[160px] flex flex-col justify-end gap-2">
-                  <div class="max-w-[85%] self-start bg-white rounded-[12px] rounded-tl-[3px] p-3 shadow-sm border border-black/5 flex flex-col gap-1">
-                    <p class="text-[12px] leading-relaxed text-black whitespace-pre-wrap font-sans font-light">
+                <div class="p-3.5 min-h-[140px] flex flex-col justify-end gap-2">
+                  <div class="max-w-[90%] self-start bg-white rounded-[10px] rounded-tl-[2px] p-2.5 shadow-xs border border-black/5 flex flex-col gap-1">
+                    <p class="text-[11.5px] leading-relaxed text-black whitespace-pre-wrap font-sans font-light">
                       {{ renderedPreviewText }}
                     </p>
-                    <div class="flex items-center justify-end gap-1 text-[9.5px] text-neutral-400 pt-0.5">
+                    <div class="flex items-center justify-end gap-1 text-[9px] text-neutral-400 pt-0.5">
                       <span>{{ previewTime }}</span>
                       <span class="text-moss-700">✓✓</span>
                     </div>
@@ -497,137 +582,221 @@
         </div>
 
         <!-- ============================================================== -->
-        <!-- CHANNEL 2: EMAIL NOTIFICATIONS                                 -->
+        <!-- CHANNEL 2: REALISTIC EMAIL CLIENT PREVIEW                      -->
         <!-- ============================================================== -->
-        <div v-else class="flex flex-col gap-6">
+        <div v-else class="flex flex-col gap-5">
           
-          <!-- Email Master Switch & Delivery Status -->
-          <div class="p-4 sm:p-5 rounded-[14px] bg-neutral-50 border border-black/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <!-- Email Master Switch -->
+          <div class="p-3.5 sm:p-4 rounded-[12px] bg-neutral-50 border border-black/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-3">
               <label class="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" v-model="form.emailNotificationEnabled" class="sr-only peer" />
-                <div class="w-10 h-6 bg-neutral-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                <div class="w-9 h-5 bg-neutral-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-black"></div>
               </label>
-              <div>
-                <span class="text-[13.5px] font-medium text-black">Enable Primary Email Confirmations</span>
-                <p class="text-[11.5px] text-neutral-500 font-light mt-0.5">
-                  Delivers official e-tickets and PDF passes directly to the guest's inbox.
-                </p>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[13px] font-medium text-black">Automated Email Confirmations</span>
+                <!-- Info Tooltip -->
+                <div class="relative inline-flex items-center" @click.stop>
+                  <button type="button" @click="toggleInfo('email_toggle')" class="text-neutral-400 hover:text-black cursor-pointer">
+                    <Info class="w-3 h-3" />
+                  </button>
+                  <div v-if="activeInfoKey === 'email_toggle'" class="absolute bottom-full left-0 mb-2 w-56 p-2 rounded-[8px] bg-black text-white text-[10.5px] font-light leading-tight shadow-lg z-30 animate-apple-pop">
+                    Delivers official tickets and door call notifications to guest email inboxes.
+                    <div class="absolute top-full left-4 border-4 border-transparent border-t-black" />
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div class="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-moss-50 border border-moss-200 text-[12px] text-moss-800 font-medium">
-              <span class="size-2 rounded-full bg-moss-600" />
-              <span>SMTP Delivery Active</span>
+            <div class="flex items-center gap-2 px-2.5 py-1 rounded-[7px] bg-moss-50 border border-moss-200 text-[11.5px] text-moss-800 font-medium">
+              <span class="size-1.5 rounded-full bg-moss-600" />
+              <span>SMTP Active</span>
             </div>
           </div>
 
           <!-- Email Stages Selector -->
-          <div class="flex items-center gap-2 p-1 rounded-[10px] bg-neutral-100 border border-black/5 w-fit">
+          <div class="flex items-center gap-1.5 p-1 rounded-[9px] bg-neutral-100 border border-black/5 w-fit">
             <button
               type="button"
               @click="activeEmailTab = 'pass'"
-              class="px-3.5 py-1.5 rounded-[7px] text-[12px] font-sans flex items-center gap-1.5 transition-all cursor-pointer"
+              class="px-3 py-1 rounded-[6px] text-[11.5px] font-sans flex items-center gap-1.5 transition-all cursor-pointer"
               :class="activeEmailTab === 'pass' ? 'bg-white text-black font-medium shadow-xs' : 'text-neutral-500 hover:text-black font-light'"
             >
-              <QrCode class="w-3.5 h-3.5" />
-              <span>1. Ticket & Live Pass Email</span>
+              <QrCode class="w-3 h-3" />
+              <span>1. Ticket & Pass Email</span>
             </button>
 
             <button
               type="button"
               @click="activeEmailTab = 'ready'"
-              class="px-3.5 py-1.5 rounded-[7px] text-[12px] font-sans flex items-center gap-1.5 transition-all cursor-pointer"
+              class="px-3 py-1 rounded-[6px] text-[11.5px] font-sans flex items-center gap-1.5 transition-all cursor-pointer"
               :class="activeEmailTab === 'ready' ? 'bg-white text-black font-medium shadow-xs' : 'text-neutral-500 hover:text-black font-light'"
             >
-              <UserCheck class="w-3.5 h-3.5" />
+              <UserCheck class="w-3 h-3" />
               <span>2. Entry Call Email</span>
             </button>
           </div>
 
-          <!-- Email Editor + Live Clean Preview -->
-          <div class="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6 items-start">
+          <!-- Email Editor + REALISTIC EMAIL CLIENT UI PREVIEW -->
+          <div class="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-5 items-start">
             
             <!-- Left: Inputs -->
-            <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-3">
               <!-- Subject -->
-              <div class="flex flex-col gap-1.5">
-                <label class="text-[12px] font-medium uppercase tracking-normal text-neutral-500">Email Subject Line</label>
+              <div class="flex flex-col gap-1">
+                <label class="text-[11.5px] font-medium uppercase tracking-normal text-neutral-500">Email Subject Line</label>
                 <input
                   v-model="currentEmailTemplate.subject"
                   type="text"
-                  class="w-full h-[40px] px-3.5 rounded-[10px] bg-neutral-50 border border-black/15 text-[13px] font-sans font-light text-black outline-none focus:border-black focus:bg-white transition-all placeholder:text-neutral-400"
-                  placeholder="e.g. Your 707 ticket for {{campaign}}"
+                  class="w-full h-[36px] px-3 rounded-[8px] bg-neutral-50 border border-black/15 text-[12.5px] font-sans font-light text-black outline-none focus:border-black focus:bg-white transition-all placeholder:text-neutral-400"
+                  placeholder="e.g. Your ticket for {{campaign}}"
                 />
               </div>
 
               <!-- Main Heading -->
-              <div class="flex flex-col gap-1.5">
-                <label class="text-[12px] font-medium uppercase tracking-normal text-neutral-500">Main Heading</label>
+              <div class="flex flex-col gap-1">
+                <label class="text-[11.5px] font-medium uppercase tracking-normal text-neutral-500">Email Heading</label>
                 <input
                   v-model="currentEmailTemplate.heading"
                   type="text"
-                  class="w-full h-[40px] px-3.5 rounded-[10px] bg-neutral-50 border border-black/15 text-[13px] font-sans font-light text-black outline-none focus:border-black focus:bg-white transition-all placeholder:text-neutral-400"
+                  class="w-full h-[36px] px-3 rounded-[8px] bg-neutral-50 border border-black/15 text-[12.5px] font-sans font-light text-black outline-none focus:border-black focus:bg-white transition-all placeholder:text-neutral-400"
                   placeholder="e.g. Your ticket"
                 />
               </div>
 
               <!-- Body Copy -->
-              <div class="flex flex-col gap-1.5">
-                <label class="text-[12px] font-medium uppercase tracking-normal text-neutral-500">Body Copy / Instructions</label>
+              <div class="flex flex-col gap-1">
+                <label class="text-[11.5px] font-medium uppercase tracking-normal text-neutral-500">Body Copy / Instructions</label>
                 <textarea
                   v-model="currentEmailTemplate.body"
                   rows="4"
-                  class="w-full p-3.5 rounded-[12px] bg-neutral-50 border border-black/15 text-[13px] leading-relaxed font-sans font-light text-black outline-none focus:border-black focus:bg-white transition-all resize-y placeholder:text-neutral-400"
+                  class="w-full p-3 rounded-[10px] bg-neutral-50 border border-black/15 text-[12.5px] leading-relaxed font-sans font-light text-black outline-none focus:border-black focus:bg-white transition-all resize-y placeholder:text-neutral-400"
                   placeholder="Enter email body copy..."
                 />
               </div>
 
               <!-- Variable Pills -->
-              <div class="flex flex-col gap-1.5">
-                <span class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Insert Dynamic Variables:</span>
-                <div class="flex flex-wrap gap-1.5">
-                  <button
-                    v-for="v in emailVariablePills"
-                    :key="v.key"
-                    type="button"
-                    @click="insertEmailTag(v.key)"
-                    class="px-2.5 py-1 rounded-[6px] bg-neutral-100 hover:bg-neutral-200 text-[11px] font-medium text-neutral-800 cursor-pointer flex items-center gap-1 transition-colors"
-                    :title="v.description"
-                  >
-                    <span>+ {{ v.label }}</span>
-                    <span class="text-[9.5px] text-neutral-400 font-sans">&#123;&#123;{{ v.key }}&#125;&#125;</span>
-                  </button>
-                </div>
+              <div class="flex flex-wrap gap-1 pt-0.5">
+                <button
+                  v-for="v in emailVariablePills"
+                  :key="v.key"
+                  type="button"
+                  @click="insertEmailTag(v.key)"
+                  class="px-2 py-0.5 rounded-[5px] bg-neutral-100 hover:bg-neutral-200 text-[10.5px] font-medium text-neutral-800 cursor-pointer flex items-center gap-1 transition-colors"
+                  :title="v.description"
+                >
+                  <span>+ {{ v.label }}</span>
+                </button>
               </div>
             </div>
 
-            <!-- Right: Clean Email Preview -->
-            <div class="rounded-[16px] border border-black/10 overflow-hidden bg-neutral-100 p-4 flex flex-col gap-2 shadow-xs select-none">
-              <div class="p-5 rounded-[12px] bg-white border border-black/5 flex flex-col gap-4 shadow-2xs">
-                <div class="flex items-center justify-between pb-3 border-b border-black/5">
-                  <div class="flex items-center gap-2">
-                    <img :src="FIGMA_ASSETS.logoDesignStudio" alt="707" class="h-3.5 w-auto object-contain" />
-                    <span class="text-[10px] text-neutral-400 uppercase tracking-normal">Campaign Pass</span>
-                  </div>
-                  <span class="text-[10px] text-neutral-400 font-sans">Official Ticket</span>
+            <!-- Right: AUTHENTIC REALISTIC EMAIL CLIENT UI (Apple Mail / Gmail Chrome) -->
+            <div class="rounded-[16px] border border-black/12 overflow-hidden bg-[#f0f0f2] shadow-sm select-none flex flex-col font-sans">
+              <!-- Realistic Email Client Header Chrome (macOS Apple Mail Style) -->
+              <div class="px-4 py-3 bg-[#e8e8ea] border-b border-black/10 flex items-center justify-between">
+                <div class="flex items-center gap-1.5">
+                  <span class="size-2.5 rounded-full bg-[#ff5f57] border border-black/10" />
+                  <span class="size-2.5 rounded-full bg-[#febc2e] border border-black/10" />
+                  <span class="size-2.5 rounded-full bg-[#28c840] border border-black/10" />
                 </div>
+                <span class="text-[11px] text-neutral-500 font-medium truncate max-w-[220px]">
+                  {{ renderedEmailSubject || 'Email Preview' }}
+                </span>
+                <span class="text-[10px] text-neutral-400 font-light">Inbox</span>
+              </div>
 
-                <div class="flex flex-col gap-1">
-                  <span class="text-[11px] font-medium text-neutral-400 uppercase">Subject: {{ renderedEmailSubject }}</span>
-                  <h4 class="text-[16px] font-medium text-black mt-1">{{ renderedEmailHeading }}</h4>
-                  <p class="text-[12.5px] text-neutral-600 font-light leading-relaxed mt-1 whitespace-pre-wrap">
-                    {{ renderedEmailBody }}
+              <!-- Email Client Metadata Envelope -->
+              <div class="px-4 py-2.5 bg-white border-b border-black/5 flex flex-col gap-1 text-[11px] text-neutral-500">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-medium text-black">From:</span>
+                    <span class="text-neutral-700 font-normal">{{ activeBrandName }} &lt;tickets@events.707.co.id&gt;</span>
+                  </div>
+                  <span class="text-[10px] text-neutral-400">14:32</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="font-medium text-black">To:</span>
+                  <span class="text-neutral-700 font-light">Sarah Jenkins &lt;s.jenkins@example.com&gt;</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="font-medium text-black">Subject:</span>
+                  <span class="text-black font-medium">{{ renderedEmailSubject }}</span>
+                </div>
+              </div>
+
+              <!-- Realistic Email Body Sheet (Matches server mailer.ts shell) -->
+              <div class="p-4 sm:p-5 bg-[#f6f6f8] flex justify-center">
+                <div class="w-full max-w-[390px] bg-white rounded-[14px] border border-black/8 p-5 sm:p-6 shadow-xs flex flex-col gap-4 text-black">
+                  
+                  <!-- Email Top Brand Logo / Banner -->
+                  <div class="flex items-center justify-between pb-3 border-b border-black/5">
+                    <!-- Brand logo if set, otherwise active brand name -->
+                    <div class="flex items-center gap-2">
+                      <img 
+                        v-if="activeBrandLogo" 
+                        :src="activeBrandLogo" 
+                        :alt="activeBrandName" 
+                        class="h-5 w-auto object-contain max-w-[120px]" 
+                      />
+                      <span v-else class="text-[14px] font-medium text-black tracking-normal">
+                        {{ activeBrandName }}
+                      </span>
+                    </div>
+
+                    <!-- Subtle 707 studio brandmark -->
+                    <img :src="FIGMA_ASSETS.logo707Brand" alt="707" class="h-3 w-auto object-contain opacity-40" />
+                  </div>
+
+                  <!-- Email Content -->
+                  <div class="flex flex-col gap-1.5">
+                    <h4 class="text-[17px] font-medium text-black leading-snug">
+                      {{ renderedEmailHeading }}
+                    </h4>
+                    <p class="text-[12.5px] text-neutral-600 font-light leading-[19px] whitespace-pre-wrap">
+                      {{ renderedEmailBody }}
+                    </p>
+                  </div>
+
+                  <!-- Realistic Details Table (from mailer.ts) -->
+                  <div class="rounded-[10px] bg-neutral-50/80 border border-black/5 p-3 flex flex-col gap-1.5 text-[11px]">
+                    <div class="flex justify-between py-0.5 border-b border-black/5">
+                      <span class="text-neutral-400 uppercase tracking-normal">Name</span>
+                      <span class="font-medium text-black">Sarah Jenkins</span>
+                    </div>
+                    <div class="flex justify-between py-0.5 border-b border-black/5">
+                      <span class="text-neutral-400 uppercase tracking-normal">Event</span>
+                      <span class="font-medium text-black">{{ activeBrandName }}</span>
+                    </div>
+                    <div class="flex justify-between py-0.5 border-b border-black/5">
+                      <span class="text-neutral-400 uppercase tracking-normal">Queue No</span>
+                      <span class="font-medium font-sans text-black">#42</span>
+                    </div>
+                    <div class="flex justify-between py-0.5">
+                      <span class="text-neutral-400 uppercase tracking-normal">Access ID</span>
+                      <span class="font-medium font-sans text-black">707-K92F</span>
+                    </div>
+                  </div>
+
+                  <!-- Live CTA Button -->
+                  <div class="pt-1">
+                    <div class="w-full h-[36px] rounded-[8px] bg-black text-white text-[12px] font-medium flex items-center justify-center shadow-xs">
+                      VIEW LIVE QUEUE PASS
+                    </div>
+                  </div>
+
+                  <!-- Attached Ticket Card -->
+                  <div class="p-2.5 rounded-[9px] bg-neutral-50 border border-black/8 flex items-center justify-between text-[11px]">
+                    <div class="flex items-center gap-2">
+                      <span class="px-1.5 py-0.5 rounded-[4px] bg-red-100 text-red-700 font-medium text-[9px]">PDF</span>
+                      <span class="font-medium text-neutral-800 truncate max-w-[170px]">ticket-sarah-707-K92F.pdf</span>
+                    </div>
+                    <span class="text-[10px] text-neutral-400 font-sans">248 KB</span>
+                  </div>
+
+                  <!-- Footer note -->
+                  <p class="text-[10.5px] text-neutral-400 font-light leading-normal pt-2 border-t border-black/5 text-center">
+                    Keep this email. Your ticket is the attached PDF. Show it at the entrance door.
                   </p>
-                </div>
-
-                <!-- Attached Ticket Mockup -->
-                <div class="p-3 rounded-[10px] bg-neutral-50 border border-black/5 flex items-center justify-between text-[11.5px] text-neutral-600">
-                  <div class="flex items-center gap-2">
-                    <Paperclip class="w-3.5 h-3.5 text-neutral-400" />
-                    <span class="font-medium">ticket-sarah-jenkins.pdf</span>
-                  </div>
-                  <span class="text-[10.5px] text-neutral-400">PDF Attached</span>
                 </div>
               </div>
             </div>
@@ -737,7 +906,6 @@
         </div>
 
         <div class="p-6 flex flex-col gap-4 overflow-y-auto max-h-[70vh]">
-          <!-- Preset selector -->
           <div class="flex flex-col gap-1.5">
             <label class="text-[12px] font-medium text-neutral-600">Gateway Provider</label>
             <div class="grid grid-cols-4 gap-2">
@@ -754,7 +922,6 @@
             </div>
           </div>
 
-          <!-- Phone Number -->
           <div class="flex flex-col gap-1.5">
             <label class="text-[12px] font-medium text-neutral-600">Sender Phone Number</label>
             <input
@@ -765,7 +932,6 @@
             />
           </div>
 
-          <!-- Gateway URL -->
           <div class="flex flex-col gap-1.5">
             <label class="text-[12px] font-medium text-neutral-600">Gateway API URL</label>
             <input
@@ -775,7 +941,6 @@
             />
           </div>
 
-          <!-- API Token -->
           <div class="flex flex-col gap-1.5">
             <label class="text-[12px] font-medium text-neutral-600">API Key / Token</label>
             <input
@@ -928,15 +1093,14 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
+import { useBrandStore } from '../../stores/brandStore.ts';
 import {
   RefreshCw,
   Check,
   Users,
   BellRing,
-  Clock,
   MessageSquare,
   Smartphone,
-  ShieldCheck,
   QrCode,
   UserCheck,
   Ban,
@@ -947,16 +1111,15 @@ import {
   X,
   AlertTriangle,
   Mail,
-  Paperclip,
   SlidersHorizontal,
-  ArrowUpRight
+  ArrowUpRight,
+  Info
 } from 'lucide-vue-next';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
-import { glassConfirm, glassPrompt } from '../../services/glassDialog.ts';
+import { glassConfirm } from '../../services/glassDialog.ts';
 import {
   fetchQueueSettings,
   saveQueueSettingsApi,
-  callNextQueue,
   totalInsideGuests,
   normalizeStatus,
   normalizeWhatsAppNumber,
@@ -996,11 +1159,27 @@ const emit = defineEmits<{
 }>();
 
 const editorStore = useEditorStore();
+const brandStore = useBrandStore();
 const isLoading = ref(false);
 const isSaving = ref(false);
 const activePanelTab = ref<'operations' | 'settings'>('operations');
 const activeNotificationTab = ref<'whatsapp' | 'email'>('whatsapp');
 const activeStageId = ref<string>('ready');
+
+// Interactive info popovers state
+const activeInfoKey = ref<string | null>(null);
+function toggleInfo(key: string) {
+  activeInfoKey.value = activeInfoKey.value === key ? null : key;
+}
+
+// Active Brand logo and name for realistic email preview
+const activeBrandLogo = computed(() => {
+  return brandStore.activeBrand?.logo_url || null;
+});
+
+const activeBrandName = computed(() => {
+  return brandStore.activeBrand?.name || editorStore.projectTitle || '707 Design Studio';
+});
 
 // Door Scanner external link
 const scannerHref = computed(() => {
@@ -1300,7 +1479,7 @@ function renderMockEmail(raw: string) {
   return raw
     .replace(/\{\{\s*name\s*\}\}/g, 'Sarah Jenkins')
     .replace(/\{\{\s*queue_number\s*\}\}/g, '#42')
-    .replace(/\{\{\s*campaign\s*\}\}/g, editorStore.projectTitle || '707 Activation')
+    .replace(/\{\{\s*campaign\s*\}\}/g, activeBrandName.value)
     .replace(/\{\{\s*access_id\s*\}\}/g, '707-K92F')
     .replace(/\{\{\s*link\s*\}\}/g, 'https://events.707.co.id/brand/drop?code=707-K92F');
 }
@@ -1459,7 +1638,7 @@ async function saveSettings() {
     if (res) {
       Object.assign(form, res);
       if (res.waConnection) form.waConnection = { ...res.waConnection };
-      emit('toast', 'Queue settings and notification preferences saved successfully.');
+      emit('toast', 'Settings saved.');
     }
   } catch (err: any) {
     emit('toast', err?.message || 'Failed to save settings');
@@ -1527,7 +1706,7 @@ async function handleConfirmLink() {
       form.waConnection = { ...res };
       showLinkModal.value = false;
       const display = res.formattedNumber || formatWhatsAppDisplay(res.phoneNumber || '') || res.phoneNumber;
-      emit('toast', `WhatsApp (${display}) connected & ready!`);
+      emit('toast', `WhatsApp (${display}) connected!`);
     }
   } catch (err: any) {
     emit('toast', err?.message || 'Failed to confirm WhatsApp gateway');
@@ -1546,13 +1725,13 @@ function handleDirectWhatsAppOpen() {
   const raw = testPhone.value.trim() || form.waConnection?.phoneNumber || '';
   const clean = normalizeWhatsAppNumber(raw);
   if (!clean || clean.length < 9) {
-    emit('toast', 'Please enter a valid recipient phone number (min 9 digits, e.g. 0812... or +62...).');
+    emit('toast', 'Please enter a valid recipient phone number.');
     return;
   }
   const text = encodeURIComponent(testPreviewMessage.value);
   const waUrl = `https://wa.me/${clean}?text=${text}`;
   window.open(waUrl, '_blank', 'noopener,noreferrer');
-  emit('toast', `Opening WhatsApp for +${clean}…`);
+  emit('toast', `Opening WhatsApp…`);
 }
 
 async function handleSendTestMessage() {
@@ -1560,7 +1739,7 @@ async function handleSendTestMessage() {
   const raw = testPhone.value.trim() || form.waConnection?.phoneNumber || '';
   const clean = normalizeWhatsAppNumber(raw);
   if (!clean || clean.length < 9) {
-    emit('toast', 'Please enter a valid recipient phone number (min 9 digits, e.g. 0812... or +62...).');
+    emit('toast', 'Please enter a valid recipient phone number.');
     return;
   }
   isSendingTest.value = true;
@@ -1569,9 +1748,9 @@ async function handleSendTestMessage() {
     if (res?.success) {
       if (res.mode === 'direct' && res.waUrl) {
         window.open(res.waUrl, '_blank', 'noopener,noreferrer');
-        emit('toast', `Direct WhatsApp opened for ${formatWhatsAppDisplay(clean)}! Tap send in WhatsApp.`);
+        emit('toast', `Direct WhatsApp opened for ${formatWhatsAppDisplay(clean)}.`);
       } else {
-        emit('toast', res.message || `Test notification dispatched to ${formatWhatsAppDisplay(clean)}!`);
+        emit('toast', res.message || `Test notification dispatched to ${formatWhatsAppDisplay(clean)}.`);
       }
       showTestModal.value = false;
     } else {
