@@ -29,6 +29,33 @@
           <span class="truncate">{{ operatorName }}</span>
         </div>
         <button v-if="isGate" type="button" @click="leave" class="px-3 h-[34px] rounded-[8px] border border-black/15 text-[12px] font-medium active:bg-black/10 cursor-pointer">Sign out</button>
+
+        <!-- Admin Profile Avatar when in live preview (!isGate) -->
+        <div v-if="!isGate && authStore.isAuthenticated" class="relative flex items-center">
+          <button 
+            type="button"
+            @click="showUserProfileModal = !showUserProfileModal"
+            class="relative size-[28px] rounded-full border-[0.5px] border-black/10 hover:border-black/30 shrink-0 bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors duration-200 cursor-pointer shadow-xs apple-press group"
+            title="User Profile"
+          >
+            <div 
+              class="relative size-full rounded-full bg-black text-white flex items-center justify-center font-sans text-[10px] font-medium tracking-tight select-none"
+            >
+              {{ userInitials }}
+              <span class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-emerald-500 border border-white" />
+            </div>
+          </button>
+
+          <UserProfileModal
+            :is-open="showUserProfileModal"
+            @close="showUserProfileModal = false"
+            @open-analytics="router.push(hubLink)"
+            @open-settings="router.push('/settings')"
+            @open-projects="router.push('/?projects=1')"
+            @open-whats-new="router.push('/?whatsnew=1')"
+            @sign-out="handleSignOut"
+          />
+        </div>
       </div>
     </header>
 
@@ -71,6 +98,8 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ArrowLeft, AlertTriangle, Calendar } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/authStore.ts';
+import { useBrandStore } from '../stores/brandStore.ts';
+import UserProfileModal from '../components/modals/UserProfileModal.vue';
 import { useCampaignGuests } from '../components/hub/useCampaignGuests.ts';
 import { getTodayDateStrings } from '../components/hub/hubUtils.ts';
 import DoorScanner from '../components/hub/DoorScanner.vue';
@@ -82,6 +111,26 @@ import DoorScanner from '../components/hub/DoorScanner.vue';
  */
 const router = useRouter();
 const authStore = useAuthStore();
+const brandStore = useBrandStore();
+const showUserProfileModal = ref(false);
+
+const userInitials = computed(() => {
+  if (authStore.isSuperAdmin) return 'SA';
+  const name = authStore.currentUser?.name || brandStore.activeBrand?.name || '';
+  if (!name) return '707';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+});
+
+function handleSignOut() {
+  showUserProfileModal.value = false;
+  authStore.signOut();
+  brandStore.setActiveBrand(null);
+  router.push('/');
+}
 
 const todayFormatted = computed(() => getTodayDateStrings().formattedShort);
 

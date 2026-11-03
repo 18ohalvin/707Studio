@@ -21,9 +21,43 @@
           </button>
         </div>
 
-        <router-link to="/" class="text-[12.5px] text-neutral-500 hover:text-black font-medium transition-colors">
-          Exit to Studio
-        </router-link>
+        <div class="flex items-center gap-3">
+          <router-link to="/" class="text-[12.5px] text-neutral-500 hover:text-black font-medium transition-colors">
+            Exit to Studio
+          </router-link>
+
+          <div class="w-px h-4 bg-black/10" />
+
+          <!-- Profile Avatar Container with Anchored UserProfileModal -->
+          <div class="relative flex items-center">
+            <button 
+              type="button"
+              @click="authStore.isAuthenticated ? (showUserProfileModal = !showUserProfileModal) : router.push('/login')"
+              class="relative size-[28px] rounded-full border-[0.5px] border-black/10 hover:border-black/30 shrink-0 bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors duration-200 cursor-pointer shadow-xs apple-press group"
+              :title="authStore.isAuthenticated ? 'User Profile' : 'Sign In'"
+            >
+              <div 
+                v-if="authStore.isAuthenticated" 
+                class="relative size-full rounded-full bg-black text-white flex items-center justify-center font-sans text-[10px] font-medium tracking-tight select-none"
+              >
+                {{ userInitials }}
+                <span class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-emerald-500 border border-white" />
+              </div>
+              <User v-else class="w-3.5 h-3.5 text-black stroke-[1.5]" />
+            </button>
+
+            <UserProfileModal
+              v-if="authStore.isAuthenticated"
+              :is-open="showUserProfileModal"
+              @close="showUserProfileModal = false"
+              @open-analytics="handleAnalytics"
+              @open-settings="handleOpenSettings"
+              @open-projects="handleOpenProjects"
+              @open-whats-new="handleOpenWhatsNew"
+              @sign-out="handleSignOut"
+            />
+          </div>
+        </div>
       </header>
 
       <!-- Center Stage: Minimalist Launchpad -->
@@ -175,6 +209,38 @@
             <span>Open Campaign Editor</span>
             <ArrowUpRight class="w-3 h-3 text-white/60" />
           </router-link>
+
+          <div class="w-px h-4 bg-black/10 mx-0.5" />
+
+          <!-- Profile Avatar Container with Anchored UserProfileModal -->
+          <div class="relative flex items-center">
+            <button 
+              type="button"
+              @click="authStore.isAuthenticated ? (showUserProfileModal = !showUserProfileModal) : router.push('/login')"
+              class="relative size-[28px] rounded-full border-[0.5px] border-black/10 hover:border-black/30 shrink-0 bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors duration-200 cursor-pointer shadow-xs apple-press group"
+              :title="authStore.isAuthenticated ? 'User Profile' : 'Sign In'"
+            >
+              <div 
+                v-if="authStore.isAuthenticated" 
+                class="relative size-full rounded-full bg-black text-white flex items-center justify-center font-sans text-[10px] font-medium tracking-tight select-none"
+              >
+                {{ userInitials }}
+                <span class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-emerald-500 border border-white" />
+              </div>
+              <User v-else class="w-3.5 h-3.5 text-black stroke-[1.5]" />
+            </button>
+
+            <UserProfileModal
+              v-if="authStore.isAuthenticated"
+              :is-open="showUserProfileModal"
+              @close="showUserProfileModal = false"
+              @open-analytics="handleAnalytics"
+              @open-settings="handleOpenSettings"
+              @open-projects="handleOpenProjects"
+              @open-whats-new="handleOpenWhatsNew"
+              @sign-out="handleSignOut"
+            />
+          </div>
         </div>
       </header>
 
@@ -408,6 +474,13 @@
       :is-open="showWhatsNewModal"
       @close="showWhatsNewModal = false"
     />
+
+    <!-- All Projects / My Activations Modal -->
+    <AllProjectsModal
+      :is-open="showAllProjectsModal"
+      @close="showAllProjectsModal = false"
+      @select-project="handleSelectProjectFromModal"
+    />
   </div>
 </template>
 
@@ -416,14 +489,18 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
   RefreshCw, ChevronDown, ChevronsUpDown, Check, Search, AlertTriangle, ScanLine, ArrowUpRight,
-  ShieldCheck, SquarePen, X
+  ShieldCheck, SquarePen, X, User
 } from 'lucide-vue-next';
 import GateAccessPanel from '../components/hub/GateAccessPanel.vue';
 import WhatsNewModal from '../components/modals/WhatsNewModal.vue';
+import UserProfileModal from '../components/modals/UserProfileModal.vue';
+import AllProjectsModal from '../components/modals/AllProjectsModal.vue';
 import { FIGMA_ASSETS } from '../constants/figmaAssets.ts';
 import type { ProjectItem } from '../types/editor.ts';
 import { useCampaignGuests } from '../components/hub/useCampaignGuests.ts';
 import { useEditorStore } from '../stores/editorStore.ts';
+import { useAuthStore } from '../stores/authStore.ts';
+import { useBrandStore } from '../stores/brandStore.ts';
 import GuestDatabaseTable from '../components/hub/GuestDatabaseTable.vue';
 import RaffleDraw from '../components/hub/RaffleDraw.vue';
 import QueueSettingsPanel from '../components/hub/QueueSettingsPanel.vue';
@@ -434,7 +511,57 @@ const TAB_IDS: TabId[] = ['guests', 'queue', 'raffle'];
 const route = useRoute();
 const router = useRouter();
 const editorStore = useEditorStore();
+const authStore = useAuthStore();
+const brandStore = useBrandStore();
 const showWhatsNewModal = ref(false);
+const showUserProfileModal = ref(false);
+const showAllProjectsModal = ref(false);
+
+const userInitials = computed(() => {
+  if (authStore.isSuperAdmin) return 'SA';
+  const name = authStore.currentUser?.name || brandStore.activeBrand?.name || '';
+  if (!name) return '707';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+});
+
+function handleOpenProjects() {
+  showUserProfileModal.value = false;
+  showAllProjectsModal.value = true;
+}
+
+function handleOpenWhatsNew() {
+  showUserProfileModal.value = false;
+  showWhatsNewModal.value = true;
+}
+
+function handleOpenSettings() {
+  showUserProfileModal.value = false;
+  if (authStore.isSuperAdmin) {
+    router.push('/settings');
+  } else {
+    router.push('/dev');
+  }
+}
+
+function handleAnalytics() {
+  showUserProfileModal.value = false;
+}
+
+function handleSignOut() {
+  showUserProfileModal.value = false;
+  authStore.signOut();
+  brandStore.setActiveBrand(null);
+  router.push('/');
+}
+
+function handleSelectProjectFromModal(project: ProjectItem) {
+  showAllProjectsModal.value = false;
+  selectProject(project.id);
+}
 
 const {
   rows, isLoading, isInitialLoad, loadError, lastSyncedAt,

@@ -39,6 +39,35 @@
           <LogOut class="w-3.5 h-3.5" />
           <span>Exit Admin</span>
         </button>
+
+        <div class="w-px h-4 bg-black/10" />
+
+        <!-- Profile Avatar Container with Anchored UserProfileModal -->
+        <div class="relative flex items-center">
+          <button 
+            type="button"
+            @click="showUserProfileModal = !showUserProfileModal"
+            class="relative size-[28px] rounded-full border-[0.5px] border-black/10 hover:border-black/30 shrink-0 bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors duration-200 cursor-pointer shadow-xs apple-press group"
+            title="User Profile"
+          >
+            <div 
+              class="relative size-full rounded-full bg-black text-white flex items-center justify-center font-sans text-[10px] font-medium tracking-tight select-none"
+            >
+              {{ userInitials }}
+              <span class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-emerald-500 border border-white" />
+            </div>
+          </button>
+
+          <UserProfileModal
+            :is-open="showUserProfileModal"
+            @close="showUserProfileModal = false"
+            @open-analytics="handleAnalytics"
+            @open-settings="showUserProfileModal = false"
+            @open-projects="handleOpenProjects"
+            @open-whats-new="handleOpenWhatsNew"
+            @sign-out="handleSignOut"
+          />
+        </div>
       </div>
     </header>
 
@@ -1489,6 +1518,13 @@
       :is-open="showWhatsNewModal"
       @close="showWhatsNewModal = false"
     />
+
+    <!-- All Projects / My Activations Modal -->
+    <AllProjectsModal
+      :is-open="showAllProjectsModal"
+      @close="showAllProjectsModal = false"
+      @select-project="handleSelectProject"
+    />
   </div>
 </template>
 
@@ -1499,6 +1535,8 @@ import { glassConfirm, glassPrompt } from '../services/glassDialog.ts';
 import { ref, computed, reactive, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import WhatsNewModal from '../components/modals/WhatsNewModal.vue';
+import UserProfileModal from '../components/modals/UserProfileModal.vue';
+import AllProjectsModal from '../components/modals/AllProjectsModal.vue';
 import { 
   ArrowLeft, 
   LogOut, 
@@ -1521,9 +1559,49 @@ import type { Brand, GlobalTemplate, WidgetItem, ProjectItem } from '../types/ed
 const router = useRouter();
 const route = useRoute();
 const showWhatsNewModal = ref(false);
+const showUserProfileModal = ref(false);
+const showAllProjectsModal = ref(false);
 const authStore = useAuthStore();
 const editorStore = useEditorStore();
 const brandStore = useBrandStore();
+
+const userInitials = computed(() => {
+  if (authStore.isSuperAdmin) return 'SA';
+  const name = authStore.currentUser?.name || brandStore.activeBrand?.name || '';
+  if (!name) return '707';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+});
+
+function handleOpenProjects() {
+  showUserProfileModal.value = false;
+  showAllProjectsModal.value = true;
+}
+
+function handleOpenWhatsNew() {
+  showUserProfileModal.value = false;
+  showWhatsNewModal.value = true;
+}
+
+function handleAnalytics() {
+  showUserProfileModal.value = false;
+  router.push('/hub');
+}
+
+function handleSignOut() {
+  showUserProfileModal.value = false;
+  authStore.signOut();
+  brandStore.setActiveBrand(null);
+  router.push('/');
+}
+
+function handleSelectProject(project: ProjectItem) {
+  showAllProjectsModal.value = false;
+  router.push({ path: '/hub', query: { project: project.id } });
+}
 
 const activeTab = ref<'brands' | 'users' | 'submissions' | 'templates'>('brands');
 
