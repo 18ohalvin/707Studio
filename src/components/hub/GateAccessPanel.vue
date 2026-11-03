@@ -116,11 +116,11 @@
             </div>
           </div>
 
-          <!-- TAB 1: SCANNER STATIONS (Concept C Physical Tablet Cards) -->
+          <!-- TAB 1: ASSIGNED DEVICES (Active Compact Ledger Cards) -->
           <div v-if="activeTab === 'stations'" class="flex flex-col gap-3">
             <!-- Header bar with Quick Add shortcut -->
             <div class="flex items-center justify-between text-[11.5px] text-neutral-400 px-0.5">
-              <span>Physical Scanner Devices ({{ accounts.length }})</span>
+              <span>Active Scanner Devices ({{ accounts.length }})</span>
               <div class="flex items-center gap-3">
                 <button
                   type="button"
@@ -152,7 +152,7 @@
               <div class="size-11 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-400">
                 <Tablet class="w-5 h-5" />
               </div>
-              <p class="text-[13.5px] text-neutral-800 font-medium">No scanner devices added yet</p>
+              <p class="text-[13.5px] text-neutral-800 font-medium">No scanner devices assigned yet</p>
               <p class="text-[12px] text-neutral-400 max-w-[280px]">Add physical tablets and assign the staff members (PIC) in charge of scanning at each gate.</p>
               <button
                 type="button"
@@ -164,157 +164,160 @@
               </button>
             </div>
 
-            <!-- Concept C Visual Device Cards Grid -->
-            <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Compact Active Device Cards Grid -->
+            <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <div
                 v-for="a in accounts"
                 :key="a.id"
-                class="rounded-[14px] border border-black/10 bg-white p-3.5 shadow-2xs hover:border-black/25 transition-all flex flex-col justify-between gap-3"
+                class="rounded-[12px] border border-black/10 bg-white p-3.5 hover:border-black/25 transition-all flex flex-col justify-between gap-3 shadow-2xs group relative"
               >
-                <!-- Card Top: Tablet Icon + Device Name + Status + More Menu -->
+                <!-- Top Row: Device Name & Store Branch + Status & Menu -->
                 <div class="flex items-start justify-between gap-2">
-                  <div class="flex items-center gap-2.5 min-w-0 flex-1">
-                    <div class="size-[36px] rounded-[10px] bg-neutral-100 flex items-center justify-center text-neutral-700 shrink-0">
-                      <Tablet class="w-4 h-4" />
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <h4 class="text-[13.5px] font-semibold text-black tracking-tight">{{ parseDeviceName(a) }}</h4>
+                      <span
+                        v-if="parseBranch(a)"
+                        class="px-1.5 py-0.5 rounded-[4px] bg-neutral-100 text-[10.5px] font-medium text-neutral-600 truncate max-w-[130px]"
+                      >
+                        {{ parseBranch(a) }}
+                      </span>
                     </div>
-                    <div class="min-w-0 flex-1">
-                      <div class="flex items-center gap-1.5">
-                        <h4 class="text-[13.5px] font-semibold text-black truncate">{{ a.deviceLabel || a.username }}</h4>
-                        <span class="inline-flex items-center gap-1 text-[10.5px]" :class="statusClass(a)">
-                          <span class="size-1.5 rounded-full" :class="statusDotClass(a)" />
-                          <span>{{ statusLabel(a) }}</span>
-                        </span>
-                      </div>
 
-                      <!-- Assigned PIC Display or Inline Edit -->
-                      <div v-if="editingPicId === a.id" class="flex items-center gap-1 mt-1">
-                        <input
-                          v-model="editPicName"
-                          type="text"
-                          placeholder="PIC Name"
-                          class="h-[24px] px-1.5 rounded-[4px] border border-black/20 text-[11px] outline-none w-full"
-                          @keydown.enter="savePic(a)"
-                        />
-                        <button type="button" @click="savePic(a)" class="h-[24px] px-2 rounded-[4px] bg-black text-white text-[10.5px] font-medium cursor-pointer">OK</button>
-                        <button type="button" @click="editingPicId = null" class="h-[24px] px-1.5 rounded-[4px] border text-[10.5px] cursor-pointer">✕</button>
-                      </div>
-                      <p v-else class="text-[11.5px] text-neutral-500 mt-0.5 flex items-center gap-1 truncate">
-                        <User class="w-3 h-3 text-neutral-400 shrink-0" />
-                        <span class="truncate">PIC: <strong class="text-neutral-800 font-medium">{{ a.username }}</strong></span>
-                      </p>
+                    <!-- PIC Name (or Inline Edit PIC) -->
+                    <div v-if="editingPicId === a.id" class="flex items-center gap-1 mt-1.5" @click.stop>
+                      <input
+                        v-model="editPicName"
+                        type="text"
+                        placeholder="PIC Name"
+                        class="h-[26px] px-2 rounded-[5px] border border-black/25 text-[11.5px] outline-none w-full bg-white"
+                        @keydown.enter="savePic(a)"
+                      />
+                      <button type="button" @click="savePic(a)" class="h-[26px] px-2 rounded-[5px] bg-black text-white text-[11px] font-medium cursor-pointer">Save</button>
+                      <button type="button" @click="editingPicId = null" class="h-[26px] px-2 rounded-[5px] border text-[11px] cursor-pointer">✕</button>
                     </div>
+                    <p v-else class="text-[12px] text-neutral-500 mt-1 flex items-center gap-1.5 truncate">
+                      <span class="text-neutral-400">PIC:</span>
+                      <strong class="text-neutral-900 font-medium truncate">{{ a.username }}</strong>
+                    </p>
                   </div>
 
-                  <!-- 3-Dot Overflow Menu -->
-                  <div class="relative shrink-0 overflow-menu-container">
-                    <button
-                      type="button"
-                      @click.stop="openMenuId = openMenuId === a.id ? null : a.id"
-                      class="size-[26px] rounded-[6px] hover:bg-neutral-100 flex items-center justify-center text-neutral-400 hover:text-black cursor-pointer transition-colors"
-                      title="Options"
-                    >
-                      <MoreHorizontal class="w-3.5 h-3.5" />
-                    </button>
-
-                    <!-- Dropdown Popover -->
-                    <div
-                      v-if="openMenuId === a.id"
-                      class="absolute right-0 top-[calc(100%+4px)] z-30 w-[170px] bg-white border border-black/10 rounded-[10px] shadow-[0_12px_30px_rgba(0,0,0,0.12)] p-1 flex flex-col gap-0.5 text-[11.5px] animate-apple-pop"
-                    >
-                      <button
-                        type="button"
-                        @click="startEditPic(a); openMenuId = null"
-                        class="w-full px-2.5 py-1.5 rounded-[6px] hover:bg-neutral-100 text-left flex items-center gap-2 text-neutral-700 hover:text-black cursor-pointer"
-                      >
-                        <Edit3 class="w-3.5 h-3.5 text-neutral-400" />
-                        <span>Edit PIC Handler</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        @click="extendHours(a, 8); openMenuId = null"
-                        class="w-full px-2.5 py-1.5 rounded-[6px] hover:bg-neutral-100 text-left flex items-center gap-2 text-neutral-700 hover:text-black cursor-pointer"
-                      >
-                        <Clock class="w-3.5 h-3.5 text-neutral-400" />
-                        <span>Extend +8 Hours</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        @click="resetPassword(a); openMenuId = null"
-                        class="w-full px-2.5 py-1.5 rounded-[6px] hover:bg-neutral-100 text-left flex items-center gap-2 text-neutral-700 hover:text-black cursor-pointer"
-                      >
-                        <KeyRound class="w-3.5 h-3.5 text-neutral-400" />
-                        <span>Reset Passcode</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        @click="toggleSuspend(a); openMenuId = null"
-                        class="w-full px-2.5 py-1.5 rounded-[6px] hover:bg-neutral-100 text-left flex items-center gap-2 text-neutral-700 hover:text-black cursor-pointer"
-                      >
-                        <Shield class="w-3.5 h-3.5 text-neutral-400" />
-                        <span>{{ a.status === 'suspended' ? 'Activate Device' : 'Suspend Tablet' }}</span>
-                      </button>
-
-                      <div class="h-px bg-black/5 my-0.5" />
-
-                      <button
-                        type="button"
-                        @click="remove(a); openMenuId = null"
-                        class="w-full px-2.5 py-1.5 rounded-[6px] hover:bg-oxblood-50 text-left flex items-center gap-2 text-oxblood-700 cursor-pointer"
-                      >
-                        <Trash2 class="w-3.5 h-3.5 text-oxblood-600" />
-                        <span>Remove Device</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Card Center: Tactile Gate Role Switcher -->
-                <div class="flex flex-col gap-1">
-                  <div class="flex items-center justify-between text-[10.5px] text-neutral-400">
-                    <span>Gate Mode</span>
-                    <span class="font-medium" :class="a.stationMode === 'in' ? 'text-moss-700' : 'text-neutral-700'">
-                      {{ a.stationMode === 'in' ? 'Check-in only' : a.stationMode === 'out' ? 'Check-out only' : 'Flexible In & Out' }}
+                  <!-- Status & 3-Dot Menu -->
+                  <div class="flex items-center gap-1 shrink-0">
+                    <span class="inline-flex items-center gap-1 text-[11px] font-medium" :class="statusClass(a)">
+                      <span class="size-1.5 rounded-full" :class="statusDotClass(a)" />
+                      <span>{{ statusLabel(a) }}</span>
                     </span>
-                  </div>
-                  <div class="grid grid-cols-3 gap-1 p-0.5 rounded-[7px] bg-neutral-100 text-[11px] font-medium">
-                    <button
-                      type="button"
-                      @click="updateStationMode(a, 'in')"
-                      class="h-[28px] rounded-[5px] transition-all flex items-center justify-center gap-1 cursor-pointer"
-                      :class="a.stationMode === 'in' ? 'bg-white text-black shadow-2xs font-semibold' : 'text-neutral-500 hover:text-black'"
-                    >
-                      <LogIn class="w-3 h-3" :class="a.stationMode === 'in' ? 'text-moss-700' : 'text-neutral-400'" />
-                      <span>Entrance</span>
-                    </button>
-                    <button
-                      type="button"
-                      @click="updateStationMode(a, 'out')"
-                      class="h-[28px] rounded-[5px] transition-all flex items-center justify-center gap-1 cursor-pointer"
-                      :class="a.stationMode === 'out' ? 'bg-white text-black shadow-2xs font-semibold' : 'text-neutral-500 hover:text-black'"
-                    >
-                      <LogOut class="w-3 h-3" :class="a.stationMode === 'out' ? 'text-neutral-800' : 'text-neutral-400'" />
-                      <span>Exit</span>
-                    </button>
-                    <button
-                      type="button"
-                      @click="updateStationMode(a, 'both')"
-                      class="h-[28px] rounded-[5px] transition-all flex items-center justify-center gap-1 cursor-pointer"
-                      :class="a.stationMode === 'both' ? 'bg-white text-black shadow-2xs font-semibold' : 'text-neutral-500 hover:text-black'"
-                    >
-                      <ArrowLeftRight class="w-3 h-3" :class="a.stationMode === 'both' ? 'text-neutral-800' : 'text-neutral-400'" />
-                      <span>Dual</span>
-                    </button>
+
+                    <!-- 3-Dot Menu -->
+                    <div class="relative overflow-menu-container">
+                      <button
+                        type="button"
+                        @click.stop="openMenuId = openMenuId === a.id ? null : a.id"
+                        class="size-[24px] rounded-[5px] hover:bg-neutral-100 flex items-center justify-center text-neutral-400 hover:text-black cursor-pointer transition-colors"
+                        title="More options"
+                      >
+                        <MoreHorizontal class="w-3.5 h-3.5" />
+                      </button>
+
+                      <!-- Dropdown Popover -->
+                      <div
+                        v-if="openMenuId === a.id"
+                        class="absolute right-0 top-[calc(100%+4px)] z-30 w-[175px] bg-white border border-black/10 rounded-[10px] shadow-[0_12px_30px_rgba(0,0,0,0.12)] p-1 flex flex-col gap-0.5 text-[11.5px] animate-apple-pop"
+                        @click.stop
+                      >
+                        <button
+                          type="button"
+                          @click="startEditPic(a); openMenuId = null"
+                          class="w-full px-2.5 py-1.5 rounded-[6px] hover:bg-neutral-100 text-left flex items-center gap-2 text-neutral-700 hover:text-black cursor-pointer"
+                        >
+                          <Edit3 class="w-3.5 h-3.5 text-neutral-400" />
+                          <span>Edit PIC Handler</span>
+                        </button>
+
+                        <div class="h-px bg-black/5 my-0.5" />
+                        <p class="px-2.5 pt-1 text-[9.5px] uppercase tracking-normal text-neutral-400 font-medium">Switch Role</p>
+                        <button
+                          type="button"
+                          @click="updateStationMode(a, 'in'); openMenuId = null"
+                          class="w-full px-2.5 py-1 rounded-[5px] hover:bg-neutral-100 text-left flex items-center justify-between text-[11px] cursor-pointer"
+                          :class="a.stationMode === 'in' ? 'font-semibold text-black' : 'text-neutral-600'"
+                        >
+                          <span>Entrance (In)</span>
+                          <Check v-if="a.stationMode === 'in'" class="w-3 h-3 text-black" />
+                        </button>
+                        <button
+                          type="button"
+                          @click="updateStationMode(a, 'out'); openMenuId = null"
+                          class="w-full px-2.5 py-1 rounded-[5px] hover:bg-neutral-100 text-left flex items-center justify-between text-[11px] cursor-pointer"
+                          :class="a.stationMode === 'out' ? 'font-semibold text-black' : 'text-neutral-600'"
+                        >
+                          <span>Exit (Out)</span>
+                          <Check v-if="a.stationMode === 'out'" class="w-3 h-3 text-black" />
+                        </button>
+                        <button
+                          type="button"
+                          @click="updateStationMode(a, 'both'); openMenuId = null"
+                          class="w-full px-2.5 py-1 rounded-[5px] hover:bg-neutral-100 text-left flex items-center justify-between text-[11px] cursor-pointer"
+                          :class="a.stationMode === 'both' ? 'font-semibold text-black' : 'text-neutral-600'"
+                        >
+                          <span>Dual (In & Out)</span>
+                          <Check v-if="a.stationMode === 'both'" class="w-3 h-3 text-black" />
+                        </button>
+
+                        <div class="h-px bg-black/5 my-0.5" />
+
+                        <button
+                          type="button"
+                          @click="extendHours(a, 8); openMenuId = null"
+                          class="w-full px-2.5 py-1.5 rounded-[6px] hover:bg-neutral-100 text-left flex items-center gap-2 text-neutral-700 hover:text-black cursor-pointer"
+                        >
+                          <Clock class="w-3.5 h-3.5 text-neutral-400" />
+                          <span>Extend +8 Hours</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          @click="resetPassword(a); openMenuId = null"
+                          class="w-full px-2.5 py-1.5 rounded-[6px] hover:bg-neutral-100 text-left flex items-center gap-2 text-neutral-700 hover:text-black cursor-pointer"
+                        >
+                          <KeyRound class="w-3.5 h-3.5 text-neutral-400" />
+                          <span>Reset Passcode</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          @click="toggleSuspend(a); openMenuId = null"
+                          class="w-full px-2.5 py-1.5 rounded-[6px] hover:bg-neutral-100 text-left flex items-center gap-2 text-neutral-700 hover:text-black cursor-pointer"
+                        >
+                          <Shield class="w-3.5 h-3.5 text-neutral-400" />
+                          <span>{{ a.status === 'suspended' ? 'Activate Device' : 'Suspend Tablet' }}</span>
+                        </button>
+
+                        <div class="h-px bg-black/5 my-0.5" />
+
+                        <button
+                          type="button"
+                          @click="remove(a); openMenuId = null"
+                          class="w-full px-2.5 py-1.5 rounded-[6px] hover:bg-oxblood-50 text-left flex items-center gap-2 text-oxblood-700 cursor-pointer"
+                        >
+                          <Trash2 class="w-3.5 h-3.5 text-oxblood-600" />
+                          <span>Remove Device</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <!-- Card Bottom: Shift Validity & Get Passcode -->
+                <!-- Bottom Row: Role Badge + Shift Validity + Passcode Action -->
                 <div class="flex items-center justify-between pt-2 border-t border-black/5 text-[11px]">
-                  <div class="flex items-center gap-1 text-neutral-400 truncate">
-                    <Clock class="w-3 h-3 shrink-0" />
-                    <span class="truncate">{{ isExpired(a) ? `Expired ${formatAgo(a.expiresAt)}` : `Until ${formatWhen(a.expiresAt)}` }}</span>
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="px-2 py-0.5 rounded-[5px] text-[10.5px] font-medium" :class="roleBadgeClass(a.stationMode)">
+                      {{ roleLabel(a.stationMode) }}
+                    </span>
+                    <span class="text-neutral-400 truncate text-[11px]" :title="a.expiresAt ? formatWhen(a.expiresAt) : ''">
+                      {{ isExpired(a) ? `Expired` : `Until ${formatWhen(a.expiresAt)}` }}
+                    </span>
                   </div>
 
                   <button
@@ -331,77 +334,123 @@
             </div>
           </div>
 
-          <!-- TAB 2: ADD DEVICE & ASSIGN PIC (Focused Concept C Form) -->
+          <!-- TAB 2: ADD DEVICE & ASSIGN PIC (3-Step Guided Form) -->
           <form v-else-if="activeTab === 'create'" class="flex flex-col gap-4 py-1" @submit.prevent="create">
             <div>
-              <p class="text-[13.5px] font-medium text-black">Add Scanner Device</p>
-              <p class="text-[11.5px] text-neutral-500 mt-0.5">Register a physical tablet station and assign the staff member handling it.</p>
+              <p class="text-[13.5px] font-medium text-black">Assign New Door PIC</p>
+              <p class="text-[11.5px] text-neutral-500 mt-0.5">Register a scanner tablet and assign field staff access with station role.</p>
             </div>
 
-            <!-- Field 1: Device Name with Quick Suggestions -->
+            <!-- Step 1: Device Selection (Tab / iPad) with Auto-Numbering -->
             <div class="flex flex-col gap-1.5">
-              <div class="flex items-center justify-between">
-                <span class="text-[12px] font-medium text-neutral-800">Device / Tablet Station Name</span>
-                <div class="flex items-center gap-1">
+              <label class="text-[11.5px] uppercase tracking-normal text-neutral-400 font-medium">1. Select Device</label>
+              <div class="flex items-center gap-2.5">
+                <!-- Segmented Device Type Selector -->
+                <div class="inline-flex p-1 rounded-[9px] bg-neutral-100 border border-black/5">
                   <button
-                    v-for="sug in deviceSuggestions"
-                    :key="sug"
                     type="button"
-                    @click="deviceLabel = sug"
-                    class="text-[10.5px] px-1.5 py-0.5 rounded-[4px] bg-neutral-100 hover:bg-neutral-200 text-neutral-600 cursor-pointer"
+                    @click="selectDeviceType('tab')"
+                    class="h-[32px] px-4 rounded-[7px] text-[12.5px] font-medium transition-all cursor-pointer flex items-center gap-1.5"
+                    :class="selectedDeviceType === 'tab' ? 'bg-white text-black shadow-2xs font-semibold' : 'text-neutral-500 hover:text-black'"
                   >
-                    {{ sug }}
+                    <Tablet class="w-3.5 h-3.5" />
+                    <span>Tab</span>
+                  </button>
+                  <button
+                    type="button"
+                    @click="selectDeviceType('ipad')"
+                    class="h-[32px] px-4 rounded-[7px] text-[12.5px] font-medium transition-all cursor-pointer flex items-center gap-1.5"
+                    :class="selectedDeviceType === 'ipad' ? 'bg-white text-black shadow-2xs font-semibold' : 'text-neutral-500 hover:text-black'"
+                  >
+                    <Tablet class="w-3.5 h-3.5" />
+                    <span>iPad</span>
                   </button>
                 </div>
+
+                <!-- Auto-Assigned Device Tag Display with Adjuster -->
+                <div class="flex-1 h-[40px] px-3.5 rounded-[9px] bg-neutral-50 border border-black/10 flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="text-[13px] font-semibold text-black tracking-tight">{{ deviceTag }}</span>
+                    <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-black/5 text-neutral-600 font-medium">Auto-numbered</span>
+                  </div>
+
+                  <div class="flex items-center gap-1">
+                    <button
+                      type="button"
+                      @click="deviceNumber = Math.max(1, deviceNumber - 1)"
+                      class="size-[22px] rounded-[5px] hover:bg-black/5 flex items-center justify-center text-neutral-600 font-medium cursor-pointer text-[12px]"
+                      title="Decrease device number"
+                    >
+                      –
+                    </button>
+                    <span class="font-mono text-[11px] text-neutral-400 px-0.5">#{{ deviceNumber }}</span>
+                    <button
+                      type="button"
+                      @click="deviceNumber++"
+                      class="size-[22px] rounded-[5px] hover:bg-black/5 flex items-center justify-center text-neutral-600 font-medium cursor-pointer text-[12px]"
+                      title="Increase device number"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
               </div>
-              <input
-                v-model="deviceLabel"
-                type="text"
-                autocomplete="off"
-                placeholder="e.g. Tablet #1, North Gate Tab, VIP Station"
-                class="h-[38px] px-3.5 rounded-[8px] bg-neutral-50 hover:bg-white focus:bg-white border border-black/15 focus:border-black text-[13px] outline-none transition-all"
-              />
             </div>
 
-            <!-- Field 2: Assigned PIC (Handler) -->
-            <label class="flex flex-col gap-1.5">
-              <span class="text-[12px] font-medium text-neutral-800">Assigned Staff Member (PIC)</span>
-              <input
-                v-model="username"
-                type="text"
-                autocomplete="off"
-                placeholder="e.g. Budi Santoso, Guard Andi, Siti"
-                class="h-[38px] px-3.5 rounded-[8px] bg-neutral-50 hover:bg-white focus:bg-white border border-black/15 focus:border-black text-[13px] outline-none transition-all"
-              />
-            </label>
+            <!-- Step 2: Assign Staff PIC Name & Store Branch Placeholders -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div class="flex flex-col gap-1.5">
+                <label class="text-[11.5px] uppercase tracking-normal text-neutral-400 font-medium">2. Staff PIC Name *</label>
+                <input
+                  v-model="username"
+                  type="text"
+                  required
+                  autocomplete="off"
+                  placeholder="Staff PIC Name (e.g. Budi Santoso)"
+                  class="h-[38px] px-3.5 rounded-[8px] bg-neutral-50 hover:bg-white focus:bg-white border border-black/15 focus:border-black text-[13px] outline-none transition-all"
+                />
+              </div>
 
-            <!-- Field 3: Station Role -->
+              <div class="flex flex-col gap-1.5">
+                <label class="text-[11.5px] uppercase tracking-normal text-neutral-400 font-medium">Store Branch / Gate</label>
+                <input
+                  v-model="storeBranch"
+                  type="text"
+                  autocomplete="off"
+                  placeholder="Store Branch (e.g. Grand Indonesia)"
+                  class="h-[38px] px-3.5 rounded-[8px] bg-neutral-50 hover:bg-white focus:bg-white border border-black/15 focus:border-black text-[13px] outline-none transition-all"
+                />
+              </div>
+            </div>
+
+            <!-- Step 3: Role & Shift Validity Selection Bars -->
             <div class="flex flex-col gap-1.5">
-              <span class="text-[12px] font-medium text-neutral-800">Station Role</span>
-              <div class="grid grid-cols-3 gap-2">
+              <label class="text-[11.5px] uppercase tracking-normal text-neutral-400 font-medium">3. Station Role</label>
+              <!-- Role Selection Bar -->
+              <div class="grid grid-cols-3 gap-1.5 p-1 rounded-[9px] bg-neutral-100 border border-black/5">
                 <button
                   type="button"
                   @click="stationMode = 'in'"
-                  class="h-[36px] rounded-[8px] border text-[12px] font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-all"
-                  :class="stationMode === 'in' ? 'bg-black text-white border-black shadow-2xs font-semibold' : 'bg-neutral-50 text-neutral-600 border-black/10 hover:border-black/25'"
+                  class="h-[34px] rounded-[7px] text-[12px] font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+                  :class="stationMode === 'in' ? 'bg-black text-white shadow-2xs font-semibold' : 'text-neutral-500 hover:text-black'"
                 >
                   <LogIn class="w-3.5 h-3.5" />
-                  <span>Entrance (In)</span>
+                  <span>Entrance</span>
                 </button>
                 <button
                   type="button"
                   @click="stationMode = 'out'"
-                  class="h-[36px] rounded-[8px] border text-[12px] font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-all"
-                  :class="stationMode === 'out' ? 'bg-black text-white border-black shadow-2xs font-semibold' : 'bg-neutral-50 text-neutral-600 border-black/10 hover:border-black/25'"
+                  class="h-[34px] rounded-[7px] text-[12px] font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+                  :class="stationMode === 'out' ? 'bg-black text-white shadow-2xs font-semibold' : 'text-neutral-500 hover:text-black'"
                 >
                   <LogOut class="w-3.5 h-3.5" />
-                  <span>Exit (Out)</span>
+                  <span>Exit</span>
                 </button>
                 <button
                   type="button"
                   @click="stationMode = 'both'"
-                  class="h-[36px] rounded-[8px] border text-[12px] font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-all"
-                  :class="stationMode === 'both' ? 'bg-black text-white border-black shadow-2xs font-semibold' : 'bg-neutral-50 text-neutral-600 border-black/10 hover:border-black/25'"
+                  class="h-[34px] rounded-[7px] text-[12px] font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+                  :class="stationMode === 'both' ? 'bg-black text-white shadow-2xs font-semibold' : 'text-neutral-500 hover:text-black'"
                 >
                   <ArrowLeftRight class="w-3.5 h-3.5" />
                   <span>Dual (In & Out)</span>
@@ -409,49 +458,41 @@
               </div>
             </div>
 
-            <!-- Field 4: Shift Validity Duration (Smart Default) -->
-            <div class="flex items-center justify-between p-3 rounded-[8px] bg-neutral-50 border border-black/5 text-[12px]">
-              <div class="flex items-center gap-2">
-                <Clock class="w-3.5 h-3.5 text-neutral-500" />
-                <span class="text-neutral-600">Shift Validity:</span>
-                <span class="font-medium text-black">{{ shiftDurationSummary }}</span>
+            <!-- Shift Validity Selection Bar -->
+            <div class="flex flex-col gap-1.5">
+              <div class="flex items-center justify-between">
+                <label class="text-[11.5px] uppercase tracking-normal text-neutral-400 font-medium">Shift Validity</label>
+                <span class="text-[11px] text-neutral-500 font-normal">{{ shiftDurationSummary }}</span>
               </div>
-              <button
-                type="button"
-                @click="showCustomDuration = !showCustomDuration"
-                class="text-[11.5px] text-neutral-500 hover:text-black underline cursor-pointer"
-              >
-                {{ showCustomDuration ? 'Default (Today)' : 'Change' }}
-              </button>
-            </div>
-
-            <!-- Optional Custom Presets -->
-            <div v-if="showCustomDuration" class="flex flex-col gap-2 p-3 rounded-[8px] border border-black/10 bg-white">
-              <div class="flex items-center gap-1.5 flex-wrap">
+              <!-- Shift Validity Selection Bar -->
+              <div class="grid grid-cols-4 gap-1 p-1 rounded-[9px] bg-neutral-100 border border-black/5">
                 <button
-                  v-for="p in presets"
+                  v-for="p in shiftPresets"
                   :key="p.id"
                   type="button"
                   @click="applyPreset(p.id)"
-                  class="h-[26px] px-2 rounded-[5px] text-[11px] font-medium cursor-pointer border transition-colors"
-                  :class="selectedPreset === p.id ? 'bg-black text-white border-black' : 'bg-white text-neutral-600 border-black/15 hover:border-black/30'"
+                  class="h-[32px] rounded-[7px] text-[11.5px] font-medium transition-all cursor-pointer flex items-center justify-center"
+                  :class="selectedPreset === p.id ? 'bg-black text-white shadow-2xs font-semibold' : 'text-neutral-500 hover:text-black'"
                 >
                   {{ p.label }}
                 </button>
               </div>
-              <input
-                v-if="selectedPreset === 'custom'"
-                v-model="customExpires"
-                type="datetime-local"
-                class="h-[32px] px-2.5 rounded-[6px] border border-black/15 text-[11.5px] outline-none focus:border-black"
-              />
+
+              <!-- Custom datetime picker if 'custom' selected -->
+              <div v-if="selectedPreset === 'custom'" class="mt-1 animate-apple-pop">
+                <input
+                  v-model="customExpires"
+                  type="datetime-local"
+                  class="h-[34px] w-full px-3 rounded-[7px] border border-black/15 text-[12px] outline-none focus:border-black bg-white"
+                />
+              </div>
             </div>
 
             <p v-if="error" class="text-[12px] text-oxblood-700 font-medium">{{ error }}</p>
 
-            <!-- Submit -->
+            <!-- Submit Bar -->
             <div class="flex items-center justify-between gap-3 pt-2 border-t border-black/5">
-              <p class="text-[11.5px] text-neutral-400">Passcode is created automatically.</p>
+              <p class="text-[11.5px] text-neutral-400">Passcode will be generated automatically.</p>
               <button
                 type="submit"
                 :disabled="busy || !username.trim()"
@@ -468,7 +509,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import {
   X,
   Copy,
@@ -520,21 +561,19 @@ const openMenuId = ref<string | null>(null);
 const credentials = ref<CredentialsState | null>(null);
 
 // Form state
-const deviceLabel = ref('Tablet #1');
+const selectedDeviceType = ref<'tab' | 'ipad'>('tab');
+const deviceNumber = ref<number>(1);
+const storeBranch = ref('');
 const username = ref('');
 const stationMode = ref<'in' | 'out' | 'both'>('in');
-const showCustomDuration = ref(false);
-
-const deviceSuggestions = ['Tablet #1', 'Tablet #2', 'Tablet #3', 'VIP Gate', 'North Gate'];
 
 // Inline edit state
 const editingPicId = ref<string | null>(null);
 const editPicName = ref('');
 
-type ShiftPreset = 'eod' | '4h' | '8h' | '12h' | 'custom';
-const presets: { id: ShiftPreset; label: string }[] = [
-  { id: 'eod', label: 'Today (Until 23:59)' },
-  { id: '4h', label: '4 Hours' },
+type ShiftPreset = 'eod' | '8h' | '12h' | 'custom';
+const shiftPresets: { id: ShiftPreset; label: string }[] = [
+  { id: 'eod', label: 'Today (23:59)' },
   { id: '8h', label: '8 Hours' },
   { id: '12h', label: '12 Hours' },
   { id: 'custom', label: 'Custom' }
@@ -545,13 +584,71 @@ const customExpires = ref(getPresetExpiry('eod'));
 
 const loginUrl = computed(() => `${window.location.origin}/login`);
 
+// Automatic device numbering logic
+function getNextDeviceNumber(type: 'tab' | 'ipad'): number {
+  const prefix = type === 'tab' ? 'tab' : 'ipad';
+  let maxNum = 0;
+  for (const a of accounts.value) {
+    const raw = (a.deviceLabel || a.username || '').toLowerCase();
+    if (raw.includes(prefix)) {
+      const match = raw.match(/\d+/);
+      if (match) {
+        const n = parseInt(match[0], 10);
+        if (!isNaN(n) && n > maxNum) maxNum = n;
+      } else {
+        if (maxNum < 1) maxNum = 1;
+      }
+    }
+  }
+  return maxNum + 1;
+}
+
+function selectDeviceType(type: 'tab' | 'ipad') {
+  selectedDeviceType.value = type;
+  deviceNumber.value = getNextDeviceNumber(type);
+}
+
+const deviceTag = computed(() => {
+  return selectedDeviceType.value === 'tab' ? `Tab ${deviceNumber.value}` : `iPad ${deviceNumber.value}`;
+});
+
+const fullDeviceLabel = computed(() => {
+  const branch = storeBranch.value.trim();
+  return branch ? `${deviceTag.value} · ${branch}` : deviceTag.value;
+});
+
+function parseDeviceName(a: GateAccount): string {
+  const raw = a.deviceLabel || a.username || 'Device';
+  if (raw.includes(' · ')) return raw.split(' · ')[0];
+  if (raw.includes(' - ')) return raw.split(' - ')[0];
+  return raw;
+}
+
+function parseBranch(a: GateAccount): string {
+  const raw = a.deviceLabel || '';
+  if (raw.includes(' · ')) return raw.split(' · ').slice(1).join(' · ');
+  if (raw.includes(' - ')) return raw.split(' - ').slice(1).join(' - ');
+  return '';
+}
+
+function roleLabel(mode: string): string {
+  if (mode === 'in') return 'Entrance';
+  if (mode === 'out') return 'Exit';
+  return 'Dual (In & Out)';
+}
+
+function roleBadgeClass(mode: string): string {
+  if (mode === 'in') return 'bg-moss-50 text-moss-800 border border-moss-200/60';
+  if (mode === 'out') return 'bg-amber-50 text-amber-800 border border-amber-200/60';
+  return 'bg-neutral-100 text-neutral-800 border border-black/5';
+}
+
 function getPresetExpiry(preset: ShiftPreset): string {
   const now = new Date();
   const pad = (n: number) => String(n).padStart(2, '0');
   const toInput = (d: Date) =>
     `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
-  if (preset === '4h') return toInput(new Date(now.getTime() + 4 * 3600 * 1000));
   if (preset === '8h') return toInput(new Date(now.getTime() + 8 * 3600 * 1000));
   if (preset === '12h') return toInput(new Date(now.getTime() + 12 * 3600 * 1000));
   if (preset === 'eod') {
@@ -571,7 +668,7 @@ function applyPreset(preset: ShiftPreset) {
 }
 
 const shiftDurationSummary = computed(() => {
-  if (selectedPreset.value === 'eod' && !showCustomDuration.value) {
+  if (selectedPreset.value === 'eod') {
     return 'Today (until 23:59)';
   }
   const d = new Date(customExpires.value);
@@ -622,15 +719,19 @@ async function load() {
     const json = await call(`/api/gate-accounts?project=${encodeURIComponent(props.projectId)}`);
     accounts.value = json.data;
     error.value = '';
-    // Auto increment suggestion for next device
-    const nextNum = accounts.value.length + 1;
-    deviceLabel.value = `Tablet #${nextNum}`;
+    deviceNumber.value = getNextDeviceNumber(selectedDeviceType.value);
   } catch (err: any) {
     error.value = err?.message || 'Could not load scanner devices.';
   } finally {
     loading.value = false;
   }
 }
+
+watch(activeTab, (tab) => {
+  if (tab === 'create') {
+    deviceNumber.value = getNextDeviceNumber(selectedDeviceType.value);
+  }
+});
 
 async function create() {
   if (busy.value || !username.value.trim()) return;
@@ -640,7 +741,7 @@ async function create() {
     const at = new Date(customExpires.value);
     if (Number.isNaN(at.getTime())) throw new Error('Set an expiry date and time.');
     const picName = username.value.trim();
-    const devName = deviceLabel.value.trim() || `Tablet #${accounts.value.length + 1}`;
+    const devName = fullDeviceLabel.value;
     
     const json = await call('/api/gate-accounts', {
       method: 'POST',
@@ -660,7 +761,7 @@ async function create() {
       reset: false
     };
     username.value = '';
-    showCustomDuration.value = false;
+    storeBranch.value = '';
     applyPreset('eod');
     await load();
     activeTab.value = 'stations';
