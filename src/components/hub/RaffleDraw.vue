@@ -372,23 +372,34 @@
               <!-- Radial Core Pulsing Aura -->
               <div class="relative flex items-center justify-center">
                 <div class="size-28 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center animate-ping opacity-30 absolute pointer-events-none" />
-                <div class="size-20 rounded-full bg-white/10 border border-white/20 flex items-center justify-center shadow-[0_0_50px_rgba(255,255,255,0.2)]">
-                  <Sparkles class="w-8 h-8 text-white animate-spin" />
+                <div 
+                  class="size-20 rounded-full border flex items-center justify-center transition-all duration-300"
+                  :class="isSuspensePhase ? 'bg-white text-black border-white shadow-[0_0_60px_rgba(255,255,255,0.8)]' : 'bg-white/10 border-white/20 text-white shadow-[0_0_50px_rgba(255,255,255,0.2)]'"
+                >
+                  <Sparkles class="w-8 h-8 transition-transform duration-300" :class="isSuspensePhase ? 'scale-110' : 'animate-spin'" />
                 </div>
               </div>
 
-              <div class="flex flex-col items-center gap-3 max-w-2xl">
-                <span class="px-3 py-1 rounded-full bg-white/10 border border-white/15 text-[11px] font-medium text-white/80 uppercase tracking-normal">
-                  Cryptographic Random Selection
+              <div class="flex flex-col items-center gap-3 max-w-2xl transition-all duration-300" :class="isSuspensePhase ? 'scale-[1.03]' : ''">
+                <span 
+                  class="px-3.5 py-1 rounded-full text-[11px] font-medium uppercase tracking-normal transition-all duration-300"
+                  :class="isSuspensePhase 
+                    ? 'bg-white text-black border border-white shadow-[0_0_24px_rgba(255,255,255,0.6)] animate-pulse' 
+                    : 'bg-white/10 border border-white/15 text-white/80'"
+                >
+                  {{ isSuspensePhase ? 'Locking Selection…' : 'Cryptographic Random Selection' }}
                 </span>
                 
                 <!-- Huge Crisp SF Pro Cycling Typography (No monospace) -->
-                <h1 class="text-[44px] sm:text-[68px] md:text-[84px] font-medium tracking-tight text-white leading-none drop-shadow-[0_12px_40px_rgba(255,255,255,0.4)]">
+                <h1 
+                  class="text-[44px] sm:text-[68px] md:text-[84px] font-medium tracking-tight text-white leading-none transition-all duration-200"
+                  :class="isSuspensePhase ? 'drop-shadow-[0_0_60px_rgba(255,255,255,0.7)] scale-[1.02]' : 'drop-shadow-[0_12px_40px_rgba(255,255,255,0.4)]'"
+                >
                   {{ shuffleName }}
                 </h1>
                 
                 <p class="text-[13px] text-white/50 font-light mt-1">
-                  Sampling across {{ eligible.length }} verified candidates...
+                  {{ isSuspensePhase ? 'Verifying candidate cryptographic signature…' : `Sampling across ${eligible.length} verified candidates...` }}
                 </p>
               </div>
             </div>
@@ -624,6 +635,7 @@ const excludePastWinners = ref(true);
 const winnerCount = ref(1);
 const drawn = ref<Submission[]>([]);
 const isDrawing = ref(false);
+const isSuspensePhase = ref(false);
 const isSaving = ref(false);
 const shuffleName = ref('');
 const showInfo = ref(false);
@@ -672,32 +684,27 @@ interface WarpStream {
   speed: number;
 }
 
-interface FoilParticle {
+interface DustMote {
   x: number;
   y: number;
   z: number;
+  size: number;
+  alpha: number;
   vx: number;
   vy: number;
-  vz: number;
-  w: number;
-  h: number;
-  rx: number;
-  ry: number;
-  rz: number;
-  vrx: number;
-  vry: number;
-  vrz: number;
-  colorFront: string;
-  colorBack: string;
+  phase: number;
+  phaseSpeed: number;
 }
 
 let sphereNodes: SphereNode[] = [];
 let warpStreams: WarpStream[] = [];
-let foilParticles: FoilParticle[] = [];
+let dustMotes: DustMote[] = [];
 let sphereAngleY = 0;
 let sphereAngleX = 0;
 let shockwaveRadius = 0;
 let shockwaveAlpha = 0;
+let flareAlpha = 0;
+let spotlightAlpha = 0;
 
 function initSphereNodes() {
   sphereNodes = [];
@@ -727,40 +734,30 @@ function initWarpStreams() {
   }
 }
 
-function triggerPlatinumConfetti() {
-  shockwaveRadius = 10;
-  shockwaveAlpha = 0.9;
-  foilParticles = [];
-
-  const metallicColors = [
-    { front: '#ffffff', back: '#d4d4d8' },
-    { front: '#f4f4f5', back: '#a1a1aa' },
-    { front: '#e4e4e7', back: '#71717a' },
-    { front: '#fafafa', back: '#e2e8f0' },
-  ];
-
-  const count = 150;
+function initDustMotes() {
+  dustMotes = [];
+  const count = 55;
   for (let i = 0; i < count; i++) {
-    const col = metallicColors[Math.floor(Math.random() * metallicColors.length)];
-    foilParticles.push({
-      x: window.innerWidth / 2 + (Math.random() - 0.5) * 320,
-      y: window.innerHeight / 2 - 80,
-      z: Math.random() * 400 - 200,
-      vx: (Math.random() - 0.5) * 20,
-      vy: Math.random() * -16 - 6,
-      vz: (Math.random() - 0.5) * 8,
-      w: Math.random() * 9 + 6,
-      h: Math.random() * 6 + 4,
-      rx: Math.random() * Math.PI * 2,
-      ry: Math.random() * Math.PI * 2,
-      rz: Math.random() * Math.PI * 2,
-      vrx: (Math.random() - 0.5) * 0.2,
-      vry: (Math.random() - 0.5) * 0.25,
-      vrz: (Math.random() - 0.5) * 0.15,
-      colorFront: col.front,
-      colorBack: col.back,
+    dustMotes.push({
+      x: (Math.random() - 0.5) * 520,
+      y: (Math.random() - 0.5) * window.innerHeight * 0.9,
+      z: Math.random() * 400 - 100,
+      size: Math.random() * 1.8 + 0.8,
+      alpha: Math.random() * 0.45 + 0.15,
+      vx: (Math.random() - 0.5) * 0.35,
+      vy: -0.25 - Math.random() * 0.35, // slow upward drift
+      phase: Math.random() * Math.PI * 2,
+      phaseSpeed: 0.02 + Math.random() * 0.025,
     });
   }
+}
+
+function triggerAmbientLightingFlash() {
+  flareAlpha = 1.0;
+  shockwaveRadius = 24;
+  shockwaveAlpha = 0.9;
+  spotlightAlpha = 1.0;
+  initDustMotes();
 }
 
 function startStage3DEngine() {
@@ -820,44 +817,101 @@ function startStage3DEngine() {
         ctx.stroke();
       }
     } 
-    // 3. STATE B: WINNER REVEALED (Shockwave + 3D Platinum Foil)
+    // 3. STATE B: WINNER REVEALED (Volumetric Spotlight, Anamorphic Flare, Shockwave, Shimmering Dust Motes)
     else if (drawn.value.length) {
-      // Shockwave ring
+      // (a) Volumetric Conical Spotlight from Stage Rig
+      if (spotlightAlpha > 0.01) {
+        const topW = 100;
+        const bottomW = Math.min(w * 0.9, 820);
+        const spotGrad = ctx.createLinearGradient(cx, 0, cx, h);
+        spotGrad.addColorStop(0, `rgba(255, 255, 255, ${0.16 * spotlightAlpha})`);
+        spotGrad.addColorStop(0.3, `rgba(255, 255, 255, ${0.08 * spotlightAlpha})`);
+        spotGrad.addColorStop(0.7, `rgba(255, 255, 255, ${0.03 * spotlightAlpha})`);
+        spotGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+        ctx.fillStyle = spotGrad;
+        ctx.beginPath();
+        ctx.moveTo(cx - topW / 2, 0);
+        ctx.lineTo(cx + topW / 2, 0);
+        ctx.lineTo(cx + bottomW / 2, h);
+        ctx.lineTo(cx - bottomW / 2, h);
+        ctx.closePath();
+        ctx.fill();
+
+        // Apex lens aperture flare
+        const apexGlow = ctx.createRadialGradient(cx, 0, 0, cx, 0, 180);
+        apexGlow.addColorStop(0, `rgba(255, 255, 255, ${0.28 * spotlightAlpha})`);
+        apexGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = apexGlow;
+        ctx.beginPath();
+        ctx.arc(cx, 0, 180, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // (b) Dual Optical Shockwave Hairline Rings
       if (shockwaveAlpha > 0.01) {
         ctx.beginPath();
         ctx.arc(cx, cy, shockwaveRadius, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(255, 255, 255, ${shockwaveAlpha})`;
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = `rgba(255, 255, 255, ${shockwaveAlpha * 0.75})`;
+        ctx.lineWidth = 1.5;
         ctx.stroke();
-        shockwaveRadius += (Math.max(w, h) * 0.7 - shockwaveRadius) * 0.08;
+
+        if (shockwaveRadius > 40) {
+          ctx.beginPath();
+          ctx.arc(cx, cy, shockwaveRadius * 0.65, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(255, 255, 255, ${shockwaveAlpha * 0.4})`;
+          ctx.lineWidth = 1.0;
+          ctx.stroke();
+        }
+
+        shockwaveRadius += (Math.max(w, h) * 0.75 - shockwaveRadius) * 0.08;
         shockwaveAlpha *= 0.94;
       }
 
-      // 3D Platinum Foil particles
-      for (const p of foilParticles) {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.z += p.vz;
-        p.vy += 0.32; // gravity
-        p.vx *= 0.985; // drag
-        p.rx += p.vrx;
-        p.ry += p.vry;
-        p.rz += p.vrz;
+      // (c) Horizontal Anamorphic Lens Flare Streak (ARRI Cinema style)
+      if (flareAlpha > 0.01) {
+        const flareW = Math.min(w * 0.95, 960);
+        const streakGrad = ctx.createLinearGradient(cx - flareW / 2, cy, cx + flareW / 2, cy);
+        streakGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+        streakGrad.addColorStop(0.35, `rgba(255, 255, 255, ${0.35 * flareAlpha})`);
+        streakGrad.addColorStop(0.5, `rgba(255, 255, 255, ${0.9 * flareAlpha})`);
+        streakGrad.addColorStop(0.65, `rgba(255, 255, 255, ${0.35 * flareAlpha})`);
+        streakGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
 
-        const scale = fov / (fov + p.z + 200);
-        const px = cx + (p.x - cx) * scale;
-        const py = cy + (p.y - cy) * scale;
+        ctx.fillStyle = streakGrad;
+        ctx.fillRect(cx - flareW / 2, cy - 1, flareW, 2);
 
-        const cosRx = Math.cos(p.rx);
-        const curW = p.w * scale;
-        const curH = p.h * Math.abs(cosRx) * scale;
+        // Central Supernova Glare Core
+        const coreGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 90);
+        coreGlow.addColorStop(0, `rgba(255, 255, 255, ${0.8 * flareAlpha})`);
+        coreGlow.addColorStop(0.5, `rgba(255, 255, 255, ${0.25 * flareAlpha})`);
+        coreGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = coreGlow;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 90, 0, Math.PI * 2);
+        ctx.fill();
 
-        ctx.save();
-        ctx.translate(px, py);
-        ctx.rotate(p.rz);
-        ctx.fillStyle = cosRx > 0 ? p.colorFront : p.colorBack;
-        ctx.fillRect(-curW / 2, -curH / 2, curW, curH);
-        ctx.restore();
+        flareAlpha *= 0.93; // Smooth exponential decay
+      }
+
+      // (d) Floating Atmospheric Dust Motes Shimmering in the Spotlight Beam
+      for (const mote of dustMotes) {
+        mote.x += mote.vx;
+        mote.y += mote.vy;
+        mote.phase += mote.phaseSpeed;
+        if (mote.y < -h / 2) mote.y = h / 2;
+        if (mote.x < -280) mote.x = 280;
+        if (mote.x > 280) mote.x = -280;
+
+        const shimmer = (Math.sin(mote.phase) + 1) / 2;
+        const currentAlpha = mote.alpha * (0.35 + 0.65 * shimmer) * Math.min(1, spotlightAlpha);
+        const px = cx + mote.x;
+        const py = cy + mote.y;
+
+        ctx.fillStyle = `rgba(255, 255, 255, ${currentAlpha})`;
+        ctx.beginPath();
+        ctx.arc(px, py, mote.size, 0, Math.PI * 2);
+        ctx.fill();
       }
     } 
     // 4. STATE C: IDLE (Rotating 3D Architectural Particle Sphere)
@@ -978,7 +1032,7 @@ const winners = computed(() => props.rows.filter(s => normalizeStatus(s.status) 
 
 watch([poolRule, excludePastWinners], () => (drawn.value = []));
 
-let shuffleTimer: ReturnType<typeof setInterval> | null = null;
+let drawTimeout: ReturnType<typeof setTimeout> | null = null;
 
 function draw() {
   const pool = eligible.value;
@@ -987,20 +1041,53 @@ function draw() {
   winnerCount.value = count;
   drawn.value = [];
   isDrawing.value = true;
+  isSuspensePhase.value = false;
 
-  shuffleTimer = setInterval(() => {
-    shuffleName.value = guestName(pool[secureRandomInt(pool.length)]);
-  }, 65);
+  // Pre-sample the exact winners via CSPRNG rejection sampling / Fisher-Yates
+  const selectedWinners = secureSample(pool, count);
+  const targetWinner = selectedWinners[0];
 
-  setTimeout(() => {
-    if (shuffleTimer) clearInterval(shuffleTimer);
-    shuffleTimer = null;
-    drawn.value = secureSample(pool, count);
-    isDrawing.value = false;
-    if (isStageModeOpen.value) {
-      setTimeout(() => triggerPlatinumConfetti(), 40);
+  const startTime = performance.now();
+  const DURATION_MS = 4500;
+  const DECEL_START_MS = 2400;
+  const SUSPENSE_START_MS = 3800;
+
+  if (drawTimeout) clearTimeout(drawTimeout);
+
+  function tick() {
+    const elapsed = performance.now() - startTime;
+
+    if (elapsed >= DURATION_MS) {
+      drawn.value = selectedWinners;
+      isDrawing.value = false;
+      isSuspensePhase.value = false;
+      drawTimeout = null;
+      if (isStageModeOpen.value) {
+        setTimeout(() => triggerAmbientLightingFlash(), 30);
+      }
+      return;
     }
-  }, 1750);
+
+    if (elapsed >= SUSPENSE_START_MS) {
+      isSuspensePhase.value = true;
+      shuffleName.value = guestName(targetWinner);
+      const remaining = DURATION_MS - elapsed;
+      drawTimeout = setTimeout(tick, Math.max(40, remaining));
+      return;
+    }
+
+    shuffleName.value = guestName(pool[secureRandomInt(pool.length)]);
+
+    let nextDelay = 60;
+    if (elapsed > DECEL_START_MS) {
+      const progress = (elapsed - DECEL_START_MS) / (SUSPENSE_START_MS - DECEL_START_MS);
+      nextDelay = Math.round(60 + Math.pow(progress, 2.2) * 360);
+    }
+
+    drawTimeout = setTimeout(tick, nextDelay);
+  }
+
+  tick();
 }
 
 const isWaitlistDraw = computed(() => poolRule.value === 'waitlisted');
@@ -1072,7 +1159,7 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown);
   window.removeEventListener('resize', handleResize);
-  if (shuffleTimer) clearInterval(shuffleTimer);
+  if (drawTimeout) clearTimeout(drawTimeout);
   stopStage3DEngine();
 });
 </script>
