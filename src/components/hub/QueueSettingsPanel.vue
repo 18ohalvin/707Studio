@@ -582,8 +582,8 @@
                       </span>
                     </div>
 
-                    <!-- Subtle 707 studio brandmark -->
-                    <img :src="FIGMA_ASSETS.logo707Brand" alt="707" class="h-3 w-auto object-contain opacity-40" />
+                    <!-- Official 707 brandmark (Solid Black) -->
+                    <img :src="FIGMA_ASSETS.logo707Brand" alt="707" class="h-3.5 w-auto object-contain" />
                   </div>
 
                   <!-- Email Content -->
