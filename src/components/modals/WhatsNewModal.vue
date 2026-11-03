@@ -18,75 +18,75 @@
 
           <!-- Main Active Card (Reference: TwelveLabs clean 28px rounded white card) -->
           <div 
-            class="w-full bg-white rounded-[28px] border border-black/10 shadow-[0_24px_70px_rgba(0,0,0,0.18)] p-6 sm:p-7 flex flex-col gap-4.5 text-black overflow-hidden relative animate-apple-pop"
+            class="w-full bg-white rounded-[28px] border border-black/10 shadow-[0_24px_70px_rgba(0,0,0,0.18)] p-7 sm:p-8 flex flex-col text-black overflow-hidden relative animate-apple-pop"
           >
-            <!-- 1. Hero Feature Visual Stage: Clean Animated Illustration on Warm Pastel Canvas -->
-            <div class="w-full h-[220px] rounded-[20px] relative overflow-hidden border border-black/5 shadow-2xs select-none">
+            <!-- 1. Hero Feature Visual Stage: Monochromatic Minimalist Vector Canvas -->
+            <div class="w-full h-[210px] rounded-[20px] relative overflow-hidden border border-black/8 shadow-2xs select-none bg-[#f6f6f8]">
               
               <!-- Slide Transition for the Animated Illustrations -->
               <Transition name="illustration-fade" mode="out-in">
                 <!-- ============================================================== -->
-                <!-- SLIDE 1: 707 Design Studio 1.5 Architecture (Modular Engine)   -->
+                <!-- SLIDE 1: 707 Design Studio 1.5 Architecture (Monochromatic)    -->
                 <!-- ============================================================== -->
                 <div 
                   v-if="currentStep === 0" 
                   key="slide-0"
-                  class="size-full bg-gradient-to-br from-[#fff7f0] via-[#fdf5f2] to-[#f5f5f7] relative flex items-center justify-center overflow-hidden"
+                  class="size-full bg-gradient-to-b from-[#fbfbfd] via-[#f5f5f7] to-[#ececef] relative flex items-center justify-center overflow-hidden"
                 >
-                  <!-- Ambient soft luminous background glows -->
-                  <div class="absolute -top-12 -left-12 size-40 bg-amber-400/15 rounded-full blur-2xl pointer-events-none" />
-                  <div class="absolute -bottom-10 -right-10 size-40 bg-rose-400/15 rounded-full blur-2xl pointer-events-none" />
+                  <!-- Subtle monochromatic ambient highlights -->
+                  <div class="absolute -top-12 -left-12 size-40 bg-black/[0.03] rounded-full blur-2xl pointer-events-none" />
+                  <div class="absolute -bottom-10 -right-10 size-40 bg-white rounded-full blur-2xl pointer-events-none" />
 
                   <!-- Illustration Scene: Floating Modular System -->
                   <div class="relative w-[340px] h-[190px] flex items-center justify-center">
                     
                     <!-- Floating Satellite Card: Visual Drops (Left) -->
-                    <div class="absolute left-2 top-6 bg-white/95 rounded-[12px] border border-black/8 shadow-md p-2.5 flex items-center gap-2 animate-float-slow">
-                      <div class="size-7 rounded-[7px] bg-black/5 flex items-center justify-center text-black">
+                    <div class="absolute left-2 top-5 bg-white rounded-[12px] border border-black/10 shadow-[0_4px_16px_rgba(0,0,0,0.06)] p-2.5 flex items-center gap-2 animate-float-slow">
+                      <div class="size-7 rounded-[7px] bg-neutral-100 flex items-center justify-center text-neutral-800">
                         <Layers class="w-3.5 h-3.5" />
                       </div>
                       <div class="flex flex-col">
                         <span class="text-[11px] font-medium text-black leading-tight">Drop Studio</span>
-                        <span class="text-[9px] text-neutral-400 font-mono">Visual Canvas</span>
+                        <span class="text-[9.5px] text-neutral-500 font-light">Visual Canvas</span>
                       </div>
                     </div>
 
                     <!-- Floating Satellite Card: Store Scanner (Right) -->
-                    <div class="absolute right-2 bottom-6 bg-white/95 rounded-[12px] border border-black/8 shadow-md p-2.5 flex items-center gap-2 animate-float-delayed">
-                      <div class="size-7 rounded-[7px] bg-moss-50 flex items-center justify-center text-moss-700">
+                    <div class="absolute right-2 bottom-5 bg-white rounded-[12px] border border-black/10 shadow-[0_4px_16px_rgba(0,0,0,0.06)] p-2.5 flex items-center gap-2 animate-float-delayed">
+                      <div class="size-7 rounded-[7px] bg-neutral-100 flex items-center justify-center text-neutral-800">
                         <QrCode class="w-3.5 h-3.5" />
                       </div>
                       <div class="flex flex-col">
                         <span class="text-[11px] font-medium text-black leading-tight">Store Passes</span>
-                        <span class="text-[9px] text-moss-700 font-mono">Live Scanner</span>
+                        <span class="text-[9.5px] text-neutral-500 font-light">Live Scanner</span>
                       </div>
                     </div>
 
                     <!-- Main Center Monogram Card with Luminous Breathing Core -->
-                    <div class="relative z-10 bg-white rounded-[16px] border border-black/10 shadow-[0_12px_36px_rgba(0,0,0,0.12)] p-4 flex flex-col items-center gap-2.5 w-[160px] animate-float-gentle">
+                    <div class="relative z-10 bg-white rounded-[16px] border border-black/10 shadow-[0_12px_36px_rgba(0,0,0,0.1)] p-4 flex flex-col items-center gap-2.5 w-[160px] animate-float-gentle">
                       <div class="size-11 rounded-full bg-black text-white flex items-center justify-center relative shadow-sm">
-                        <Sparkles class="w-5 h-5 text-amber-300" />
-                        <span class="absolute inset-0 rounded-full border border-amber-300/40 animate-ping opacity-30" />
+                        <Sparkles class="w-5 h-5 text-neutral-100" />
+                        <span class="absolute inset-0 rounded-full border border-neutral-400/40 animate-ping opacity-30" />
                       </div>
                       
                       <div class="flex flex-col items-center text-center">
-                        <span class="text-[12px] font-medium text-black leading-tight">Engine v1.5</span>
-                        <span class="text-[10px] text-neutral-400 font-mono mt-0.5">3 Modular Activations</span>
+                        <span class="text-[12px] font-medium text-black leading-tight">Studio 1.5</span>
+                        <span class="text-[10px] text-neutral-500 font-light mt-0.5">Active Workspace</span>
                       </div>
 
-                      <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-black/5 text-[9.5px] font-mono text-neutral-600">
-                        <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <div class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-neutral-100 text-[9.5px] font-light text-neutral-700">
+                        <span class="size-1.5 rounded-full bg-neutral-800 animate-pulse" />
                         <span>Ready to deploy</span>
                       </div>
                     </div>
 
-                    <!-- Reference-style Floating Prompt Pill Overlay -->
-                    <div class="absolute -bottom-1 left-4 z-20 bg-white/98 rounded-[12px] border border-black/10 shadow-lg px-3 py-2 flex items-center justify-between gap-3 min-w-[210px] animate-float-slow">
+                    <!-- Solid Floating Prompt Pill Overlay (100% Opaque for high contrast & readability) -->
+                    <div class="absolute -bottom-1 left-4 z-20 bg-white rounded-[13px] border border-black/10 shadow-[0_8px_24px_rgba(0,0,0,0.12)] px-3.5 py-2 flex items-center justify-between gap-3 min-w-[210px] animate-float-slow">
                       <div class="flex flex-col">
-                        <span class="text-[10.5px] font-medium text-black">Campaign Architecture</span>
-                        <span class="text-[9px] text-neutral-400 font-mono">Real-time sync active</span>
+                        <span class="text-[10.5px] font-medium text-black leading-tight">Campaign Architecture</span>
+                        <span class="text-[9.5px] text-neutral-500 font-light">Real-time sync active</span>
                       </div>
-                      <div class="size-5 rounded-full bg-black text-white flex items-center justify-center">
+                      <div class="size-5 rounded-full bg-black text-white flex items-center justify-center shrink-0">
                         <Check class="w-3 h-3 stroke-[2.5]" />
                       </div>
                     </div>
@@ -94,147 +94,89 @@
                 </div>
 
                 <!-- ============================================================== -->
-                <!-- SLIDE 2: Drop Studio (Visual Mobile Builder & Dynamic Canvas)  -->
+                <!-- SLIDE 2: Campaign Builder (Mobile-first RSVP & Live Preview)  -->
                 <!-- ============================================================== -->
                 <div 
                   v-else-if="currentStep === 1" 
                   key="slide-1"
-                  class="size-full bg-gradient-to-br from-[#f2f4ff] via-[#f7f8ff] to-[#f4f3fb] relative flex items-center justify-center overflow-hidden"
+                  class="size-full bg-gradient-to-b from-[#fbfbfd] via-[#f5f5f7] to-[#ececef] relative flex items-center justify-center overflow-hidden"
                 >
-                  <div class="absolute -top-10 -right-10 size-40 bg-indigo-400/15 rounded-full blur-2xl pointer-events-none" />
-                  <div class="absolute -bottom-10 -left-10 size-40 bg-purple-400/15 rounded-full blur-2xl pointer-events-none" />
+                  <div class="absolute -top-10 -right-10 size-40 bg-black/[0.03] rounded-full blur-2xl pointer-events-none" />
+                  <div class="absolute -bottom-10 -left-10 size-40 bg-white rounded-full blur-2xl pointer-events-none" />
 
                   <!-- Minimal Smartphone Silhouette with Floating Component Elements -->
                   <div class="relative w-[340px] h-[190px] flex items-center justify-center">
                     
-                    <!-- Stylized Smartphone Canvas Frame -->
-                    <div class="w-[155px] h-[185px] bg-white rounded-[20px] border border-black/12 shadow-lg p-2 flex flex-col justify-between overflow-hidden relative">
+                    <!-- Stylized Smartphone Canvas Frame (Monochromatic) -->
+                    <div class="w-[155px] h-[180px] bg-white rounded-[20px] border border-black/12 shadow-[0_12px_32px_rgba(0,0,0,0.08)] p-2.5 flex flex-col justify-between overflow-hidden relative">
                       <!-- Notch -->
-                      <div class="w-12 h-2.5 rounded-full bg-black/10 mx-auto" />
+                      <div class="w-12 h-2 rounded-full bg-neutral-200 mx-auto" />
 
                       <!-- Mini drop banner mockup -->
-                      <div class="w-full h-12 rounded-[8px] bg-indigo-50 border border-indigo-100 flex items-center justify-center overflow-hidden relative">
-                        <div class="size-16 rounded-full bg-indigo-200/50 absolute blur-lg" />
-                        <span class="text-[9px] font-medium text-indigo-900 relative z-10">DROP CANVAS</span>
+                      <div class="w-full h-11 rounded-[8px] bg-neutral-100 border border-neutral-200/80 flex items-center justify-center overflow-hidden relative">
+                        <span class="text-[9.5px] font-medium text-neutral-800 tracking-normal">CAMPAIGN RSVP</span>
                       </div>
 
                       <!-- Placeholder text bars -->
-                      <div class="flex flex-col gap-1 w-full px-0.5">
+                      <div class="flex flex-col gap-1.5 w-full px-0.5">
                         <div class="h-2 rounded-full bg-neutral-200 w-3/4 animate-pulse" />
                         <div class="h-1.5 rounded-full bg-neutral-100 w-full" />
                       </div>
 
                       <!-- Interactive CTA in phone -->
                       <div class="h-6 rounded-[7px] bg-black text-white text-[9px] font-medium flex items-center justify-center gap-1 shadow-xs">
-                        <span>RSVP Now</span>
+                        <span>Register Now</span>
                         <ArrowRight class="w-2.5 h-2.5" />
                       </div>
                     </div>
 
-                    <!-- Floating Interaction Card: Live RSVP Bubble (TwelveLabs Prompt Style) -->
-                    <div class="absolute right-3 top-6 z-20 bg-white/98 rounded-[14px] border border-black/10 shadow-xl p-3 flex flex-col gap-1.5 w-[165px] animate-float-slow">
+                    <!-- Solid Floating Interaction Card: Live RSVP Bubble (100% Opaque for high contrast) -->
+                    <div class="absolute right-3 top-5 z-20 bg-white rounded-[13px] border border-black/10 shadow-[0_10px_28px_rgba(0,0,0,0.12)] p-3 flex flex-col gap-1.5 w-[165px] animate-float-slow">
                       <div class="flex items-center justify-between">
-                        <span class="text-[9.5px] uppercase font-mono text-neutral-400">Live RSVP</span>
-                        <span class="px-1.5 py-0.2 rounded bg-moss-50 text-moss-700 text-[9px] font-medium">Valid</span>
+                        <span class="text-[9.5px] font-medium text-neutral-600">LIVE RSVP</span>
+                        <span class="px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-800 text-[8.5px] font-medium">Valid</span>
                       </div>
                       <p class="text-[11px] font-medium text-black leading-tight">Instant RSVP Form</p>
-                      <div class="flex items-center gap-1 pt-1 border-t border-black/5 text-[9px] text-neutral-500 font-mono">
-                        <Check class="w-2.5 h-2.5 text-moss-600" />
+                      <div class="flex items-center gap-1 pt-1 border-t border-black/5 text-[9.5px] text-neutral-500 font-light">
+                        <Check class="w-2.5 h-2.5 text-neutral-800" />
                         <span>One-click deploy</span>
                       </div>
                     </div>
 
                     <!-- Floating Palette Badge -->
-                    <div class="absolute left-2 bottom-3 z-20 bg-white/95 rounded-[10px] border border-black/10 shadow-md px-2.5 py-1.5 flex items-center gap-1.5 animate-float-delayed">
-                      <div class="size-2 rounded-full bg-indigo-500 animate-ping" />
-                      <span class="text-[9.5px] font-mono text-neutral-700">WYSIWYG Editor</span>
+                    <div class="absolute left-2 bottom-3 z-20 bg-white rounded-[10px] border border-black/10 shadow-md px-2.5 py-1.5 flex items-center gap-1.5 animate-float-delayed">
+                      <div class="size-2 rounded-full bg-black animate-ping" />
+                      <span class="text-[9.5px] font-light text-neutral-700">WYSIWYG Editor</span>
                     </div>
                   </div>
                 </div>
 
                 <!-- ============================================================== -->
-                <!-- SLIDE 3: Smart Raffles (Ballot Shuffling & Anti-Bot Shield)    -->
-                <!-- ============================================================== -->
-                <div 
-                  v-else-if="currentStep === 2" 
-                  key="slide-2"
-                  class="size-full bg-gradient-to-br from-[#fff9ea] via-[#fffbf3] to-[#f7f5ed] relative flex items-center justify-center overflow-hidden"
-                >
-                  <div class="absolute -top-10 -left-10 size-40 bg-amber-400/15 rounded-full blur-2xl pointer-events-none" />
-                  <div class="absolute -bottom-10 -right-10 size-40 bg-orange-400/15 rounded-full blur-2xl pointer-events-none" />
-
-                  <!-- Shuffling Sneaker Ballot Tickets Scene -->
-                  <div class="relative w-[340px] h-[190px] flex items-center justify-center">
-                    
-                    <!-- Background Ticket Card 1 (Tilted Left) -->
-                    <div class="absolute w-[180px] h-[100px] rounded-[14px] bg-white/70 border border-black/8 shadow-sm transform -rotate-6 -translate-x-8 -translate-y-2 pointer-events-none" />
-
-                    <!-- Background Ticket Card 2 (Tilted Right) -->
-                    <div class="absolute w-[180px] h-[100px] rounded-[14px] bg-white/70 border border-black/8 shadow-sm transform rotate-6 translate-x-8 -translate-y-1 pointer-events-none" />
-
-                    <!-- Center Active Ballot Ticket Card -->
-                    <div class="relative z-10 w-[220px] bg-white rounded-[16px] border border-black/12 shadow-[0_12px_36px_rgba(0,0,0,0.1)] p-3.5 flex flex-col gap-2.5 animate-float-gentle">
-                      <!-- Ticket Header -->
-                      <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-1.5">
-                          <Ticket class="w-3.5 h-3.5 text-amber-500" />
-                          <span class="text-[11.5px] font-medium text-black">Official Sneaker Ballot</span>
-                        </div>
-                        <span class="text-[9.5px] font-mono text-neutral-400">#707-RAFFLE</span>
-                      </div>
-
-                      <!-- Size Pills Selector Preview -->
-                      <div class="flex items-center justify-between gap-1">
-                        <span class="flex-1 py-1 rounded-[6px] bg-black/5 text-[9.5px] font-mono text-neutral-600 text-center">US 8.5</span>
-                        <span class="flex-1 py-1 rounded-[6px] bg-black text-white text-[9.5px] font-mono font-medium text-center shadow-2xs">US 9.0</span>
-                        <span class="flex-1 py-1 rounded-[6px] bg-black/5 text-[9.5px] font-mono text-neutral-600 text-center">US 9.5</span>
-                        <span class="flex-1 py-1 rounded-[6px] bg-black/5 text-[9.5px] font-mono text-neutral-600 text-center">US 10</span>
-                      </div>
-
-                      <!-- Bottom verification footer -->
-                      <div class="flex items-center justify-between text-[9px] font-mono pt-1.5 border-t border-dashed border-black/10 text-neutral-500">
-                        <span>1 TICKET / PERSON</span>
-                        <span class="text-amber-600 font-medium">FAIR RANDOM DRAW</span>
-                      </div>
-                    </div>
-
-                    <!-- Floating Anti-Bot Shield Pill (TwelveLabs Prompt Style) -->
-                    <div class="absolute -bottom-2 right-4 z-20 bg-white/98 rounded-[12px] border border-black/10 shadow-lg px-3 py-1.5 flex items-center gap-2 animate-float-slow">
-                      <ShieldCheck class="w-3.5 h-3.5 text-amber-500" />
-                      <div class="flex flex-col">
-                        <span class="text-[10px] font-medium text-black leading-tight">Anti-Bot Shield</span>
-                        <span class="text-[8.5px] text-neutral-400 font-mono">CAPTCHA & Quotas</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- ============================================================== -->
-                <!-- SLIDE 4: Store Passes (Dynamic QR & Zero-Delay Scanner)       -->
+                <!-- SLIDE 3: Store Passes & Door Scanner (Monochromatic)           -->
                 <!-- ============================================================== -->
                 <div 
                   v-else 
-                  key="slide-3"
-                  class="size-full bg-gradient-to-br from-[#effcf5] via-[#f4fcf7] to-[#ecf7f1] relative flex items-center justify-center overflow-hidden"
+                  key="slide-2"
+                  class="size-full bg-gradient-to-b from-[#fbfbfd] via-[#f5f5f7] to-[#ececef] relative flex items-center justify-center overflow-hidden"
                 >
-                  <div class="absolute -top-10 -right-10 size-40 bg-emerald-400/15 rounded-full blur-2xl pointer-events-none" />
-                  <div class="absolute -bottom-10 -left-10 size-40 bg-teal-400/15 rounded-full blur-2xl pointer-events-none" />
+                  <div class="absolute -top-10 -right-10 size-40 bg-black/[0.03] rounded-full blur-2xl pointer-events-none" />
+                  <div class="absolute -bottom-10 -left-10 size-40 bg-white rounded-full blur-2xl pointer-events-none" />
 
-                  <!-- Digital Store Pass & Laser HUD Scene -->
+                  <!-- Digital Store Pass & Laser HUD Scene (Monochromatic) -->
                   <div class="relative w-[340px] h-[190px] flex items-center justify-center">
                     
-                    <!-- Digital Pass Card -->
+                    <!-- Digital Pass Card (Solid White, Clean Monochromatic) -->
                     <div class="w-[210px] bg-white rounded-[16px] border border-black/12 shadow-[0_12px_36px_rgba(0,0,0,0.1)] p-3.5 flex flex-col gap-2.5 relative overflow-hidden animate-float-gentle">
-                      <!-- Scanning Laser Line Overlay -->
-                      <div class="absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-500 to-transparent shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-laser-scan pointer-events-none z-10" />
+                      <!-- Sleek Monochromatic Scanning Laser Line Overlay -->
+                      <div class="absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-neutral-900 to-transparent shadow-[0_0_8px_rgba(0,0,0,0.3)] opacity-60 animate-laser-scan pointer-events-none z-10" />
 
                       <!-- Pass Header -->
                       <div class="flex items-center justify-between">
                         <div class="flex items-center gap-1.5">
-                          <div class="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                          <div class="size-2 rounded-full bg-neutral-900 animate-pulse" />
                           <span class="text-[11px] font-medium text-black">Store VIP Pass</span>
                         </div>
-                        <span class="text-[9px] font-mono text-neutral-400">#PASS-8821</span>
+                        <span class="text-[9.5px] font-light text-neutral-500">#PASS-2038</span>
                       </div>
 
                       <!-- Geometric QR Code Graphic -->
@@ -243,20 +185,20 @@
                       </div>
 
                       <!-- Pass Status -->
-                      <div class="flex items-center justify-between text-[9px] font-mono pt-1.5 border-t border-black/5 text-neutral-500">
+                      <div class="flex items-center justify-between text-[9.5px] font-light pt-1.5 border-t border-black/5 text-neutral-500">
                         <span>ENTRANCE GATE</span>
-                        <span class="text-moss-700 font-medium">ADMIT 1 GUEST</span>
+                        <span class="text-neutral-900 font-medium">ADMIT 1 GUEST</span>
                       </div>
                     </div>
 
-                    <!-- Floating Verified Scanner Badge (TwelveLabs Prompt Style) -->
-                    <div class="absolute -bottom-2 left-4 z-20 bg-white/98 rounded-[12px] border border-black/10 shadow-lg px-3 py-1.5 flex items-center gap-2 animate-float-slow">
-                      <div class="size-5 rounded-full bg-moss-600 text-white flex items-center justify-center">
+                    <!-- Solid Floating Verified Scanner Badge (100% Opaque for high contrast & perfect readability) -->
+                    <div class="absolute -bottom-2 left-4 z-20 bg-white rounded-[13px] border border-black/10 shadow-[0_10px_28px_rgba(0,0,0,0.14)] px-3.5 py-2 flex items-center gap-2.5 animate-float-slow">
+                      <div class="size-5 rounded-full bg-black text-white flex items-center justify-center shrink-0">
                         <Check class="w-3 h-3 stroke-[2.5]" />
                       </div>
                       <div class="flex flex-col">
-                        <span class="text-[10px] font-medium text-black leading-tight">Instant Admission</span>
-                        <span class="text-[8.5px] text-moss-700 font-mono">Zero-delay scanner</span>
+                        <span class="text-[10.5px] font-medium text-black leading-tight">Instant Admission</span>
+                        <span class="text-[9.5px] text-neutral-500 font-light">Zero-delay scanner</span>
                       </div>
                     </div>
                   </div>
@@ -264,28 +206,28 @@
               </Transition>
             </div>
 
-            <!-- 2. Centered Capsule Badges (Matching TwelveLabs [NEW] [FEATURE] Capsule Badges) -->
-            <div class="flex items-center justify-center gap-1.5 pt-1">
-              <span class="px-2 py-0.5 rounded-[4px] border border-black/20 text-[10px] font-mono font-medium text-black uppercase tracking-normal">
+            <!-- 2. Centered Capsule Badges (Spacious top margin & clean SF Pro font) -->
+            <div class="flex items-center justify-center gap-2 mt-6">
+              <span class="px-2.5 py-0.5 rounded-[4px] border border-black/25 text-[10px] font-sans font-medium text-black uppercase tracking-normal">
                 NEW
               </span>
-              <span class="px-2 py-0.5 rounded-[4px] border border-black/20 text-[10px] font-mono font-medium text-neutral-600 uppercase tracking-normal">
+              <span class="px-2.5 py-0.5 rounded-[4px] border border-black/25 text-[10px] font-sans font-medium text-neutral-700 uppercase tracking-normal">
                 {{ activeStep.badge }}
               </span>
             </div>
 
-            <!-- 3. Headline & Description (Strictly Apple SF Pro Light / Medium Typography) -->
-            <div class="flex flex-col items-center text-center gap-1.5 px-2">
-              <h3 id="whats-new-title" class="text-[20px] sm:text-[21px] font-medium text-black tracking-normal leading-snug">
+            <!-- 3. Headline & Description (Strictly SF Pro Light / Medium Typography, spacious vertical separation) -->
+            <div class="flex flex-col items-center text-center mt-3.5 px-3">
+              <h3 id="whats-new-title" class="text-[21px] sm:text-[22px] font-medium text-black tracking-normal leading-snug">
                 {{ activeStep.title }}
               </h3>
-              <p class="text-[13px] sm:text-[13.5px] text-neutral-500 font-light leading-[21px] max-w-[380px] mx-auto">
+              <p class="text-[13.5px] sm:text-[14px] text-neutral-500 font-light leading-[22px] max-w-[390px] mx-auto mt-2.5">
                 {{ activeStep.description }}
               </p>
             </div>
 
-            <!-- 4. Minimalist Stepper Dots (Interactive) -->
-            <div class="flex items-center justify-center gap-1.5 py-0.5">
+            <!-- 4. Minimalist Stepper Dots (Interactive, spacious vertical spacing) -->
+            <div class="flex items-center justify-center gap-2 mt-7 mb-1">
               <button
                 v-for="(_, idx) in steps"
                 :key="idx"
@@ -297,12 +239,12 @@
               />
             </div>
 
-            <!-- 5. Action Footer (Cancel on left, Next / Get Started on right) -->
-            <div class="flex items-center justify-between gap-3 pt-1">
+            <!-- 5. Action Footer (Cancel on left, Next / Get Started on right, generous spacing) -->
+            <div class="flex items-center justify-between gap-3 mt-6 pt-1">
               <button
                 type="button"
                 @click="emit('close')"
-                class="h-[38px] px-5 rounded-[12px] border border-black/15 hover:bg-neutral-50 active:bg-neutral-100 text-[12.5px] font-medium text-neutral-700 transition-colors cursor-pointer"
+                class="h-[40px] px-6 rounded-[12px] border border-black/15 hover:bg-neutral-50 active:bg-neutral-100 text-[13px] font-medium text-neutral-700 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -312,7 +254,7 @@
                   v-if="currentStep < steps.length - 1"
                   type="button"
                   @click="currentStep++"
-                  class="h-[38px] px-6 rounded-[12px] bg-black hover:bg-neutral-800 text-white text-[12.5px] font-medium transition-colors apple-press cursor-pointer shadow-xs"
+                  class="h-[40px] px-7 rounded-[12px] bg-black hover:bg-neutral-800 text-white text-[13px] font-medium transition-colors apple-press cursor-pointer shadow-xs"
                 >
                   Next
                 </button>
@@ -320,7 +262,7 @@
                   v-else
                   type="button"
                   @click="emit('close')"
-                  class="h-[38px] px-6 rounded-[12px] bg-black hover:bg-neutral-800 text-white text-[12.5px] font-medium transition-colors apple-press cursor-pointer shadow-xs"
+                  class="h-[40px] px-7 rounded-[12px] bg-black hover:bg-neutral-800 text-white text-[13px] font-medium transition-colors apple-press cursor-pointer shadow-xs"
                 >
                   Get Started
                 </button>
@@ -335,7 +277,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { Layers, Ticket, QrCode, Check, ArrowRight, ShieldCheck, Sparkles } from 'lucide-vue-next';
+import { Layers, QrCode, Check, ArrowRight, Sparkles } from 'lucide-vue-next';
 
 defineProps<{
   isOpen: boolean;
@@ -352,25 +294,19 @@ const steps = [
     id: 'intro',
     badge: 'STUDIO 1.5',
     title: 'New look with enhanced capabilities',
-    description: 'Design Studio 1.5 is here with a fresh architectural look. Build mobile campaigns, run anti-bot raffles, and issue live store passes.'
+    description: 'Design Studio 1.5 is here with a fresh architectural look. Manage campaigns, register guests in real-time, and monitor attendance with precision.'
   },
   {
     id: 'drops',
     badge: 'DROP BUILDER',
     title: 'Mobile-first visual launchpad',
-    description: 'Design interactive campaign RSVP pages with live canvas preview, customizable forms, and instant edge deployment.'
-  },
-  {
-    id: 'raffles',
-    badge: 'SMART RAFFLES',
-    title: 'Bot-proof community balloting',
-    description: 'Host fair high-heat release balloting with authenticated shoe size quotas, anti-bot protection, and automated drawing.'
+    description: 'Design interactive campaign RSVP pages with live responsive preview, customizable form fields, and instant edge publishing.'
   },
   {
     id: 'passes',
     badge: 'STORE PASSES',
     title: 'Dynamic digital QR entrance passes',
-    description: 'Issue encrypted dynamic QR passes to approved guests, verified in real-time with our zero-delay door scanner.'
+    description: 'Issue encrypted dynamic passes to approved guests, verified in real-time at the entrance with our zero-delay door scanner and gate controls.'
   }
 ];
 
@@ -454,10 +390,10 @@ onUnmounted(() => {
     opacity: 0;
   }
   15% {
-    opacity: 1;
+    opacity: 0.6;
   }
   85% {
-    opacity: 1;
+    opacity: 0.6;
   }
   100% {
     top: 85%;
