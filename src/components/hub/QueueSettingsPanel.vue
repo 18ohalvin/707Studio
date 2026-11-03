@@ -229,13 +229,13 @@
           <div class="flex items-center gap-2.5 text-[12.5px]">
             <span class="font-medium text-black">Guest Alerts:</span>
             <span class="flex items-center gap-1 text-neutral-600 font-light">
-              <span class="size-1.5 rounded-full" :class="form.waEnabled && form.waConnection?.connected ? 'bg-moss-600' : 'bg-neutral-300'" />
-              WhatsApp {{ form.waEnabled && form.waConnection?.connected ? 'On' : 'Off' }}
+              <span class="size-1.5 rounded-full" :class="form.emailNotificationEnabled !== false ? 'bg-moss-600' : 'bg-neutral-300'" />
+              Email (Default) {{ form.emailNotificationEnabled !== false ? 'On' : 'Off' }}
             </span>
             <span class="text-neutral-300">•</span>
             <span class="flex items-center gap-1 text-neutral-600 font-light">
-              <span class="size-1.5 rounded-full" :class="form.emailNotificationEnabled !== false ? 'bg-moss-600' : 'bg-neutral-300'" />
-              Email {{ form.emailNotificationEnabled !== false ? 'On' : 'Off' }}
+              <span class="size-1.5 rounded-full" :class="form.waEnabled && form.waConnection?.connected ? 'bg-moss-600' : 'bg-neutral-300'" />
+              WhatsApp (Additional) {{ form.waEnabled && form.waConnection?.connected ? 'On' : 'Off' }}
             </span>
           </div>
         </div>
@@ -400,191 +400,30 @@
           <div class="flex items-center gap-1 p-1 bg-neutral-100 rounded-[9px] border border-black/5 w-fit">
             <button
               type="button"
-              @click="activeNotificationTab = 'whatsapp'"
-              class="h-[30px] px-3 rounded-[6px] text-[12px] font-sans flex items-center gap-1.5 transition-all cursor-pointer"
-              :class="activeNotificationTab === 'whatsapp' ? 'bg-white text-black font-medium shadow-xs' : 'text-neutral-500 hover:text-black font-light'"
-            >
-              <Smartphone class="w-3.5 h-3.5" />
-              <span>WhatsApp Alerts</span>
-            </button>
-
-            <button
-              type="button"
               @click="activeNotificationTab = 'email'"
               class="h-[30px] px-3 rounded-[6px] text-[12px] font-sans flex items-center gap-1.5 transition-all cursor-pointer"
               :class="activeNotificationTab === 'email' ? 'bg-white text-black font-medium shadow-xs' : 'text-neutral-500 hover:text-black font-light'"
             >
               <Mail class="w-3.5 h-3.5" />
-              <span>Email Confirmations</span>
+              <span>Email Confirmations (Primary)</span>
+            </button>
+
+            <button
+              type="button"
+              @click="activeNotificationTab = 'whatsapp'"
+              class="h-[30px] px-3 rounded-[6px] text-[12px] font-sans flex items-center gap-1.5 transition-all cursor-pointer"
+              :class="activeNotificationTab === 'whatsapp' ? 'bg-white text-black font-medium shadow-xs' : 'text-neutral-500 hover:text-black font-light'"
+            >
+              <Smartphone class="w-3.5 h-3.5" />
+              <span>WhatsApp Alerts (Additional)</span>
             </button>
           </div>
         </div>
 
+<!-- ============================================================== -->
+        <!-- CHANNEL 1: REALISTIC EMAIL CLIENT PREVIEW (Primary)            -->
         <!-- ============================================================== -->
-        <!-- CHANNEL 1: WHATSAPP NOTIFICATIONS                              -->
-        <!-- ============================================================== -->
-        <div v-if="activeNotificationTab === 'whatsapp'" class="flex flex-col gap-5">
-          
-          <!-- Master Switch & Connection Bar (Clean, no copy bloat) -->
-          <div class="p-3.5 sm:p-4 rounded-[12px] bg-neutral-50 border border-black/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" v-model="form.waEnabled" class="sr-only peer" />
-                <div class="w-9 h-5 bg-neutral-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-black"></div>
-              </label>
-              <div class="flex items-center gap-1.5">
-                <span class="text-[13px] font-medium text-black">Automated WhatsApp Alerts</span>
-                <!-- Info Tooltip -->
-                <div class="relative inline-flex items-center" @click.stop>
-                  <button type="button" @click="toggleInfo('wa_toggle')" class="text-neutral-400 hover:text-black cursor-pointer">
-                    <Info class="w-3 h-3" />
-                  </button>
-                  <div v-if="activeInfoKey === 'wa_toggle'" class="absolute bottom-full left-0 mb-2 w-56 p-2 rounded-[8px] bg-black text-white text-[10.5px] font-light leading-tight shadow-lg z-30 animate-apple-pop">
-                    Sends automated WhatsApp messages to attendees when registered or called.
-                    <div class="absolute top-full left-4 border-4 border-transparent border-t-black" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Device Connection Pill / Action -->
-            <div class="flex items-center gap-2">
-              <div v-if="form.waConnection?.connected" class="flex items-center gap-2 px-3 py-1 rounded-[7px] bg-moss-50 border border-moss-200 text-[11.5px] text-moss-800 font-medium">
-                <span class="size-1.5 rounded-full bg-moss-600" />
-                <span>+{{ form.waConnection.phoneNumber }}</span>
-                <button type="button" @click="disconnectWhatsAppDevice" class="ml-1 text-neutral-400 hover:text-oxblood-600 transition-colors" title="Disconnect device">
-                  <X class="w-3 h-3" />
-                </button>
-              </div>
-              <button
-                v-else
-                type="button"
-                @click="openWhatsAppQrModal"
-                class="h-[32px] px-3 rounded-[7px] bg-black text-white hover:bg-neutral-800 text-[11.5px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
-              >
-                <QrCode class="w-3 h-3" />
-                <span>Link Device via QR</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Secondary Toolbar: Advanced Gateway, Test Message, Delivery Logs -->
-          <div class="flex flex-wrap items-center justify-between gap-2 pt-0.5">
-            <span class="text-[11px] text-neutral-400 font-light">Tools:</span>
-            <div class="flex items-center gap-1.5">
-              <button
-                type="button"
-                @click="openLinkModal"
-                class="h-[30px] px-2.5 rounded-[7px] border border-black/15 hover:bg-black/5 text-[11px] font-medium text-neutral-700 flex items-center gap-1 transition-colors cursor-pointer"
-                title="Configure custom API gateway"
-              >
-                <Link2 class="w-3 h-3" />
-                <span>Advanced Gateway</span>
-              </button>
-
-              <button
-                type="button"
-                @click="openTestModal"
-                class="h-[30px] px-2.5 rounded-[7px] border border-black/15 hover:bg-black/5 text-[11px] font-medium text-neutral-700 flex items-center gap-1 transition-colors cursor-pointer"
-              >
-                <Send class="w-3 h-3" />
-                <span>Send Test</span>
-              </button>
-
-              <button
-                type="button"
-                @click="openLogsModal"
-                class="h-[30px] px-2.5 rounded-[7px] border border-black/15 hover:bg-black/5 text-[11px] font-medium text-neutral-700 flex items-center gap-1 transition-colors cursor-pointer"
-              >
-                <History class="w-3 h-3" />
-                <span>Delivery Logs</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- WhatsApp Message Stages & Live Chat Bubble Preview -->
-          <div class="flex flex-col gap-3 pt-1">
-            <!-- Stage Selector Pills -->
-            <div class="flex flex-wrap items-center gap-1.5">
-              <button
-                v-for="s in DEFAULT_STAGES"
-                :key="s.id"
-                type="button"
-                @click="selectActiveWaStage(s.id)"
-                class="px-3 py-1 rounded-[7px] text-[11.5px] font-sans flex items-center gap-1 transition-all cursor-pointer"
-                :class="(form.activeWaStage || activeStageId) === s.id ? 'bg-black text-white font-medium shadow-xs' : 'bg-neutral-100 text-neutral-600 hover:text-black font-light'"
-              >
-                <component :is="s.icon" class="w-3 h-3" />
-                <span>{{ s.title }}</span>
-              </button>
-            </div>
-
-            <!-- 2-Column Split: Message Text Editor on Left vs Chat Preview on Right -->
-            <div class="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-5 items-start">
-              
-              <!-- Left: Text Editor -->
-              <div class="flex flex-col gap-2.5">
-                <div class="flex items-center justify-between">
-                  <span class="text-[11.5px] font-medium text-black">Message Content</span>
-                  <span class="text-[10.5px] text-neutral-400 font-sans">{{ (form.waTemplates[activeStageId] || '').length }} chars</span>
-                </div>
-
-                <textarea
-                  v-model="form.waTemplates[activeStageId]"
-                  rows="4"
-                  class="w-full p-3 rounded-[10px] bg-neutral-50 border border-black/15 text-[12.5px] leading-relaxed font-sans font-light text-black outline-none focus:border-black focus:bg-white transition-all resize-y placeholder:text-neutral-400"
-                  placeholder="Enter message copy..."
-                />
-
-                <!-- Dynamic Variables Chips -->
-                <div class="flex flex-wrap gap-1 pt-0.5">
-                  <button
-                    v-for="t in currentStage.tags"
-                    :key="t.key"
-                    type="button"
-                    @click="insertTag(t.key)"
-                    class="px-2 py-0.5 rounded-[5px] bg-neutral-100 hover:bg-neutral-200 text-[10.5px] font-medium text-neutral-800 cursor-pointer flex items-center gap-1 transition-colors"
-                    :title="t.description"
-                  >
-                    <span>+ {{ t.label }}</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Right: Live WhatsApp Chat Bubble Preview -->
-              <div class="rounded-[14px] border border-black/10 overflow-hidden bg-[#efeae2] flex flex-col shadow-xs select-none">
-                <!-- Chat Header -->
-                <div class="px-3.5 py-2 bg-[#075e54] text-white flex items-center justify-between text-[11.5px]">
-                  <div class="flex items-center gap-2">
-                    <div class="size-5 rounded-full bg-white/20 flex items-center justify-center font-medium text-[9px]">
-                      707
-                    </div>
-                    <span class="font-medium truncate max-w-[140px]">{{ activeBrandName }}</span>
-                  </div>
-                  <span class="text-[9.5px] text-white/70">{{ previewTime }}</span>
-                </div>
-
-                <!-- Chat Canvas & Message Bubble -->
-                <div class="p-3.5 min-h-[140px] flex flex-col justify-end gap-2">
-                  <div class="max-w-[90%] self-start bg-white rounded-[10px] rounded-tl-[2px] p-2.5 shadow-xs border border-black/5 flex flex-col gap-1">
-                    <p class="text-[11.5px] leading-relaxed text-black whitespace-pre-wrap font-sans font-light">
-                      {{ renderedPreviewText }}
-                    </p>
-                    <div class="flex items-center justify-end gap-1 text-[9px] text-neutral-400 pt-0.5">
-                      <span>{{ previewTime }}</span>
-                      <span class="text-moss-700">✓✓</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ============================================================== -->
-        <!-- CHANNEL 2: REALISTIC EMAIL CLIENT PREVIEW                      -->
-        <!-- ============================================================== -->
-        <div v-else class="flex flex-col gap-5">
+        <div v-if="activeNotificationTab === 'email'" class="flex flex-col gap-5">
           
           <!-- Email Master Switch -->
           <div class="p-3.5 sm:p-4 rounded-[12px] bg-neutral-50 border border-black/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -797,6 +636,167 @@
                   <p class="text-[10.5px] text-neutral-400 font-light leading-normal pt-2 border-t border-black/5 text-center">
                     Keep this email. Your ticket is the attached PDF. Show it at the entrance door.
                   </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+<!-- ============================================================== -->
+        <!-- CHANNEL 2: WHATSAPP NOTIFICATIONS (Additional)                 -->
+        <!-- ============================================================== -->
+        <div v-else class="flex flex-col gap-5">
+          
+          <!-- Master Switch & Connection Bar (Clean, no copy bloat) -->
+          <div class="p-3.5 sm:p-4 rounded-[12px] bg-neutral-50 border border-black/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" v-model="form.waEnabled" class="sr-only peer" />
+                <div class="w-9 h-5 bg-neutral-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-black"></div>
+              </label>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[13px] font-medium text-black">Automated WhatsApp Alerts</span>
+                <!-- Info Tooltip -->
+                <div class="relative inline-flex items-center" @click.stop>
+                  <button type="button" @click="toggleInfo('wa_toggle')" class="text-neutral-400 hover:text-black cursor-pointer">
+                    <Info class="w-3 h-3" />
+                  </button>
+                  <div v-if="activeInfoKey === 'wa_toggle'" class="absolute bottom-full left-0 mb-2 w-56 p-2 rounded-[8px] bg-black text-white text-[10.5px] font-light leading-tight shadow-lg z-30 animate-apple-pop">
+                    Sends automated WhatsApp messages to attendees when registered or called.
+                    <div class="absolute top-full left-4 border-4 border-transparent border-t-black" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Device Connection Pill / Action -->
+            <div class="flex items-center gap-2">
+              <div v-if="form.waConnection?.connected" class="flex items-center gap-2 px-3 py-1 rounded-[7px] bg-moss-50 border border-moss-200 text-[11.5px] text-moss-800 font-medium">
+                <span class="size-1.5 rounded-full bg-moss-600" />
+                <span>+{{ form.waConnection.phoneNumber }}</span>
+                <button type="button" @click="disconnectWhatsAppDevice" class="ml-1 text-neutral-400 hover:text-oxblood-600 transition-colors" title="Disconnect device">
+                  <X class="w-3 h-3" />
+                </button>
+              </div>
+              <button
+                v-else
+                type="button"
+                @click="openWhatsAppQrModal"
+                class="h-[32px] px-3 rounded-[7px] bg-black text-white hover:bg-neutral-800 text-[11.5px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+              >
+                <QrCode class="w-3 h-3" />
+                <span>Link Device via QR</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Secondary Toolbar: Advanced Gateway, Test Message, Delivery Logs -->
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+            <span class="text-[11px] text-neutral-400 font-light">Tools:</span>
+            <div class="flex items-center gap-1.5">
+              <button
+                type="button"
+                @click="openLinkModal"
+                class="h-[30px] px-2.5 rounded-[7px] border border-black/15 hover:bg-black/5 text-[11px] font-medium text-neutral-700 flex items-center gap-1 transition-colors cursor-pointer"
+                title="Configure custom API gateway"
+              >
+                <Link2 class="w-3 h-3" />
+                <span>Advanced Gateway</span>
+              </button>
+
+              <button
+                type="button"
+                @click="openTestModal"
+                class="h-[30px] px-2.5 rounded-[7px] border border-black/15 hover:bg-black/5 text-[11px] font-medium text-neutral-700 flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <Send class="w-3 h-3" />
+                <span>Send Test</span>
+              </button>
+
+              <button
+                type="button"
+                @click="openLogsModal"
+                class="h-[30px] px-2.5 rounded-[7px] border border-black/15 hover:bg-black/5 text-[11px] font-medium text-neutral-700 flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <History class="w-3 h-3" />
+                <span>Delivery Logs</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- WhatsApp Message Stages & Live Chat Bubble Preview -->
+          <div class="flex flex-col gap-3 pt-1">
+            <!-- Stage Selector Pills -->
+            <div class="flex flex-wrap items-center gap-1.5">
+              <button
+                v-for="s in DEFAULT_STAGES"
+                :key="s.id"
+                type="button"
+                @click="selectActiveWaStage(s.id)"
+                class="px-3 py-1 rounded-[7px] text-[11.5px] font-sans flex items-center gap-1 transition-all cursor-pointer"
+                :class="(form.activeWaStage || activeStageId) === s.id ? 'bg-black text-white font-medium shadow-xs' : 'bg-neutral-100 text-neutral-600 hover:text-black font-light'"
+              >
+                <component :is="s.icon" class="w-3 h-3" />
+                <span>{{ s.title }}</span>
+              </button>
+            </div>
+
+            <!-- 2-Column Split: Message Text Editor on Left vs Chat Preview on Right -->
+            <div class="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-5 items-start">
+              
+              <!-- Left: Text Editor -->
+              <div class="flex flex-col gap-2.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-[11.5px] font-medium text-black">Message Content</span>
+                  <span class="text-[10.5px] text-neutral-400 font-sans">{{ (form.waTemplates[activeStageId] || '').length }} chars</span>
+                </div>
+
+                <textarea
+                  v-model="form.waTemplates[activeStageId]"
+                  rows="4"
+                  class="w-full p-3 rounded-[10px] bg-neutral-50 border border-black/15 text-[12.5px] leading-relaxed font-sans font-light text-black outline-none focus:border-black focus:bg-white transition-all resize-y placeholder:text-neutral-400"
+                  placeholder="Enter message copy..."
+                />
+
+                <!-- Dynamic Variables Chips -->
+                <div class="flex flex-wrap gap-1 pt-0.5">
+                  <button
+                    v-for="t in currentStage.tags"
+                    :key="t.key"
+                    type="button"
+                    @click="insertTag(t.key)"
+                    class="px-2 py-0.5 rounded-[5px] bg-neutral-100 hover:bg-neutral-200 text-[10.5px] font-medium text-neutral-800 cursor-pointer flex items-center gap-1 transition-colors"
+                    :title="t.description"
+                  >
+                    <span>+ {{ t.label }}</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Right: Live WhatsApp Chat Bubble Preview -->
+              <div class="rounded-[14px] border border-black/10 overflow-hidden bg-[#efeae2] flex flex-col shadow-xs select-none">
+                <!-- Chat Header -->
+                <div class="px-3.5 py-2 bg-[#075e54] text-white flex items-center justify-between text-[11.5px]">
+                  <div class="flex items-center gap-2">
+                    <div class="size-5 rounded-full bg-white/20 flex items-center justify-center font-medium text-[9px]">
+                      707
+                    </div>
+                    <span class="font-medium truncate max-w-[140px]">{{ activeBrandName }}</span>
+                  </div>
+                  <span class="text-[9.5px] text-white/70">{{ previewTime }}</span>
+                </div>
+
+                <!-- Chat Canvas & Message Bubble -->
+                <div class="p-3.5 min-h-[140px] flex flex-col justify-end gap-2">
+                  <div class="max-w-[90%] self-start bg-white rounded-[10px] rounded-tl-[2px] p-2.5 shadow-xs border border-black/5 flex flex-col gap-1">
+                    <p class="text-[11.5px] leading-relaxed text-black whitespace-pre-wrap font-sans font-light">
+                      {{ renderedPreviewText }}
+                    </p>
+                    <div class="flex items-center justify-end gap-1 text-[9px] text-neutral-400 pt-0.5">
+                      <span>{{ previewTime }}</span>
+                      <span class="text-moss-700">✓✓</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1163,7 +1163,7 @@ const brandStore = useBrandStore();
 const isLoading = ref(false);
 const isSaving = ref(false);
 const activePanelTab = ref<'operations' | 'settings'>('operations');
-const activeNotificationTab = ref<'whatsapp' | 'email'>('whatsapp');
+const activeNotificationTab = ref<'email' | 'whatsapp'>('email');
 const activeStageId = ref<string>('ready');
 
 // Interactive info popovers state
