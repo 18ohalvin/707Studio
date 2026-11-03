@@ -83,8 +83,8 @@ function shell(title: string, lead: string, rows: Array<[string, string]>, foote
       <table width="100%" style="max-width:520px;background:#fff;border-radius:16px;padding:32px;" cellpadding="0" cellspacing="0">
         <tr><td style="padding-bottom:24px;"><img src="cid:logo707" alt="707" width="84" height="26" style="display:block;border:0;width:84px;height:auto;" /></td></tr>
         <tr><td style="font-size:22px;font-weight:700;color:#111;padding-bottom:8px;">${escape(title)}</td></tr>
-        <tr><td style="font-size:15px;color:#555;line-height:1.6;padding-bottom:24px;">${escape(lead)}</td></tr>
-        <tr><td><table width="100%" cellpadding="0" cellspacing="0">${cells}</table></td></tr>
+        <tr><td style="font-size:15px;color:#555;line-height:1.6;padding-bottom:${cells ? '24px' : '8px'};">${escape(lead)}</td></tr>
+        ${cells ? `<tr><td><table width="100%" cellpadding="0" cellspacing="0">${cells}</table></td></tr>` : ''}
         ${cta ? `<tr><td style="padding-top:24px;"><a href="${escape(cta.url)}" style="display:block;background:#111;color:#fff;text-decoration:none;text-align:center;font-size:14px;font-weight:700;letter-spacing:.04em;padding:14px 20px;border-radius:10px;">${escape(cta.label)}</a>${cta.hint ? `<p style="margin:8px 0 0 0;text-align:center;font-size:12px;color:#888;">${escape(cta.hint)}</p>` : ''}</td></tr>` : ''}
         <tr><td style="padding-top:28px;border-top:1px solid #eee;margin-top:24px;font-size:13px;color:#8a8a8a;line-height:1.6;">${escape(footer)}</td></tr>
       </table>
@@ -195,8 +195,8 @@ function ticketMail(guest: GuestMail, title: string, intro: string, template?: E
     title,
     formattedIntro,
     withPdf
-      ? [['Name', guest.fullName || ''], ['Event', guest.campaign || '']]
-      : [['Access code', guest.ticketCode || ''], ['Name', guest.fullName || ''], ['Event', guest.campaign || '']],
+      ? []
+      : [['Access code', guest.ticketCode || '']],
     withPdf
       ? 'Keep this email. Your ticket is the attached PDF.'
       : 'Keep this email. Your access code is your entry.',
@@ -251,10 +251,7 @@ export function sendWaitlistEmail(guest: GuestMail) {
   const html = shell(
     'You are on the waitlist',
     `Hi ${guest.fullName || 'there'}, ${eventLabel(guest)} is full right now. You are on the waitlist, and we will email you your ticket the moment a place opens.`,
-    [
-      ['Name', guest.fullName || ''],
-      ['Event', guest.campaign || '']
-    ],
+    [],
     'No action needed. This is not a ticket yet. Wait for the confirmation email.'
   );
 
@@ -297,12 +294,7 @@ export function sendTurnReadyEmail(guest: GuestMail, template?: EmailTemplateCon
   const html = shell(
     heading,
     bodyText,
-    [
-      ['Queue Number', (guest as any).queueNumber ? `#${(guest as any).queueNumber}` : (guest.ticketCode ? `#${guest.ticketCode}` : '')],
-      ['Access Code', guest.ticketCode || ''],
-      ['Name', guest.fullName || ''],
-      ['Event', guest.campaign || '']
-    ],
+    [],
     'Please proceed to the entrance promptly. Present your pass on screen at the door.',
     guest.liveUrl ? {
       label: 'VIEW LIVE QUEUE',

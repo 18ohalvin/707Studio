@@ -596,26 +596,6 @@
                     </p>
                   </div>
 
-                  <!-- Realistic Details Table (from mailer.ts) -->
-                  <div class="rounded-[10px] bg-neutral-50/80 border border-black/5 p-3 flex flex-col gap-1.5 text-[11px]">
-                    <div class="flex justify-between py-0.5 border-b border-black/5">
-                      <span class="text-neutral-400 uppercase tracking-normal">Name</span>
-                      <span class="font-medium text-black">Sarah Jenkins</span>
-                    </div>
-                    <div class="flex justify-between py-0.5 border-b border-black/5">
-                      <span class="text-neutral-400 uppercase tracking-normal">Event</span>
-                      <span class="font-medium text-black">{{ activeBrandName }}</span>
-                    </div>
-                    <div class="flex justify-between py-0.5 border-b border-black/5">
-                      <span class="text-neutral-400 uppercase tracking-normal">Queue No</span>
-                      <span class="font-medium font-sans text-black">#42</span>
-                    </div>
-                    <div class="flex justify-between py-0.5">
-                      <span class="text-neutral-400 uppercase tracking-normal">Access ID</span>
-                      <span class="font-medium font-sans text-black">707-K92F</span>
-                    </div>
-                  </div>
-
                   <!-- Live CTA Button -->
                   <div class="pt-1">
                     <div class="w-full h-[36px] rounded-[8px] bg-black text-white text-[12px] font-medium flex items-center justify-center shadow-xs">
