@@ -9,7 +9,7 @@
 
       <!-- Pop Up Modal Box - Anchored cleanly below the profile button -->
       <div 
-        class="absolute top-[calc(100%+8px)] right-0 z-50 bg-white/95 backdrop-blur-2xl border-[0.5px] border-black/10 flex flex-col items-start pb-[10px] rounded-[18px] shadow-[0px_24px_60px_0px_rgba(0,0,0,0.14),0_1px_3px_rgba(0,0,0,0.04)] w-[300px] select-none apple-popover-box overflow-hidden"
+        class="absolute top-[calc(100%+8px)] right-0 z-50 bg-white border border-black/10 flex flex-col items-start pb-[10px] rounded-[18px] shadow-[0px_20px_50px_rgba(0,0,0,0.18)] w-[300px] select-none apple-popover-box overflow-hidden"
         data-node-id="212:8894"
         data-name="User Profile Pop Up Modal"
       >

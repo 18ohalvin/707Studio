@@ -77,7 +77,7 @@
           </button>
 
           <Transition name="hub-pop">
-            <div v-if="isColumnsOpen" class="absolute right-0 top-[calc(100%+6px)] z-40 w-[240px] apple-frost border border-black/10 rounded-[12px] shadow-[0px_24px_60px_rgba(0,0,0,0.16)] p-2 font-sans font-light tracking-normal">
+            <div v-if="isColumnsOpen" class="absolute right-0 top-[calc(100%+6px)] z-40 w-[240px] bg-white border border-black/10 rounded-[12px] shadow-[0px_20px_50px_rgba(0,0,0,0.16)] p-2 font-sans font-light tracking-normal">
               <!-- Event Date Filter inside dropdown if multiple dates -->
               <div v-if="availableDates.length > 1" class="pb-2 mb-2 border-b border-black/5">
                 <p class="px-2 text-[10px] uppercase tracking-normal text-neutral-400 mb-1">Event Date</p>
@@ -357,7 +357,7 @@
         <div
           v-if="statusMenu"
           ref="statusMenuRef"
-          class="fixed z-[80] w-[190px] apple-frost border border-black/10 rounded-[12px] shadow-[0px_24px_60px_rgba(0,0,0,0.18)] p-1.5 font-sans font-light tracking-normal"
+          class="fixed z-[80] w-[190px] bg-white border border-black/10 rounded-[12px] shadow-[0px_20px_50px_rgba(0,0,0,0.18)] p-1.5 font-sans font-light tracking-normal"
           :style="{ top: `${statusMenu.y}px`, left: `${statusMenu.x}px` }"
         >
           <button

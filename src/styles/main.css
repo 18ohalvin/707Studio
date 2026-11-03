@@ -1164,13 +1164,13 @@ button:active,
    near-opaque instead of letting the text behind show through.
    ------------------------------------------------------------------ */
 .apple-frost {
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.96);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
   backdrop-filter: blur(28px) saturate(180%);
 }
 
 .apple-frost-strong {
-  background: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.98);
   -webkit-backdrop-filter: blur(32px) saturate(180%);
   backdrop-filter: blur(32px) saturate(180%);
 }

@@ -137,7 +137,7 @@
             <Transition name="hub-pop">
               <div
                 v-if="isPickerOpen"
-                class="absolute left-0 top-[calc(100%+6px)] z-50 w-[320px] apple-frost border border-black/10 rounded-[14px] shadow-[0px_24px_60px_rgba(0,0,0,0.18)] p-2 font-sans font-light tracking-normal"
+                class="absolute left-0 top-[calc(100%+6px)] z-50 w-[320px] bg-white border border-black/10 rounded-[14px] shadow-[0px_20px_50px_rgba(0,0,0,0.18)] p-2 font-sans font-light tracking-normal"
               >
                 <div class="flex items-center justify-between px-2 pt-1 pb-2">
                   <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Switch Campaign</span>
