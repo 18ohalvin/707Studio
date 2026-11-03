@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full w-full bg-white text-black font-707 flex flex-col select-none overflow-y-auto overflow-x-hidden">
+  <div class="h-full w-full bg-white text-black font-sans font-light tracking-normal flex flex-col select-none overflow-y-auto overflow-x-hidden">
     <!-- Top Header (Retaining Existing 48px Header Style as requested) -->
     <header class="w-full h-[48px] px-[20px] flex items-center justify-between border-b border-black/10 bg-white/90 backdrop-blur-md shrink-0 sticky top-0 z-30">
       <!-- Left: 707 Logo & Sub-Brand Studio Identifier (Consistent App Brand Logo) -->
@@ -14,7 +14,7 @@
         <button 
           type="button"
           @click="showWhatsNewModal = true"
-          class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white hover:bg-neutral-50 border-[0.5px] border-black/10 hover:border-black/30 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10.5px] font-707 font-medium text-black leading-none whitespace-nowrap cursor-pointer transition-all apple-press"
+          class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white hover:bg-neutral-50 border-[0.5px] border-black/10 hover:border-black/30 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10.5px] font-sans font-light tracking-normal font-medium text-black leading-none whitespace-nowrap cursor-pointer transition-all apple-press"
           title="What's New in Design Studio 1.5"
         >
           1.5
@@ -25,7 +25,7 @@
       <div class="flex items-center gap-3">
         <router-link 
           to="/" 
-          class="flex items-center gap-1.5 px-3 h-[30px] rounded-[6px] border border-black/15 text-[12px] font-707 font-medium hover:bg-black/5 transition-colors"
+          class="flex items-center gap-1.5 px-3 h-[30px] rounded-[6px] border border-black/15 text-[12px] font-sans font-light tracking-normal font-medium hover:bg-black/5 transition-colors"
         >
           <ArrowLeft class="w-3.5 h-3.5" />
           <span>Back to Studio</span>
@@ -33,7 +33,7 @@
 
         <button 
           @click="handleExitAdmin"
-          class="flex items-center gap-1.5 px-3 h-[30px] rounded-[6px] bg-neutral-100 hover:bg-neutral-200 text-black border border-black/10 text-[12px] font-707 font-medium cursor-pointer transition-colors"
+          class="flex items-center gap-1.5 px-3 h-[30px] rounded-[6px] bg-neutral-100 hover:bg-neutral-200 text-black border border-black/10 text-[12px] font-sans font-light tracking-normal font-medium cursor-pointer transition-colors"
           title="Exit Superadmin Mode"
         >
           <LogOut class="w-3.5 h-3.5" />
@@ -46,10 +46,10 @@
     <main class="flex-1 w-full max-w-[1280px] mx-auto py-[48px] flex flex-col gap-[40px]">
       <!-- 1. Intro Container (Figma Node 295:4069) -->
       <div class="flex flex-col gap-[8px] items-start px-[48px] w-full" data-node-id="295:4069" data-name="Intro Container">
-        <h1 class="font-707 text-[28px] leading-[34px] tracking-[-0.56px] text-black font-normal" data-node-id="295:4070">
+        <h1 class="font-sans font-light tracking-normal text-[28px] leading-[34px] tracking-normal text-black font-normal" data-node-id="295:4070">
           System Governance & Directory
         </h1>
-        <p class="font-707 text-[14px] leading-[24px] text-black max-w-[680px]" data-node-id="295:4071">
+        <p class="font-sans font-light tracking-normal text-[14px] leading-[24px] text-black max-w-[680px]" data-node-id="295:4071">
           Review design drops, manage brand PICs, team account passwords, and system-wide configurations.
         </p>
       </div>
@@ -58,7 +58,7 @@
       <div class="flex gap-[40px] md:gap-[48px] items-center leading-[24px] px-[48px] text-[16px] text-black w-full whitespace-nowrap" data-node-id="295:4072" data-name="Navigation Container">
         <button 
           @click="activeTab = 'brands'"
-          class="bg-transparent border-none p-0 cursor-pointer font-707 text-[16px] transition-colors"
+          class="bg-transparent border-none p-0 cursor-pointer font-sans font-light tracking-normal text-[16px] transition-colors"
           :class="[
             activeTab === 'brands' 
               ? 'font-medium underline decoration-solid underline-offset-[8px] text-black' 
@@ -70,7 +70,7 @@
 
         <button 
           @click="activeTab = 'users'"
-          class="bg-transparent border-none p-0 cursor-pointer font-707 text-[16px] transition-colors"
+          class="bg-transparent border-none p-0 cursor-pointer font-sans font-light tracking-normal text-[16px] transition-colors"
           :class="[
             activeTab === 'users' 
               ? 'font-medium underline decoration-solid underline-offset-[8px] text-black' 
@@ -82,7 +82,7 @@
 
         <button 
           @click="activeTab = 'submissions'"
-          class="bg-transparent border-none p-0 cursor-pointer font-707 text-[16px] transition-colors flex items-center gap-2"
+          class="bg-transparent border-none p-0 cursor-pointer font-sans font-light tracking-normal text-[16px] transition-colors flex items-center gap-2"
           :class="[
             activeTab === 'submissions' 
               ? 'font-medium underline decoration-solid underline-offset-[8px] text-black' 
@@ -97,7 +97,7 @@
 
         <button 
           @click="activeTab = 'templates'"
-          class="bg-transparent border-none p-0 cursor-pointer font-707 text-[16px] transition-colors"
+          class="bg-transparent border-none p-0 cursor-pointer font-sans font-light tracking-normal text-[16px] transition-colors"
           :class="[
             activeTab === 'templates' 
               ? 'font-medium underline decoration-solid underline-offset-[8px] text-black' 
@@ -112,13 +112,13 @@
       <div v-if="activeTab === 'brands'" class="flex flex-col gap-[20px] items-start px-[48px] w-full" data-node-id="295:4077" data-name="Brands List Container">
         <!-- Brands Header (Figma Node 295:4078) -->
         <div class="flex items-center justify-between w-full" data-node-id="295:4078" data-name="Brands Header">
-          <p class="font-707 text-[16px] leading-[22px] text-black font-normal" data-node-id="295:4079">
+          <p class="font-sans font-light tracking-normal text-[16px] leading-[22px] text-black font-normal" data-node-id="295:4079">
             Brands List [{{ brandStore.brands.length }}]
           </p>
 
           <button 
             @click="showAddBrandModal = true"
-            class="border-[0.5px] border-black border-solid flex items-center justify-center px-[16px] py-[6px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[12px] leading-[16px] font-medium text-black gap-1.5"
+            class="border-[0.5px] border-black border-solid flex items-center justify-center px-[16px] py-[6px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-sans font-light tracking-normal text-[12px] leading-[16px] font-medium text-black gap-1.5"
             data-node-id="295:4080"
           >
             <Plus class="w-3.5 h-3.5" />
@@ -138,7 +138,7 @@
             <div class="flex gap-[20px] md:gap-[24px] items-center shrink-0" data-name="Brand Info Container">
               <!-- Avatar Circle / Brand Photo -->
               <div 
-                class="size-[38px] rounded-full text-white flex items-center justify-center font-bold text-[14px] shrink-0 border border-black/10 shadow-xs overflow-hidden bg-black"
+                class="size-[38px] rounded-full text-white flex items-center justify-center font-medium text-[14px] shrink-0 border border-black/10 shadow-xs overflow-hidden bg-black"
                 :style="{ backgroundColor: brand.primary_color || '#000000' }"
               >
                 <img 
@@ -154,41 +154,41 @@
               <!-- Brand Name & Link -->
               <div class="flex flex-col gap-[2px] items-start w-[180px] shrink-0">
                 <div class="flex gap-[8px] items-center w-full">
-                  <p class="font-707 font-medium text-[12px] leading-[18px] text-black whitespace-nowrap">
+                  <p class="font-sans font-light tracking-normal font-medium text-[12px] leading-[18px] text-black whitespace-nowrap">
                     {{ brand.name }}
                   </p>
                   <div class="border border-black border-solid flex items-center justify-center px-[6px] rounded-[100px] shrink-0 h-[16px]">
-                    <span class="font-707 text-[10px] leading-[12px] text-black text-center whitespace-nowrap">
+                    <span class="font-sans font-light tracking-normal text-[10px] leading-[12px] text-black text-center whitespace-nowrap">
                       active
                     </span>
                   </div>
                 </div>
-                <p class="font-707 text-[11px] leading-[15px] text-neutral-500 font-mono">
+                <p class="font-sans font-light tracking-normal text-[11px] leading-[15px] text-neutral-500 font-mono">
                   events.707.co.id/{{ brand.slug }}
                 </p>
               </div>
             </div>
 
             <!-- Col 2: On-going Projects -->
-            <p class="font-707 text-[12px] leading-[18px] text-black whitespace-nowrap">
+            <p class="font-sans font-light tracking-normal text-[12px] leading-[18px] text-black whitespace-nowrap">
               {{ getBrandDropsCount(brand.slug) }} Projects On-going
             </p>
 
             <!-- Col 3: Last Activity -->
-            <p class="font-707 text-[12px] leading-[18px] text-neutral-600 whitespace-nowrap">
+            <p class="font-sans font-light tracking-normal text-[12px] leading-[18px] text-neutral-600 whitespace-nowrap">
               {{ getBrandLastActivity(brand.slug) }}
             </p>
 
             <!-- Col 4: PIC Accounts Count & Avatars -->
             <div class="flex items-center gap-2 whitespace-nowrap">
-              <span class="font-707 text-[12px] leading-[18px] text-black">
+              <span class="font-sans font-light tracking-normal text-[12px] leading-[18px] text-black">
                 {{ getBrandPics(brand.slug).length }} PIC Account{{ getBrandPics(brand.slug).length === 1 ? '' : 's' }}
               </span>
               <div class="flex -space-x-1.5 overflow-hidden">
                 <div 
                   v-for="pic in getBrandPics(brand.slug).slice(0, 3)" 
                   :key="pic.id" 
-                  class="inline-block size-4.5 rounded-full ring-1 ring-white bg-neutral-200 text-[9px] font-bold text-center leading-4.5 text-black"
+                  class="inline-block size-4.5 rounded-full ring-1 ring-white bg-neutral-200 text-[9px] font-medium text-center leading-4.5 text-black"
                   :title="pic.name"
                 >
                   {{ pic.name.charAt(0) }}
@@ -200,7 +200,7 @@
             <div class="flex items-center gap-2.5 shrink-0">
               <button 
                 @click="openBrandDetailsModal(brand)"
-                class="font-707 font-medium text-[12px] leading-[18px] text-black hover:opacity-75 cursor-pointer bg-transparent border-none p-0 transition-opacity whitespace-nowrap"
+                class="font-sans font-light tracking-normal font-medium text-[12px] leading-[18px] text-black hover:opacity-75 cursor-pointer bg-transparent border-none p-0 transition-opacity whitespace-nowrap"
               >
                 Edit Details
               </button>
@@ -220,14 +220,14 @@
       <div v-if="activeTab === 'users'" class="flex flex-col gap-[20px] items-start px-[48px] w-full">
         <!-- Team Header -->
         <div class="flex items-center justify-between w-full">
-          <p class="font-707 text-[16px] leading-[22px] text-black font-normal">
+          <p class="font-sans font-light tracking-normal text-[16px] leading-[22px] text-black font-normal">
             Team Accounts [{{ teamUsers.length }}]
           </p>
 
           <div class="flex items-center gap-2.5">
             <button 
               @click="showAddUserModal = true"
-              class="border-[0.5px] border-black border-solid flex items-center justify-center px-[16px] py-[6px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[12px] leading-[16px] font-medium text-black gap-1.5"
+              class="border-[0.5px] border-black border-solid flex items-center justify-center px-[16px] py-[6px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-sans font-light tracking-normal text-[12px] leading-[16px] font-medium text-black gap-1.5"
             >
               <Plus class="w-3.5 h-3.5" />
               <span>Add Member</span>
@@ -244,19 +244,19 @@
           >
             <!-- Member Info -->
             <div class="flex gap-[16px] items-center shrink-0 w-[240px]">
-              <div class="size-[36px] rounded-full bg-black text-white flex items-center justify-center font-bold text-[13px] shrink-0 shadow-xs">
+              <div class="size-[36px] rounded-full bg-black text-white flex items-center justify-center font-medium text-[13px] shrink-0 shadow-xs">
                 {{ user.name.charAt(0) }}
               </div>
               <div class="flex flex-col gap-[2px]">
-                <span class="font-707 font-medium text-[12px] text-black">{{ user.name }}</span>
-                <span class="font-707 text-[11px] text-neutral-500 font-mono">{{ user.email }}</span>
+                <span class="font-sans font-light tracking-normal font-medium text-[12px] text-black">{{ user.name }}</span>
+                <span class="font-sans font-light tracking-normal text-[11px] text-neutral-500 font-mono">{{ user.email }}</span>
               </div>
             </div>
 
             <!-- Role Badge -->
             <div class="w-[140px]">
               <div class="border border-black border-solid inline-flex items-center justify-center px-[8px] py-[1px] rounded-[100px]">
-                <span class="font-707 text-[10px] text-black capitalize">
+                <span class="font-sans font-light tracking-normal text-[10px] text-black capitalize">
                   {{ user.role === 'superadmin' ? 'Superadmin' : user.role === 'editor' ? 'Brand Designer' : 'Viewer' }}
                 </span>
               </div>
@@ -272,7 +272,7 @@
               </span>
               <button 
                 @click="openPasswordModal(user)"
-                class="font-707 text-[11px] text-black underline font-medium hover:opacity-75 cursor-pointer bg-transparent border-none ml-1"
+                class="font-sans font-light tracking-normal text-[11px] text-black underline font-medium hover:opacity-75 cursor-pointer bg-transparent border-none ml-1"
               >
                 Reset
               </button>
@@ -293,18 +293,18 @@
             <div class="flex items-center justify-end gap-3 w-[150px] text-right">
               <button 
                 @click="openEditUserModal(user)"
-                class="font-707 text-[12px] text-black hover:underline cursor-pointer bg-transparent border-none font-medium"
+                class="font-sans font-light tracking-normal text-[12px] text-black hover:underline cursor-pointer bg-transparent border-none font-medium"
               >
                 Edit
               </button>
               <button 
                 v-if="user.role !== 'superadmin'"
                 @click="authStore.removeUser(user.id)"
-                class="font-707 text-[12px] text-red-600 hover:underline cursor-pointer bg-transparent border-none"
+                class="font-sans font-light tracking-normal text-[12px] text-red-600 hover:underline cursor-pointer bg-transparent border-none"
               >
                 Remove
               </button>
-              <span v-else class="font-707 text-[10px] text-neutral-400 italic">Primary</span>
+              <span v-else class="font-sans font-light tracking-normal text-[10px] text-neutral-400 italic">Primary</span>
             </div>
           </div>
         </div>
@@ -315,12 +315,12 @@
         <!-- Projects Header with Filter & Refresh Action -->
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
           <div class="flex items-center gap-4">
-            <p class="font-707 text-[16px] leading-[22px] text-black font-normal">
+            <p class="font-sans font-light tracking-normal text-[16px] leading-[22px] text-black font-normal">
               Project Submissions [{{ filteredProjects.length }}]
             </p>
 
             <!-- Project Status Filter Tabs -->
-            <div class="flex items-center gap-1.5 p-0.5 rounded-[6px] bg-black/[0.04] border border-black/5 text-[11px] font-707">
+            <div class="flex items-center gap-1.5 p-0.5 rounded-[6px] bg-black/[0.04] border border-black/5 text-[11px] font-sans font-light tracking-normal">
               <button 
                 @click="projectFilter = 'all'"
                 class="px-2.5 py-1 rounded-[4px] transition-colors cursor-pointer"
@@ -355,7 +355,7 @@
           <!-- Refresh Queue Action -->
           <button 
             @click="editorStore.loadProjects()" 
-            class="border-[0.5px] border-black border-solid flex items-center justify-center px-[16px] py-[6px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[12px] leading-[16px] font-medium text-black gap-1.5 shrink-0"
+            class="border-[0.5px] border-black border-solid flex items-center justify-center px-[16px] py-[6px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-sans font-light tracking-normal text-[12px] leading-[16px] font-medium text-black gap-1.5 shrink-0"
           >
             <RefreshCw class="w-3.5 h-3.5" />
             <span>Refresh Queue</span>
@@ -371,13 +371,13 @@
           >
             <!-- Col 1: Project Title & Brand (240px) -->
             <div class="flex flex-col w-[240px] md:w-[260px] gap-[2px] shrink-0">
-              <span class="font-707 font-medium text-[12px] text-black truncate">{{ project.title }}</span>
-              <span class="font-707 text-[11px] text-neutral-500 font-mono truncate">/{{ project.brand_slug || 'atmos' }}/{{ project.slug }}</span>
+              <span class="font-sans font-light tracking-normal font-medium text-[12px] text-black truncate">{{ project.title }}</span>
+              <span class="font-sans font-light tracking-normal text-[11px] text-neutral-500 font-mono truncate">/{{ project.brand_slug || 'atmos' }}/{{ project.slug }}</span>
             </div>
 
             <!-- Col 2: Layout Info (160px) -->
             <div class="w-[150px] shrink-0 text-left">
-              <span class="font-707 text-[12px] text-neutral-700 whitespace-nowrap">
+              <span class="font-sans font-light tracking-normal text-[12px] text-neutral-700 whitespace-nowrap">
                 {{ project.pages?.length || 1 }} Pages · {{ project.widget_tree?.length || 0 }} Widgets
               </span>
             </div>
@@ -395,7 +395,7 @@
 
             <!-- Col 4: Last Updated (120px) -->
             <div class="w-[120px] shrink-0 text-center">
-              <span class="font-707 text-[12px] text-neutral-500 whitespace-nowrap">
+              <span class="font-sans font-light tracking-normal text-[12px] text-neutral-500 whitespace-nowrap">
                 {{ editorStore.formatRelativeTime(project.updated_at) }}
               </span>
             </div>
@@ -404,7 +404,7 @@
             <div class="flex items-center gap-2 justify-end shrink-0 min-w-[260px]">
               <button 
                 @click="handlePreviewProject(project.id)"
-                class="border-[0.5px] border-black px-2.5 py-1 rounded-[6px] text-[11px] font-707 font-medium text-black hover:bg-black hover:text-white transition-all cursor-pointer"
+                class="border-[0.5px] border-black px-2.5 py-1 rounded-[6px] text-[11px] font-sans font-light tracking-normal font-medium text-black hover:bg-black hover:text-white transition-all cursor-pointer"
                 title="Inspect in live designer canvas"
               >
                 Inspect
@@ -412,7 +412,7 @@
 
               <button 
                 @click="handleApproveProject(project.id)"
-                class="bg-black text-white px-3 py-1 rounded-[6px] text-[11px] font-707 font-medium hover:bg-neutral-800 transition-all cursor-pointer flex items-center gap-1"
+                class="bg-black text-white px-3 py-1 rounded-[6px] text-[11px] font-sans font-light tracking-normal font-medium hover:bg-neutral-800 transition-all cursor-pointer flex items-center gap-1"
                 :class="!canPublish(project) ? 'opacity-40 cursor-default hover:bg-black' : ''"
                 :disabled="!canPublish(project)"
                 :title="!canPublish(project) ? 'Live — nothing new to publish' : (isLiveProject(project) ? 'Publish the submitted update' : 'Approve and publish')"
@@ -424,7 +424,7 @@
               <button 
                 v-if="isAwaitingReview(project)"
                 @click="handleDeclineProject(project.id)"
-                class="border-[0.5px] border-black/20 text-neutral-700 hover:text-neutral-900 hover:border-black/40 hover:bg-neutral-100 px-2.5 py-1 rounded-[6px] text-[11px] font-707 font-medium transition-colors cursor-pointer flex items-center gap-1"
+                class="border-[0.5px] border-black/20 text-neutral-700 hover:text-neutral-900 hover:border-black/40 hover:bg-neutral-100 px-2.5 py-1 rounded-[6px] text-[11px] font-sans font-light tracking-normal font-medium transition-colors cursor-pointer flex items-center gap-1"
                 title="Send the submission back to the brand with a note"
               >
                 <XCircle class="w-3 h-3" />
@@ -433,7 +433,7 @@
 
               <button 
                 @click="handleDeleteProject(project)"
-                class="border-[0.5px] border-red-200 text-red-600 hover:bg-red-600 hover:text-white px-2.5 py-1 rounded-[6px] text-[11px] font-707 font-medium transition-all cursor-pointer flex items-center gap-1"
+                class="border-[0.5px] border-red-200 text-red-600 hover:bg-red-600 hover:text-white px-2.5 py-1 rounded-[6px] text-[11px] font-sans font-light tracking-normal font-medium transition-all cursor-pointer flex items-center gap-1"
                 title="Delete project permanently from cloud server"
               >
                 <Trash2 class="w-3 h-3" />
@@ -442,7 +442,7 @@
             </div>
           </div>
 
-          <div v-if="!filteredProjects.length" class="p-8 text-center text-neutral-400 font-707 text-[12px] w-full">
+          <div v-if="!filteredProjects.length" class="p-8 text-center text-neutral-400 font-sans font-light tracking-normal text-[12px] w-full">
             No project submissions found for this filter.
           </div>
         </div>
@@ -452,8 +452,8 @@
       <div v-if="activeTab === 'brands'" class="px-[48px] w-full">
         <div class="w-full rounded-[12px] border border-red-200 bg-red-50/40 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div class="flex flex-col gap-1 max-w-[640px]">
-            <p class="font-707 text-[14px] font-medium text-black">Media library</p>
-            <p class="font-707 text-[12.5px] leading-[19px] text-neutral-700">
+            <p class="font-sans font-light tracking-normal text-[14px] font-medium text-black">Media library</p>
+            <p class="font-sans font-light tracking-normal text-[12.5px] leading-[19px] text-neutral-700">
               Delete every asset in every brand's library, files included. Campaigns still showing one of these images lose it.
               Brands manage their own library from the editor (Media Gallery → Select).
             </p>
@@ -462,7 +462,7 @@
             type="button"
             :disabled="isPurgingMedia"
             @click="handlePurgeMedia"
-            class="shrink-0 h-[36px] px-4 rounded-[8px] bg-[#9b0707] hover:bg-[#7f0606] text-white text-[12.5px] font-707 font-medium cursor-pointer disabled:opacity-50"
+            class="shrink-0 h-[36px] px-4 rounded-[8px] bg-[#9b0707] hover:bg-[#7f0606] text-white text-[12.5px] font-sans font-light tracking-normal font-medium cursor-pointer disabled:opacity-50"
           >
             {{ isPurgingMedia ? 'Deleting…' : 'Delete all media' }}
           </button>
@@ -474,12 +474,12 @@
         <!-- Templates Header with Filter & Build Action -->
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
           <div class="flex items-center gap-4">
-            <p class="font-707 text-[16px] leading-[22px] text-black font-normal">
+            <p class="font-sans font-light tracking-normal text-[16px] leading-[22px] text-black font-normal">
               Activation Template Presets [{{ filteredTemplates.length }}]
             </p>
 
             <!-- Status Filter Tabs -->
-            <div class="flex items-center gap-1.5 p-0.5 rounded-[6px] bg-black/[0.04] border border-black/5 text-[11px] font-707">
+            <div class="flex items-center gap-1.5 p-0.5 rounded-[6px] bg-black/[0.04] border border-black/5 text-[11px] font-sans font-light tracking-normal">
               <button 
                 @click="templateFilter = 'all'"
                 class="px-2.5 py-1 rounded-[4px] transition-colors cursor-pointer"
@@ -506,7 +506,7 @@
 
           <button 
             @click="openBuildTemplateModal" 
-            class="border-[0.5px] border-black border-solid flex items-center justify-center px-[16px] py-[6px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-707 text-[12px] leading-[16px] font-medium text-black gap-1.5 shrink-0"
+            class="border-[0.5px] border-black border-solid flex items-center justify-center px-[16px] py-[6px] rounded-[8px] bg-white hover:bg-black hover:text-white transition-all cursor-pointer font-sans font-light tracking-normal text-[12px] leading-[16px] font-medium text-black gap-1.5 shrink-0"
           >
             <Plus class="w-3.5 h-3.5" />
             <span>Build New Template</span>
@@ -524,19 +524,19 @@
             <div class="flex items-start justify-between gap-3">
               <div class="flex flex-col gap-1">
                 <div class="flex items-center gap-2">
-                  <h3 class="font-707 font-medium text-[14px] text-black">{{ tpl.name }}</h3>
+                  <h3 class="font-sans font-light tracking-normal font-medium text-[14px] text-black">{{ tpl.name }}</h3>
                   <!-- Category Pill -->
-                  <span class="px-2 py-0.5 rounded-[100px] border border-black/20 text-[10px] font-707 uppercase text-neutral-700 bg-neutral-50">
+                  <span class="px-2 py-0.5 rounded-[100px] border border-black/20 text-[10px] font-sans font-light tracking-normal uppercase text-neutral-700 bg-neutral-50">
                     {{ tpl.category || 'custom' }}
                   </span>
                 </div>
-                <p class="font-707 text-[12px] text-neutral-500 leading-relaxed line-clamp-2">{{ tpl.description }}</p>
+                <p class="font-sans font-light tracking-normal text-[12px] text-neutral-500 leading-relaxed line-clamp-2">{{ tpl.description }}</p>
               </div>
 
               <!-- Draft / Published Status Badge -->
               <button 
                 @click="brandStore.toggleTemplateStatus(tpl.id)"
-                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[100px] text-[10px] font-707 font-medium border shrink-0 transition-colors cursor-pointer"
+                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[100px] text-[10px] font-sans font-light tracking-normal font-medium border shrink-0 transition-colors cursor-pointer"
                 :class="tpl.status === 'published' 
                   ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100' 
                   : 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100'"
@@ -548,7 +548,7 @@
             </div>
 
             <!-- Middle Summary -->
-            <div class="flex items-center justify-between text-[11px] font-707 text-neutral-500">
+            <div class="flex items-center justify-between text-[11px] font-sans font-light tracking-normal text-neutral-500">
               <span class="flex items-center gap-1">
                 <Layers class="w-3.5 h-3.5 text-neutral-400" />
                 <span>{{ tpl.widget_tree.length }} Widgets configured</span>
@@ -561,7 +561,7 @@
               <div class="flex items-center gap-3.5 flex-wrap">
                 <button 
                   @click="openEditTemplateModal(tpl)"
-                  class="font-707 font-medium text-[12px] leading-[18px] text-black hover:opacity-75 cursor-pointer bg-transparent border-none p-0 transition-opacity whitespace-nowrap flex items-center"
+                  class="font-sans font-light tracking-normal font-medium text-[12px] leading-[18px] text-black hover:opacity-75 cursor-pointer bg-transparent border-none p-0 transition-opacity whitespace-nowrap flex items-center"
                 >
                   Edit Details
                 </button>
@@ -570,7 +570,7 @@
 
                 <button 
                   @click="brandStore.toggleTemplateStatus(tpl.id)"
-                  class="font-707 text-[12px] leading-[18px] text-neutral-600 hover:text-black cursor-pointer bg-transparent border-none p-0 transition-colors whitespace-nowrap flex items-center"
+                  class="font-sans font-light tracking-normal text-[12px] leading-[18px] text-neutral-600 hover:text-black cursor-pointer bg-transparent border-none p-0 transition-colors whitespace-nowrap flex items-center"
                 >
                   {{ tpl.status === 'published' ? 'Set to Draft' : 'Publish' }}
                 </button>
@@ -579,7 +579,7 @@
 
                 <button 
                   @click="handleRemoveTemplate(tpl)"
-                  class="font-707 text-[12px] leading-[18px] text-red-600 hover:text-red-700 hover:underline cursor-pointer bg-transparent border-none p-0 transition-colors whitespace-nowrap flex items-center"
+                  class="font-sans font-light tracking-normal text-[12px] leading-[18px] text-red-600 hover:text-red-700 hover:underline cursor-pointer bg-transparent border-none p-0 transition-colors whitespace-nowrap flex items-center"
                 >
                   Remove
                 </button>
@@ -587,7 +587,7 @@
 
               <button 
                 @click="handleEditInStudio(tpl)"
-                class="border-[0.5px] border-black px-3.5 h-[28px] rounded-[6px] text-[12px] font-707 font-medium text-black hover:bg-black hover:text-white transition-all cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
+                class="border-[0.5px] border-black px-3.5 h-[28px] rounded-[6px] text-[12px] font-sans font-light tracking-normal font-medium text-black hover:bg-black hover:text-white transition-all cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
               >
                 <span>Edit in Builder</span>
                 <ExternalLink class="w-3.5 h-3.5" />
@@ -596,7 +596,7 @@
           </div>
         </div>
 
-        <div v-if="!filteredTemplates.length" class="p-8 text-center text-neutral-400 font-707 text-[12px] w-full border border-dashed border-neutral-300 rounded-[8px]">
+        <div v-if="!filteredTemplates.length" class="p-8 text-center text-neutral-400 font-sans font-light tracking-normal text-[12px] w-full border border-dashed border-neutral-300 rounded-[8px]">
           No templates found in this view. Click "Build New Template" to create one.
         </div>
       </div>
@@ -609,41 +609,41 @@
         class="fixed inset-0 z-50 apple-frost-backdrop flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showAddBrandModal = false"
       >
-        <div class="apple-frost rounded-[16px] border border-white/60 p-6 w-full max-w-[460px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707">
+        <div class="apple-frost rounded-[16px] border border-white/60 p-6 w-full max-w-[460px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-sans font-light tracking-normal">
           <div class="flex items-center justify-between">
-            <h3 class="font-707 font-medium text-[16px] text-black">Add Brand Account</h3>
-            <button @click="showAddBrandModal = false" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
+            <h3 class="font-sans font-light tracking-normal font-medium text-[16px] text-black">Add Brand Account</h3>
+            <button @click="showAddBrandModal = false" class="text-neutral-400 hover:text-black text-xl font-medium cursor-pointer">×</button>
           </div>
 
-          <p class="font-707 text-[12px] text-neutral-600">
+          <p class="font-sans font-light tracking-normal text-[12px] text-neutral-600">
             Create an official brand account in the 707 cloud ecosystem.
           </p>
 
           <form @submit.prevent="handleAddBrandSubmit" class="flex flex-col gap-3.5">
             <div class="flex flex-col gap-1">
-              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Brand Name</label>
+              <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Brand Name</label>
               <input 
                 v-model="newBrandName" 
                 type="text" 
                 required 
                 placeholder="e.g. atmos Indonesia" 
-                class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black"
               />
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div class="flex flex-col gap-1">
-                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Brand URL Slug</label>
+                <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Brand URL Slug</label>
                 <input 
                   v-model="newBrandSlug" 
                   type="text" 
                   placeholder="e.g. atmos" 
-                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black font-mono"
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black font-mono"
                 />
               </div>
 
               <div class="flex flex-col gap-1">
-                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Primary Color</label>
+                <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Primary Color</label>
                 <div class="flex items-center gap-2">
                   <input 
                     v-model="newBrandColor" 
@@ -653,7 +653,7 @@
                   <input 
                     v-model="newBrandColor" 
                     type="text" 
-                    class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black font-mono"
+                    class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black font-mono"
                   />
                 </div>
               </div>
@@ -661,7 +661,7 @@
 
             <div class="flex flex-col gap-1.5">
               <div class="flex items-center justify-between">
-                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">
+                <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">
                   Brand Logo / Photo
                 </label>
                 <span v-if="isUploadingNewLogo" class="text-[11px] text-neutral-500 font-mono flex items-center gap-1">
@@ -691,7 +691,7 @@
                     class="size-full object-cover" 
                     @error="(e: any) => (e.target.style.display = 'none')" 
                   />
-                  <span v-else class="text-white font-bold text-sm">
+                  <span v-else class="text-white font-medium text-sm">
                     {{ (newBrandName || 'B').charAt(0).toUpperCase() }}
                   </span>
                   <button 
@@ -712,7 +712,7 @@
                       type="button"
                       @click="newBrandFileInputRef?.click()"
                       :disabled="isUploadingNewLogo"
-                      class="px-3 h-[32px] rounded-[7px] bg-black text-white hover:bg-neutral-800 text-[12px] font-707 font-medium flex items-center gap-1.5 cursor-pointer disabled:opacity-50 transition-colors shadow-xs"
+                      class="px-3 h-[32px] rounded-[7px] bg-black text-white hover:bg-neutral-800 text-[12px] font-sans font-light tracking-normal font-medium flex items-center gap-1.5 cursor-pointer disabled:opacity-50 transition-colors shadow-xs"
                     >
                       <Upload class="w-3.5 h-3.5" />
                       <span>{{ newBrandLogoUrl ? 'Change from Device' : 'Upload from Device' }}</span>
@@ -721,7 +721,7 @@
                       v-if="!showNewBrandUrlInput && !newBrandLogoUrl"
                       type="button"
                       @click="showNewBrandUrlInput = true"
-                      class="px-2.5 h-[32px] rounded-[7px] border border-black/15 text-[11px] font-707 text-neutral-600 hover:text-black hover:bg-black/5 transition-colors cursor-pointer"
+                      class="px-2.5 h-[32px] rounded-[7px] border border-black/15 text-[11px] font-sans font-light tracking-normal text-neutral-600 hover:text-black hover:bg-black/5 transition-colors cursor-pointer"
                     >
                       Paste link instead
                     </button>
@@ -732,19 +732,19 @@
                     v-model="newBrandLogoUrl" 
                     type="text" 
                     placeholder="Or enter image URL (https://...)" 
-                    class="w-full h-[30px] px-2.5 rounded-[6px] bg-black/[0.03] border border-black/15 text-[11px] font-707 text-black outline-none focus:border-black font-mono"
+                    class="w-full h-[30px] px-2.5 rounded-[6px] bg-black/[0.03] border border-black/15 text-[11px] font-sans font-light tracking-normal text-black outline-none focus:border-black font-mono"
                   />
                 </div>
               </div>
             </div>
 
             <div class="flex flex-col gap-1">
-              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Description</label>
+              <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Description</label>
               <textarea 
                 v-model="newBrandDesc" 
                 rows="2"
                 placeholder="Brand specialty, footwear collaboration hub..." 
-                class="w-full p-2.5 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black resize-none"
+                class="w-full p-2.5 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black resize-none"
               />
             </div>
 
@@ -752,13 +752,13 @@
               <button 
                 type="button" 
                 @click="showAddBrandModal = false" 
-                class="px-4 h-[36px] rounded-[8px] border border-black/15 text-neutral-600 font-707 text-[12px] font-medium"
+                class="px-4 h-[36px] rounded-[8px] border border-black/15 text-neutral-600 font-sans font-light tracking-normal text-[12px] font-medium"
               >
                 Cancel
               </button>
               <button 
                 type="submit" 
-                class="apple-glass-btn-dark bg-black text-white px-5 h-[36px] rounded-[8px] font-707 text-[12px] font-medium"
+                class="apple-glass-btn-dark bg-black text-white px-5 h-[36px] rounded-[8px] font-sans font-light tracking-normal text-[12px] font-medium"
               >
                 Create Brand
               </button>
@@ -775,11 +775,11 @@
         class="fixed inset-0 z-50 apple-frost-backdrop flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showBrandDetailsModal = false"
       >
-        <div class="apple-frost rounded-[16px] border border-white/60 p-6 w-full max-w-[480px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707">
+        <div class="apple-frost rounded-[16px] border border-white/60 p-6 w-full max-w-[480px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-sans font-light tracking-normal">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2.5">
               <div 
-                class="size-8 rounded-[6px] text-white flex items-center justify-center font-bold text-[14px] overflow-hidden"
+                class="size-8 rounded-[6px] text-white flex items-center justify-center font-medium text-[14px] overflow-hidden"
                 :style="{ backgroundColor: targetBrand?.primary_color || '#000' }"
               >
                 <img 
@@ -792,27 +792,27 @@
                 <span v-else>{{ targetBrand?.name.charAt(0) }}</span>
               </div>
               <div>
-                <h3 class="font-707 font-medium text-[16px] text-black">{{ targetBrand?.name }}</h3>
-                <p class="font-707 text-[11px] text-neutral-500 font-mono">events.707.co.id/{{ targetBrand?.slug }}</p>
+                <h3 class="font-sans font-light tracking-normal font-medium text-[16px] text-black">{{ targetBrand?.name }}</h3>
+                <p class="font-sans font-light tracking-normal text-[11px] text-neutral-500 font-mono">events.707.co.id/{{ targetBrand?.slug }}</p>
               </div>
             </div>
-            <button @click="showBrandDetailsModal = false" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
+            <button @click="showBrandDetailsModal = false" class="text-neutral-400 hover:text-black text-xl font-medium cursor-pointer">×</button>
           </div>
 
           <form @submit.prevent="handleSaveBrandDetails" class="flex flex-col gap-4">
             <div class="flex flex-col gap-1">
-              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Brand Name</label>
+              <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Brand Name</label>
               <input 
                 v-model="editBrandName" 
                 type="text" 
                 required 
-                class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black"
               />
             </div>
 
             <div class="flex flex-col gap-1.5">
               <div class="flex items-center justify-between">
-                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">
+                <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">
                   Brand Logo / Photo
                 </label>
                 <span v-if="isUploadingEditLogo" class="text-[11px] text-neutral-500 font-mono flex items-center gap-1">
@@ -842,7 +842,7 @@
                     class="size-full object-cover" 
                     @error="(e: any) => (e.target.style.display = 'none')" 
                   />
-                  <span v-else class="text-white font-bold text-sm">
+                  <span v-else class="text-white font-medium text-sm">
                     {{ (editBrandName || targetBrand?.name || 'B').charAt(0).toUpperCase() }}
                   </span>
                   <button 
@@ -863,7 +863,7 @@
                       type="button"
                       @click="editBrandFileInputRef?.click()"
                       :disabled="isUploadingEditLogo"
-                      class="px-3 h-[32px] rounded-[7px] bg-black text-white hover:bg-neutral-800 text-[12px] font-707 font-medium flex items-center gap-1.5 cursor-pointer disabled:opacity-50 transition-colors shadow-xs"
+                      class="px-3 h-[32px] rounded-[7px] bg-black text-white hover:bg-neutral-800 text-[12px] font-sans font-light tracking-normal font-medium flex items-center gap-1.5 cursor-pointer disabled:opacity-50 transition-colors shadow-xs"
                     >
                       <Upload class="w-3.5 h-3.5" />
                       <span>{{ (editBrandLogoUrl || targetBrand?.logo_url) ? 'Change from Device' : 'Upload from Device' }}</span>
@@ -872,7 +872,7 @@
                       v-if="!showEditBrandUrlInput && !editBrandLogoUrl && !targetBrand?.logo_url"
                       type="button"
                       @click="showEditBrandUrlInput = true"
-                      class="px-2.5 h-[32px] rounded-[7px] border border-black/15 text-[11px] font-707 text-neutral-600 hover:text-black hover:bg-black/5 transition-colors cursor-pointer"
+                      class="px-2.5 h-[32px] rounded-[7px] border border-black/15 text-[11px] font-sans font-light tracking-normal text-neutral-600 hover:text-black hover:bg-black/5 transition-colors cursor-pointer"
                     >
                       Paste link instead
                     </button>
@@ -883,31 +883,31 @@
                     v-model="editBrandLogoUrl" 
                     type="text" 
                     placeholder="Or enter image URL (https://...)" 
-                    class="w-full h-[30px] px-2.5 rounded-[6px] bg-black/[0.03] border border-black/15 text-[11px] font-707 text-black outline-none focus:border-black font-mono"
+                    class="w-full h-[30px] px-2.5 rounded-[6px] bg-black/[0.03] border border-black/15 text-[11px] font-sans font-light tracking-normal text-black outline-none focus:border-black font-mono"
                   />
                 </div>
               </div>
             </div>
 
             <div class="flex flex-col gap-1">
-              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Description</label>
+              <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Description</label>
               <textarea 
                 v-model="editBrandDesc" 
                 rows="2"
-                class="w-full p-2.5 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black resize-none"
+                class="w-full p-2.5 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black resize-none"
               />
             </div>
 
             <!-- Assigned PICs for this brand -->
             <div class="flex flex-col gap-2">
               <div class="flex items-center justify-between">
-                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">
+                <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">
                   Assigned PICs ({{ currentBrandPics.length }})
                 </label>
                 <button 
                   type="button"
                   @click="openAssignPicModal(targetBrand?.slug || '', targetBrand?.name || '')"
-                  class="text-[11px] font-707 font-medium text-black underline cursor-pointer"
+                  class="text-[11px] font-sans font-light tracking-normal font-medium text-black underline cursor-pointer"
                 >
                   + Add PIC
                 </button>
@@ -927,7 +927,7 @@
                     v-if="pic.role !== 'superadmin'"
                     type="button" 
                     @click="authStore.unassignBrandPic(targetBrand?.slug || '', pic.id)"
-                    class="text-neutral-400 hover:text-red-600 font-bold"
+                    class="text-neutral-400 hover:text-red-600 font-medium"
                   >
                     ×
                   </button>
@@ -939,13 +939,13 @@
               <button 
                 type="button" 
                 @click="showBrandDetailsModal = false" 
-                class="px-4 h-[36px] rounded-[8px] border border-black/15 text-neutral-600 font-707 text-[12px] font-medium"
+                class="px-4 h-[36px] rounded-[8px] border border-black/15 text-neutral-600 font-sans font-light tracking-normal text-[12px] font-medium"
               >
                 Cancel
               </button>
               <button 
                 type="submit" 
-                class="apple-glass-btn-dark bg-black text-white px-5 h-[36px] rounded-[8px] font-707 text-[12px] font-medium"
+                class="apple-glass-btn-dark bg-black text-white px-5 h-[36px] rounded-[8px] font-sans font-light tracking-normal text-[12px] font-medium"
               >
                 Save Details
               </button>
@@ -962,60 +962,60 @@
         class="fixed inset-0 z-50 apple-frost-backdrop flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showAddUserModal = false"
       >
-        <div class="apple-frost rounded-[16px] border border-white/60 p-6 w-full max-w-[460px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707">
+        <div class="apple-frost rounded-[16px] border border-white/60 p-6 w-full max-w-[460px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-sans font-light tracking-normal">
           <div class="flex items-center justify-between">
-            <h3 class="font-707 font-medium text-[16px] text-black">Create Team Member Account</h3>
-            <button @click="showAddUserModal = false" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
+            <h3 class="font-sans font-light tracking-normal font-medium text-[16px] text-black">Create Team Member Account</h3>
+            <button @click="showAddUserModal = false" class="text-neutral-400 hover:text-black text-xl font-medium cursor-pointer">×</button>
           </div>
 
           <form @submit.prevent="handleAddUserSubmit" class="flex flex-col gap-3.5">
             <div class="flex flex-col gap-1">
-              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Full Name</label>
+              <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Full Name</label>
               <input 
                 v-model="newUserName" 
                 type="text" 
                 required 
                 placeholder="e.g. Maya Chen" 
-                class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black"
               />
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div class="flex flex-col gap-1">
-                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Email Address</label>
+                <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Email Address</label>
                 <input 
                   v-model="newUserEmail" 
                   type="email" 
                   required 
                   placeholder="maya@atmos.co.id" 
-                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black"
                 />
               </div>
               <div class="flex flex-col gap-1">
-                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Phone Number</label>
+                <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Phone Number</label>
                 <input 
                   v-model="newUserPhone" 
                   type="tel" 
                   placeholder="+62 812..." 
-                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black"
                 />
               </div>
             </div>
 
             <div class="flex flex-col gap-1">
-              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Sign-in Password</label>
+              <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Sign-in Password</label>
               <div class="flex items-center gap-2">
                 <input 
                   v-model="newUserPassword" 
                   type="text" 
                   required 
                   placeholder="Set initial password" 
-                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black font-mono"
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black font-mono"
                 />
                 <button 
                   type="button" 
                   @click="generateRandomPassword"
-                  class="px-3 h-[38px] rounded-[8px] border border-black/15 text-[11px] font-707 font-medium hover:bg-black/5 whitespace-nowrap cursor-pointer"
+                  class="px-3 h-[38px] rounded-[8px] border border-black/15 text-[11px] font-sans font-light tracking-normal font-medium hover:bg-black/5 whitespace-nowrap cursor-pointer"
                 >
                   Generate
                 </button>
@@ -1024,10 +1024,10 @@
 
             <div class="grid grid-cols-2 gap-3">
               <div class="flex flex-col gap-1">
-                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Access Role</label>
+                <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Access Role</label>
                 <select 
                   v-model="newUserRole" 
-                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black"
                 >
                   <option value="editor">Brand Designer / Editor</option>
                   <option value="viewer">Viewer / Reviewer</option>
@@ -1036,10 +1036,10 @@
               </div>
 
               <div class="flex flex-col gap-1">
-                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Primary Assigned Brand</label>
+                <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Primary Assigned Brand</label>
                 <select 
                   v-model="newUserBrand" 
-                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black"
                 >
                   <option v-for="b in brandStore.brands" :key="b.id" :value="b.slug">{{ b.name }}</option>
                   <option value="all">All Brands (Master)</option>
@@ -1051,13 +1051,13 @@
               <button 
                 type="button" 
                 @click="showAddUserModal = false" 
-                class="px-4 h-[36px] rounded-[8px] border border-black/15 text-neutral-600 font-707 text-[12px] font-medium"
+                class="px-4 h-[36px] rounded-[8px] border border-black/15 text-neutral-600 font-sans font-light tracking-normal text-[12px] font-medium"
               >
                 Cancel
               </button>
               <button 
                 type="submit" 
-                class="apple-glass-btn-dark bg-black text-white px-5 h-[36px] rounded-[8px] font-707 text-[12px] font-medium"
+                class="apple-glass-btn-dark bg-black text-white px-5 h-[36px] rounded-[8px] font-sans font-light tracking-normal text-[12px] font-medium"
               >
                 Create Account
               </button>
@@ -1074,62 +1074,62 @@
         class="fixed inset-0 z-50 apple-frost-backdrop flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showEditUserModal = false"
       >
-        <div class="apple-frost rounded-[16px] border border-white/60 p-6 w-full max-w-[460px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707">
+        <div class="apple-frost rounded-[16px] border border-white/60 p-6 w-full max-w-[460px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-sans font-light tracking-normal">
           <div class="flex items-center justify-between">
-            <h3 class="font-707 font-medium text-[16px] text-black">Edit Registered Team Member</h3>
-            <button @click="showEditUserModal = false" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
+            <h3 class="font-sans font-light tracking-normal font-medium text-[16px] text-black">Edit Registered Team Member</h3>
+            <button @click="showEditUserModal = false" class="text-neutral-400 hover:text-black text-xl font-medium cursor-pointer">×</button>
           </div>
 
           <form @submit.prevent="handleSaveEditUserSubmit" class="flex flex-col gap-3.5">
             <div class="flex flex-col gap-1">
-              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Full Name</label>
+              <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Full Name</label>
               <input 
                 v-model="editUserName" 
                 type="text" 
                 required 
                 placeholder="e.g. Maya Chen" 
-                class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black"
               />
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div class="flex flex-col gap-1">
-                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Email Address</label>
+                <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Email Address</label>
                 <input 
                   v-model="editUserEmail" 
                   type="email" 
                   required 
                   placeholder="maya@atmos.co.id" 
-                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black"
                 />
               </div>
               <div class="flex flex-col gap-1">
-                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Phone Number</label>
+                <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Phone Number</label>
                 <input 
                   v-model="editUserPhone" 
                   type="tel" 
                   placeholder="+62 812..." 
-                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black"
                 />
               </div>
             </div>
 
             <div class="flex flex-col gap-1">
-              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Sign-in Password / PIN</label>
+              <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Sign-in Password / PIN</label>
               <input 
                 v-model="editUserPassword" 
                 type="text" 
                 placeholder="Leave blank to keep the current password" 
-                class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black font-mono"
+                class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black font-mono"
               />
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div class="flex flex-col gap-1">
-                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Access Role</label>
+                <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Access Role</label>
                 <select 
                   v-model="editUserRole" 
-                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black"
                 >
                   <option value="editor">Brand Designer / Editor</option>
                   <option value="viewer">Viewer / Reviewer</option>
@@ -1138,10 +1138,10 @@
               </div>
 
               <div class="flex flex-col gap-1">
-                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Primary Assigned Brand</label>
+                <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Primary Assigned Brand</label>
                 <select 
                   v-model="editUserBrand" 
-                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black"
                 >
                   <option v-for="b in brandStore.brands" :key="b.id" :value="b.slug">{{ b.name }}</option>
                   <option value="all">All Brands (Master)</option>
@@ -1150,10 +1150,10 @@
             </div>
 
             <div class="flex flex-col gap-1">
-              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Account Status</label>
+              <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Account Status</label>
               <select 
                 v-model="editUserStatus" 
-                class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black"
               >
                 <option value="active">Active</option>
                 <option value="pending">Pending</option>
@@ -1165,13 +1165,13 @@
               <button 
                 type="button" 
                 @click="showEditUserModal = false" 
-                class="px-4 h-[36px] rounded-[8px] border border-black/15 text-neutral-600 font-707 text-[12px] font-medium"
+                class="px-4 h-[36px] rounded-[8px] border border-black/15 text-neutral-600 font-sans font-light tracking-normal text-[12px] font-medium"
               >
                 Cancel
               </button>
               <button 
                 type="submit" 
-                class="apple-glass-btn-dark bg-black text-white px-5 h-[36px] rounded-[8px] font-707 text-[12px] font-medium"
+                class="apple-glass-btn-dark bg-black text-white px-5 h-[36px] rounded-[8px] font-sans font-light tracking-normal text-[12px] font-medium"
               >
                 Save Changes
               </button>
@@ -1188,19 +1188,19 @@
         class="fixed inset-0 z-50 apple-frost-backdrop flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="closePasswordModal"
       >
-        <div class="apple-frost rounded-[16px] border border-white/60 p-6 w-full max-w-[400px] shadow-xl flex flex-col gap-4 animate-apple-pop font-707">
+        <div class="apple-frost rounded-[16px] border border-white/60 p-6 w-full max-w-[400px] shadow-xl flex flex-col gap-4 animate-apple-pop font-sans font-light tracking-normal">
           <div class="flex items-center justify-between">
-            <h3 class="font-707 font-medium text-[16px] text-black">Reset Sign-in Password</h3>
-            <button @click="closePasswordModal" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
+            <h3 class="font-sans font-light tracking-normal font-medium text-[16px] text-black">Reset Sign-in Password</h3>
+            <button @click="closePasswordModal" class="text-neutral-400 hover:text-black text-xl font-medium cursor-pointer">×</button>
           </div>
 
-          <p class="font-707 text-[12px] text-neutral-600">
+          <p class="font-sans font-light tracking-normal text-[12px] text-neutral-600">
             Resetting password for <strong>{{ targetUserForPassword?.name }}</strong> ({{ targetUserForPassword?.email }}).
           </p>
 
           <form v-if="!passwordResetDone" @submit.prevent="handlePasswordUpdateSubmit" class="flex flex-col gap-3">
             <div class="flex flex-col gap-1">
-              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">New Password</label>
+              <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">New Password</label>
               <div class="flex items-center gap-2">
                 <input 
                   v-model="updatedPasswordValue" 
@@ -1208,30 +1208,30 @@
                   required 
                   minlength="8"
                   placeholder="Enter new password" 
-                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black font-mono"
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black font-mono"
                 />
                 <button 
                   type="button" 
                   @click="updatedPasswordValue = secureRandomPassword()"
-                  class="px-3 h-[38px] rounded-[8px] border border-black/15 text-[11px] font-707 font-medium hover:bg-black/5 whitespace-nowrap cursor-pointer"
+                  class="px-3 h-[38px] rounded-[8px] border border-black/15 text-[11px] font-sans font-light tracking-normal font-medium hover:bg-black/5 whitespace-nowrap cursor-pointer"
                 >
                   Generate
                 </button>
               </div>
-              <p class="font-707 text-[11px] text-neutral-500">Passwords are stored hashed. After you confirm, this is the only time it is shown.</p>
+              <p class="font-sans font-light tracking-normal text-[11px] text-neutral-500">Passwords are stored hashed. After you confirm, this is the only time it is shown.</p>
             </div>
 
             <div class="flex items-center justify-end gap-2 mt-2">
               <button 
                 type="button" 
                 @click="closePasswordModal" 
-                class="px-4 h-[36px] rounded-[8px] border border-black/15 text-neutral-600 font-707 text-[12px] font-medium"
+                class="px-4 h-[36px] rounded-[8px] border border-black/15 text-neutral-600 font-sans font-light tracking-normal text-[12px] font-medium"
               >
                 Cancel
               </button>
               <button 
                 type="submit" 
-                class="apple-glass-btn-dark bg-black text-white px-5 h-[36px] rounded-[8px] font-707 text-[12px] font-medium"
+                class="apple-glass-btn-dark bg-black text-white px-5 h-[36px] rounded-[8px] font-sans font-light tracking-normal text-[12px] font-medium"
               >
                 Update Password
               </button>
@@ -1239,7 +1239,7 @@
           </form>
 
           <div v-else class="flex flex-col gap-3">
-            <p class="font-707 text-[12px] text-neutral-700">
+            <p class="font-sans font-light tracking-normal text-[12px] text-neutral-700">
               Password updated. Share it with {{ targetUserForPassword?.name }} now — it can't be viewed again, only reset.
             </p>
             <div class="flex items-center gap-2">
@@ -1247,7 +1247,7 @@
               <button 
                 type="button" 
                 @click="copyResetPassword"
-                class="px-3 h-[38px] rounded-[8px] border border-black/15 text-[11px] font-707 font-medium hover:bg-black/5 whitespace-nowrap cursor-pointer"
+                class="px-3 h-[38px] rounded-[8px] border border-black/15 text-[11px] font-sans font-light tracking-normal font-medium hover:bg-black/5 whitespace-nowrap cursor-pointer"
               >
                 Copy
               </button>
@@ -1256,7 +1256,7 @@
               <button 
                 type="button" 
                 @click="closePasswordModal" 
-                class="apple-glass-btn-dark bg-black text-white px-5 h-[36px] rounded-[8px] font-707 text-[12px] font-medium"
+                class="apple-glass-btn-dark bg-black text-white px-5 h-[36px] rounded-[8px] font-sans font-light tracking-normal text-[12px] font-medium"
               >
                 Done
               </button>
@@ -1273,34 +1273,34 @@
         class="fixed inset-0 z-50 apple-frost-backdrop flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showBuildTemplateModal = false"
       >
-        <div class="apple-frost rounded-[16px] border border-white/60 p-6 w-full max-w-[500px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707 max-h-[90vh] overflow-y-auto">
+        <div class="apple-frost rounded-[16px] border border-white/60 p-6 w-full max-w-[500px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-sans font-light tracking-normal max-h-[90vh] overflow-y-auto">
           <div class="flex items-center justify-between">
-            <h3 class="font-707 font-medium text-[16px] text-black">Build Master Activation Template</h3>
-            <button @click="showBuildTemplateModal = false" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
+            <h3 class="font-sans font-light tracking-normal font-medium text-[16px] text-black">Build Master Activation Template</h3>
+            <button @click="showBuildTemplateModal = false" class="text-neutral-400 hover:text-black text-xl font-medium cursor-pointer">×</button>
           </div>
 
-          <p class="font-707 text-[12px] text-neutral-600">
+          <p class="font-sans font-light tracking-normal text-[12px] text-neutral-600">
             Configure a reusable layout preset for Brand Designers. You can launch it directly in the editor canvas to customize widgets.
           </p>
 
           <form @submit.prevent="handleBuildTemplateSubmit(false)" class="flex flex-col gap-3.5">
             <div class="flex flex-col gap-1">
-              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Template Name</label>
+              <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Template Name</label>
               <input 
                 v-model="newTemplateName" 
                 type="text" 
                 required 
                 placeholder="e.g. VIP Secret Drop & Guest E-Pass" 
-                class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black"
               />
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div class="flex flex-col gap-1">
-                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Category</label>
+                <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Category</label>
                 <select 
                   v-model="newTemplateCategory" 
-                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black"
                 >
                   <option value="raffle">Raffle Drop</option>
                   <option value="rsvp">VIP RSVP Pass</option>
@@ -1312,10 +1312,10 @@
               </div>
 
               <div class="flex flex-col gap-1">
-                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Initial Status</label>
+                <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Initial Status</label>
                 <select 
                   v-model="newTemplateStatus" 
-                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black"
                 >
                   <option value="draft">Draft (Private Superadmin)</option>
                   <option value="published">Published (Available for Brands)</option>
@@ -1324,19 +1324,19 @@
             </div>
 
             <div class="flex flex-col gap-1">
-              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Description</label>
+              <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Description</label>
               <textarea 
                 v-model="newTemplateDesc" 
                 rows="2"
                 placeholder="Provide guidelines or activation instructions..." 
-                class="w-full p-2.5 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black resize-none"
+                class="w-full p-2.5 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black resize-none"
               />
             </div>
 
             <!-- Starter Widget Architecture Base -->
             <div class="flex flex-col gap-1.5">
-              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Starting Architecture</label>
-              <div class="grid grid-cols-2 gap-2 text-[12px] font-707">
+              <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Starting Architecture</label>
+              <div class="grid grid-cols-2 gap-2 text-[12px] font-sans font-light tracking-normal">
                 <label 
                   class="p-2.5 rounded-[8px] border cursor-pointer flex flex-col gap-1 transition-colors"
                   :class="starterPresetBase === 'blank' ? 'border-black bg-black/[0.03] font-medium' : 'border-black/10 hover:border-black/30'"
@@ -1379,20 +1379,20 @@
               <button 
                 type="button" 
                 @click="showBuildTemplateModal = false" 
-                class="px-4 h-[36px] rounded-[8px] border border-black/15 text-neutral-600 font-707 text-[12px] font-medium"
+                class="px-4 h-[36px] rounded-[8px] border border-black/15 text-neutral-600 font-sans font-light tracking-normal text-[12px] font-medium"
               >
                 Cancel
               </button>
               <button 
                 type="submit" 
-                class="px-4 h-[36px] rounded-[8px] border border-black text-black font-707 text-[12px] font-medium hover:bg-neutral-100"
+                class="px-4 h-[36px] rounded-[8px] border border-black text-black font-sans font-light tracking-normal text-[12px] font-medium hover:bg-neutral-100"
               >
                 Save Preset
               </button>
               <button 
                 type="button" 
                 @click="handleBuildTemplateSubmit(true)"
-                class="apple-glass-btn-dark bg-black text-white px-4 h-[36px] rounded-[8px] font-707 text-[12px] font-medium flex items-center gap-1.5"
+                class="apple-glass-btn-dark bg-black text-white px-4 h-[36px] rounded-[8px] font-sans font-light tracking-normal text-[12px] font-medium flex items-center gap-1.5"
               >
                 <span>Save & Open Builder</span>
                 <ExternalLink class="w-3.5 h-3.5" />
@@ -1410,29 +1410,29 @@
         class="fixed inset-0 z-50 apple-frost-backdrop flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
         @click.self="showEditTemplateModal = false"
       >
-        <div class="apple-frost rounded-[16px] border border-white/60 p-6 w-full max-w-[460px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-707">
+        <div class="apple-frost rounded-[16px] border border-white/60 p-6 w-full max-w-[460px] shadow-2xl flex flex-col gap-4 animate-apple-pop font-sans font-light tracking-normal">
           <div class="flex items-center justify-between">
-            <h3 class="font-707 font-medium text-[16px] text-black">Edit Template Details</h3>
-            <button @click="showEditTemplateModal = false" class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer">×</button>
+            <h3 class="font-sans font-light tracking-normal font-medium text-[16px] text-black">Edit Template Details</h3>
+            <button @click="showEditTemplateModal = false" class="text-neutral-400 hover:text-black text-xl font-medium cursor-pointer">×</button>
           </div>
 
           <form @submit.prevent="handleEditTemplateSubmit" class="flex flex-col gap-3.5">
             <div class="flex flex-col gap-1">
-              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Template Name</label>
+              <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Template Name</label>
               <input 
                 v-model="editTemplateName" 
                 type="text" 
                 required 
-                class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black"
               />
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div class="flex flex-col gap-1">
-                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Category</label>
+                <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Category</label>
                 <select 
                   v-model="editTemplateCategory" 
-                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black"
                 >
                   <option value="raffle">Raffle Drop</option>
                   <option value="rsvp">VIP RSVP Pass</option>
@@ -1444,10 +1444,10 @@
               </div>
 
               <div class="flex flex-col gap-1">
-                <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Status</label>
+                <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Status</label>
                 <select 
                   v-model="editTemplateStatus" 
-                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black"
+                  class="w-full h-[38px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black"
                 >
                   <option value="draft">Draft (Work in Progress)</option>
                   <option value="published">Published (Live for Brands)</option>
@@ -1456,11 +1456,11 @@
             </div>
 
             <div class="flex flex-col gap-1">
-              <label class="font-707 text-[11px] font-semibold text-neutral-700 uppercase">Description</label>
+              <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 uppercase">Description</label>
               <textarea 
                 v-model="editTemplateDesc" 
                 rows="3"
-                class="w-full p-2.5 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black resize-none"
+                class="w-full p-2.5 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black resize-none"
               />
             </div>
 
@@ -1468,13 +1468,13 @@
               <button 
                 type="button" 
                 @click="showEditTemplateModal = false" 
-                class="px-4 h-[36px] rounded-[8px] border border-black/15 text-neutral-600 font-707 text-[12px] font-medium"
+                class="px-4 h-[36px] rounded-[8px] border border-black/15 text-neutral-600 font-sans font-light tracking-normal text-[12px] font-medium"
               >
                 Cancel
               </button>
               <button 
                 type="submit" 
-                class="apple-glass-btn-dark bg-black text-white px-5 h-[36px] rounded-[8px] font-707 text-[12px] font-medium"
+                class="apple-glass-btn-dark bg-black text-white px-5 h-[36px] rounded-[8px] font-sans font-light tracking-normal text-[12px] font-medium"
               >
                 Save Changes
               </button>

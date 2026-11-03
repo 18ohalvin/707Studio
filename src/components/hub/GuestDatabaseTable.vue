@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-4 w-full" @keydown.esc="handleEscape">
+  <div class="flex flex-col gap-4 w-full font-sans font-light tracking-normal" @keydown.esc="handleEscape">
     <!-- Calm Tranquil Toolbar -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full select-none">
       <!-- Left: Minimalist Search & Quiet Segmented View Tabs -->
@@ -13,7 +13,7 @@
             v-model="search"
             type="text"
             placeholder="Search guest, pass ID, phone…"
-            class="w-full h-[36px] pl-9 pr-8 rounded-[8px] bg-neutral-100/80 hover:bg-neutral-100 focus:bg-white border border-transparent focus:border-black/20 text-[12.5px] font-707 text-black placeholder:text-neutral-400 outline-none transition-all"
+            class="w-full h-[36px] pl-9 pr-8 rounded-[8px] bg-neutral-100/80 hover:bg-neutral-100 focus:bg-white border border-transparent focus:border-black/20 text-[12.5px] font-sans font-light text-black placeholder:text-neutral-400 outline-none transition-all"
           />
           <kbd v-if="!search" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono text-neutral-400">⌘K</kbd>
           <button v-else type="button" @click="search = ''" class="absolute right-2 top-1/2 -translate-y-1/2 size-5 rounded-full hover:bg-black/10 flex items-center justify-center cursor-pointer">
@@ -22,7 +22,7 @@
         </div>
 
         <!-- 3 Calm Segmented Tabs (No heavy boxes) -->
-        <div class="flex items-center gap-1 text-[12px] font-707 overflow-x-auto no-scrollbar py-0.5">
+        <div class="flex items-center gap-1 text-[12px] font-sans overflow-x-auto no-scrollbar py-0.5">
           <button
             v-for="t in primaryTabs"
             :key="t.id"
@@ -77,13 +77,13 @@
           </button>
 
           <Transition name="hub-pop">
-            <div v-if="isColumnsOpen" class="absolute right-0 top-[calc(100%+6px)] z-40 w-[240px] apple-frost border border-black/10 rounded-[12px] shadow-[0px_24px_60px_rgba(0,0,0,0.16)] p-2 font-707">
+            <div v-if="isColumnsOpen" class="absolute right-0 top-[calc(100%+6px)] z-40 w-[240px] apple-frost border border-black/10 rounded-[12px] shadow-[0px_24px_60px_rgba(0,0,0,0.16)] p-2 font-sans font-light tracking-normal">
               <!-- Event Date Filter inside dropdown if multiple dates -->
               <div v-if="availableDates.length > 1" class="pb-2 mb-2 border-b border-black/5">
-                <p class="px-2 text-[10px] uppercase tracking-[0.12em] text-neutral-400 mb-1">Event Date</p>
+                <p class="px-2 text-[10px] uppercase tracking-normal text-neutral-400 mb-1">Event Date</p>
                 <select 
                   v-model="dateFilter"
-                  class="w-full h-[30px] px-2 rounded-[6px] bg-black/[0.04] text-[11.5px] font-707 text-black focus:outline-none cursor-pointer border-0"
+                  class="w-full h-[30px] px-2 rounded-[6px] bg-black/[0.04] text-[11.5px] font-sans text-black focus:outline-none cursor-pointer border-0"
                 >
                   <option value="all">All Dates ({{ props.rows.length }})</option>
                   <option v-for="d in availableDates" :key="d" :value="d">{{ d }}</option>
@@ -357,7 +357,7 @@
         <div
           v-if="statusMenu"
           ref="statusMenuRef"
-          class="fixed z-[80] w-[190px] apple-frost border border-black/10 rounded-[12px] shadow-[0px_24px_60px_rgba(0,0,0,0.18)] p-1.5 font-707"
+          class="fixed z-[80] w-[190px] apple-frost border border-black/10 rounded-[12px] shadow-[0px_24px_60px_rgba(0,0,0,0.18)] p-1.5 font-sans font-light tracking-normal"
           :style="{ top: `${statusMenu.y}px`, left: `${statusMenu.x}px` }"
         >
           <button
@@ -377,7 +377,7 @@
 
     <!-- Ticket email progress -->
     <Teleport to="body">
-      <div v-if="ticketSender.progress.value" class="fixed top-[16px] inset-x-0 z-[80] flex justify-center pointer-events-none px-4 font-707">
+      <div v-if="ticketSender.progress.value" class="fixed top-[16px] inset-x-0 z-[80] flex justify-center pointer-events-none px-4 font-sans font-light tracking-normal">
         <div class="pointer-events-auto flex flex-col gap-1.5 px-4 py-3 rounded-[14px] bg-[#0c0d0e]/[0.92] backdrop-blur-2xl border border-white/10 text-white shadow-[0_24px_60px_rgba(0,0,0,0.35)] w-full max-w-[420px]">
           <div class="flex items-center justify-between gap-3">
             <span class="text-[12px] font-medium tabular-nums">
@@ -402,7 +402,7 @@
     <!-- Floating bulk action bar (editor-style dark glass) -->
     <Teleport to="body">
       <Transition name="hub-bar">
-        <div v-if="selected.size" class="fixed bottom-[24px] inset-x-0 z-[70] flex justify-center pointer-events-none px-3 sm:px-4 font-707">
+        <div v-if="selected.size" class="fixed bottom-[24px] inset-x-0 z-[70] flex justify-center pointer-events-none px-3 sm:px-4 font-sans font-light tracking-normal">
           <div class="pointer-events-auto flex items-center gap-1 pl-3.5 sm:pl-4 pr-1.5 py-1.5 rounded-[14px] bg-[#0c0d0e]/[0.94] backdrop-blur-2xl border border-white/10 text-white shadow-[0_24px_60px_rgba(0,0,0,0.4)] max-w-[calc(100vw-24px)] sm:max-w-[calc(100vw-32px)] overflow-x-auto no-scrollbar scroll-smooth">
             <span class="text-[12px] font-medium whitespace-nowrap tabular-nums pr-1.5 sm:pr-2 shrink-0">{{ selected.size }} <span class="hidden xs:inline">selected</span></span>
             <div class="w-px h-5 bg-white/15 mx-0.5 sm:mx-1 shrink-0" />
@@ -411,21 +411,21 @@
               :key="o.value"
               type="button"
               @click="applyStatus([...selected], o.value)"
-              class="px-2 sm:px-2.5 h-[30px] rounded-[8px] text-[11px] sm:text-[11.5px] hover:bg-white/10 cursor-pointer whitespace-nowrap transition-colors shrink-0"
+              class="px-2 sm:px-2.5 h-[30px] rounded-[8px] text-[11px] sm:text-[11.5px] hover:bg-white/10 cursor-pointer whitespace-nowrap transition-colors shrink-0 font-light"
             >
               {{ o.label }}
             </button>
             <div class="w-px h-5 bg-white/15 mx-0.5 sm:mx-1 shrink-0" />
-            <button type="button" @click="sendTickets(selectedRows)" :disabled="!!ticketSender.progress.value && !ticketSender.progress.value.finished" class="px-2 sm:px-2.5 h-[30px] rounded-[8px] text-[11px] sm:text-[11.5px] hover:bg-white/10 cursor-pointer flex items-center gap-1 sm:gap-1.5 whitespace-nowrap shrink-0 disabled:opacity-40 disabled:cursor-not-allowed" title="Email each selected guest their e-ticket PDF">
+            <button type="button" @click="sendTickets(selectedRows)" :disabled="!!ticketSender.progress.value && !ticketSender.progress.value.finished" class="px-2 sm:px-2.5 h-[30px] rounded-[8px] text-[11px] sm:text-[11.5px] hover:bg-white/10 cursor-pointer flex items-center gap-1 sm:gap-1.5 whitespace-nowrap shrink-0 disabled:opacity-40 disabled:cursor-not-allowed font-light" title="Email each selected guest their e-ticket PDF">
               <Mail class="w-3.5 h-3.5" /> <span class="hidden sm:inline">Send ticket</span><span class="sm:hidden">Send</span>
             </button>
-            <button type="button" @click="sendTickets(selectedRows, true)" :disabled="!!ticketSender.progress.value && !ticketSender.progress.value.finished" class="px-2 sm:px-2.5 h-[30px] rounded-[8px] text-[11px] sm:text-[11.5px] hover:bg-white/10 cursor-pointer flex items-center gap-1 sm:gap-1.5 whitespace-nowrap shrink-0 disabled:opacity-40 disabled:cursor-not-allowed" title="Send the ticket again, also to guests who already received it">
+            <button type="button" @click="sendTickets(selectedRows, true)" :disabled="!!ticketSender.progress.value && !ticketSender.progress.value.finished" class="px-2 sm:px-2.5 h-[30px] rounded-[8px] text-[11px] sm:text-[11.5px] hover:bg-white/10 cursor-pointer flex items-center gap-1 sm:gap-1.5 whitespace-nowrap shrink-0 disabled:opacity-40 disabled:cursor-not-allowed font-light" title="Send the ticket again, also to guests who already received it">
               <RotateCw class="w-3.5 h-3.5" /> <span class="hidden sm:inline">Resend ticket</span><span class="sm:hidden">Resend</span>
             </button>
-            <button type="button" @click="exportCsv(selectedRows)" class="px-2 sm:px-2.5 h-[30px] rounded-[8px] text-[11px] sm:text-[11.5px] hover:bg-white/10 cursor-pointer flex items-center gap-1 sm:gap-1.5 whitespace-nowrap shrink-0">
+            <button type="button" @click="exportCsv(selectedRows)" class="px-2 sm:px-2.5 h-[30px] rounded-[8px] text-[11px] sm:text-[11.5px] hover:bg-white/10 cursor-pointer flex items-center gap-1 sm:gap-1.5 whitespace-nowrap shrink-0 font-light">
               <Download class="w-3.5 h-3.5" /> <span class="hidden xs:inline">Export</span>
             </button>
-            <button type="button" @click="deleteRows([...selected])" class="px-2 sm:px-2.5 h-[30px] rounded-[8px] text-[11px] sm:text-[11.5px] text-oxblood-200 hover:bg-oxblood-600/20 hover:text-oxblood-200 cursor-pointer flex items-center gap-1 sm:gap-1.5 whitespace-nowrap shrink-0">
+            <button type="button" @click="deleteRows([...selected])" class="px-2 sm:px-2.5 h-[30px] rounded-[8px] text-[11px] sm:text-[11.5px] text-oxblood-200 hover:bg-oxblood-600/20 hover:text-oxblood-200 cursor-pointer flex items-center gap-1 sm:gap-1.5 whitespace-nowrap shrink-0 font-light">
               <Trash2 class="w-3.5 h-3.5" /> <span>Delete</span>
             </button>
             <button type="button" @click="selected = new Set()" class="size-[30px] rounded-[8px] hover:bg-white/10 flex items-center justify-center cursor-pointer shrink-0 ml-1" title="Clear selection (Esc)">
@@ -444,7 +444,7 @@
       <Transition name="hub-drawer">
         <aside
           v-if="drawerRow"
-          class="fixed top-0 right-0 bottom-0 z-[76] w-full sm:w-[440px] apple-frost-strong border-l border-black/10 shadow-[-24px_0_60px_rgba(0,0,0,0.12)] flex flex-col font-707"
+          class="fixed top-0 right-0 bottom-0 z-[76] w-full sm:w-[440px] apple-frost-strong border-l border-black/10 shadow-[-24px_0_60px_rgba(0,0,0,0.12)] flex flex-col font-sans font-light tracking-normal"
           role="dialog"
           aria-label="Guest details"
         >
@@ -482,7 +482,7 @@
             <div class="w-full shrink-0 min-h-[168px] rounded-[14px] bg-[#0c0d0e] text-white p-4 relative overflow-hidden flex flex-col justify-between gap-3 shadow-[0_4px_20px_rgba(0,0,0,0.12)]">
               <div class="absolute inset-0 opacity-[0.07] hub-grid pointer-events-none" />
               <div class="flex items-center justify-between gap-3 relative z-10">
-                <p class="text-[10px] uppercase tracking-[0.18em] text-white/50 font-medium">Access ID</p>
+                <p class="text-[10px] uppercase tracking-normal text-white/50 font-medium">Access ID</p>
                 <button
                   type="button"
                   @click="copy(accessId(drawerRow))"
@@ -493,7 +493,7 @@
               </div>
               <!-- The ID sits in the middle of the space between the header and the status lines -->
               <div class="relative z-10 flex items-center justify-center py-1">
-                <span class="font-mono text-[22px] leading-none tracking-[0.06em] text-center break-all select-all font-medium">{{ accessId(drawerRow) || '—' }}</span>
+                <span class="font-mono text-[22px] leading-none tracking-normal text-center break-all select-all font-medium">{{ accessId(drawerRow) || '—' }}</span>
               </div>
               <div class="relative z-10 border-t border-white/10 pt-3 flex flex-col gap-2">
                 <div class="flex items-center gap-2 text-[11px]" :class="drawerRow.checked_in_at ? 'text-moss-300' : 'text-white/50'">
@@ -520,7 +520,7 @@
 
             <!-- Status -->
             <div class="flex flex-col gap-2">
-              <p class="text-[10.5px] uppercase tracking-[0.12em] text-neutral-500">Status</p>
+              <p class="text-[10.5px] uppercase tracking-normal text-neutral-500 font-medium">Status</p>
               <div class="grid grid-cols-3 gap-1 p-1 rounded-[10px] bg-black/[0.04] border border-black/5">
                 <button
                   v-for="o in STATUS_OPTIONS"
@@ -528,7 +528,7 @@
                   type="button"
                   @click="applyStatus([drawerRow.id], o.value)"
                   class="h-[30px] rounded-[7px] text-[11.5px] cursor-pointer transition-all"
-                  :class="normalizeStatus(drawerRow.status) === o.value ? (o.value === 'winner' ? 'bg-black text-white font-medium' : 'bg-white text-black font-medium shadow-[0_1px_2px_rgba(0,0,0,0.08)]') : 'text-neutral-500 hover:text-black'"
+                  :class="normalizeStatus(drawerRow.status) === o.value ? (o.value === 'winner' ? 'bg-black text-white font-medium' : 'bg-white text-black font-medium shadow-[0_1px_2px_rgba(0,0,0,0.08)]') : 'text-neutral-500 hover:text-black font-light'"
                 >
                   {{ o.label }}
                 </button>
@@ -537,43 +537,43 @@
 
             <!-- Answers -->
             <div class="flex flex-col gap-2">
-              <p class="text-[10.5px] uppercase tracking-[0.12em] text-neutral-500">Form answers</p>
+              <p class="text-[10.5px] uppercase tracking-normal text-neutral-500 font-medium">Form answers</p>
               <div class="rounded-[12px] border border-black/8 bg-white divide-y divide-black/5">
                 <div class="flex items-start justify-between gap-4 px-3.5 py-2.5">
-                  <span class="text-[12px] text-neutral-500">WhatsApp</span>
+                  <span class="text-[12px] text-neutral-500 font-light">WhatsApp</span>
                   <a v-if="guestPhone(drawerRow)" :href="whatsappLink(guestPhone(drawerRow))" target="_blank" rel="noopener" class="text-[12px] font-mono text-right hover:underline underline-offset-2">{{ guestPhone(drawerRow) }}</a>
                   <span v-else class="text-[12px] text-neutral-300">—</span>
                 </div>
                 <div v-for="k in drawerAnswerKeys" :key="k" class="flex items-start justify-between gap-4 px-3.5 py-2.5">
-                  <span class="text-[12px] text-neutral-500 shrink-0 max-w-[45%]">{{ formatColumnLabel(k) }}</span>
-                  <span class="text-[12px] text-right break-words min-w-0">{{ formatCustomAnswer(drawerRow, k) || '—' }}</span>
+                  <span class="text-[12px] text-neutral-500 font-light shrink-0 max-w-[45%]">{{ formatColumnLabel(k) }}</span>
+                  <span class="text-[12px] text-right break-words min-w-0 font-light">{{ formatCustomAnswer(drawerRow, k) || '—' }}</span>
                 </div>
               </div>
             </div>
 
             <!-- Meta -->
             <div class="flex flex-col gap-2">
-              <p class="text-[10.5px] uppercase tracking-[0.12em] text-neutral-500">Record</p>
+              <p class="text-[10.5px] uppercase tracking-normal text-neutral-500 font-medium">Record</p>
               <div class="rounded-[12px] border border-black/8 bg-white divide-y divide-black/5 text-[12px]">
                 <div v-if="drawerRow.queue_number" class="flex justify-between px-3.5 py-2.5">
-                  <span class="text-neutral-500">Queue Number</span>
-                  <span class="font-mono font-bold text-black">#{{ drawerRow.queue_number }}</span>
+                  <span class="text-neutral-500 font-light">Queue Number</span>
+                  <span class="font-mono font-medium text-black">#{{ drawerRow.queue_number }}</span>
                 </div>
                 <div v-if="(Number(drawerRow.party_size) || 1) > 1" class="flex justify-between px-3.5 py-2.5">
-                  <span class="text-neutral-500">Party Size</span>
+                  <span class="text-neutral-500 font-light">Party Size</span>
                   <span class="font-medium text-black">{{ drawerRow.party_size }} pax</span>
                 </div>
-                <div class="flex justify-between px-3.5 py-2.5"><span class="text-neutral-500">Campaign</span><span class="text-right truncate ml-4">{{ campaignTitle(drawerRow.page_id) }}</span></div>
+                <div class="flex justify-between px-3.5 py-2.5"><span class="text-neutral-500 font-light">Campaign</span><span class="text-right truncate ml-4 font-light">{{ campaignTitle(drawerRow.page_id) }}</span></div>
                 <div v-if="drawerRow.checked_in_at" class="flex justify-between px-3.5 py-2.5">
-                  <span class="text-neutral-500">Checked In</span>
-                  <span class="tabular-nums font-mono text-black">{{ formatDateTime(drawerRow.checked_in_at) }}</span>
+                  <span class="text-neutral-500 font-light">Checked In</span>
+                  <span class="tabular-nums font-mono text-black font-medium">{{ formatDateTime(drawerRow.checked_in_at) }}</span>
                 </div>
                 <div v-if="drawerRow.checked_out_at" class="flex justify-between px-3.5 py-2.5">
-                  <span class="text-neutral-500">Checked Out</span>
-                  <span class="tabular-nums font-mono text-black">{{ formatDateTime(drawerRow.checked_out_at) }}</span>
+                  <span class="text-neutral-500 font-light">Checked Out</span>
+                  <span class="tabular-nums font-mono text-black font-medium">{{ formatDateTime(drawerRow.checked_out_at) }}</span>
                 </div>
-                <div class="flex justify-between px-3.5 py-2.5"><span class="text-neutral-500">Submitted</span><span class="tabular-nums">{{ formatDateTime(drawerRow.created_at) }}</span></div>
-                <div class="flex justify-between px-3.5 py-2.5"><span class="text-neutral-500">Record ID</span><span class="font-mono text-[11px] text-neutral-500 truncate ml-4">{{ drawerRow.id }}</span></div>
+                <div class="flex justify-between px-3.5 py-2.5"><span class="text-neutral-500 font-light">Submitted</span><span class="tabular-nums font-light">{{ formatDateTime(drawerRow.created_at) }}</span></div>
+                <div class="flex justify-between px-3.5 py-2.5"><span class="text-neutral-500 font-light">Record ID</span><span class="font-mono text-[11px] text-neutral-500 truncate ml-4 font-light">{{ drawerRow.id }}</span></div>
               </div>
             </div>
           </div>
@@ -593,7 +593,7 @@
               <button
                 type="button"
                 @click="toggleCheckIn(drawerRow)"
-                class="h-[40px] px-3 rounded-[10px] border border-black/15 text-[11.5px] text-neutral-600 hover:bg-black/5 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                class="h-[40px] px-3 rounded-[10px] border border-black/15 text-[11.5px] text-neutral-600 hover:bg-black/5 flex items-center justify-center gap-1.5 cursor-pointer transition-colors font-light"
                 title="Undo check-in"
               >
                 <RotateCw class="w-3.5 h-3.5" />
@@ -632,12 +632,12 @@
     <!-- Add Walk-In Guest Modal -->
     <Teleport to="body">
       <Transition name="hub-fade">
-        <div v-if="isAddGuestOpen" class="fixed inset-0 z-[80] bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 select-none font-707" @click.self="isAddGuestOpen = false">
+        <div v-if="isAddGuestOpen" class="fixed inset-0 z-[80] bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 select-none font-sans font-light tracking-normal" @click.self="isAddGuestOpen = false">
           <div class="relative w-full max-w-[420px] bg-white rounded-[20px] border border-black/10 shadow-[0_24px_60px_rgba(0,0,0,0.18)] p-6 flex flex-col gap-4 animate-apple-pop text-black">
             <div class="flex items-center justify-between">
               <div>
                 <h3 class="text-[17px] font-medium tracking-tight">Add Walk-In Guest</h3>
-                <p class="text-[12px] text-neutral-500 mt-0.5">Quickly register an on-site attendee or VIP.</p>
+                <p class="text-[12px] text-neutral-500 mt-0.5 font-light">Quickly register an on-site attendee or VIP.</p>
               </div>
               <button type="button" @click="isAddGuestOpen = false" class="size-7 rounded-full bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center cursor-pointer transition-colors">
                 <X class="w-3.5 h-3.5" />
@@ -646,33 +646,33 @@
 
             <form @submit.prevent="handleAddGuestSubmit" class="flex flex-col gap-3.5 mt-1">
               <div class="flex flex-col gap-1">
-                <label class="text-[11px] uppercase tracking-[0.1em] text-neutral-500 font-medium">Guest Name *</label>
+                <label class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Guest Name *</label>
                 <input
                   v-model="newGuest.name"
                   type="text"
                   required
                   placeholder="Full name"
-                  class="h-[38px] px-3 rounded-[8px] border border-black/15 text-[13px] outline-none focus:border-black"
+                  class="h-[38px] px-3 rounded-[8px] border border-black/15 text-[13px] outline-none focus:border-black font-light"
                 />
               </div>
 
               <div class="grid grid-cols-2 gap-2.5">
                 <div class="flex flex-col gap-1">
-                  <label class="text-[11px] uppercase tracking-[0.1em] text-neutral-500 font-medium">Email</label>
+                  <label class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Email</label>
                   <input
                     v-model="newGuest.email"
                     type="email"
                     placeholder="guest@example.com"
-                    class="h-[38px] px-3 rounded-[8px] border border-black/15 text-[13px] outline-none focus:border-black"
+                    class="h-[38px] px-3 rounded-[8px] border border-black/15 text-[13px] outline-none focus:border-black font-light"
                   />
                 </div>
                 <div class="flex flex-col gap-1">
-                  <label class="text-[11px] uppercase tracking-[0.1em] text-neutral-500 font-medium">WhatsApp / Phone</label>
+                  <label class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">WhatsApp / Phone</label>
                   <input
                     v-model="newGuest.phone"
                     type="tel"
                     placeholder="+62 8..."
-                    class="h-[38px] px-3 rounded-[8px] border border-black/15 text-[13px] outline-none focus:border-black"
+                    class="h-[38px] px-3 rounded-[8px] border border-black/15 text-[13px] outline-none focus:border-black font-light"
                   />
                 </div>
               </div>

@@ -21,7 +21,7 @@
               <div v-if="authStore.isSuperAdmin" class="size-full bg-black text-white flex items-center justify-center">
                 <ShieldCheck class="w-4 h-4 text-white" />
               </div>
-              <div v-else class="size-full bg-black text-white flex items-center justify-center font-707 text-[12px] font-semibold tracking-tight">
+              <div v-else class="size-full bg-black text-white flex items-center justify-center font-sans font-light tracking-normal text-[12px] font-medium tracking-tight">
                 {{ userInitials }}
               </div>
               <!-- Green live status dot -->
@@ -31,19 +31,19 @@
             <!-- Identity Info -->
             <div class="flex flex-col min-w-0 flex-1">
               <div class="flex items-center gap-1.5 min-w-0">
-                <h2 class="font-707 text-[14px] font-medium leading-[18px] text-black truncate">
+                <h2 class="font-sans font-light tracking-normal text-[14px] font-medium leading-[18px] text-black truncate">
                   {{ displayName }}
                 </h2>
               </div>
               <div class="flex items-center gap-1 mt-0.5 min-w-0">
-                <span v-if="authStore.isSuperAdmin" class="inline-flex items-center px-1.5 py-[1px] rounded-[4px] bg-black text-white text-[9.5px] font-707 font-medium uppercase tracking-wider">
+                <span v-if="authStore.isSuperAdmin" class="inline-flex items-center px-1.5 py-[1px] rounded-[4px] bg-black text-white text-[9.5px] font-sans font-light tracking-normal font-medium uppercase tracking-wider">
                   Superadmin
                 </span>
-                <span v-else class="inline-flex items-center gap-1 px-1.5 py-[1px] rounded-[4px] bg-neutral-100 border-[0.5px] border-black/10 text-neutral-700 text-[10px] font-707 font-medium shrink-0">
+                <span v-else class="inline-flex items-center gap-1 px-1.5 py-[1px] rounded-[4px] bg-neutral-100 border-[0.5px] border-black/10 text-neutral-700 text-[10px] font-sans font-light tracking-normal font-medium shrink-0">
                   <CheckCircle2 class="w-2.5 h-2.5 text-emerald-600" />
                   Verified
                 </span>
-                <span class="text-[11px] text-neutral-500 font-707 truncate">
+                <span class="text-[11px] text-neutral-500 font-sans font-light tracking-normal truncate">
                   {{ userSubtitle }}
                 </span>
               </div>
@@ -71,11 +71,11 @@
           >
             <div class="flex items-center gap-2.5 min-w-0">
               <FolderKanban class="w-4 h-4 text-neutral-500 group-hover:text-black transition-colors" />
-              <span class="font-707 text-[13px] font-normal">
+              <span class="font-sans font-light tracking-normal text-[13px] font-normal">
                 My Activations
               </span>
             </div>
-            <span class="text-[11px] font-707 text-neutral-400 group-hover:text-neutral-600 transition-colors">
+            <span class="text-[11px] font-sans font-light tracking-normal text-neutral-400 group-hover:text-neutral-600 transition-colors">
               All Drops
             </span>
           </button>
@@ -88,11 +88,11 @@
           >
             <div class="flex items-center gap-2.5 min-w-0">
               <BarChart2 class="w-4 h-4 text-neutral-500 group-hover:text-black transition-colors" />
-              <span class="font-707 text-[13px] font-normal">
+              <span class="font-sans font-light tracking-normal text-[13px] font-normal">
                 Campaign Hub
               </span>
             </div>
-            <span class="text-[11px] font-707 text-neutral-400 group-hover:text-neutral-600 transition-colors">
+            <span class="text-[11px] font-sans font-light tracking-normal text-neutral-400 group-hover:text-neutral-600 transition-colors">
               Scanner & Guests
             </span>
           </button>
@@ -105,11 +105,11 @@
           >
             <div class="flex items-center gap-2.5 min-w-0">
               <Sparkles class="w-4 h-4 text-neutral-500 group-hover:text-amber-500 transition-colors" />
-              <span class="font-707 text-[13px] font-normal">
+              <span class="font-sans font-light tracking-normal text-[13px] font-normal">
                 What's New in 1.5
               </span>
             </div>
-            <span class="text-[10px] font-707 font-medium px-1.5 py-[1px] rounded-[4px] bg-neutral-100 border-[0.5px] border-black/10 text-neutral-600">
+            <span class="text-[10px] font-sans font-light tracking-normal font-medium px-1.5 py-[1px] rounded-[4px] bg-neutral-100 border-[0.5px] border-black/10 text-neutral-600">
               Tour
             </span>
           </button>
@@ -122,7 +122,7 @@
             class="w-full text-left px-[12px] py-[8.5px] rounded-[8px] hover:bg-black/5 active:bg-black/10 transition-colors cursor-pointer border-0 outline-none bg-transparent flex items-center gap-2.5 text-black apple-press group"
           >
             <Settings class="w-4 h-4 text-neutral-500 group-hover:text-black transition-colors" />
-            <span class="font-707 text-[13px] font-normal">
+            <span class="font-sans font-light tracking-normal text-[13px] font-normal">
               Superadmin Settings
             </span>
           </button>
@@ -138,7 +138,7 @@
           >
             <div class="flex items-center gap-2.5 min-w-0">
               <LogOut class="w-4 h-4 text-red-500 group-hover:translate-x-0.5 transition-transform" />
-              <span class="font-707 text-[13px] font-medium text-red-600">
+              <span class="font-sans font-light tracking-normal text-[13px] font-medium text-red-600">
                 Sign Out
               </span>
             </div>

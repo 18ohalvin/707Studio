@@ -1,10 +1,10 @@
 <template>
-  <div class="w-full flex flex-col gap-6 font-707">
+  <div class="w-full flex flex-col gap-6 font-sans font-light tracking-normal">
     <!-- Header banner -->
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 rounded-[16px] border border-black/10 bg-white">
       <div>
         <div class="flex items-center gap-2">
-          <p class="text-[11px] uppercase tracking-[0.14em] text-neutral-500 font-medium">Venue Capacity & Access</p>
+          <p class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Venue Capacity & Access</p>
           <span class="px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-moss-50 text-moss-700 border border-moss-200">
             Queue System Active
           </span>
@@ -43,7 +43,7 @@
       <div class="p-6 md:p-7 rounded-[18px] border border-black/10 bg-white flex flex-col justify-between gap-6 shadow-xs">
         <div>
           <div class="flex items-center justify-between">
-            <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Venue Capacity & Real-Time Headcount</span>
+            <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Venue Capacity & Real-Time Headcount</span>
             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-black/5 text-neutral-700 border border-black/10">
               <span class="size-1.5 rounded-full" :style="{ backgroundColor: barColor }" />
               {{ capacityPercent >= 100 ? 'Venue Full' : 'Accepting Entry' }}
@@ -62,8 +62,8 @@
             </div>
 
             <div class="sm:text-right flex flex-col gap-1 sm:items-end">
-              <span class="text-[11px] uppercase tracking-[0.1em] text-neutral-500 font-medium">Available Spots</span>
-              <span class="text-[22px] font-bold font-mono tabular-nums" :style="{ color: barColor }">
+              <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Available Spots</span>
+              <span class="text-[22px] font-medium font-mono tabular-nums" :style="{ color: barColor }">
                 {{ Math.max(0, form.maxCapacity - insideCount) }}
               </span>
             </div>
@@ -99,7 +99,7 @@
       <div class="p-6 rounded-[16px] border border-black/10 bg-white flex flex-col justify-between gap-5">
         <div>
           <div class="flex items-center justify-between mb-4">
-            <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Queue & Capacity Rules</span>
+            <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Queue & Capacity Rules</span>
             <span class="text-[11px] text-neutral-400">Venue Limits</span>
           </div>
 
@@ -124,7 +124,7 @@
                   type="number"
                   min="1"
                   max="2000"
-                  class="flex-1 h-full min-w-0 px-2 text-[15px] font-semibold font-mono tabular-nums text-center text-black bg-transparent border-none outline-none focus:outline-none"
+                  class="flex-1 h-full min-w-0 px-2 text-[15px] font-medium font-mono tabular-nums text-center text-black bg-transparent border-none outline-none focus:outline-none"
                 />
                 <span class="w-[46px] h-full flex items-center justify-center text-[11px] font-medium font-mono text-neutral-400 bg-black/[0.02] select-none uppercase tracking-wider">
                   pax
@@ -152,7 +152,7 @@
                   type="number"
                   min="1"
                   max="100"
-                  class="flex-1 h-full min-w-0 px-2 text-[15px] font-semibold font-mono tabular-nums text-center text-black bg-transparent border-none outline-none focus:outline-none"
+                  class="flex-1 h-full min-w-0 px-2 text-[15px] font-medium font-mono tabular-nums text-center text-black bg-transparent border-none outline-none focus:outline-none"
                 />
                 <span class="w-[46px] h-full flex items-center justify-center text-[11px] font-medium font-mono text-neutral-400 bg-black/[0.02] select-none uppercase tracking-wider">
                   ahead
@@ -180,7 +180,7 @@
                   type="number"
                   min="1"
                   max="50"
-                  class="flex-1 h-full min-w-0 px-2 text-[15px] font-semibold font-mono tabular-nums text-center text-black bg-transparent border-none outline-none focus:outline-none"
+                  class="flex-1 h-full min-w-0 px-2 text-[15px] font-medium font-mono tabular-nums text-center text-black bg-transparent border-none outline-none focus:outline-none"
                 />
                 <span class="w-[46px] h-full flex items-center justify-center text-[11px] font-medium font-mono text-neutral-400 bg-black/[0.02] select-none uppercase tracking-wider">
                   turns
@@ -207,7 +207,7 @@
           <div>
             <div class="flex items-center gap-2.5">
               <h3 class="text-[18px] font-medium tracking-tight text-black">Primary Email Notifications</h3>
-              <span class="text-[10.5px] uppercase tracking-[0.1em] font-mono px-2.5 py-0.5 rounded-full border bg-moss-50 text-moss-700 border-moss-200">
+              <span class="text-[10.5px] uppercase tracking-normal font-mono px-2.5 py-0.5 rounded-full border bg-moss-50 text-moss-700 border-moss-200">
                 Primary • Active
               </span>
             </div>
@@ -259,48 +259,48 @@
         <div class="flex flex-col gap-4">
           <!-- Subject Line Field -->
           <div class="flex flex-col gap-1.5">
-            <label class="text-[12px] font-medium uppercase tracking-[0.08em] text-neutral-500 flex items-center justify-between">
+            <label class="text-[12px] font-medium uppercase tracking-normal text-neutral-500 flex items-center justify-between">
               <span>Email Subject Line</span>
               <span class="text-[11px] text-neutral-400 font-mono">{{ currentEmailTemplate.subject?.length || 0 }} chars</span>
             </label>
             <input
               v-model="currentEmailTemplate.subject"
               type="text"
-              class="w-full h-[42px] px-3.5 rounded-[10px] bg-black/[0.02] border border-black/15 text-[13.5px] font-707 text-black outline-none focus:border-black focus:bg-white transition-all placeholder:text-neutral-400"
+              class="w-full h-[42px] px-3.5 rounded-[10px] bg-black/[0.02] border border-black/15 text-[13.5px] font-sans font-light tracking-normal text-black outline-none focus:border-black focus:bg-white transition-all placeholder:text-neutral-400"
               placeholder="e.g. Your 707 ticket for {{campaign}}"
             />
           </div>
 
           <!-- Email Heading Field -->
           <div class="flex flex-col gap-1.5">
-            <label class="text-[12px] font-medium uppercase tracking-[0.08em] text-neutral-500">
+            <label class="text-[12px] font-medium uppercase tracking-normal text-neutral-500">
               Email Main Heading
             </label>
             <input
               v-model="currentEmailTemplate.heading"
               type="text"
-              class="w-full h-[42px] px-3.5 rounded-[10px] bg-black/[0.02] border border-black/15 text-[13.5px] font-707 text-black outline-none focus:border-black focus:bg-white transition-all placeholder:text-neutral-400"
+              class="w-full h-[42px] px-3.5 rounded-[10px] bg-black/[0.02] border border-black/15 text-[13.5px] font-sans font-light tracking-normal text-black outline-none focus:border-black focus:bg-white transition-all placeholder:text-neutral-400"
               placeholder="e.g. Your ticket"
             />
           </div>
 
           <!-- Email Body Copy Field -->
           <div class="flex flex-col gap-1.5">
-            <label class="text-[12px] font-medium uppercase tracking-[0.08em] text-neutral-500 flex items-center justify-between">
+            <label class="text-[12px] font-medium uppercase tracking-normal text-neutral-500 flex items-center justify-between">
               <span>Body Copy / Intro</span>
               <span class="text-[11px] text-neutral-400 font-mono">{{ currentEmailTemplate.body?.length || 0 }} chars</span>
             </label>
             <textarea
               v-model="currentEmailTemplate.body"
               rows="4"
-              class="w-full p-3.5 rounded-[12px] bg-black/[0.02] border border-black/15 text-[13.5px] leading-relaxed font-707 text-black outline-none focus:border-black focus:bg-white transition-all resize-y placeholder:text-neutral-400"
+              class="w-full p-3.5 rounded-[12px] bg-black/[0.02] border border-black/15 text-[13.5px] leading-relaxed font-sans font-light tracking-normal text-black outline-none focus:border-black focus:bg-white transition-all resize-y placeholder:text-neutral-400"
               placeholder="Enter message body copy..."
             />
           </div>
 
           <!-- Dynamic Variable Pills -->
           <div class="flex flex-col gap-1.5">
-            <span class="text-[11px] uppercase tracking-[0.08em] text-neutral-500 font-medium">Insert Dynamic Variables:</span>
+            <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Insert Dynamic Variables:</span>
             <div class="flex flex-wrap gap-1.5">
               <button
                 v-for="v in emailVariablePills"
@@ -320,7 +320,7 @@
           <div v-if="activeEmailTab === 'pass'" class="p-4 rounded-[14px] bg-black/[0.02] border border-black/10 flex flex-col gap-3">
             <div class="flex items-center justify-between gap-3">
               <div class="flex flex-col min-w-0">
-                <span class="text-[12.5px] font-semibold text-black">Live Queue Tracking Link Button</span>
+                <span class="text-[12.5px] font-medium text-black">Live Queue Tracking Link Button</span>
                 <span class="text-[11.5px] text-neutral-500">Provides guests a 1-tap button to track their live queue position without WhatsApp.</span>
               </div>
               <button
@@ -340,14 +340,14 @@
             </div>
 
             <div v-if="currentEmailTemplate.includeLiveTrackingButton !== false" class="flex flex-col gap-1.5 pt-1">
-              <label class="text-[11px] font-medium uppercase tracking-[0.08em] text-neutral-500">
+              <label class="text-[11px] font-medium uppercase tracking-normal text-neutral-500">
                 Email Button Label
               </label>
               <input
                 v-model="currentEmailTemplate.liveTrackingButtonLabel"
                 type="text"
                 placeholder="VIEW LIVE QUEUE"
-                class="w-full h-[38px] px-3 rounded-[8px] bg-white border border-black/15 text-[13px] font-707 text-black outline-none focus:border-black uppercase transition-all"
+                class="w-full h-[38px] px-3 rounded-[8px] bg-white border border-black/15 text-[13px] font-sans font-light tracking-normal text-black outline-none focus:border-black uppercase transition-all"
               />
             </div>
           </div>
@@ -368,7 +368,7 @@
             <div class="flex flex-col gap-0.5 text-[12px]">
               <div class="flex items-center gap-2">
                 <span class="font-medium text-neutral-400 w-14 text-right text-[11px]">Subject:</span>
-                <span class="font-semibold text-black truncate">{{ renderedEmailSubject }}</span>
+                <span class="font-medium text-black truncate">{{ renderedEmailSubject }}</span>
               </div>
               <div class="flex items-center gap-2">
                 <span class="font-medium text-neutral-400 w-14 text-right text-[11px]">From:</span>
@@ -387,7 +387,7 @@
 
             <!-- Email Headline -->
             <div class="flex flex-col gap-1.5">
-              <h2 class="text-[20px] font-semibold text-black tracking-tight leading-snug">
+              <h2 class="text-[20px] font-medium text-black tracking-tight leading-snug">
                 {{ renderedEmailHeading }}
               </h2>
               <p class="text-[13px] text-neutral-600 leading-relaxed whitespace-pre-wrap">
@@ -399,11 +399,11 @@
             <div class="p-3.5 rounded-[10px] bg-neutral-50 border border-black/5 grid grid-cols-2 gap-3 text-[12px]">
               <div class="flex flex-col gap-0.5">
                 <span class="text-[10px] font-mono uppercase text-neutral-400">Queue Number</span>
-                <span class="font-mono font-bold text-black text-[14px]">#42</span>
+                <span class="font-mono font-medium text-black text-[14px]">#42</span>
               </div>
               <div class="flex flex-col gap-0.5">
                 <span class="text-[10px] font-mono uppercase text-neutral-400">Access ID</span>
-                <span class="font-mono font-bold text-black text-[14px]">707-K92F</span>
+                <span class="font-mono font-medium text-black text-[14px]">707-K92F</span>
               </div>
               <div class="flex flex-col gap-0.5">
                 <span class="text-[10px] font-mono uppercase text-neutral-400">Visitor</span>
@@ -453,7 +453,7 @@
             <div class="flex items-center gap-2.5">
               <h3 class="text-[18px] font-medium tracking-tight text-black">Automated WhatsApp Notifications</h3>
               <span
-                class="text-[10.5px] uppercase tracking-[0.1em] font-mono px-2.5 py-0.5 rounded-full border transition-colors"
+                class="text-[10.5px] uppercase tracking-normal font-mono px-2.5 py-0.5 rounded-full border transition-colors"
                 :class="form.waEnabled ? 'bg-moss-50 text-moss-700 border-moss-200' : 'bg-neutral-100 text-neutral-500 border-neutral-200'"
               >
                 {{ form.waEnabled ? 'Active' : 'Disabled' }}
@@ -496,7 +496,7 @@
           <div class="p-6 rounded-[20px] border border-black/10 bg-white flex flex-col gap-5 shadow-xs">
             <!-- 1. Default WhatsApp Number Header -->
             <div class="flex items-center justify-between">
-              <span class="text-[11px] font-mono uppercase tracking-[0.12em] text-neutral-500 font-bold">DEFAULT WHATSAPP NUMBER</span>
+              <span class="text-[11px] font-mono uppercase tracking-normal text-neutral-500 font-medium">DEFAULT WHATSAPP NUMBER</span>
               <span
                 class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-medium border transition-colors"
                 :class="form.waConnection?.connected ? 'bg-moss-50 text-moss-700 border-moss-200' : 'bg-neutral-100 text-neutral-500 border-neutral-200'"
@@ -514,7 +514,7 @@
                 </div>
                 <div class="min-w-0">
                   <div class="text-[11px] text-neutral-400 font-medium">Default Sender Phone</div>
-                  <div class="text-[13.5px] font-semibold text-black font-mono truncate">
+                  <div class="text-[13.5px] font-medium text-black font-mono truncate">
                     {{ form.waConnection?.formattedNumber || (form.waConnection?.phoneNumber ? `+${form.waConnection.phoneNumber}` : 'No phone configured') }}
                   </div>
                 </div>
@@ -531,8 +531,8 @@
             <!-- 2. WhatsApp Gateway Section -->
             <div class="pt-4 border-t border-black/10 flex flex-col gap-3.5">
               <div class="flex items-center justify-between">
-                <span class="text-[11px] font-mono uppercase tracking-[0.12em] text-neutral-500 font-bold">WHATSAPP GATEWAY</span>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-neutral-100 text-neutral-700 border border-neutral-200">
+                <span class="text-[11px] font-mono uppercase tracking-normal text-neutral-500 font-medium">WHATSAPP GATEWAY</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-neutral-100 text-neutral-700 border border-neutral-200">
                   Zero Cost Direct
                 </span>
               </div>
@@ -558,9 +558,9 @@
                 <div class="p-3.5 rounded-[12px] bg-moss-500/[0.06] border border-moss-200 flex items-center justify-between">
                   <div class="flex items-center gap-2">
                     <span class="size-2 rounded-full bg-moss-600"></span>
-                    <span class="text-[12.5px] font-semibold text-moss-800">Gateway Active</span>
+                    <span class="text-[12.5px] font-medium text-moss-800">Gateway Active</span>
                   </div>
-                  <span class="text-[13px] font-mono font-semibold text-moss-900">
+                  <span class="text-[13px] font-mono font-medium text-moss-900">
                     {{ form.waConnection?.formattedNumber || (form.waConnection?.phoneNumber ? `+${form.waConnection.phoneNumber}` : '') }}
                   </span>
                 </div>
@@ -646,7 +646,7 @@
                 <strong>Anti-Ban Protection:</strong> Max 1 milestone per guest to protect your linked number. Ticket passes and live tracking are safely delivered via Email.
               </span>
             </div>
-            <span class="text-[10px] font-mono uppercase bg-amber-500/15 text-amber-900 border border-amber-500/30 px-2 py-0.5 rounded-full font-semibold shrink-0 hidden sm:inline-block">
+            <span class="text-[10px] font-mono uppercase bg-amber-500/15 text-amber-900 border border-amber-500/30 px-2 py-0.5 rounded-full font-medium shrink-0 hidden sm:inline-block">
               1 Milestone Max
             </span>
           </div>
@@ -654,7 +654,7 @@
           <!-- Compact 707 Milestone Selector -->
           <div class="flex flex-col gap-2">
             <div class="flex items-center justify-between">
-              <label class="text-[11.5px] font-mono uppercase tracking-[0.08em] font-bold text-neutral-600">
+              <label class="text-[11.5px] font-mono uppercase tracking-normal font-medium text-neutral-600">
                 Active WhatsApp Trigger Milestone
               </label>
               <span class="text-[11px] text-neutral-400">1 selected milestone will send to customer</span>
@@ -666,7 +666,7 @@
                 :key="stage.id"
                 type="button"
                 @click="selectActiveWaStage(stage.id)"
-                class="h-[52px] px-3.5 rounded-[10px] text-left transition-all cursor-pointer flex items-center justify-between gap-2 border font-707 apple-press"
+                class="h-[52px] px-3.5 rounded-[10px] text-left transition-all cursor-pointer flex items-center justify-between gap-2 border font-sans font-light tracking-normal apple-press"
                 :class="form.activeWaStage === stage.id 
                   ? 'apple-glass-btn-dark bg-black text-white border-black shadow-xs' 
                   : 'apple-glass-btn bg-white hover:bg-neutral-50 text-neutral-800 border-black/15'"
@@ -674,13 +674,13 @@
                 <div class="flex items-center gap-2.5 min-w-0">
                   <component :is="stage.icon || MessageSquare" class="w-4 h-4 shrink-0" :class="form.activeWaStage === stage.id ? 'text-white' : 'text-neutral-500'" />
                   <div class="flex flex-col min-w-0">
-                    <span class="text-[12.5px] font-semibold leading-none truncate">{{ stage.title }}</span>
+                    <span class="text-[12.5px] font-medium leading-none truncate">{{ stage.title }}</span>
                     <span class="text-[10px] leading-none mt-1 truncate" :class="form.activeWaStage === stage.id ? 'text-white/70' : 'text-neutral-400'">{{ stage.triggerSummary }}</span>
                   </div>
                 </div>
                 <span 
                   v-if="stage.id === 'ready'"
-                  class="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded font-semibold shrink-0"
+                  class="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded font-medium shrink-0"
                   :class="form.activeWaStage === stage.id ? 'bg-white/20 text-white' : 'bg-moss-50 text-moss-700 border border-moss-200'"
                 >
                   Best
@@ -695,7 +695,7 @@
           <!-- Left: Template Textarea Editor -->
           <div class="flex flex-col gap-3">
             <div class="flex items-center justify-between">
-              <label for="template-editor" class="text-[11.5px] font-medium uppercase tracking-[0.08em] text-neutral-500">
+              <label for="template-editor" class="text-[11.5px] font-medium uppercase tracking-normal text-neutral-500">
                 {{ currentStage.title }} Template Copy
               </label>
               <span class="text-[11px] text-neutral-400 font-mono">
@@ -707,13 +707,13 @@
               id="template-editor"
               v-model="form.waTemplates[activeStageId]"
               rows="4"
-              class="w-full p-3.5 rounded-[12px] bg-black/[0.02] border border-black/15 text-[13px] leading-relaxed font-707 outline-none focus:border-black focus:bg-white transition-all resize-y text-black placeholder:text-neutral-400"
+              class="w-full p-3.5 rounded-[12px] bg-black/[0.02] border border-black/15 text-[13px] leading-relaxed font-sans font-light tracking-normal outline-none focus:border-black focus:bg-white transition-all resize-y text-black placeholder:text-neutral-400"
               placeholder="Enter WhatsApp message copy..."
             />
 
             <!-- Dynamic Tag Pills -->
             <div class="flex flex-col gap-1.5">
-              <span class="text-[11px] uppercase tracking-[0.08em] text-neutral-500 font-medium">Insert Dynamic Variables:</span>
+              <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Insert Dynamic Variables:</span>
               <div class="flex flex-wrap gap-1.5">
                 <button
                   v-for="tag in currentStage.tags"
@@ -734,7 +734,7 @@
           <div class="rounded-[16px] border border-black/10 bg-[#f4f2ec] overflow-hidden shadow-sm flex flex-col">
             <!-- Chat Header -->
             <div class="bg-[#0b5c49] text-white px-4 py-3 flex items-center gap-3">
-              <div class="size-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-[12px] text-white shrink-0">
+              <div class="size-8 rounded-full bg-white/20 flex items-center justify-center font-medium text-[12px] text-white shrink-0">
                 707
               </div>
               <div class="min-w-0 flex-1">
@@ -761,7 +761,7 @@
                 </p>
                 <div class="flex items-center justify-end gap-1 text-[10px] text-neutral-400 mt-0.5">
                   <span>{{ previewTime }}</span>
-                  <span class="text-sky-500 font-bold">✓✓</span>
+                  <span class="text-sky-500 font-medium">✓✓</span>
                 </div>
               </div>
             </div>
@@ -785,14 +785,14 @@
       class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
       @click.self="closeWhatsAppQrModal"
     >
-      <div class="w-full max-w-[640px] bg-white rounded-[24px] shadow-2xl border border-black/10 overflow-hidden flex flex-col font-707">
+      <div class="w-full max-w-[640px] bg-white rounded-[24px] shadow-2xl border border-black/10 overflow-hidden flex flex-col font-sans font-light tracking-normal">
         <div class="p-6 border-b border-black/10 flex items-center justify-between bg-neutral-50/50">
           <div class="flex items-center gap-3">
             <div class="size-10 rounded-[12px] bg-black text-white flex items-center justify-center shadow-xs">
               <QrCode class="w-5 h-5" />
             </div>
             <div>
-              <h3 class="text-[17px] font-semibold text-black tracking-tight">Link WhatsApp Device</h3>
+              <h3 class="text-[17px] font-medium text-black tracking-tight">Link WhatsApp Device</h3>
               <p class="text-[12.5px] text-neutral-500">Zero-cost automated notifications via WhatsApp Linked Devices.</p>
             </div>
           </div>
@@ -811,7 +811,7 @@
             <AlertTriangle class="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
             <span>{{ waDeviceStatus.error }}</span>
           </div>
-          <button type="button" @click="openWhatsAppQrModal" class="px-2.5 py-1 rounded-[6px] bg-red-100 hover:bg-red-200 font-semibold text-[11px] shrink-0 cursor-pointer">
+          <button type="button" @click="openWhatsAppQrModal" class="px-2.5 py-1 rounded-[6px] bg-red-100 hover:bg-red-200 font-medium text-[11px] shrink-0 cursor-pointer">
             Retry
           </button>
         </div>
@@ -821,33 +821,33 @@
           <!-- Steps -->
           <div class="flex flex-col gap-4">
             <div class="flex items-start gap-3">
-              <span class="size-6 rounded-full bg-black text-white text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
+              <span class="size-6 rounded-full bg-black text-white text-[11px] font-medium flex items-center justify-center shrink-0 mt-0.5">1</span>
               <div>
-                <div class="text-[13px] font-semibold text-black">Open WhatsApp</div>
+                <div class="text-[13px] font-medium text-black">Open WhatsApp</div>
                 <div class="text-[12px] text-neutral-500 mt-0.5">Open WhatsApp or WhatsApp Business on your phone.</div>
               </div>
             </div>
 
             <div class="flex items-start gap-3">
-              <span class="size-6 rounded-full bg-black text-white text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
+              <span class="size-6 rounded-full bg-black text-white text-[11px] font-medium flex items-center justify-center shrink-0 mt-0.5">2</span>
               <div>
-                <div class="text-[13px] font-semibold text-black">Go to Linked Devices</div>
+                <div class="text-[13px] font-medium text-black">Go to Linked Devices</div>
                 <div class="text-[12px] text-neutral-500 mt-0.5">Tap <strong>Settings</strong> (iOS) or <strong>⋮ Menu</strong> (Android) &gt; <strong>Linked Devices</strong>.</div>
               </div>
             </div>
 
             <div class="flex items-start gap-3">
-              <span class="size-6 rounded-full bg-black text-white text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">3</span>
+              <span class="size-6 rounded-full bg-black text-white text-[11px] font-medium flex items-center justify-center shrink-0 mt-0.5">3</span>
               <div>
-                <div class="text-[13px] font-semibold text-black">Link a Device</div>
+                <div class="text-[13px] font-medium text-black">Link a Device</div>
                 <div class="text-[12px] text-neutral-500 mt-0.5">Tap <strong>Link a Device</strong> and authenticate with biometric or passcode.</div>
               </div>
             </div>
 
             <div class="flex items-start gap-3">
-              <span class="size-6 rounded-full bg-black text-white text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">4</span>
+              <span class="size-6 rounded-full bg-black text-white text-[11px] font-medium flex items-center justify-center shrink-0 mt-0.5">4</span>
               <div>
-                <div class="text-[13px] font-semibold text-black">Scan QR Code</div>
+                <div class="text-[13px] font-medium text-black">Scan QR Code</div>
                 <div class="text-[12px] text-neutral-500 mt-0.5">Point phone camera directly at the QR code on screen.</div>
               </div>
             </div>
@@ -863,7 +863,7 @@
               </div>
               <div v-if="waDeviceStatus.pairingCode" class="mt-4 w-full border-t border-black/10 pt-3">
                 <div class="text-[11px] text-neutral-500">Can't scan? On the phone choose <strong>Link with phone number instead</strong> and enter:</div>
-                <div class="mt-1.5 font-mono text-[22px] font-bold tracking-[0.18em] text-black select-all">{{ waDeviceStatus.pairingCode }}</div>
+                <div class="mt-1.5 font-mono text-[22px] font-medium tracking-normal text-black select-all">{{ waDeviceStatus.pairingCode }}</div>
               </div>
             </template>
             <template v-else-if="waDeviceStatus.status === 'connecting' || isConnectingWa">
@@ -899,7 +899,7 @@
       class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
       @click.self="showLinkModal = false"
     >
-      <div class="w-full max-w-[580px] bg-white rounded-[24px] shadow-2xl border border-black/10 overflow-hidden flex flex-col font-707">
+      <div class="w-full max-w-[580px] bg-white rounded-[24px] shadow-2xl border border-black/10 overflow-hidden flex flex-col font-sans font-light tracking-normal">
         <!-- Header -->
         <div class="p-6 sm:p-7 border-b border-black/10 flex items-center justify-between bg-neutral-50/50">
           <div class="flex items-center gap-3.5">
@@ -1016,15 +1016,15 @@
                 <span>What this enables:</span>
               </div>
               <div class="flex items-start gap-2">
-                <span class="text-moss-600 font-bold">✓</span>
+                <span class="text-moss-600 font-medium">✓</span>
                 <span>Immediate 1-tap WhatsApp chat dispatch from the Guest Database table and Gate Scanner.</span>
               </div>
               <div class="flex items-start gap-2">
-                <span class="text-moss-600 font-bold">✓</span>
+                <span class="text-moss-600 font-medium">✓</span>
                 <span>Direct "Send Test" launches WhatsApp Web or mobile app instantly with pre-filled test notification copy.</span>
               </div>
               <div class="flex items-start gap-2">
-                <span class="text-moss-600 font-bold">✓</span>
+                <span class="text-moss-600 font-medium">✓</span>
                 <span>Zero monthly provider subscriptions, zero bot disconnects.</span>
               </div>
             </div>
@@ -1038,7 +1038,7 @@
 
             <!-- Provider Presets -->
             <div class="flex flex-col gap-1.5">
-              <span class="text-[11.5px] uppercase tracking-[0.08em] text-neutral-500 font-medium">Gateway Provider:</span>
+              <span class="text-[11.5px] uppercase tracking-normal text-neutral-500 font-medium">Gateway Provider:</span>
               <div class="grid grid-cols-4 gap-2">
                 <button
                   type="button"
@@ -1159,7 +1159,7 @@
       class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
       @click.self="showTestModal = false"
     >
-      <div class="w-full max-w-[500px] bg-white rounded-[22px] shadow-2xl border border-black/10 overflow-hidden flex flex-col font-707">
+      <div class="w-full max-w-[500px] bg-white rounded-[22px] shadow-2xl border border-black/10 overflow-hidden flex flex-col font-sans font-light tracking-normal">
         <div class="p-5 border-b border-black/10 flex items-center justify-between bg-neutral-50/50">
           <div class="flex items-center gap-3">
             <div class="size-9 rounded-[10px] bg-moss-600 text-white flex items-center justify-center shadow-2xs">
@@ -1279,7 +1279,7 @@
       class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
       @click.self="showLogsModal = false"
     >
-      <div class="w-full max-w-[620px] bg-white rounded-[20px] shadow-2xl border border-black/10 overflow-hidden flex flex-col font-707">
+      <div class="w-full max-w-[620px] bg-white rounded-[20px] shadow-2xl border border-black/10 overflow-hidden flex flex-col font-sans font-light tracking-normal">
         <div class="p-5 border-b border-black/10 flex items-center justify-between bg-neutral-50/50">
           <div class="flex items-center gap-3">
             <div class="size-9 rounded-[10px] bg-black/5 text-neutral-700 flex items-center justify-center">

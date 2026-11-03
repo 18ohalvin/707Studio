@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-4 w-full font-707">
+  <div class="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-4 w-full font-sans font-light tracking-normal">
     <!-- Draw settings -->
     <div class="rounded-[12px] border border-black/10 bg-white p-4 flex flex-col gap-4 h-fit">
       <div class="flex items-center justify-between">
@@ -10,7 +10,7 @@
       </div>
 
       <div class="flex flex-col gap-2">
-        <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500">Who can win</span>
+        <span class="text-[11px] uppercase tracking-normal text-neutral-500">Who can win</span>
         <label v-for="opt in poolOptions" :key="opt.value" class="flex items-start gap-2.5 cursor-pointer">
           <input v-model="poolRule" type="radio" :value="opt.value" class="mt-[3px] accent-black" />
           <span class="flex flex-col">
@@ -25,7 +25,7 @@
       </div>
 
       <div class="flex flex-col gap-1.5">
-        <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500">{{ isWaitlistDraw ? 'Number of guests' : 'Number of winners' }}</span>
+        <span class="text-[11px] uppercase tracking-normal text-neutral-500">{{ isWaitlistDraw ? 'Number of guests' : 'Number of winners' }}</span>
         <div class="flex items-center gap-2">
           <button type="button" @click="winnerCount = Math.max(1, winnerCount - 1)" class="size-9 rounded-[8px] border border-black/15 hover:bg-black/5 cursor-pointer flex items-center justify-center"><Minus class="w-3.5 h-3.5" /></button>
           <input
@@ -147,7 +147,7 @@
       <Transition name="stage-fade">
         <div
           v-if="isStageModeOpen"
-          class="fixed inset-0 z-[120] bg-[#0b0c0d] text-white flex flex-col justify-between p-6 sm:p-10 font-707 select-none overflow-hidden"
+          class="fixed inset-0 z-[120] bg-[#0b0c0d] text-white flex flex-col justify-between p-6 sm:p-10 font-sans font-light tracking-normal select-none overflow-hidden"
           role="dialog"
           aria-modal="true"
         >
@@ -188,8 +188,8 @@
                 <Sparkles class="w-8 h-8 text-amber-300 animate-spin" />
               </div>
               <div class="flex flex-col items-center gap-2">
-                <p class="text-[12px] uppercase tracking-[0.22em] text-white/50 font-medium">Drawing Lucky Winner</p>
-                <h1 class="text-[38px] sm:text-[64px] md:text-[80px] font-bold tracking-tight text-white font-mono leading-none drop-shadow-[0_8px_30px_rgba(255,255,255,0.3)]">
+                <p class="text-[12px] uppercase tracking-normal text-white/50 font-medium">Drawing Lucky Winner</p>
+                <h1 class="text-[38px] sm:text-[64px] md:text-[80px] font-medium tracking-tight text-white font-mono leading-none drop-shadow-[0_8px_30px_rgba(255,255,255,0.3)]">
                   {{ shuffleName }}
                 </h1>
                 <p class="text-[13.5px] text-white/60 font-mono mt-2">Cycling {{ eligible.length }} entries...</p>
@@ -199,10 +199,10 @@
             <!-- State 2: Winner(s) Revealed -->
             <div v-else-if="drawn.length" class="flex flex-col items-center justify-center w-full gap-6">
               <div class="flex flex-col items-center gap-1.5">
-                <span class="px-3.5 py-1 rounded-full text-[11px] uppercase tracking-[0.2em] font-semibold bg-amber-400/20 text-amber-300 border border-amber-400/40">
+                <span class="px-3.5 py-1 rounded-full text-[11px] uppercase tracking-normal font-medium bg-amber-400/20 text-amber-300 border border-amber-400/40">
                   🎉 Winner{{ drawn.length > 1 ? 's' : '' }} Selected
                 </span>
-                <h2 class="text-[32px] sm:text-[44px] font-semibold text-white tracking-tight">
+                <h2 class="text-[32px] sm:text-[44px] font-medium text-white tracking-tight">
                   Congratulations!
                 </h2>
               </div>
@@ -217,15 +217,15 @@
                   :key="s.id"
                   class="relative p-5 rounded-[18px] bg-white/[0.08] backdrop-blur-xl border border-white/20 shadow-[0_16px_40px_rgba(0,0,0,0.5)] flex items-center gap-4 text-left transition-all hover:bg-white/[0.12]"
                 >
-                  <div class="size-13 rounded-full bg-gradient-to-tr from-amber-400 to-amber-200 text-black font-bold text-[17px] flex items-center justify-center shrink-0 shadow-lg">
+                  <div class="size-13 rounded-full bg-gradient-to-tr from-amber-400 to-amber-200 text-black font-medium text-[17px] flex items-center justify-center shrink-0 shadow-lg">
                     {{ initials(guestName(s)) }}
                   </div>
                   <div class="flex flex-col min-w-0 flex-1">
                     <div class="flex items-center gap-2">
-                      <span class="text-[11px] font-mono text-amber-300 uppercase tracking-wider font-semibold">#{{ idx + 1 }} Winner</span>
+                      <span class="text-[11px] font-mono text-amber-300 uppercase tracking-wider font-medium">#{{ idx + 1 }} Winner</span>
                       <span v-if="s.checked_in_at" class="text-[10px] px-1.5 py-0.2 rounded-full bg-moss-500/20 text-moss-300 border border-moss-500/30">At Venue</span>
                     </div>
-                    <h3 class="text-[19px] font-semibold text-white truncate leading-snug">{{ guestName(s) }}</h3>
+                    <h3 class="text-[19px] font-medium text-white truncate leading-snug">{{ guestName(s) }}</h3>
                     <p class="text-[12px] text-white/60 font-mono truncate">{{ maskEmail(guestEmail(s)) || guestPhone(s) || '—' }}</p>
                     <p class="text-[11px] text-white/40 font-mono mt-0.5">Pass ID: {{ accessId(s) }}</p>
                   </div>
@@ -239,8 +239,8 @@
                 <Trophy class="w-10 h-10 text-amber-300/80" />
               </div>
               <div class="flex flex-col items-center gap-2">
-                <span class="text-[12px] uppercase tracking-[0.2em] text-white/50 font-medium">Ready for Live Selection</span>
-                <h1 class="text-[36px] sm:text-[54px] font-semibold text-white tracking-tight leading-tight">
+                <span class="text-[12px] uppercase tracking-normal text-white/50 font-medium">Ready for Live Selection</span>
+                <h1 class="text-[36px] sm:text-[54px] font-medium text-white tracking-tight leading-tight">
                   {{ isWaitlistDraw ? 'Waitlist Draw' : 'Official Prize Draw' }}
                 </h1>
                 <p class="text-[15px] text-white/60 max-w-[480px]">
@@ -252,7 +252,7 @@
                 type="button"
                 :disabled="!eligible.length || isDrawing"
                 @click="draw"
-                class="apple-press h-[56px] px-10 rounded-[14px] bg-white text-black font-semibold text-[17px] tracking-tight hover:bg-neutral-200 cursor-pointer shadow-[0_12px_36px_rgba(255,255,255,0.2)] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-3 mt-4"
+                class="apple-press h-[56px] px-10 rounded-[14px] bg-white text-black font-medium text-[17px] tracking-tight hover:bg-neutral-200 cursor-pointer shadow-[0_12px_36px_rgba(255,255,255,0.2)] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-3 mt-4"
               >
                 <Shuffle class="w-5 h-5" />
                 <span>Start Lucky Draw</span>

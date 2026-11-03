@@ -93,7 +93,7 @@
               <span class="size-2 rounded-full transition-colors duration-300" :style="{ backgroundColor: barColor }" />
               Live Booth Capacity
             </span>
-            <span class="tabular-nums font-mono text-[13px] text-black font-semibold">
+            <span class="tabular-nums font-mono text-[13px] text-black font-medium">
               {{ insideCount }} <span class="text-neutral-400 font-normal">/ {{ maxCapacity }}</span>
               <span class="ml-1.5 text-[11px] font-normal" :style="{ color: barColor }">({{ capacityPercent }}%)</span>
             </span>
@@ -164,8 +164,8 @@
                     <span v-if="isVip(m.guest)" class="shrink-0 px-1.5 py-0.5 rounded-[5px] bg-black text-white text-[10px] font-medium tracking-normal">VIP</span>
                   </p>
                   <p class="text-[12.5px] text-neutral-500 leading-tight truncate">
-                    <span :class="m.via === 'code' ? 'text-black font-semibold' : ''">ID ···<span class="font-mono">{{ codeTail(m.guest) }}</span></span>
-                    <template v-if="phoneTail(m.guest)"> · <span :class="m.via === 'phone' ? 'text-black font-semibold' : ''">WA ···{{ phoneTail(m.guest) }}</span></template>
+                    <span :class="m.via === 'code' ? 'text-black font-medium' : ''">ID ···<span class="font-mono">{{ codeTail(m.guest) }}</span></span>
+                    <template v-if="phoneTail(m.guest)"> · <span :class="m.via === 'phone' ? 'text-black font-medium' : ''">WA ···{{ phoneTail(m.guest) }}</span></template>
                   </p>
                 </div>
                 <span class="shrink-0 px-2 py-0.5 rounded-full text-[11px] font-medium border" :class="matchChipClass(m.guest)">{{ matchChipLabel(m.guest) }}</span>
@@ -181,13 +181,13 @@
                   <div class="flex items-center gap-2">
                     <Volume2 class="w-3.5 h-3.5 text-neutral-600 shrink-0" />
                     <span class="text-[11px] font-mono uppercase tracking-normal text-neutral-500">Serving</span>
-                    <span class="px-2 py-0.5 rounded-[6px] bg-black text-white font-mono text-[13px] font-bold">#{{ currentCalledNumber }}</span>
+                    <span class="px-2 py-0.5 rounded-[6px] bg-black text-white font-mono text-[13px] font-medium">#{{ currentCalledNumber }}</span>
                     <div class="flex items-center gap-1 ml-0.5">
                       <button
                         type="button"
                         @click="stepQueueCaller(-1)"
                         :disabled="currentCalledNumber <= 1"
-                        class="size-6 rounded-[5px] border border-black/15 bg-white text-[11px] font-mono font-bold hover:bg-black/5 disabled:opacity-30 cursor-pointer flex items-center justify-center transition-colors"
+                        class="size-6 rounded-[5px] border border-black/15 bg-white text-[11px] font-mono font-medium hover:bg-black/5 disabled:opacity-30 cursor-pointer flex items-center justify-center transition-colors"
                         title="Step back to previous number"
                       >
                         -
@@ -195,7 +195,7 @@
                       <button
                         type="button"
                         @click="stepQueueCaller(1)"
-                        class="size-6 rounded-[5px] border border-black/15 bg-white text-[11px] font-mono font-bold hover:bg-black/5 cursor-pointer flex items-center justify-center transition-colors"
+                        class="size-6 rounded-[5px] border border-black/15 bg-white text-[11px] font-mono font-medium hover:bg-black/5 cursor-pointer flex items-center justify-center transition-colors"
                         title="Step to next number"
                       >
                         +
@@ -249,7 +249,7 @@
                     class="w-full flex items-center justify-between p-2 rounded-[10px] border border-moss-200 bg-moss-50/70 transition-colors"
                   >
                     <div class="flex items-center gap-2.5 min-w-0">
-                      <span class="size-7 rounded-[7px] bg-moss-600 text-white font-mono font-bold text-[12px] flex items-center justify-center shrink-0 shadow-2xs">
+                      <span class="size-7 rounded-[7px] bg-moss-600 text-white font-mono font-medium text-[12px] flex items-center justify-center shrink-0 shadow-2xs">
                         #{{ getGuestQueueNumber(guest) }}
                       </span>
                       <div class="min-w-0">
@@ -295,7 +295,7 @@
                   >
                     <div class="flex items-center gap-2.5 min-w-0">
                       <span
-                        class="size-7 rounded-[7px] flex items-center justify-center font-mono font-bold text-[12px] shrink-0"
+                        class="size-7 rounded-[7px] flex items-center justify-center font-mono font-medium text-[12px] shrink-0"
                         :class="getGuestQueueNumber(guest) === currentCalledNumber
                           ? 'bg-moss-600 text-white shadow-2xs'
                           : (isGuestInside(guest) ? 'bg-neutral-300 text-neutral-600' : 'bg-black/10 text-neutral-800')"
@@ -424,7 +424,7 @@
             <p class="text-[13px] text-neutral-500 leading-tight truncate">
               ID ···<span class="font-mono">{{ codeTail(g) }}</span>
               <template v-if="phoneTail(g)"> · WA ···{{ phoneTail(g) }}</template>
-              · in at {{ formatTime(g.checked_in_at) }}<template v-if="g.checked_in_by"> · by <span class="font-semibold text-neutral-800">{{ g.checked_in_by }}</span></template>
+              · in at {{ formatTime(g.checked_in_at) }}<template v-if="g.checked_in_by"> · by <span class="font-medium text-neutral-800">{{ g.checked_in_by }}</span></template>
             </p>
           </div>
           <template v-if="cancelArmed === g.id">
@@ -445,7 +445,7 @@
         <div class="flex-1 min-h-0 flex flex-col items-center justify-center text-center px-8 py-6 gap-2 overflow-y-auto">
           <div class="flex items-center gap-2">
             <span class="text-[12px] uppercase tracking-normal text-neutral-500">{{ mode === 'in' ? 'Is this the guest?' : 'Check this guest out?' }}</span>
-            <span v-if="pending.queue_number" class="px-2 py-0.5 rounded-[6px] bg-black/5 border border-black/10 font-mono text-[12px] font-semibold text-black tabular-nums">
+            <span v-if="pending.queue_number" class="px-2 py-0.5 rounded-[6px] bg-black/5 border border-black/10 font-mono text-[12px] font-medium text-black tabular-nums">
               Antrian #{{ pending.queue_number }}
             </span>
           </div>

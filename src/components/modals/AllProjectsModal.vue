@@ -7,7 +7,7 @@
     >
       <!-- Modal Box (Apple Glass UI Hub) -->
       <div 
-        class="apple-frost border border-white/60 flex flex-col items-start rounded-[20px] shadow-[0px_24px_60px_0px_rgba(0,0,0,0.16),0_1px_3px_rgba(0,0,0,0.05)] w-full max-w-[1020px] max-h-[88vh] overflow-hidden apple-modal-box font-707"
+        class="apple-frost border border-white/60 flex flex-col items-start rounded-[20px] shadow-[0px_24px_60px_0px_rgba(0,0,0,0.16),0_1px_3px_rgba(0,0,0,0.05)] w-full max-w-[1020px] max-h-[88vh] overflow-hidden apple-modal-box font-sans font-light tracking-normal"
         data-name="All Projects Hub Modal"
       >
         <!-- Modal Top Header -->
@@ -18,14 +18,14 @@
             </div>
             <div>
               <div class="flex items-center gap-2">
-                <h2 class="font-707 text-[19px] font-medium leading-[24px] text-black">
-                  All Projects
+                <h2 class="font-sans font-light tracking-normal text-[19px] font-medium leading-[24px] text-black">
+                  My Activations
                 </h2>
                 <span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-black/5 text-black border border-black/5">
                   {{ filteredProjects.length }} Project{{ filteredProjects.length === 1 ? '' : 's' }}
                 </span>
               </div>
-              <p class="font-707 text-[12px] text-neutral-500 mt-0.5">
+              <p class="font-sans font-light tracking-normal text-[12px] text-neutral-500 mt-0.5">
                 {{ authStore.isSuperAdmin ? 'Master ecosystem drops & brand campaigns' : `Managed projects for ${activeBrandName}` }}
               </p>
             </div>
@@ -35,7 +35,7 @@
           <div class="flex items-center gap-3">
             <button 
               @click="handleCreateNew"
-              class="apple-glass-btn-dark bg-black text-white px-3.5 h-[34px] rounded-[8px] font-707 text-[12px] font-medium flex items-center gap-1.5 apple-press cursor-pointer hover:bg-neutral-800 transition-colors shadow-xs"
+              class="apple-glass-btn-dark bg-black text-white px-3.5 h-[34px] rounded-[8px] font-sans font-light tracking-normal text-[12px] font-medium flex items-center gap-1.5 apple-press cursor-pointer hover:bg-neutral-800 transition-colors shadow-xs"
             >
               <Plus class="w-3.5 h-3.5" />
               <span>New Project</span>
@@ -61,19 +61,19 @@
               v-model="searchQuery"
               type="text"
               placeholder="Search projects by name or slug..."
-              class="w-full h-[34px] pl-9 pr-3 rounded-[8px] bg-white/60 border border-black/10 text-[12px] font-707 text-black placeholder:text-neutral-400 outline-none focus:border-black focus:bg-white transition-all"
+              class="w-full h-[34px] pl-9 pr-3 rounded-[8px] bg-white/60 border border-black/10 text-[12px] font-sans font-light tracking-normal text-black placeholder:text-neutral-400 outline-none focus:border-black focus:bg-white transition-all"
             />
           </div>
 
           <!-- Middle & Right: Status Filter Pills + View Mode Toggle -->
           <div class="flex items-center gap-3 justify-between sm:justify-end flex-wrap">
             <!-- Status Tabs -->
-            <div class="flex items-center gap-1 p-0.5 rounded-[8px] bg-black/5 text-[11px] font-707">
+            <div class="flex items-center gap-1 p-0.5 rounded-[8px] bg-black/5 text-[11px] font-sans font-light tracking-normal">
               <button 
                 @click="statusFilter = 'all'"
                 :class="[
                   'px-2.5 py-1 rounded-[6px] transition-all cursor-pointer border-none',
-                  statusFilter === 'all' ? 'bg-white text-black font-semibold shadow-xs' : 'bg-transparent text-neutral-500 hover:text-black'
+                  statusFilter === 'all' ? 'bg-white text-black font-medium shadow-xs' : 'bg-transparent text-neutral-500 hover:text-black'
                 ]"
               >
                 All ({{ allCount }})
@@ -82,7 +82,7 @@
                 @click="statusFilter = 'approved'"
                 :class="[
                   'px-2.5 py-1 rounded-[6px] transition-all cursor-pointer border-none',
-                  statusFilter === 'approved' ? 'bg-white text-black font-semibold shadow-xs' : 'bg-transparent text-neutral-500 hover:text-black'
+                  statusFilter === 'approved' ? 'bg-white text-black font-medium shadow-xs' : 'bg-transparent text-neutral-500 hover:text-black'
                 ]"
               >
                 Live ({{ liveCount }})
@@ -91,7 +91,7 @@
                 @click="statusFilter = 'pending_review'"
                 :class="[
                   'px-2.5 py-1 rounded-[6px] transition-all cursor-pointer border-none',
-                  statusFilter === 'pending_review' ? 'bg-white text-black font-semibold shadow-xs' : 'bg-transparent text-neutral-500 hover:text-black'
+                  statusFilter === 'pending_review' ? 'bg-white text-black font-medium shadow-xs' : 'bg-transparent text-neutral-500 hover:text-black'
                 ]"
               >
                 Review ({{ reviewCount }})
@@ -100,7 +100,7 @@
                 @click="statusFilter = 'draft'"
                 :class="[
                   'px-2.5 py-1 rounded-[6px] transition-all cursor-pointer border-none',
-                  statusFilter === 'draft' ? 'bg-white text-black font-semibold shadow-xs' : 'bg-transparent text-neutral-500 hover:text-black'
+                  statusFilter === 'draft' ? 'bg-white text-black font-medium shadow-xs' : 'bg-transparent text-neutral-500 hover:text-black'
                 ]"
               >
                 Drafts ({{ draftCount }})
@@ -179,10 +179,10 @@
 
               <!-- Card Middle: Project Title & Slug -->
               <div class="flex flex-col gap-1 mb-3">
-                <h3 class="font-707 font-medium text-[14px] leading-[18px] text-black truncate group-hover:text-neutral-900" :title="project.title">
+                <h3 class="font-sans font-light tracking-normal font-medium text-[14px] leading-[18px] text-black truncate group-hover:text-neutral-900" :title="project.title">
                   {{ project.title }}
                 </h3>
-                <p class="font-707 text-[11px] text-neutral-500 font-mono truncate">
+                <p class="font-sans font-light tracking-normal text-[11px] text-neutral-500 font-mono truncate">
                   /{{ project.brand_slug || 'atmos' }}/{{ project.slug }}
                 </p>
               </div>
@@ -247,12 +247,12 @@
                 </div>
                 <div class="flex flex-col min-w-0 flex-1">
                   <div class="flex items-center gap-2">
-                    <h4 class="font-707 font-medium text-[13px] text-black truncate">{{ project.title }}</h4>
+                    <h4 class="font-sans font-light tracking-normal font-medium text-[13px] text-black truncate">{{ project.title }}</h4>
                     <span class="px-1.5 py-0.2 rounded text-[9px] font-mono bg-black/5 text-neutral-600 uppercase">
                       {{ project.brand_slug || 'atmos' }}
                     </span>
                   </div>
-                  <span class="font-707 text-[11px] text-neutral-400 font-mono truncate">
+                  <span class="font-sans font-light tracking-normal text-[11px] text-neutral-400 font-mono truncate">
                     events.707.co.id/{{ project.brand_slug || 'atmos' }}/{{ project.slug }}
                   </span>
                 </div>
@@ -270,7 +270,7 @@
               </div>
 
               <!-- Last Edited -->
-              <div class="w-[110px] shrink-0 text-right font-707 text-[11px] text-neutral-500">
+              <div class="w-[110px] shrink-0 text-right font-sans font-light tracking-normal text-[11px] text-neutral-500">
                 {{ editorStore.formatRelativeTime(project.updated_at) }}
               </div>
 
@@ -314,15 +314,15 @@
             <div class="size-12 rounded-full bg-black/5 flex items-center justify-center text-neutral-400 mb-3">
               <FolderKanban class="w-6 h-6 stroke-[1.5]" />
             </div>
-            <h3 class="font-707 font-medium text-[15px] text-black mb-1">
+            <h3 class="font-sans font-light tracking-normal font-medium text-[15px] text-black mb-1">
               No projects found
             </h3>
-            <p class="font-707 text-[12px] text-neutral-500 max-w-[320px] mb-4">
+            <p class="font-sans font-light tracking-normal text-[12px] text-neutral-500 max-w-[320px] mb-4">
               {{ searchQuery ? `No matches for "${searchQuery}". Try changing your query or filter.` : 'No campaigns created yet for this brand directory.' }}
             </p>
             <button 
               @click="handleCreateNew"
-              class="apple-glass-btn-dark bg-black text-white px-4 h-[36px] rounded-[8px] font-707 text-[12px] font-medium flex items-center gap-1.5 apple-press cursor-pointer"
+              class="apple-glass-btn-dark bg-black text-white px-4 h-[36px] rounded-[8px] font-sans font-light tracking-normal text-[12px] font-medium flex items-center gap-1.5 apple-press cursor-pointer"
             >
               <Plus class="w-3.5 h-3.5" />
               <span>Create First Project</span>

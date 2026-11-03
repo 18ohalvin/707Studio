@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-6 w-full font-707">
+  <div class="flex flex-col gap-6 w-full font-sans font-light tracking-normal">
     <!-- Empty state -->
     <div
       v-if="!rows.length"
@@ -16,7 +16,7 @@
       <!-- Stat tiles -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div v-for="tile in tiles" :key="tile.label" class="rounded-[12px] border border-black/10 bg-white px-4 py-3.5 flex flex-col gap-1">
-          <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500">{{ tile.label }}</span>
+          <span class="text-[11px] uppercase tracking-normal text-neutral-500">{{ tile.label }}</span>
           <span class="text-[26px] leading-[32px] tabular-nums">{{ tile.value }}</span>
           <span class="text-[11.5px] text-neutral-500 tabular-nums">{{ tile.hint }}</span>
         </div>

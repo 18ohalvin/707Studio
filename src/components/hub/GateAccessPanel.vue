@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <div
-      class="fixed inset-0 z-[80] bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4 font-['Helvetica_Neue',Helvetica,Arial,sans-serif] tracking-normal select-none"
+      class="fixed inset-0 z-[80] bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4 font-sans font-light tracking-normal select-none"
       @click.self="$emit('close')"
     >
       <div class="w-full max-w-[640px] max-h-[88vh] rounded-[16px] bg-white border border-black/10 shadow-[0px_20px_60px_rgba(0,0,0,0.2)] flex flex-col overflow-hidden">
@@ -9,8 +9,8 @@
         <div class="flex items-start justify-between gap-4 px-6 pt-5 pb-3 border-b border-black/5">
           <div class="min-w-0">
             <div class="flex items-center gap-1.5 text-neutral-400 text-[11px] font-medium">
-              <Shield class="w-3.5 h-3.5 text-moss-700" />
-              <span>Door Scanner Stations</span>
+              <ShieldCheck class="w-3.5 h-3.5 text-moss-700" />
+              <span>Gate Management</span>
             </div>
             <p class="text-[18px] font-medium leading-tight truncate text-black mt-0.5">{{ projectTitle }}</p>
           </div>
@@ -31,7 +31,7 @@
             @click="activeTab = 'stations'"
             style="outline: none; box-shadow: none; -webkit-tap-highlight-color: transparent;"
             class="py-2.5 text-[12.5px] transition-colors relative cursor-pointer flex items-center gap-1.5 outline-none focus:outline-none focus-visible:outline-none ring-0 focus:ring-0 border-0 bg-transparent select-none"
-            :class="activeTab === 'stations' ? 'text-black font-semibold' : 'text-neutral-500 hover:text-black font-normal'"
+            :class="activeTab === 'stations' ? 'text-black font-medium' : 'text-neutral-500 hover:text-black font-light'"
           >
             <span>Assigned Devices</span>
             <span
@@ -51,7 +51,7 @@
             @click="activeTab = 'create'"
             style="outline: none; box-shadow: none; -webkit-tap-highlight-color: transparent;"
             class="py-2.5 text-[12.5px] transition-colors relative cursor-pointer flex items-center gap-1 outline-none focus:outline-none focus-visible:outline-none ring-0 focus:ring-0 border-0 bg-transparent select-none"
-            :class="activeTab === 'create' ? 'text-black font-semibold' : 'text-neutral-500 hover:text-black font-normal'"
+            :class="activeTab === 'create' ? 'text-black font-medium' : 'text-neutral-500 hover:text-black font-light'"
           >
             <Plus class="w-3.5 h-3.5" />
             <span>Add Device & Assign PIC</span>
@@ -78,7 +78,7 @@
               <div class="min-w-0 flex-1 pr-3">
                 <div class="flex items-center gap-1.5">
                   <Tablet class="w-3.5 h-3.5 text-neutral-400" />
-                  <span class="text-[13.5px] font-semibold text-white truncate">{{ credentials.deviceLabel || credentials.username }}</span>
+                  <span class="text-[13.5px] font-medium text-white truncate">{{ credentials.deviceLabel || credentials.username }}</span>
                 </div>
                 <p class="text-[12px] text-neutral-300 mt-0.5">
                   PIC: <strong class="text-white font-medium">{{ credentials.username }}</strong>
@@ -90,7 +90,7 @@
               </div>
               <div class="text-right shrink-0">
                 <span class="text-[10px] uppercase text-white/50 block">Passcode</span>
-                <span class="text-[18px] font-mono font-bold tracking-wider text-white select-all">{{ credentials.password }}</span>
+                <span class="text-[18px] font-mono font-medium tracking-wider text-white select-all">{{ credentials.password }}</span>
               </div>
             </div>
 
@@ -175,7 +175,7 @@
                 <div class="flex items-start justify-between gap-2">
                   <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-1.5 flex-wrap">
-                      <h4 class="text-[13.5px] font-semibold text-black tracking-tight">{{ parseDeviceName(a) }}</h4>
+                      <h4 class="text-[13.5px] font-medium text-black tracking-tight">{{ parseDeviceName(a) }}</h4>
                       <span
                         v-if="parseBranch(a)"
                         class="px-1.5 py-0.5 rounded-[4px] bg-neutral-100 text-[10.5px] font-medium text-neutral-600 truncate max-w-[130px]"
@@ -241,7 +241,7 @@
                           type="button"
                           @click="updateStationMode(a, 'in'); openMenuId = null"
                           class="w-full px-2.5 py-1 rounded-[5px] hover:bg-neutral-100 text-left flex items-center justify-between text-[11px] cursor-pointer"
-                          :class="a.stationMode === 'in' ? 'font-semibold text-black' : 'text-neutral-600'"
+                          :class="a.stationMode === 'in' ? 'font-medium text-black' : 'text-neutral-600'"
                         >
                           <span>Entrance (In)</span>
                           <Check v-if="a.stationMode === 'in'" class="w-3 h-3 text-black" />
@@ -250,7 +250,7 @@
                           type="button"
                           @click="updateStationMode(a, 'out'); openMenuId = null"
                           class="w-full px-2.5 py-1 rounded-[5px] hover:bg-neutral-100 text-left flex items-center justify-between text-[11px] cursor-pointer"
-                          :class="a.stationMode === 'out' ? 'font-semibold text-black' : 'text-neutral-600'"
+                          :class="a.stationMode === 'out' ? 'font-medium text-black' : 'text-neutral-600'"
                         >
                           <span>Exit (Out)</span>
                           <Check v-if="a.stationMode === 'out'" class="w-3 h-3 text-black" />
@@ -259,7 +259,7 @@
                           type="button"
                           @click="updateStationMode(a, 'both'); openMenuId = null"
                           class="w-full px-2.5 py-1 rounded-[5px] hover:bg-neutral-100 text-left flex items-center justify-between text-[11px] cursor-pointer"
-                          :class="a.stationMode === 'both' ? 'font-semibold text-black' : 'text-neutral-600'"
+                          :class="a.stationMode === 'both' ? 'font-medium text-black' : 'text-neutral-600'"
                         >
                           <span>Dual (In & Out)</span>
                           <Check v-if="a.stationMode === 'both'" class="w-3 h-3 text-black" />
@@ -351,7 +351,7 @@
                     type="button"
                     @click="selectDeviceType('tab')"
                     class="h-[32px] px-3 rounded-[6px] text-[12px] font-medium transition-all cursor-pointer flex items-center gap-1.5 select-none"
-                    :class="selectedDeviceType === 'tab' ? 'bg-white text-black shadow-2xs font-semibold' : 'text-neutral-500 hover:text-black'"
+                    :class="selectedDeviceType === 'tab' ? 'bg-white text-black shadow-2xs font-medium' : 'text-neutral-500 hover:text-black font-light'"
                   >
                     <Tablet class="w-3.5 h-3.5" />
                     <span>Tab {{ nextTabNumber }}</span>
@@ -360,7 +360,7 @@
                     type="button"
                     @click="selectDeviceType('ipad')"
                     class="h-[32px] px-3 rounded-[6px] text-[12px] font-medium transition-all cursor-pointer flex items-center gap-1.5 select-none"
-                    :class="selectedDeviceType === 'ipad' ? 'bg-white text-black shadow-2xs font-semibold' : 'text-neutral-500 hover:text-black'"
+                    :class="selectedDeviceType === 'ipad' ? 'bg-white text-black shadow-2xs font-medium' : 'text-neutral-500 hover:text-black font-light'"
                   >
                     <Tablet class="w-3.5 h-3.5" />
                     <span>iPad {{ nextIpadNumber }}</span>
@@ -426,7 +426,7 @@
                       type="button"
                       @click="selectRole('in')"
                       class="w-full px-2.5 py-2 rounded-[7px] text-left flex items-center justify-between text-[12.5px] cursor-pointer transition-colors"
-                      :class="stationMode === 'in' ? 'bg-black/5 font-semibold text-black' : 'hover:bg-neutral-50 text-neutral-700'"
+                      :class="stationMode === 'in' ? 'bg-black/5 font-medium text-black' : 'hover:bg-neutral-50 text-neutral-700'"
                     >
                       <div class="flex items-center gap-2">
                         <LogIn class="w-3.5 h-3.5 text-moss-600 shrink-0" />
@@ -442,7 +442,7 @@
                       type="button"
                       @click="selectRole('out')"
                       class="w-full px-2.5 py-2 rounded-[7px] text-left flex items-center justify-between text-[12.5px] cursor-pointer transition-colors"
-                      :class="stationMode === 'out' ? 'bg-black/5 font-semibold text-black' : 'hover:bg-neutral-50 text-neutral-700'"
+                      :class="stationMode === 'out' ? 'bg-black/5 font-medium text-black' : 'hover:bg-neutral-50 text-neutral-700'"
                     >
                       <div class="flex items-center gap-2">
                         <LogOut class="w-3.5 h-3.5 text-amber-600 shrink-0" />
@@ -458,7 +458,7 @@
                       type="button"
                       @click="selectRole('both')"
                       class="w-full px-2.5 py-2 rounded-[7px] text-left flex items-center justify-between text-[12.5px] cursor-pointer transition-colors"
-                      :class="stationMode === 'both' ? 'bg-black/5 font-semibold text-black' : 'hover:bg-neutral-50 text-neutral-700'"
+                      :class="stationMode === 'both' ? 'bg-black/5 font-medium text-black' : 'hover:bg-neutral-50 text-neutral-700'"
                     >
                       <div class="flex items-center gap-2">
                         <ArrowLeftRight class="w-3.5 h-3.5 text-neutral-700 shrink-0" />
@@ -506,7 +506,7 @@
                     type="button"
                     @click="selectShift(p.id)"
                     class="w-full px-2.5 py-2 rounded-[7px] text-left flex items-center justify-between text-[12.5px] cursor-pointer transition-colors"
-                    :class="selectedPreset === p.id ? 'bg-black/5 font-semibold text-black' : 'hover:bg-neutral-50 text-neutral-700'"
+                    :class="selectedPreset === p.id ? 'bg-black/5 font-medium text-black' : 'hover:bg-neutral-50 text-neutral-700'"
                   >
                     <div class="flex items-center gap-2">
                       <Clock class="w-3.5 h-3.5 text-neutral-400 shrink-0" />
@@ -554,6 +554,7 @@ import {
   Copy,
   Trash2,
   Shield,
+  ShieldCheck,
   Clock,
   LogIn,
   LogOut,

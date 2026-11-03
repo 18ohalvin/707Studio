@@ -1,10 +1,10 @@
 <template>
-  <div class="h-full w-full bg-white text-black font-707 flex flex-col overflow-y-auto overflow-x-hidden hub-root" data-name="Campaign Hub">
+  <div class="h-full w-full bg-white text-black font-sans font-light tracking-normal flex flex-col overflow-y-auto overflow-x-hidden hub-root" data-name="Campaign Hub">
     <!-- ============================================================== -->
     <!-- STATE 1: CAMPAIGN SELECTION LAUNCHPAD (Pre-Hub Gateway)        -->
     <!-- Strictly follows Sign-Up Step 1 layout on pure white canvas    -->
     <!-- ============================================================== -->
-    <div v-if="!selectedProject" class="min-h-screen w-full flex flex-col justify-between bg-white text-black font-707 select-none">
+    <div v-if="!selectedProject" class="min-h-screen w-full flex flex-col justify-between bg-white text-black font-sans font-light tracking-normal select-none">
       <!-- 48px Header -->
       <header class="w-full h-[48px] px-[24px] py-[8px] flex items-center justify-between border-b border-black/10 shrink-0 sticky top-0 z-30 bg-white">
         <div class="flex items-center gap-[10px] h-[20px]">
@@ -14,7 +14,7 @@
           <button 
             type="button"
             @click="showWhatsNewModal = true"
-            class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white hover:bg-neutral-50 border-[0.5px] border-black/10 hover:border-black/30 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10.5px] font-707 font-medium text-black leading-none whitespace-nowrap cursor-pointer transition-all apple-press"
+            class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white hover:bg-neutral-50 border-[0.5px] border-black/10 hover:border-black/30 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10.5px] font-sans font-medium text-black leading-none whitespace-nowrap cursor-pointer transition-all apple-press"
             title="What's New in Design Studio 1.5"
           >
             1.5
@@ -31,8 +31,8 @@
         <div class="flex flex-col items-center gap-6 w-full text-center my-auto animate-apple-pop">
           <!-- Title Section -->
           <div class="flex flex-col items-center text-center gap-2">
-            <span class="text-[12.5px] uppercase tracking-[0.14em] text-neutral-400 font-medium">Campaign Hub</span>
-            <h1 class="font-707 text-[32px] sm:text-[40px] tracking-tight leading-[38px] sm:leading-[46px]">
+            <span class="text-[12.5px] uppercase tracking-normal text-neutral-400 font-medium">Campaign Hub</span>
+            <h1 class="font-sans text-[32px] sm:text-[40px] tracking-tight leading-[38px] sm:leading-[46px]">
               <span class="font-light text-black/60">Which campaign are you </span>
               <span class="font-medium text-black">managing today?</span>
             </h1>
@@ -48,7 +48,7 @@
             >
               <div class="flex items-center gap-3 min-w-0">
                 <Search class="w-4 h-4 text-neutral-400 group-hover:text-black transition-colors shrink-0" />
-                <span class="text-[13.5px] text-neutral-500 font-normal truncate">
+                <span class="text-[13.5px] text-neutral-500 font-light truncate">
                   Select or search campaign…
                 </span>
               </div>
@@ -77,7 +77,7 @@
           <button 
             type="button"
             @click="showWhatsNewModal = true"
-            class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white hover:bg-neutral-50 border-[0.5px] border-black/10 hover:border-black/30 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10.5px] font-707 font-medium text-black leading-none whitespace-nowrap cursor-pointer transition-all apple-press"
+            class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white hover:bg-neutral-50 border-[0.5px] border-black/10 hover:border-black/30 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10.5px] font-sans font-medium text-black leading-none whitespace-nowrap cursor-pointer transition-all apple-press"
             title="What's New in Design Studio 1.5"
           >
             1.5
@@ -103,14 +103,14 @@
             <Transition name="hub-pop">
               <div
                 v-if="isPickerOpen"
-                class="absolute left-0 top-[calc(100%+6px)] z-50 w-[320px] apple-frost border border-black/10 rounded-[14px] shadow-[0px_24px_60px_rgba(0,0,0,0.18)] p-2 font-707"
+                class="absolute left-0 top-[calc(100%+6px)] z-50 w-[320px] apple-frost border border-black/10 rounded-[14px] shadow-[0px_24px_60px_rgba(0,0,0,0.18)] p-2 font-sans font-light tracking-normal"
               >
                 <div class="flex items-center justify-between px-2 pt-1 pb-2">
-                  <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Switch Campaign</span>
+                  <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Switch Campaign</span>
                   <button
                     type="button"
                     @click="resetToLaunchpad"
-                    class="text-[11.5px] text-neutral-600 hover:text-black underline cursor-pointer"
+                    class="text-[11.5px] text-neutral-600 hover:text-black underline cursor-pointer font-light"
                   >
                     All campaigns
                   </button>
@@ -155,7 +155,7 @@
             id="hub-refresh-btn"
             type="button"
             @click="refresh(true)"
-            class="flex items-center gap-1.5 px-2.5 h-[32px] rounded-[8px] text-[11.5px] font-707 text-neutral-500 hover:text-black hover:bg-black/5 transition-colors cursor-pointer"
+            class="flex items-center gap-1.5 px-2.5 h-[32px] rounded-[8px] text-[11.5px] font-sans font-light text-neutral-500 hover:text-black hover:bg-black/5 transition-colors cursor-pointer"
             :title="lastSyncedAt ? `Last synced ${lastSyncedLabel}` : 'Sync now'"
           >
             <span class="relative flex size-2 items-center justify-center">
@@ -168,7 +168,7 @@
           <!-- Primary: Open Campaign Editor -->
           <router-link
             :to="editorHref"
-            class="flex items-center gap-1.5 h-[32px] px-3.5 rounded-[8px] bg-black text-white text-[12px] font-707 font-medium hover:bg-neutral-800 transition-colors apple-press"
+            class="flex items-center gap-1.5 h-[32px] px-3.5 rounded-[8px] bg-black text-white text-[12px] font-sans font-medium hover:bg-neutral-800 transition-colors apple-press"
             title="Open Campaign Form Editor"
           >
             <SquarePen class="w-3.5 h-3.5" />
@@ -179,28 +179,28 @@
       </header>
 
       <!-- 1. Live Campaign HUD / Metric Ribbon (Harmonious Calm Cards, Earth Green) -->
-      <div class="px-[24px] w-full pt-[20px] md:pt-[24px] pb-[16px] shrink-0">
+      <div class="px-[24px] w-full pt-[20px] md:pt-[24px] pb-[16px] shrink-0 font-sans tracking-normal">
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <!-- Card 1: Total Registered -->
           <div class="p-4 rounded-[14px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between gap-1 shadow-2xs">
-            <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Total Registered</span>
+            <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Total Registered</span>
             <div class="flex items-baseline gap-2 mt-1">
               <span class="text-[26px] sm:text-[30px] font-medium font-mono tabular-nums leading-none text-black">{{ rows.length }}</span>
-              <span class="text-[12px] text-neutral-400 font-normal">Pax</span>
+              <span class="text-[12px] text-neutral-400 font-light">Pax</span>
             </div>
           </div>
 
           <!-- Card 2: Live Checked In -->
           <div class="p-4 rounded-[14px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between gap-1 shadow-2xs">
             <div class="flex items-center justify-between">
-              <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Checked In</span>
+              <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Checked In</span>
               <span class="text-[11px] font-mono font-medium text-moss-700 bg-moss-50 px-1.5 py-0.2 rounded-full border border-moss-200 tabular-nums">
                 {{ checkedInPct }}%
               </span>
             </div>
             <div class="flex items-baseline gap-2 mt-1">
               <span class="text-[26px] sm:text-[30px] font-medium font-mono tabular-nums leading-none text-black">{{ checkedInCount }}</span>
-              <span class="text-[12px] text-neutral-400 font-normal">/ {{ rows.length }}</span>
+              <span class="text-[12px] text-neutral-400 font-light">/ {{ rows.length }}</span>
             </div>
             <!-- Mini progress bar (Earth Green) -->
             <div class="w-full h-[4px] rounded-full bg-black/10 overflow-hidden mt-1.5">
@@ -210,17 +210,17 @@
 
           <!-- Card 3: Pending Arrival -->
           <div class="p-4 rounded-[14px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between gap-1 shadow-2xs">
-            <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Pending Arrival</span>
+            <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Pending Arrival</span>
             <div class="flex items-baseline gap-2 mt-1">
               <span class="text-[26px] sm:text-[30px] font-medium font-mono tabular-nums leading-none text-neutral-800">{{ pendingArrivalCount }}</span>
-              <span class="text-[12px] text-neutral-400 font-normal">Remaining</span>
+              <span class="text-[12px] text-neutral-400 font-light">Remaining</span>
             </div>
           </div>
 
           <!-- Card 4: Door Check-in Quick Launch (Calm & Balanced) -->
           <div class="p-4 rounded-[14px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between gap-2 shadow-2xs">
             <div class="flex items-center justify-between">
-              <span class="text-[11px] uppercase tracking-[0.12em] text-neutral-500 font-medium">Door Entrance</span>
+              <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Door Entrance</span>
               <span class="size-1.5 rounded-full bg-moss-600 shrink-0" />
             </div>
             <div class="flex flex-col gap-1.5 mt-1">
@@ -237,11 +237,11 @@
               <button
                 type="button"
                 @click="gateOpen = true"
-                class="w-full h-[24px] text-[11px] font-mono text-neutral-500 hover:text-black flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                class="w-full h-[24px] text-[11px] font-sans text-neutral-500 hover:text-black flex items-center justify-center gap-1 cursor-pointer transition-colors"
                 title="Create or manage door-security accounts for this campaign"
               >
                 <ShieldCheck class="w-3 h-3 text-neutral-400" />
-                <span>Staff Passwords</span>
+                <span>Gate Management</span>
               </button>
             </div>
           </div>
@@ -250,15 +250,15 @@
 
       <!-- 2. Workspace Navigation (Sticky beneath 48px header) -->
       <div id="hub-workspace-nav" class="sticky top-[48px] z-30 bg-white/95 backdrop-blur-md border-b border-black/10 w-full select-none">
-        <nav class="flex gap-[28px] md:gap-[44px] items-center px-[24px] w-full whitespace-nowrap overflow-x-auto no-scrollbar py-2.5" aria-label="Campaign hub sections">
+        <nav class="flex gap-[28px] md:gap-[44px] items-center px-[24px] w-full whitespace-nowrap overflow-x-auto no-scrollbar py-2.5 font-sans tracking-normal" aria-label="Campaign hub sections">
           <button
             v-for="t in tabs"
             :id="`hub-tab-${t.id}`"
             :key="t.id"
             type="button"
             @click="setTab(t.id)"
-            class="bg-transparent border-none p-0 cursor-pointer font-707 text-[14.5px] md:text-[15.5px] leading-[22px] transition-colors flex items-center gap-2 outline-none focus:outline-none focus-visible:outline-none ring-0 select-none"
-            :class="activeTab === t.id ? 'font-medium underline decoration-solid underline-offset-[10px] text-black' : 'font-normal text-neutral-500 hover:text-black'"
+            class="bg-transparent border-none p-0 cursor-pointer font-sans text-[14.5px] md:text-[15.5px] leading-[22px] transition-colors flex items-center gap-2 outline-none focus:outline-none focus-visible:outline-none ring-0 select-none"
+            :class="activeTab === t.id ? 'font-medium underline decoration-solid underline-offset-[10px] text-black' : 'font-light text-neutral-500 hover:text-black'"
           >
             {{ t.label }}
             <span v-if="t.badge !== undefined" class="px-1.5 py-0 rounded-full text-[10.5px] font-medium bg-black/5 text-neutral-700 no-underline tabular-nums">{{ t.badge }}</span>
@@ -331,7 +331,7 @@
         role="status"
       >
         <div class="size-2 rounded-full bg-moss-500 shrink-0" />
-        <p class="font-707 text-[12px] text-black font-medium">{{ toastMessage }}</p>
+        <p class="font-sans text-[12px] text-black font-medium">{{ toastMessage }}</p>
       </div>
     </Transition>
 
@@ -340,7 +340,7 @@
       <Transition name="hub-fade">
         <div 
           v-if="isLaunchpadModalOpen" 
-          class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 font-707 select-none"
+          class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 font-sans font-light tracking-normal select-none"
           @click.self="isLaunchpadModalOpen = false"
         >
           <div class="w-full max-w-[500px] bg-white rounded-[18px] shadow-[0_24px_70px_rgba(0,0,0,0.22)] border border-black/10 overflow-hidden flex flex-col animate-apple-pop">
@@ -352,7 +352,7 @@
                 v-model="launchpadSearch"
                 type="text"
                 placeholder="Search campaign by title or slug…"
-                class="flex-1 h-full text-[13.5px] bg-transparent outline-none placeholder:text-neutral-400 text-black"
+                class="flex-1 h-full text-[13.5px] bg-transparent outline-none placeholder:text-neutral-400 text-black font-light"
                 @keydown.esc="isLaunchpadModalOpen = false"
                 @keydown.enter.prevent="handleModalEnter"
               />
@@ -377,7 +377,7 @@
               >
                 <div class="flex items-center gap-3 min-w-0">
                   <div class="size-8 rounded-[8px] bg-black/[0.04] border border-black/5 flex items-center justify-center shrink-0">
-                    <span class="font-bold text-[11px] text-neutral-700 uppercase">{{ (p.title || 'C').charAt(0) }}</span>
+                    <span class="font-medium text-[11px] text-neutral-700 uppercase">{{ (p.title || 'C').charAt(0) }}</span>
                   </div>
                   <div class="min-w-0 flex flex-col">
                     <span class="text-[13.5px] font-medium text-black truncate group-hover:text-black">{{ p.title }}</span>
@@ -390,11 +390,11 @@
                     <span class="size-1.5 rounded-full bg-moss-600" />
                     <span>Active</span>
                   </span>
-                  <span v-else class="text-[11px] text-neutral-400 capitalize">{{ p.status || 'Draft' }}</span>
+                  <span v-else class="text-[11px] text-neutral-400 capitalize font-light">{{ p.status || 'Draft' }}</span>
                 </div>
               </button>
 
-              <div v-if="!filteredLaunchpadProjects.length" class="py-8 text-center text-[13px] text-neutral-400">
+              <div v-if="!filteredLaunchpadProjects.length" class="py-8 text-center text-[13px] text-neutral-400 font-light">
                 No campaigns match "{{ launchpadSearch }}"
               </div>
             </div>

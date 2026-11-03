@@ -14,7 +14,7 @@
         <!-- Modal Header (Figma Node 224:9592) -->
         <div class="flex flex-col gap-[8px] items-start w-full mb-[24px]" data-node-id="224:9592" data-name="Widget Container">
           <div class="flex items-center justify-between w-full" data-node-id="224:9593" data-name="Widget Header">
-            <h2 class="font-707 text-[22px] font-normal leading-[28px] text-black whitespace-nowrap" data-node-id="224:9594">
+            <h2 class="font-sans font-light tracking-normal text-[22px] font-normal leading-[28px] text-black whitespace-nowrap" data-node-id="224:9594">
               Setup your Project
             </h2>
             <!-- Close Button (Figma Node 224:9595) -->
@@ -29,7 +29,7 @@
             </button>
           </div>
           <!-- Subtitle copy -->
-          <p class="font-707 text-[14px] font-normal leading-[18px] text-black w-full" data-node-id="224:9597">
+          <p class="font-sans font-light tracking-normal text-[14px] font-normal leading-[18px] text-black w-full" data-node-id="224:9597">
             Name and create a custom slug for your project
           </p>
         </div>
@@ -46,14 +46,14 @@
                 type="text"
                 placeholder="Your Project Name"
                 required
-                class="border border-[#aaa] focus:border-black focus:outline-none rounded-[8px] h-[52px] px-[24px] py-[8px] font-707 text-[14px] text-black bg-white/60 transition-all placeholder:text-[#aaa] w-full"
+                class="border border-[#aaa] focus:border-black focus:outline-none rounded-[8px] h-[52px] px-[24px] py-[8px] font-sans font-light tracking-normal text-[14px] text-black bg-white/60 transition-all placeholder:text-[#aaa] w-full"
                 data-node-id="224:9600"
               />
             </div>
 
             <!-- Field 2: Event Format (Daily Rolling vs Single-Day vs Multi-Day) -->
             <div class="flex flex-col gap-[8px] w-full">
-              <label class="font-707 font-medium text-[12px] text-neutral-600 uppercase tracking-tight flex items-center justify-between">
+              <label class="font-sans font-light tracking-normal font-medium text-[12px] text-neutral-600 uppercase tracking-tight flex items-center justify-between">
                 <span>Event Format</span>
                 <span class="text-[11px] font-normal lowercase text-neutral-400">sets access validity</span>
               </label>
@@ -61,7 +61,7 @@
                 <button
                   type="button"
                   @click="eventType = 'daily_rolling'"
-                  class="h-[44px] rounded-[8px] border text-[12px] font-707 flex flex-col items-center justify-center cursor-pointer transition-all px-1"
+                  class="h-[44px] rounded-[8px] border text-[12px] font-sans font-light tracking-normal flex flex-col items-center justify-center cursor-pointer transition-all px-1"
                   :class="eventType === 'daily_rolling' 
                     ? 'bg-black text-white border-black font-medium shadow-2xs' 
                     : 'bg-white/70 hover:bg-white text-neutral-700 border-neutral-300 hover:border-black/50'"
@@ -75,7 +75,7 @@
                 <button
                   type="button"
                   @click="eventType = 'single'"
-                  class="h-[44px] rounded-[8px] border text-[12px] font-707 flex flex-col items-center justify-center cursor-pointer transition-all px-1"
+                  class="h-[44px] rounded-[8px] border text-[12px] font-sans font-light tracking-normal flex flex-col items-center justify-center cursor-pointer transition-all px-1"
                   :class="eventType === 'single' 
                     ? 'bg-black text-white border-black font-medium shadow-2xs' 
                     : 'bg-white/70 hover:bg-white text-neutral-700 border-neutral-300 hover:border-black/50'"
@@ -89,7 +89,7 @@
                 <button
                   type="button"
                   @click="eventType = 'multiday'"
-                  class="h-[44px] rounded-[8px] border text-[12px] font-707 flex flex-col items-center justify-center cursor-pointer transition-all px-1"
+                  class="h-[44px] rounded-[8px] border text-[12px] font-sans font-light tracking-normal flex flex-col items-center justify-center cursor-pointer transition-all px-1"
                   :class="eventType === 'multiday' 
                     ? 'bg-black text-white border-black font-medium shadow-2xs' 
                     : 'bg-white/70 hover:bg-white text-neutral-700 border-neutral-300 hover:border-black/50'"
@@ -111,7 +111,7 @@
                       v-model="startDate"
                       type="text"
                       placeholder="Start (16 Oct 2026)"
-                      class="flex-1 min-w-0 bg-transparent font-707 text-[12px] text-black focus:outline-none placeholder:text-[#aaa] p-0 m-0 border-none"
+                      class="flex-1 min-w-0 bg-transparent font-sans font-light tracking-normal text-[12px] text-black focus:outline-none placeholder:text-[#aaa] p-0 m-0 border-none"
                     />
                   </div>
                   <div class="border border-[#aaa] focus-within:border-black rounded-[8px] h-[46px] px-[12px] py-[6px] flex items-center gap-[6px] bg-white/60 transition-all">
@@ -120,11 +120,11 @@
                       v-model="endDate"
                       type="text"
                       placeholder="End (1 Nov 2026)"
-                      class="flex-1 min-w-0 bg-transparent font-707 text-[12px] text-black focus:outline-none placeholder:text-[#aaa] p-0 m-0 border-none"
+                      class="flex-1 min-w-0 bg-transparent font-sans font-light tracking-normal text-[12px] text-black focus:outline-none placeholder:text-[#aaa] p-0 m-0 border-none"
                     />
                   </div>
                 </div>
-                <p class="font-707 text-[11px] text-neutral-500 leading-tight px-1">
+                <p class="font-sans font-light tracking-normal text-[11px] text-neutral-500 leading-tight px-1">
                   Campaign runs across the period. Passes automatically stamp <strong>today's date</strong> in real time with <strong>daily queue resets</strong> and a date-organized database.
                 </p>
               </div>
@@ -137,16 +137,16 @@
                     v-model="eventDate"
                     type="text"
                     placeholder="Event Date (e.g. 16 October 2026)"
-                    class="flex-1 min-w-0 bg-transparent font-707 text-[13px] text-black focus:outline-none placeholder:text-[#aaa] p-0 m-0 border-none"
+                    class="flex-1 min-w-0 bg-transparent font-sans font-light tracking-normal text-[13px] text-black focus:outline-none placeholder:text-[#aaa] p-0 m-0 border-none"
                   />
                 </div>
-                <p class="font-707 text-[11px] text-neutral-500 leading-tight px-1">
+                <p class="font-sans font-light tracking-normal text-[11px] text-neutral-500 leading-tight px-1">
                   Auto-populates "ACCESS VALID FOR" on guest passes & PDF tickets without requiring arrival date form selection.
                 </p>
               </div>
 
               <div v-else class="w-full pt-0.5 animate-apple-pop">
-                <p class="font-707 text-[11px] text-neutral-500 leading-tight px-1">
+                <p class="font-sans font-light tracking-normal text-[11px] text-neutral-500 leading-tight px-1">
                   Guests will choose from session/arrival dates you configure in form widgets or modals.
                 </p>
               </div>
@@ -157,7 +157,7 @@
               class="border border-[#aaa] focus-within:border-black rounded-[8px] h-[52px] px-[24px] py-[8px] flex items-center gap-[4px] bg-white/60 transition-all w-full overflow-hidden"
               data-node-id="224:9602"
             >
-              <span class="font-707 text-[14px] text-[#aaa] shrink-0 select-none" data-node-id="224:9607">
+              <span class="font-sans font-light tracking-normal text-[14px] text-[#aaa] shrink-0 select-none" data-node-id="224:9607">
                 events.707.co.id/{{ targetBrandSlug }}/
               </span>
               <input 
@@ -165,7 +165,7 @@
                 @input="handleSlugInput"
                 type="text"
                 placeholder="Enter your campaign url"
-                class="flex-1 min-w-0 bg-transparent font-707 text-[14px] text-black focus:outline-none placeholder:text-[#aaa] p-0 m-0 border-none"
+                class="flex-1 min-w-0 bg-transparent font-sans font-light tracking-normal text-[14px] text-black focus:outline-none placeholder:text-[#aaa] p-0 m-0 border-none"
                 data-node-id="224:9608"
               />
             </div>
@@ -176,7 +176,7 @@
             <button 
               type="submit"
               :disabled="!campaignName.trim()"
-              class="bg-black hover:bg-neutral-800 active:bg-neutral-900 text-white font-707 font-medium text-[14px] leading-[18px] h-[52px] flex items-center justify-center rounded-[8px] cursor-pointer apple-press w-full transition-all shadow-sm disabled:bg-[#e0e0e0] disabled:text-[#888] disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none disabled:border-transparent"
+              class="bg-black hover:bg-neutral-800 active:bg-neutral-900 text-white font-sans font-light tracking-normal font-medium text-[14px] leading-[18px] h-[52px] flex items-center justify-center rounded-[8px] cursor-pointer apple-press w-full transition-all shadow-sm disabled:bg-[#e0e0e0] disabled:text-[#888] disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none disabled:border-transparent"
               data-node-id="I224:9605;176:5764"
             >
               Submit

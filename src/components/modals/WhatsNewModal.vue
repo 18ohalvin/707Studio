@@ -3,7 +3,7 @@
     <Transition name="apple-modal-fade">
       <div 
         v-if="isOpen"
-        class="fixed inset-0 z-[100] bg-black/45 backdrop-blur-[8px] flex items-center justify-center p-4 select-none font-707 animate-apple-fade"
+        class="fixed inset-0 z-[100] bg-black/45 backdrop-blur-[8px] flex items-center justify-center p-4 select-none font-sans font-light tracking-normal animate-apple-fade"
         @click.self="emit('close')"
         role="dialog"
         aria-modal="true"
@@ -21,7 +21,7 @@
                 alt="707 Design Studio" 
                 class="h-[17px] w-auto object-contain pointer-events-none" 
               />
-              <span class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white border-[0.5px] border-black/10 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10px] font-707 font-medium text-black leading-none">
+              <span class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white border-[0.5px] border-black/10 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10px] font-sans font-light tracking-normal font-medium text-black leading-none">
                 1.5
               </span>
             </div>
@@ -118,7 +118,7 @@
                       <!-- Top Drop Header -->
                       <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                          <span class="px-2 py-0.5 rounded-[5px] bg-white text-black text-[10px] font-bold tracking-wider uppercase shadow-xs">
+                          <span class="px-2 py-0.5 rounded-[5px] bg-white text-black text-[10px] font-medium tracking-wider uppercase shadow-xs">
                             DROP
                           </span>
                           <span class="text-[11.5px] font-medium text-white drop-shadow-sm">Barbie™ x Stanley Quencher</span>
@@ -181,7 +181,7 @@
                           type="button"
                           @click="selectedSize = size"
                           class="py-2 rounded-[8px] text-[11px] font-medium transition-all text-center cursor-pointer border apple-press"
-                          :class="selectedSize === size ? 'bg-white text-black border-white shadow-md font-semibold' : 'bg-white/[0.07] hover:bg-white/[0.12] text-neutral-300 border-white/10'"
+                          :class="selectedSize === size ? 'bg-white text-black border-white shadow-md font-medium' : 'bg-white/[0.07] hover:bg-white/[0.12] text-neutral-300 border-white/10'"
                         >
                           {{ size }}
                         </button>

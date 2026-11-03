@@ -12,26 +12,26 @@
               <ShieldCheck class="w-4 h-4 stroke-[2.2]" />
             </div>
             <div>
-              <h3 class="font-707 font-medium text-[15px] text-black">Superadmin Verification</h3>
-              <p class="font-707 text-[11px] text-neutral-500">707 System Management & Approvals</p>
+              <h3 class="font-sans font-light tracking-normal font-medium text-[15px] text-black">Superadmin Verification</h3>
+              <p class="font-sans font-light tracking-normal text-[11px] text-neutral-500">707 System Management & Approvals</p>
             </div>
           </div>
           <button 
             type="button"
             @click="emit('close')" 
-            class="text-neutral-400 hover:text-black text-xl font-bold cursor-pointer"
+            class="text-neutral-400 hover:text-black text-xl font-medium cursor-pointer"
           >
             ×
           </button>
         </div>
 
-        <p class="font-707 text-[13px] text-neutral-600 leading-relaxed">
+        <p class="font-sans font-light tracking-normal text-[13px] text-neutral-600 leading-relaxed">
           The settings dashboard is restricted to <strong>Superadmin</strong> accounts. Enter your passkey to manage multi-user access, approvals, and brand systems.
         </p>
 
         <form @submit.prevent="handleVerify" class="flex flex-col gap-3">
           <div class="flex flex-col gap-1.5">
-            <label class="font-707 text-[11px] font-medium text-neutral-700 tracking-wider uppercase">
+            <label class="font-sans font-light tracking-normal text-[11px] font-medium text-neutral-700 tracking-wider uppercase">
               Superadmin Passkey
             </label>
             <input 
@@ -39,12 +39,12 @@
               v-model="passkey"
               type="password"
               placeholder="Enter superadmin passkey"
-              class="w-full h-[40px] px-3.5 rounded-[8px] bg-black/[0.04] border border-black/15 text-[13px] font-707 text-black focus:border-black focus:bg-white outline-none transition-all placeholder:text-neutral-400"
+              class="w-full h-[40px] px-3.5 rounded-[8px] bg-black/[0.04] border border-black/15 text-[13px] font-sans font-light tracking-normal text-black focus:border-black focus:bg-white outline-none transition-all placeholder:text-neutral-400"
               autocomplete="current-password"
             />
           </div>
 
-          <div v-if="errorMessage" class="flex items-center gap-1.5 text-red-500 text-[12px] font-707">
+          <div v-if="errorMessage" class="flex items-center gap-1.5 text-red-500 text-[12px] font-sans font-light tracking-normal">
             <AlertCircle class="w-3.5 h-3.5 shrink-0" />
             <span>{{ errorMessage }}</span>
           </div>
@@ -53,13 +53,13 @@
             <button 
               type="button"
               @click="emit('close')"
-              class="px-4 h-[36px] rounded-[8px] border border-black/15 text-neutral-600 hover:text-black font-707 text-[13px] font-medium cursor-pointer transition-colors"
+              class="px-4 h-[36px] rounded-[8px] border border-black/15 text-neutral-600 hover:text-black font-sans font-light tracking-normal text-[13px] font-medium cursor-pointer transition-colors"
             >
               Cancel
             </button>
             <button 
               type="submit"
-              class="apple-glass-btn-dark bg-black text-white px-5 h-[36px] rounded-[8px] font-707 text-[13px] font-medium apple-press cursor-pointer hover:bg-neutral-800 transition-all flex items-center justify-center gap-2 shadow-sm"
+              class="apple-glass-btn-dark bg-black text-white px-5 h-[36px] rounded-[8px] font-sans font-light tracking-normal text-[13px] font-medium apple-press cursor-pointer hover:bg-neutral-800 transition-all flex items-center justify-center gap-2 shadow-sm"
             >
               <Key class="w-3.5 h-3.5" />
               <span>Unlock Settings</span>
