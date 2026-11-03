@@ -23,7 +23,8 @@
         <button v-if="loadError" type="button" @click="refresh()" class="flex items-center gap-1.5 px-2.5 h-[32px] rounded-[8px] bg-oxblood-50 border border-oxblood-200 text-[12px] text-oxblood-700 font-medium cursor-pointer" title="The guest list could not be refreshed. Scans still go straight to the server.">
           <AlertTriangle class="w-4 h-4" /> Offline · Retry
         </button>
-        <div v-else class="hidden md:flex items-center gap-1.5 text-[12px] text-neutral-600 truncate max-w-[200px]" title="Active operator / device account">
+        <!-- Operator identity shown only for Gate Staff scanning on dedicated tablets -->
+        <div v-else-if="isGate" class="hidden md:flex items-center gap-1.5 text-[12px] text-neutral-600 truncate max-w-[200px]" title="Active gate staff device">
           <span class="size-1.5 rounded-full bg-moss-600 shrink-0" />
           <span class="truncate">{{ operatorName }}</span>
         </div>
