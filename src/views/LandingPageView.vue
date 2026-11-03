@@ -440,6 +440,19 @@ onMounted(() => {
   if (route.query.signin === '1') {
     router.replace({ path: '/login', query: route.query.redirect ? { redirect: route.query.redirect } : {} });
   }
+
+  // First-time visit: automatically show Design Studio 1.5 What's New modal
+  try {
+    const hasSeenWhatsNew = localStorage.getItem('707_seen_whats_new_1_5');
+    if (!hasSeenWhatsNew || route.query.whatsnew === '1') {
+      showWhatsNewModal.value = true;
+      if (route.query.whatsnew === '1') {
+        router.replace({ query: { ...route.query, whatsnew: undefined } });
+      }
+    }
+  } catch {
+    showWhatsNewModal.value = true;
+  }
 });
 
 // A session can expire while this page is already open; the query then

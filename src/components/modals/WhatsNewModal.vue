@@ -4,7 +4,7 @@
       <div 
         v-if="isOpen"
         class="fixed inset-0 z-[100] bg-black/45 backdrop-blur-[8px] flex items-center justify-center p-4 select-none font-sans font-light tracking-normal animate-apple-fade"
-        @click.self="emit('close')"
+        @click.self="handleClose"
         role="dialog"
         aria-modal="true"
         aria-labelledby="whats-new-title"
@@ -236,7 +236,7 @@
             <div class="flex items-center justify-between gap-3 mt-6 pt-1">
               <button
                 type="button"
-                @click="emit('close')"
+                @click="handleClose"
                 class="h-[40px] px-6 rounded-[12px] border border-black/15 hover:bg-neutral-50 active:bg-neutral-100 text-[13px] font-medium text-neutral-700 transition-colors cursor-pointer"
               >
                 Cancel
@@ -254,7 +254,7 @@
                 <button
                   v-else
                   type="button"
-                  @click="emit('close')"
+                  @click="handleClose"
                   class="h-[40px] px-7 rounded-[12px] bg-black hover:bg-neutral-800 text-white text-[13px] font-medium transition-colors apple-press cursor-pointer shadow-xs"
                 >
                   Get Started
@@ -304,9 +304,18 @@ const steps = [
 
 const activeStep = computed(() => steps[currentStep.value]);
 
+function handleClose() {
+  try {
+    localStorage.setItem('707_seen_whats_new_1_5', 'true');
+  } catch {
+    // ignore
+  }
+  emit('close');
+}
+
 function handleKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape') {
-    emit('close');
+    handleClose();
   } else if (e.key === 'ArrowRight' && currentStep.value < steps.length - 1) {
     currentStep.value++;
   } else if (e.key === 'ArrowLeft' && currentStep.value > 0) {
