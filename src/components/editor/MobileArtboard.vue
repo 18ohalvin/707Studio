@@ -435,15 +435,18 @@
                     @click.stop="handleHeroCtaClick(widget)"
                     :disabled="isButtonInactive(widget)"
                     :class="[
-                      (widget.props.variant === 'white' || widget.props.buttonVariant === 'white')
-                        ? 'bg-white text-black shadow-none apple-cta-btn-white'
-                        : (widget.props.variant === 'black' || widget.props.buttonVariant === 'black')
-                          ? 'bg-black text-white apple-cta-btn-dark'
-                          : (widget.props.isSolidSpace 
-                              ? 'bg-black text-white apple-cta-btn-dark' 
-                              : 'bg-white text-black shadow-none apple-cta-btn-white'),
-                      isButtonInactive(widget) ? 'opacity-40 cursor-not-allowed pointer-events-none' : 'apple-cta-btn',
-                      'font-707 font-medium text-btn h-[48px] px-[16px] py-[12px] cursor-pointer whitespace-nowrap flex items-center justify-center uppercase border-0 border-none outline-none transition-opacity'
+                      isButtonInactive(widget)
+                        ? ((widget.props.variant === 'white' || widget.props.buttonVariant === 'white')
+                            ? '!bg-[#e5e5e5] !text-[#8e8e93] cursor-not-allowed pointer-events-none'
+                            : '!bg-[#262626] !text-[#737373] cursor-not-allowed pointer-events-none')
+                        : ((widget.props.variant === 'white' || widget.props.buttonVariant === 'white')
+                            ? 'bg-white text-black shadow-none apple-cta-btn-white apple-cta-btn'
+                            : (widget.props.variant === 'black' || widget.props.buttonVariant === 'black')
+                              ? 'bg-black text-white apple-cta-btn-dark apple-cta-btn'
+                              : (widget.props.isSolidSpace 
+                                  ? 'bg-black text-white apple-cta-btn-dark apple-cta-btn' 
+                                  : 'bg-white text-black shadow-none apple-cta-btn-white apple-cta-btn')),
+                      'font-707 font-medium text-btn h-[48px] px-[16px] py-[12px] cursor-pointer whitespace-nowrap flex items-center justify-center uppercase border-0 border-none outline-none'
                     ]"
                   >
                     {{ widget.props.buttonText || widget.props.ctaLabel || 'Action' }}
@@ -750,24 +753,12 @@
               data-node-id="236:11400"
               data-name="Input field base"
             >
-              <!-- Field Content Structure with Luxury Floating Label & Animated Sweeping Underline -->
+              <!-- Field Content Structure with Luxury Underline & Direct Placeholder -->
               <div 
-                class="w-full flex flex-col items-start relative pt-[16px]"
+                class="w-full flex flex-col items-start relative pt-[6px]"
                 :class="isDateField(widget) ? 'cursor-pointer' : ''"
                 @click.stop="isDateField(widget) ? openDateSelectorSheet(widget) : undefined"
               >
-                <!-- Floating Label (Translates upward smoothly when focused or active) -->
-                <label 
-                  class="luxury-floating-label font-707 left-0"
-                  :class="[
-                    isFieldLabelFloating(widget)
-                      ? 'top-[0px] text-[11px] leading-[14px] text-black font-normal'
-                      : 'top-[26px] text-[14px] leading-[20px] text-[#737373] font-normal'
-                  ]"
-                >
-                  {{ isFieldLabelFloating(widget) ? (widget.props.label || 'Email') : (widget.props.placeholder || `${widget.props.label || 'Email'}*`) }}<span v-if="isFieldLabelFloating(widget) && (widget.props.required ?? true)">*</span>
-                </label>
-
                 <!-- Input Row with Underline Stack & Jitter Shake on Error -->
                 <div 
                   class="w-full flex items-center gap-[8px] pt-[8px] pb-[10px] relative"
@@ -775,10 +766,10 @@
                     shakingFieldIds.has(widget.id) ? 'animate-luxury-jitter' : ''
                   ]"
                 >
-                  <!-- WhatsApp / Phone Country Calling Code Selector with Small Chevron (Visible when active/focused or filled) -->
+                  <!-- WhatsApp / Phone Country Calling Code Selector (Always visible for phone inputs) -->
                   <div 
-                    v-if="isPhoneField(widget) && isFieldLabelFloating(widget)"
-                    class="flex items-center gap-[4px] shrink-0 select-none cursor-pointer pr-[2px] group/code relative z-10 animate-in fade-in duration-200"
+                    v-if="isPhoneField(widget)"
+                    class="flex items-center gap-[4px] shrink-0 select-none cursor-pointer pr-[4px] group/code relative z-20"
                     @click.stop="openCountryCodeSheet(widget)"
                     title="Select Country Calling Code"
                   >
@@ -793,6 +784,7 @@
                     :value="widget.props.value || ''"
                     :type="isDateField(widget) ? 'text' : (widget.props.inputType || 'text')"
                     :inputmode="isDateField(widget) ? 'none' : (isPhoneField(widget) ? 'numeric' : (widget.props.inputType === 'email' || (widget.props.label && widget.props.label.toLowerCase().includes('email')) ? 'email' : 'text'))"
+                    :placeholder="isDateField(widget) ? (widget.props.placeholder || 'DD / MM / YYYY') : (isPhoneField(widget) ? (widget.props.placeholder || 'WhatsApp Number*') : (widget.props.placeholder || `${widget.props.label || 'Email'}${widget.props.required ? '*' : ''}`))"
                     @click="isDateField(widget) ? openDateSelectorSheet(widget) : undefined"
                     @input="handleFieldInputChange($event, widget)"
                     @focus="isDateField(widget) ? openDateSelectorSheet(widget) : handleFieldFocus(widget)"
@@ -800,7 +792,7 @@
                     :readonly="isDateField(widget) || isMiniPreview || isDesignCanvas"
                     :tabindex="isDesignCanvas ? -1 : undefined"
                     :style="isDesignCanvas ? { pointerEvents: 'none' } : undefined"
-                    class="font-707 font-normal text-[14px] leading-[20px] w-full bg-transparent outline-none border-none p-0 m-0 transition-colors duration-300 relative z-10"
+                    class="font-707 font-normal text-[14px] leading-[20px] w-full bg-transparent outline-none border-none p-0 m-0 transition-colors duration-300 relative z-10 placeholder:text-[#737373] placeholder:font-normal"
                     :class="[
                       widget.props.stateVariant === 'Wrong alert' ? 'text-[#9b0707]' : 'text-black',
                       isDateField(widget) ? 'cursor-pointer' : ''
@@ -954,22 +946,10 @@
                 <div 
                   v-for="(field, fIdx) in (widget.props.fields || [])"
                   :key="field.id || fIdx"
-                  class="w-full flex flex-col items-start relative pt-[16px]"
+                  class="w-full flex flex-col items-start relative pt-[6px]"
                   :class="isDateItem(field) ? 'cursor-pointer' : 'cursor-text'"
                   @click.stop="isDateItem(field) ? openDateSelectorSheet(widget, field) : focusRegistrationFormField(widget.id, field.id)"
                 >
-                  <!-- Floating Label -->
-                  <label 
-                    class="luxury-floating-label font-707 left-0"
-                    :class="[
-                      isFormItemFloating(widget.id, field)
-                        ? 'top-[0px] text-[11px] leading-[14px] text-black font-normal'
-                        : 'top-[26px] text-[14px] leading-[20px] text-[#737373] font-normal'
-                    ]"
-                  >
-                    {{ isFormItemFloating(widget.id, field) ? (field.name || 'Field') : (field.placeholder || `${field.name || 'Field'}*`) }}<span v-if="isFormItemFloating(widget.id, field) && (field.required !== false)">*</span>
-                  </label>
-
                   <!-- Input Row with Underline Stack -->
                   <div 
                     class="w-full flex items-center gap-[8px] pt-[8px] pb-[10px] relative"
@@ -977,10 +957,10 @@
                       shakingFieldIds.has(`${widget.id}_${field.id}`) ? 'animate-luxury-jitter' : ''
                     ]"
                   >
-                    <!-- WhatsApp / Phone Country Calling Code Selector -->
+                    <!-- WhatsApp / Phone Country Calling Code Selector (Always visible for phone inputs) -->
                     <div 
-                      v-if="isPhoneItem(field) && isFormItemFloating(widget.id, field)"
-                      class="flex items-center gap-[4px] shrink-0 select-none cursor-pointer pr-[2px] group/code relative z-10 animate-in fade-in duration-200"
+                      v-if="isPhoneItem(field)"
+                      class="flex items-center gap-[4px] shrink-0 select-none cursor-pointer pr-[4px] group/code relative z-20"
                       @click.stop="openCountryCodeSheet(widget, field)"
                       title="Select Country Calling Code"
                     >
@@ -995,6 +975,7 @@
                       :value="field.value || ''"
                       :type="isDateItem(field) ? 'text' : (field.type || 'text')"
                       :inputmode="isDateItem(field) ? 'none' : (isPhoneItem(field) ? 'numeric' : (field.type === 'email' || (field.name && field.name.toLowerCase().includes('email')) ? 'email' : 'text'))"
+                      :placeholder="isDateItem(field) ? (field.placeholder || 'DD / MM / YYYY') : (isPhoneItem(field) ? (field.placeholder || 'WhatsApp Number*') : (field.placeholder || `${field.name || 'Field'}${field.required !== false ? '*' : ''}`))"
                       @click="isDateItem(field) ? openDateSelectorSheet(widget, field) : undefined"
                       @input="handleRegistrationFormItemInput($event, widget, field)"
                       @focus="isDateItem(field) ? openDateSelectorSheet(widget, field) : handleRegistrationFormFieldFocus(widget.id, field.id)"
@@ -1002,7 +983,7 @@
                       :readonly="isDateItem(field) || isMiniPreview || isDesignCanvas"
                       :tabindex="isDesignCanvas ? -1 : undefined"
                       :style="isDesignCanvas ? { pointerEvents: 'none' } : undefined"
-                      class="font-707 font-normal text-[14px] leading-[20px] w-full bg-transparent outline-none border-none p-0 m-0 transition-colors duration-300 relative z-10"
+                      class="font-707 font-normal text-[14px] leading-[20px] w-full bg-transparent outline-none border-none p-0 m-0 transition-colors duration-300 relative z-10 placeholder:text-[#737373] placeholder:font-normal"
                       :class="[
                         field.errorMessage ? 'text-[#9b0707]' : 'text-black',
                         isDateItem(field) ? 'cursor-pointer' : ''
@@ -1144,13 +1125,16 @@
                   @click.stop="handleActionButtonClick(widget)"
                   :disabled="isButtonInactive(widget)"
                   :class="[
-                    (widget.props.variant === 'white' || widget.props.buttonVariant === 'white')
-                      ? 'bg-white text-black apple-cta-btn-white'
-                      : 'bg-black text-white apple-cta-btn-dark',
-                    isButtonInactive(widget) ? 'opacity-40 cursor-not-allowed pointer-events-none' : 'apple-cta-btn'
+                    isButtonInactive(widget)
+                      ? ((widget.props.variant === 'white' || widget.props.buttonVariant === 'white')
+                          ? '!bg-[#e5e5e5] !text-[#8e8e93] cursor-not-allowed pointer-events-none'
+                          : '!bg-[#262626] !text-[#737373] cursor-not-allowed pointer-events-none')
+                      : ((widget.props.variant === 'white' || widget.props.buttonVariant === 'white')
+                          ? 'bg-white text-black apple-cta-btn-white apple-cta-btn'
+                          : 'bg-black text-white apple-cta-btn-dark apple-cta-btn')
                   ]"
                   :style="{ height: `${widget.props.height || 48}px` }"
-                  class="w-full px-[16px] py-[12px] rounded-[0px] flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none transition-opacity"
+                  class="w-full px-[16px] py-[12px] rounded-[0px] flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none"
                 >
                   <!-- Action Icon -->
                   <component :is="getButtonIcon(widget)" v-if="widget.props.showIcon" class="size-[16px] shrink-0" />
@@ -1966,10 +1950,10 @@ more</span>
             </div>
           </div>
 
-          <!-- Physical Bottom Clearance Spacer for Sticky Bottom Button (Disabled when last widget is a Hero banner so banner sits flush against the sticky button) -->
+          <!-- Physical Bottom Clearance Spacer for Sticky Bottom Button: 64px gap space + 48px button height = 112px clearance -->
           <div 
             v-if="stickyButtonForThisPage && !isLastWidgetHero" 
-            class="h-[64px] w-full shrink-0 pointer-events-none" 
+            class="h-[112px] w-full shrink-0 pointer-events-none" 
             aria-hidden="true" 
           />
           <!-- Exclusive 32px bottom padding spacer when the latest order of widgets is a text widget and no sticky button -->
@@ -2005,6 +1989,9 @@ more</span>
         @mouseenter="hoveredWidgetId = stickyButtonForThisPage.id"
         @mouseleave="hoveredWidgetId = null"
         class="absolute bottom-0 inset-x-0 z-30 w-full p-0 transition-all select-none group/sticky cursor-pointer"
+        :class="[
+          isStickyButtonOnDarkBackground ? 'bg-transparent' : 'bg-white border-t border-black/5'
+        ]"
       >
         <!-- Floating Toolbar on Hover for Sticky Bottom Button in Editor -->
         <div 
@@ -2026,22 +2013,27 @@ more</span>
           >
             <Trash2 class="w-3.5 h-3.5" />
           </button>
-        </div>        <button 
+        </div>
+
+        <button 
           type="button"
           @click.stop="handleActionButtonClick(stickyButtonForThisPage)"
           :disabled="isButtonInactive(stickyButtonForThisPage)"
           :class="[
-            (stickyButtonForThisPage.props?.variant === 'white' || stickyButtonForThisPage.props?.buttonVariant === 'white')
-              ? 'bg-white text-black apple-cta-btn-white border-t border-black/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]'
-              : (stickyButtonForThisPage.props?.variant === 'black' || stickyButtonForThisPage.props?.buttonVariant === 'black')
-                ? 'bg-black text-white apple-cta-btn-dark'
-                : (isStickyButtonOnDarkBackground
-                    ? 'bg-white text-black apple-cta-btn-white border-t border-black/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]'
-                    : 'bg-black text-white apple-cta-btn-dark'),
-            isButtonInactive(stickyButtonForThisPage) ? 'opacity-40 cursor-not-allowed pointer-events-none' : 'apple-cta-btn'
+            isButtonInactive(stickyButtonForThisPage)
+              ? ((stickyButtonForThisPage.props?.variant === 'white' || stickyButtonForThisPage.props?.buttonVariant === 'white')
+                  ? '!bg-[#e5e5e5] !text-[#8e8e93] cursor-not-allowed pointer-events-none'
+                  : '!bg-[#262626] !text-[#737373] cursor-not-allowed pointer-events-none')
+              : ((stickyButtonForThisPage.props?.variant === 'white' || stickyButtonForThisPage.props?.buttonVariant === 'white')
+                  ? 'bg-white text-black apple-cta-btn-white border-t border-black/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] apple-cta-btn'
+                  : (stickyButtonForThisPage.props?.variant === 'black' || stickyButtonForThisPage.props?.buttonVariant === 'black')
+                    ? 'bg-black text-white apple-cta-btn-dark apple-cta-btn'
+                    : (isStickyButtonOnDarkBackground
+                        ? 'bg-white text-black apple-cta-btn-white border-t border-black/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] apple-cta-btn'
+                        : 'bg-black text-white apple-cta-btn-dark apple-cta-btn'))
           ]"
           :style="{ height: `${stickyButtonForThisPage.props?.height || 48}px` }"
-          class="w-full px-[16px] py-[12px] rounded-none flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none transition-opacity"
+          class="w-full px-[16px] py-[12px] rounded-none flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none"
         >
           <!-- Action Icon -->
           <component :is="getButtonIcon(stickyButtonForThisPage)" v-if="stickyButtonForThisPage.props?.showIcon" class="size-[16px] shrink-0" />
@@ -2308,7 +2300,7 @@ more</span>
                 @click.stop="handleModalDoneClick"
                 :disabled="isModalButtonInactive"
                 :class="[
-                  isModalButtonInactive ? 'opacity-40 cursor-not-allowed pointer-events-none' : 'apple-cta-btn',
+                  isModalButtonInactive ? '!bg-[#262626] !text-[#737373] cursor-not-allowed pointer-events-none' : 'apple-cta-btn',
                   'apple-cta-btn-dark bg-black text-white hover:bg-neutral-900 active:bg-neutral-800 w-full h-[48px] px-[16px] py-[12px] rounded-none flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none transition-all'
                 ]"
               >
@@ -4054,12 +4046,17 @@ function getWidgetMarginTopClass(index: number) {
     return 'mt-[16px]';
   }
 
-  // 5. Special Hero + Button tight fit if configured
-  if (isHeroWithButtonOnly.value && currentWidget?.type === 'ActionButton' && prevWidget?.type === 'HeroDrop') {
-    return 'mt-[16px]';
+  // 5. Hero + Button spacing (excluded from 64px requirement)
+  if (currentWidget?.type === 'ActionButton' && prevWidget?.type === 'HeroDrop') {
+    return isHeroWithButtonOnly.value ? 'mt-[16px]' : 'mt-[24px]';
   }
 
-  // 6. Default standard editorial gap between any distinct widgets on a single page: 48px
+  // 6. CTA ActionButton following any non-Hero widget: strictly 64px gap space
+  if (currentWidget?.type === 'ActionButton') {
+    return 'mt-[64px]';
+  }
+
+  // 7. Default standard editorial gap between any distinct widgets on a single page: 48px
   return 'mt-[48px]';
 }
 
@@ -4248,6 +4245,8 @@ const showDateSelectorSheet = ref(false);
 const targetDateContext = ref<{
   widgetId?: string;
   fieldId?: string;
+  field?: any;
+  widget?: any;
 } | null>(null);
 
 const dateSheetTitle = ref('SELECT DATE');
@@ -4315,7 +4314,9 @@ function openDateSelectorSheet(widget?: any, field?: any) {
   if (wasDraggingRecently.value) return;
   targetDateContext.value = {
     widgetId: widget?.id,
-    fieldId: field?.id
+    fieldId: field?.id,
+    field,
+    widget
   };
 
   const label = field?.name || widget?.props?.label || 'DATE OF BIRTH';
@@ -4359,6 +4360,16 @@ function confirmDateSelection() {
 
   const ctx = targetDateContext.value;
   if (ctx) {
+    if (ctx.field) {
+      ctx.field.value = formatted;
+      ctx.field.errorMessage = '';
+    }
+    if (ctx.widget && !ctx.field) {
+      if (!ctx.widget.props) ctx.widget.props = {};
+      ctx.widget.props.value = formatted;
+      ctx.widget.props.errorMessage = '';
+      ctx.widget.props.showError = false;
+    }
     if (ctx.widgetId && ctx.fieldId) {
       const w = activePage.value?.widget_tree?.find(x => x.id === ctx.widgetId);
       if (w && Array.isArray(w.props?.fields)) {
@@ -4393,6 +4404,8 @@ const countrySearchQuery = ref('');
 const targetCountryCodeContext = ref<{
   widgetId?: string;
   fieldId?: string;
+  field?: any;
+  widget?: any;
   isModal?: boolean;
 } | null>(null);
 
@@ -4410,6 +4423,8 @@ function openCountryCodeSheet(widget?: any, field?: any, isModal = false) {
   targetCountryCodeContext.value = {
     widgetId: widget?.id,
     fieldId: field?.id,
+    field,
+    widget,
     isModal
   };
   countrySearchQuery.value = '';
@@ -4426,6 +4441,8 @@ function getCurrentCountryCode(): string {
   const ctx = targetCountryCodeContext.value;
   if (!ctx) return '+62';
   if (ctx.isModal) return modalCountryCode.value || '+62';
+  if (ctx.field?.countryCode) return ctx.field.countryCode;
+  if (ctx.widget?.props?.countryCode) return ctx.widget.props.countryCode;
   if (ctx.widgetId && ctx.fieldId) {
     const w = activePage.value?.widget_tree?.find(x => x.id === ctx.widgetId);
     const f = w?.props?.fields?.find((x: any) => x.id === ctx.fieldId);
@@ -4450,23 +4467,53 @@ function selectCountryCode(code: string) {
   }
   if (ctx.isModal) {
     modalCountryCode.value = code;
-  } else if (ctx.widgetId && ctx.fieldId) {
-    const w = activePage.value?.widget_tree?.find(x => x.id === ctx.widgetId);
-    if (w && Array.isArray(w.props?.fields)) {
-      const f = w.props.fields.find((x: any) => x.id === ctx.fieldId);
-      if (f) {
-        f.countryCode = code;
-        if (!props.isLivePage) {
-          editorStore.updateWidgetProps(w.id, { fields: [...w.props.fields] });
+  } else {
+    // 1. Direct mutation for guaranteed instant reactivity across all views
+    if (ctx.field) {
+      ctx.field.countryCode = code;
+    }
+    if (ctx.widget && !ctx.field) {
+      if (!ctx.widget.props) ctx.widget.props = {};
+      ctx.widget.props.countryCode = code;
+    }
+
+    // 2. Sync to active page widget tree if present
+    const widgetId = ctx.widgetId || ctx.widget?.id;
+    const fieldId = ctx.fieldId || ctx.field?.id;
+    if (widgetId) {
+      const w = activePage.value?.widget_tree?.find(x => x.id === widgetId);
+      if (w) {
+        if (fieldId && Array.isArray(w.props?.fields)) {
+          const f = w.props.fields.find((x: any) => x.id === fieldId);
+          if (f) {
+            f.countryCode = code;
+          }
+          if (!props.isLivePage) {
+            editorStore.updateWidgetProps(w.id, { fields: [...w.props.fields] });
+          }
+        } else {
+          w.props = { ...w.props, countryCode: code };
+          if (!props.isLivePage) {
+            editorStore.updateWidgetProps(w.id, { countryCode: code });
+          }
         }
       }
-    }
-  } else if (ctx.widgetId) {
-    const w = activePage.value?.widget_tree?.find(x => x.id === ctx.widgetId);
-    if (w) {
-      w.props = { ...w.props, countryCode: code };
+      
+      // 3. Also sync across all pages in editorStore
       if (!props.isLivePage) {
-        editorStore.updateWidgetProps(w.id, { countryCode: code });
+        for (const p of editorStore.pages) {
+          const pageW = p.widget_tree.find(x => x.id === widgetId);
+          if (pageW) {
+            if (fieldId && Array.isArray(pageW.props?.fields)) {
+              const f = pageW.props.fields.find((x: any) => x.id === fieldId);
+              if (f) f.countryCode = code;
+              pageW.props = { ...pageW.props, fields: [...pageW.props.fields] };
+            } else {
+              pageW.props = { ...pageW.props, countryCode: code };
+            }
+            break;
+          }
+        }
       }
     }
   }
@@ -4691,7 +4738,21 @@ function isFormItemUnderlineActive(widgetId: string, field: any): boolean {
 function isPhoneItem(field: any): boolean {
   if (!field) return false;
   const name = (field.name || '').toLowerCase();
-  return field.type === 'tel' || name.includes('whatsapp') || name.includes('wa') || name.includes('phone') || !!field.countryCode;
+  const label = (field.label || '').toLowerCase();
+  const placeholder = (field.placeholder || '').toLowerCase();
+  return (
+    field.type === 'tel' || 
+    field.type === 'phone' || 
+    name.includes('whatsapp') || 
+    name.includes('wa') || 
+    name.includes('phone') || 
+    label.includes('whatsapp') || 
+    label.includes('wa') || 
+    label.includes('phone') || 
+    placeholder.includes('whatsapp') || 
+    placeholder.includes('phone') || 
+    !!field.countryCode
+  );
 }
 
 function isDateItem(field: any): boolean {
@@ -5175,9 +5236,9 @@ const containerBottomPaddingClass = computed(() => {
   const tree = inFlowWidgets.value;
   if (tree.length === 0) return 'pb-0';
   if (isLastWidgetHero.value) return 'pb-0';
-  if (stickyButtonForThisPage.value) return 'pb-[72px]';
+  if (stickyButtonForThisPage.value) return 'pb-0';
   if (isHeroWithButtonOnly.value) return 'pb-[16px]';
-  if (isLastWidgetButton.value) return 'pb-0';
+  if (isLastWidgetButton.value) return 'pb-[24px]';
   if (isLastWidgetText.value) return 'pb-0';
   return 'pb-[16px]';
 });
