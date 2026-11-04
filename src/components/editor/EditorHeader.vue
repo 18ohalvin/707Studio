@@ -138,6 +138,52 @@
         <Copy v-if="primaryCta.state === 'live'" class="w-3 h-3 text-neutral-400 ml-0.5" />
       </button>
 
+      <!-- Real-time Active Collaborators & Superadmin Presence Avatars (Google Workspace / Figma style) -->
+      <div 
+        v-if="!editorStore.isPreviewMode && presenceStore.onlineCollaborators.length > 0" 
+        class="flex items-center -space-x-1.5 mr-1"
+      >
+        <div 
+          v-for="peer in presenceStore.onlineCollaborators" 
+          :key="peer.userId"
+          class="relative group cursor-pointer"
+          @click.stop="handlePeerAvatarClick(peer)"
+        >
+          <!-- Avatar Pill -->
+          <div 
+            class="size-[28px] rounded-full border-2 flex items-center justify-center font-707 text-[10px] font-semibold text-white select-none transition-transform group-hover:scale-110 shadow-xs relative"
+            :class="[
+              peer.role === 'superadmin' ? 'ring-2 ring-[#7e2c32] ring-offset-1' : '',
+              presenceStore.followingUserId === peer.userId ? 'scale-110 ring-2 ring-black' : ''
+            ]"
+            :style="{ backgroundColor: peer.color || '#000000', borderColor: '#ffffff' }"
+            :title="`Click to follow ${peer.name} (${peer.role})`"
+          >
+            {{ peer.initials }}
+            <!-- Status Dot: Oxblood pulse if superadmin, green static if editor -->
+            <span 
+              class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full border border-white"
+              :class="peer.role === 'superadmin' ? 'bg-[#7e2c32] animate-pulse' : 'bg-emerald-500'" 
+            />
+          </div>
+
+          <!-- Hover Tooltip Pill (707 Design Token Style) -->
+          <div class="absolute top-[36px] right-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50 whitespace-nowrap bg-black text-white text-[11px] font-707 px-2.5 py-1.5 rounded-md shadow-lg border border-white/10 flex flex-col gap-0.5">
+            <div class="flex items-center gap-1.5 font-medium">
+              <span>{{ peer.name }}</span>
+              <span v-if="peer.role === 'superadmin'" class="text-[9px] px-1 py-0.2 bg-[#7e2c32] text-white rounded uppercase font-semibold">Superadmin</span>
+            </div>
+            <div class="text-[10px] text-neutral-400 font-normal">
+              {{ peer.activePageTitle || `Page ${peer.activePageIndex + 1}` }}
+              <span v-if="peer.selectedWidgetType"> · {{ peer.selectedWidgetType }}</span>
+            </div>
+            <div class="text-[9px] text-neutral-300 font-medium tracking-wide uppercase pt-0.5 text-right">
+              {{ presenceStore.followingUserId === peer.userId ? '● FOLLOWING (CLICK TO STOP)' : 'CLICK TO FOLLOW' }}
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Profile Avatar Container with Anchored UserProfileModal (Hidden in preview mode) -->
       <div v-if="!editorStore.isPreviewMode" class="relative">
         <button 
@@ -178,6 +224,7 @@ import { useRouter } from 'vue-router';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { useAuthStore } from '../../stores/authStore.ts';
 import { useBrandStore } from '../../stores/brandStore.ts';
+import { usePresenceStore } from '../../stores/presenceStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { Eye, Edit3, User, History, Check, Copy } from 'lucide-vue-next';
 import ProjectHistoryPanel from './ProjectHistoryPanel.vue';
@@ -189,9 +236,19 @@ const router = useRouter();
 const editorStore = useEditorStore();
 const authStore = useAuthStore();
 const brandStore = useBrandStore();
+const presenceStore = usePresenceStore();
 const logoFailed = ref(false);
 const showUserProfileModal = ref(false);
 const nowTicker = ref(Date.now());
+
+function handlePeerAvatarClick(peer: any) {
+  presenceStore.startFollowing(peer.userId);
+  if (presenceStore.followingUserId === peer.userId) {
+    editorStore.showToast(`Following ${peer.name} (${peer.role})`);
+  } else {
+    editorStore.showToast(`Stopped following`);
+  }
+}
 
 /* ---------- Publish state ---------- */
 const project = computed(() => editorStore.userProjects.find(p => p.id === editorStore.currentProjectId) || null);

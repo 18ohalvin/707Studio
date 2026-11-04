@@ -217,6 +217,22 @@
               :class="editorStore.selectedWidgetId === widget.id ? 'opacity-100' : 'opacity-60'"
             />
 
+            <!-- Remote Collaborator (Superadmin/Editor) Live Selection Ring & Name Tag (Google Workspace / Figma style) -->
+            <div 
+              v-if="!isMiniPreview && !isPreviewModal && !isLivePage && getPeerOnWidget(widget.id)" 
+              class="absolute inset-0 border-[1.5px] pointer-events-none z-30 transition-all"
+              :style="{ borderColor: getPeerOnWidget(widget.id)?.color || '#7e2c32' }"
+            >
+              <!-- Name Badge floating at top-left of widget -->
+              <div 
+                class="absolute -top-[18px] left-[2px] px-1.5 py-0.5 text-white font-707 text-[9px] font-medium tracking-tight flex items-center gap-1 shadow-sm uppercase select-none pointer-events-none"
+                :style="{ backgroundColor: getPeerOnWidget(widget.id)?.color || '#7e2c32' }"
+              >
+                <span>{{ getPeerOnWidget(widget.id)?.name }}</span>
+                <span v-if="getPeerOnWidget(widget.id)?.role === 'superadmin'" class="opacity-80 text-[8px]">(Admin)</span>
+              </div>
+            </div>
+
             <!-- Insertion Line Indicator Above Widget -->
             <div 
               v-if="isDragOver && dropTargetIndex === index" 
@@ -2590,6 +2606,7 @@ import { defaultTicketPage } from './ticket/ticketDesign.ts';
 import { openPendingPdfWindow, closePendingPdfWindow } from './ticket/pdfDelivery.ts';
 import { blackenLogo } from './ticket/blackLogo.ts';
 import { useEditorStore } from '../../stores/editorStore.ts';
+import { usePresenceStore } from '../../stores/presenceStore.ts';
 import { glassConfirm } from '../../services/glassDialog.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { COUNTRY_CODES, type CountryCodeItem } from '../../constants/countryCodes.ts';
@@ -2644,6 +2661,11 @@ const emit = defineEmits<{
 }>();
 
 const editorStore = useEditorStore();
+const presenceStore = usePresenceStore();
+
+function getPeerOnWidget(widgetId: string) {
+  return presenceStore.onlineCollaborators.find(p => p.selectedWidgetId === widgetId);
+}
 const moveMenuWidgetId = ref<string | null>(null);
 function toggleMoveMenu(widgetId: string) {
   moveMenuWidgetId.value = moveMenuWidgetId.value === widgetId ? null : widgetId;

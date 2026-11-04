@@ -3,6 +3,9 @@
     <!-- Top Navigation Header (Figma Node 63:38) -->
     <EditorHeader />
 
+    <!-- Real-time Follow Mode Floating Banner (Google Workspace / Figma style) -->
+    <FollowModeBanner />
+
     <!-- Main Workspace (Editor Canvas) -->
     <div class="h-full w-full flex overflow-hidden relative">
       <EditorCanvas />
@@ -17,12 +20,14 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue';
+import { watch, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useEditorStore } from '../stores/editorStore.ts';
 import { useBrandStore } from '../stores/brandStore.ts';
 import { useAuthStore } from '../stores/authStore.ts';
+import { usePresenceStore } from '../stores/presenceStore.ts';
 import EditorHeader from '../components/editor/EditorHeader.vue';
+import FollowModeBanner from '../components/editor/FollowModeBanner.vue';
 import EditorCanvas from '../components/editor/EditorCanvas.vue';
 import ReviewSubmitModal from '../components/editor/Modals/ReviewSubmitModal.vue';
 import TestFormModal from '../components/editor/Modals/TestFormModal.vue';
@@ -34,6 +39,23 @@ const router = useRouter();
 const editorStore = useEditorStore();
 const brandStore = useBrandStore();
 const authStore = useAuthStore();
+const presenceStore = usePresenceStore();
+
+watch(
+  () => editorStore.currentProjectId,
+  (id) => {
+    if (id) {
+      presenceStore.connect(id);
+    } else {
+      presenceStore.disconnect();
+    }
+  },
+  { immediate: true }
+);
+
+onUnmounted(() => {
+  presenceStore.disconnect();
+});
 
 /** /editor/<brand>/<projectId> or /editor/template/<templateId> for the open canvas */
 function canonicalPath(): string | null {

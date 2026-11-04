@@ -1,4 +1,5 @@
 import express from 'express';
+import http from 'http';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -20,6 +21,7 @@ import { autoRestoreSessions, sendBaileysMessage, shutdownWhatsApp } from './bai
 import { setBaileysDispatcher } from './queueHelpers.js';
 import { resolveUploadDir } from './uploads.js';
 import { imageVariantMiddleware } from './imageVariants.js';
+import { setupPresenceWebSocket, presenceRouter } from './presence.js';
 
 // Wire authentic Baileys socket dispatcher to queue notifications
 setBaileysDispatcher(sendBaileysMessage);
@@ -84,6 +86,7 @@ app.use((req, _res, next) => { rememberBaseUrl(req); next(); });
 app.use('/api/whatsapp', requireAuth, whatsappRouter);
 app.use('/api/media', requireAuth, mediaRouter);
 app.use('/api/notifications', requireAuth, notificationsRouter);
+app.use('/api/presence', presenceRouter);
 
 // Any unmatched /api path must fail as JSON. Letting it fall through to the SPA
 // would answer an API call with HTML and turn a plain 404 into a confusing
@@ -160,9 +163,13 @@ async function startServer() {
       }
     }, 5000);
   }
-  app.listen(PORT, '0.0.0.0', () => {
+  const httpServer = http.createServer(app);
+  setupPresenceWebSocket(httpServer);
+
+  httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`[707 Activation Server] Running on port ${PORT}`);
     console.log(`[707 Activation Server] Uploads directory: ${uploadDir}`);
+    console.log(`[707 Activation Server] WebSocket Presence mounted on /ws/presence`);
   });
 }
 
