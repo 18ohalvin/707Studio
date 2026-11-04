@@ -16,22 +16,37 @@
     <!-- Artboard Tab Label (Positioned absolutely above artboard so it never pushes or shifts canvas vertical centering) -->
     <template v-if="!isMiniPreview && !isPreviewModal && !isLivePage">
       <div 
-        v-if="isSelected"
-        class="animate-apple-pop absolute bottom-full left-0 mb-[12px] group bg-[#ececec]/50 hover:bg-[#ececec] border-black/15 hover:border-black/50 border-[0.5px] border-solid content-stretch flex h-[24px] items-center justify-center px-[8px] rounded-[10px] shadow-sm transition-all cursor-pointer will-change-transform backdrop-blur-md z-30"
+        v-if="isSelected || isMissingActionButton"
+        class="animate-apple-pop absolute bottom-full left-0 mb-[12px] group border-[0.5px] border-solid content-stretch flex h-[26px] items-center justify-center px-[8px] rounded-[10px] shadow-sm transition-all cursor-pointer will-change-transform backdrop-blur-md z-30"
+        :class="isMissingActionButton 
+          ? 'bg-rose-50/90 border-rose-300 hover:border-rose-400 text-rose-950' 
+          : 'bg-[#ececec]/50 hover:bg-[#ececec] border-black/15 hover:border-black/50 text-black'"
         :style="{
           transform: `scale(${100 / editorStore.zoomLevel})`,
           transformOrigin: 'bottom left'
         }"
         @click.stop="!isTicketPage && startEditingPageName()"
-        :title="isTicketPage ? 'Design the downloadable ticket. Guest data blocks are filled in per guest.' : (isEditingPageName ? '' : 'Click to rename page')"
+        :title="isTicketPage ? 'Design the downloadable ticket. Guest data blocks are filled in per guest.' : (isEditingPageName ? '' : (isMissingActionButton ? 'Missing action button — click warning icon to resolve' : 'Click to rename page'))"
       >
         <!-- View mode -->
         <div v-if="!isEditingPageName" class="flex items-center gap-[6px]">
-          <p class="font-707 font-light text-caption text-black whitespace-nowrap">
+          <p class="font-707 font-light text-caption whitespace-nowrap">
             <template v-if="isTicketPage">Ticket · PDF — height follows its content; not shown as a page to guests</template>
             <template v-else>Page {{ pageNumber }}: {{ currentPageName }}</template>
           </p>
-          <Pencil class="w-2.5 h-2.5 text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Pencil v-if="!isMissingActionButton" class="w-2.5 h-2.5 text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+          <!-- Warning (i) / Alert Icon & Trigger Button -->
+          <button
+            v-if="isMissingActionButton"
+            type="button"
+            @click.stop="openMissingButtonModal"
+            class="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-rose-500 hover:bg-rose-600 active:scale-95 text-white text-[10px] font-sans font-medium transition-all shadow-xs cursor-pointer"
+            title="Warning: Missing action button to next page. Click to add button."
+          >
+            <AlertCircle class="w-3 h-3 text-white animate-pulse" />
+            <span>Missing Button</span>
+          </button>
         </div>
 
         <!-- Edit mode -->
@@ -75,13 +90,23 @@
               : (isMiniPreview 
                   ? 'w-[393px] h-[852px] border-none shadow-none' 
                   : 'border-[0.5px] w-[393px] h-[852px]')),
-        !isMiniPreview && !isPreviewModal && !isLivePage && isSelected 
-          ? 'border-black shadow-[0px_16px_48px_rgba(0,0,0,0.12)]' 
-          : (!isMiniPreview && !isPreviewModal && !isLivePage ? 'border-neutral-300 opacity-80 shadow-[0px_0px_30px_rgba(0,0,0,0.04)] cursor-pointer' : '')
+        !isMiniPreview && !isPreviewModal && !isLivePage && isMissingActionButton
+          ? '!border-rose-500 !border-2 shadow-[0px_0px_24px_rgba(244,63,94,0.3)]'
+          : (!isMiniPreview && !isPreviewModal && !isLivePage && isSelected 
+              ? 'border-black shadow-[0px_16px_48px_rgba(0,0,0,0.12)]' 
+              : (!isMiniPreview && !isPreviewModal && !isLivePage ? 'border-neutral-300 opacity-80 shadow-[0px_0px_30px_rgba(0,0,0,0.04)] cursor-pointer' : ''))
       ]"
     >
-      <!-- Persistent Thin 0.5px Black Selected Page Outline Overlay (Only on selected artboard) -->
-      <div v-if="!isMiniPreview && !isPreviewModal && !isLivePage && isSelected" class="pointer-events-none absolute inset-0 z-50 border-[0.5px] border-black border-solid" />
+      <!-- Persistent Red Warning Outline Overlay when missing action button -->
+      <div 
+        v-if="!isMiniPreview && !isPreviewModal && !isLivePage && isMissingActionButton" 
+        class="pointer-events-none absolute inset-0 z-50 border-[2px] border-rose-500 border-solid" 
+      />
+      <!-- Persistent Thin 0.5px Black Selected Page Outline Overlay (Only on selected artboard when no warning) -->
+      <div 
+        v-else-if="!isMiniPreview && !isPreviewModal && !isLivePage && isSelected" 
+        class="pointer-events-none absolute inset-0 z-50 border-[0.5px] border-black border-solid" 
+      />
 
       <!-- Fixed 48px Header with Right 707 Logo (Figma Node 107:3820). Not on the Ticket: it is printed as designed. -->
       <div 
@@ -2342,6 +2367,7 @@ import { defaultTicketPage } from './ticket/ticketDesign.ts';
 import { openPendingPdfWindow, closePendingPdfWindow } from './ticket/pdfDelivery.ts';
 import { blackenLogo } from './ticket/blackLogo.ts';
 import { useEditorStore } from '../../stores/editorStore.ts';
+import { glassConfirm } from '../../services/glassDialog.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { 
   SlidersHorizontal, 
@@ -2549,6 +2575,69 @@ const currentPageName = computed(() => {
   if (activePage.value.page_name) return activePage.value.page_name;
   return pageNumber.value === 1 ? 'Landing Page' : 'Untitled Page';
 });
+
+// Action Button Navigation Health Check
+const nonTicketPages = computed(() => editorStore.pages.filter(p => p.kind !== 'ticket'));
+
+const isLastNonTicketPage = computed(() => {
+  const currentId = activePage.value?.id;
+  const idx = nonTicketPages.value.findIndex(p => p.id === currentId);
+  return idx !== -1 && idx === nonTicketPages.value.length - 1;
+});
+
+const hasContent = computed(() => {
+  return (activePage.value?.widget_tree?.length || 0) > 0;
+});
+
+const hasNavigationButton = computed(() => {
+  const tree = activePage.value?.widget_tree || [];
+  return tree.some((w: any) => {
+    if (w.type === 'ActionButton') return true;
+    if (w.type === 'HeroDrop' && (w.props?.isCtaEnabled || w.props?.buttonText || w.props?.showButton)) return true;
+    return false;
+  });
+});
+
+const isMissingActionButton = computed(() => {
+  if (props.isMiniPreview || props.isPreviewModal || props.isLivePage) return false;
+  if (isTicketPage.value || activePage.value?.kind === 'ticket') return false;
+  if (isLastNonTicketPage.value) return false;
+  if (!hasContent.value) return false;
+  return !hasNavigationButton.value;
+});
+
+async function openMissingButtonModal() {
+  handleSelectThisPage();
+  const currentId = activePage.value?.id;
+  const idx = nonTicketPages.value.findIndex(p => p.id === currentId);
+  const nextPage = idx !== -1 && idx < nonTicketPages.value.length - 1 ? nonTicketPages.value[idx + 1] : null;
+  const nextLabel = nextPage ? `Page ${idx + 2} (${nextPage.page_name || 'Next Page'})` : 'the next page';
+
+  const shouldAdd = await glassConfirm({
+    title: 'Missing Navigation Button',
+    message: `Page ${pageNumber.value} has no action button to link guests to ${nextLabel}.\n\nWithout a button, guests will reach a dead end and cannot proceed.\n\nWould you like to add a "CONTINUE →" button now?`,
+    confirmLabel: 'Add Button',
+    cancelLabel: 'Later'
+  });
+
+  if (shouldAdd) {
+    addNextActionButton();
+  }
+}
+
+function addNextActionButton() {
+  handleSelectThisPage();
+  editorStore.addWidget('ActionButton', undefined, {
+    label: 'CONTINUE →',
+    variant: 'black',
+    buttonVariant: 'black',
+    actionType: 'submit',
+    positionMode: 'in-flow',
+    height: 48,
+    showIcon: true
+  });
+  editorStore.showToast(`Action button added to Page ${pageNumber.value}`);
+}
 
 function handleSelectThisPage() {
   if (typeof props.pageIndex === 'number' && !props.isSelected) {
