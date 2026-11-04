@@ -75,8 +75,22 @@
                 class="font-707 font-medium text-[13px] text-black bg-transparent outline-none border-b border-transparent focus:border-black py-0.5 w-full min-w-0"
                 placeholder="Field Label"
               />
-              <span class="font-707 text-[10px] text-neutral-500 uppercase px-1.5 py-0.5 rounded bg-neutral-100 shrink-0 font-medium">
-                {{ field.type === 'tel' ? (field.countryCode || '+62') : (field.type || 'text') }}
+              <!-- Country Calling Code Selector for Phone fields -->
+              <div v-if="field.type === 'tel'" class="relative shrink-0 flex items-center">
+                <select 
+                  :value="field.countryCode || '+62'"
+                  @change="updateFieldCountryCode(index, ($event.target as HTMLSelectElement).value)"
+                  class="font-707 text-[10px] text-neutral-700 uppercase pl-1.5 pr-4 py-0.5 rounded bg-neutral-100 hover:bg-neutral-200 shrink-0 font-medium border-0 outline-none cursor-pointer appearance-none transition-colors"
+                  title="Default Country Calling Code"
+                >
+                  <option v-for="c in COUNTRY_CODES" :key="c.code + c.name" :value="c.code">
+                    {{ c.flag }} {{ c.code }} ({{ c.name }})
+                  </option>
+                </select>
+                <ChevronDown class="size-2.5 text-neutral-500 absolute right-1 pointer-events-none" />
+              </div>
+              <span v-else class="font-707 text-[10px] text-neutral-500 uppercase px-1.5 py-0.5 rounded bg-neutral-100 shrink-0 font-medium">
+                {{ field.type || 'text' }}
               </span>
             </div>
 
@@ -101,6 +115,24 @@
               <Trash2 class="size-3.5" />
             </button>
           </div>
+        </div>
+      </div>
+
+      <!-- Smart Suggestion: Dedicated Visual Choice Page (Item 2a) -->
+      <div class="px-[24px] pt-4 pb-0 w-full">
+        <div class="p-3 rounded-[10px] bg-neutral-50/90 border border-black/5 flex items-center justify-between gap-3">
+          <div class="flex flex-col min-w-0">
+            <span class="font-707 text-[12px] font-medium text-black">Need size or model choices?</span>
+            <span class="font-707 text-[10.5px] text-neutral-400 font-light truncate">Add a visual Choice Matrix on the next page.</span>
+          </div>
+          <button 
+            type="button"
+            @click="handleAddChoicePage"
+            class="px-2.5 h-[28px] rounded-[6px] bg-black text-white text-[11px] font-707 font-medium whitespace-nowrap hover:bg-neutral-800 active:scale-95 transition-all cursor-pointer flex items-center gap-1 shrink-0"
+          >
+            <Plus class="size-3" />
+            <span>Add Page</span>
+          </button>
         </div>
       </div>
 
@@ -247,6 +279,7 @@
 import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
+import { COUNTRY_CODES } from '../../constants/countryCodes.ts';
 import type { FormFieldItem } from '../../types/editor.ts';
 import { ChevronDown, GripVertical, Trash2, Plus, List, Type, ShieldCheck } from 'lucide-vue-next';
 import { useModalPopover } from '../common/modalPopover.ts';
@@ -361,6 +394,36 @@ function removeField(index: number) {
   if (!currentWidget.value || fields.value.length <= 1) return;
   const updated = fields.value.filter((_, i) => i !== index);
   editorStore.updateWidgetProps(currentWidget.value.id, { fields: updated });
+}
+
+function updateFieldCountryCode(index: number, code: string) {
+  if (!currentWidget.value) return;
+  const updated = [...fields.value];
+  updated[index] = { ...updated[index], countryCode: code };
+  editorStore.updateWidgetProps(currentWidget.value.id, { fields: updated });
+}
+
+function handleAddChoicePage() {
+  const newPage = editorStore.addPage();
+  if (newPage) {
+    newPage.page_name = 'Select Model';
+    newPage.title = 'Select Model';
+    editorStore.addWidget('MultipleChoice', undefined, {
+      title: 'SELECT YOUR MODEL*',
+      subtitle: 'Choose your preferred model below.',
+      required: true
+    });
+    editorStore.addWidget('ActionButton', undefined, {
+      label: 'SUBMIT →',
+      variant: 'black',
+      buttonVariant: 'black',
+      actionType: 'submit',
+      positionMode: 'in-flow',
+      height: 48,
+      showIcon: true
+    });
+    editorStore.showToast('Choice page added with navigation button');
+  }
 }
 
 const availablePresets = [

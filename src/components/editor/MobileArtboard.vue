@@ -19,7 +19,7 @@
         v-if="isSelected || isMissingActionButton"
         class="animate-apple-pop absolute bottom-full left-0 mb-[12px] group border-[0.5px] border-solid content-stretch flex h-[26px] items-center justify-center px-[8px] rounded-[10px] shadow-sm transition-all cursor-pointer will-change-transform backdrop-blur-md z-30"
         :class="isMissingActionButton 
-          ? 'bg-rose-50/90 border-rose-300 hover:border-rose-400 text-rose-950' 
+          ? 'bg-white border-[#9b0707] text-black shadow-xs' 
           : 'bg-[#ececec]/50 hover:bg-[#ececec] border-black/15 hover:border-black/50 text-black'"
         :style="{
           transform: `scale(${100 / editorStore.zoomLevel})`,
@@ -41,11 +41,11 @@
             v-if="isMissingActionButton"
             type="button"
             @click.stop="openMissingButtonModal"
-            class="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-rose-500 hover:bg-rose-600 active:scale-95 text-white text-[10px] font-sans font-medium transition-all shadow-xs cursor-pointer"
+            class="flex items-center gap-1 ml-1.5 px-2 py-0.5 rounded-full bg-[#9b0707] hover:bg-[#7f0606] active:scale-95 text-white text-[10px] font-707 font-medium transition-all shadow-xs cursor-pointer"
             title="Warning: Missing action button to next page. Click to add button."
           >
-            <AlertCircle class="w-3 h-3 text-white animate-pulse" />
-            <span>Missing Button</span>
+            <AlertCircle class="w-2.5 h-2.5 text-white" />
+            <span>Add Button</span>
           </button>
         </div>
 
@@ -91,16 +91,16 @@
                   ? 'w-[393px] h-[852px] border-none shadow-none' 
                   : 'border-[0.5px] w-[393px] h-[852px]')),
         !isMiniPreview && !isPreviewModal && !isLivePage && isMissingActionButton
-          ? '!border-rose-500 !border-2 shadow-[0px_0px_24px_rgba(244,63,94,0.3)]'
+          ? '!border-[#9b0707] !border-[0.5px] shadow-[0px_16px_48px_rgba(0,0,0,0.08)]'
           : (!isMiniPreview && !isPreviewModal && !isLivePage && isSelected 
               ? 'border-black shadow-[0px_16px_48px_rgba(0,0,0,0.12)]' 
               : (!isMiniPreview && !isPreviewModal && !isLivePage ? 'border-neutral-300 opacity-80 shadow-[0px_0px_30px_rgba(0,0,0,0.04)] cursor-pointer' : ''))
       ]"
     >
-      <!-- Persistent Red Warning Outline Overlay when missing action button -->
+      <!-- Persistent Red Warning Outline Overlay when missing action button (707 red heart token 0.5px) -->
       <div 
         v-if="!isMiniPreview && !isPreviewModal && !isLivePage && isMissingActionButton" 
-        class="pointer-events-none absolute inset-0 z-50 border-[2px] border-rose-500 border-solid" 
+        class="pointer-events-none absolute inset-0 z-50 border-[0.5px] border-[#9b0707] border-solid" 
       />
       <!-- Persistent Thin 0.5px Black Selected Page Outline Overlay (Only on selected artboard when no warning) -->
       <div 
@@ -775,8 +775,8 @@
                   <div 
                     v-if="isPhoneField(widget) && isFieldLabelFloating(widget)"
                     class="flex items-center gap-[4px] shrink-0 select-none cursor-pointer pr-[2px] group/code relative z-10 animate-in fade-in duration-200"
-                    @click.stop="toggleCountryCode(widget)"
-                    title="Click to switch Country Calling Code"
+                    @click.stop="openCountryCodeSheet(widget)"
+                    title="Select Country Calling Code"
                   >
                     <span class="font-707 text-[14px] leading-[20px] text-black font-normal tracking-tight">
                       {{ widget.props.countryCode || '+62' }}
@@ -964,8 +964,8 @@
                     <div 
                       v-if="isPhoneItem(field) && isFormItemFloating(widget.id, field)"
                       class="flex items-center gap-[4px] shrink-0 select-none cursor-pointer pr-[2px] group/code relative z-10 animate-in fade-in duration-200"
-                      @click.stop="toggleFormItemCountryCode(widget, field)"
-                      title="Click to switch Country Calling Code"
+                      @click.stop="openCountryCodeSheet(widget, field)"
+                      title="Select Country Calling Code"
                     >
                       <span class="font-707 text-[14px] leading-[20px] text-black font-normal tracking-tight">
                         {{ field.countryCode || '+62' }}
@@ -2076,8 +2076,8 @@ more</span>
                   <!-- WhatsApp Country Calling Code Selector with Chevron -->
                   <div 
                     class="flex items-center gap-[4px] shrink-0 select-none cursor-pointer pr-[4px] group/code relative z-10"
-                    @click.stop="toggleModalCountryCode"
-                    title="Click to switch Country Calling Code"
+                    @click.stop="openCountryCodeSheet(null, null, true)"
+                    title="Select Country Calling Code"
                   >
                     <span class="font-707 text-[14px] leading-[20px] text-black font-normal tracking-tight">
                       {{ modalCountryCode }}
@@ -2349,6 +2349,92 @@ more</span>
           </div>
         </div>
       </Transition>
+
+      <!-- WhatsApp / Phone Country Code Sticky Bottom Sheet Modal (Figma Node 276:4722 Token Harmonization) -->
+      <Transition name="apple-bottom-sheet">
+        <div 
+          v-if="showCountryCodeSheet"
+          class="absolute inset-0 z-[60] flex flex-col justify-end overflow-hidden"
+          @click.stop="closeCountryCodeSheet"
+        >
+          <!-- Frosted Dark Backdrop -->
+          <div class="absolute inset-0 bg-black/40 backdrop-blur-md transition-opacity" />
+
+          <!-- Bottom Sheet Card (Apple frost strong, rounded top, shadow) -->
+          <div 
+            @click.stop
+            class="apple-bottom-sheet-card relative z-10 w-full bg-white border-t border-white/60 text-black rounded-t-[20px] shadow-[0px_-10px_40px_rgba(0,0,0,0.16),0_-1px_3px_rgba(0,0,0,0.05)] max-h-[75%] h-[480px] flex flex-col overflow-hidden"
+            data-node-id="276:4722"
+            data-name="Country Code Selector Bottom Sheet"
+          >
+            <!-- Sheet Top Handle Pill -->
+            <div class="w-full flex items-center justify-center pt-3 pb-2 shrink-0">
+              <div class="w-10 h-1 rounded-full bg-neutral-300" />
+            </div>
+
+            <!-- Sheet Header -->
+            <div class="px-[20px] pb-3 flex items-center justify-between shrink-0 border-b border-black/5">
+              <div class="flex flex-col">
+                <span class="font-707 font-medium text-[15px] leading-tight text-black">SELECT COUNTRY CODE</span>
+                <span class="font-707 text-[11px] text-neutral-400 font-light mt-0.5">International calling code for WhatsApp</span>
+              </div>
+              <button 
+                type="button" 
+                @click.stop="closeCountryCodeSheet" 
+                class="size-7 rounded-full bg-neutral-100 hover:bg-neutral-200 active:scale-95 flex items-center justify-center transition-colors cursor-pointer"
+                title="Close"
+              >
+                <X class="size-3.5 text-neutral-600" />
+              </button>
+            </div>
+
+            <!-- Search input -->
+            <div class="px-[20px] py-2.5 shrink-0 border-b border-black/5 bg-neutral-50/50">
+              <div class="relative flex items-center w-full">
+                <Search class="absolute left-3 size-3.5 text-neutral-400 pointer-events-none" />
+                <input 
+                  v-model="countrySearchQuery"
+                  type="text"
+                  placeholder="Search country or dial code..."
+                  class="w-full h-[36px] pl-9 pr-7 rounded-[8px] bg-white border border-neutral-200 focus:border-black text-[13px] font-707 text-black placeholder:text-neutral-400 outline-none transition-colors"
+                />
+                <button 
+                  v-if="countrySearchQuery"
+                  @click="countrySearchQuery = ''"
+                  type="button"
+                  class="absolute right-2.5 size-4 rounded-full bg-neutral-200 hover:bg-neutral-300 flex items-center justify-center text-[10px] text-neutral-600 cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <!-- Country list -->
+            <div class="flex-1 overflow-y-auto overscroll-contain px-[12px] py-1.5 no-scrollbar divide-y divide-black/5">
+              <div 
+                v-for="country in filteredCountries" 
+                :key="country.code + country.name"
+                @click.stop="selectCountryCode(country.code)"
+                class="flex items-center justify-between px-3 py-3 rounded-[8px] hover:bg-black/[0.04] active:bg-black/[0.08] transition-colors cursor-pointer select-none group"
+                :class="isSelectedCountry(country.code) ? 'bg-black/[0.04] font-medium' : ''"
+              >
+                <div class="flex items-center gap-3 min-w-0">
+                  <span class="text-[20px] leading-none shrink-0">{{ country.flag }}</span>
+                  <span class="font-707 text-[13px] text-neutral-900 group-hover:text-black truncate">{{ country.name }}</span>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <span class="font-707 text-[13px] font-medium text-neutral-500 group-hover:text-black">{{ country.code }}</span>
+                  <Check v-if="isSelectedCountry(country.code)" class="size-4 text-black stroke-[2.5]" />
+                  <div v-else class="size-4" />
+                </div>
+              </div>
+              <div v-if="filteredCountries.length === 0" class="py-8 text-center text-neutral-400 font-707 text-[12px]">
+                No country matching "{{ countrySearchQuery }}"
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
     </div>
   </div>
 </template>
@@ -2369,6 +2455,7 @@ import { blackenLogo } from './ticket/blackLogo.ts';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { glassConfirm } from '../../services/glassDialog.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
+import { COUNTRY_CODES, type CountryCodeItem } from '../../constants/countryCodes.ts';
 import { 
   SlidersHorizontal, 
   Copy, 
@@ -2390,7 +2477,9 @@ import {
   Crop,
   Move,
   ZoomIn,
-  ArrowRightLeft
+  ArrowRightLeft,
+  X,
+  Search
 } from 'lucide-vue-next';
 import { fetchPublicQueueNow } from '../hub/hubUtils.ts';
 import { uploadMediaDirectly } from '../../services/mediaService.ts';
@@ -2608,16 +2697,12 @@ const isMissingActionButton = computed(() => {
 
 async function openMissingButtonModal() {
   handleSelectThisPage();
-  const currentId = activePage.value?.id;
-  const idx = nonTicketPages.value.findIndex(p => p.id === currentId);
-  const nextPage = idx !== -1 && idx < nonTicketPages.value.length - 1 ? nonTicketPages.value[idx + 1] : null;
-  const nextLabel = nextPage ? `Page ${idx + 2} (${nextPage.page_name || 'Next Page'})` : 'the next page';
 
   const shouldAdd = await glassConfirm({
-    title: 'Missing Navigation Button',
-    message: `Page ${pageNumber.value} has no action button to link guests to ${nextLabel}.\n\nWithout a button, guests will reach a dead end and cannot proceed.\n\nWould you like to add a "CONTINUE →" button now?`,
+    title: 'Add Navigation Button',
+    message: `Page ${pageNumber.value} has no button linking to the next page.`,
     confirmLabel: 'Add Button',
-    cancelLabel: 'Later'
+    cancelLabel: 'Cancel'
   });
 
   if (shouldAdd) {
@@ -4001,17 +4086,100 @@ function isPhoneField(widget: any): boolean {
 }
 
 const countryCodes = ['+62', '+65', '+60', '+1', '+44', '+61', '+81', '+971'];
+
+// WhatsApp / Phone Country Code Bottom Sheet State (Figma Node 276:4722 Token Harmonization)
+const showCountryCodeSheet = ref(false);
+const countrySearchQuery = ref('');
+const targetCountryCodeContext = ref<{
+  widgetId?: string;
+  fieldId?: string;
+  isModal?: boolean;
+} | null>(null);
+
+const filteredCountries = computed(() => {
+  const q = countrySearchQuery.value.trim().toLowerCase();
+  if (!q) return COUNTRY_CODES;
+  return COUNTRY_CODES.filter(c => 
+    c.name.toLowerCase().includes(q) || 
+    c.code.toLowerCase().includes(q)
+  );
+});
+
+function openCountryCodeSheet(widget?: any, field?: any, isModal = false) {
+  if (wasDraggingRecently.value) return;
+  targetCountryCodeContext.value = {
+    widgetId: widget?.id,
+    fieldId: field?.id,
+    isModal
+  };
+  countrySearchQuery.value = '';
+  showCountryCodeSheet.value = true;
+}
+
+function closeCountryCodeSheet() {
+  showCountryCodeSheet.value = false;
+  targetCountryCodeContext.value = null;
+  countrySearchQuery.value = '';
+}
+
+function getCurrentCountryCode(): string {
+  const ctx = targetCountryCodeContext.value;
+  if (!ctx) return '+62';
+  if (ctx.isModal) return modalCountryCode.value || '+62';
+  if (ctx.widgetId && ctx.fieldId) {
+    const w = activePage.value?.widget_tree?.find(x => x.id === ctx.widgetId);
+    const f = w?.props?.fields?.find((x: any) => x.id === ctx.fieldId);
+    return f?.countryCode || '+62';
+  }
+  if (ctx.widgetId) {
+    const w = activePage.value?.widget_tree?.find(x => x.id === ctx.widgetId);
+    return w?.props?.countryCode || '+62';
+  }
+  return '+62';
+}
+
+function isSelectedCountry(code: string): boolean {
+  return getCurrentCountryCode() === code;
+}
+
+function selectCountryCode(code: string) {
+  const ctx = targetCountryCodeContext.value;
+  if (!ctx) {
+    closeCountryCodeSheet();
+    return;
+  }
+  if (ctx.isModal) {
+    modalCountryCode.value = code;
+  } else if (ctx.widgetId && ctx.fieldId) {
+    const w = activePage.value?.widget_tree?.find(x => x.id === ctx.widgetId);
+    if (w && Array.isArray(w.props?.fields)) {
+      const f = w.props.fields.find((x: any) => x.id === ctx.fieldId);
+      if (f) {
+        f.countryCode = code;
+        if (!props.isLivePage) {
+          editorStore.updateWidgetProps(w.id, { fields: [...w.props.fields] });
+        }
+      }
+    }
+  } else if (ctx.widgetId) {
+    const w = activePage.value?.widget_tree?.find(x => x.id === ctx.widgetId);
+    if (w) {
+      w.props = { ...w.props, countryCode: code };
+      if (!props.isLivePage) {
+        editorStore.updateWidgetProps(w.id, { countryCode: code });
+      }
+    }
+  }
+  closeCountryCodeSheet();
+}
+
 function toggleCountryCode(widget: any) {
-  const current = widget.props.countryCode || '+62';
-  const idx = countryCodes.indexOf(current);
-  widget.props.countryCode = countryCodes[(idx + 1) % countryCodes.length];
+  openCountryCodeSheet(widget);
 }
 
 const modalCountryCode = ref('+62');
 function toggleModalCountryCode() {
-  if (wasDraggingRecently.value) return;
-  const idx = countryCodes.indexOf(modalCountryCode.value);
-  modalCountryCode.value = countryCodes[(idx + 1) % countryCodes.length];
+  openCountryCodeSheet(null, null, true);
 }
 
 function validateField(widget: any, triggerShake = true): boolean {
@@ -4227,10 +4395,7 @@ function isPhoneItem(field: any): boolean {
 }
 
 function toggleFormItemCountryCode(widget: any, field: any) {
-  const current = field.countryCode || '+62';
-  const idx = countryCodes.indexOf(current);
-  field.countryCode = countryCodes[(idx + 1) % countryCodes.length];
-  editorStore.updateWidgetProps(widget.id, { fields: [...widget.props.fields] });
+  openCountryCodeSheet(widget, field);
 }
 
 function handleRegistrationFormFieldFocus(widgetId: string, fieldId: string) {
