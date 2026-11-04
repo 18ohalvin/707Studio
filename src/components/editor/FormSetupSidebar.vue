@@ -75,22 +75,9 @@
                 class="font-707 font-medium text-[13px] text-black bg-transparent outline-none border-b border-transparent focus:border-black py-0.5 w-full min-w-0"
                 placeholder="Field Label"
               />
-              <!-- Country Calling Code Selector for Phone fields -->
-              <div v-if="field.type === 'tel'" class="relative shrink-0 flex items-center">
-                <select 
-                  :value="field.countryCode || '+62'"
-                  @change="updateFieldCountryCode(index, ($event.target as HTMLSelectElement).value)"
-                  class="font-707 text-[10px] text-neutral-700 uppercase pl-1.5 pr-4 py-0.5 rounded bg-neutral-100 hover:bg-neutral-200 shrink-0 font-medium border-0 outline-none cursor-pointer appearance-none transition-colors"
-                  title="Default Country Calling Code"
-                >
-                  <option v-for="c in COUNTRY_CODES" :key="c.code + c.name" :value="c.code">
-                    {{ c.flag }} {{ c.code }} ({{ c.name }})
-                  </option>
-                </select>
-                <ChevronDown class="size-2.5 text-neutral-500 absolute right-1 pointer-events-none" />
-              </div>
-              <span v-else class="font-707 text-[10px] text-neutral-500 uppercase px-1.5 py-0.5 rounded bg-neutral-100 shrink-0 font-medium">
-                {{ field.type || 'text' }}
+              <!-- Field Type Indicator -->
+              <span class="font-707 text-[10px] text-neutral-500 uppercase px-2 py-0.5 rounded bg-neutral-100 shrink-0 font-medium tracking-tight">
+                {{ field.type === 'tel' ? 'WhatsApp' : (field.type === 'date' || field.name.toLowerCase().includes('birth') ? 'Date' : (field.type || 'text')) }}
               </span>
             </div>
 
@@ -279,7 +266,6 @@
 import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
-import { COUNTRY_CODES } from '../../constants/countryCodes.ts';
 import type { FormFieldItem } from '../../types/editor.ts';
 import { ChevronDown, GripVertical, Trash2, Plus, List, Type, ShieldCheck } from 'lucide-vue-next';
 import { useModalPopover } from '../common/modalPopover.ts';
@@ -396,13 +382,6 @@ function removeField(index: number) {
   editorStore.updateWidgetProps(currentWidget.value.id, { fields: updated });
 }
 
-function updateFieldCountryCode(index: number, code: string) {
-  if (!currentWidget.value) return;
-  const updated = [...fields.value];
-  updated[index] = { ...updated[index], countryCode: code };
-  editorStore.updateWidgetProps(currentWidget.value.id, { fields: updated });
-}
-
 function handleAddChoicePage() {
   const newPage = editorStore.addPage();
   if (newPage) {
@@ -432,7 +411,7 @@ const availablePresets = [
   { name: 'Email Address', placeholder: 'Email Address*', type: 'email' },
   { name: 'WhatsApp Number', placeholder: 'WhatsApp Number*', type: 'tel', countryCode: '+62' },
   { name: 'Instagram Handle', placeholder: 'Instagram Handle*', type: 'text' },
-  { name: 'Date of Birth', placeholder: 'DD / MM / YYYY', type: 'text' },
+  { name: 'Date of Birth', placeholder: 'DD / MM / YYYY', type: 'date' },
   { name: 'National ID / KTP', placeholder: 'Enter 16-digit KTP number', type: 'text' },
   { name: 'Custom Field', placeholder: 'Field Details*', type: 'text' }
 ];

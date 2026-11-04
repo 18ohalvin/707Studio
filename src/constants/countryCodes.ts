@@ -34,3 +34,4 @@ export const COUNTRY_CODES: CountryCodeItem[] = [
   { name: 'Brazil', code: '+55', flag: '🇧🇷' },
   { name: 'Mexico', code: '+52', flag: '🇲🇽' },
 ];
+

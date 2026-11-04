@@ -751,7 +751,11 @@
               data-name="Input field base"
             >
               <!-- Field Content Structure with Luxury Floating Label & Animated Sweeping Underline -->
-              <div class="w-full flex flex-col items-start relative pt-[16px]">
+              <div 
+                class="w-full flex flex-col items-start relative pt-[16px]"
+                :class="isDateField(widget) ? 'cursor-pointer' : ''"
+                @click.stop="isDateField(widget) ? openDateSelectorSheet(widget) : undefined"
+              >
                 <!-- Floating Label (Translates upward smoothly when focused or active) -->
                 <label 
                   class="luxury-floating-label font-707 left-0"
@@ -787,19 +791,31 @@
                   <input 
                     :ref="el => registerInputField(widget.id, el)"
                     :value="widget.props.value || ''"
-                    :type="widget.props.inputType || 'text'"
-                    :inputmode="isPhoneField(widget) ? 'numeric' : (widget.props.inputType === 'email' || (widget.props.label && widget.props.label.toLowerCase().includes('email')) ? 'email' : 'text')"
+                    :type="isDateField(widget) ? 'text' : (widget.props.inputType || 'text')"
+                    :inputmode="isDateField(widget) ? 'none' : (isPhoneField(widget) ? 'numeric' : (widget.props.inputType === 'email' || (widget.props.label && widget.props.label.toLowerCase().includes('email')) ? 'email' : 'text'))"
+                    @click="isDateField(widget) ? openDateSelectorSheet(widget) : undefined"
                     @input="handleFieldInputChange($event, widget)"
-                    @focus="handleFieldFocus(widget)"
+                    @focus="isDateField(widget) ? openDateSelectorSheet(widget) : handleFieldFocus(widget)"
                     @blur="handleFieldBlur(widget)"
-                    :readonly="isMiniPreview || isDesignCanvas"
+                    :readonly="isDateField(widget) || isMiniPreview || isDesignCanvas"
                     :tabindex="isDesignCanvas ? -1 : undefined"
                     :style="isDesignCanvas ? { pointerEvents: 'none' } : undefined"
                     class="font-707 font-normal text-[14px] leading-[20px] w-full bg-transparent outline-none border-none p-0 m-0 transition-colors duration-300 relative z-10"
                     :class="[
-                      widget.props.stateVariant === 'Wrong alert' ? 'text-[#9b0707]' : 'text-black'
+                      widget.props.stateVariant === 'Wrong alert' ? 'text-[#9b0707]' : 'text-black',
+                      isDateField(widget) ? 'cursor-pointer' : ''
                     ]"
                   />
+
+                  <!-- Calendar Trigger Icon for Date fields -->
+                  <div 
+                    v-if="isDateField(widget)"
+                    class="size-[18px] shrink-0 flex items-center justify-center text-neutral-400 hover:text-black cursor-pointer transition-colors relative z-10"
+                    @click.stop="openDateSelectorSheet(widget)"
+                    title="Select Date"
+                  >
+                    <Calendar class="size-4 stroke-[1.75]" />
+                  </div>
 
                   <!-- Error Alert Icon (Kept visible on error state even when dismissed) -->
                   <div 
@@ -938,8 +954,9 @@
                 <div 
                   v-for="(field, fIdx) in (widget.props.fields || [])"
                   :key="field.id || fIdx"
-                  class="w-full flex flex-col items-start relative pt-[16px] cursor-text"
-                  @click.stop="focusRegistrationFormField(widget.id, field.id)"
+                  class="w-full flex flex-col items-start relative pt-[16px]"
+                  :class="isDateItem(field) ? 'cursor-pointer' : 'cursor-text'"
+                  @click.stop="isDateItem(field) ? openDateSelectorSheet(widget, field) : focusRegistrationFormField(widget.id, field.id)"
                 >
                   <!-- Floating Label -->
                   <label 
@@ -976,19 +993,31 @@
                     <input 
                       :ref="el => registerInputField(`${widget.id}_${field.id}`, el)"
                       :value="field.value || ''"
-                      :type="field.type || 'text'"
-                      :inputmode="isPhoneItem(field) ? 'numeric' : (field.type === 'email' || (field.name && field.name.toLowerCase().includes('email')) ? 'email' : 'text')"
+                      :type="isDateItem(field) ? 'text' : (field.type || 'text')"
+                      :inputmode="isDateItem(field) ? 'none' : (isPhoneItem(field) ? 'numeric' : (field.type === 'email' || (field.name && field.name.toLowerCase().includes('email')) ? 'email' : 'text'))"
+                      @click="isDateItem(field) ? openDateSelectorSheet(widget, field) : undefined"
                       @input="handleRegistrationFormItemInput($event, widget, field)"
-                      @focus="handleRegistrationFormFieldFocus(widget.id, field.id)"
+                      @focus="isDateItem(field) ? openDateSelectorSheet(widget, field) : handleRegistrationFormFieldFocus(widget.id, field.id)"
                       @blur="handleRegistrationFormFieldBlur(widget.id, field.id)"
-                      :readonly="isMiniPreview || isDesignCanvas"
-                    :tabindex="isDesignCanvas ? -1 : undefined"
-                    :style="isDesignCanvas ? { pointerEvents: 'none' } : undefined"
+                      :readonly="isDateItem(field) || isMiniPreview || isDesignCanvas"
+                      :tabindex="isDesignCanvas ? -1 : undefined"
+                      :style="isDesignCanvas ? { pointerEvents: 'none' } : undefined"
                       class="font-707 font-normal text-[14px] leading-[20px] w-full bg-transparent outline-none border-none p-0 m-0 transition-colors duration-300 relative z-10"
                       :class="[
-                        field.errorMessage ? 'text-[#9b0707]' : 'text-black'
+                        field.errorMessage ? 'text-[#9b0707]' : 'text-black',
+                        isDateItem(field) ? 'cursor-pointer' : ''
                       ]"
                     />
+
+                    <!-- Calendar Trigger Icon for Date of Birth / Date items -->
+                    <div 
+                      v-if="isDateItem(field)"
+                      class="size-[18px] shrink-0 flex items-center justify-center text-neutral-400 hover:text-black cursor-pointer transition-colors relative z-10"
+                      @click.stop="openDateSelectorSheet(widget, field)"
+                      title="Select Date"
+                    >
+                      <Calendar class="size-4 stroke-[1.75]" />
+                    </div>
 
                     <!-- Error Alert Icon -->
                     <div 
@@ -2363,7 +2392,7 @@ more</span>
           <!-- Bottom Sheet Card (Apple frost strong, rounded top, shadow) -->
           <div 
             @click.stop
-            class="apple-bottom-sheet-card relative z-10 w-full bg-white border-t border-white/60 text-black rounded-t-[20px] shadow-[0px_-10px_40px_rgba(0,0,0,0.16),0_-1px_3px_rgba(0,0,0,0.05)] max-h-[75%] h-[480px] flex flex-col overflow-hidden"
+            class="apple-bottom-sheet-card relative z-10 w-full bg-white border-t border-white/60 text-black rounded-t-[20px] shadow-[0px_-10px_40px_rgba(0,0,0,0.16),0_-1px_3px_rgba(0,0,0,0.05)] max-h-[82%] h-[540px] flex flex-col overflow-hidden"
             data-node-id="276:4722"
             data-name="Country Code Selector Bottom Sheet"
           >
@@ -2373,11 +2402,10 @@ more</span>
             </div>
 
             <!-- Sheet Header -->
-            <div class="px-[20px] pb-3 flex items-center justify-between shrink-0 border-b border-black/5">
-              <div class="flex flex-col">
-                <span class="font-707 font-medium text-[15px] leading-tight text-black">SELECT COUNTRY CODE</span>
-                <span class="font-707 text-[11px] text-neutral-400 font-light mt-0.5">International calling code for WhatsApp</span>
-              </div>
+            <div class="px-[24px] pt-1 pb-3 flex items-center justify-between shrink-0 border-b border-black/5">
+              <span class="font-707 font-medium text-[16px] leading-tight text-black tracking-normal">
+                SELECT COUNTRY
+              </span>
               <button 
                 type="button" 
                 @click.stop="closeCountryCodeSheet" 
@@ -2389,14 +2417,14 @@ more</span>
             </div>
 
             <!-- Search input -->
-            <div class="px-[20px] py-2.5 shrink-0 border-b border-black/5 bg-neutral-50/50">
+            <div class="px-[20px] py-3 shrink-0 border-b border-black/5 bg-neutral-50/50">
               <div class="relative flex items-center w-full">
-                <Search class="absolute left-3 size-3.5 text-neutral-400 pointer-events-none" />
+                <Search class="absolute left-3.5 size-4 text-neutral-400 pointer-events-none" />
                 <input 
                   v-model="countrySearchQuery"
                   type="text"
                   placeholder="Search country or dial code..."
-                  class="w-full h-[36px] pl-9 pr-7 rounded-[8px] bg-white border border-neutral-200 focus:border-black text-[13px] font-707 text-black placeholder:text-neutral-400 outline-none transition-colors"
+                  class="w-full h-[40px] pl-10 pr-7 rounded-[10px] bg-white border border-neutral-200 focus:border-black text-[13.5px] font-707 text-black placeholder:text-neutral-400 outline-none transition-colors"
                 />
                 <button 
                   v-if="countrySearchQuery"
@@ -2409,28 +2437,150 @@ more</span>
               </div>
             </div>
 
-            <!-- Country list -->
-            <div class="flex-1 overflow-y-auto overscroll-contain px-[12px] py-1.5 no-scrollbar divide-y divide-black/5">
+            <!-- Country list (Generous spacing, relaxed premium rows) -->
+            <div class="flex-1 overflow-y-auto overscroll-contain px-[16px] py-2.5 no-scrollbar flex flex-col gap-1.5">
               <div 
                 v-for="country in filteredCountries" 
                 :key="country.code + country.name"
                 @click.stop="selectCountryCode(country.code)"
-                class="flex items-center justify-between px-3 py-3 rounded-[8px] hover:bg-black/[0.04] active:bg-black/[0.08] transition-colors cursor-pointer select-none group"
-                :class="isSelectedCountry(country.code) ? 'bg-black/[0.04] font-medium' : ''"
+                class="flex items-center justify-between h-[52px] px-3.5 rounded-[10px] hover:bg-neutral-100 active:bg-neutral-200/80 transition-all cursor-pointer select-none group"
+                :class="isSelectedCountry(country.code) ? 'bg-neutral-100 font-medium' : ''"
               >
-                <div class="flex items-center gap-3 min-w-0">
-                  <span class="text-[20px] leading-none shrink-0">{{ country.flag }}</span>
-                  <span class="font-707 text-[13px] text-neutral-900 group-hover:text-black truncate">{{ country.name }}</span>
+                <div class="flex items-center gap-3.5 min-w-0">
+                  <span class="text-[22px] leading-none shrink-0">{{ country.flag }}</span>
+                  <span class="font-707 text-[14px] text-neutral-900 group-hover:text-black truncate">{{ country.name }}</span>
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
-                  <span class="font-707 text-[13px] font-medium text-neutral-500 group-hover:text-black">{{ country.code }}</span>
+                <div class="flex items-center gap-2.5 shrink-0">
+                  <span class="font-707 text-[13.5px] font-medium text-neutral-500 group-hover:text-black">{{ country.code }}</span>
                   <Check v-if="isSelectedCountry(country.code)" class="size-4 text-black stroke-[2.5]" />
                   <div v-else class="size-4" />
                 </div>
               </div>
-              <div v-if="filteredCountries.length === 0" class="py-8 text-center text-neutral-400 font-707 text-[12px]">
+              <div v-if="filteredCountries.length === 0" class="py-10 text-center text-neutral-400 font-707 text-[13px]">
                 No country matching "{{ countrySearchQuery }}"
               </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Interactive Date Selector Sticky Bottom Sheet Modal (Figma Node 276:4722 Token Harmonization) -->
+      <Transition name="apple-bottom-sheet">
+        <div 
+          v-if="showDateSelectorSheet"
+          class="absolute inset-0 z-[60] flex flex-col justify-end overflow-hidden"
+          @click.stop="closeDateSelectorSheet"
+        >
+          <!-- Frosted Dark Backdrop -->
+          <div class="absolute inset-0 bg-black/40 backdrop-blur-md transition-opacity" />
+
+          <!-- Bottom Sheet Card (Apple frost strong, rounded top, shadow) -->
+          <div 
+            @click.stop
+            class="apple-bottom-sheet-card relative z-10 w-full bg-white border-t border-white/60 text-black rounded-t-[20px] shadow-[0px_-10px_40px_rgba(0,0,0,0.16),0_-1px_3px_rgba(0,0,0,0.05)] flex flex-col overflow-hidden"
+            data-node-id="276:4722"
+            data-name="Interactive Date Selector Bottom Sheet"
+          >
+            <!-- Sheet Top Handle Pill -->
+            <div class="w-full flex items-center justify-center pt-3 pb-2 shrink-0">
+              <div class="w-10 h-1 rounded-full bg-neutral-300" />
+            </div>
+
+            <!-- Sheet Header -->
+            <div class="px-[24px] pt-1 pb-3 flex items-center justify-between shrink-0 border-b border-black/5">
+              <span class="font-707 font-medium text-[16px] leading-tight text-black tracking-normal">
+                {{ dateSheetTitle || 'SELECT DATE' }}
+              </span>
+              <button 
+                type="button" 
+                @click.stop="closeDateSelectorSheet" 
+                class="size-7 rounded-full bg-neutral-100 hover:bg-neutral-200 active:scale-95 flex items-center justify-center transition-colors cursor-pointer"
+                title="Close"
+              >
+                <X class="size-3.5 text-neutral-600" />
+              </button>
+            </div>
+
+            <!-- Selected Date Hero Display -->
+            <div class="px-[24px] py-3.5 flex items-center justify-between bg-neutral-50/70 border-b border-black/5 shrink-0">
+              <div class="flex flex-col">
+                <span class="font-707 text-[10px] text-neutral-400 uppercase tracking-widest font-normal">Selected</span>
+                <span class="font-707 text-[17px] text-black font-medium tracking-tight mt-0.5">
+                  {{ formattedDatePreview }}
+                </span>
+              </div>
+              <span 
+                v-if="calculatedAge !== null" 
+                class="px-2.5 py-1 rounded-full bg-black/5 text-black font-707 text-[11px] font-medium tracking-normal"
+              >
+                {{ calculatedAge }} YRS
+              </span>
+            </div>
+
+            <!-- 3-Column Interactive Date Picker (Day / Month / Year) -->
+            <div class="px-[20px] py-3.5 grid grid-cols-12 gap-3 shrink-0 h-[220px]">
+              <!-- Day Column (cols 3) -->
+              <div class="col-span-3 flex flex-col h-full">
+                <span class="font-707 text-[10px] text-neutral-400 uppercase tracking-wider text-center mb-1.5 font-medium">DAY</span>
+                <div class="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-1 pr-1">
+                  <button
+                    v-for="d in daysList"
+                    :key="'d_' + d"
+                    type="button"
+                    @click="selectedDay = d"
+                    class="h-[36px] rounded-[8px] flex items-center justify-center font-707 text-[14px] transition-all cursor-pointer shrink-0 select-none"
+                    :class="selectedDay === d ? 'bg-black text-white font-medium shadow-xs' : 'text-neutral-600 hover:bg-neutral-100 hover:text-black'"
+                  >
+                    {{ String(d).padStart(2, '0') }}
+                  </button>
+                </div>
+              </div>
+
+              <!-- Month Column (cols 5) -->
+              <div class="col-span-5 flex flex-col h-full border-x border-black/5 px-2">
+                <span class="font-707 text-[10px] text-neutral-400 uppercase tracking-wider text-center mb-1.5 font-medium">MONTH</span>
+                <div class="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-1">
+                  <button
+                    v-for="m in monthsList"
+                    :key="'m_' + m.value"
+                    type="button"
+                    @click="selectedMonth = m.value"
+                    class="h-[36px] rounded-[8px] flex items-center justify-between px-3 font-707 text-[13px] transition-all cursor-pointer shrink-0 select-none"
+                    :class="selectedMonth === m.value ? 'bg-black text-white font-medium shadow-xs' : 'text-neutral-600 hover:bg-neutral-100 hover:text-black'"
+                  >
+                    <span>{{ m.name }}</span>
+                    <span class="text-[11px]" :class="selectedMonth === m.value ? 'text-white/70' : 'text-neutral-400'">{{ String(m.value).padStart(2, '0') }}</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Year Column (cols 4) -->
+              <div class="col-span-4 flex flex-col h-full">
+                <span class="font-707 text-[10px] text-neutral-400 uppercase tracking-wider text-center mb-1.5 font-medium">YEAR</span>
+                <div class="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-1 pl-1">
+                  <button
+                    v-for="y in yearsList"
+                    :key="'y_' + y"
+                    type="button"
+                    @click="selectedYear = y"
+                    class="h-[36px] rounded-[8px] flex items-center justify-center font-707 text-[14px] transition-all cursor-pointer shrink-0 select-none"
+                    :class="selectedYear === y ? 'bg-black text-white font-medium shadow-xs' : 'text-neutral-600 hover:bg-neutral-100 hover:text-black'"
+                  >
+                    {{ y }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sticky Bottom CTA Button -->
+            <div class="px-[24px] pt-2 pb-[24px] shrink-0 w-full bg-white border-t border-black/5 z-20">
+              <button 
+                type="button"
+                @click.stop="confirmDateSelection"
+                class="apple-cta-btn-dark bg-black text-white hover:bg-neutral-900 active:bg-neutral-800 w-full h-[48px] px-[16px] py-[12px] rounded-none flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 outline-none uppercase transition-all"
+              >
+                <span>CONFIRM DATE</span>
+              </button>
             </div>
           </div>
         </div>
@@ -2479,7 +2629,8 @@ import {
   ZoomIn,
   ArrowRightLeft,
   X,
-  Search
+  Search,
+  Calendar
 } from 'lucide-vue-next';
 import { fetchPublicQueueNow } from '../hub/hubUtils.ts';
 import { uploadMediaDirectly } from '../../services/mediaService.ts';
@@ -4085,6 +4236,155 @@ function isPhoneField(widget: any): boolean {
   return widget.props?.inputType === 'tel' || label.includes('whatsapp') || label.includes('wa') || label.includes('phone') || !!widget.props?.countryCode;
 }
 
+function isDateField(widget: any): boolean {
+  if (!widget || widget.type !== 'FieldInput') return false;
+  const label = (widget.props?.label || '').toLowerCase();
+  const placeholder = (widget.props?.placeholder || '').toLowerCase();
+  return widget.props?.inputType === 'date' || label.includes('birth') || label.includes('dob') || label.includes('date') || label.includes('lahir') || placeholder.includes('dd / mm / yyyy');
+}
+
+// Interactive Date Selector Bottom Sheet State (Figma Node 276:4722 Token Harmonization)
+const showDateSelectorSheet = ref(false);
+const targetDateContext = ref<{
+  widgetId?: string;
+  fieldId?: string;
+} | null>(null);
+
+const dateSheetTitle = ref('SELECT DATE');
+const selectedDay = ref(1);
+const selectedMonth = ref(1);
+const selectedYear = ref(2000);
+
+const monthsList = [
+  { value: 1, label: 'JAN', name: 'January' },
+  { value: 2, label: 'FEB', name: 'February' },
+  { value: 3, label: 'MAR', name: 'March' },
+  { value: 4, label: 'APR', name: 'April' },
+  { value: 5, label: 'MAY', name: 'May' },
+  { value: 6, label: 'JUN', name: 'June' },
+  { value: 7, label: 'JUL', name: 'July' },
+  { value: 8, label: 'AUG', name: 'August' },
+  { value: 9, label: 'SEP', name: 'September' },
+  { value: 10, label: 'OCT', name: 'October' },
+  { value: 11, label: 'NOV', name: 'November' },
+  { value: 12, label: 'DEC', name: 'December' },
+];
+
+const currentSystemYear = new Date().getFullYear();
+const yearsList = computed(() => {
+  const yrs: number[] = [];
+  const maxYear = currentSystemYear - 5;
+  for (let y = maxYear; y >= 1940; y--) {
+    yrs.push(y);
+  }
+  return yrs;
+});
+
+const maxDaysInSelectedMonth = computed(() => {
+  return new Date(selectedYear.value, selectedMonth.value, 0).getDate();
+});
+
+const daysList = computed(() => {
+  const count = maxDaysInSelectedMonth.value;
+  return Array.from({ length: count }, (_, i) => i + 1);
+});
+
+watch(maxDaysInSelectedMonth, (max) => {
+  if (selectedDay.value > max) {
+    selectedDay.value = max;
+  }
+});
+
+const formattedDatePreview = computed(() => {
+  const d = String(selectedDay.value).padStart(2, '0');
+  const m = monthsList.find(x => x.value === selectedMonth.value)?.name.toUpperCase() || 'JANUARY';
+  return `${d} ${m} ${selectedYear.value}`;
+});
+
+const calculatedAge = computed(() => {
+  const now = new Date();
+  let age = now.getFullYear() - selectedYear.value;
+  const m = (now.getMonth() + 1) - selectedMonth.value;
+  if (m < 0 || (m === 0 && now.getDate() < selectedDay.value)) {
+    age--;
+  }
+  return age > 0 ? age : null;
+});
+
+function openDateSelectorSheet(widget?: any, field?: any) {
+  if (wasDraggingRecently.value) return;
+  targetDateContext.value = {
+    widgetId: widget?.id,
+    fieldId: field?.id
+  };
+
+  const label = field?.name || widget?.props?.label || 'DATE OF BIRTH';
+  dateSheetTitle.value = label.toUpperCase();
+
+  const currentValue = field ? field.value : widget?.props?.value;
+  if (currentValue && typeof currentValue === 'string') {
+    const slashMatch = currentValue.match(/(\d{1,2})\s*[\/\-\.]\s*(\d{1,2})\s*[\/\-\.]\s*(\d{4})/);
+    const isoMatch = currentValue.match(/(\d{4})\s*[\/\-\.]\s*(\d{1,2})\s*[\/\-\.]\s*(\d{1,2})/);
+    if (slashMatch) {
+      selectedDay.value = Math.min(31, Math.max(1, parseInt(slashMatch[1], 10) || 1));
+      selectedMonth.value = Math.min(12, Math.max(1, parseInt(slashMatch[2], 10) || 1));
+      selectedYear.value = parseInt(slashMatch[3], 10) || 2000;
+    } else if (isoMatch) {
+      selectedYear.value = parseInt(isoMatch[1], 10) || 2000;
+      selectedMonth.value = Math.min(12, Math.max(1, parseInt(isoMatch[2], 10) || 1));
+      selectedDay.value = Math.min(31, Math.max(1, parseInt(isoMatch[3], 10) || 1));
+    } else {
+      selectedDay.value = 1;
+      selectedMonth.value = 1;
+      selectedYear.value = 2000;
+    }
+  } else {
+    selectedDay.value = 1;
+    selectedMonth.value = 1;
+    selectedYear.value = 2000;
+  }
+
+  showDateSelectorSheet.value = true;
+}
+
+function closeDateSelectorSheet() {
+  showDateSelectorSheet.value = false;
+  targetDateContext.value = null;
+}
+
+function confirmDateSelection() {
+  const d = String(selectedDay.value).padStart(2, '0');
+  const m = String(selectedMonth.value).padStart(2, '0');
+  const formatted = `${d} / ${m} / ${selectedYear.value}`;
+
+  const ctx = targetDateContext.value;
+  if (ctx) {
+    if (ctx.widgetId && ctx.fieldId) {
+      const w = activePage.value?.widget_tree?.find(x => x.id === ctx.widgetId);
+      if (w && Array.isArray(w.props?.fields)) {
+        const f = w.props.fields.find((x: any) => x.id === ctx.fieldId);
+        if (f) {
+          f.value = formatted;
+          f.errorMessage = '';
+          if (!props.isLivePage) {
+            editorStore.updateWidgetProps(w.id, { fields: [...w.props.fields] });
+          }
+        }
+      }
+    } else if (ctx.widgetId) {
+      const w = activePage.value?.widget_tree?.find(x => x.id === ctx.widgetId);
+      if (w) {
+        w.props = { ...w.props, value: formatted, errorMessage: '', showError: false };
+        if (!props.isLivePage) {
+          editorStore.updateWidgetProps(w.id, { value: formatted, errorMessage: '', showError: false });
+        }
+      }
+    }
+  }
+
+  closeDateSelectorSheet();
+}
+
 const countryCodes = ['+62', '+65', '+60', '+1', '+44', '+61', '+81', '+971'];
 
 // WhatsApp / Phone Country Code Bottom Sheet State (Figma Node 276:4722 Token Harmonization)
@@ -4392,6 +4692,13 @@ function isPhoneItem(field: any): boolean {
   if (!field) return false;
   const name = (field.name || '').toLowerCase();
   return field.type === 'tel' || name.includes('whatsapp') || name.includes('wa') || name.includes('phone') || !!field.countryCode;
+}
+
+function isDateItem(field: any): boolean {
+  if (!field) return false;
+  const name = (field.name || '').toLowerCase();
+  const placeholder = (field.placeholder || '').toLowerCase();
+  return field.type === 'date' || name.includes('birth') || name.includes('dob') || name.includes('date') || name.includes('lahir') || placeholder.includes('dd / mm / yyyy');
 }
 
 function toggleFormItemCountryCode(widget: any, field: any) {
