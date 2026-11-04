@@ -820,6 +820,97 @@ export const useEditorStore = defineStore('editor', () => {
     pushHistory();
   }
 
+  const widgetClipboard = ref<WidgetItem | null>(null);
+
+  function copyWidget(id?: string) {
+    const targetId = id || selectedWidgetId.value;
+    if (!targetId) return;
+    for (const page of pages.value) {
+      const found = page.widget_tree.find(w => w.id === targetId);
+      if (found) {
+        widgetClipboard.value = JSON.parse(JSON.stringify(found));
+        showToast(`Copied ${found.type} to clipboard`);
+        return;
+      }
+    }
+  }
+
+  function cutWidget(id?: string) {
+    const targetId = id || selectedWidgetId.value;
+    if (!targetId) return;
+    for (const page of pages.value) {
+      const idx = page.widget_tree.findIndex(w => w.id === targetId);
+      if (idx !== -1) {
+        const found = page.widget_tree[idx];
+        widgetClipboard.value = JSON.parse(JSON.stringify(found));
+        page.widget_tree.splice(idx, 1);
+        if (selectedWidgetId.value === targetId) {
+          selectedWidgetId.value = page.widget_tree[0]?.id || null;
+        }
+        pushHistory();
+        showToast(`Cut ${found.type}`);
+        return;
+      }
+    }
+  }
+
+  function pasteWidget(targetPageIndex?: number) {
+    if (!widgetClipboard.value) {
+      showToast('Clipboard is empty');
+      return;
+    }
+    const pIdx = targetPageIndex ?? activePageIndex.value;
+    const targetPage = pages.value[pIdx];
+    if (!targetPage) return;
+
+    const source = widgetClipboard.value;
+    const check = canAddWidget(source.type);
+    if (!check.allowed) {
+      if (check.reason) showToast(check.reason);
+      return;
+    }
+
+    const newId = `${source.type.toLowerCase()}_${Date.now()}`;
+    const clonedWidget: WidgetItem = {
+      id: newId,
+      type: source.type,
+      props: JSON.parse(JSON.stringify(source.props))
+    };
+    targetPage.widget_tree.push(clonedWidget);
+    activePageIndex.value = pIdx;
+    selectedWidgetId.value = newId;
+    pushHistory();
+    showToast(`Pasted onto Page ${pIdx + 1}`);
+  }
+
+  function moveWidgetToPage(widgetId: string, targetPageIndex: number) {
+    if (targetPageIndex < 0 || targetPageIndex >= pages.value.length) return;
+    let foundWidget: WidgetItem | null = null;
+    let sourcePageIdx = -1;
+
+    for (let i = 0; i < pages.value.length; i++) {
+      const wIdx = pages.value[i].widget_tree.findIndex(w => w.id === widgetId);
+      if (wIdx !== -1) {
+        foundWidget = pages.value[i].widget_tree.splice(wIdx, 1)[0];
+        sourcePageIdx = i;
+        break;
+      }
+    }
+
+    if (!foundWidget) return;
+    if (sourcePageIdx === targetPageIndex) {
+      pages.value[sourcePageIdx].widget_tree.push(foundWidget);
+      return;
+    }
+
+    const targetPage = pages.value[targetPageIndex];
+    targetPage.widget_tree.push(foundWidget);
+    activePageIndex.value = targetPageIndex;
+    selectedWidgetId.value = widgetId;
+    pushHistory();
+    showToast(`Moved to Page ${targetPageIndex + 1}`);
+  }
+
   function updateWidgetProps(id: string, newProps: Record<string, any>) {
     const widget = currentPage.value.widget_tree.find(w => w.id === id);
     if (widget) {
@@ -2102,6 +2193,11 @@ export const useEditorStore = defineStore('editor', () => {
     removeWidget,
     duplicateWidget,
     moveWidget,
+    widgetClipboard,
+    copyWidget,
+    cutWidget,
+    pasteWidget,
+    moveWidgetToPage,
     updateWidgetProps,
     isCurrentPageDynamicFit,
     canAddWidget,

@@ -305,12 +305,103 @@ function handleKeyDown(e: KeyboardEvent) {
   if (e.key === 'Escape' || e.code === 'Escape') {
     editorStore.closeAllSidebars();
     editorStore.selectWidget(null);
+    return;
   }
-  if (e.code === 'Space' && !isInputElement(e.target)) {
+
+  // Never intercept shortcuts while typing in an input / textarea
+  if (isInputElement(e.target)) return;
+
+  if (e.code === 'Space') {
     if (!isSpacePressed.value) {
       isSpacePressed.value = true;
     }
     e.preventDefault();
+    return;
+  }
+
+  const isCmdOrCtrl = e.metaKey || e.ctrlKey;
+  const key = e.key.toLowerCase();
+
+  // 1. History (Undo: Cmd+Z, Redo: Cmd+Shift+Z or Cmd+Y)
+  if (isCmdOrCtrl && key === 'z') {
+    e.preventDefault();
+    if (e.shiftKey) {
+      editorStore.redo();
+    } else {
+      editorStore.undo();
+    }
+    return;
+  }
+  if (isCmdOrCtrl && key === 'y') {
+    e.preventDefault();
+    editorStore.redo();
+    return;
+  }
+
+  // 2. Duplicate selected widget (Cmd+D)
+  if (isCmdOrCtrl && key === 'd') {
+    if (editorStore.selectedWidgetId) {
+      e.preventDefault();
+      editorStore.duplicateWidget(editorStore.selectedWidgetId);
+    }
+    return;
+  }
+
+  // 3. Cut (Cmd+X)
+  if (isCmdOrCtrl && key === 'x') {
+    if (editorStore.selectedWidgetId) {
+      e.preventDefault();
+      editorStore.cutWidget(editorStore.selectedWidgetId);
+    }
+    return;
+  }
+
+  // 4. Copy (Cmd+C)
+  if (isCmdOrCtrl && key === 'c') {
+    if (editorStore.selectedWidgetId) {
+      e.preventDefault();
+      editorStore.copyWidget(editorStore.selectedWidgetId);
+    }
+    return;
+  }
+
+  // 5. Paste (Cmd+V)
+  if (isCmdOrCtrl && key === 'v') {
+    if (editorStore.widgetClipboard) {
+      e.preventDefault();
+      editorStore.pasteWidget();
+    }
+    return;
+  }
+
+  // 6. Delete / Backspace (Delete widget if selected; else delete page if pages > 1 and not ticket)
+  if (e.key === 'Backspace' || e.key === 'Delete') {
+    if (editorStore.selectedWidgetId) {
+      e.preventDefault();
+      editorStore.removeWidget(editorStore.selectedWidgetId);
+    } else if (editorStore.pages.length > 1 && editorStore.activePageIndex >= 0) {
+      const pIdx = editorStore.activePageIndex;
+      if (editorStore.pages[pIdx]?.kind !== 'ticket') {
+        e.preventDefault();
+        editorStore.removePage(pIdx);
+        editorStore.showToast(`Page ${pIdx + 1} removed.`);
+      }
+    }
+    return;
+  }
+
+  // 7. Reorder Stack (Alt+ArrowUp / Alt+ArrowDown)
+  if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+    if (editorStore.selectedWidgetId) {
+      e.preventDefault();
+      const currentWidgets = editorStore.currentPage.widget_tree;
+      const curIdx = currentWidgets.findIndex(w => w.id === editorStore.selectedWidgetId);
+      if (curIdx !== -1) {
+        const targetIdx = e.key === 'ArrowUp' ? curIdx - 1 : curIdx + 1;
+        editorStore.moveWidget(curIdx, targetIdx);
+      }
+    }
+    return;
   }
 }
 

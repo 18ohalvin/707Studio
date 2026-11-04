@@ -626,7 +626,37 @@
                     <Copy class="w-3.5 h-3.5" />
                   </button>
 
-                  <!-- Button 3: Remove -->
+                  <!-- Button 3: Move to Page -->
+                  <div class="relative">
+                    <button 
+                      @click.stop="toggleMoveMenu(widget.id)"
+                      class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer hover:bg-black/10"
+                      title="Move to Page"
+                    >
+                      <ArrowRightLeft class="w-3.5 h-3.5" />
+                    </button>
+
+                    <div 
+                      v-if="moveMenuWidgetId === widget.id" 
+                      class="absolute top-full right-0 mt-1 min-w-[160px] bg-white border border-black/10 rounded-[10px] shadow-xl p-1 z-50 animate-in fade-in zoom-in-95 duration-100 flex flex-col gap-0.5"
+                      @click.stop
+                    >
+                      <div class="px-2 py-1 text-[9.5px] uppercase font-mono text-neutral-400 font-medium border-b border-black/5">Move to Page</div>
+                      <button 
+                        v-for="(p, pIdx) in editorStore.pages" 
+                        :key="p.id"
+                        :disabled="pIdx === pageIndex"
+                        @click.stop="editorStore.moveWidgetToPage(widget.id, pIdx); moveMenuWidgetId = null"
+                        class="w-full text-left px-2 py-1.5 rounded-[6px] text-[11px] font-sans font-medium flex items-center justify-between transition-colors"
+                        :class="pIdx === pageIndex ? 'opacity-40 cursor-not-allowed text-neutral-400 bg-neutral-50' : 'hover:bg-black/5 text-neutral-800 cursor-pointer'"
+                      >
+                        <span class="truncate">Page {{ pIdx + 1 }}: {{ p.page_name || 'Untitled' }}</span>
+                        <Check v-if="pIdx === pageIndex" class="w-3 h-3 text-neutral-400 shrink-0" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Button 4: Remove -->
                   <button 
                     @click.stop="editorStore.removeWidget(widget.id)"
                     class="apple-glass-icon-btn size-[24px] hover:text-red-600 flex items-center justify-center rounded-[6px] text-black cursor-pointer hover:bg-red-50"
@@ -820,7 +850,37 @@
                   <Copy class="w-3.5 h-3.5" />
                 </button>
 
-                <!-- Icon 3: Remove -->
+                <!-- Icon 3: Move to Page -->
+                <div class="relative">
+                  <button 
+                    @click.stop="toggleMoveMenu(widget.id)"
+                    class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer hover:bg-black/10"
+                    title="Move to Page"
+                  >
+                    <ArrowRightLeft class="w-3.5 h-3.5" />
+                  </button>
+
+                  <div 
+                    v-if="moveMenuWidgetId === widget.id" 
+                    class="absolute top-full right-0 mt-1 min-w-[160px] bg-white border border-black/10 rounded-[10px] shadow-xl p-1 z-50 animate-in fade-in zoom-in-95 duration-100 flex flex-col gap-0.5"
+                    @click.stop
+                  >
+                    <div class="px-2 py-1 text-[9.5px] uppercase font-mono text-neutral-400 font-medium border-b border-black/5">Move to Page</div>
+                    <button 
+                      v-for="(p, pIdx) in editorStore.pages" 
+                      :key="p.id"
+                      :disabled="pIdx === pageIndex"
+                      @click.stop="editorStore.moveWidgetToPage(widget.id, pIdx); moveMenuWidgetId = null"
+                      class="w-full text-left px-2 py-1.5 rounded-[6px] text-[11px] font-sans font-medium flex items-center justify-between transition-colors"
+                      :class="pIdx === pageIndex ? 'opacity-40 cursor-not-allowed text-neutral-400 bg-neutral-50' : 'hover:bg-black/5 text-neutral-800 cursor-pointer'"
+                    >
+                      <span class="truncate">Page {{ pIdx + 1 }}: {{ p.page_name || 'Untitled' }}</span>
+                      <Check v-if="pIdx === pageIndex" class="w-3 h-3 text-neutral-400 shrink-0" />
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Icon 4: Remove -->
                 <button 
                   @click.stop="editorStore.removeWidget(widget.id)"
                   class="apple-glass-icon-btn size-[24px] hover:text-red-600 flex items-center justify-center rounded-[6px] text-black cursor-pointer hover:bg-red-50"
@@ -985,7 +1045,37 @@
                     <Copy class="w-3.5 h-3.5" />
                   </button>
 
-                  <!-- Button 3: Remove -->
+                  <!-- Button 3: Move to Page -->
+                  <div class="relative">
+                    <button 
+                      @click.stop="toggleMoveMenu(widget.id)"
+                      class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black hover:bg-black/10 cursor-pointer"
+                      title="Move to Page"
+                    >
+                      <ArrowRightLeft class="w-3.5 h-3.5" />
+                    </button>
+
+                    <div 
+                      v-if="moveMenuWidgetId === widget.id" 
+                      class="absolute top-full right-0 mt-1 min-w-[160px] bg-white border border-black/10 rounded-[10px] shadow-xl p-1 z-50 animate-in fade-in zoom-in-95 duration-100 flex flex-col gap-0.5"
+                      @click.stop
+                    >
+                      <div class="px-2 py-1 text-[9.5px] uppercase font-mono text-neutral-400 font-medium border-b border-black/5">Move to Page</div>
+                      <button 
+                        v-for="(p, pIdx) in editorStore.pages" 
+                        :key="p.id"
+                        :disabled="pIdx === pageIndex"
+                        @click.stop="editorStore.moveWidgetToPage(widget.id, pIdx); moveMenuWidgetId = null"
+                        class="w-full text-left px-2 py-1.5 rounded-[6px] text-[11px] font-sans font-medium flex items-center justify-between transition-colors"
+                        :class="pIdx === pageIndex ? 'opacity-40 cursor-not-allowed text-neutral-400 bg-neutral-50' : 'hover:bg-black/5 text-neutral-800 cursor-pointer'"
+                      >
+                        <span class="truncate">Page {{ pIdx + 1 }}: {{ p.page_name || 'Untitled' }}</span>
+                        <Check v-if="pIdx === pageIndex" class="w-3 h-3 text-neutral-400 shrink-0" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Button 4: Remove -->
                   <button 
                     @click.stop="editorStore.removeWidget(widget.id)"
                     class="apple-glass-icon-btn size-[24px] hover:text-red-600 flex items-center justify-center rounded-[6px] text-black hover:bg-red-50 cursor-pointer"
@@ -1048,7 +1138,37 @@
                   <Copy class="w-3.5 h-3.5" />
                 </button>
 
-                <!-- Button 3: Remove -->
+                <!-- Button 3: Move to Page -->
+                <div class="relative">
+                  <button 
+                    @click.stop="toggleMoveMenu(widget.id)"
+                    class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black hover:bg-black/10 cursor-pointer"
+                    title="Move to Page"
+                  >
+                    <ArrowRightLeft class="w-3.5 h-3.5" />
+                  </button>
+
+                  <div 
+                    v-if="moveMenuWidgetId === widget.id" 
+                    class="absolute top-full right-0 mt-1 min-w-[160px] bg-white border border-black/10 rounded-[10px] shadow-xl p-1 z-50 animate-in fade-in zoom-in-95 duration-100 flex flex-col gap-0.5"
+                    @click.stop
+                  >
+                    <div class="px-2 py-1 text-[9.5px] uppercase font-mono text-neutral-400 font-medium border-b border-black/5">Move to Page</div>
+                    <button 
+                      v-for="(p, pIdx) in editorStore.pages" 
+                      :key="p.id"
+                      :disabled="pIdx === pageIndex"
+                      @click.stop="editorStore.moveWidgetToPage(widget.id, pIdx); moveMenuWidgetId = null"
+                      class="w-full text-left px-2 py-1.5 rounded-[6px] text-[11px] font-sans font-medium flex items-center justify-between transition-colors"
+                      :class="pIdx === pageIndex ? 'opacity-40 cursor-not-allowed text-neutral-400 bg-neutral-50' : 'hover:bg-black/5 text-neutral-800 cursor-pointer'"
+                    >
+                      <span class="truncate">Page {{ pIdx + 1 }}: {{ p.page_name || 'Untitled' }}</span>
+                      <Check v-if="pIdx === pageIndex" class="w-3 h-3 text-neutral-400 shrink-0" />
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Button 4: Remove -->
                 <button 
                   @click.stop="editorStore.removeWidget(widget.id)"
                   class="apple-glass-icon-btn size-[24px] hover:text-red-600 flex items-center justify-center rounded-[6px] text-black hover:bg-red-50 cursor-pointer"
@@ -1432,7 +1552,37 @@ more</span>
                   <Copy class="w-3.5 h-3.5" />
                 </button>
 
-                <!-- Button 3: Remove -->
+                <!-- Button 3: Move to Page -->
+                <div class="relative">
+                  <button 
+                    @click.stop="toggleMoveMenu(widget.id)"
+                    class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black hover:bg-black/10 cursor-pointer"
+                    title="Move to Page"
+                  >
+                    <ArrowRightLeft class="w-3.5 h-3.5" />
+                  </button>
+
+                  <div 
+                    v-if="moveMenuWidgetId === widget.id" 
+                    class="absolute top-full right-0 mt-1 min-w-[160px] bg-white border border-black/10 rounded-[10px] shadow-xl p-1 z-50 animate-in fade-in zoom-in-95 duration-100 flex flex-col gap-0.5"
+                    @click.stop
+                  >
+                    <div class="px-2 py-1 text-[9.5px] uppercase font-mono text-neutral-400 font-medium border-b border-black/5">Move to Page</div>
+                    <button 
+                      v-for="(p, pIdx) in editorStore.pages" 
+                      :key="p.id"
+                      :disabled="pIdx === pageIndex"
+                      @click.stop="editorStore.moveWidgetToPage(widget.id, pIdx); moveMenuWidgetId = null"
+                      class="w-full text-left px-2 py-1.5 rounded-[6px] text-[11px] font-sans font-medium flex items-center justify-between transition-colors"
+                      :class="pIdx === pageIndex ? 'opacity-40 cursor-not-allowed text-neutral-400 bg-neutral-50' : 'hover:bg-black/5 text-neutral-800 cursor-pointer'"
+                    >
+                      <span class="truncate">Page {{ pIdx + 1 }}: {{ p.page_name || 'Untitled' }}</span>
+                      <Check v-if="pIdx === pageIndex" class="w-3 h-3 text-neutral-400 shrink-0" />
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Button 4: Remove -->
                 <button 
                   @click.stop="editorStore.removeWidget(widget.id)"
                   class="apple-glass-icon-btn size-[24px] hover:text-red-600 flex items-center justify-center rounded-[6px] text-black hover:bg-red-50 cursor-pointer"
@@ -2213,7 +2363,8 @@ import {
   Image as ImageIcon,
   Crop,
   Move,
-  ZoomIn
+  ZoomIn,
+  ArrowRightLeft
 } from 'lucide-vue-next';
 import { fetchPublicQueueNow } from '../hub/hubUtils.ts';
 import { uploadMediaDirectly } from '../../services/mediaService.ts';
@@ -2240,6 +2391,10 @@ const emit = defineEmits<{
 }>();
 
 const editorStore = useEditorStore();
+const moveMenuWidgetId = ref<string | null>(null);
+function toggleMoveMenu(widgetId: string) {
+  moveMenuWidgetId.value = moveMenuWidgetId.value === widgetId ? null : widgetId;
+}
 
 // Real pass state on a published page (provided by PublicDropView); absent in the editor.
 const livePass = inject(LIVE_PASS_KEY, null);
@@ -2656,6 +2811,7 @@ onMounted(() => {
 
 function handleArtboardClick() {
   if (wasDraggingRecently.value) return;
+  moveMenuWidgetId.value = null;
   handleSelectThisPage();
   editorStore.selectWidget(null);
   editorStore.closeAllSidebars();
@@ -3539,11 +3695,11 @@ function getWidgetMarginTopClass(index: number) {
     if (currentWidget?.type === 'GuestEPass' || currentWidget?.type === 'LiveQueuePass') {
       return 'mt-[8px]';
     }
-    // If text widget, MultipleChoice, FieldInput, or RegistrationForm is the first top widget, apply exclusive 24px top margin for clean breathing room from header
+    // If text widget, MultipleChoice, FieldInput, or RegistrationForm is the first top widget, apply 24px top margin for breathing room from header
     if (currentWidget?.type === 'TextBanner' || currentWidget?.type === 'MultipleChoice' || currentWidget?.type === 'FieldInput' || currentWidget?.type === 'RegistrationForm') {
       return 'mt-[24px]';
     }
-    // If action button is the first top widget, top padding follows applied bottom padding (48px or 16px)
+    // If action button is the first top widget
     if (currentWidget?.type === 'ActionButton') {
       if (isHeroWithButtonOnly.value) return 'mt-[16px]';
       if (isLastWidgetButton.value) return 'mt-[48px]';
@@ -3553,78 +3709,33 @@ function getWidgetMarginTopClass(index: number) {
   }
   const prevWidget = tree[index - 1];
 
-  // 1. If hero banner meets another hero banner (Hero meets Hero), 0px spacing between them
+  // 1. If hero banner meets another hero banner (Hero meets Hero in vertical carousel), 0px spacing
   if (currentWidget?.type === 'HeroDrop' && prevWidget?.type === 'HeroDrop') {
     return 'mt-0';
   }
 
-  // 2. If ActionButton meets HeroDrop: top padding exactly follows applied bottom padding (48px when last, 16px in dynamic fit)
-  if (currentWidget?.type === 'ActionButton' && prevWidget?.type === 'HeroDrop') {
-    if (isHeroWithButtonOnly.value) return 'mt-[16px]';
-    if (isLastWidgetButton.value) return 'mt-[48px]';
-    return 'mt-[16px]';
-  }
-  if (currentWidget?.type === 'HeroDrop' && prevWidget?.type === 'ActionButton') {
-    return 'mt-0';
-  }
-
-  // 3. If text widget is the top widget (index 0) and followed by form input, banner, or any other widget: exclusive 24px bottom spacing
-  if (index === 1 && prevWidget?.type === 'TextBanner' && currentWidget?.type !== 'TextBanner') {
-    if (currentWidget?.type === 'ActionButton') {
-      if (isHeroWithButtonOnly.value) return 'mt-[16px]';
-      if (isLastWidgetButton.value) return 'mt-[48px]';
-    }
-    if (currentWidget?.type === 'FieldInput') {
-      return 'mt-[12px]';
-    }
-    return 'mt-[24px]';
-  }
-
-  // 4. If text widget meets another text widget (Text meets Text), 8px spacing matching widget headers
+  // 2. If text widget meets another text widget (Title meets Subtitle), 8px tight typographic spacing
   if (currentWidget?.type === 'TextBanner' && prevWidget?.type === 'TextBanner') {
     return 'mt-[8px]';
   }
 
-  // 5. If text widget is followed by FieldInput, RegistrationForm, MultipleChoice, or Banner anywhere in stack: 24px spacing (or 12px for FieldInput with floating label)
-  if (prevWidget?.type === 'TextBanner' && (currentWidget?.type === 'FieldInput' || currentWidget?.type === 'RegistrationForm' || currentWidget?.type === 'MultipleChoice' || currentWidget?.type === 'HeroDrop')) {
-    if (currentWidget?.type === 'FieldInput') {
-      return 'mt-[12px]';
-    }
-    return 'mt-[24px]';
-  }
-
-  // If ActionButton follows TextBanner
-  if (currentWidget?.type === 'ActionButton' && prevWidget?.type === 'TextBanner') {
-    if (isHeroWithButtonOnly.value) return 'mt-[16px]';
-    if (isLastWidgetButton.value) return 'mt-[48px]';
-    return 'mt-[24px]';
-  }
-
-  // 6. If FieldInput meets another FieldInput, 12px spacing between them
-  if (currentWidget?.type === 'FieldInput' && prevWidget?.type === 'FieldInput') {
-    return 'mt-[12px]';
-  }
-
-  // 6b. If MultipleChoice or RegistrationForm meets FieldInput, MultipleChoice, or RegistrationForm: 12px spacing
-  if ((currentWidget?.type === 'MultipleChoice' || currentWidget?.type === 'RegistrationForm') && 
-      (prevWidget?.type === 'FieldInput' || prevWidget?.type === 'MultipleChoice' || prevWidget?.type === 'RegistrationForm')) {
-    return 'mt-[12px]';
-  }
-
-  // 7. If ActionButton meets another ActionButton, 8px spacing between them
+  // 3. If ActionButton meets another ActionButton (Stacked button group), 12px spacing
   if (currentWidget?.type === 'ActionButton' && prevWidget?.type === 'ActionButton') {
-    return 'mt-[8px]';
+    return 'mt-[12px]';
   }
 
-  // 8. If ActionButton follows any other widget (FieldInput, MultipleChoice, etc.), top padding follows applied bottom padding
-  if (currentWidget?.type === 'ActionButton') {
-    if (isHeroWithButtonOnly.value) return 'mt-[16px]';
-    if (isLastWidgetButton.value) return 'mt-[48px]';
+  // 4. If single FieldInput meets another FieldInput, 16px spacing
+  if (currentWidget?.type === 'FieldInput' && prevWidget?.type === 'FieldInput') {
     return 'mt-[16px]';
   }
 
-  // 9. Default spacing between different widget types
-  return 'mt-[16px]';
+  // 5. Special Hero + Button tight fit if configured
+  if (isHeroWithButtonOnly.value && currentWidget?.type === 'ActionButton' && prevWidget?.type === 'HeroDrop') {
+    return 'mt-[16px]';
+  }
+
+  // 6. Default standard editorial gap between any distinct widgets on a single page: 48px
+  return 'mt-[48px]';
 }
 
 function handleMultipleChoiceContainerClick(widget: any) {
