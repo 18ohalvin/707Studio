@@ -1,9 +1,10 @@
 <template>
   <div class="h-screen w-screen overflow-hidden flex flex-col justify-between bg-[#f5f5f5] text-black font-sans relative select-none hub-root" data-name="707 Dev Portal">
     
-    <!-- 1. Main Header strictly matching user mode tokens -->
+    <!-- 1. Main Header strictly matching user mode tokens with subroute indicator -->
     <header 
-      class="absolute top-0 left-0 right-0 w-full h-[48px] px-[24px] py-[8px] flex items-center justify-between z-40 bg-transparent shrink-0"
+      class="absolute top-0 left-0 right-0 w-full h-[48px] px-[24px] py-[8px] flex items-center justify-between z-40 transition-colors shrink-0"
+      :class="currentTab ? 'bg-[#f5f5f5]/90 backdrop-blur-md border-b border-black/[0.06]' : 'bg-transparent border-b-transparent'"
       data-name="Header"
     >
       <!-- Left: 707 Logo + Dev Badge only (No studio governance text) -->
@@ -18,6 +19,52 @@
         <span class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-black/[0.04] border border-black/10 text-[10px] font-mono font-medium text-neutral-600 leading-none whitespace-nowrap select-none">
           Dev
         </span>
+
+        <!-- Return to Dev Home Breadcrumb Button (when inside subroute) -->
+        <template v-if="currentTab">
+          <span class="text-neutral-300">/</span>
+          <router-link 
+            to="/dev" 
+            class="inline-flex items-center gap-1 text-[11px] font-mono text-neutral-500 hover:text-black transition-colors px-1.5 py-0.5 rounded hover:bg-black/5"
+            title="Return to Dev Home (ESC)"
+          >
+            <ChevronLeft class="w-3.5 h-3.5 stroke-[2]" />
+            <span>Home</span>
+          </router-link>
+        </template>
+      </div>
+
+      <!-- Center Segmented Switcher (Visible when inside a subroute) -->
+      <div v-if="currentTab" class="hidden sm:flex items-center gap-1 p-0.5 bg-black/[0.04] border border-black/[0.08] rounded-[8px]">
+        <button 
+          @click="router.push('/dev/review')" 
+          :class="currentTab === 'review' ? 'bg-white text-black shadow-xs font-medium' : 'text-neutral-500 hover:text-black'"
+          class="px-2.5 py-1 rounded-[6px] text-[11.5px] font-707 transition-all flex items-center gap-1.5 cursor-pointer border-none bg-transparent"
+        >
+          <span>Review Gate</span>
+          <span v-if="pendingProjects.length > 0" class="size-1.5 rounded-full bg-amber-500" />
+        </button>
+        <button 
+          @click="router.push('/dev/brands')" 
+          :class="currentTab === 'brands' ? 'bg-white text-black shadow-xs font-medium' : 'text-neutral-500 hover:text-black'"
+          class="px-2.5 py-1 rounded-[6px] text-[11.5px] font-707 transition-all cursor-pointer border-none bg-transparent"
+        >
+          Brand Houses
+        </button>
+        <button 
+          @click="router.push('/dev/foundry')" 
+          :class="currentTab === 'foundry' ? 'bg-white text-black shadow-xs font-medium' : 'text-neutral-500 hover:text-black'"
+          class="px-2.5 py-1 rounded-[6px] text-[11.5px] font-707 transition-all cursor-pointer border-none bg-transparent"
+        >
+          Foundry
+        </button>
+        <button 
+          @click="router.push('/dev/roster')" 
+          :class="currentTab === 'roster' ? 'bg-white text-black shadow-xs font-medium' : 'text-neutral-500 hover:text-black'"
+          class="px-2.5 py-1 rounded-[6px] text-[11.5px] font-707 transition-all cursor-pointer border-none bg-transparent"
+        >
+          Team Roster
+        </button>
       </div>
 
       <!-- Right: Notifications & Profile Icon (Matching user mode) -->
@@ -53,18 +100,19 @@
       </div>
     </header>
 
-    <!-- 2. Centered Main Content Hub (Matching LandingPageView.vue 50vh composition) -->
+    <!-- 2. Centered Main Content Hub (Shown when on /dev home) -->
     <main 
+      v-if="!currentTab"
       class="relative flex-1 w-full h-full overflow-hidden flex flex-col items-center select-none"
       data-name="Main Content Container"
     >
       <!-- Grouped Headline + Categories Shortcut Section: Centered at 50vh -->
-      <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-full max-w-[664px] px-4 pointer-events-auto">
+      <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-full max-w-[800px] px-4 pointer-events-auto">
         <section class="flex flex-col items-center gap-[28px] md:gap-[32px] w-full shrink-0" data-name="Intro Container">
           
-          <!-- Editorial Dev Headline -->
-          <h1 class="font-707 text-[28px] md:text-[30px] font-normal text-black text-center tracking-[-0.56px] leading-[34px] whitespace-nowrap">
-            Studio Governance.
+          <!-- Smart Dynamic Editorial Dev Headline -->
+          <h1 class="font-707 text-[28px] md:text-[30px] font-normal text-black text-center tracking-[-0.56px] leading-[36px] max-w-[780px] [text-wrap:balance] transition-all duration-300">
+            {{ adaptiveDevGreeting }}
           </h1>
 
           <!-- 4 Aligned Icons Container (Exact user mode gap & button tokens) -->
@@ -74,7 +122,7 @@
             <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-name="Button Container">
               <div class="relative size-[88px]">
                 <button 
-                  @click="openDrawer('review')"
+                  @click="router.push('/dev/review')"
                   class="category-menu-btn apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] flex items-center justify-center p-[8px] rounded-[8px] size-full apple-press cursor-pointer transition-all duration-200 group"
                   title="Review Gate: Pending Drop Submissions"
                 >
@@ -99,7 +147,7 @@
             <!-- 2. Brand Houses -->
             <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-name="Button Container">
               <button 
-                @click="openDrawer('brands')"
+                @click="router.push('/dev/brands')"
                 class="category-menu-btn apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group"
                 title="Brand Houses Directory"
               >
@@ -115,7 +163,7 @@
             <!-- 3. Foundry Blueprints -->
             <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-name="Button Container">
               <button 
-                @click="openDrawer('foundry')"
+                @click="router.push('/dev/foundry')"
                 class="category-menu-btn apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group"
                 title="Master Blueprints & Presets"
               >
@@ -131,7 +179,7 @@
             <!-- 4. Team Roster -->
             <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-name="Button Container">
               <button 
-                @click="openDrawer('roster')"
+                @click="router.push('/dev/roster')"
                 class="category-menu-btn apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group"
                 title="Team Access & Roster"
               >
@@ -149,331 +197,411 @@
       </div>
     </main>
 
-    <!-- ======================================================== -->
-    <!-- SLIDE-OVER FOCUSED DIVISION DRAWERS                      -->
-    <!-- ======================================================== -->
-    <Teleport to="body">
-      <Transition name="hub-fade">
-        <div 
-          v-if="activeDrawer" 
-          class="fixed inset-0 z-50 bg-black/30 backdrop-blur-xs flex justify-end font-sans font-light select-none"
-          @click.self="activeDrawer = null"
-        >
-          <div class="w-full max-w-[620px] h-full bg-white shadow-2xl flex flex-col justify-between border-l border-black/10 animate-slide-left overflow-hidden">
-            
-            <!-- Drawer Header -->
-            <div class="px-6 py-4 border-b border-black/10 flex items-center justify-between bg-white/90 backdrop-blur-md shrink-0">
-              <div class="flex items-center gap-2.5">
-                <span class="size-2 rounded-full bg-black" />
-                <h2 class="text-[16px] font-medium text-black">
-                  {{ drawerTitle }}
-                </h2>
+    <!-- 3. Full-Page Sub-Route Workspaces (Option 2: Dedicated Full Viewports) -->
+    <main 
+      v-else
+      class="relative flex-1 w-full h-full pt-[64px] pb-[32px] overflow-y-auto select-none"
+      data-name="Subroute Workspace Container"
+    >
+      <div class="w-full max-w-[1240px] mx-auto px-6 flex flex-col gap-6">
+        
+        <!-- Header Banner & Action Bar -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-black/[0.08]">
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center gap-2">
+              <span class="size-2 rounded-full bg-black" />
+              <h2 class="text-[22px] font-medium text-black font-707 tracking-tight">
+                {{ subrouteMeta.title }}
+              </h2>
+              <span 
+                v-if="subrouteMeta.count !== undefined" 
+                class="px-2 py-0.5 rounded-[5px] bg-black/[0.06] text-[11px] font-mono text-neutral-600 font-medium"
+              >
+                {{ subrouteMeta.count }}
+              </span>
+            </div>
+            <p class="text-[13px] text-neutral-500 font-light">
+              {{ subrouteMeta.description }}
+            </p>
+          </div>
+
+          <!-- Quick Actions on Header -->
+          <div class="flex items-center gap-2.5">
+            <button 
+              v-if="currentTab === 'brands'"
+              type="button" 
+              @click="showAddBrandModal = true" 
+              class="h-[32px] px-3.5 rounded-[8px] bg-black text-white hover:bg-neutral-800 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs"
+            >
+              <Plus class="w-3.5 h-3.5" />
+              <span>New Brand House</span>
+            </button>
+
+            <button 
+              v-if="currentTab === 'foundry'"
+              type="button" 
+              @click="openBuildTemplateModal" 
+              class="h-[32px] px-3.5 rounded-[8px] bg-black text-white hover:bg-neutral-800 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs"
+            >
+              <Plus class="w-3.5 h-3.5" />
+              <span>New Blueprint</span>
+            </button>
+
+            <button 
+              v-if="currentTab === 'roster'"
+              type="button" 
+              @click="showAddUserModal = true" 
+              class="h-[32px] px-3.5 rounded-[8px] bg-black text-white hover:bg-neutral-800 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs"
+            >
+              <Plus class="w-3.5 h-3.5" />
+              <span>Invite Member</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- SUBROUTE 1: REVIEW GATE -->
+        <div v-if="currentTab === 'review'" class="flex flex-col gap-6">
+          <div v-if="pendingProjects.length === 0" class="py-20 text-center flex flex-col items-center justify-center gap-3 bg-white rounded-[16px] border border-black/10 shadow-xs">
+            <div class="size-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <CheckCircle2 class="size-6 stroke-[1.6]" />
+            </div>
+            <div class="flex flex-col gap-1 items-center">
+              <h3 class="text-[17px] font-medium text-black">All runway releases are signed off</h3>
+              <p class="text-[13px] font-mono text-neutral-400 max-w-[420px]">
+                No drops currently awaiting sign-off. Newly submitted brand activations will appear here immediately.
+              </p>
+            </div>
+          </div>
+
+          <div v-else class="grid grid-cols-1 gap-4">
+            <div 
+              v-for="p in pendingProjects" 
+              :key="p.id"
+              class="p-6 bg-white rounded-[16px] border border-black/10 shadow-xs hover:shadow-md transition-shadow flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+            >
+              <div class="flex flex-col gap-2 min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-black text-white font-medium">
+                    {{ p.brand_slug || 'atmos' }}
+                  </span>
+                  <span class="text-[10.5px] font-mono text-amber-900 bg-amber-50 border border-amber-300 px-2 py-0.5 rounded">
+                    {{ p.pending_update_at ? 'Live Update Sign-Off' : 'New Drop Release' }}
+                  </span>
+                  <span class="text-[11px] font-mono text-neutral-400">
+                    Submitted {{ formatDate(p.pending_update_at || p.updated_at) }}
+                  </span>
+                </div>
+
+                <h3 class="text-[20px] font-medium text-black truncate">{{ p.title }}</h3>
+                
+                <span class="text-[12px] font-mono text-neutral-500">
+                  Public Destination: <code class="px-1.5 py-0.5 rounded bg-black/[0.04]">/{{ p.brand_slug || 'atmos' }}/{{ p.slug }}</code>
+                </span>
               </div>
 
-              <div class="flex items-center gap-2">
-                <!-- Action button inside header depending on drawer -->
-                <button 
-                  v-if="activeDrawer === 'brands'"
-                  type="button" 
-                  @click="showAddBrandModal = true" 
-                  class="h-[30px] px-3 rounded-[6px] bg-black text-white hover:bg-neutral-800 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1"
+              <div class="flex items-center gap-2.5 shrink-0">
+                <button
+                  type="button"
+                  @click="handleInspectProject(p)"
+                  class="h-[36px] px-4 rounded-[8px] border border-black/15 bg-white hover:bg-neutral-50 text-[11.5px] font-mono uppercase tracking-wider text-black transition-colors cursor-pointer flex items-center gap-1.5"
                 >
-                  <Plus class="w-3 h-3" />
-                  <span>New House</span>
+                  <ExternalLink class="w-3.5 h-3.5" />
+                  <span>Inspect Drop</span>
                 </button>
-
-                <button 
-                  v-if="activeDrawer === 'foundry'"
-                  type="button" 
-                  @click="openBuildTemplateModal" 
-                  class="h-[30px] px-3 rounded-[6px] bg-black text-white hover:bg-neutral-800 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1"
+                <button
+                  type="button"
+                  @click="handleDeclineProject(p.id)"
+                  class="h-[36px] px-4 rounded-[8px] border border-black/15 bg-white hover:bg-red-50 text-[11.5px] font-mono uppercase tracking-wider text-neutral-600 hover:text-red-600 transition-colors cursor-pointer"
                 >
-                  <Plus class="w-3 h-3" />
-                  <span>New Blueprint</span>
+                  Request Changes
                 </button>
-
-                <button 
-                  v-if="activeDrawer === 'roster'"
-                  type="button" 
-                  @click="showAddUserModal = true" 
-                  class="h-[30px] px-3 rounded-[6px] bg-black text-white hover:bg-neutral-800 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1"
+                <button
+                  type="button"
+                  @click="handleApproveProject(p.id)"
+                  class="h-[36px] px-5 rounded-[8px] bg-black text-white hover:bg-neutral-800 text-[11.5px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 shadow-xs"
                 >
-                  <Plus class="w-3 h-3" />
-                  <span>Invite</span>
-                </button>
-
-                <button 
-                  type="button" 
-                  @click="activeDrawer = null" 
-                  class="size-8 rounded-[6px] hover:bg-black/5 flex items-center justify-center text-neutral-500 hover:text-black transition-colors cursor-pointer border-none bg-transparent"
-                  title="Close (ESC)"
-                >
-                  <X class="w-4 h-4" />
+                  <CheckCircle2 class="w-3.5 h-3.5" />
+                  <span>Approve Live</span>
                 </button>
               </div>
             </div>
+          </div>
+        </div>
 
-            <!-- Drawer Body -->
-            <div class="flex-1 overflow-y-auto px-6 py-6 flex flex-col gap-6">
-              
-              <!-- DRAWER 1: REVIEW GATE -->
-              <div v-if="activeDrawer === 'review'" class="flex flex-col gap-5">
-                <div v-if="pendingProjects.length === 0" class="py-16 text-center flex flex-col items-center justify-center gap-2">
-                  <CheckCircle2 class="size-8 text-neutral-300 stroke-[1.2]" />
-                  <span class="text-[14px] font-normal text-neutral-700">All runway releases are signed off</span>
-                  <span class="text-[12px] font-mono text-neutral-400">Newly submitted drops will appear here immediately for approval.</span>
+        <!-- SUBROUTE 2: BRAND HOUSES -->
+        <div v-if="currentTab === 'brands'" class="flex flex-col gap-6">
+          <div class="flex items-center justify-between gap-4">
+            <div class="relative w-full max-w-[340px]">
+              <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-neutral-400" />
+              <input 
+                v-model="brandSearchQuery"
+                type="text" 
+                placeholder="Filter brand houses..." 
+                class="w-full h-[36px] pl-9 pr-3 rounded-[8px] border border-black/10 bg-white text-[13px] placeholder:text-neutral-400 focus:outline-none focus:border-black/30 transition-colors font-mono"
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div 
+              v-for="brand in filteredBrands" 
+              :key="brand.id"
+              class="bg-white rounded-[16px] border border-black/10 p-5 flex flex-col justify-between gap-5 shadow-xs hover:shadow-md transition-shadow"
+            >
+              <div class="flex flex-col gap-3.5">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="size-10 rounded-[10px] bg-black text-white flex items-center justify-center font-707 text-[14px] font-semibold uppercase tracking-tight">
+                      {{ brand.name.slice(0, 2) }}
+                    </div>
+                    <div class="flex flex-col">
+                      <h3 class="text-[17px] font-medium text-black leading-tight">{{ brand.name }}</h3>
+                      <span class="text-[11.5px] font-mono text-neutral-400">/{{ brand.slug }}</span>
+                    </div>
+                  </div>
+                  
+                  <span class="px-2 py-0.5 rounded-[5px] bg-black/[0.04] text-[11px] font-mono text-neutral-600 font-medium">
+                    {{ getBrandDropCount(brand) }} {{ getBrandDropCount(brand) === 1 ? 'Drop' : 'Drops' }}
+                  </span>
                 </div>
 
-                <div v-else class="flex flex-col divide-y divide-black/[0.08]">
-                  <div 
-                    v-for="p in pendingProjects" 
-                    :key="p.id"
-                    class="py-4 flex flex-col gap-3"
+                <div class="flex items-center flex-wrap gap-1.5 text-[11px] font-mono">
+                  <span class="text-neutral-400">Team:</span>
+                  <span 
+                    v-for="pic in getBrandPics(brand)" 
+                    :key="pic.id" 
+                    class="px-2 py-0.5 rounded bg-black/[0.04] text-neutral-700"
                   >
-                    <div class="flex items-center justify-between">
-                      <span class="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-black text-white font-medium">
-                        {{ p.brand_slug || 'atmos' }}
-                      </span>
-                      <span class="text-[10.5px] font-mono text-amber-900 bg-amber-50 border border-amber-300 px-1.5 py-0.2 rounded">
-                        {{ p.pending_update_at ? 'Live Update' : 'New Drop' }}
-                      </span>
-                    </div>
+                    {{ pic.name }}
+                  </span>
+                  <span v-if="getBrandPics(brand).length === 0" class="text-neutral-400 italic">None assigned</span>
+                </div>
 
-                    <div class="flex flex-col gap-0.5">
-                      <h3 class="text-[16px] font-medium text-black">{{ p.title }}</h3>
-                      <span class="text-[11.5px] font-mono text-neutral-400">
-                        Submitted {{ formatDate(p.pending_update_at || p.updated_at) }} · /{{ p.brand_slug }}/{{ p.slug }}
-                      </span>
-                    </div>
-
-                    <div class="flex items-center gap-2 pt-1">
-                      <button
-                        type="button"
-                        @click="handleInspectProject(p)"
-                        class="h-[30px] px-3 rounded-[6px] border border-black/15 bg-white hover:bg-neutral-50 text-[11px] font-mono uppercase tracking-wider text-black transition-colors cursor-pointer"
-                      >
-                        Inspect
-                      </button>
-                      <button
-                        type="button"
-                        @click="handleDeclineProject(p.id)"
-                        class="h-[30px] px-3 rounded-[6px] border border-black/15 bg-white hover:bg-neutral-50 text-[11px] font-mono uppercase tracking-wider text-neutral-600 hover:text-red-600 transition-colors cursor-pointer"
-                      >
-                        Request Changes
-                      </button>
-                      <button
-                        type="button"
-                        @click="handleApproveProject(p.id)"
-                        class="h-[30px] px-3.5 rounded-[6px] bg-black text-white hover:bg-neutral-800 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none"
-                      >
-                        Approve Live
-                      </button>
-                    </div>
+                <div v-if="getBrandProjects(brand).length > 0" class="flex flex-col divide-y divide-black/[0.04] border-t border-black/[0.06] pt-2">
+                  <div 
+                    v-for="p in getBrandProjects(brand).slice(0, 3)" 
+                    :key="p.id"
+                    class="py-1.5 flex items-center justify-between text-[12px]"
+                  >
+                    <span class="truncate max-w-[180px] text-neutral-800">{{ p.title }}</span>
+                    <span 
+                      class="text-[9.5px] font-mono px-1.5 py-0.2 rounded border uppercase"
+                      :class="isLiveProject(p) ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-neutral-100 text-neutral-600 border-neutral-200'"
+                    >
+                      {{ formatProjectStatus(p) }}
+                    </span>
                   </div>
                 </div>
               </div>
 
-              <!-- DRAWER 2: BRAND HOUSES -->
-              <div v-else-if="activeDrawer === 'brands'" class="flex flex-col divide-y divide-black/[0.08]">
-                <div 
-                  v-for="brand in brandStore.brands" 
-                  :key="brand.id"
-                  class="py-5 flex flex-col gap-3"
-                >
-                  <div class="flex items-center justify-between">
-                    <div class="flex flex-col">
-                      <h3 class="text-[17px] font-medium text-black">{{ brand.name }}</h3>
-                      <span class="text-[11px] font-mono text-neutral-400">/{{ brand.slug }} · {{ getBrandDropCount(brand) }} Drops</span>
-                    </div>
+              <div class="flex items-center justify-between pt-3 border-t border-black/[0.06]">
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    @click="openBrandDetailsModal(brand)"
+                    class="text-[11.5px] font-mono uppercase text-neutral-500 hover:text-black transition-colors cursor-pointer bg-transparent border-none p-0"
+                  >
+                    Settings
+                  </button>
+                  <span class="text-neutral-300">·</span>
+                  <button
+                    type="button"
+                    @click="handleCreateCampaignForBrand(brand)"
+                    class="text-[11.5px] font-mono uppercase text-neutral-600 hover:text-black transition-colors cursor-pointer bg-transparent border-none p-0"
+                  >
+                    + Drop
+                  </button>
+                </div>
 
-                    <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  @click="openBrandInStudio(brand)"
+                  class="h-[30px] px-3 rounded-[6px] bg-black text-white hover:bg-neutral-800 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1"
+                >
+                  <span>Studio</span>
+                  <ChevronRight class="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBROUTE 3: FOUNDRY -->
+        <div v-else-if="currentTab === 'foundry'" class="flex flex-col gap-6">
+          <div class="flex items-center gap-2 overflow-x-auto pb-1">
+            <button 
+              v-for="cat in ['all', 'raffle', 'rsvp', 'hype_drop', 'lookbook', 'pass']" 
+              :key="cat"
+              @click="selectedFoundryCategory = cat"
+              :class="selectedFoundryCategory === cat ? 'bg-black text-white' : 'bg-white text-neutral-600 hover:text-black border border-black/10'"
+              class="px-3 py-1.5 rounded-[8px] text-[11.5px] font-mono uppercase tracking-wider transition-all cursor-pointer border-none whitespace-nowrap"
+            >
+              {{ cat === 'all' ? 'All Frameworks' : cat.replace('_', ' ') }}
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div 
+              v-for="tpl in filteredFoundryTemplates" 
+              :key="tpl.id"
+              class="bg-white rounded-[16px] border border-black/10 p-5 flex flex-col justify-between gap-5 shadow-xs hover:shadow-md transition-shadow"
+            >
+              <div class="flex flex-col gap-2.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-black/[0.05] text-neutral-700 border border-black/10 font-medium">
+                    {{ tpl.category || 'raffle' }}
+                  </span>
+                  <span 
+                    class="text-[9.5px] font-mono px-1.5 py-0.5 rounded border uppercase"
+                    :class="tpl.status === 'published' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-neutral-100 text-neutral-600 border-neutral-200'"
+                  >
+                    {{ tpl.status || 'published' }}
+                  </span>
+                </div>
+
+                <h3 class="text-[17px] font-medium text-black">{{ tpl.name }}</h3>
+                <p class="text-[12.5px] text-neutral-500 font-light line-clamp-2">
+                  {{ tpl.description || 'Master layout framework preset.' }}
+                </p>
+              </div>
+
+              <div class="flex items-center justify-between pt-3 border-t border-black/[0.06]">
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    @click="openEditTemplateModal(tpl)"
+                    class="text-[11.5px] font-mono uppercase text-neutral-500 hover:text-black transition-colors cursor-pointer bg-transparent border-none p-0"
+                  >
+                    Edit
+                  </button>
+                  <span class="text-neutral-300">·</span>
+                  <button
+                    type="button"
+                    @click="handleRemoveTemplate(tpl)"
+                    class="text-[11.5px] font-mono uppercase text-neutral-400 hover:text-red-600 transition-colors cursor-pointer bg-transparent border-none p-0"
+                  >
+                    Remove
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  @click="handleEditInStudio(tpl)"
+                  class="h-[30px] px-3 rounded-[6px] bg-black text-white hover:bg-neutral-800 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1"
+                >
+                  <span>Open in Studio</span>
+                  <ExternalLink class="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBROUTE 4: TEAM ROSTER -->
+        <div v-else-if="currentTab === 'roster'" class="flex flex-col gap-6">
+          <div class="flex items-center justify-between gap-4">
+            <div class="relative w-full max-w-[340px]">
+              <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-neutral-400" />
+              <input 
+                v-model="userSearchQuery"
+                type="text" 
+                placeholder="Filter members by name, email, or role..." 
+                class="w-full h-[36px] pl-9 pr-3 rounded-[8px] border border-black/10 bg-white text-[13px] placeholder:text-neutral-400 focus:outline-none focus:border-black/30 transition-colors font-mono"
+              />
+            </div>
+          </div>
+
+          <div class="bg-white rounded-[16px] border border-black/10 overflow-hidden shadow-xs">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-black/[0.08] bg-black/[0.02] text-[11px] font-mono uppercase text-neutral-500 tracking-wider">
+                  <th class="py-3 px-5 font-normal">Member</th>
+                  <th class="py-3 px-4 font-normal">Role</th>
+                  <th class="py-3 px-4 font-normal">Brand Access</th>
+                  <th class="py-3 px-5 font-normal text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-black/[0.05] text-[13px]">
+                <tr 
+                  v-for="user in filteredTeamUsers" 
+                  :key="user.id"
+                  class="hover:bg-neutral-50/60 transition-colors"
+                >
+                  <td class="py-3.5 px-5">
+                    <div class="flex items-center gap-3">
+                      <div class="size-8 rounded-full bg-black text-white flex items-center justify-center font-707 text-[11px] font-semibold tracking-tight shrink-0">
+                        {{ user.name.slice(0, 2).toUpperCase() }}
+                      </div>
+                      <div class="flex flex-col min-w-0">
+                        <span class="font-medium text-black truncate">{{ user.name }}</span>
+                        <span class="text-[11.5px] font-mono text-neutral-400 truncate">{{ user.email }}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="py-3.5 px-4 font-mono">
+                    <span class="px-2 py-0.5 rounded text-[11px] uppercase font-medium"
+                      :class="user.role === 'superadmin' ? 'bg-black text-white' : 'bg-black/[0.05] text-neutral-700'"
+                    >
+                      {{ user.role }}
+                    </span>
+                  </td>
+                  <td class="py-3.5 px-4 font-mono text-[11px]">
+                    <div class="flex items-center flex-wrap gap-1">
+                      <span 
+                        v-for="b in user.assignedBrands" 
+                        :key="b" 
+                        class="px-1.5 py-0.5 rounded bg-black/[0.04] text-neutral-700"
+                      >
+                        {{ b === 'all' ? 'Global Atelier' : b }}
+                      </span>
+                    </div>
+                  </td>
+                  <td class="py-3.5 px-5 text-right font-mono text-[11px]">
+                    <div class="flex items-center justify-end gap-2">
                       <button
                         type="button"
-                        @click="openBrandDetailsModal(brand)"
-                        class="text-[11px] font-mono uppercase text-neutral-500 hover:text-black transition-colors cursor-pointer bg-transparent border-none p-0"
+                        @click="openPasswordModal(user)"
+                        class="text-neutral-500 hover:text-black transition-colors cursor-pointer bg-transparent border-none p-0 uppercase"
                       >
-                        Settings
+                        Passkey ↺
                       </button>
                       <span class="text-neutral-300">·</span>
                       <button
                         type="button"
-                        @click="handleCreateCampaignForBrand(brand)"
-                        class="text-[11px] font-mono uppercase text-neutral-600 hover:text-black transition-colors cursor-pointer bg-transparent border-none p-0"
-                      >
-                        + Drop
-                      </button>
-                      <button
-                        type="button"
-                        @click="openBrandInStudio(brand)"
-                        class="h-[28px] px-3 rounded-[6px] bg-black text-white hover:bg-neutral-800 text-[10.5px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1"
-                      >
-                        <span>Enter Studio</span>
-                        <ChevronRight class="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Personnel Chips -->
-                  <div class="flex items-center flex-wrap gap-1.5 text-[11px] font-mono">
-                    <span class="text-neutral-400">Team:</span>
-                    <span 
-                      v-for="pic in getBrandPics(brand)" 
-                      :key="pic.id" 
-                      class="px-1.5 py-0.5 rounded bg-black/[0.04] text-neutral-700"
-                    >
-                      {{ pic.name }}
-                    </span>
-                    <span v-if="getBrandPics(brand).length === 0" class="text-neutral-400 italic">None assigned</span>
-                  </div>
-
-                  <!-- Mini drops table -->
-                  <div v-if="getBrandProjects(brand).length > 0" class="flex flex-col divide-y divide-black/[0.04] border-t border-black/[0.05] pt-1">
-                    <div 
-                      v-for="p in getBrandProjects(brand)" 
-                      :key="p.id"
-                      class="py-1.5 flex items-center justify-between text-[12px]"
-                    >
-                      <span class="truncate max-w-[280px] text-neutral-800">{{ p.title }}</span>
-                      <div class="flex items-center gap-3">
-                        <span 
-                          class="text-[9.5px] font-mono px-1 py-0.2 rounded border uppercase"
-                          :class="isLiveProject(p) ? 'bg-moss-50 text-moss-700 border-moss-200' : 'bg-neutral-100 text-neutral-600 border-neutral-200'"
-                        >
-                          {{ formatProjectStatus(p) }}
-                        </span>
-                        <button 
-                          type="button" 
-                          @click="handleInspectProject(p)"
-                          class="text-[10.5px] font-mono uppercase text-neutral-500 hover:text-black cursor-pointer bg-transparent border-none p-0"
-                        >
-                          Open
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- DRAWER 3: FOUNDRY -->
-              <div v-else-if="activeDrawer === 'foundry'" class="flex flex-col divide-y divide-black/[0.08]">
-                <div 
-                  v-for="tpl in brandStore.templates" 
-                  :key="tpl.id"
-                  class="py-4 flex flex-col gap-2"
-                >
-                  <div class="flex items-center justify-between">
-                    <span class="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-black/[0.05] text-neutral-700 border border-black/10">
-                      {{ tpl.category || 'raffle' }}
-                    </span>
-                    <span 
-                      class="text-[9.5px] font-mono px-1.5 py-0.5 rounded border uppercase"
-                      :class="tpl.status === 'published' ? 'bg-moss-50 text-moss-700 border-moss-200' : 'bg-neutral-100 text-neutral-600 border-neutral-200'"
-                    >
-                      {{ tpl.status || 'published' }}
-                    </span>
-                  </div>
-
-                  <div class="flex flex-col gap-0.5">
-                    <h3 class="text-[15.5px] font-medium text-black">{{ tpl.name }}</h3>
-                    <p class="text-[12px] text-neutral-500 font-light truncate">
-                      {{ tpl.description || 'Master layout framework preset.' }}
-                    </p>
-                  </div>
-
-                  <div class="flex items-center justify-between pt-1">
-                    <div class="flex items-center gap-2">
-                      <button
-                        type="button"
-                        @click="openEditTemplateModal(tpl)"
-                        class="text-[11px] font-mono uppercase text-neutral-500 hover:text-black transition-colors cursor-pointer bg-transparent border-none p-0"
+                        @click="openEditUserModal(user)"
+                        class="text-neutral-500 hover:text-black transition-colors cursor-pointer bg-transparent border-none p-0 uppercase"
                       >
                         Edit
                       </button>
                       <span class="text-neutral-300">·</span>
                       <button
                         type="button"
-                        @click="handleRemoveTemplate(tpl)"
-                        class="text-[11px] font-mono uppercase text-neutral-400 hover:text-red-600 transition-colors cursor-pointer bg-transparent border-none p-0"
+                        @click="handleRemoveUser(user)"
+                        class="text-neutral-400 hover:text-red-600 transition-colors cursor-pointer bg-transparent border-none p-0 uppercase"
                       >
                         Remove
                       </button>
                     </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
-                    <button
-                      type="button"
-                      @click="handleEditInStudio(tpl)"
-                      class="h-[28px] px-3 rounded-[6px] bg-black text-white hover:bg-neutral-800 text-[10.5px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1"
-                    >
-                      <span>Open in Studio</span>
-                      <ExternalLink class="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- DRAWER 4: TEAM ROSTER -->
-              <div v-else-if="activeDrawer === 'roster'" class="flex flex-col divide-y divide-black/[0.08]">
-                <div 
-                  v-for="user in teamUsers" 
-                  :key="user.id"
-                  class="py-3.5 flex items-center justify-between gap-3"
-                >
-                  <div class="flex flex-col min-w-0">
-                    <span class="text-[14px] font-normal text-black truncate">{{ user.name }}</span>
-                    <span class="text-[11px] font-mono text-neutral-400">{{ user.email }}</span>
-                    <div class="flex items-center gap-1 text-[10px] font-mono text-neutral-500 mt-1">
-                      <span class="uppercase font-medium px-1 rounded bg-black/[0.05]">{{ user.role }}</span>
-                      <span v-for="b in user.assignedBrands" :key="b" class="px-1 rounded bg-black/[0.03]">
-                        {{ b }}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div class="flex items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      @click="openPasswordModal(user)"
-                      class="text-[11px] font-mono uppercase text-neutral-500 hover:text-black transition-colors cursor-pointer bg-transparent border-none p-0"
-                    >
-                      Passkey ↺
-                    </button>
-                    <span class="text-neutral-300">·</span>
-                    <button
-                      type="button"
-                      @click="openEditUserModal(user)"
-                      class="text-[11px] font-mono uppercase text-neutral-500 hover:text-black transition-colors cursor-pointer bg-transparent border-none p-0"
-                    >
-                      Edit
-                    </button>
-                    <span class="text-neutral-300">·</span>
-                    <button
-                      type="button"
-                      @click="handleRemoveUser(user)"
-                      class="text-[11px] font-mono uppercase text-neutral-400 hover:text-red-600 transition-colors cursor-pointer bg-transparent border-none p-0"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
-            <!-- Drawer Footer with Storage Maintenance Trigger -->
-            <div class="px-6 py-3 border-t border-black/10 bg-neutral-50/70 flex items-center justify-between text-[11px] font-mono text-neutral-400 shrink-0">
-              <button 
-                @click="handleClearMediaConfirm" 
-                class="hover:text-red-600 transition-colors cursor-pointer bg-transparent border-none p-0 text-[10.5px] font-mono text-neutral-400"
-              >
-                Purge Media Storage
-              </button>
-              <span>ESC TO CLOSE</span>
-            </div>
-
+          <!-- Bottom Maintenance Bar -->
+          <div class="pt-2 flex items-center justify-between text-[11px] font-mono text-neutral-400">
+            <span>707 ATELIER GOVERNANCE</span>
+            <button 
+              @click="handleClearMediaConfirm" 
+              class="hover:text-red-600 transition-colors cursor-pointer bg-transparent border-none p-0 text-[11px] font-mono text-neutral-400"
+            >
+              Purge Media Storage
+            </button>
           </div>
         </div>
-      </Transition>
-    </Teleport>
+
+      </div>
+    </main>
 
     <!-- ======================================================== -->
     <!-- ALL MODALS (Standardized 707 Tokens)                     -->
@@ -1018,10 +1146,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { 
-  Plus, X, ExternalLink, ChevronRight, Layers, Building2, Boxes, Users, CheckCircle2
+  Plus, X, ExternalLink, ChevronRight, ChevronLeft, Layers, Building2, Boxes, Users, CheckCircle2, Search
 } from 'lucide-vue-next';
 
 import { useAuthStore, type UserAccount } from '../stores/authStore.ts';
@@ -1035,12 +1163,168 @@ import WhatsNewModal from '../components/modals/WhatsNewModal.vue';
 import type { Brand, GlobalTemplate, ProjectItem } from '../types/editor.ts';
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 const brandStore = useBrandStore();
 const editorStore = useEditorStore();
 
 const showUserProfileModal = ref(false);
 const showWhatsNewModal = ref(false);
+
+// ----------------------------------------------------
+// Sub-Route State & Metadata (Option 2: Dedicated Full Viewports)
+// ----------------------------------------------------
+type DevSubroute = 'review' | 'brands' | 'foundry' | 'roster';
+
+const currentTab = computed<DevSubroute | null>(() => {
+  const tab = (route.params.tab as string) || '';
+  return ['review', 'brands', 'foundry', 'roster'].includes(tab) ? (tab as DevSubroute) : null;
+});
+
+const subrouteMeta = computed(() => {
+  switch (currentTab.value) {
+    case 'review':
+      return {
+        title: 'Review Gate',
+        count: pendingProjects.value.length,
+        description: 'Pending brand drop releases and live updates awaiting runway sign-off.'
+      };
+    case 'brands':
+      return {
+        title: 'Brand Houses',
+        count: brandStore.brands.length,
+        description: 'Multi-tenant brand registries, personnel assignments, and active drop portfolios.'
+      };
+    case 'foundry':
+      return {
+        title: 'Foundry Blueprints',
+        count: brandStore.templates.length,
+        description: 'Master layout frameworks, interactive presets, and brand activation blueprints.'
+      };
+    case 'roster':
+      return {
+        title: 'Team Roster & Access',
+        count: teamUsers.value.length,
+        description: 'Studio personnel directory, role permissions, and brand house access control.'
+      };
+    default:
+      return { title: '', description: '' };
+  }
+});
+
+// ----------------------------------------------------
+// Smart Dynamic Dev Welcome Message (Combined A + B + C Package)
+// ----------------------------------------------------
+const adaptiveDevGreeting = computed(() => {
+  const now = new Date();
+  const hour = now.getHours();
+  const firstName = authStore.currentUser?.name?.trim().split(/\s+/)[0] || '';
+  const pendingCount = pendingProjects.value.length;
+  const brandCount = brandStore.brands.length;
+  const liveDropsCount = editorStore.projects.filter(isLiveProject).length;
+  const seed = (hour + now.getDate()) % 3;
+
+  // 1. High Priority: Pending Runway Reviews (Operational Intelligence)
+  if (pendingCount > 0) {
+    if (firstName && seed === 0) {
+      return `${pendingCount} ${pendingCount === 1 ? 'release awaits' : 'releases await'} sign-off, ${firstName}.`;
+    }
+    if (seed === 1) {
+      return `Review gate active with ${pendingCount} ${pendingCount === 1 ? 'drop' : 'drops'} pending approval.`;
+    }
+    return `${pendingCount} ${pendingCount === 1 ? 'drop awaits' : 'drops await'} runway sign-off.`;
+  }
+
+  // 2. High Footfall / Live Drops Running in the Wild
+  if (liveDropsCount > 0 && seed === 2) {
+    if (firstName) {
+      return `${liveDropsCount} ${liveDropsCount === 1 ? 'drop' : 'drops'} live across ${brandCount} brand houses, ${firstName}.`;
+    }
+    return `${liveDropsCount} live ${liveDropsCount === 1 ? 'drop' : 'drops'} running across brand houses.`;
+  }
+
+  // 3. Time-of-Day + Monogram Persona Atmospheric (Luxury Editorial)
+  // Morning: 05:00 - 11:59
+  if (hour >= 5 && hour < 12) {
+    const morning = firstName ? [
+      `Good morning, ${firstName}. The runway is clear.`,
+      `First light in the studio, ${firstName}.`,
+      `All brand houses accounted for, ${firstName}.`
+    ] : [
+      'First light in the studio. The runway is clear.',
+      'All brand houses accounted for.',
+      'Morning briefing across the ecosystem.'
+    ];
+    return morning[seed % morning.length];
+  }
+
+  // Afternoon: 12:00 - 17:59
+  if (hour >= 12 && hour < 18) {
+    const afternoon = firstName ? [
+      `Good afternoon, ${firstName}. All systems operational.`,
+      `Master studio architecture, ${firstName}.`,
+      `The runway is clear across all brand houses, ${firstName}.`
+    ] : [
+      'All systems operational across brand houses.',
+      'Command the runway.',
+      'Master studio architecture.'
+    ];
+    return afternoon[seed % afternoon.length];
+  }
+
+  // Evening: 18:00 - 22:59
+  if (hour >= 18 && hour < 23) {
+    const evening = firstName ? [
+      `Good evening, ${firstName}. Curate the ecosystem.`,
+      `Golden hour across the brand houses, ${firstName}.`,
+      `Blueprint, release, and oversee, ${firstName}.`
+    ] : [
+      'Golden hour across the brand houses.',
+      'Blueprint, release, and oversee.',
+      'Curate the ecosystem.'
+    ];
+    return evening[seed % evening.length];
+  }
+
+  // Late Night: 23:00 - 04:59
+  const night = firstName ? [
+    `After-hours architecture, ${firstName}.`,
+    `Nightfall in the studio, ${firstName}.`,
+    `Quiet hours. The runway is yours, ${firstName}.`
+  ] : [
+    'After-hours architecture.',
+    'Nightfall in the studio.',
+    'Quiet hours. The runway is yours.'
+  ];
+  return night[seed % night.length];
+});
+
+// ----------------------------------------------------
+// Search & Filter Collections
+// ----------------------------------------------------
+const brandSearchQuery = ref('');
+const filteredBrands = computed(() => {
+  const q = brandSearchQuery.value.trim().toLowerCase();
+  if (!q) return brandStore.brands;
+  return brandStore.brands.filter(b => b.name.toLowerCase().includes(q) || b.slug.toLowerCase().includes(q));
+});
+
+const selectedFoundryCategory = ref<string>('all');
+const filteredFoundryTemplates = computed(() => {
+  if (selectedFoundryCategory.value === 'all') return brandStore.templates;
+  return brandStore.templates.filter(t => t.category === selectedFoundryCategory.value);
+});
+
+const userSearchQuery = ref('');
+const filteredTeamUsers = computed(() => {
+  const q = userSearchQuery.value.trim().toLowerCase();
+  if (!q) return teamUsers.value;
+  return teamUsers.value.filter(u => 
+    u.name.toLowerCase().includes(q) || 
+    u.email.toLowerCase().includes(q) || 
+    (u.role && u.role.toLowerCase().includes(q))
+  );
+});
 
 const userInitials = computed(() => {
   const name = authStore.currentUser?.name || 'Superadmin Lead';
@@ -1071,26 +1355,6 @@ function handleSignOut() {
   authStore.signOut();
   brandStore.setActiveBrand(null);
   router.push('/login');
-}
-
-// ----------------------------------------------------
-// Division Drawer State
-// ----------------------------------------------------
-type DrawerDivision = 'review' | 'brands' | 'foundry' | 'roster';
-const activeDrawer = ref<DrawerDivision | null>(null);
-
-const drawerTitle = computed(() => {
-  switch (activeDrawer.value) {
-    case 'review': return 'Review Gate — Pending Releases';
-    case 'brands': return 'Brand Houses Matrix';
-    case 'foundry': return 'Foundry — Master Blueprints';
-    case 'roster': return 'Team Roster & Access Directory';
-    default: return '';
-  }
-});
-
-function openDrawer(division: DrawerDivision) {
-  activeDrawer.value = division;
 }
 
 // Pending Review projects
@@ -1130,12 +1394,31 @@ const teamUsers = computed(() => {
   return authStore.users.filter(u => !u.status || u.status === 'active');
 });
 
-// Initialization
+// ESC navigation listener
+function handleGlobalKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape') {
+    if (showAddBrandModal.value || showBrandDetailsModal.value || showAddUserModal.value || 
+        showEditUserModal.value || showPasswordModal.value || showBuildTemplateModal.value || 
+        showEditTemplateModal.value || showUserProfileModal.value || showWhatsNewModal.value) {
+      return;
+    }
+    if (currentTab.value) {
+      router.push('/dev');
+    }
+  }
+}
+
+// Initialization & Teardown
 onMounted(async () => {
+  window.addEventListener('keydown', handleGlobalKeydown);
   await brandStore.loadBrands();
   await brandStore.loadTemplates();
   await authStore.loadUsers();
   await editorStore.loadProjects();
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleGlobalKeydown);
 });
 
 function openBrandInStudio(brand?: Brand) {
@@ -1212,7 +1495,7 @@ async function handleAddBrandSubmit() {
     showAddBrandModal.value = false;
     newBrandName.value = '';
     newBrandSlug.value = '';
-    activeDrawer.value = 'brands';
+    router.push('/dev/brands');
   } catch (err: any) {
     editorStore.showToast(err?.message || 'Could not create brand.');
   }
@@ -1277,7 +1560,7 @@ async function handleAddUserSubmit() {
     showAddUserModal.value = false;
     newUserName.value = '';
     newUserEmail.value = '';
-    activeDrawer.value = 'roster';
+    router.push('/dev/roster');
   } catch (err: any) {
     editorStore.showToast(err?.message || 'Could not create account.');
   }
@@ -1381,7 +1664,7 @@ function handleBuildTemplateSubmit(openInStudio = false) {
   brandStore.addTemplate(newTpl);
   showBuildTemplateModal.value = false;
   editorStore.showToast(`Blueprint "${newTpl.name}" created.`);
-  activeDrawer.value = 'foundry';
+  router.push('/dev/foundry');
 
   if (openInStudio) {
     handleEditInStudio(newTpl);

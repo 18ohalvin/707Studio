@@ -46,7 +46,7 @@ const routes = [
     meta: { public: true }
   },
   {
-    path: '/dev',
+    path: '/dev/:tab?',
     name: 'SuperAdminPortal',
     component: SuperAdminSettingsView
   },
@@ -92,7 +92,7 @@ router.beforeEach((to) => {
     return { path: '/dev' };
   }
   
-  if (to.path === '/dev' || to.path === '/settings' || to.path === '/admin') {
+  if (to.path === '/dev' || to.path.startsWith('/dev/') || to.path === '/settings' || to.path === '/admin') {
     if (!authStore.isSuperAdmin) {
       return { path: '/login', query: { redirect: to.fullPath } };
     }
