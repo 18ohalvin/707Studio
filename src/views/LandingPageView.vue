@@ -96,7 +96,7 @@
       <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-full max-w-[664px] px-4 pointer-events-auto">
         <!-- Intro Greeting & 5 Action Cards (Figma Node 212:7033) -->
         <section class="flex flex-col items-center gap-[28px] md:gap-[32px] w-full shrink-0" data-node-id="212:7033" data-name="Intro Container">
-          <h1 class="font-707 text-[26px] sm:text-[28px] md:text-[30px] font-normal text-black text-center tracking-[-0.56px] leading-[34px] max-w-[620px] transition-all duration-300" data-node-id="198:6839">
+          <h1 class="font-707 text-[28px] md:text-[30px] font-normal text-black text-center tracking-[-0.56px] leading-[36px] max-w-[760px] [text-wrap:balance] transition-all duration-300" data-node-id="198:6839">
             {{ adaptiveGreeting }}
           </h1>
 
@@ -448,51 +448,51 @@ const adaptiveGreeting = computed(() => {
   // 1. Superadmin Suite Oversight
   if (isSuperAdmin) {
     const adminPhrases = [
-      'All brand houses accounted for. The master suite is yours.',
-      'From blueprint to live showcase. Oversee your runway.',
-      'Studio oversight active. Ready for the next release.',
-      'Command center ready. Guide the next brand launch.'
+      'All brand houses accounted for.',
+      'From blueprint to live showcase.',
+      'Studio oversight active.',
+      'Command center ready.'
     ];
     return adminPhrases[seed % adminPhrases.length];
   }
 
   // 2. Active Draft awaiting continuation
   if (draftProject && seed === 3) {
-    return `Pick up the thread. "${draftProject.title}" is waiting.`;
+    return `Pick up the thread on "${draftProject.title}".`;
   }
 
   // 3. Live Campaigns in the wild
   if (liveCount > 0 && seed === 2) {
     if (activeBrand) {
-      return `${activeBrand} is live in the wild. Ready for the next drop?`;
+      return `${activeBrand} is live in the wild.`;
     }
-    return `${liveCount} ${liveCount === 1 ? 'drop' : 'drops'} live right now. What's on deck next?`;
+    return `${liveCount} ${liveCount === 1 ? 'drop' : 'drops'} live in the wild.`;
   }
 
   // 4. Day-of-Week Drop Window Rhythms
   if (isFriday && (hour >= 11 && hour <= 21)) {
     const fridayPhrases = [
-      'Friday drop window is open. Ready when you are.',
-      'It’s release day. Let’s make some noise.',
-      'The weekend crowd is waiting. Launch your experience.'
+      'Friday drop window is open.',
+      'It’s release day.',
+      'The weekend crowd is waiting.'
     ];
     return fridayPhrases[seed % fridayPhrases.length];
   }
 
   if (isWeekend) {
     const weekendPhrases = [
-      'Weekend showcase in motion. Shape your next experience.',
-      'Doors are open. Time to make something memorable.',
-      'High footfall hours. Perfect the guest journey.'
+      'Weekend showcase in motion.',
+      'Doors are open.',
+      'High footfall hours in the studio.'
     ];
     return weekendPhrases[seed % weekendPhrases.length];
   }
 
   if (isMonday && hour < 14) {
     const mondayPhrases = [
-      'New week, blank canvas. What’s the next drop?',
-      'Monday briefing. Set the runway in motion.',
-      'Fresh roadmap ahead. Build your next experience.'
+      'New week, blank canvas.',
+      'Monday briefing on the runway.',
+      'Fresh roadmap ahead.'
     ];
     return mondayPhrases[seed % mondayPhrases.length];
   }
@@ -501,15 +501,15 @@ const adaptiveGreeting = computed(() => {
   // Morning: 05:00 - 11:59
   if (hour >= 5 && hour < 12) {
     const morningPhrases = firstName ? [
-      `Good morning, ${firstName}. The runway is clear.`,
-      `First light in the studio. What are we creating today?`,
-      `Quiet morning, sharp ideas. Time to create.`,
-      `Coffee poured. Set the tone before the crowd arrives.`
+      `Good morning, ${firstName}.`,
+      'First light in the studio.',
+      'Quiet morning, sharp ideas.',
+      'The runway is clear.'
     ] : [
-      'First light in the studio. What are we creating today?',
-      'Coffee poured. The runway is clear.',
-      'Quiet morning, sharp ideas. Time to create.',
-      'Set the tone before the crowd arrives.'
+      'First light in the studio.',
+      'The runway is clear.',
+      'Quiet morning, sharp ideas.',
+      'Coffee poured, studio open.'
     ];
     return morningPhrases[seed % morningPhrases.length];
   }
@@ -517,13 +517,13 @@ const adaptiveGreeting = computed(() => {
   // Afternoon: 12:00 - 17:59
   if (hour >= 12 && hour < 18) {
     const afternoonPhrases = firstName ? [
-      `Good afternoon, ${firstName}. Peak studio hours.`,
-      `Crafting culture in real time. Build your next experience.`,
-      `The crowd is waiting. Make something memorable.`,
-      `From raw concept to the showroom floor.`
+      `Good afternoon, ${firstName}.`,
+      'Crafting culture in real time.',
+      'Peak studio hours.',
+      'From raw concept to the showroom floor.'
     ] : [
       'Build your next brand activation.',
-      'Peak studio hours. Make something memorable.',
+      'Peak studio hours.',
       'Crafting culture in real time.',
       'From raw concept to the showroom floor.'
     ];
@@ -533,29 +533,29 @@ const adaptiveGreeting = computed(() => {
   // Evening: 18:00 - 22:59
   if (hour >= 18 && hour < 23) {
     const eveningPhrases = firstName ? [
-      `Good evening, ${firstName}. The spotlight is yours.`,
-      `Golden hour in the studio. Perfect the experience.`,
-      `Doors open soon. Put on the finishing touch.`,
-      `Evening edit. Curate the guest list.`
+      `Good evening, ${firstName}.`,
+      'Golden hour in the studio.',
+      'Doors open soon.',
+      'Nightfall on the runway.'
     ] : [
-      'Golden hour in the studio. The spotlight is yours.',
-      'Nightfall. Time to curate the guest experience.',
-      'Doors open soon. Put on the finishing touch.',
-      'Evening edit. Perfect the experience.'
+      'Golden hour in the studio.',
+      'Nightfall on the runway.',
+      'Doors open soon.',
+      'The evening edit is in session.'
     ];
     return eveningPhrases[seed % eveningPhrases.length];
   }
 
   // Late Night: 23:00 - 04:59
   const nightPhrases = firstName ? [
-    `Midnight in the studio, ${firstName}. Where the best ideas happen.`,
-    `The city is asleep. The studio is alive.`,
-    `After-hours curation. Take all the time you need.`,
-    `Burning the midnight oil on the next release.`
+    `Midnight in the studio, ${firstName}.`,
+    'The studio is alive.',
+    'After-hours curation.',
+    'Burning the midnight oil.'
   ] : [
-    'Midnight in the studio. Where the best ideas happen.',
-    'The city is asleep. The studio is alive.',
-    'After-hours curation. Take all the time you need.',
+    'Midnight in the studio.',
+    'The studio is alive.',
+    'After-hours curation.',
     'Burning the midnight oil on the next release.'
   ];
   return nightPhrases[seed % nightPhrases.length];

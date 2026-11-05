@@ -1,65 +1,46 @@
 <template>
-  <div class="h-screen w-screen bg-[#fbfbfb] text-black font-sans font-light tracking-normal selection:bg-black selection:text-white select-none overflow-hidden relative hub-root" data-name="707 Dev Portal">
+  <div class="h-screen w-screen overflow-hidden flex flex-col justify-between bg-[#f5f5f5] text-black font-sans relative select-none hub-root" data-name="707 Dev Portal">
     
-    <!-- Top 48px Header strictly following 707 Design Tokens -->
-    <header class="w-full h-[48px] px-6 sm:px-12 flex items-center justify-between border-b border-black/[0.08] bg-white/80 backdrop-blur-md shrink-0 sticky top-0 z-40 select-none">
-      <div class="flex items-center gap-3 h-[24px]">
-        <!-- 707 Logo linking to /dev -->
-        <router-link to="/dev" class="h-[18px] relative shrink-0 flex items-center cursor-pointer hover:opacity-80 transition-opacity" title="707 Dev Core">
-          <img :src="FIGMA_ASSETS.logoDesignStudio" alt="707 Design Studio" class="h-[18px] w-auto object-contain pointer-events-none" />
+    <!-- 1. Main Header strictly matching user mode tokens -->
+    <header 
+      class="absolute top-0 left-0 right-0 w-full h-[48px] px-[24px] py-[8px] flex items-center justify-between z-40 bg-transparent shrink-0"
+      data-name="Header"
+    >
+      <!-- Left: 707 Logo + Dev Badge only (No studio governance text) -->
+      <div class="flex items-center gap-[10px] h-[20px]" data-name="Logo">
+        <router-link to="/dev" class="h-[18px] relative shrink-0 flex items-center cursor-pointer hover:opacity-85 transition-opacity" title="707 Design Studio">
+          <img 
+            :src="FIGMA_ASSETS.logoDesignStudio" 
+            alt="707 Design Studio" 
+            class="h-[18px] w-auto object-contain pointer-events-none" 
+          />
         </router-link>
-
-        <span class="inline-flex items-center px-1.5 py-[2px] rounded-[4px] bg-black/[0.04] border border-black/10 text-[10px] font-mono font-medium text-neutral-600 leading-none whitespace-nowrap select-none">
+        <span class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-black/[0.04] border border-black/10 text-[10px] font-mono font-medium text-neutral-600 leading-none whitespace-nowrap select-none">
           Dev
         </span>
-
-        <div class="w-px h-3.5 bg-black/15 mx-1" />
-
-        <div class="flex items-center gap-2 text-[11px] font-mono text-neutral-500">
-          <span class="size-1.5 rounded-full bg-emerald-500" />
-          <span>STUDIO GOVERNANCE</span>
-        </div>
       </div>
 
-      <!-- Right Header Actions -->
-      <div class="flex items-center gap-3 sm:gap-4">
-        <button 
-          type="button" 
-          @click="openBrandInStudio()" 
-          class="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-neutral-600 hover:text-black transition-colors cursor-pointer bg-transparent border-none p-0"
-        >
-          <span>Studio Canvas</span>
-          <ExternalLink class="w-3 h-3" />
-        </button>
+      <!-- Right: Notifications & Profile Icon (Matching user mode) -->
+      <div class="flex items-center gap-[24px]" data-name="Icons Container">
+        <!-- Bell Notification Icon -->
+        <NotificationsMenu v-if="authStore.isAuthenticated" />
 
-        <div class="hidden sm:block w-px h-3.5 bg-black/10" />
-
-        <button 
-          type="button"
-          @click="handleExitAdmin"
-          class="text-[11px] font-mono uppercase tracking-wider text-neutral-500 hover:text-black transition-colors cursor-pointer bg-transparent border-none p-0"
-          title="Sign out of Superadmin"
-        >
-          Exit Admin
-        </button>
-
-        <div class="w-px h-3.5 bg-black/10" />
-
-        <!-- Profile Avatar Container with Anchored UserProfileModal -->
+        <!-- Minimal Profile / User Icon -->
         <div class="relative flex items-center">
           <button 
-            type="button"
             @click="showUserProfileModal = !showUserProfileModal"
-            class="relative size-[26px] rounded-full border border-black/10 hover:border-black/30 shrink-0 bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors cursor-pointer"
+            class="relative size-[24px] flex items-center justify-center apple-press cursor-pointer hover:opacity-80 transition-opacity border-0 border-none outline-none bg-transparent shadow-none p-0 shrink-0 text-black group"
             title="Dev Profile"
           >
-            <div class="relative size-full rounded-full bg-black text-white flex items-center justify-center font-sans text-[10px] font-medium tracking-tight select-none">
+            <div class="relative size-[22px] rounded-full bg-black text-white flex items-center justify-center font-707 text-[10px] font-semibold tracking-tight shadow-xs select-none transition-transform duration-200 group-hover:scale-105">
               {{ userInitials }}
-              <span class="absolute -bottom-0.5 -right-0.5 size-[5px] rounded-full bg-emerald-500 border border-white" />
+              <span class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-emerald-500 border border-white" />
             </div>
           </button>
 
+          <!-- Anchored UserProfileModal -->
           <UserProfileModal
+            v-if="authStore.isAuthenticated"
             :is-open="showUserProfileModal"
             @close="showUserProfileModal = false"
             @open-analytics="handleAnalytics"
@@ -72,32 +53,29 @@
       </div>
     </header>
 
-    <!-- Centered Main Content Hub (Signature 707 Design Studio Layout) -->
-    <main class="relative flex-1 w-full h-[calc(100vh-48px)] overflow-hidden flex flex-col items-center select-none">
-      
+    <!-- 2. Centered Main Content Hub (Matching LandingPageView.vue 50vh composition) -->
+    <main 
+      class="relative flex-1 w-full h-full overflow-hidden flex flex-col items-center select-none"
+      data-name="Main Content Container"
+    >
       <!-- Grouped Headline + Categories Shortcut Section: Centered at 50vh -->
-      <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-full max-w-[720px] px-4 pointer-events-auto">
-        <section class="flex flex-col items-center gap-[28px] md:gap-[36px] w-full shrink-0">
+      <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-full max-w-[664px] px-4 pointer-events-auto">
+        <section class="flex flex-col items-center gap-[28px] md:gap-[32px] w-full shrink-0" data-name="Intro Container">
           
           <!-- Editorial Dev Headline -->
-          <div class="flex flex-col items-center text-center gap-1.5">
-            <h1 class="font-707 text-[28px] md:text-[32px] font-normal text-black text-center tracking-[-0.56px] leading-[36px] whitespace-nowrap">
-              Studio Governance & Control.
-            </h1>
-            <p class="font-mono text-[11.5px] uppercase tracking-widest text-neutral-400">
-              {{ brandStore.brands.length }} Brand Houses · {{ editorStore.projects.length }} Live Drops · {{ teamUsers.length }} Accounts
-            </p>
-          </div>
+          <h1 class="font-707 text-[28px] md:text-[30px] font-normal text-black text-center tracking-[-0.56px] leading-[34px] whitespace-nowrap">
+            Studio Governance.
+          </h1>
 
-          <!-- Aligned 5 Dev Action Tiles (Exact 707 Apple Glass Tokens) -->
-          <div class="flex gap-[20px] sm:gap-[28px] md:gap-[32px] items-start justify-center px-[16px] py-[8px] w-full flex-wrap sm:flex-nowrap">
+          <!-- 4 Aligned Icons Container (Exact user mode gap & button tokens) -->
+          <div class="flex gap-[32px] md:gap-[40px] items-start justify-center px-[16px] py-[8px] w-full" data-name="Buttons Container">
             
             <!-- 1. Review Gate -->
-            <div class="flex flex-col gap-[10px] items-center justify-center w-[92px] sm:w-[100px]">
+            <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-name="Button Container">
               <div class="relative size-[88px]">
                 <button 
                   @click="openDrawer('review')"
-                  class="category-menu-btn apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] flex items-center justify-center p-[8px] rounded-[8px] size-full apple-press cursor-pointer transition-all duration-200 group border-none"
+                  class="category-menu-btn apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] flex items-center justify-center p-[8px] rounded-[8px] size-full apple-press cursor-pointer transition-all duration-200 group"
                   title="Review Gate: Pending Drop Submissions"
                 >
                   <div class="size-[32px] relative shrink-0 flex items-center justify-center text-black">
@@ -105,122 +83,70 @@
                   </div>
                 </button>
 
-                <!-- Pending drops notification badge -->
+                <!-- Pending count badge -->
                 <span 
                   v-if="pendingProjects.length > 0"
-                  class="absolute -top-1.5 -right-1.5 bg-amber-500 text-white font-mono text-[9px] px-1.5 py-0.5 rounded-full font-medium shadow-xs animate-pulse pointer-events-none"
+                  class="absolute -top-1.5 -right-1.5 bg-black/80 text-white font-707 text-[8.5px] tracking-wider uppercase px-1.5 py-0.5 rounded-[4px] pointer-events-none shadow-xs font-medium"
                 >
-                  {{ pendingProjects.length }}
+                  {{ pendingProjects.length }} New
                 </span>
               </div>
-              <div class="flex flex-col items-center">
-                <p class="font-707 text-[13px] md:text-[13.5px] text-black text-center leading-[17px] font-normal">
-                  Review Gate
-                </p>
-                <span class="font-mono text-[10.5px] text-neutral-400">
-                  {{ pendingProjects.length === 0 ? 'All Clear' : `${pendingProjects.length} Pending` }}
-                </span>
-              </div>
+              <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal">
+                Review Gate
+              </p>
             </div>
 
             <!-- 2. Brand Houses -->
-            <div class="flex flex-col gap-[10px] items-center justify-center w-[92px] sm:w-[100px]">
+            <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-name="Button Container">
               <button 
                 @click="openDrawer('brands')"
-                class="category-menu-btn apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group border-none"
+                class="category-menu-btn apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group"
                 title="Brand Houses Directory"
               >
                 <div class="size-[32px] relative shrink-0 flex items-center justify-center text-black">
                   <Building2 class="size-full stroke-[1.4] transition-transform duration-200 group-hover:scale-105" />
                 </div>
               </button>
-              <div class="flex flex-col items-center">
-                <p class="font-707 text-[13px] md:text-[13.5px] text-black text-center leading-[17px] font-normal">
-                  Brand Houses
-                </p>
-                <span class="font-mono text-[10.5px] text-neutral-400">
-                  {{ brandStore.brands.length }} Houses
-                </span>
-              </div>
+              <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal">
+                Brand Houses
+              </p>
             </div>
 
             <!-- 3. Foundry Blueprints -->
-            <div class="flex flex-col gap-[10px] items-center justify-center w-[92px] sm:w-[100px]">
+            <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-name="Button Container">
               <button 
                 @click="openDrawer('foundry')"
-                class="category-menu-btn apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group border-none"
+                class="category-menu-btn apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group"
                 title="Master Blueprints & Presets"
               >
                 <div class="size-[32px] relative shrink-0 flex items-center justify-center text-black">
                   <Boxes class="size-full stroke-[1.4] transition-transform duration-200 group-hover:scale-105" />
                 </div>
               </button>
-              <div class="flex flex-col items-center">
-                <p class="font-707 text-[13px] md:text-[13.5px] text-black text-center leading-[17px] font-normal">
-                  Foundry
-                </p>
-                <span class="font-mono text-[10.5px] text-neutral-400">
-                  {{ brandStore.templates.length }} Presets
-                </span>
-              </div>
+              <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal">
+                Foundry
+              </p>
             </div>
 
             <!-- 4. Team Roster -->
-            <div class="flex flex-col gap-[10px] items-center justify-center w-[92px] sm:w-[100px]">
+            <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-name="Button Container">
               <button 
                 @click="openDrawer('roster')"
-                class="category-menu-btn apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group border-none"
+                class="category-menu-btn apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group"
                 title="Team Access & Roster"
               >
                 <div class="size-[32px] relative shrink-0 flex items-center justify-center text-black">
                   <Users class="size-full stroke-[1.4] transition-transform duration-200 group-hover:scale-105" />
                 </div>
               </button>
-              <div class="flex flex-col items-center">
-                <p class="font-707 text-[13px] md:text-[13.5px] text-black text-center leading-[17px] font-normal">
-                  Team Roster
-                </p>
-                <span class="font-mono text-[10.5px] text-neutral-400">
-                  {{ teamUsers.length }} Accounts
-                </span>
-              </div>
-            </div>
-
-            <!-- 5. Studio Canvas -->
-            <div class="flex flex-col gap-[10px] items-center justify-center w-[92px] sm:w-[100px]">
-              <button 
-                @click="openBrandInStudio()"
-                class="category-menu-btn apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group border-none"
-                title="Launch 707 Studio Canvas"
-              >
-                <div class="size-[32px] relative shrink-0 flex items-center justify-center text-black">
-                  <Sparkles class="size-full stroke-[1.4] transition-transform duration-200 group-hover:scale-105" />
-                </div>
-              </button>
-              <div class="flex flex-col items-center">
-                <p class="font-707 text-[13px] md:text-[13.5px] text-black text-center leading-[17px] font-normal">
-                  Studio
-                </p>
-                <span class="font-mono text-[10.5px] text-neutral-400">
-                  Live Canvas
-                </span>
-              </div>
+              <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal">
+                Team Roster
+              </p>
             </div>
 
           </div>
         </section>
       </div>
-
-      <!-- Bottom Atmospheric Studio Telemetry -->
-      <footer class="absolute bottom-5 left-0 w-full px-6 sm:px-12 flex items-center justify-between text-[11px] font-mono uppercase tracking-widest text-neutral-400 pointer-events-none">
-        <span>707 STUDIO DEV ARCHITECTURE</span>
-        <button 
-          @click="handleClearMediaConfirm" 
-          class="pointer-events-auto hover:text-red-600 transition-colors cursor-pointer bg-transparent border-none p-0 text-[10.5px] font-mono text-neutral-400"
-        >
-          Purge Media Storage
-        </button>
-      </footer>
     </main>
 
     <!-- ======================================================== -->
@@ -533,9 +459,14 @@
 
             </div>
 
-            <!-- Drawer Footer -->
+            <!-- Drawer Footer with Storage Maintenance Trigger -->
             <div class="px-6 py-3 border-t border-black/10 bg-neutral-50/70 flex items-center justify-between text-[11px] font-mono text-neutral-400 shrink-0">
-              <span>707 ATELIER GOVERNANCE</span>
+              <button 
+                @click="handleClearMediaConfirm" 
+                class="hover:text-red-600 transition-colors cursor-pointer bg-transparent border-none p-0 text-[10.5px] font-mono text-neutral-400"
+              >
+                Purge Media Storage
+              </button>
               <span>ESC TO CLOSE</span>
             </div>
 
@@ -1090,7 +1021,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { 
-  Plus, X, ExternalLink, ChevronRight, Layers, Building2, Boxes, Users, Sparkles, CheckCircle2
+  Plus, X, ExternalLink, ChevronRight, Layers, Building2, Boxes, Users, CheckCircle2
 } from 'lucide-vue-next';
 
 import { useAuthStore, type UserAccount } from '../stores/authStore.ts';
@@ -1098,6 +1029,7 @@ import { useBrandStore } from '../stores/brandStore.ts';
 import { useEditorStore } from '../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../constants/figmaAssets.ts';
 import { glassConfirm, glassPrompt } from '../services/glassDialog.ts';
+import NotificationsMenu from '../components/common/NotificationsMenu.vue';
 import UserProfileModal from '../components/modals/UserProfileModal.vue';
 import WhatsNewModal from '../components/modals/WhatsNewModal.vue';
 import type { Brand, GlobalTemplate, ProjectItem } from '../types/editor.ts';
@@ -1118,11 +1050,6 @@ const userInitials = computed(() => {
   }
   return name.slice(0, 2).toUpperCase();
 });
-
-function handleExitAdmin() {
-  authStore.signOut();
-  router.push('/login');
-}
 
 function handleOpenProjects() {
   showUserProfileModal.value = false;
@@ -1154,7 +1081,7 @@ const activeDrawer = ref<DrawerDivision | null>(null);
 
 const drawerTitle = computed(() => {
   switch (activeDrawer.value) {
-    case 'review': return 'Runway Gate — Pending Releases';
+    case 'review': return 'Review Gate — Pending Releases';
     case 'brands': return 'Brand Houses Matrix';
     case 'foundry': return 'Foundry — Master Blueprints';
     case 'roster': return 'Team Roster & Access Directory';
@@ -1522,6 +1449,17 @@ function formatDate(iso?: string): string {
 </script>
 
 <style scoped>
+/* Borderless default state for icon category menu (matching user mode) */
+.category-menu-btn {
+  border: 0.5px solid transparent !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.category-menu-btn:hover:not(.category-menu-btn-disabled) {
+  border-color: rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04) !important;
+}
+
 @keyframes slideLeft {
   from {
     transform: translateX(100%);
