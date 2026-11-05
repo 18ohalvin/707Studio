@@ -88,6 +88,11 @@ router.beforeEach((to) => {
   if (authStore.isAuthenticated && me?.role === 'gate' && to.path !== '/hub/scanner' && to.path !== '/login') {
     return { path: '/hub/scanner', query: me.assignedProject ? { project: me.assignedProject } : {} };
   }
+
+  // Superadmin workspace home is strictly /settings (Studio Monolith). Bypasses consumer landing page.
+  if (to.path === '/' && authStore.isSuperAdmin) {
+    return { path: '/settings' };
+  }
   
   if (to.path === '/settings' || to.path === '/admin') {
     if (!authStore.isSuperAdmin) {
