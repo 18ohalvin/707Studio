@@ -32,3 +32,4 @@ export type PresenceServerMessage =
   | { type: 'user_left'; userId: string }
   | { type: 'user_updated'; user: PresenceUser }
   | { type: 'user_action'; userId: string; action: string; targetId?: string | number };
+

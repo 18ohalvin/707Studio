@@ -32,3 +32,4 @@ declare module 'ws' {
     on(event: string, listener: (...args: any[]) => void): this;
   }
 }
+
