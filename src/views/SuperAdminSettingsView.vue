@@ -3,18 +3,15 @@
     <!-- Top 48px Header (Campaign Hub Standard) -->
     <header class="w-full h-[48px] px-[24px] py-[8px] flex items-center justify-between border-b border-black/10 bg-white/95 backdrop-blur-md shrink-0 sticky top-0 z-40 select-none">
       <div class="flex items-center gap-[12px] h-[24px]">
-        <!-- 707 Logo + 1.5 Badge -->
+        <!-- 707 Logo + Dev Badge -->
         <router-link to="/" class="h-[18px] relative shrink-0 flex items-center cursor-pointer hover:opacity-85 transition-opacity" title="Back to 707 Home">
           <img :src="FIGMA_ASSETS.logoDesignStudio" alt="707 Design Studio" class="h-[18px] w-auto object-contain pointer-events-none" />
         </router-link>
-        <button 
-          type="button"
-          @click="showWhatsNewModal = true"
-          class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white hover:bg-neutral-50 border-[0.5px] border-black/10 hover:border-black/30 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10.5px] font-sans font-medium text-black leading-none whitespace-nowrap cursor-pointer transition-all apple-press"
-          title="What's New in Design Studio 1.5"
+        <span 
+          class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-black/[0.04] border border-black/10 text-[10px] font-mono font-medium text-neutral-600 leading-none whitespace-nowrap select-none"
         >
-          1.5
-        </button>
+          Dev
+        </span>
 
         <div class="w-px h-4 bg-black/15 mx-0.5" />
 

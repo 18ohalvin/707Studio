@@ -11,7 +11,14 @@
           <router-link to="/" class="h-[18px] relative shrink-0 flex items-center cursor-pointer hover:opacity-85 transition-opacity" title="Back to 707 Home">
             <img :src="FIGMA_ASSETS.logoDesignStudio" alt="707 Design Studio" class="h-[18px] w-auto object-contain pointer-events-none" />
           </router-link>
+          <span 
+            v-if="authStore.isSuperAdmin"
+            class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-black/[0.04] border border-black/10 text-[10px] font-mono font-medium text-neutral-600 leading-none whitespace-nowrap select-none"
+          >
+            Dev
+          </span>
           <button 
+            v-else
             type="button"
             @click="showWhatsNewModal = true"
             class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white hover:bg-neutral-50 border-[0.5px] border-black/10 hover:border-black/30 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10.5px] font-sans font-medium text-black leading-none whitespace-nowrap cursor-pointer transition-all apple-press"
@@ -108,7 +115,14 @@
           <router-link to="/" class="h-[18px] relative shrink-0 flex items-center cursor-pointer hover:opacity-85 transition-opacity" title="Back to 707 Home">
             <img :src="FIGMA_ASSETS.logoDesignStudio" alt="707 Design Studio" class="h-[18px] w-auto object-contain pointer-events-none" />
           </router-link>
+          <span 
+            v-if="authStore.isSuperAdmin"
+            class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-black/[0.04] border border-black/10 text-[10px] font-mono font-medium text-neutral-600 leading-none whitespace-nowrap select-none"
+          >
+            Dev
+          </span>
           <button 
+            v-else
             type="button"
             @click="showWhatsNewModal = true"
             class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white hover:bg-neutral-50 border-[0.5px] border-black/10 hover:border-black/30 shadow-[0_1px_2px_rgba(0,0,0,0.04)] text-[10.5px] font-sans font-medium text-black leading-none whitespace-nowrap cursor-pointer transition-all apple-press"
