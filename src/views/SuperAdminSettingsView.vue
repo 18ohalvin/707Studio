@@ -76,53 +76,7 @@
       </div>
     </header>
 
-    <!-- 1. Live Governance HUD / Metric Ribbon (Campaign Hub Standard) -->
-    <div class="px-[24px] w-full pt-[20px] md:pt-[24px] pb-[16px] shrink-0 font-sans tracking-normal">
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <!-- Card 1: Total Brands -->
-        <div class="p-4 rounded-[14px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between gap-1 shadow-2xs">
-          <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Brand Tenants</span>
-          <div class="flex items-baseline gap-2 mt-1">
-            <span class="text-[26px] sm:text-[30px] font-medium font-mono tabular-nums leading-none text-black">{{ brandStore.brands.length }}</span>
-            <span class="text-[12px] text-neutral-400 font-light">Active</span>
-          </div>
-        </div>
-
-        <!-- Card 2: Team Accounts -->
-        <div class="p-4 rounded-[14px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between gap-1 shadow-2xs">
-          <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Team Accounts</span>
-          <div class="flex items-baseline gap-2 mt-1">
-            <span class="text-[26px] sm:text-[30px] font-medium font-mono tabular-nums leading-none text-black">{{ teamUsers.length }}</span>
-            <span class="text-[12px] text-neutral-400 font-light">Members</span>
-          </div>
-        </div>
-
-        <!-- Card 3: Pending Submissions -->
-        <div class="p-4 rounded-[14px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between gap-1 shadow-2xs">
-          <div class="flex items-center justify-between">
-            <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Pending Review</span>
-            <span v-if="pendingSubmissionsCount > 0" class="text-[11px] font-mono font-medium text-amber-800 bg-amber-50 px-1.5 py-0.2 rounded-full border border-amber-200 tabular-nums">
-              Action Req.
-            </span>
-          </div>
-          <div class="flex items-baseline gap-2 mt-1">
-            <span class="text-[26px] sm:text-[30px] font-medium font-mono tabular-nums leading-none text-black">{{ pendingSubmissionsCount }}</span>
-            <span class="text-[12px] text-neutral-400 font-light">/ {{ editorStore.projects.length }}</span>
-          </div>
-        </div>
-
-        <!-- Card 4: Template Presets -->
-        <div class="p-4 rounded-[14px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between gap-1 shadow-2xs">
-          <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Templates Available</span>
-          <div class="flex items-baseline gap-2 mt-1">
-            <span class="text-[26px] sm:text-[30px] font-medium font-mono tabular-nums leading-none text-black">{{ brandStore.templates.length }}</span>
-            <span class="text-[12px] text-neutral-400 font-light">{{ publishedTemplatesCount }} Live</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 2. Workspace Navigation (Sticky beneath 48px header - Campaign Hub Standard) -->
+    <!-- 1. Workspace Navigation (Sticky beneath 48px header - Campaign Hub Standard) -->
     <div id="superadmin-workspace-nav" class="sticky top-[48px] z-30 bg-white/95 backdrop-blur-md border-b border-black/10 w-full select-none">
       <nav class="flex gap-[28px] md:gap-[44px] items-center px-[24px] w-full whitespace-nowrap overflow-x-auto no-scrollbar py-2.5 font-sans tracking-normal" aria-label="Superadmin directory sections">
         <button 
@@ -170,7 +124,7 @@
       </nav>
     </div>
 
-    <!-- 3. Workspace Content (Flows naturally with sticky tab above) -->
+    <!-- 2. Workspace Content (Flows naturally with sticky tab above) -->
     <main class="flex-1 w-full px-[24px] py-[20px] md:py-[24px] flex flex-col gap-5 font-sans">
       <!-- TAB 1: BRANDS AND PIC'S -->
       <div v-if="activeTab === 'brands'" class="flex flex-col gap-4 w-full">
