@@ -85,10 +85,10 @@
         <!-- Editorial Heading (Step 1 & Step 2A) -->
         <div class="flex flex-col items-center text-center gap-2 mb-2">
           <h1 class="font-707 text-[30px] sm:text-[34px] font-normal tracking-tight text-white leading-[36px] sm:leading-[40px]">
-            Let's get you inside.
+            {{ currentStep === 'password' ? 'Welcome back.' : "Let's get you inside." }}
           </h1>
           <p class="font-707 text-[13px] text-white/60">
-            Sign in to your workspace.
+            {{ currentStep === 'password' ? 'Enter your password to continue.' : 'Sign in or request workspace access.' }}
           </p>
         </div>
 
@@ -131,7 +131,7 @@
           </div>
 
           <!-- Continue Button -->
-          <div class="mt-4">
+          <div class="mt-4 flex flex-col gap-3">
             <button
               type="submit"
               :disabled="isLoading || !email.trim()"
@@ -140,6 +140,11 @@
               <span v-if="isLoading" class="size-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
               <span v-else>Continue</span>
             </button>
+
+            <!-- Dual-purpose helper hint for new users -->
+            <p class="font-707 text-[11.5px] text-white/50 text-center leading-relaxed">
+              New partner or team member? Enter your work email to get started.
+            </p>
           </div>
         </form>
 
@@ -200,7 +205,7 @@
           </div>
 
           <!-- Sign In Button -->
-          <div class="mt-4">
+          <div class="mt-4 flex flex-col items-center gap-3">
             <button
               type="submit"
               :disabled="isLoading || !password.trim()"
@@ -208,6 +213,14 @@
             >
               <span v-if="isLoading" class="size-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
               <span v-else>Sign In</span>
+            </button>
+
+            <button 
+              type="button" 
+              @click="resetToLogin"
+              class="font-707 text-[11.5px] text-white/50 hover:text-white transition-colors border-none bg-transparent cursor-pointer p-0 text-center"
+            >
+              Use a different email
             </button>
           </div>
         </form>
