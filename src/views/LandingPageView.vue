@@ -96,8 +96,8 @@
       <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-full max-w-[664px] px-4 pointer-events-auto">
         <!-- Intro Greeting & 5 Action Cards (Figma Node 212:7033) -->
         <section class="flex flex-col items-center gap-[28px] md:gap-[32px] w-full shrink-0" data-node-id="212:7033" data-name="Intro Container">
-          <h1 class="font-707 text-[28px] md:text-[30px] font-normal text-black text-center tracking-[-0.56px] leading-[34px] whitespace-nowrap" data-node-id="198:6839">
-            Build your next brand activation.
+          <h1 class="font-707 text-[26px] sm:text-[28px] md:text-[30px] font-normal text-black text-center tracking-[-0.56px] leading-[34px] max-w-[620px] transition-all duration-300" data-node-id="198:6839">
+            {{ adaptiveGreeting }}
           </h1>
 
           <!-- Superadmin Shortcut Buttons (Strictly 3 items when Superadmin) -->
@@ -418,6 +418,147 @@ const userInitials = computed(() => {
     return (parts[0][0] + parts[1][0]).toUpperCase();
   }
   return name.slice(0, 2).toUpperCase();
+});
+
+// ----------------------------------------------------
+// Adaptive Editorial Greeting Engine
+// ----------------------------------------------------
+const adaptiveGreeting = computed(() => {
+  const now = new Date();
+  const hour = now.getHours();
+  const day = now.getDay(); // 0 = Sun, 1 = Mon, ... 5 = Fri, 6 = Sat
+  const isWeekend = day === 0 || day === 6;
+  const isFriday = day === 5;
+  const isMonday = day === 1;
+
+  // Contextual user & brand parameters
+  const user = authStore.currentUser;
+  const isSuperAdmin = authStore.isSuperAdmin;
+  const activeBrand = brandStore.activeBrand?.name || '';
+  const firstName = user?.name ? user.name.trim().split(/\s+/)[0] : '';
+
+  // Project health & state
+  const userProjects = editorStore.projects;
+  const liveCount = userProjects.filter(p => p.status === 'published' || p.status === 'approved' || (Number(p.live_version || 0) > 0)).length;
+  const draftProject = userProjects.find(p => p.status === 'draft' || !p.status);
+
+  // Rotation seed based on hour and day
+  const seed = (hour + now.getDate() + (userProjects.length % 3)) % 4;
+
+  // 1. Superadmin Suite Oversight
+  if (isSuperAdmin) {
+    const adminPhrases = [
+      'All brand houses accounted for. The master suite is yours.',
+      'From blueprint to live showcase. Oversee your runway.',
+      'Studio oversight active. Ready for the next release.',
+      'Command center ready. Guide the next brand launch.'
+    ];
+    return adminPhrases[seed % adminPhrases.length];
+  }
+
+  // 2. Active Draft awaiting continuation
+  if (draftProject && seed === 3) {
+    return `Pick up the thread. "${draftProject.title}" is waiting.`;
+  }
+
+  // 3. Live Campaigns in the wild
+  if (liveCount > 0 && seed === 2) {
+    if (activeBrand) {
+      return `${activeBrand} is live in the wild. Ready for the next drop?`;
+    }
+    return `${liveCount} ${liveCount === 1 ? 'drop' : 'drops'} live right now. What's on deck next?`;
+  }
+
+  // 4. Day-of-Week Drop Window Rhythms
+  if (isFriday && (hour >= 11 && hour <= 21)) {
+    const fridayPhrases = [
+      'Friday drop window is open. Ready when you are.',
+      'It’s release day. Let’s make some noise.',
+      'The weekend crowd is waiting. Launch your experience.'
+    ];
+    return fridayPhrases[seed % fridayPhrases.length];
+  }
+
+  if (isWeekend) {
+    const weekendPhrases = [
+      'Weekend showcase in motion. Shape your next experience.',
+      'Doors are open. Time to make something memorable.',
+      'High footfall hours. Perfect the guest journey.'
+    ];
+    return weekendPhrases[seed % weekendPhrases.length];
+  }
+
+  if (isMonday && hour < 14) {
+    const mondayPhrases = [
+      'New week, blank canvas. What’s the next drop?',
+      'Monday briefing. Set the runway in motion.',
+      'Fresh roadmap ahead. Build your next experience.'
+    ];
+    return mondayPhrases[seed % mondayPhrases.length];
+  }
+
+  // 5. Time-of-Day Atmospheric Pools
+  // Morning: 05:00 - 11:59
+  if (hour >= 5 && hour < 12) {
+    const morningPhrases = firstName ? [
+      `Good morning, ${firstName}. The runway is clear.`,
+      `First light in the studio. What are we creating today?`,
+      `Quiet morning, sharp ideas. Time to create.`,
+      `Coffee poured. Set the tone before the crowd arrives.`
+    ] : [
+      'First light in the studio. What are we creating today?',
+      'Coffee poured. The runway is clear.',
+      'Quiet morning, sharp ideas. Time to create.',
+      'Set the tone before the crowd arrives.'
+    ];
+    return morningPhrases[seed % morningPhrases.length];
+  }
+
+  // Afternoon: 12:00 - 17:59
+  if (hour >= 12 && hour < 18) {
+    const afternoonPhrases = firstName ? [
+      `Good afternoon, ${firstName}. Peak studio hours.`,
+      `Crafting culture in real time. Build your next experience.`,
+      `The crowd is waiting. Make something memorable.`,
+      `From raw concept to the showroom floor.`
+    ] : [
+      'Build your next brand activation.',
+      'Peak studio hours. Make something memorable.',
+      'Crafting culture in real time.',
+      'From raw concept to the showroom floor.'
+    ];
+    return afternoonPhrases[seed % afternoonPhrases.length];
+  }
+
+  // Evening: 18:00 - 22:59
+  if (hour >= 18 && hour < 23) {
+    const eveningPhrases = firstName ? [
+      `Good evening, ${firstName}. The spotlight is yours.`,
+      `Golden hour in the studio. Perfect the experience.`,
+      `Doors open soon. Put on the finishing touch.`,
+      `Evening edit. Curate the guest list.`
+    ] : [
+      'Golden hour in the studio. The spotlight is yours.',
+      'Nightfall. Time to curate the guest experience.',
+      'Doors open soon. Put on the finishing touch.',
+      'Evening edit. Perfect the experience.'
+    ];
+    return eveningPhrases[seed % eveningPhrases.length];
+  }
+
+  // Late Night: 23:00 - 04:59
+  const nightPhrases = firstName ? [
+    `Midnight in the studio, ${firstName}. Where the best ideas happen.`,
+    `The city is asleep. The studio is alive.`,
+    `After-hours curation. Take all the time you need.`,
+    `Burning the midnight oil on the next release.`
+  ] : [
+    'Midnight in the studio. Where the best ideas happen.',
+    'The city is asleep. The studio is alive.',
+    'After-hours curation. Take all the time you need.',
+    'Burning the midnight oil on the next release.'
+  ];
+  return nightPhrases[seed % nightPhrases.length];
 });
 
 function handleOpenWhatsNew() {
