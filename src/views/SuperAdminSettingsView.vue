@@ -1,31 +1,31 @@
 <template>
-  <div class="h-screen w-screen overflow-hidden flex flex-col justify-between bg-[#f5f5f5] text-black font-sans relative select-none hub-root" data-name="707 Dev Portal">
+  <div class="h-screen w-screen overflow-hidden flex flex-col justify-between bg-[#0a0a0a] text-white font-sans relative select-none hub-root dark-dev-portal" data-name="707 Dev Portal">
     
-    <!-- 1. Main Header strictly matching user mode tokens with subroute indicator -->
+    <!-- 1. Main Header strictly matching user mode tokens with subroute indicator (Inverted Obsidian Dark) -->
     <header 
       class="absolute top-0 left-0 right-0 w-full h-[48px] px-[24px] py-[8px] flex items-center justify-between z-40 transition-colors shrink-0"
-      :class="currentTab ? 'bg-[#f5f5f5]/90 backdrop-blur-md border-b border-black/[0.06]' : 'bg-transparent border-b-transparent'"
+      :class="currentTab ? 'bg-[#0a0a0a]/85 backdrop-blur-md border-b border-white/[0.08]' : 'bg-transparent border-b-transparent'"
       data-name="Header"
     >
-      <!-- Left: 707 Logo + Dev Badge only (No studio governance text) -->
+      <!-- Left: 707 Logo (Inverted White) + Dev Badge only -->
       <div class="flex items-center gap-[10px] h-[20px]" data-name="Logo">
         <router-link to="/dev" class="h-[18px] relative shrink-0 flex items-center cursor-pointer hover:opacity-85 transition-opacity" title="707 Design Studio">
           <img 
             :src="FIGMA_ASSETS.logoDesignStudio" 
             alt="707 Design Studio" 
-            class="h-[18px] w-auto object-contain pointer-events-none" 
+            class="h-[18px] w-auto object-contain pointer-events-none brightness-0 invert" 
           />
         </router-link>
-        <span class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-black/[0.04] border border-black/10 text-[10px] font-mono font-medium text-neutral-600 leading-none whitespace-nowrap select-none">
+        <span class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white/[0.08] border border-white/15 text-[10px] font-mono font-medium text-white/90 leading-none whitespace-nowrap select-none">
           Dev
         </span>
 
         <!-- Return to Dev Home Breadcrumb Button (when inside subroute) -->
         <template v-if="currentTab">
-          <span class="text-neutral-300">/</span>
+          <span class="text-neutral-600">/</span>
           <router-link 
             to="/dev" 
-            class="inline-flex items-center gap-1 text-[11px] font-mono text-neutral-500 hover:text-black transition-colors px-1.5 py-0.5 rounded hover:bg-black/5"
+            class="inline-flex items-center gap-1 text-[11px] font-mono text-neutral-400 hover:text-white transition-colors px-1.5 py-0.5 rounded hover:bg-white/10"
             title="Return to Dev Home (ESC)"
           >
             <ChevronLeft class="w-3.5 h-3.5 stroke-[2]" />
@@ -35,53 +35,53 @@
       </div>
 
       <!-- Center Segmented Switcher (Visible when inside a subroute) -->
-      <div v-if="currentTab" class="hidden sm:flex items-center gap-1 p-0.5 bg-black/[0.04] border border-black/[0.08] rounded-[8px]">
+      <div v-if="currentTab" class="hidden sm:flex items-center gap-1 p-0.5 bg-white/[0.06] border border-white/[0.1] rounded-[8px]">
         <button 
           @click="router.push('/dev/review')" 
-          :class="currentTab === 'review' ? 'bg-white text-black shadow-xs font-medium' : 'text-neutral-500 hover:text-black'"
+          :class="currentTab === 'review' ? 'bg-white text-black shadow-xs font-medium' : 'text-neutral-400 hover:text-white'"
           class="px-2.5 py-1 rounded-[6px] text-[11.5px] font-707 transition-all flex items-center gap-1.5 cursor-pointer border-none bg-transparent"
         >
           <span>Review Gate</span>
-          <span v-if="pendingProjects.length > 0" class="size-1.5 rounded-full bg-amber-500" />
+          <span v-if="pendingProjects.length > 0" class="size-1.5 rounded-full bg-amber-400" />
         </button>
         <button 
           @click="router.push('/dev/brands')" 
-          :class="currentTab === 'brands' ? 'bg-white text-black shadow-xs font-medium' : 'text-neutral-500 hover:text-black'"
+          :class="currentTab === 'brands' ? 'bg-white text-black shadow-xs font-medium' : 'text-neutral-400 hover:text-white'"
           class="px-2.5 py-1 rounded-[6px] text-[11.5px] font-707 transition-all cursor-pointer border-none bg-transparent"
         >
           Brand Houses
         </button>
         <button 
           @click="router.push('/dev/foundry')" 
-          :class="currentTab === 'foundry' ? 'bg-white text-black shadow-xs font-medium' : 'text-neutral-500 hover:text-black'"
+          :class="currentTab === 'foundry' ? 'bg-white text-black shadow-xs font-medium' : 'text-neutral-400 hover:text-white'"
           class="px-2.5 py-1 rounded-[6px] text-[11.5px] font-707 transition-all cursor-pointer border-none bg-transparent"
         >
           Foundry
         </button>
         <button 
           @click="router.push('/dev/roster')" 
-          :class="currentTab === 'roster' ? 'bg-white text-black shadow-xs font-medium' : 'text-neutral-500 hover:text-black'"
+          :class="currentTab === 'roster' ? 'bg-white text-black shadow-xs font-medium' : 'text-neutral-400 hover:text-white'"
           class="px-2.5 py-1 rounded-[6px] text-[11.5px] font-707 transition-all cursor-pointer border-none bg-transparent"
         >
           Team Roster
         </button>
       </div>
 
-      <!-- Right: Notifications & Profile Icon (Matching user mode) -->
+      <!-- Right: Notifications & Profile Icon (Inverted) -->
       <div class="flex items-center gap-[24px]" data-name="Icons Container">
-        <!-- Bell Notification Icon -->
-        <NotificationsMenu v-if="authStore.isAuthenticated" />
+        <!-- Bell Notification Icon with Inverted White Bell -->
+        <NotificationsMenu v-if="authStore.isAuthenticated" class="[&_button]:text-white [&_svg]:text-white [&_span]:ring-[#0a0a0a]" />
 
         <!-- Minimal Profile / User Icon -->
         <div class="relative flex items-center">
           <button 
             @click="showUserProfileModal = !showUserProfileModal"
-            class="relative size-[24px] flex items-center justify-center apple-press cursor-pointer hover:opacity-80 transition-opacity border-0 border-none outline-none bg-transparent shadow-none p-0 shrink-0 text-black group"
+            class="relative size-[24px] flex items-center justify-center apple-press cursor-pointer hover:opacity-80 transition-opacity border-0 border-none outline-none bg-transparent shadow-none p-0 shrink-0 text-white group"
             title="Dev Profile"
           >
-            <div class="relative size-[22px] rounded-full bg-black text-white flex items-center justify-center font-707 text-[10px] font-semibold tracking-tight shadow-xs select-none transition-transform duration-200 group-hover:scale-105">
+            <div class="relative size-[22px] rounded-full bg-white text-black flex items-center justify-center font-707 text-[10px] font-semibold tracking-tight shadow-xs select-none transition-transform duration-200 group-hover:scale-105">
               {{ userInitials }}
-              <span class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-emerald-500 border border-white" />
+              <span class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-emerald-500 border border-[#0a0a0a]" />
             </div>
           </button>
 
@@ -100,7 +100,7 @@
       </div>
     </header>
 
-    <!-- 2. Centered Main Content Hub (Shown when on /dev home) -->
+    <!-- 2. Centered Main Content Hub (Shown when on /dev home: Smoked Glass) -->
     <main 
       v-if="!currentTab"
       class="relative flex-1 w-full h-full overflow-hidden flex flex-col items-center select-none"
@@ -110,12 +110,12 @@
       <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-full max-w-[800px] px-4 pointer-events-auto">
         <section class="flex flex-col items-center gap-[28px] md:gap-[32px] w-full shrink-0" data-name="Intro Container">
           
-          <!-- Smart Dynamic Editorial Dev Headline -->
-          <h1 class="font-707 text-[28px] md:text-[30px] font-normal text-black text-center tracking-[-0.56px] leading-[36px] max-w-[780px] [text-wrap:balance] transition-all duration-300">
+          <!-- Smart Dynamic Editorial Dev Headline (Crisp White) -->
+          <h1 class="font-707 text-[28px] md:text-[30px] font-normal text-white text-center tracking-[-0.56px] leading-[36px] max-w-[780px] [text-wrap:balance] transition-all duration-300">
             {{ adaptiveDevGreeting }}
           </h1>
 
-          <!-- 4 Aligned Icons Container (Exact user mode gap & button tokens) -->
+          <!-- 4 Aligned Icons Container (Exact user mode gap & button tokens, Smoked Glass Inverted) -->
           <div class="flex gap-[32px] md:gap-[40px] items-start justify-center px-[16px] py-[8px] w-full" data-name="Buttons Container">
             
             <!-- 1. Review Gate -->
@@ -123,10 +123,10 @@
               <div class="relative size-[88px]">
                 <button 
                   @click="router.push('/dev/review')"
-                  class="category-menu-btn apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] flex items-center justify-center p-[8px] rounded-[8px] size-full apple-press cursor-pointer transition-all duration-200 group"
+                  class="category-menu-btn apple-glass-btn backdrop-blur-[12px] bg-white/[0.06] hover:bg-white/[0.12] active:bg-white/[0.18] flex items-center justify-center p-[8px] rounded-[8px] size-full apple-press cursor-pointer transition-all duration-200 group"
                   title="Review Gate: Pending Drop Submissions"
                 >
-                  <div class="size-[32px] relative shrink-0 flex items-center justify-center text-black">
+                  <div class="size-[32px] relative shrink-0 flex items-center justify-center text-white">
                     <Layers class="size-full stroke-[1.4] transition-transform duration-200 group-hover:scale-105" />
                   </div>
                 </button>
@@ -134,12 +134,12 @@
                 <!-- Pending count badge -->
                 <span 
                   v-if="pendingProjects.length > 0"
-                  class="absolute -top-1.5 -right-1.5 bg-black/80 text-white font-707 text-[8.5px] tracking-wider uppercase px-1.5 py-0.5 rounded-[4px] pointer-events-none shadow-xs font-medium"
+                  class="absolute -top-1.5 -right-1.5 bg-white text-black font-707 text-[8.5px] tracking-wider uppercase px-1.5 py-0.5 rounded-[4px] pointer-events-none shadow-xs font-semibold"
                 >
                   {{ pendingProjects.length }} New
                 </span>
               </div>
-              <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal">
+              <p class="font-707 text-[13px] md:text-[14px] text-white/90 text-center leading-[18px] font-normal">
                 Review Gate
               </p>
             </div>
@@ -148,14 +148,14 @@
             <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-name="Button Container">
               <button 
                 @click="router.push('/dev/brands')"
-                class="category-menu-btn apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group"
+                class="category-menu-btn apple-glass-btn backdrop-blur-[12px] bg-white/[0.06] hover:bg-white/[0.12] active:bg-white/[0.18] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group"
                 title="Brand Houses Directory"
               >
-                <div class="size-[32px] relative shrink-0 flex items-center justify-center text-black">
+                <div class="size-[32px] relative shrink-0 flex items-center justify-center text-white">
                   <Building2 class="size-full stroke-[1.4] transition-transform duration-200 group-hover:scale-105" />
                 </div>
               </button>
-              <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal">
+              <p class="font-707 text-[13px] md:text-[14px] text-white/90 text-center leading-[18px] font-normal">
                 Brand Houses
               </p>
             </div>
@@ -164,14 +164,14 @@
             <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-name="Button Container">
               <button 
                 @click="router.push('/dev/foundry')"
-                class="category-menu-btn apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group"
+                class="category-menu-btn apple-glass-btn backdrop-blur-[12px] bg-white/[0.06] hover:bg-white/[0.12] active:bg-white/[0.18] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group"
                 title="Master Blueprints & Presets"
               >
-                <div class="size-[32px] relative shrink-0 flex items-center justify-center text-black">
+                <div class="size-[32px] relative shrink-0 flex items-center justify-center text-white">
                   <Boxes class="size-full stroke-[1.4] transition-transform duration-200 group-hover:scale-105" />
                 </div>
               </button>
-              <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal">
+              <p class="font-707 text-[13px] md:text-[14px] text-white/90 text-center leading-[18px] font-normal">
                 Foundry
               </p>
             </div>
@@ -180,14 +180,14 @@
             <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-name="Button Container">
               <button 
                 @click="router.push('/dev/roster')"
-                class="category-menu-btn apple-glass-btn backdrop-blur-[4px] bg-[rgba(236,236,236,0.85)] hover:bg-[#ececec] active:bg-[#e0e0e0] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group"
+                class="category-menu-btn apple-glass-btn backdrop-blur-[12px] bg-white/[0.06] hover:bg-white/[0.12] active:bg-white/[0.18] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group"
                 title="Team Access & Roster"
               >
-                <div class="size-[32px] relative shrink-0 flex items-center justify-center text-black">
+                <div class="size-[32px] relative shrink-0 flex items-center justify-center text-white">
                   <Users class="size-full stroke-[1.4] transition-transform duration-200 group-hover:scale-105" />
                 </div>
               </button>
-              <p class="font-707 text-[13px] md:text-[14px] text-black text-center leading-[18px] font-normal">
+              <p class="font-707 text-[13px] md:text-[14px] text-white/90 text-center leading-[18px] font-normal">
                 Team Roster
               </p>
             </div>
@@ -206,32 +206,32 @@
       <div class="w-full max-w-[1240px] mx-auto px-6 flex flex-col gap-6">
         
         <!-- Header Banner & Action Bar -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-black/[0.08]">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-white/[0.08]">
           <div class="flex flex-col gap-1">
             <div class="flex items-center gap-2">
-              <span class="size-2 rounded-full bg-black" />
-              <h2 class="text-[22px] font-medium text-black font-707 tracking-tight">
+              <span class="size-2 rounded-full bg-white" />
+              <h2 class="text-[22px] font-medium text-white font-707 tracking-tight">
                 {{ subrouteMeta.title }}
               </h2>
               <span 
                 v-if="subrouteMeta.count !== undefined" 
-                class="px-2 py-0.5 rounded-[5px] bg-black/[0.06] text-[11px] font-mono text-neutral-600 font-medium"
+                class="px-2 py-0.5 rounded-[5px] bg-white/[0.08] text-[11px] font-mono text-white/90 font-medium border border-white/10"
               >
                 {{ subrouteMeta.count }}
               </span>
             </div>
-            <p class="text-[13px] text-neutral-500 font-light">
+            <p class="text-[13px] text-neutral-400 font-light">
               {{ subrouteMeta.description }}
             </p>
           </div>
 
-          <!-- Quick Actions on Header -->
+          <!-- Quick Actions on Header (Inverted Solid White Buttons) -->
           <div class="flex items-center gap-2.5">
             <button 
               v-if="currentTab === 'brands'"
               type="button" 
               @click="showAddBrandModal = true" 
-              class="h-[32px] px-3.5 rounded-[8px] bg-black text-white hover:bg-neutral-800 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs"
+              class="h-[32px] px-3.5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs font-semibold"
             >
               <Plus class="w-3.5 h-3.5" />
               <span>New Brand House</span>
@@ -241,7 +241,7 @@
               v-if="currentTab === 'foundry'"
               type="button" 
               @click="openBuildTemplateModal" 
-              class="h-[32px] px-3.5 rounded-[8px] bg-black text-white hover:bg-neutral-800 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs"
+              class="h-[32px] px-3.5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs font-semibold"
             >
               <Plus class="w-3.5 h-3.5" />
               <span>New Blueprint</span>
@@ -251,7 +251,7 @@
               v-if="currentTab === 'roster'"
               type="button" 
               @click="showAddUserModal = true" 
-              class="h-[32px] px-3.5 rounded-[8px] bg-black text-white hover:bg-neutral-800 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs"
+              class="h-[32px] px-3.5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs font-semibold"
             >
               <Plus class="w-3.5 h-3.5" />
               <span>Invite Member</span>
@@ -261,12 +261,12 @@
 
         <!-- SUBROUTE 1: REVIEW GATE -->
         <div v-if="currentTab === 'review'" class="flex flex-col gap-6">
-          <div v-if="pendingProjects.length === 0" class="py-20 text-center flex flex-col items-center justify-center gap-3 bg-white rounded-[16px] border border-black/10 shadow-xs">
-            <div class="size-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+          <div v-if="pendingProjects.length === 0" class="py-20 text-center flex flex-col items-center justify-center gap-3 bg-[#141414] rounded-[16px] border border-white/10 shadow-xs">
+            <div class="size-12 rounded-full bg-emerald-950/60 text-emerald-400 flex items-center justify-center border border-emerald-800/40">
               <CheckCircle2 class="size-6 stroke-[1.6]" />
             </div>
             <div class="flex flex-col gap-1 items-center">
-              <h3 class="text-[17px] font-medium text-black">All runway releases are signed off</h3>
+              <h3 class="text-[17px] font-medium text-white">All runway releases are signed off</h3>
               <p class="text-[13px] font-mono text-neutral-400 max-w-[420px]">
                 No drops currently awaiting sign-off. Newly submitted brand activations will appear here immediately.
               </p>
@@ -277,14 +277,14 @@
             <div 
               v-for="p in pendingProjects" 
               :key="p.id"
-              class="p-6 bg-white rounded-[16px] border border-black/10 shadow-xs hover:shadow-md transition-shadow flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+              class="p-6 bg-[#141414] rounded-[16px] border border-white/10 shadow-xs hover:border-white/20 hover:shadow-md transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-6"
             >
               <div class="flex flex-col gap-2 min-w-0">
                 <div class="flex items-center gap-2">
-                  <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-black text-white font-medium">
+                  <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-white text-black font-semibold">
                     {{ p.brand_slug || 'atmos' }}
                   </span>
-                  <span class="text-[10.5px] font-mono text-amber-900 bg-amber-50 border border-amber-300 px-2 py-0.5 rounded">
+                  <span class="text-[10.5px] font-mono text-amber-300 bg-amber-950/60 border border-amber-800/60 px-2 py-0.5 rounded">
                     {{ p.pending_update_at ? 'Live Update Sign-Off' : 'New Drop Release' }}
                   </span>
                   <span class="text-[11px] font-mono text-neutral-400">
@@ -292,10 +292,10 @@
                   </span>
                 </div>
 
-                <h3 class="text-[20px] font-medium text-black truncate">{{ p.title }}</h3>
+                <h3 class="text-[20px] font-medium text-white truncate">{{ p.title }}</h3>
                 
-                <span class="text-[12px] font-mono text-neutral-500">
-                  Public Destination: <code class="px-1.5 py-0.5 rounded bg-black/[0.04]">/{{ p.brand_slug || 'atmos' }}/{{ p.slug }}</code>
+                <span class="text-[12px] font-mono text-neutral-400">
+                  Public Destination: <code class="px-1.5 py-0.5 rounded bg-white/[0.08] text-white/90">/{{ p.brand_slug || 'atmos' }}/{{ p.slug }}</code>
                 </span>
               </div>
 
@@ -303,7 +303,7 @@
                 <button
                   type="button"
                   @click="handleInspectProject(p)"
-                  class="h-[36px] px-4 rounded-[8px] border border-black/15 bg-white hover:bg-neutral-50 text-[11.5px] font-mono uppercase tracking-wider text-black transition-colors cursor-pointer flex items-center gap-1.5"
+                  class="h-[36px] px-4 rounded-[8px] border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-[11.5px] font-mono uppercase tracking-wider text-white transition-colors cursor-pointer flex items-center gap-1.5"
                 >
                   <ExternalLink class="w-3.5 h-3.5" />
                   <span>Inspect Drop</span>
@@ -311,14 +311,14 @@
                 <button
                   type="button"
                   @click="handleDeclineProject(p.id)"
-                  class="h-[36px] px-4 rounded-[8px] border border-black/15 bg-white hover:bg-red-50 text-[11.5px] font-mono uppercase tracking-wider text-neutral-600 hover:text-red-600 transition-colors cursor-pointer"
+                  class="h-[36px] px-4 rounded-[8px] border border-white/15 bg-white/[0.05] hover:bg-red-950/40 text-[11.5px] font-mono uppercase tracking-wider text-neutral-300 hover:text-red-400 hover:border-red-800/40 transition-colors cursor-pointer"
                 >
                   Request Changes
                 </button>
                 <button
                   type="button"
                   @click="handleApproveProject(p.id)"
-                  class="h-[36px] px-5 rounded-[8px] bg-black text-white hover:bg-neutral-800 text-[11.5px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 shadow-xs"
+                  class="h-[36px] px-5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11.5px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 shadow-xs font-semibold"
                 >
                   <CheckCircle2 class="w-3.5 h-3.5" />
                   <span>Approve Live</span>
@@ -337,7 +337,7 @@
                 v-model="brandSearchQuery"
                 type="text" 
                 placeholder="Filter brand houses..." 
-                class="w-full h-[36px] pl-9 pr-3 rounded-[8px] border border-black/10 bg-white text-[13px] placeholder:text-neutral-400 focus:outline-none focus:border-black/30 transition-colors font-mono"
+                class="w-full h-[36px] pl-9 pr-3 rounded-[8px] border border-white/10 bg-[#141414] text-[13px] text-white placeholder:text-neutral-500 focus:outline-none focus:border-white/30 transition-colors font-mono"
               />
             </div>
           </div>
@@ -346,47 +346,47 @@
             <div 
               v-for="brand in filteredBrands" 
               :key="brand.id"
-              class="bg-white rounded-[16px] border border-black/10 p-5 flex flex-col justify-between gap-5 shadow-xs hover:shadow-md transition-shadow"
+              class="bg-[#141414] rounded-[16px] border border-white/10 hover:border-white/20 p-5 flex flex-col justify-between gap-5 shadow-xs hover:shadow-md transition-all"
             >
               <div class="flex flex-col gap-3.5">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-3">
-                    <div class="size-10 rounded-[10px] bg-black text-white flex items-center justify-center font-707 text-[14px] font-semibold uppercase tracking-tight">
+                    <div class="size-10 rounded-[10px] bg-white text-black flex items-center justify-center font-707 text-[14px] font-semibold uppercase tracking-tight">
                       {{ brand.name.slice(0, 2) }}
                     </div>
                     <div class="flex flex-col">
-                      <h3 class="text-[17px] font-medium text-black leading-tight">{{ brand.name }}</h3>
+                      <h3 class="text-[17px] font-medium text-white leading-tight">{{ brand.name }}</h3>
                       <span class="text-[11.5px] font-mono text-neutral-400">/{{ brand.slug }}</span>
                     </div>
                   </div>
                   
-                  <span class="px-2 py-0.5 rounded-[5px] bg-black/[0.04] text-[11px] font-mono text-neutral-600 font-medium">
+                  <span class="px-2 py-0.5 rounded-[5px] bg-white/[0.08] border border-white/10 text-[11px] font-mono text-neutral-300 font-medium">
                     {{ getBrandDropCount(brand) }} {{ getBrandDropCount(brand) === 1 ? 'Drop' : 'Drops' }}
                   </span>
                 </div>
 
                 <div class="flex items-center flex-wrap gap-1.5 text-[11px] font-mono">
-                  <span class="text-neutral-400">Team:</span>
+                  <span class="text-neutral-500">Team:</span>
                   <span 
                     v-for="pic in getBrandPics(brand)" 
                     :key="pic.id" 
-                    class="px-2 py-0.5 rounded bg-black/[0.04] text-neutral-700"
+                    class="px-2 py-0.5 rounded bg-white/[0.06] text-neutral-300 border border-white/5"
                   >
                     {{ pic.name }}
                   </span>
-                  <span v-if="getBrandPics(brand).length === 0" class="text-neutral-400 italic">None assigned</span>
+                  <span v-if="getBrandPics(brand).length === 0" class="text-neutral-500 italic">None assigned</span>
                 </div>
 
-                <div v-if="getBrandProjects(brand).length > 0" class="flex flex-col divide-y divide-black/[0.04] border-t border-black/[0.06] pt-2">
+                <div v-if="getBrandProjects(brand).length > 0" class="flex flex-col divide-y divide-white/[0.05] border-t border-white/[0.08] pt-2">
                   <div 
                     v-for="p in getBrandProjects(brand).slice(0, 3)" 
                     :key="p.id"
                     class="py-1.5 flex items-center justify-between text-[12px]"
                   >
-                    <span class="truncate max-w-[180px] text-neutral-800">{{ p.title }}</span>
+                    <span class="truncate max-w-[180px] text-neutral-300">{{ p.title }}</span>
                     <span 
-                      class="text-[9.5px] font-mono px-1.5 py-0.2 rounded border uppercase"
-                      :class="isLiveProject(p) ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-neutral-100 text-neutral-600 border-neutral-200'"
+                      class="text-[9.5px] font-mono px-1.5 py-0.2 rounded border uppercase font-medium"
+                      :class="isLiveProject(p) ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800/50' : 'bg-white/[0.06] text-neutral-400 border-white/10'"
                     >
                       {{ formatProjectStatus(p) }}
                     </span>
@@ -394,20 +394,20 @@
                 </div>
               </div>
 
-              <div class="flex items-center justify-between pt-3 border-t border-black/[0.06]">
+              <div class="flex items-center justify-between pt-3 border-t border-white/[0.08]">
                 <div class="flex items-center gap-2">
                   <button
                     type="button"
                     @click="openBrandDetailsModal(brand)"
-                    class="text-[11.5px] font-mono uppercase text-neutral-500 hover:text-black transition-colors cursor-pointer bg-transparent border-none p-0"
+                    class="text-[11.5px] font-mono uppercase text-neutral-400 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0"
                   >
                     Settings
                   </button>
-                  <span class="text-neutral-300">·</span>
+                  <span class="text-neutral-600">·</span>
                   <button
                     type="button"
                     @click="handleCreateCampaignForBrand(brand)"
-                    class="text-[11.5px] font-mono uppercase text-neutral-600 hover:text-black transition-colors cursor-pointer bg-transparent border-none p-0"
+                    class="text-[11.5px] font-mono uppercase text-neutral-300 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0"
                   >
                     + Drop
                   </button>
@@ -416,7 +416,7 @@
                 <button
                   type="button"
                   @click="openBrandInStudio(brand)"
-                  class="h-[30px] px-3 rounded-[6px] bg-black text-white hover:bg-neutral-800 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1"
+                  class="h-[30px] px-3 rounded-[6px] bg-white text-black hover:bg-neutral-200 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1 font-semibold"
                 >
                   <span>Studio</span>
                   <ChevronRight class="w-3 h-3" />
@@ -433,7 +433,7 @@
               v-for="cat in ['all', 'raffle', 'rsvp', 'hype_drop', 'lookbook', 'pass']" 
               :key="cat"
               @click="selectedFoundryCategory = cat"
-              :class="selectedFoundryCategory === cat ? 'bg-black text-white' : 'bg-white text-neutral-600 hover:text-black border border-black/10'"
+              :class="selectedFoundryCategory === cat ? 'bg-white text-black font-semibold' : 'bg-[#141414] text-neutral-400 hover:text-white border border-white/10'"
               class="px-3 py-1.5 rounded-[8px] text-[11.5px] font-mono uppercase tracking-wider transition-all cursor-pointer border-none whitespace-nowrap"
             >
               {{ cat === 'all' ? 'All Frameworks' : cat.replace('_', ' ') }}
@@ -444,41 +444,41 @@
             <div 
               v-for="tpl in filteredFoundryTemplates" 
               :key="tpl.id"
-              class="bg-white rounded-[16px] border border-black/10 p-5 flex flex-col justify-between gap-5 shadow-xs hover:shadow-md transition-shadow"
+              class="bg-[#141414] rounded-[16px] border border-white/10 p-5 flex flex-col justify-between gap-5 shadow-[0_4px_20px_rgba(0,0,0,0.4)] hover:border-white/20 transition-all"
             >
               <div class="flex flex-col gap-2.5">
                 <div class="flex items-center justify-between">
-                  <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-black/[0.05] text-neutral-700 border border-black/10 font-medium">
+                  <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-white/[0.06] text-neutral-300 border border-white/10 font-medium">
                     {{ tpl.category || 'raffle' }}
                   </span>
                   <span 
-                    class="text-[9.5px] font-mono px-1.5 py-0.5 rounded border uppercase"
-                    :class="tpl.status === 'published' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-neutral-100 text-neutral-600 border-neutral-200'"
+                    class="text-[9.5px] font-mono px-1.5 py-0.5 rounded border uppercase font-medium"
+                    :class="tpl.status === 'published' ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800/50' : 'bg-white/[0.06] text-neutral-400 border-white/10'"
                   >
                     {{ tpl.status || 'published' }}
                   </span>
                 </div>
 
-                <h3 class="text-[17px] font-medium text-black">{{ tpl.name }}</h3>
-                <p class="text-[12.5px] text-neutral-500 font-light line-clamp-2">
+                <h3 class="text-[17px] font-medium text-white">{{ tpl.name }}</h3>
+                <p class="text-[12.5px] text-neutral-400 font-light line-clamp-2">
                   {{ tpl.description || 'Master layout framework preset.' }}
                 </p>
               </div>
 
-              <div class="flex items-center justify-between pt-3 border-t border-black/[0.06]">
+              <div class="flex items-center justify-between pt-3 border-t border-white/[0.08]">
                 <div class="flex items-center gap-2">
                   <button
                     type="button"
                     @click="openEditTemplateModal(tpl)"
-                    class="text-[11.5px] font-mono uppercase text-neutral-500 hover:text-black transition-colors cursor-pointer bg-transparent border-none p-0"
+                    class="text-[11.5px] font-mono uppercase text-neutral-400 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0"
                   >
                     Edit
                   </button>
-                  <span class="text-neutral-300">·</span>
+                  <span class="text-neutral-600">·</span>
                   <button
                     type="button"
                     @click="handleRemoveTemplate(tpl)"
-                    class="text-[11.5px] font-mono uppercase text-neutral-400 hover:text-red-600 transition-colors cursor-pointer bg-transparent border-none p-0"
+                    class="text-[11.5px] font-mono uppercase text-neutral-500 hover:text-red-400 transition-colors cursor-pointer bg-transparent border-none p-0"
                   >
                     Remove
                   </button>
@@ -487,7 +487,7 @@
                 <button
                   type="button"
                   @click="handleEditInStudio(tpl)"
-                  class="h-[30px] px-3 rounded-[6px] bg-black text-white hover:bg-neutral-800 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1"
+                  class="h-[30px] px-3 rounded-[6px] bg-white text-black hover:bg-neutral-200 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1 font-semibold"
                 >
                   <span>Open in Studio</span>
                   <ExternalLink class="w-3 h-3" />
@@ -501,46 +501,46 @@
         <div v-else-if="currentTab === 'roster'" class="flex flex-col gap-6">
           <div class="flex items-center justify-between gap-4">
             <div class="relative w-full max-w-[340px]">
-              <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-neutral-400" />
+              <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-neutral-500" />
               <input 
                 v-model="userSearchQuery"
                 type="text" 
                 placeholder="Filter members by name, email, or role..." 
-                class="w-full h-[36px] pl-9 pr-3 rounded-[8px] border border-black/10 bg-white text-[13px] placeholder:text-neutral-400 focus:outline-none focus:border-black/30 transition-colors font-mono"
+                class="w-full h-[36px] pl-9 pr-3 rounded-[8px] border border-white/10 bg-[#141414] text-[13px] text-white placeholder:text-neutral-500 focus:outline-none focus:border-white/30 transition-colors font-mono"
               />
             </div>
           </div>
 
-          <div class="bg-white rounded-[16px] border border-black/10 overflow-hidden shadow-xs">
+          <div class="bg-[#141414] rounded-[16px] border border-white/10 overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
             <table class="w-full text-left border-collapse">
               <thead>
-                <tr class="border-b border-black/[0.08] bg-black/[0.02] text-[11px] font-mono uppercase text-neutral-500 tracking-wider">
+                <tr class="border-b border-white/[0.08] bg-white/[0.02] text-[11px] font-mono uppercase text-neutral-400 tracking-wider">
                   <th class="py-3 px-5 font-normal">Member</th>
                   <th class="py-3 px-4 font-normal">Role</th>
                   <th class="py-3 px-4 font-normal">Brand Access</th>
                   <th class="py-3 px-5 font-normal text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-black/[0.05] text-[13px]">
+              <tbody class="divide-y divide-white/[0.05] text-[13px]">
                 <tr 
                   v-for="user in filteredTeamUsers" 
                   :key="user.id"
-                  class="hover:bg-neutral-50/60 transition-colors"
+                  class="hover:bg-white/[0.02] transition-colors"
                 >
                   <td class="py-3.5 px-5">
                     <div class="flex items-center gap-3">
-                      <div class="size-8 rounded-full bg-black text-white flex items-center justify-center font-707 text-[11px] font-semibold tracking-tight shrink-0">
+                      <div class="size-8 rounded-full bg-white text-black flex items-center justify-center font-707 text-[11px] font-semibold tracking-tight shrink-0">
                         {{ user.name.slice(0, 2).toUpperCase() }}
                       </div>
                       <div class="flex flex-col min-w-0">
-                        <span class="font-medium text-black truncate">{{ user.name }}</span>
+                        <span class="font-medium text-white truncate">{{ user.name }}</span>
                         <span class="text-[11.5px] font-mono text-neutral-400 truncate">{{ user.email }}</span>
                       </div>
                     </div>
                   </td>
                   <td class="py-3.5 px-4 font-mono">
                     <span class="px-2 py-0.5 rounded text-[11px] uppercase font-medium"
-                      :class="user.role === 'superadmin' ? 'bg-black text-white' : 'bg-black/[0.05] text-neutral-700'"
+                      :class="user.role === 'superadmin' ? 'bg-white text-black font-semibold' : 'bg-white/[0.06] text-neutral-300 border border-white/10'"
                     >
                       {{ user.role }}
                     </span>
@@ -550,7 +550,7 @@
                       <span 
                         v-for="b in user.assignedBrands" 
                         :key="b" 
-                        class="px-1.5 py-0.5 rounded bg-black/[0.04] text-neutral-700"
+                        class="px-1.5 py-0.5 rounded bg-white/[0.06] text-neutral-300 border border-white/5"
                       >
                         {{ b === 'all' ? 'Global Atelier' : b }}
                       </span>
@@ -561,23 +561,23 @@
                       <button
                         type="button"
                         @click="openPasswordModal(user)"
-                        class="text-neutral-500 hover:text-black transition-colors cursor-pointer bg-transparent border-none p-0 uppercase"
+                        class="text-neutral-400 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0 uppercase"
                       >
                         Passkey ↺
                       </button>
-                      <span class="text-neutral-300">·</span>
+                      <span class="text-neutral-600">·</span>
                       <button
                         type="button"
                         @click="openEditUserModal(user)"
-                        class="text-neutral-500 hover:text-black transition-colors cursor-pointer bg-transparent border-none p-0 uppercase"
+                        class="text-neutral-400 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0 uppercase"
                       >
                         Edit
                       </button>
-                      <span class="text-neutral-300">·</span>
+                      <span class="text-neutral-600">·</span>
                       <button
                         type="button"
                         @click="handleRemoveUser(user)"
-                        class="text-neutral-400 hover:text-red-600 transition-colors cursor-pointer bg-transparent border-none p-0 uppercase"
+                        class="text-neutral-500 hover:text-red-400 transition-colors cursor-pointer bg-transparent border-none p-0 uppercase"
                       >
                         Remove
                       </button>
@@ -589,11 +589,11 @@
           </div>
 
           <!-- Bottom Maintenance Bar -->
-          <div class="pt-2 flex items-center justify-between text-[11px] font-mono text-neutral-400">
+          <div class="pt-2 flex items-center justify-between text-[11px] font-mono text-neutral-500">
             <span>707 ATELIER GOVERNANCE</span>
             <button 
               @click="handleClearMediaConfirm" 
-              class="hover:text-red-600 transition-colors cursor-pointer bg-transparent border-none p-0 text-[11px] font-mono text-neutral-400"
+              class="hover:text-red-400 transition-colors cursor-pointer bg-transparent border-none p-0 text-[11px] font-mono text-neutral-500"
             >
               Purge Media Storage
             </button>
@@ -612,16 +612,16 @@
       <Transition name="hub-fade">
         <div 
           v-if="showAddBrandModal" 
-          class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 font-sans font-light tracking-normal select-none"
+          class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 font-sans font-light tracking-normal select-none"
           @click.self="showAddBrandModal = false"
         >
-          <div class="w-full max-w-[440px] bg-white rounded-[16px] shadow-[0_24px_70px_rgba(0,0,0,0.22)] border border-black/10 overflow-hidden flex flex-col animate-apple-pop">
-            <div class="px-5 py-3.5 border-b border-black/10 flex items-center justify-between">
-              <h3 class="text-[15px] font-medium text-black">New Brand House</h3>
+          <div class="w-full max-w-[440px] bg-[#141414] rounded-[16px] shadow-[0_24px_70px_rgba(0,0,0,0.6)] border border-white/15 overflow-hidden flex flex-col animate-apple-pop text-white">
+            <div class="px-5 py-3.5 border-b border-white/10 flex items-center justify-between">
+              <h3 class="text-[15px] font-medium text-white">New Brand House</h3>
               <button 
                 type="button" 
                 @click="showAddBrandModal = false" 
-                class="size-7 rounded-[6px] hover:bg-black/5 flex items-center justify-center text-neutral-500 hover:text-black cursor-pointer border-none bg-transparent"
+                class="size-7 rounded-[6px] hover:bg-white/10 flex items-center justify-center text-neutral-400 hover:text-white cursor-pointer border-none bg-transparent"
               >
                 <X class="w-4 h-4" />
               </button>
@@ -629,25 +629,25 @@
 
             <form @submit.prevent="handleAddBrandSubmit" class="p-5 flex flex-col gap-4">
               <div class="flex flex-col gap-1">
-                <label class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Brand Name</label>
+                <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Brand Name</label>
                 <input 
                   v-model="newBrandName" 
                   type="text" 
                   required 
                   placeholder="e.g. atmos Indonesia" 
-                  class="w-full h-[36px] px-3 rounded-[8px] bg-black/[0.03] border border-black/12 text-[12.5px] font-sans font-light text-black outline-none focus:border-black/30 focus:bg-white transition-all"
+                  class="w-full h-[36px] px-3 rounded-[8px] bg-white/[0.05] border border-white/15 text-[12.5px] font-sans font-light text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all placeholder:text-neutral-500"
                 />
               </div>
 
               <div class="flex flex-col gap-1">
-                <label class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">URL Slug</label>
+                <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">URL Slug</label>
                 <div class="flex items-center gap-1.5">
-                  <span class="text-[12px] font-mono text-neutral-400">events.707.co.id/</span>
+                  <span class="text-[12px] font-mono text-neutral-500">events.707.co.id/</span>
                   <input 
                     v-model="newBrandSlug" 
                     type="text" 
                     placeholder="atmos" 
-                    class="flex-1 h-[36px] px-3 rounded-[8px] bg-black/[0.03] border border-black/12 text-[12.5px] font-mono text-black outline-none focus:border-black/30 focus:bg-white transition-all"
+                    class="flex-1 h-[36px] px-3 rounded-[8px] bg-white/[0.05] border border-white/15 text-[12.5px] font-mono text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all placeholder:text-neutral-500"
                   />
                 </div>
               </div>
@@ -656,13 +656,13 @@
                 <button 
                   type="button" 
                   @click="showAddBrandModal = false" 
-                  class="px-3.5 h-[32px] rounded-[8px] border border-black/15 bg-white hover:bg-neutral-50 text-[12px] font-medium text-neutral-700 transition-colors cursor-pointer"
+                  class="px-3.5 h-[32px] rounded-[8px] border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-[12px] font-medium text-neutral-300 hover:text-white transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit" 
-                  class="px-4 h-[32px] rounded-[8px] bg-black text-white hover:bg-neutral-800 text-[12px] font-medium transition-colors cursor-pointer border-none apple-press"
+                  class="px-4 h-[32px] rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[12px] font-semibold transition-colors cursor-pointer border-none apple-press"
                 >
                   Create House
                 </button>
@@ -678,16 +678,16 @@
       <Transition name="hub-fade">
         <div 
           v-if="showBrandDetailsModal && targetBrandForDetails" 
-          class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 font-sans font-light tracking-normal select-none"
+          class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 font-sans font-light tracking-normal select-none"
           @click.self="showBrandDetailsModal = false"
         >
-          <div class="w-full max-w-[440px] bg-white rounded-[16px] shadow-[0_24px_70px_rgba(0,0,0,0.22)] border border-black/10 overflow-hidden flex flex-col animate-apple-pop">
-            <div class="px-5 py-3.5 border-b border-black/10 flex items-center justify-between">
-              <h3 class="text-[15px] font-medium text-black">Edit Brand Details</h3>
+          <div class="w-full max-w-[440px] bg-[#141414] rounded-[16px] shadow-[0_24px_70px_rgba(0,0,0,0.6)] border border-white/15 overflow-hidden flex flex-col animate-apple-pop text-white">
+            <div class="px-5 py-3.5 border-b border-white/10 flex items-center justify-between">
+              <h3 class="text-[15px] font-medium text-white">Edit Brand Details</h3>
               <button 
                 type="button" 
                 @click="showBrandDetailsModal = false" 
-                class="size-7 rounded-[6px] hover:bg-black/5 flex items-center justify-center text-neutral-500 hover:text-black cursor-pointer border-none bg-transparent"
+                class="size-7 rounded-[6px] hover:bg-white/10 flex items-center justify-center text-neutral-400 hover:text-white cursor-pointer border-none bg-transparent"
               >
                 <X class="w-4 h-4" />
               </button>
@@ -695,22 +695,22 @@
 
             <form @submit.prevent="handleSaveBrandDetails" class="p-5 flex flex-col gap-4">
               <div class="flex flex-col gap-1">
-                <label class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Brand Name</label>
+                <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Brand Name</label>
                 <input 
                   v-model="editBrandName" 
                   type="text" 
                   required 
-                  class="w-full h-[36px] px-3 rounded-[8px] bg-black/[0.03] border border-black/12 text-[12.5px] font-sans font-light text-black outline-none focus:border-black/30 focus:bg-white transition-all"
+                  class="w-full h-[36px] px-3 rounded-[8px] bg-white/[0.05] border border-white/15 text-[12.5px] font-sans font-light text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all"
                 />
               </div>
 
               <div class="flex flex-col gap-1">
-                <label class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">URL Slug</label>
+                <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">URL Slug</label>
                 <input 
                   v-model="editBrandSlug" 
                   type="text" 
                   required 
-                  class="w-full h-[36px] px-3 rounded-[8px] bg-black/[0.03] border border-black/12 text-[12.5px] font-mono text-black outline-none focus:border-black/30 focus:bg-white transition-all"
+                  class="w-full h-[36px] px-3 rounded-[8px] bg-white/[0.05] border border-white/15 text-[12.5px] font-mono text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all"
                 />
               </div>
 
@@ -718,7 +718,7 @@
                 <button 
                   type="button" 
                   @click="handleRemoveBrand(targetBrandForDetails)" 
-                  class="text-[12px] text-red-500 hover:text-red-700 transition-colors cursor-pointer bg-transparent border-none p-0"
+                  class="text-[12px] text-red-400 hover:text-red-300 transition-colors cursor-pointer bg-transparent border-none p-0"
                 >
                   Remove House
                 </button>
@@ -726,13 +726,13 @@
                   <button 
                     type="button" 
                     @click="showBrandDetailsModal = false" 
-                    class="px-3.5 h-[32px] rounded-[8px] border border-black/15 bg-white hover:bg-neutral-50 text-[12px] font-medium text-neutral-700 transition-colors cursor-pointer"
+                    class="px-3.5 h-[32px] rounded-[8px] border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-[12px] font-medium text-neutral-300 hover:text-white transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button 
                     type="submit" 
-                    class="px-4 h-[32px] rounded-[8px] bg-black text-white hover:bg-neutral-800 text-[12px] font-medium transition-colors cursor-pointer border-none apple-press"
+                    class="px-4 h-[32px] rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[12px] font-semibold transition-colors cursor-pointer border-none apple-press"
                   >
                     Save Changes
                   </button>
@@ -749,16 +749,16 @@
       <Transition name="hub-fade">
         <div 
           v-if="showAddUserModal" 
-          class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 font-sans font-light tracking-normal select-none"
+          class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 font-sans font-light tracking-normal select-none"
           @click.self="showAddUserModal = false"
         >
-          <div class="w-full max-w-[440px] bg-white rounded-[16px] shadow-[0_24px_70px_rgba(0,0,0,0.22)] border border-black/10 overflow-hidden flex flex-col animate-apple-pop">
-            <div class="px-5 py-3.5 border-b border-black/10 flex items-center justify-between">
-              <h3 class="text-[15px] font-medium text-black">Invite Team Member</h3>
+          <div class="w-full max-w-[440px] bg-[#141414] rounded-[16px] shadow-[0_24px_70px_rgba(0,0,0,0.6)] border border-white/15 overflow-hidden flex flex-col animate-apple-pop text-white">
+            <div class="px-5 py-3.5 border-b border-white/10 flex items-center justify-between">
+              <h3 class="text-[15px] font-medium text-white">Invite Team Member</h3>
               <button 
                 type="button" 
                 @click="showAddUserModal = false" 
-                class="size-7 rounded-[6px] hover:bg-black/5 flex items-center justify-center text-neutral-500 hover:text-black cursor-pointer border-none bg-transparent"
+                class="size-7 rounded-[6px] hover:bg-white/10 flex items-center justify-center text-neutral-400 hover:text-white cursor-pointer border-none bg-transparent"
               >
                 <X class="w-4 h-4" />
               </button>
@@ -766,33 +766,33 @@
 
             <form @submit.prevent="handleAddUserSubmit" class="p-5 flex flex-col gap-4">
               <div class="flex flex-col gap-1">
-                <label class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Full Name</label>
+                <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Full Name</label>
                 <input 
                   v-model="newUserName" 
                   type="text" 
                   required 
                   placeholder="e.g. Sarah Jenkins" 
-                  class="w-full h-[36px] px-3 rounded-[8px] bg-black/[0.03] border border-black/12 text-[12.5px] font-sans font-light text-black outline-none focus:border-black/30 focus:bg-white transition-all"
+                  class="w-full h-[36px] px-3 rounded-[8px] bg-white/[0.05] border border-white/15 text-[12.5px] font-sans font-light text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all placeholder:text-neutral-500"
                 />
               </div>
 
               <div class="flex flex-col gap-1">
-                <label class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Work Email</label>
+                <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Work Email</label>
                 <input 
                   v-model="newUserEmail" 
                   type="email" 
                   required 
                   placeholder="sarah@atmos.co.id" 
-                  class="w-full h-[36px] px-3 rounded-[8px] bg-black/[0.03] border border-black/12 text-[12.5px] font-sans font-light text-black outline-none focus:border-black/30 focus:bg-white transition-all"
+                  class="w-full h-[36px] px-3 rounded-[8px] bg-white/[0.05] border border-white/15 text-[12.5px] font-sans font-light text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all placeholder:text-neutral-500"
                 />
               </div>
 
               <div class="grid grid-cols-2 gap-3">
                 <div class="flex flex-col gap-1">
-                  <label class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Role</label>
+                  <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Role</label>
                   <select 
                     v-model="newUserRole" 
-                    class="w-full h-[36px] px-3 rounded-[8px] bg-black/[0.03] border border-black/12 text-[12.5px] font-sans font-light text-black outline-none focus:border-black/30 focus:bg-white transition-all"
+                    class="w-full h-[36px] px-3 rounded-[8px] bg-[#1a1a1a] border border-white/15 text-[12.5px] font-sans font-light text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all"
                   >
                     <option value="editor">Editor (Brand PIC)</option>
                     <option value="superadmin">Superadmin</option>
@@ -800,10 +800,10 @@
                 </div>
 
                 <div class="flex flex-col gap-1">
-                  <label class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Brand House</label>
+                  <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Brand House</label>
                   <select 
                     v-model="newUserBrand" 
-                    class="w-full h-[36px] px-3 rounded-[8px] bg-black/[0.03] border border-black/12 text-[12.5px] font-sans font-light text-black outline-none focus:border-black/30 focus:bg-white transition-all"
+                    class="w-full h-[36px] px-3 rounded-[8px] bg-[#1a1a1a] border border-white/15 text-[12.5px] font-sans font-light text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all"
                   >
                     <option value="all">All Brands</option>
                     <option v-for="b in brandStore.brands" :key="b.id" :value="b.slug">{{ b.name }}</option>
@@ -815,13 +815,13 @@
                 <button 
                   type="button" 
                   @click="showAddUserModal = false" 
-                  class="px-3.5 h-[32px] rounded-[8px] border border-black/15 bg-white hover:bg-neutral-50 text-[12px] font-medium text-neutral-700 transition-colors cursor-pointer"
+                  class="px-3.5 h-[32px] rounded-[8px] border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-[12px] font-medium text-neutral-300 hover:text-white transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit" 
-                  class="px-4 h-[32px] rounded-[8px] bg-black text-white hover:bg-neutral-800 text-[12px] font-medium transition-colors cursor-pointer border-none apple-press"
+                  class="px-4 h-[32px] rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[12px] font-semibold transition-colors cursor-pointer border-none apple-press"
                 >
                   Invite Member
                 </button>
@@ -837,16 +837,16 @@
       <Transition name="hub-fade">
         <div 
           v-if="showEditUserModal && targetUserForEdit" 
-          class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 font-sans font-light tracking-normal select-none"
+          class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 font-sans font-light tracking-normal select-none"
           @click.self="showEditUserModal = false"
         >
-          <div class="w-full max-w-[440px] bg-white rounded-[16px] shadow-[0_24px_70px_rgba(0,0,0,0.22)] border border-black/10 overflow-hidden flex flex-col animate-apple-pop">
-            <div class="px-5 py-3.5 border-b border-black/10 flex items-center justify-between">
-              <h3 class="text-[15px] font-medium text-black">Edit Member</h3>
+          <div class="w-full max-w-[440px] bg-[#141414] rounded-[16px] shadow-[0_24px_70px_rgba(0,0,0,0.6)] border border-white/15 overflow-hidden flex flex-col animate-apple-pop text-white">
+            <div class="px-5 py-3.5 border-b border-white/10 flex items-center justify-between">
+              <h3 class="text-[15px] font-medium text-white">Edit Member</h3>
               <button 
                 type="button" 
                 @click="showEditUserModal = false" 
-                class="size-7 rounded-[6px] hover:bg-black/5 flex items-center justify-center text-neutral-500 hover:text-black cursor-pointer border-none bg-transparent"
+                class="size-7 rounded-[6px] hover:bg-white/10 flex items-center justify-center text-neutral-400 hover:text-white cursor-pointer border-none bg-transparent"
               >
                 <X class="w-4 h-4" />
               </button>
@@ -854,22 +854,22 @@
 
             <form @submit.prevent="handleEditUserSubmit" class="p-5 flex flex-col gap-4">
               <div class="flex flex-col gap-1">
-                <label class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Full Name</label>
+                <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Full Name</label>
                 <input 
                   v-model="editUserName" 
                   type="text" 
                   required 
-                  class="w-full h-[36px] px-3 rounded-[8px] bg-black/[0.03] border border-black/12 text-[12.5px] font-sans font-light text-black outline-none focus:border-black/30 focus:bg-white transition-all"
+                  class="w-full h-[36px] px-3 rounded-[8px] bg-white/[0.05] border border-white/15 text-[12.5px] font-sans font-light text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all"
                 />
               </div>
 
               <div class="flex flex-col gap-1">
-                <label class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Work Email</label>
+                <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Work Email</label>
                 <input 
                   v-model="editUserEmail" 
                   type="email" 
                   required 
-                  class="w-full h-[36px] px-3 rounded-[8px] bg-black/[0.03] border border-black/12 text-[12.5px] font-sans font-light text-black outline-none focus:border-black/30 focus:bg-white transition-all"
+                  class="w-full h-[36px] px-3 rounded-[8px] bg-white/[0.05] border border-white/15 text-[12.5px] font-sans font-light text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all"
                 />
               </div>
 
@@ -877,13 +877,13 @@
                 <button 
                   type="button" 
                   @click="showEditUserModal = false" 
-                  class="px-3.5 h-[32px] rounded-[8px] border border-black/15 bg-white hover:bg-neutral-50 text-[12px] font-medium text-neutral-700 transition-colors cursor-pointer"
+                  class="px-3.5 h-[32px] rounded-[8px] border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-[12px] font-medium text-neutral-300 hover:text-white transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit" 
-                  class="px-4 h-[32px] rounded-[8px] bg-black text-white hover:bg-neutral-800 text-[12px] font-medium transition-colors cursor-pointer border-none apple-press"
+                  class="px-4 h-[32px] rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[12px] font-semibold transition-colors cursor-pointer border-none apple-press"
                 >
                   Save Changes
                 </button>
@@ -899,36 +899,36 @@
       <Transition name="hub-fade">
         <div 
           v-if="showPasswordModal && targetUserForPassword" 
-          class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 font-sans font-light tracking-normal select-none"
+          class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 font-sans font-light tracking-normal select-none"
           @click.self="showPasswordModal = false"
         >
-          <div class="w-full max-w-[400px] bg-white rounded-[16px] shadow-[0_24px_70px_rgba(0,0,0,0.22)] border border-black/10 overflow-hidden flex flex-col animate-apple-pop">
-            <div class="px-5 py-3.5 border-b border-black/10 flex items-center justify-between">
-              <h3 class="text-[15px] font-medium text-black">Reset Passkey</h3>
+          <div class="w-full max-w-[400px] bg-[#141414] rounded-[16px] shadow-[0_24px_70px_rgba(0,0,0,0.6)] border border-white/15 overflow-hidden flex flex-col animate-apple-pop text-white">
+            <div class="px-5 py-3.5 border-b border-white/10 flex items-center justify-between">
+              <h3 class="text-[15px] font-medium text-white">Reset Passkey</h3>
               <button 
                 type="button" 
                 @click="showPasswordModal = false" 
-                class="size-7 rounded-[6px] hover:bg-black/5 flex items-center justify-center text-neutral-500 hover:text-black cursor-pointer border-none bg-transparent"
+                class="size-7 rounded-[6px] hover:bg-white/10 flex items-center justify-center text-neutral-400 hover:text-white cursor-pointer border-none bg-transparent"
               >
                 <X class="w-4 h-4" />
               </button>
             </div>
 
             <div class="p-5 flex flex-col gap-4">
-              <p class="text-[12px] text-neutral-500">
-                New temporary access passkey for <b class="text-black font-medium">{{ targetUserForPassword.name }}</b>:
+              <p class="text-[12px] text-neutral-400">
+                New temporary access passkey for <b class="text-white font-medium">{{ targetUserForPassword.name }}</b>:
               </p>
 
               <div class="flex items-center gap-2">
                 <input 
                   v-model="updatedPasswordValue" 
                   type="text" 
-                  class="flex-1 h-[36px] px-3 rounded-[8px] bg-black/[0.03] border border-black/12 text-[13px] font-mono text-black outline-none"
+                  class="flex-1 h-[36px] px-3 rounded-[8px] bg-white/[0.05] border border-white/15 text-[13px] font-mono text-white outline-none focus:border-white/40 focus:bg-white/[0.08]"
                 />
                 <button 
                   type="button" 
                   @click="copyResetPassword" 
-                  class="h-[36px] px-3 rounded-[8px] border border-black/15 bg-white hover:bg-neutral-50 text-[12px] font-medium text-neutral-800 transition-colors cursor-pointer"
+                  class="h-[36px] px-3 rounded-[8px] border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-[12px] font-medium text-neutral-200 transition-colors cursor-pointer"
                 >
                   Copy
                 </button>
@@ -938,14 +938,14 @@
                 <button 
                   type="button" 
                   @click="showPasswordModal = false" 
-                  class="px-3.5 h-[32px] rounded-[8px] border border-black/15 bg-white hover:bg-neutral-50 text-[12px] font-medium text-neutral-700 transition-colors cursor-pointer"
+                  class="px-3.5 h-[32px] rounded-[8px] border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-[12px] font-medium text-neutral-300 hover:text-white transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button 
                   type="button" 
                   @click="handlePasswordUpdateSubmit" 
-                  class="px-4 h-[32px] rounded-[8px] bg-black text-white hover:bg-neutral-800 text-[12px] font-medium transition-colors cursor-pointer border-none apple-press"
+                  class="px-4 h-[32px] rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[12px] font-semibold transition-colors cursor-pointer border-none apple-press"
                 >
                   Save Passkey
                 </button>
@@ -961,16 +961,16 @@
       <Transition name="hub-fade">
         <div 
           v-if="showBuildTemplateModal" 
-          class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 font-sans font-light tracking-normal select-none"
+          class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 font-sans font-light tracking-normal select-none"
           @click.self="showBuildTemplateModal = false"
         >
-          <div class="w-full max-w-[480px] bg-white rounded-[16px] shadow-[0_24px_70px_rgba(0,0,0,0.22)] border border-black/10 overflow-hidden flex flex-col animate-apple-pop">
-            <div class="px-5 py-3.5 border-b border-black/10 flex items-center justify-between">
-              <h3 class="text-[15px] font-medium text-black">New Master Blueprint</h3>
+          <div class="w-full max-w-[480px] bg-[#141414] rounded-[16px] shadow-[0_24px_70px_rgba(0,0,0,0.6)] border border-white/15 overflow-hidden flex flex-col animate-apple-pop text-white">
+            <div class="px-5 py-3.5 border-b border-white/10 flex items-center justify-between">
+              <h3 class="text-[15px] font-medium text-white">New Master Blueprint</h3>
               <button 
                 type="button" 
                 @click="showBuildTemplateModal = false" 
-                class="size-7 rounded-[6px] hover:bg-black/5 flex items-center justify-center text-neutral-500 hover:text-black cursor-pointer border-none bg-transparent"
+                class="size-7 rounded-[6px] hover:bg-white/10 flex items-center justify-center text-neutral-400 hover:text-white cursor-pointer border-none bg-transparent"
               >
                 <X class="w-4 h-4" />
               </button>
@@ -978,22 +978,22 @@
 
             <form @submit.prevent="handleBuildTemplateSubmit(false)" class="p-5 flex flex-col gap-4">
               <div class="flex flex-col gap-1">
-                <label class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Blueprint Name</label>
+                <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Blueprint Name</label>
                 <input 
                   v-model="newTemplateName" 
                   type="text" 
                   required 
                   placeholder="e.g. VIP Secret Drop & Guest E-Pass" 
-                  class="w-full h-[36px] px-3 rounded-[8px] bg-black/[0.03] border border-black/12 text-[12.5px] font-sans font-light text-black outline-none focus:border-black/30 focus:bg-white transition-all"
+                  class="w-full h-[36px] px-3 rounded-[8px] bg-white/[0.05] border border-white/15 text-[12.5px] font-sans font-light text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all placeholder:text-neutral-500"
                 />
               </div>
 
               <div class="grid grid-cols-2 gap-3">
                 <div class="flex flex-col gap-1">
-                  <label class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Category</label>
+                  <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Category</label>
                   <select 
                     v-model="newTemplateCategory" 
-                    class="w-full h-[36px] px-3 rounded-[8px] bg-black/[0.03] border border-black/12 text-[12.5px] font-sans font-light text-black outline-none focus:border-black/30 focus:bg-white transition-all"
+                    class="w-full h-[36px] px-3 rounded-[8px] bg-[#1a1a1a] border border-white/15 text-[12.5px] font-sans font-light text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all"
                   >
                     <option value="raffle">Raffle Drop</option>
                     <option value="rsvp">VIP RSVP Pass</option>
@@ -1005,10 +1005,10 @@
                 </div>
 
                 <div class="flex flex-col gap-1">
-                  <label class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Initial Status</label>
+                  <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Initial Status</label>
                   <select 
                     v-model="newTemplateStatus" 
-                    class="w-full h-[36px] px-3 rounded-[8px] bg-black/[0.03] border border-black/12 text-[12.5px] font-sans font-light text-black outline-none focus:border-black/30 focus:bg-white transition-all"
+                    class="w-full h-[36px] px-3 rounded-[8px] bg-[#1a1a1a] border border-white/15 text-[12.5px] font-sans font-light text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all"
                   >
                     <option value="published">Published (Available)</option>
                     <option value="draft">Draft (Private)</option>
@@ -1017,12 +1017,12 @@
               </div>
 
               <div class="flex flex-col gap-1">
-                <label class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Description</label>
+                <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Description</label>
                 <textarea 
                   v-model="newTemplateDesc" 
                   rows="2"
                   placeholder="Master framework layout description..." 
-                  class="w-full p-2.5 rounded-[8px] bg-black/[0.03] border border-black/12 text-[12px] font-sans font-light text-black outline-none focus:border-black/30 focus:bg-white transition-all resize-none"
+                  class="w-full p-2.5 rounded-[8px] bg-white/[0.05] border border-white/15 text-[12px] font-sans font-light text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all resize-none placeholder:text-neutral-500"
                 />
               </div>
 
@@ -1030,21 +1030,21 @@
                 <button 
                   type="button" 
                   @click="showBuildTemplateModal = false" 
-                  class="px-3.5 h-[32px] rounded-[8px] border border-black/15 bg-white hover:bg-neutral-50 text-[12px] font-medium text-neutral-700 transition-colors cursor-pointer"
+                  class="px-3.5 h-[32px] rounded-[8px] border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-[12px] font-medium text-neutral-300 hover:text-white transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <div class="flex items-center gap-2">
                   <button 
                     type="submit" 
-                    class="px-3.5 h-[32px] rounded-[8px] border border-black/15 bg-white hover:bg-neutral-50 text-[12px] font-medium text-neutral-800 transition-colors cursor-pointer"
+                    class="px-3.5 h-[32px] rounded-[8px] border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-[12px] font-medium text-neutral-200 transition-colors cursor-pointer"
                   >
                     Save Preset
                   </button>
                   <button 
                     type="button"
                     @click="handleBuildTemplateSubmit(true)"
-                    class="px-4 h-[32px] rounded-[8px] bg-black text-white hover:bg-neutral-800 text-[12px] font-medium transition-colors apple-press cursor-pointer border-none flex items-center gap-1.5"
+                    class="px-4 h-[32px] rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[12px] font-semibold transition-colors apple-press cursor-pointer border-none flex items-center gap-1.5"
                   >
                     <span>Save & Build in Studio</span>
                     <ExternalLink class="w-3.5 h-3.5" />
@@ -1062,16 +1062,16 @@
       <Transition name="hub-fade">
         <div 
           v-if="showEditTemplateModal && targetTemplateForEdit" 
-          class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 font-sans font-light tracking-normal select-none"
+          class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 font-sans font-light tracking-normal select-none"
           @click.self="showEditTemplateModal = false"
         >
-          <div class="w-full max-w-[440px] bg-white rounded-[16px] shadow-[0_24px_70px_rgba(0,0,0,0.22)] border border-black/10 overflow-hidden flex flex-col animate-apple-pop">
-            <div class="px-5 py-3.5 border-b border-black/10 flex items-center justify-between">
-              <h3 class="text-[15px] font-medium text-black">Edit Blueprint</h3>
+          <div class="w-full max-w-[440px] bg-[#141414] rounded-[16px] shadow-[0_24px_70px_rgba(0,0,0,0.6)] border border-white/15 overflow-hidden flex flex-col animate-apple-pop text-white">
+            <div class="px-5 py-3.5 border-b border-white/10 flex items-center justify-between">
+              <h3 class="text-[15px] font-medium text-white">Edit Blueprint</h3>
               <button 
                 type="button" 
                 @click="showEditTemplateModal = false" 
-                class="size-7 rounded-[6px] hover:bg-black/5 flex items-center justify-center text-neutral-500 hover:text-black cursor-pointer border-none bg-transparent"
+                class="size-7 rounded-[6px] hover:bg-white/10 flex items-center justify-center text-neutral-400 hover:text-white cursor-pointer border-none bg-transparent"
               >
                 <X class="w-4 h-4" />
               </button>
@@ -1079,21 +1079,21 @@
 
             <form @submit.prevent="handleEditTemplateSubmit" class="p-5 flex flex-col gap-4">
               <div class="flex flex-col gap-1">
-                <label class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Blueprint Name</label>
+                <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Blueprint Name</label>
                 <input 
                   v-model="editTemplateName" 
                   type="text" 
                   required 
-                  class="w-full h-[36px] px-3 rounded-[8px] bg-black/[0.03] border border-black/12 text-[12.5px] font-sans font-light text-black outline-none focus:border-black/30 focus:bg-white transition-all"
+                  class="w-full h-[36px] px-3 rounded-[8px] bg-white/[0.05] border border-white/15 text-[12.5px] font-sans font-light text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all"
                 />
               </div>
 
               <div class="grid grid-cols-2 gap-3">
                 <div class="flex flex-col gap-1">
-                  <label class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Category</label>
+                  <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Category</label>
                   <select 
                     v-model="editTemplateCategory" 
-                    class="w-full h-[36px] px-3 rounded-[8px] bg-black/[0.03] border border-black/12 text-[12.5px] font-sans font-light text-black outline-none focus:border-black/30 focus:bg-white transition-all"
+                    class="w-full h-[36px] px-3 rounded-[8px] bg-[#1a1a1a] border border-white/15 text-[12.5px] font-sans font-light text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all"
                   >
                     <option value="raffle">Raffle Drop</option>
                     <option value="rsvp">VIP RSVP Pass</option>
@@ -1105,10 +1105,10 @@
                 </div>
 
                 <div class="flex flex-col gap-1">
-                  <label class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Status</label>
+                  <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Status</label>
                   <select 
                     v-model="editTemplateStatus" 
-                    class="w-full h-[36px] px-3 rounded-[8px] bg-black/[0.03] border border-black/12 text-[12.5px] font-sans font-light text-black outline-none focus:border-black/30 focus:bg-white transition-all"
+                    class="w-full h-[36px] px-3 rounded-[8px] bg-[#1a1a1a] border border-white/15 text-[12.5px] font-sans font-light text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all"
                   >
                     <option value="published">Published</option>
                     <option value="draft">Draft</option>
@@ -1120,13 +1120,13 @@
                 <button 
                   type="button" 
                   @click="showEditTemplateModal = false" 
-                  class="px-3.5 h-[32px] rounded-[8px] border border-black/15 bg-white hover:bg-neutral-50 text-[12px] font-medium text-neutral-700 transition-colors cursor-pointer"
+                  class="px-3.5 h-[32px] rounded-[8px] border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-[12px] font-medium text-neutral-300 hover:text-white transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit" 
-                  class="px-4 h-[32px] rounded-[8px] bg-black text-white hover:bg-neutral-800 text-[12px] font-medium transition-colors cursor-pointer border-none apple-press"
+                  class="px-4 h-[32px] rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[12px] font-semibold transition-colors cursor-pointer border-none apple-press"
                 >
                   Save Changes
                 </button>
@@ -1247,11 +1247,11 @@ const adaptiveDevGreeting = computed(() => {
   // Morning: 05:00 - 11:59
   if (hour >= 5 && hour < 12) {
     const morning = firstName ? [
-      `Good morning, ${firstName}. The runway is clear.`,
+      `Good morning, ${firstName}.`,
       `First light in the studio, ${firstName}.`,
       `All brand houses accounted for, ${firstName}.`
     ] : [
-      'First light in the studio. The runway is clear.',
+      'First light in the studio.',
       'All brand houses accounted for.',
       'Morning briefing across the ecosystem.'
     ];
@@ -1261,7 +1261,7 @@ const adaptiveDevGreeting = computed(() => {
   // Afternoon: 12:00 - 17:59
   if (hour >= 12 && hour < 18) {
     const afternoon = firstName ? [
-      `Good afternoon, ${firstName}. All systems operational.`,
+      `Good afternoon, ${firstName}.`,
       `Master studio architecture, ${firstName}.`,
       `The runway is clear across all brand houses, ${firstName}.`
     ] : [
@@ -1275,7 +1275,7 @@ const adaptiveDevGreeting = computed(() => {
   // Evening: 18:00 - 22:59
   if (hour >= 18 && hour < 23) {
     const evening = firstName ? [
-      `Good evening, ${firstName}. Curate the ecosystem.`,
+      `Good evening, ${firstName}.`,
       `Golden hour across the brand houses, ${firstName}.`,
       `Blueprint, release, and oversee, ${firstName}.`
     ] : [
@@ -1290,11 +1290,11 @@ const adaptiveDevGreeting = computed(() => {
   const night = firstName ? [
     `After-hours architecture, ${firstName}.`,
     `Nightfall in the studio, ${firstName}.`,
-    `Quiet hours. The runway is yours, ${firstName}.`
+    `Quiet hours on the runway, ${firstName}.`
   ] : [
     'After-hours architecture.',
     'Nightfall in the studio.',
-    'Quiet hours. The runway is yours.'
+    'Quiet hours on the runway.'
   ];
   return night[seed % night.length];
 });
@@ -1732,15 +1732,15 @@ function formatDate(iso?: string): string {
 </script>
 
 <style scoped>
-/* Borderless default state for icon category menu (matching user mode) */
+/* Smoked glass default state for dev dark mode icon category menu */
 .category-menu-btn {
   border: 0.5px solid transparent !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
 }
 
 .category-menu-btn:hover:not(.category-menu-btn-disabled) {
-  border-color: rgba(0, 0, 0, 0.15) !important;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
 }
 
 @keyframes slideLeft {
