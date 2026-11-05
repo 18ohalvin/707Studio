@@ -1,16 +1,38 @@
 <template>
   <!-- A fixed one-screen layout: nothing on this page scrolls, so the door never loses its place. -->
-  <div class="h-[100dvh] w-full bg-[#f4f4f5] text-black font-sans tracking-normal flex flex-col overflow-hidden overscroll-none select-none" data-name="Door Scanner">
-    <header class="w-full h-[48px] px-3 flex items-center justify-between gap-3 border-b border-black/10 bg-white shrink-0 z-30">
+  <div 
+    class="h-[100dvh] w-full font-sans tracking-normal flex flex-col overflow-hidden overscroll-none select-none transition-colors duration-200"
+    :class="isDark ? 'bg-[#0a0a0a] text-white' : 'bg-[#f4f4f5] text-black'"
+    data-name="Door Scanner"
+  >
+    <header 
+      class="w-full h-[48px] px-3 flex items-center justify-between gap-3 shrink-0 z-30 border-b"
+      :class="isDark ? 'bg-[#141414] border-white/10 text-white' : 'bg-white border-black/10 text-black'"
+    >
       <div class="flex items-center gap-2 min-w-0">
-        <router-link v-if="!isGate" :to="hubLink" class="size-[40px] rounded-[10px] active:bg-black/10 flex items-center justify-center shrink-0" title="Back to Campaign Hub">
+        <router-link 
+          v-if="!isGate" 
+          :to="hubLink" 
+          class="size-[40px] rounded-[10px] flex items-center justify-center shrink-0 transition-colors"
+          :class="isDark ? 'hover:bg-white/10 active:bg-white/20 text-white' : 'active:bg-black/10 text-black'"
+          title="Back to Campaign Hub"
+        >
           <ArrowLeft class="w-5 h-5" />
         </router-link>
         <div class="flex items-center gap-2 min-w-0">
-          <span class="text-[15px] font-medium truncate max-w-[40vw] text-black" :title="selectedProject?.title || ''">{{ selectedProject?.title || 'Loading campaign…' }}</span>
+          <span 
+            class="text-[15px] font-medium truncate max-w-[40vw]"
+            :class="isDark ? 'text-white' : 'text-black'"
+            :title="selectedProject?.title || ''"
+          >
+            {{ selectedProject?.title || 'Loading campaign…' }}
+          </span>
         </div>
-        <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-black/5 border border-black/10 text-[11.5px] font-mono text-neutral-700 shrink-0">
-          <Calendar class="w-3.5 h-3.5 text-neutral-500" />
+        <div 
+          class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] text-[11.5px] font-mono shrink-0 border"
+          :class="isDark ? 'bg-white/10 border-white/15 text-white/90' : 'bg-black/5 border-black/10 text-neutral-700'"
+        >
+          <Calendar class="w-3.5 h-3.5 text-neutral-400" />
           <span>Today · {{ todayFormatted }}</span>
         </div>
       </div>
@@ -24,25 +46,40 @@
           <AlertTriangle class="w-4 h-4" /> Offline · Retry
         </button>
         <!-- Operator identity shown only for Gate Staff scanning on dedicated tablets -->
-        <div v-else-if="isGate" class="hidden md:flex items-center gap-1.5 text-[12px] text-neutral-600 truncate max-w-[200px]" title="Active gate staff device">
+        <div v-else-if="isGate" class="hidden md:flex items-center gap-1.5 text-[12px] truncate max-w-[200px]" :class="isDark ? 'text-neutral-400' : 'text-neutral-600'" title="Active gate staff device">
           <span class="size-1.5 rounded-full bg-moss-600 shrink-0" />
           <span class="truncate">{{ operatorName }}</span>
         </div>
-        <button v-if="isGate" type="button" @click="leave" class="px-3 h-[34px] rounded-[8px] border border-black/15 text-[12px] font-medium active:bg-black/10 cursor-pointer">Sign out</button>
+        <button 
+          v-if="isGate" 
+          type="button" 
+          @click="leave" 
+          class="px-3 h-[34px] rounded-[8px] text-[12px] font-medium cursor-pointer border"
+          :class="isDark ? 'border-white/20 active:bg-white/10 text-white' : 'border-black/15 active:bg-black/10 text-black'"
+        >
+          Sign out
+        </button>
 
         <!-- Admin Profile Avatar when in live preview (!isGate) -->
         <div v-if="!isGate && authStore.isAuthenticated" class="relative flex items-center">
           <button 
             type="button"
             @click="showUserProfileModal = !showUserProfileModal"
-            class="relative size-[28px] rounded-full border-[0.5px] border-black/10 hover:border-black/30 shrink-0 bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors duration-200 cursor-pointer shadow-xs apple-press group"
+            class="relative size-[28px] rounded-full shrink-0 flex items-center justify-center transition-colors duration-200 cursor-pointer shadow-xs apple-press group"
+            :class="isDark 
+              ? 'border border-white/20 bg-white text-black hover:bg-neutral-200' 
+              : 'border-[0.5px] border-black/10 hover:border-black/30 bg-neutral-100 hover:bg-neutral-200 text-black'"
             title="User Profile"
           >
             <div 
-              class="relative size-full rounded-full bg-black text-white flex items-center justify-center font-sans text-[10px] font-medium tracking-tight select-none"
+              class="relative size-full rounded-full flex items-center justify-center font-sans text-[10px] font-medium tracking-tight select-none"
+              :class="isDark ? 'bg-white text-black' : 'bg-black text-white'"
             >
               {{ userInitials }}
-              <span class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-emerald-500 border border-white" />
+              <span 
+                class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-emerald-500 border"
+                :class="isDark ? 'border-[#141414]' : 'border-white'"
+              />
             </div>
           </button>
 
@@ -113,6 +150,8 @@ const router = useRouter();
 const authStore = useAuthStore();
 const brandStore = useBrandStore();
 const showUserProfileModal = ref(false);
+
+const isDark = computed(() => authStore.isSuperAdmin);
 
 const userInitials = computed(() => {
   if (authStore.isSuperAdmin) return 'SA';

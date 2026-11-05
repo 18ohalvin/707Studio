@@ -1,19 +1,36 @@
 <template>
-  <div class="h-full w-full bg-white text-black font-sans font-light tracking-normal flex flex-col overflow-y-auto overflow-x-hidden hub-root" data-name="Campaign Hub">
+  <div 
+    class="h-full w-full font-sans font-light tracking-normal flex flex-col overflow-y-auto overflow-x-hidden hub-root transition-colors duration-200"
+    :class="isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-black'"
+    data-name="Campaign Hub"
+  >
     <!-- ============================================================== -->
     <!-- STATE 1: CAMPAIGN SELECTION LAUNCHPAD (Pre-Hub Gateway)        -->
     <!-- Strictly follows Sign-Up Step 1 layout on pure white canvas    -->
     <!-- ============================================================== -->
-    <div v-if="!selectedProject" class="min-h-screen w-full flex flex-col justify-between bg-white text-black font-sans font-light tracking-normal select-none">
+    <div 
+      v-if="!selectedProject" 
+      class="min-h-screen w-full flex flex-col justify-between font-sans font-light tracking-normal select-none"
+      :class="isDark ? 'bg-[#0a0a0a] text-white' : 'bg-white text-black'"
+    >
       <!-- 48px Header -->
-      <header class="w-full h-[48px] px-[24px] py-[8px] flex items-center justify-between border-b border-black/10 shrink-0 sticky top-0 z-30 bg-white">
+      <header 
+        class="w-full h-[48px] px-[24px] py-[8px] flex items-center justify-between shrink-0 sticky top-0 z-30 border-b"
+        :class="isDark ? 'bg-[#0a0a0a] border-white/10 text-white' : 'bg-white border-black/10 text-black'"
+      >
         <div class="flex items-center gap-[10px] h-[20px]">
           <router-link to="/" class="h-[18px] relative shrink-0 flex items-center cursor-pointer hover:opacity-85 transition-opacity" title="Back to 707 Home">
-            <img :src="FIGMA_ASSETS.logoDesignStudio" alt="707 Design Studio" class="h-[18px] w-auto object-contain pointer-events-none" />
+            <img 
+              :src="FIGMA_ASSETS.logoDesignStudio" 
+              alt="707 Design Studio" 
+              class="h-[18px] w-auto object-contain pointer-events-none"
+              :class="isDark ? 'brightness-0 invert' : ''"
+            />
           </router-link>
           <span 
             v-if="authStore.isSuperAdmin"
-            class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-black/[0.04] border border-black/10 text-[10px] font-mono font-medium text-neutral-600 leading-none whitespace-nowrap select-none"
+            class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] text-[10px] font-mono font-medium leading-none whitespace-nowrap select-none border"
+            :class="isDark ? 'bg-white/10 border-white/15 text-white/90' : 'bg-black/[0.04] border-black/10 text-neutral-600'"
           >
             Dev
           </span>
@@ -29,28 +46,39 @@
         </div>
 
         <div class="flex items-center gap-3">
-          <router-link to="/" class="text-[12.5px] text-neutral-500 hover:text-black font-medium transition-colors">
+          <router-link 
+            to="/" 
+            class="text-[12.5px] font-medium transition-colors"
+            :class="isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black'"
+          >
             Exit to Studio
           </router-link>
 
-          <div class="w-px h-4 bg-black/10" />
+          <div class="w-px h-4" :class="isDark ? 'bg-white/15' : 'bg-black/10'" />
 
           <!-- Profile Avatar Container with Anchored UserProfileModal -->
           <div class="relative flex items-center">
             <button 
               type="button"
               @click="authStore.isAuthenticated ? (showUserProfileModal = !showUserProfileModal) : router.push('/login')"
-              class="relative size-[28px] rounded-full border-[0.5px] border-black/10 hover:border-black/30 shrink-0 bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors duration-200 cursor-pointer shadow-xs apple-press group"
+              class="relative size-[28px] rounded-full shrink-0 flex items-center justify-center transition-colors duration-200 cursor-pointer shadow-xs apple-press group"
+              :class="isDark 
+                ? 'border border-white/20 bg-white text-black hover:bg-neutral-200' 
+                : 'border-[0.5px] border-black/10 hover:border-black/30 bg-neutral-100 hover:bg-neutral-200 text-black'"
               :title="authStore.isAuthenticated ? 'User Profile' : 'Sign In'"
             >
               <div 
                 v-if="authStore.isAuthenticated" 
-                class="relative size-full rounded-full bg-black text-white flex items-center justify-center font-sans text-[10px] font-medium tracking-tight select-none"
+                class="relative size-full rounded-full flex items-center justify-center font-sans text-[10px] font-medium tracking-tight select-none"
+                :class="isDark ? 'bg-white text-black' : 'bg-black text-white'"
               >
                 {{ userInitials }}
-                <span class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-emerald-500 border border-white" />
+                <span 
+                  class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-emerald-500 border"
+                  :class="isDark ? 'border-[#0a0a0a]' : 'border-white'"
+                />
               </div>
-              <User v-else class="w-3.5 h-3.5 text-black stroke-[1.5]" />
+              <User v-else class="w-3.5 h-3.5 stroke-[1.5]" :class="isDark ? 'text-white' : 'text-black'" />
             </button>
 
             <UserProfileModal
@@ -72,10 +100,15 @@
         <div class="flex flex-col items-center gap-6 w-full text-center my-auto animate-apple-pop">
           <!-- Title Section -->
           <div class="flex flex-col items-center text-center gap-2">
-            <span class="text-[12.5px] uppercase tracking-normal text-neutral-400 font-medium">Campaign Hub</span>
+            <span 
+              class="text-[12.5px] uppercase tracking-normal font-medium"
+              :class="isDark ? 'text-neutral-400' : 'text-neutral-400'"
+            >
+              Campaign Hub
+            </span>
             <h1 class="font-sans text-[32px] sm:text-[40px] tracking-tight leading-[38px] sm:leading-[46px]">
-              <span class="font-light text-black/60">Which campaign are you </span>
-              <span class="font-medium text-black">managing today?</span>
+              <span class="font-light" :class="isDark ? 'text-white/60' : 'text-black/60'">Which campaign are you </span>
+              <span class="font-medium" :class="isDark ? 'text-white' : 'text-black'">managing today?</span>
             </h1>
           </div>
 
@@ -84,18 +117,35 @@
             <button
               type="button"
               @click="openLaunchpadModal"
-              class="w-full h-[50px] px-4 rounded-[14px] bg-neutral-50 hover:bg-neutral-100 border border-black/10 hover:border-black/25 flex items-center justify-between text-left transition-all apple-press cursor-pointer group shadow-2xs"
+              class="w-full h-[50px] px-4 rounded-[14px] flex items-center justify-between text-left transition-all apple-press cursor-pointer group shadow-2xs border"
+              :class="isDark 
+                ? 'bg-[#141414] hover:bg-white/[0.06] border-white/15 text-white' 
+                : 'bg-neutral-50 hover:bg-neutral-100 border-black/10 hover:border-black/25 text-black'"
               title="Click to search and select campaign (⌘K)"
             >
               <div class="flex items-center gap-3 min-w-0">
-                <Search class="w-4 h-4 text-neutral-400 group-hover:text-black transition-colors shrink-0" />
-                <span class="text-[13.5px] text-neutral-500 font-light truncate">
+                <Search 
+                  class="w-4 h-4 transition-colors shrink-0" 
+                  :class="isDark ? 'text-neutral-400 group-hover:text-white' : 'text-neutral-400 group-hover:text-black'" 
+                />
+                <span 
+                  class="text-[13.5px] font-light truncate"
+                  :class="isDark ? 'text-neutral-400 group-hover:text-white' : 'text-neutral-500'"
+                >
                   Select or search campaign…
                 </span>
               </div>
               <div class="flex items-center gap-2 shrink-0">
-                <kbd class="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded-[5px] bg-black/[0.04] border border-black/10 text-[11px] font-mono text-neutral-400">⌘K</kbd>
-                <ChevronsUpDown class="w-4 h-4 text-neutral-400 group-hover:text-black transition-colors" />
+                <kbd 
+                  class="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded-[5px] text-[11px] font-mono border"
+                  :class="isDark ? 'bg-white/[0.08] border-white/15 text-neutral-300' : 'bg-black/[0.04] border-black/10 text-neutral-400'"
+                >
+                  ⌘K
+                </kbd>
+                <ChevronsUpDown 
+                  class="w-4 h-4 transition-colors" 
+                  :class="isDark ? 'text-neutral-400 group-hover:text-white' : 'text-neutral-400 group-hover:text-black'" 
+                />
               </div>
             </button>
           </div>
@@ -109,15 +159,24 @@
     <!-- ============================================================== -->
     <template v-else>
       <!-- Top 48px Header with Campaign Switcher -->
-      <header class="w-full h-[48px] px-[24px] py-[8px] flex items-center justify-between border-b border-black/10 bg-white/95 backdrop-blur-md shrink-0 sticky top-0 z-40 select-none">
+      <header 
+        class="w-full h-[48px] px-[24px] py-[8px] flex items-center justify-between backdrop-blur-md shrink-0 sticky top-0 z-40 select-none border-b"
+        :class="isDark ? 'bg-[#0a0a0a]/95 border-white/10 text-white' : 'bg-white/95 border-black/10 text-black'"
+      >
         <div class="flex items-center gap-[12px] h-[24px]">
           <!-- 707 Logo + 1.5 Badge -->
           <router-link to="/" class="h-[18px] relative shrink-0 flex items-center cursor-pointer hover:opacity-85 transition-opacity" title="Back to 707 Home">
-            <img :src="FIGMA_ASSETS.logoDesignStudio" alt="707 Design Studio" class="h-[18px] w-auto object-contain pointer-events-none" />
+            <img 
+              :src="FIGMA_ASSETS.logoDesignStudio" 
+              alt="707 Design Studio" 
+              class="h-[18px] w-auto object-contain pointer-events-none" 
+              :class="isDark ? 'brightness-0 invert' : ''"
+            />
           </router-link>
           <span 
             v-if="authStore.isSuperAdmin"
-            class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-black/[0.04] border border-black/10 text-[10px] font-mono font-medium text-neutral-600 leading-none whitespace-nowrap select-none"
+            class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] text-[10px] font-mono font-medium leading-none whitespace-nowrap select-none border"
+            :class="isDark ? 'bg-white/10 border-white/15 text-white/90' : 'bg-black/[0.04] border-black/10 text-neutral-600'"
           >
             Dev
           </span>
@@ -131,7 +190,7 @@
             1.5
           </button>
 
-          <div class="w-px h-4 bg-black/15 mx-0.5" />
+          <div class="w-px h-4 mx-0.5" :class="isDark ? 'bg-white/15' : 'bg-black/15'" />
 
           <!-- Campaign Switcher Pill in Header (Campaign Title only, clean earth green dot) -->
           <div class="relative" ref="headerPickerRef">
@@ -139,26 +198,46 @@
               id="hub-header-switcher"
               type="button"
               @click="isPickerOpen = !isPickerOpen"
-              class="flex items-center gap-2 h-[32px] px-2.5 rounded-[8px] border border-black/12 bg-neutral-50 hover:bg-neutral-100 text-black text-[12.5px] font-medium transition-all apple-press cursor-pointer"
+              class="flex items-center gap-2 h-[32px] px-2.5 rounded-[8px] text-[12.5px] font-medium transition-all apple-press cursor-pointer border"
+              :class="isDark 
+                ? 'border-white/15 bg-[#141414] hover:bg-white/[0.08] text-white' 
+                : 'border-black/12 bg-neutral-50 hover:bg-neutral-100 text-black'"
               title="Switch campaign or return to selector"
             >
               <div class="size-1.5 rounded-full bg-moss-600 shrink-0" />
-              <span class="font-medium truncate max-w-[220px] sm:max-w-[300px] text-[13px] text-black">{{ selectedProject.title }}</span>
-              <ChevronDown class="w-3.5 h-3.5 text-neutral-400 ml-0.5 shrink-0 transition-transform" :class="isPickerOpen ? 'rotate-180' : ''" />
+              <span 
+                class="font-medium truncate max-w-[220px] sm:max-w-[300px] text-[13px]"
+                :class="isDark ? 'text-white' : 'text-black'"
+              >
+                {{ selectedProject.title }}
+              </span>
+              <ChevronDown 
+                class="w-3.5 h-3.5 ml-0.5 shrink-0 transition-transform" 
+                :class="[isPickerOpen ? 'rotate-180' : '', isDark ? 'text-neutral-400' : 'text-neutral-400']" 
+              />
             </button>
 
             <!-- Dropdown Popover -->
             <Transition name="hub-pop">
               <div
                 v-if="isPickerOpen"
-                class="absolute left-0 top-[calc(100%+6px)] z-50 w-[320px] bg-white border border-black/10 rounded-[14px] shadow-[0px_20px_50px_rgba(0,0,0,0.18)] p-2 font-sans font-light tracking-normal"
+                class="absolute left-0 top-[calc(100%+6px)] z-50 w-[320px] rounded-[14px] p-2 font-sans font-light tracking-normal border"
+                :class="isDark 
+                  ? 'bg-[#141414] border-white/15 text-white shadow-[0px_24px_70px_rgba(0,0,0,0.85)]' 
+                  : 'bg-white border-black/10 text-black shadow-[0px_20px_50px_rgba(0,0,0,0.18)]'"
               >
                 <div class="flex items-center justify-between px-2 pt-1 pb-2">
-                  <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Switch Campaign</span>
+                  <span 
+                    class="text-[11px] uppercase tracking-normal font-medium"
+                    :class="isDark ? 'text-neutral-400' : 'text-neutral-500'"
+                  >
+                    Switch Campaign
+                  </span>
                   <button
                     type="button"
                     @click="resetToLaunchpad"
-                    class="text-[11.5px] text-neutral-600 hover:text-black underline cursor-pointer font-light"
+                    class="text-[11.5px] underline cursor-pointer font-light"
+                    :class="isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black'"
                   >
                     All campaigns
                   </button>
@@ -171,7 +250,10 @@
                     v-model="pickerQuery"
                     type="text"
                     placeholder="Find campaign…"
-                    class="w-full h-[32px] pl-8 pr-2 rounded-[7px] bg-black/[0.04] text-[12px] outline-none border border-transparent focus:border-black/20 focus:bg-white"
+                    class="w-full h-[32px] pl-8 pr-2 rounded-[7px] text-[12px] outline-none border transition-all"
+                    :class="isDark 
+                      ? 'bg-white/[0.06] border-white/10 text-white focus:border-white/30 focus:bg-white/[0.09] placeholder:text-neutral-500' 
+                      : 'bg-black/[0.04] border-transparent focus:border-black/20 focus:bg-white text-black placeholder:text-neutral-400'"
                   />
                 </div>
 
@@ -181,14 +263,18 @@
                     :key="p.id"
                     type="button"
                     @click="selectProject(p.id)"
-                    class="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] hover:bg-black/5 cursor-pointer text-left transition-colors"
-                    :class="selectedProjectId === p.id ? 'bg-black/5 font-medium' : ''"
+                    class="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] cursor-pointer text-left transition-colors"
+                    :class="[
+                      selectedProjectId === p.id 
+                        ? (isDark ? 'bg-white/10 font-medium' : 'bg-black/5 font-medium') 
+                        : (isDark ? 'hover:bg-white/[0.06]' : 'hover:bg-black/5')
+                    ]"
                   >
                     <div class="flex flex-col min-w-0 flex-1">
-                      <span class="text-[12.5px] truncate">{{ p.title }}</span>
+                      <span class="text-[12.5px] truncate" :class="isDark ? 'text-white' : 'text-black'">{{ p.title }}</span>
                     </div>
                     <span v-if="p.status === 'approved' || p.status === 'published'" class="size-1.5 rounded-full bg-moss-600 shrink-0" />
-                    <Check v-if="selectedProjectId === p.id" class="w-3.5 h-3.5 text-black shrink-0" />
+                    <Check v-if="selectedProjectId === p.id" class="w-3.5 h-3.5 shrink-0" :class="isDark ? 'text-white' : 'text-black'" />
                   </button>
                 </div>
               </div>
@@ -203,7 +289,8 @@
             id="hub-refresh-btn"
             type="button"
             @click="refresh(true)"
-            class="flex items-center gap-1.5 px-2.5 h-[32px] rounded-[8px] text-[11.5px] font-sans font-light text-neutral-500 hover:text-black hover:bg-black/5 transition-colors cursor-pointer"
+            class="flex items-center gap-1.5 px-2.5 h-[32px] rounded-[8px] text-[11.5px] font-sans font-light transition-colors cursor-pointer"
+            :class="isDark ? 'text-neutral-400 hover:text-white hover:bg-white/10' : 'text-neutral-500 hover:text-black hover:bg-black/5'"
             :title="lastSyncedAt ? `Last synced ${lastSyncedLabel}` : 'Sync now'"
           >
             <span class="relative flex size-2 items-center justify-center">
@@ -216,32 +303,42 @@
           <!-- Primary: Open Campaign Editor -->
           <router-link
             :to="editorHref"
-            class="flex items-center gap-1.5 h-[32px] px-3.5 rounded-[8px] bg-black text-white text-[12px] font-sans font-medium hover:bg-neutral-800 transition-colors apple-press"
+            class="flex items-center gap-1.5 h-[32px] px-3.5 rounded-[8px] text-[12px] font-sans font-medium transition-colors apple-press"
+            :class="isDark 
+              ? 'bg-white text-black hover:bg-neutral-200 font-semibold' 
+              : 'bg-black text-white hover:bg-neutral-800'"
             title="Open Campaign Form Editor"
           >
             <SquarePen class="w-3.5 h-3.5" />
             <span>Open Campaign Editor</span>
-            <ArrowUpRight class="w-3 h-3 text-white/60" />
+            <ArrowUpRight class="w-3 h-3" :class="isDark ? 'text-black/60' : 'text-white/60'" />
           </router-link>
 
-          <div class="w-px h-4 bg-black/10 mx-0.5" />
+          <div class="w-px h-4 mx-0.5" :class="isDark ? 'bg-white/15' : 'bg-black/10'" />
 
           <!-- Profile Avatar Container with Anchored UserProfileModal -->
           <div class="relative flex items-center">
             <button 
               type="button"
               @click="authStore.isAuthenticated ? (showUserProfileModal = !showUserProfileModal) : router.push('/login')"
-              class="relative size-[28px] rounded-full border-[0.5px] border-black/10 hover:border-black/30 shrink-0 bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors duration-200 cursor-pointer shadow-xs apple-press group"
+              class="relative size-[28px] rounded-full shrink-0 flex items-center justify-center transition-colors duration-200 cursor-pointer shadow-xs apple-press group"
+              :class="isDark 
+                ? 'border border-white/20 bg-white text-black hover:bg-neutral-200' 
+                : 'border-[0.5px] border-black/10 hover:border-black/30 bg-neutral-100 hover:bg-neutral-200 text-black'"
               :title="authStore.isAuthenticated ? 'User Profile' : 'Sign In'"
             >
               <div 
                 v-if="authStore.isAuthenticated" 
-                class="relative size-full rounded-full bg-black text-white flex items-center justify-center font-sans text-[10px] font-medium tracking-tight select-none"
+                class="relative size-full rounded-full flex items-center justify-center font-sans text-[10px] font-medium tracking-tight select-none"
+                :class="isDark ? 'bg-white text-black' : 'bg-black text-white'"
               >
                 {{ userInitials }}
-                <span class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-emerald-500 border border-white" />
+                <span 
+                  class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-emerald-500 border" 
+                  :class="isDark ? 'border-[#0a0a0a]' : 'border-white'"
+                />
               </div>
-              <User v-else class="w-3.5 h-3.5 text-black stroke-[1.5]" />
+              <User v-else class="w-3.5 h-3.5 stroke-[1.5]" :class="isDark ? 'text-white' : 'text-black'" />
             </button>
 
             <UserProfileModal
@@ -262,45 +359,95 @@
       <div class="px-[24px] w-full pt-[20px] md:pt-[24px] pb-[16px] shrink-0 font-sans tracking-normal">
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <!-- Card 1: Total Registered -->
-          <div class="p-4 rounded-[14px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between gap-1 shadow-2xs">
-            <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Total Registered</span>
+          <div 
+            class="p-4 rounded-[14px] border flex flex-col justify-between gap-1 shadow-2xs"
+            :class="isDark ? 'bg-[#141414] border-white/10 text-white' : 'bg-neutral-50/60 border-black/10 text-black'"
+          >
+            <span 
+              class="text-[11px] uppercase tracking-normal font-medium"
+              :class="isDark ? 'text-neutral-400' : 'text-neutral-500'"
+            >
+              Total Registered
+            </span>
             <div class="flex items-baseline gap-2 mt-1">
-              <span class="text-[26px] sm:text-[30px] font-medium font-mono tabular-nums leading-none text-black">{{ rows.length }}</span>
-              <span class="text-[12px] text-neutral-400 font-light">Pax</span>
+              <span 
+                class="text-[26px] sm:text-[30px] font-medium font-mono tabular-nums leading-none"
+                :class="isDark ? 'text-white' : 'text-black'"
+              >
+                {{ rows.length }}
+              </span>
+              <span class="text-[12px] font-light" :class="isDark ? 'text-neutral-400' : 'text-neutral-400'">Pax</span>
             </div>
           </div>
 
           <!-- Card 2: Live Checked In -->
-          <div class="p-4 rounded-[14px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between gap-1 shadow-2xs">
+          <div 
+            class="p-4 rounded-[14px] border flex flex-col justify-between gap-1 shadow-2xs"
+            :class="isDark ? 'bg-[#141414] border-white/10 text-white' : 'bg-neutral-50/60 border-black/10 text-black'"
+          >
             <div class="flex items-center justify-between">
-              <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Checked In</span>
+              <span 
+                class="text-[11px] uppercase tracking-normal font-medium"
+                :class="isDark ? 'text-neutral-400' : 'text-neutral-500'"
+              >
+                Checked In
+              </span>
               <span class="text-[11px] font-mono font-medium text-moss-700 bg-moss-50 px-1.5 py-0.2 rounded-full border border-moss-200 tabular-nums">
                 {{ checkedInPct }}%
               </span>
             </div>
             <div class="flex items-baseline gap-2 mt-1">
-              <span class="text-[26px] sm:text-[30px] font-medium font-mono tabular-nums leading-none text-black">{{ checkedInCount }}</span>
-              <span class="text-[12px] text-neutral-400 font-light">/ {{ rows.length }}</span>
+              <span 
+                class="text-[26px] sm:text-[30px] font-medium font-mono tabular-nums leading-none"
+                :class="isDark ? 'text-white' : 'text-black'"
+              >
+                {{ checkedInCount }}
+              </span>
+              <span class="text-[12px] font-light" :class="isDark ? 'text-neutral-400' : 'text-neutral-400'">/ {{ rows.length }}</span>
             </div>
             <!-- Mini progress bar (Earth Green) -->
-            <div class="w-full h-[4px] rounded-full bg-black/10 overflow-hidden mt-1.5">
+            <div 
+              class="w-full h-[4px] rounded-full overflow-hidden mt-1.5"
+              :class="isDark ? 'bg-white/10' : 'bg-black/10'"
+            >
               <div class="h-full bg-moss-700 rounded-full transition-all duration-500" :style="{ width: `${checkedInPct}%` }" />
             </div>
           </div>
 
           <!-- Card 3: Pending Arrival -->
-          <div class="p-4 rounded-[14px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between gap-1 shadow-2xs">
-            <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Pending Arrival</span>
+          <div 
+            class="p-4 rounded-[14px] border flex flex-col justify-between gap-1 shadow-2xs"
+            :class="isDark ? 'bg-[#141414] border-white/10 text-white' : 'bg-neutral-50/60 border-black/10 text-black'"
+          >
+            <span 
+              class="text-[11px] uppercase tracking-normal font-medium"
+              :class="isDark ? 'text-neutral-400' : 'text-neutral-500'"
+            >
+              Pending Arrival
+            </span>
             <div class="flex items-baseline gap-2 mt-1">
-              <span class="text-[26px] sm:text-[30px] font-medium font-mono tabular-nums leading-none text-neutral-800">{{ pendingArrivalCount }}</span>
-              <span class="text-[12px] text-neutral-400 font-light">Remaining</span>
+              <span 
+                class="text-[26px] sm:text-[30px] font-medium font-mono tabular-nums leading-none"
+                :class="isDark ? 'text-white' : 'text-neutral-800'"
+              >
+                {{ pendingArrivalCount }}
+              </span>
+              <span class="text-[12px] font-light" :class="isDark ? 'text-neutral-400' : 'text-neutral-400'">Remaining</span>
             </div>
           </div>
 
           <!-- Card 4: Door Check-in Quick Launch (Calm & Balanced) -->
-          <div class="p-4 rounded-[14px] border border-black/10 bg-neutral-50/60 flex flex-col justify-between gap-2 shadow-2xs">
+          <div 
+            class="p-4 rounded-[14px] border flex flex-col justify-between gap-2 shadow-2xs"
+            :class="isDark ? 'bg-[#141414] border-white/10 text-white' : 'bg-neutral-50/60 border-black/10 text-black'"
+          >
             <div class="flex items-center justify-between">
-              <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Door Entrance</span>
+              <span 
+                class="text-[11px] uppercase tracking-normal font-medium"
+                :class="isDark ? 'text-neutral-400' : 'text-neutral-500'"
+              >
+                Door Entrance
+              </span>
               <span class="size-1.5 rounded-full bg-moss-600 shrink-0" />
             </div>
             <div class="flex flex-col gap-1.5 mt-1">
@@ -308,19 +455,23 @@
                 :href="scannerHref"
                 target="_blank"
                 rel="noopener"
-                class="w-full h-[32px] rounded-[8px] bg-black text-white hover:bg-neutral-800 text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors apple-press cursor-pointer"
+                class="w-full h-[32px] rounded-[8px] text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors apple-press cursor-pointer"
+                :class="isDark 
+                  ? 'bg-white text-black hover:bg-neutral-200 font-semibold' 
+                  : 'bg-black text-white hover:bg-neutral-800'"
               >
                 <ScanLine class="w-3.5 h-3.5" />
                 <span>Launch Scanner</span>
-                <ArrowUpRight class="w-3 h-3 text-neutral-400" />
+                <ArrowUpRight class="w-3 h-3" :class="isDark ? 'text-black/60' : 'text-neutral-400'" />
               </a>
               <button
                 type="button"
                 @click="gateOpen = true"
-                class="w-full h-[24px] text-[11px] font-sans text-neutral-500 hover:text-black flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                class="w-full h-[24px] text-[11px] font-sans flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                :class="isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black'"
                 title="Create or manage door-security accounts for this campaign"
               >
-                <ShieldCheck class="w-3 h-3 text-neutral-400" />
+                <ShieldCheck class="w-3 h-3" :class="isDark ? 'text-neutral-400' : 'text-neutral-400'" />
                 <span>Gate Management</span>
               </button>
             </div>
@@ -329,7 +480,11 @@
       </div>
 
       <!-- 2. Workspace Navigation (Sticky beneath 48px header) -->
-      <div id="hub-workspace-nav" class="sticky top-[48px] z-30 bg-white/95 backdrop-blur-md border-b border-black/10 w-full select-none">
+      <div 
+        id="hub-workspace-nav" 
+        class="sticky top-[48px] z-30 backdrop-blur-md border-b w-full select-none"
+        :class="isDark ? 'bg-[#0a0a0a]/95 border-white/10 text-white' : 'bg-white/95 border-black/10 text-black'"
+      >
         <nav class="flex gap-[28px] md:gap-[44px] items-center px-[24px] w-full whitespace-nowrap overflow-x-auto no-scrollbar py-2.5 font-sans tracking-normal" aria-label="Campaign hub sections">
           <button
             v-for="t in tabs"
@@ -338,10 +493,20 @@
             type="button"
             @click="setTab(t.id)"
             class="bg-transparent border-none p-0 cursor-pointer font-sans text-[14.5px] md:text-[15.5px] leading-[22px] transition-colors flex items-center gap-2 outline-none focus:outline-none focus-visible:outline-none ring-0 select-none"
-            :class="activeTab === t.id ? 'font-medium underline decoration-solid underline-offset-[10px] text-black' : 'font-light text-neutral-500 hover:text-black'"
+            :class="[
+              activeTab === t.id 
+                ? (isDark ? 'font-medium underline decoration-solid underline-offset-[10px] text-white decoration-white' : 'font-medium underline decoration-solid underline-offset-[10px] text-black decoration-black') 
+                : (isDark ? 'font-light text-neutral-400 hover:text-white' : 'font-light text-neutral-500 hover:text-black')
+            ]"
           >
             {{ t.label }}
-            <span v-if="t.badge !== undefined" class="px-1.5 py-0 rounded-full text-[10.5px] font-medium bg-black/5 text-neutral-700 no-underline tabular-nums">{{ t.badge }}</span>
+            <span 
+              v-if="t.badge !== undefined" 
+              class="px-1.5 py-0 rounded-full text-[10.5px] font-medium no-underline tabular-nums"
+              :class="isDark ? 'bg-white/10 text-neutral-300' : 'bg-black/5 text-neutral-700'"
+            >
+              {{ t.badge }}
+            </span>
           </button>
         </nav>
       </div>
@@ -420,26 +585,37 @@
       <Transition name="hub-fade">
         <div 
           v-if="isLaunchpadModalOpen" 
-          class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 font-sans font-light tracking-normal select-none"
+          class="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center p-4 font-sans font-light tracking-normal select-none"
+          :class="isDark ? 'bg-black/75' : 'bg-black/40'"
           @click.self="isLaunchpadModalOpen = false"
         >
-          <div class="w-full max-w-[500px] bg-white rounded-[18px] shadow-[0_24px_70px_rgba(0,0,0,0.22)] border border-black/10 overflow-hidden flex flex-col animate-apple-pop">
+          <div 
+            class="w-full max-w-[500px] rounded-[18px] border overflow-hidden flex flex-col animate-apple-pop"
+            :class="isDark 
+              ? 'bg-[#141414] border-white/15 text-white shadow-[0_24px_70px_rgba(0,0,0,0.85)]' 
+              : 'bg-white border-black/10 text-black shadow-[0_24px_70px_rgba(0,0,0,0.22)]'"
+          >
             <!-- Modal Header / Live Search Bar -->
-            <div class="relative flex items-center px-4 h-[52px] border-b border-black/10 shrink-0">
-              <Search class="w-4 h-4 text-neutral-400 shrink-0 mr-3" />
+            <div 
+              class="relative flex items-center px-4 h-[52px] border-b shrink-0"
+              :class="isDark ? 'border-white/10' : 'border-black/10'"
+            >
+              <Search class="w-4 h-4 shrink-0 mr-3 text-neutral-400" />
               <input
                 ref="launchpadModalInputRef"
                 v-model="launchpadSearch"
                 type="text"
                 placeholder="Search campaign by title or slug…"
-                class="flex-1 h-full text-[13.5px] bg-transparent outline-none placeholder:text-neutral-400 text-black font-light"
+                class="flex-1 h-full text-[13.5px] bg-transparent outline-none font-light"
+                :class="isDark ? 'text-white placeholder:text-neutral-500' : 'text-black placeholder:text-neutral-400'"
                 @keydown.esc="isLaunchpadModalOpen = false"
                 @keydown.enter.prevent="handleModalEnter"
               />
               <button
                 type="button"
                 @click="isLaunchpadModalOpen = false"
-                class="size-7 rounded-[6px] hover:bg-black/5 flex items-center justify-center text-neutral-400 hover:text-black cursor-pointer transition-colors"
+                class="size-7 rounded-[6px] flex items-center justify-center text-neutral-400 cursor-pointer transition-colors"
+                :class="isDark ? 'hover:bg-white/10 hover:text-white' : 'hover:bg-black/5 hover:text-black'"
                 title="Close (Esc)"
               >
                 <X class="w-4 h-4" />
@@ -447,20 +623,37 @@
             </div>
 
             <!-- Campaign Results List -->
-            <div class="max-h-[360px] overflow-y-auto divide-y divide-black/[0.04] p-1.5">
+            <div 
+              class="max-h-[360px] overflow-y-auto p-1.5 divide-y"
+              :class="isDark ? 'divide-white/10' : 'divide-black/[0.04]'"
+            >
               <button
                 v-for="p in filteredLaunchpadProjects"
                 :key="p.id"
                 type="button"
                 @click="selectProjectAndEnter(p.id)"
-                class="w-full px-3.5 py-3 rounded-[10px] hover:bg-neutral-100/90 active:bg-neutral-200/70 flex items-center justify-between text-left transition-colors cursor-pointer group"
+                class="w-full px-3.5 py-3 rounded-[10px] flex items-center justify-between text-left transition-colors cursor-pointer group"
+                :class="isDark ? 'hover:bg-white/[0.06] active:bg-white/[0.1]' : 'hover:bg-neutral-100/90 active:bg-neutral-200/70'"
               >
                 <div class="flex items-center gap-3 min-w-0">
-                  <div class="size-8 rounded-[8px] bg-black/[0.04] border border-black/5 flex items-center justify-center shrink-0">
-                    <span class="font-medium text-[11px] text-neutral-700 uppercase">{{ (p.title || 'C').charAt(0) }}</span>
+                  <div 
+                    class="size-8 rounded-[8px] flex items-center justify-center shrink-0 border"
+                    :class="isDark ? 'bg-white/10 border-white/15' : 'bg-black/[0.04] border-black/5'"
+                  >
+                    <span 
+                      class="font-medium text-[11px] uppercase"
+                      :class="isDark ? 'text-white' : 'text-neutral-700'"
+                    >
+                      {{ (p.title || 'C').charAt(0) }}
+                    </span>
                   </div>
                   <div class="min-w-0 flex flex-col">
-                    <span class="text-[13.5px] font-medium text-black truncate group-hover:text-black">{{ p.title }}</span>
+                    <span 
+                      class="text-[13.5px] font-medium truncate"
+                      :class="isDark ? 'text-white' : 'text-black'"
+                    >
+                      {{ p.title }}
+                    </span>
                     <span class="text-[11px] text-neutral-400 font-mono truncate">/{{ p.slug }}</span>
                   </div>
                 </div>
@@ -530,6 +723,8 @@ const brandStore = useBrandStore();
 const showWhatsNewModal = ref(false);
 const showUserProfileModal = ref(false);
 const showAllProjectsModal = ref(false);
+
+const isDark = computed(() => authStore.isSuperAdmin);
 
 const userInitials = computed(() => {
   if (authStore.isSuperAdmin) return 'SA';
