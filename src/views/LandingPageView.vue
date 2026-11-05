@@ -814,19 +814,31 @@ function openProject(projectId: string) {
 </script>
 
 <style scoped>
-/* Borderless default state for icon category menu (cleaner, more premium aesthetic) */
+/* Hidden container in default state for icon category menu (ultra-clean, minimal aesthetic) */
 .category-menu-btn {
+  background-color: transparent !important;
   border: 0.5px solid transparent !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+  box-shadow: none !important;
 }
 
 .category-menu-btn:hover:not(.category-menu-btn-disabled) {
-  border-color: rgba(0, 0, 0, 0.15) !important;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04) !important;
+  background-color: rgba(236, 236, 236, 0.85) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04) !important;
+}
+
+.category-menu-btn:active:not(.category-menu-btn-disabled) {
+  background-color: #e0e0e0 !important;
 }
 
 .category-menu-btn-disabled {
+  background-color: transparent !important;
   border: 0.5px solid transparent !important;
   box-shadow: none !important;
+}
+
+.category-menu-btn-disabled:hover {
+  background-color: rgba(236, 236, 236, 0.5) !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
 }
 </style>

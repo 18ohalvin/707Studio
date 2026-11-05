@@ -3,8 +3,8 @@
     
     <!-- 1. Main Header strictly matching user mode tokens with subroute indicator (Inverted Obsidian Dark) -->
     <header 
-      class="absolute top-0 left-0 right-0 w-full h-[48px] px-[24px] py-[8px] flex items-center justify-between z-40 transition-colors shrink-0"
-      :class="currentTab ? 'bg-[#0a0a0a]/85 backdrop-blur-md border-b border-white/[0.08]' : 'bg-transparent border-b-transparent'"
+      class="w-full h-[48px] px-[24px] py-[8px] flex items-center justify-between shrink-0 z-40 transition-colors"
+      :class="currentTab ? 'sticky top-0 bg-[#0a0a0a]/90 backdrop-blur-md border-b border-white/[0.08]' : 'absolute top-0 left-0 right-0 bg-transparent border-b-transparent'"
       data-name="Header"
     >
       <!-- Left: 707 Logo (Inverted White) + Dev Badge only -->
@@ -115,7 +115,7 @@
             {{ adaptiveDevGreeting }}
           </h1>
 
-          <!-- 4 Aligned Icons Container (Exact user mode gap & button tokens, Smoked Glass Inverted) -->
+          <!-- 4 Aligned Icons Container (Exact user mode gap & button tokens, default container hidden) -->
           <div class="flex gap-[32px] md:gap-[40px] items-start justify-center px-[16px] py-[8px] w-full" data-name="Buttons Container">
             
             <!-- 1. Review Gate -->
@@ -123,10 +123,10 @@
               <div class="relative size-[88px]">
                 <button 
                   @click="router.push('/dev/review')"
-                  class="category-menu-btn apple-glass-btn backdrop-blur-[12px] bg-white/[0.06] hover:bg-white/[0.12] active:bg-white/[0.18] flex items-center justify-center p-[8px] rounded-[8px] size-full apple-press cursor-pointer transition-all duration-200 group"
+                  class="category-menu-btn apple-glass-btn flex items-center justify-center p-[8px] rounded-[12px] size-full apple-press cursor-pointer transition-all duration-200 group bg-transparent hover:bg-white/[0.08] active:bg-white/[0.14]"
                   title="Review Gate: Pending Drop Submissions"
                 >
-                  <div class="size-[32px] relative shrink-0 flex items-center justify-center text-white">
+                  <div class="size-[32px] relative shrink-0 flex items-center justify-center text-white/80 group-hover:text-white transition-colors">
                     <Layers class="size-full stroke-[1.4] transition-transform duration-200 group-hover:scale-105" />
                   </div>
                 </button>
@@ -139,7 +139,7 @@
                   {{ pendingProjects.length }} New
                 </span>
               </div>
-              <p class="font-707 text-[13px] md:text-[14px] text-white/90 text-center leading-[18px] font-normal">
+              <p class="font-707 text-[13px] md:text-[14px] text-white/80 group-hover:text-white text-center leading-[18px] font-normal transition-colors">
                 Review Gate
               </p>
             </div>
@@ -148,14 +148,14 @@
             <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-name="Button Container">
               <button 
                 @click="router.push('/dev/brands')"
-                class="category-menu-btn apple-glass-btn backdrop-blur-[12px] bg-white/[0.06] hover:bg-white/[0.12] active:bg-white/[0.18] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group"
+                class="category-menu-btn apple-glass-btn flex items-center justify-center p-[8px] rounded-[12px] size-[88px] apple-press cursor-pointer transition-all duration-200 group bg-transparent hover:bg-white/[0.08] active:bg-white/[0.14]"
                 title="Brand Houses Directory"
               >
-                <div class="size-[32px] relative shrink-0 flex items-center justify-center text-white">
+                <div class="size-[32px] relative shrink-0 flex items-center justify-center text-white/80 group-hover:text-white transition-colors">
                   <Building2 class="size-full stroke-[1.4] transition-transform duration-200 group-hover:scale-105" />
                 </div>
               </button>
-              <p class="font-707 text-[13px] md:text-[14px] text-white/90 text-center leading-[18px] font-normal">
+              <p class="font-707 text-[13px] md:text-[14px] text-white/80 group-hover:text-white text-center leading-[18px] font-normal transition-colors">
                 Brand Houses
               </p>
             </div>
@@ -164,14 +164,14 @@
             <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-name="Button Container">
               <button 
                 @click="router.push('/dev/foundry')"
-                class="category-menu-btn apple-glass-btn backdrop-blur-[12px] bg-white/[0.06] hover:bg-white/[0.12] active:bg-white/[0.18] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group"
+                class="category-menu-btn apple-glass-btn flex items-center justify-center p-[8px] rounded-[12px] size-[88px] apple-press cursor-pointer transition-all duration-200 group bg-transparent hover:bg-white/[0.08] active:bg-white/[0.14]"
                 title="Master Blueprints & Presets"
               >
-                <div class="size-[32px] relative shrink-0 flex items-center justify-center text-white">
+                <div class="size-[32px] relative shrink-0 flex items-center justify-center text-white/80 group-hover:text-white transition-colors">
                   <Boxes class="size-full stroke-[1.4] transition-transform duration-200 group-hover:scale-105" />
                 </div>
               </button>
-              <p class="font-707 text-[13px] md:text-[14px] text-white/90 text-center leading-[18px] font-normal">
+              <p class="font-707 text-[13px] md:text-[14px] text-white/80 group-hover:text-white text-center leading-[18px] font-normal transition-colors">
                 Foundry
               </p>
             </div>
@@ -180,14 +180,14 @@
             <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-name="Button Container">
               <button 
                 @click="router.push('/dev/roster')"
-                class="category-menu-btn apple-glass-btn backdrop-blur-[12px] bg-white/[0.06] hover:bg-white/[0.12] active:bg-white/[0.18] flex items-center justify-center p-[8px] rounded-[8px] size-[88px] apple-press cursor-pointer transition-all duration-200 group"
+                class="category-menu-btn apple-glass-btn flex items-center justify-center p-[8px] rounded-[12px] size-[88px] apple-press cursor-pointer transition-all duration-200 group bg-transparent hover:bg-white/[0.08] active:bg-white/[0.14]"
                 title="Team Access & Roster"
               >
-                <div class="size-[32px] relative shrink-0 flex items-center justify-center text-white">
+                <div class="size-[32px] relative shrink-0 flex items-center justify-center text-white/80 group-hover:text-white transition-colors">
                   <Users class="size-full stroke-[1.4] transition-transform duration-200 group-hover:scale-105" />
                 </div>
               </button>
-              <p class="font-707 text-[13px] md:text-[14px] text-white/90 text-center leading-[18px] font-normal">
+              <p class="font-707 text-[13px] md:text-[14px] text-white/80 group-hover:text-white text-center leading-[18px] font-normal transition-colors">
                 Team Roster
               </p>
             </div>
@@ -197,13 +197,13 @@
       </div>
     </main>
 
-    <!-- 3. Full-Page Sub-Route Workspaces (Option 2: Dedicated Full Viewports) -->
+    <!-- 3. Full-Page Sub-Route Workspaces (Option 2: Following Global Padding w-full px-[24px]) -->
     <main 
       v-else
-      class="relative flex-1 w-full h-full pt-[64px] pb-[32px] overflow-y-auto select-none"
+      class="flex-1 w-full overflow-y-auto select-none px-[24px] py-[20px] md:py-[24px]"
       data-name="Subroute Workspace Container"
     >
-      <div class="w-full max-w-[1240px] mx-auto px-6 flex flex-col gap-6">
+      <div class="w-full flex flex-col gap-6">
         
         <!-- Header Banner & Action Bar -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-white/[0.08]">
@@ -342,7 +342,7 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             <div 
               v-for="brand in filteredBrands" 
               :key="brand.id"
@@ -440,7 +440,7 @@
             </button>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             <div 
               v-for="tpl in filteredFoundryTemplates" 
               :key="tpl.id"
@@ -1732,15 +1732,22 @@ function formatDate(iso?: string): string {
 </script>
 
 <style scoped>
-/* Smoked glass default state for dev dark mode icon category menu */
+/* Default state: container is completely hidden (no background, no border, no shadow) */
 .category-menu-btn {
+  background-color: transparent !important;
   border: 0.5px solid transparent !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+  box-shadow: none !important;
 }
 
+/* Hover state: smoked glass container reveals smoothly */
 .category-menu-btn:hover:not(.category-menu-btn-disabled) {
-  border-color: rgba(255, 255, 255, 0.16) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+.category-menu-btn:active:not(.category-menu-btn-disabled) {
+  background-color: rgba(255, 255, 255, 0.14) !important;
 }
 
 @keyframes slideLeft {
