@@ -34,39 +34,6 @@
         </template>
       </div>
 
-      <!-- Center Segmented Switcher (Visible when inside a subroute) -->
-      <div v-if="currentTab" class="hidden sm:flex items-center gap-1 p-0.5 bg-white/[0.06] border border-white/[0.1] rounded-[8px]">
-        <button 
-          @click="router.push('/dev/review')" 
-          :class="currentTab === 'review' ? 'bg-white text-black shadow-xs font-medium' : 'text-neutral-400 hover:text-white'"
-          class="px-2.5 py-1 rounded-[6px] text-[11.5px] font-707 transition-all flex items-center gap-1.5 cursor-pointer border-none bg-transparent"
-        >
-          <span>Review Gate</span>
-          <span v-if="pendingProjects.length > 0" class="size-1.5 rounded-full bg-amber-400" />
-        </button>
-        <button 
-          @click="router.push('/dev/brands')" 
-          :class="currentTab === 'brands' ? 'bg-white text-black shadow-xs font-medium' : 'text-neutral-400 hover:text-white'"
-          class="px-2.5 py-1 rounded-[6px] text-[11.5px] font-707 transition-all cursor-pointer border-none bg-transparent"
-        >
-          Brand Houses
-        </button>
-        <button 
-          @click="router.push('/dev/foundry')" 
-          :class="currentTab === 'foundry' ? 'bg-white text-black shadow-xs font-medium' : 'text-neutral-400 hover:text-white'"
-          class="px-2.5 py-1 rounded-[6px] text-[11.5px] font-707 transition-all cursor-pointer border-none bg-transparent"
-        >
-          Foundry
-        </button>
-        <button 
-          @click="router.push('/dev/roster')" 
-          :class="currentTab === 'roster' ? 'bg-white text-black shadow-xs font-medium' : 'text-neutral-400 hover:text-white'"
-          class="px-2.5 py-1 rounded-[6px] text-[11.5px] font-707 transition-all cursor-pointer border-none bg-transparent"
-        >
-          Team Roster
-        </button>
-      </div>
-
       <!-- Right: Notifications & Profile Icon (Inverted) -->
       <div class="flex items-center gap-[24px]" data-name="Icons Container">
         <!-- Bell Notification Icon with Inverted White Bell -->
@@ -205,58 +172,22 @@
     >
       <div class="w-full flex flex-col gap-6">
         
-        <!-- Header Banner & Action Bar -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-white/[0.08]">
-          <div class="flex flex-col gap-1">
-            <div class="flex items-center gap-2">
-              <span class="size-2 rounded-full bg-white" />
-              <h2 class="text-[22px] font-medium text-white font-707 tracking-tight">
-                {{ subrouteMeta.title }}
-              </h2>
-              <span 
-                v-if="subrouteMeta.count !== undefined" 
-                class="px-2 py-0.5 rounded-[5px] bg-white/[0.08] text-[11px] font-mono text-white/90 font-medium border border-white/10"
-              >
-                {{ subrouteMeta.count }}
-              </span>
-            </div>
-            <p class="text-[13px] text-neutral-400 font-light">
-              {{ subrouteMeta.description }}
-            </p>
+        <!-- Header Banner -->
+        <div class="flex flex-col gap-1 pb-4 border-b border-white/[0.08]">
+          <div class="flex items-center gap-2">
+            <h2 class="text-[22px] font-medium text-white font-707 tracking-tight">
+              {{ subrouteMeta.title }}
+            </h2>
+            <span 
+              v-if="subrouteMeta.count !== undefined" 
+              class="px-2 py-0.5 rounded-[5px] bg-white/[0.08] text-[11px] font-mono text-white/90 font-medium border border-white/10"
+            >
+              {{ subrouteMeta.count }}
+            </span>
           </div>
-
-          <!-- Quick Actions on Header (Inverted Solid White Buttons) -->
-          <div class="flex items-center gap-2.5">
-            <button 
-              v-if="currentTab === 'brands'"
-              type="button" 
-              @click="showAddBrandModal = true" 
-              class="h-[32px] px-3.5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs font-semibold"
-            >
-              <Plus class="w-3.5 h-3.5" />
-              <span>New Brand House</span>
-            </button>
-
-            <button 
-              v-if="currentTab === 'foundry'"
-              type="button" 
-              @click="openBuildTemplateModal" 
-              class="h-[32px] px-3.5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs font-semibold"
-            >
-              <Plus class="w-3.5 h-3.5" />
-              <span>New Blueprint</span>
-            </button>
-
-            <button 
-              v-if="currentTab === 'roster'"
-              type="button" 
-              @click="showAddUserModal = true" 
-              class="h-[32px] px-3.5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs font-semibold"
-            >
-              <Plus class="w-3.5 h-3.5" />
-              <span>Invite Member</span>
-            </button>
-          </div>
+          <p class="text-[13px] text-neutral-400 font-light">
+            {{ subrouteMeta.description }}
+          </p>
         </div>
 
         <!-- SUBROUTE 1: REVIEW GATE -->
@@ -330,6 +261,7 @@
 
         <!-- SUBROUTE 2: BRAND HOUSES -->
         <div v-if="currentTab === 'brands'" class="flex flex-col gap-6">
+          <!-- Search & Action Toolbar -->
           <div class="flex items-center justify-between gap-4">
             <div class="relative w-full max-w-[340px]">
               <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-neutral-400" />
@@ -340,6 +272,15 @@
                 class="w-full h-[36px] pl-9 pr-3 rounded-[8px] border border-white/10 bg-[#141414] text-[13px] text-white placeholder:text-neutral-500 focus:outline-none focus:border-white/30 transition-colors font-mono"
               />
             </div>
+
+            <button 
+              type="button" 
+              @click="showAddBrandModal = true" 
+              class="h-[36px] px-3.5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs font-semibold shrink-0"
+            >
+              <Plus class="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>New Brand House</span>
+            </button>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
@@ -428,15 +369,27 @@
 
         <!-- SUBROUTE 3: FOUNDRY -->
         <div v-else-if="currentTab === 'foundry'" class="flex flex-col gap-6">
-          <div class="flex items-center gap-2 overflow-x-auto pb-1">
+          <!-- Filter & Action Toolbar -->
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center gap-2 overflow-x-auto pb-1">
+              <button 
+                v-for="cat in ['all', 'raffle', 'rsvp', 'hype_drop', 'lookbook', 'pass']" 
+                :key="cat"
+                @click="selectedFoundryCategory = cat"
+                :class="selectedFoundryCategory === cat ? 'bg-white text-black font-semibold' : 'bg-[#141414] text-neutral-400 hover:text-white border border-white/10'"
+                class="px-3 py-1.5 rounded-[8px] text-[11.5px] font-mono uppercase tracking-wider transition-all cursor-pointer border-none whitespace-nowrap"
+              >
+                {{ cat === 'all' ? 'All Frameworks' : cat.replace('_', ' ') }}
+              </button>
+            </div>
+
             <button 
-              v-for="cat in ['all', 'raffle', 'rsvp', 'hype_drop', 'lookbook', 'pass']" 
-              :key="cat"
-              @click="selectedFoundryCategory = cat"
-              :class="selectedFoundryCategory === cat ? 'bg-white text-black font-semibold' : 'bg-[#141414] text-neutral-400 hover:text-white border border-white/10'"
-              class="px-3 py-1.5 rounded-[8px] text-[11.5px] font-mono uppercase tracking-wider transition-all cursor-pointer border-none whitespace-nowrap"
+              type="button" 
+              @click="openBuildTemplateModal" 
+              class="h-[36px] px-3.5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs font-semibold shrink-0"
             >
-              {{ cat === 'all' ? 'All Frameworks' : cat.replace('_', ' ') }}
+              <Plus class="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>New Blueprint</span>
             </button>
           </div>
 
@@ -499,6 +452,7 @@
 
         <!-- SUBROUTE 4: TEAM ROSTER -->
         <div v-else-if="currentTab === 'roster'" class="flex flex-col gap-6">
+          <!-- Search & Action Toolbar -->
           <div class="flex items-center justify-between gap-4">
             <div class="relative w-full max-w-[340px]">
               <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-neutral-500" />
@@ -509,6 +463,15 @@
                 class="w-full h-[36px] pl-9 pr-3 rounded-[8px] border border-white/10 bg-[#141414] text-[13px] text-white placeholder:text-neutral-500 focus:outline-none focus:border-white/30 transition-colors font-mono"
               />
             </div>
+
+            <button 
+              type="button" 
+              @click="showAddUserModal = true" 
+              class="h-[36px] px-3.5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs font-semibold shrink-0"
+            >
+              <Plus class="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Invite Member</span>
+            </button>
           </div>
 
           <div class="bg-[#141414] rounded-[16px] border border-white/10 overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.4)]">

@@ -114,19 +114,6 @@
             </span>
           </button>
 
-          <!-- 4. Superadmin Settings (Strictly hidden for brand editors) -->
-          <button 
-            v-if="authStore.isSuperAdmin"
-            type="button"
-            @click="handleAccountSettings"
-            class="w-full text-left px-[12px] py-[8.5px] rounded-[8px] hover:bg-black/5 active:bg-black/10 transition-colors cursor-pointer border-0 outline-none bg-transparent flex items-center gap-2.5 text-black apple-press group"
-          >
-            <Settings class="w-4 h-4 text-neutral-500 group-hover:text-black transition-colors" />
-            <span class="font-sans font-light tracking-normal text-[13px] font-normal">
-              Superadmin Settings
-            </span>
-          </button>
-
           <!-- Divider -->
           <div class="h-[0.5px] bg-black/10 my-1 mx-2" />
 
