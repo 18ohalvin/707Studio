@@ -88,7 +88,7 @@ async function syncProjectFromRoute() {
     const tpl = brandStore.templates.find(t => t.id === templateId);
     if (!tpl) {
       editorStore.showToast('Template not found.');
-      router.replace('/settings?tab=templates');
+      router.replace('/dev');
       return;
     }
     if (editorStore.currentProjectId) await editorStore.flushPendingSave();

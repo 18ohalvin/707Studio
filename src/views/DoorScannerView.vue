@@ -50,7 +50,7 @@
             :is-open="showUserProfileModal"
             @close="showUserProfileModal = false"
             @open-analytics="router.push(hubLink)"
-            @open-settings="router.push('/settings')"
+            @open-settings="router.push('/dev')"
             @open-projects="router.push('/?projects=1')"
             @open-whats-new="router.push('/?whatsnew=1')"
             @sign-out="handleSignOut"

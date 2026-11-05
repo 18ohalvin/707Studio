@@ -47,18 +47,16 @@ const routes = [
   },
   {
     path: '/dev',
-    name: 'DevAccess',
-    component: () => import('../views/DevAccessView.vue'),
-    meta: { public: true }
+    name: 'SuperAdminPortal',
+    component: SuperAdminSettingsView
+  },
+  {
+    path: '/settings',
+    redirect: '/dev'
   },
   {
     path: '/superadmin',
     redirect: '/dev'
-  },
-  {
-    path: '/settings',
-    name: 'SuperAdminSettings',
-    component: SuperAdminSettingsView
   },
   {
     path: '/admin',
@@ -89,14 +87,14 @@ router.beforeEach((to) => {
     return { path: '/hub/scanner', query: me.assignedProject ? { project: me.assignedProject } : {} };
   }
 
-  // Superadmin workspace home is strictly /settings (Studio Monolith). Bypasses consumer landing page.
+  // Superadmin workspace home is strictly /dev (Dev Portal). Bypasses consumer landing page.
   if (to.path === '/' && authStore.isSuperAdmin) {
-    return { path: '/settings' };
+    return { path: '/dev' };
   }
   
-  if (to.path === '/settings' || to.path === '/admin') {
+  if (to.path === '/dev' || to.path === '/settings' || to.path === '/admin') {
     if (!authStore.isSuperAdmin) {
-      return { path: '/dev', query: { redirect: to.fullPath } };
+      return { path: '/login', query: { redirect: to.fullPath } };
     }
   }
 

@@ -364,7 +364,7 @@ async function navigateHome() {
   await editorStore.flushPendingSave();
   if (editorStore.isTemplateMode) {
     editorStore.exitTemplateMode();
-    router.push('/settings?tab=templates');
+    router.push('/dev');
   } else {
     router.push('/');
   }
@@ -416,7 +416,7 @@ async function handleAnalytics() {
 
 function handleSettings() {
   if (authStore.isSuperAdmin) {
-    router.push('/settings');
+    router.push('/dev');
   } else {
     editorStore.isProjectSettingsOpen = true;
   }

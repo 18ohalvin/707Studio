@@ -660,7 +660,7 @@ async function handlePasswordSubmit() {
       if (redirect && redirect !== '/') {
         router.push(redirect);
       } else if (authStore.isSuperAdmin) {
-        router.push('/settings');
+        router.push('/dev');
       } else {
         router.push('/');
       }
