@@ -84,6 +84,7 @@
             <UserProfileModal
               v-if="authStore.isAuthenticated"
               :is-open="showUserProfileModal"
+              :dark="isDark"
               @close="showUserProfileModal = false"
               @open-analytics="handleAnalytics"
               @open-settings="handleOpenSettings"
@@ -344,6 +345,7 @@
             <UserProfileModal
               v-if="authStore.isAuthenticated"
               :is-open="showUserProfileModal"
+              :dark="isDark"
               @close="showUserProfileModal = false"
               @open-analytics="handleAnalytics"
               @open-settings="handleOpenSettings"
@@ -679,12 +681,14 @@
     <!-- Design Studio 1.5 What's New Modal -->
     <WhatsNewModal
       :is-open="showWhatsNewModal"
+      :dark="isDark"
       @close="showWhatsNewModal = false"
     />
 
     <!-- All Projects / My Activations Modal -->
     <AllProjectsModal
       :is-open="showAllProjectsModal"
+      :dark="isDark"
       @close="showAllProjectsModal = false"
       @select-project="handleSelectProjectFromModal"
     />

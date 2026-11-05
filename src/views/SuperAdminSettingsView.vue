@@ -37,7 +37,7 @@
       <!-- Right: Notifications & Profile Icon (Inverted) -->
       <div class="flex items-center gap-[24px]" data-name="Icons Container">
         <!-- Bell Notification Icon with Inverted White Bell -->
-        <NotificationsMenu v-if="authStore.isAuthenticated" class="[&_button]:text-white [&_svg]:text-white [&_span]:ring-[#0a0a0a]" />
+        <NotificationsMenu v-if="authStore.isAuthenticated" :dark="true" class="[&_button]:text-white [&_svg]:text-white [&_span]:ring-[#0a0a0a]" />
 
         <!-- Minimal Profile / User Icon -->
         <div class="relative flex items-center">
@@ -56,6 +56,7 @@
           <UserProfileModal
             v-if="authStore.isAuthenticated"
             :is-open="showUserProfileModal"
+            :dark="true"
             @close="showUserProfileModal = false"
             @open-analytics="handleAnalytics"
             @open-settings="showUserProfileModal = false"
@@ -1103,6 +1104,7 @@
     <!-- Modal 9: What's New Modal -->
     <WhatsNewModal 
       :is-open="showWhatsNewModal" 
+      :dark="true"
       @close="showWhatsNewModal = false" 
     />
   </div>

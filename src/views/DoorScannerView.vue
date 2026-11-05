@@ -85,6 +85,7 @@
 
           <UserProfileModal
             :is-open="showUserProfileModal"
+            :dark="isDark"
             @close="showUserProfileModal = false"
             @open-analytics="router.push(hubLink)"
             @open-settings="router.push('/dev')"

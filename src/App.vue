@@ -1,7 +1,9 @@
 <template>
   <div 
     class="w-full relative"
-    :class="isPublicDrop ? 'min-h-[100dvh] bg-white text-black overflow-y-auto' : 'h-screen w-screen overflow-hidden flex flex-col bg-[#f5f5f5] text-black font-sans'"
+    :class="isPublicDrop 
+      ? 'min-h-[100dvh] bg-white text-black overflow-y-auto' 
+      : (isDevMode ? 'h-screen w-screen overflow-hidden flex flex-col bg-[#0a0a0a] text-white font-sans' : 'h-screen w-screen overflow-hidden flex flex-col bg-[#f5f5f5] text-black font-sans')"
   >
     <DesktopOnlyGuard v-if="!isPublicDrop" />
     <ProjectLoadingScreen v-if="!isPublicDrop" />
@@ -11,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { SESSION_EXPIRED_EVENT } from './services/apiClient.ts';
 import DesktopOnlyGuard from './components/common/DesktopOnlyGuard.vue';
@@ -30,6 +32,28 @@ const editorStore = useEditorStore();
 const isPublicDrop = computed(() => {
   return route.name === 'PublicDrop' || (Boolean(route.meta?.public) && route.name !== 'Login');
 });
+
+const isDevMode = computed(() => {
+  return route.path.startsWith('/dev') || (authStore.isSuperAdmin && (route.path.startsWith('/hub') || route.path.startsWith('/dev')));
+});
+
+watch(
+  isDevMode,
+  (dev) => {
+    if (typeof document !== 'undefined') {
+      if (dev) {
+        document.documentElement.classList.add('dark');
+        document.body.style.backgroundColor = '#0a0a0a';
+        document.body.style.color = '#ffffff';
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.body.style.backgroundColor = isPublicDrop.value ? '#ffffff' : '#f5f5f5';
+        document.body.style.color = '#000000';
+      }
+    }
+  },
+  { immediate: true }
+);
 
 function handleSessionExpired() {
   if (!authStore.isAuthenticated) return;
