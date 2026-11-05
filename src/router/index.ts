@@ -47,13 +47,11 @@ const routes = [
   },
   {
     path: '/dev',
-    name: 'DevAccess',
-    component: () => import('../views/DevAccessView.vue'),
-    meta: { public: true }
+    redirect: '/login'
   },
   {
     path: '/superadmin',
-    redirect: '/dev'
+    redirect: '/settings'
   },
   {
     path: '/settings',
@@ -62,7 +60,7 @@ const routes = [
   },
   {
     path: '/admin',
-    redirect: '/dev'
+    redirect: '/settings'
   },
   {
     path: '/:brandSlug/:pageSlug',
@@ -91,7 +89,7 @@ router.beforeEach((to) => {
   
   if (to.path === '/settings' || to.path === '/admin') {
     if (!authStore.isSuperAdmin) {
-      return { path: '/dev', query: { redirect: to.fullPath } };
+      return { path: '/login', query: { redirect: to.fullPath } };
     }
   }
 
