@@ -492,4 +492,62 @@ describe('707 Activation Builder Stores', () => {
     expect(epass).toBeTruthy();
     expect(epass.type).toBe('GuestEPass');
   });
+
+  it('intelligently and dynamically auto-names new pages based on funnel order and widget contents', () => {
+    const editorStore = useEditorStore();
+    editorStore.pages = [
+      {
+        id: 'p1',
+        brand_id: '1',
+        brand_slug: 'atmos',
+        title: 'Landing Page',
+        page_name: 'Landing Page',
+        slug: 'landing',
+        status: 'draft',
+        current_version: 1,
+        widget_tree: [],
+        page_settings: { seoTitle: 'Landing', seoDescription: '', theme: 'the-707-standard' },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ];
+    editorStore.activePageIndex = 0;
+
+    // 1. Initial page defaults to Landing Page
+    expect(editorStore.pages[0].page_name).toBe('Landing Page');
+
+    // 2. Adding second page automatically defaults to 'Guest Registration'
+    const p2 = editorStore.addPage();
+    expect(p2.page_name).toBe('Guest Registration');
+    expect(p2.title).toBe('Page 2: Guest Registration');
+
+    // 3. Adding third page automatically defaults to 'Pass & Confirmation'
+    const p3 = editorStore.addPage();
+    expect(p3.page_name).toBe('Pass & Confirmation');
+    expect(p3.title).toBe('Page 3: Pass & Confirmation');
+
+    // 4. Focus page 2 and drop a MultipleChoice widget (e.g. Select Model)
+    editorStore.focusPage(1);
+    editorStore.addWidget('MultipleChoice', undefined, { heading: 'Select Model' });
+    expect(editorStore.currentPage.page_name).toBe('Select Model');
+
+    // 5. Drop a GuestEPass on page 2 -> auto-updates to Pass & Confirmation
+    editorStore.addWidget('GuestEPass');
+    expect(editorStore.currentPage.page_name).toBe('Pass & Confirmation');
+
+    // 6. Custom manual rename locks the name
+    editorStore.currentPage.page_name = 'VIP Special Access';
+    editorStore.currentPage.is_custom_name = true;
+    editorStore.syncPageName(editorStore.currentPage, 1);
+    expect(editorStore.currentPage.page_name).toBe('VIP Special Access');
+
+    // 7. Adding more widgets does not overwrite custom name
+    editorStore.addWidget('RulesAccordion');
+    expect(editorStore.currentPage.page_name).toBe('VIP Special Access');
+
+    // 8. Resetting custom name lets it re-infer dynamically
+    editorStore.currentPage.is_custom_name = false;
+    editorStore.syncPageName(editorStore.currentPage, 1);
+    expect(editorStore.currentPage.page_name).toBe('Pass & Confirmation');
+  });
 });

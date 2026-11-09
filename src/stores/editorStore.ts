@@ -22,6 +22,99 @@ function getStoredProjects(): ProjectItem[] {
   return [];
 }
 
+/**
+ * Intelligently infers a human-readable, brand-standard page purpose
+ * based on the widgets placed on the page and its position in the activation flow.
+ */
+export function inferPageName(page: ActivationPage, pageIndex: number): string {
+  if (page.kind === 'ticket') return 'Ticket (PDF)';
+  
+  const tree = page.widget_tree || [];
+  
+  // 1. Pass & E-Ticket
+  if (tree.some(w => w.type === 'LiveQueuePass')) return 'Live Queue Pass';
+  if (tree.some(w => w.type === 'GuestEPass' || w.type === 'PassCTA')) return 'Pass & Confirmation';
+  
+  // 2. Forms & Registration
+  if (tree.some(w => w.type === 'RaffleForm')) return 'Raffle Registration';
+  if (tree.some(w => w.type === 'RsvpForm')) return 'RSVP Form';
+  const regForm = tree.find(w => w.type === 'RegistrationForm');
+  if (regForm) {
+    const heading = String(regForm.props?.heading || regForm.props?.title || '').trim();
+    if (heading && heading.length <= 24 && !heading.toLowerCase().includes('untitled')) {
+      return heading;
+    }
+    return 'Guest Registration';
+  }
+  
+  // 3. Selection & Option Picker
+  const choice = tree.find(w => w.type === 'MultipleChoice');
+  if (choice) {
+    const title = String(choice.props?.heading || choice.props?.title || choice.props?.question || '').trim();
+    if (title && title.length <= 22 && !title.toLowerCase().includes('untitled')) {
+      return title;
+    }
+    return 'Selection & Options';
+  }
+  
+  // 4. Rules & Terms
+  if (tree.some(w => w.type === 'RulesAccordion') && tree.length <= 3) {
+    return 'Rules & Terms';
+  }
+  
+  // 5. Lookbook & Product Showcase
+  if (tree.some(w => w.type === 'LookbookCarousel' || w.type === 'ProductGrid')) {
+    return 'Product Showcase';
+  }
+  
+  // 6. Location & Venue
+  if (tree.some(w => w.type === 'LocationCard')) {
+    return 'Venue & Location';
+  }
+  
+  // 7. Video Experience
+  if (tree.some(w => w.type === 'VideoPlayer') && tree.length <= 2) {
+    return 'Media Experience';
+  }
+
+  // 8. Hero Drop
+  if (tree.some(w => w.type === 'HeroDrop')) {
+    return pageIndex === 0 ? 'Landing Page' : 'Cover & Overview';
+  }
+
+  // 9. Countdown Timer
+  if (tree.some(w => w.type === 'CountdownTimer') && tree.length <= 2) {
+    return 'Drop Countdown';
+  }
+  
+  // 10. Default Funnel Milestone by Page Index (Zero-confusion fallback)
+  if (pageIndex === 0) return 'Landing Page';
+  if (pageIndex === 1) return 'Guest Registration';
+  if (pageIndex === 2) return 'Pass & Confirmation';
+  
+  return `Page ${pageIndex + 1}`;
+}
+
+/**
+ * Synchronizes page_name and title dynamically unless the editor has
+ * explicitly entered a custom name.
+ */
+export function syncPageName(page: ActivationPage, pageIndex: number) {
+  if (page.kind === 'ticket') {
+    page.page_name = 'Ticket (PDF)';
+    page.title = 'Ticket (PDF)';
+    return;
+  }
+  const isGeneric = !page.page_name || page.page_name === 'Untitled Page' || page.page_name === 'Untitled';
+  if (!page.is_custom_name || isGeneric) {
+    page.page_name = inferPageName(page, pageIndex);
+    page.is_custom_name = false;
+    page.title = `Page ${pageIndex + 1}: ${page.page_name}`;
+  } else {
+    page.title = `Page ${pageIndex + 1}: ${page.page_name}`;
+  }
+}
+
 export const useEditorStore = defineStore('editor', () => {
   // Realtime Projects List (Synced with Cloud API & Local Mirror)
   const projects = ref<ProjectItem[]>(getStoredProjects());
@@ -389,12 +482,14 @@ export const useEditorStore = defineStore('editor', () => {
 
   function addPage() {
     const pageNumber = (ticketPageIndex.value >= 0 ? ticketPageIndex.value : pages.value.length) + 1;
+    const insertAt = ticketPageIndex.value >= 0 ? ticketPageIndex.value : pages.value.length;
     const newPage: ActivationPage = {
       id: `page_${Date.now()}`,
       brand_id: currentPage.value?.brand_id || '1',
       brand_slug: currentPage.value?.brand_slug || 'atmos',
-      title: `Page ${pageNumber}: Untitled Page`,
-      page_name: 'Untitled Page',
+      title: '',
+      page_name: '',
+      is_custom_name: false,
       slug: `page-${pageNumber}`,
       description: `Page ${pageNumber} of campaign activation`,
       status: 'draft',
@@ -408,8 +503,8 @@ export const useEditorStore = defineStore('editor', () => {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
+    syncPageName(newPage, insertAt);
     // New funnel pages go before the Ticket page, which stays last.
-    const insertAt = ticketPageIndex.value >= 0 ? ticketPageIndex.value : pages.value.length;
     pages.value.splice(insertAt, 0, newPage);
     activePageIndex.value = insertAt;
     if (!isPagesOpen.value) {
@@ -445,8 +540,9 @@ export const useEditorStore = defineStore('editor', () => {
       id: `page_${Date.now()}`,
       brand_id: source.brand_id,
       brand_slug: source.brand_slug,
-      title: `Page ${newPageNumber}: ${source.page_name || 'Untitled Page'} (Copy)`,
-      page_name: `${source.page_name || 'Untitled Page'} (Copy)`,
+      title: `Page ${newPageNumber}: ${source.page_name || inferPageName(source, index)} (Copy)`,
+      page_name: `${source.page_name || inferPageName(source, index)} (Copy)`,
+      is_custom_name: true,
       slug: `page-${newPageNumber}`,
       description: source.description,
       status: 'draft',
@@ -767,6 +863,7 @@ export const useEditorStore = defineStore('editor', () => {
       openWidgetSidebar();
     }
 
+    syncPageName(currentPage.value, activePageIndex.value);
     return newWidget;
   }
 
@@ -788,6 +885,7 @@ export const useEditorStore = defineStore('editor', () => {
     currentPage.value.widget_tree.splice(index + 1, 0, clonedWidget);
     selectedWidgetId.value = newId;
     pushHistory();
+    syncPageName(currentPage.value, activePageIndex.value);
   }
 
   function removeWidget(id: string) {
@@ -811,6 +909,7 @@ export const useEditorStore = defineStore('editor', () => {
       closeAllSidebars();
     }
     pushHistory();
+    syncPageName(currentPage.value, activePageIndex.value);
   }
 
   function moveWidget(fromIndex: number, toIndex: number) {
@@ -923,6 +1022,7 @@ export const useEditorStore = defineStore('editor', () => {
     currentPage.value.widget_tree = JSON.parse(JSON.stringify(template.widget_tree));
     selectedWidgetId.value = currentPage.value.widget_tree[0]?.id || null;
     pushHistory();
+    syncPageName(currentPage.value, activePageIndex.value);
   }
 
   function setPageStatus(status: PageStatus, reviewedBy = 'Head of UI/UX', notes = '') {
@@ -1949,6 +2049,7 @@ export const useEditorStore = defineStore('editor', () => {
 
     if (proj.pages && proj.pages.length > 0) {
       pages.value = JSON.parse(JSON.stringify(proj.pages));
+      pages.value.forEach((p, idx) => syncPageName(p, idx));
     } else {
       pages.value = [
         {
@@ -2101,6 +2202,8 @@ export const useEditorStore = defineStore('editor', () => {
     selectPage,
     focusPage,
     getPageCenterOffsetX,
+    inferPageName,
+    syncPageName,
     addPage,
     removePage,
     duplicatePage,

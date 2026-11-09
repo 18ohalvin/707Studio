@@ -70,7 +70,7 @@
           Page: {{ pageIndex + 1 }}
         </p>
         <p class="font-707 font-normal text-black/80" data-node-id="185:6585">
-          {{ page.page_name || (pageIndex === 0 ? 'Landing Page' : 'Untitled Page') }}
+          {{ page.page_name && page.page_name !== 'Untitled Page' ? page.page_name : inferPageName(page, pageIndex) }}
         </p>
       </div>
 
@@ -105,7 +105,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useEditorStore } from '../../stores/editorStore.ts';
+import { useEditorStore, inferPageName } from '../../stores/editorStore.ts';
 import { Copy, Trash2 } from 'lucide-vue-next';
 import MobileArtboard from './MobileArtboard.vue';
 import type { ActivationPage } from '../../types/editor.ts';

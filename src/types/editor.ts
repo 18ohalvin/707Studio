@@ -117,6 +117,7 @@ export interface ActivationPage {
   brand_slug: string;
   title: string;
   page_name?: string;
+  is_custom_name?: boolean;
   slug: string;
   description?: string;
   status: PageStatus;

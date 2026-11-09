@@ -50,26 +50,49 @@
         </div>
 
         <!-- Edit mode -->
-        <div v-else class="flex items-center gap-1" @click.stop>
+        <div v-else class="flex items-center gap-1 relative" @click.stop>
           <span class="font-707 font-light text-caption text-neutral-500 whitespace-nowrap select-none">
             Page {{ pageNumber }}:
           </span>
           <input 
             ref="pageNameInputRef"
             v-model="pageNameInput"
-            @keydown.enter.prevent="savePageName"
+            @keydown.enter.prevent="savePageName()"
             @keydown.esc.prevent="cancelPageName"
-            @blur="savePageName"
+            @blur="savePageName()"
             class="font-707 font-normal text-caption text-black bg-transparent border-b border-black outline-none px-0.5 py-0 w-auto min-w-[70px] max-w-[140px]"
           />
           <button 
             type="button"
-            @click.stop="savePageName" 
+            @click.stop="savePageName()" 
             class="size-3.5 flex items-center justify-center text-moss-600 hover:text-moss-700 cursor-pointer"
             title="Save Name"
           >
             <Check class="w-3 h-3" />
           </button>
+          <button
+            type="button"
+            @pointerdown.prevent="resetToAutoPageName"
+            class="ml-1 px-1.5 py-0.2 rounded text-[9px] font-mono font-medium border cursor-pointer transition-colors"
+            :class="!activePage.is_custom_name ? 'bg-moss-950/20 text-moss-700 border-moss-400/50' : 'bg-black/5 hover:bg-black/10 text-neutral-500 border-black/10'"
+            title="Reset to smart auto-naming"
+          >
+            Auto ✦
+          </button>
+
+          <!-- Quick Suggestion Preset Chips -->
+          <div class="absolute left-0 top-full mt-2 flex items-center gap-1 p-1 bg-white/95 backdrop-blur-md rounded-[8px] border border-black/10 shadow-[0_6px_20px_rgba(0,0,0,0.12)] z-40 animate-apple-pop whitespace-nowrap pointer-events-auto">
+            <span class="text-[9px] font-mono text-neutral-400 uppercase tracking-wider px-1">Presets:</span>
+            <button
+              v-for="preset in ['Landing', 'Registration', 'Select Model', 'E-Pass', 'Rules & Terms']"
+              :key="preset"
+              type="button"
+              @pointerdown.prevent="savePageName(preset)"
+              class="px-2 py-0.5 rounded-[5px] bg-black/[0.04] hover:bg-black hover:text-white border border-black/5 text-[10px] font-707 text-neutral-700 transition-colors cursor-pointer"
+            >
+              {{ preset }}
+            </button>
+          </div>
         </div>
       </div>
     </template>
@@ -2819,8 +2842,10 @@ const pageNameInput = ref('');
 const pageNameInputRef = ref<HTMLInputElement | null>(null);
 
 const currentPageName = computed(() => {
-  if (activePage.value.page_name) return activePage.value.page_name;
-  return pageNumber.value === 1 ? 'Landing Page' : 'Untitled Page';
+  if (activePage.value.is_custom_name && activePage.value.page_name) {
+    return activePage.value.page_name;
+  }
+  return editorStore.inferPageName(activePage.value, pageNumber.value - 1);
 });
 
 // Action Button Navigation Health Check
@@ -2908,15 +2933,24 @@ function startEditingPageName() {
   });
 }
 
-function savePageName() {
+function savePageName(customName?: string) {
   if (isEditingPageName.value) {
-    const trimmed = pageNameInput.value.trim();
+    const raw = typeof customName === 'string' ? customName : pageNameInput.value;
+    const trimmed = raw.trim();
     if (trimmed) {
       activePage.value.page_name = trimmed;
+      activePage.value.is_custom_name = true;
       activePage.value.title = `Page ${pageNumber.value}: ${trimmed}`;
     }
     isEditingPageName.value = false;
   }
+}
+
+function resetToAutoPageName() {
+  activePage.value.is_custom_name = false;
+  editorStore.syncPageName(activePage.value, pageNumber.value - 1);
+  pageNameInput.value = currentPageName.value;
+  isEditingPageName.value = false;
 }
 
 function cancelPageName() {
