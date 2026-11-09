@@ -101,17 +101,18 @@ function normalizeRow(row: any) {
 }
 
 /**
- * Human-readable door code in the same shape the e-pass already prints:
- * DDMMYY-HHMM-XXXX. Four random characters leave about a million codes a
- * minute; the database refuses a repeat and the caller draws again.
+ * Human-readable door code in an ultra-minimalist Airline PNR shape:
+ * XXX-XXX (3 uppercase alphanumeric chars, hyphen, 3 uppercase alphanumeric chars).
+ * Uses an unambiguous character set (excluding 0/O and 1/I to prevent reading/typing mistakes).
+ * 31^6 provides > 887 million combinations with instant readability on passes and door scanners.
  */
 function generateTicketCode(): string {
-  const now = new Date();
-  const pad = (n: number) => String(n).padStart(2, '0');
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let suffix = '';
-  for (let i = 0; i < 4; i++) suffix += alphabet[crypto.randomInt(alphabet.length)];
-  return `${pad(now.getDate())}${pad(now.getMonth() + 1)}${String(now.getFullYear()).slice(-2)}-${pad(now.getHours())}${pad(now.getMinutes())}-${suffix}`;
+  const alphabet = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+  let part1 = '';
+  let part2 = '';
+  for (let i = 0; i < 3; i++) part1 += alphabet[crypto.randomInt(alphabet.length)];
+  for (let i = 0; i < 3; i++) part2 += alphabet[crypto.randomInt(alphabet.length)];
+  return `${part1}-${part2}`;
 }
 
 function parsePageIds(req: Request): string[] {

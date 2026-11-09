@@ -205,7 +205,7 @@ check('restart changes nothing (migration is idempotent)', snapshot === JSON.str
    ================================================================= */
 console.log('\n3. Registration');
 let r = await post(entry('first@guest.co', { key: 'visit-key-0001' }));
-check('new guest → 201 with an Access ID', r.status === 201 && /^\d{6}-\d{4}-[A-Z0-9]{4}$/.test(r.json?.data?.ticket_code || ''), JSON.stringify(r.json));
+check('new guest → 201 with an Access ID', r.status === 201 && /^[A-Z0-9]{3}-[A-Z0-9]{3}$/.test(r.json?.data?.ticket_code || ''), JSON.stringify(r.json));
 const firstCode = r.json?.data?.ticket_code;
 check('response carries only what the pass needs', !('ip_address' in r.json.data) && !('user_agent' in r.json.data) && Object.keys(r.json.data.form_data).every(k => ['fullName', 'email', 'Guest Type', 'Access Valid For'].includes(k)));
 

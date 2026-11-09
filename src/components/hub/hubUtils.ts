@@ -164,9 +164,15 @@ export function accessId(s: Submission): string {
 /** Upper-case letters and digits only, so "061026-1103-487t" and "0610261103487T" are the same code. */
 const alnum = (v: string) => String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 
-/** The part of an Access ID door staff read out and type: its last four characters. */
+/** The part of an Access ID door staff read out and type: the tail segment or last 3-4 characters. */
 export function codeTail(s: Submission): string {
-  return alnum(accessId(s)).slice(-4);
+  const code = accessId(s);
+  if (!code) return '';
+  const parts = code.split('-');
+  if (parts.length > 1) {
+    return parts[parts.length - 1].toUpperCase();
+  }
+  return alnum(code).slice(-3);
 }
 
 /** The last four digits of the guest's WhatsApp / phone number, or '' if they gave none. */
@@ -200,7 +206,8 @@ export function findGuestsByShortCode(rows: Submission[], query: string, limit =
   for (const guest of rows) {
     if (guest.duplicate_of) continue;
     let via: GuestMatch['via'] | null = null;
-    if (alnum(guest.ticket_code || '').endsWith(key)) via = 'code';
+    const guestCode = alnum(guest.ticket_code || '');
+    if (guestCode.endsWith(key) || guestCode.startsWith(key) || guestCode === key) via = 'code';
     else if (digitsOnly && guestPhone(guest).replace(/\D/g, '').endsWith(key)) via = 'phone';
     else if (/[a-z]/i.test(text) && guestName(guest).toLowerCase().includes(lower)) via = 'name';
     if (via) found.push({ guest, via });

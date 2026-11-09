@@ -1679,8 +1679,8 @@ function renderMockEmail(raw: string) {
     .replace(/\{\{\s*name\s*\}\}/g, 'Sarah Jenkins')
     .replace(/\{\{\s*queue_number\s*\}\}/g, '#42')
     .replace(/\{\{\s*campaign\s*\}\}/g, activeBrandName.value)
-    .replace(/\{\{\s*access_id\s*\}\}/g, '707-K92F')
-    .replace(/\{\{\s*link\s*\}\}/g, 'https://events.707.co.id/brand/drop?code=707-K92F');
+    .replace(/\{\{\s*access_id\s*\}\}/g, '8K2-9M4')
+    .replace(/\{\{\s*link\s*\}\}/g, 'https://events.707.co.id/brand/drop?code=8K2-9M4');
 }
 
 const renderedEmailSubject = computed(() => renderMockEmail(currentEmailTemplate.value.subject || ''));
@@ -1724,7 +1724,7 @@ const previewTime = computed(() => {
 const sampleLink = computed(() => {
   const project = editorStore.userProjects.find(p => p.id === props.pageId || (p.pages || []).some(pg => pg.id === props.pageId));
   const path = project ? `/${project.brand_slug}/${project.slug}` : '/brand/campaign';
-  return `${window.location.origin}${path}?code=STAN-8842`;
+  return `${window.location.origin}${path}?code=8K2-9M4`;
 });
 
 const renderedPreviewText = computed(() => {
@@ -1734,7 +1734,7 @@ const renderedPreviewText = computed(() => {
     queue_number: activeStageId.value === 'approaching' ? form.currentCalledNumber + 4 : form.currentCalledNumber,
     current_called: form.currentCalledNumber,
     party_size: 2,
-    access_id: 'STAN-8842',
+    access_id: '8K2-9M4',
     skipped_tolerance: form.skippedTolerance || 5,
     link: sampleLink.value
   };
@@ -1858,9 +1858,9 @@ const testPreviewMessage = computed({
       queue_number: form.currentCalledNumber,
       current_called: form.currentCalledNumber,
       party_size: 2,
-      access_id: 'STAN-8842',
+      access_id: '8K2-9M4',
       skipped_tolerance: form.skippedTolerance || 5,
-      link: 'https://events.707.co.id/pass/STAN-8842'
+      link: 'https://events.707.co.id/pass/8K2-9M4'
     };
     let rendered = raw;
     for (const [key, val] of Object.entries(sampleData)) {

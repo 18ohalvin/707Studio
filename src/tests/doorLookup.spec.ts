@@ -67,5 +67,12 @@ describe('door lookup by short code', () => {
     expect(codeTail(rows[0])).toBe('487T');
     expect(phoneTail(rows[0])).toBe('9683');
     expect(phoneTail(rows[4])).toBe('');
+
+    // Airline PNR 6-character format (e.g. 8K2-9M4)
+    const pnrGuest = guest('pnr-1', '8K2-9M4', 'Clara Oswald');
+    expect(codeTail(pnrGuest)).toBe('9M4');
+    expect(findGuestsByShortCode([pnrGuest], '9M4').length).toBe(1);
+    expect(findGuestsByShortCode([pnrGuest], '8K2').length).toBe(1);
+    expect(findGuestsByShortCode([pnrGuest], '8K2-9M4').length).toBe(1);
   });
 });

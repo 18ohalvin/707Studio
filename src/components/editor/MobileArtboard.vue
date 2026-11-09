@@ -2677,13 +2677,11 @@ const livePlaces = inject(PLACES_KEY, null);
 const isLivePass = computed(() => Boolean(props.isLivePage && livePass));
 const livePassQr = ref('');
 
-/** Same shape as the server's ticket codes (DDMMYY-HHMM-XXXX); preview only. */
+/** Same shape as the server's ticket codes (compact Airline PNR: XXX-XXX); preview only. */
 const sampleAccessId = (() => {
-  const now = new Date();
-  const pad = (n: number) => String(n).padStart(2, '0');
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const suffix = Array.from({ length: 4 }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join('');
-  return `${pad(now.getDate())}${pad(now.getMonth() + 1)}${String(now.getFullYear()).slice(-2)}-${pad(now.getHours())}${pad(now.getMinutes())}-${suffix}`;
+  const alphabet = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+  const rand3 = () => Array.from({ length: 3 }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join('');
+  return `${rand3()}-${rand3()}`;
 })();
 watch(
   () => livePass?.code,

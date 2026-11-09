@@ -131,7 +131,7 @@
                 autocomplete="off"
                 autocapitalize="characters"
                 spellcheck="false"
-                placeholder="Last 4 of Access ID or WhatsApp"
+                placeholder="Access ID or WhatsApp (e.g. 9M4 or phone)"
                 class="w-full h-[52px] pl-11 pr-11 rounded-[12px] border text-[24px] font-medium font-mono tracking-normal uppercase placeholder:text-[14px] placeholder:tracking-normal placeholder:font-normal placeholder:normal-case outline-none transition-colors"
                 :class="isDark ? 'bg-white/[0.06] border-white/15 text-white placeholder:text-neutral-500 focus:border-white focus:bg-white/[0.1]' : 'bg-black/[0.04] border-black/15 text-black placeholder:text-neutral-400 focus:border-black focus:bg-white'"
               />
