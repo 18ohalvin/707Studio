@@ -220,6 +220,10 @@
             :key="widget.id"
             :data-widget-id="widget.id"
             @click.stop="handleWidgetClick(widget)"
+            @touchstart="handleWidgetTouchStart(widget, $event)"
+            @touchmove="handleWidgetTouchMove($event)"
+            @touchend="handleWidgetTouchEnd"
+            @touchcancel="handleWidgetTouchEnd"
             @mouseenter="hoveredWidgetId = widget.id"
             @mouseleave="hoveredWidgetId = null"
             @dragover.prevent.stop="handleDragOver($event, index)"
@@ -233,6 +237,68 @@
               (isHeroWithButtonOnly && widget.type === 'HeroDrop') ? '' : 'shrink-0'
             ]"
           >
+            <!-- Floating Touch Quick-Actions Bar for iPad & Touch (Move Up, Move Down, Duplicate, Settings, Delete) -->
+            <div 
+              v-if="!isMiniPreview && !isPreviewModal && !isLivePage && isSelected && editorStore.selectedWidgetId === widget.id && (touchActionWidgetId === widget.id || isTouchDevice)"
+              class="absolute -top-[42px] left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 px-1.5 py-1 bg-black/95 text-white rounded-[12px] shadow-[0_8px_24px_rgba(0,0,0,0.35)] backdrop-blur-md border border-white/20 select-none animate-apple-pop pointer-events-auto"
+              @click.stop
+              @touchstart.stop
+              @mousedown.stop
+            >
+              <!-- Move Up -->
+              <button
+                type="button"
+                :disabled="index === 0"
+                @click.stop="moveWidgetStep(index, -1)"
+                class="size-[30px] rounded-[7px] flex items-center justify-center hover:bg-white/20 active:bg-white/30 disabled:opacity-25 disabled:cursor-not-allowed cursor-pointer transition-colors apple-press"
+                title="Move Up"
+              >
+                <ChevronUp class="w-4 h-4 text-white" />
+              </button>
+
+              <!-- Move Down -->
+              <button
+                type="button"
+                :disabled="index === inFlowWidgets.length - 1"
+                @click.stop="moveWidgetStep(index, 1)"
+                class="size-[30px] rounded-[7px] flex items-center justify-center hover:bg-white/20 active:bg-white/30 disabled:opacity-25 disabled:cursor-not-allowed cursor-pointer transition-colors apple-press"
+                title="Move Down"
+              >
+                <ChevronDown class="w-4 h-4 text-white" />
+              </button>
+
+              <div class="w-px h-3.5 bg-white/20 mx-0.5" />
+
+              <!-- Duplicate -->
+              <button
+                type="button"
+                @click.stop="duplicateThisWidget(widget.id)"
+                class="size-[30px] rounded-[7px] flex items-center justify-center hover:bg-white/20 active:bg-white/30 cursor-pointer transition-colors apple-press"
+                title="Duplicate"
+              >
+                <Copy class="w-3.5 h-3.5 text-white" />
+              </button>
+
+              <!-- Settings / Edit -->
+              <button
+                type="button"
+                @click.stop="handleAdjustWidget(widget)"
+                class="size-[30px] rounded-[7px] flex items-center justify-center hover:bg-white/20 active:bg-white/30 cursor-pointer transition-colors apple-press"
+                title="Widget Settings"
+              >
+                <SlidersHorizontal class="w-3.5 h-3.5 text-white" />
+              </button>
+
+              <!-- Delete -->
+              <button
+                type="button"
+                @click.stop="deleteThisWidget(widget.id)"
+                class="size-[30px] rounded-[7px] flex items-center justify-center hover:bg-red-600 active:bg-red-700 text-neutral-300 hover:text-white cursor-pointer transition-colors apple-press"
+                title="Delete"
+              >
+                <Trash2 class="w-3.5 h-3.5" />
+              </button>
+            </div>
             <!-- Selected / Hovered Dashed Outline Border for non-TextBanner widgets (matching Text widget outline) -->
             <div 
               v-if="!isMiniPreview && !isPreviewModal && widget.type !== 'TextBanner' && (editorStore.selectedWidgetId === widget.id || hoveredWidgetId === widget.id)" 
@@ -2642,6 +2708,7 @@ import {
   Check, 
   AlertCircle, 
   ChevronDown, 
+  ChevronUp,
   LayoutGrid,
   ArrowRight,
   Ticket,
@@ -3166,6 +3233,9 @@ watch(() => activePage.value.widget_tree, async () => {
 let resizeObserver: ResizeObserver | null = null;
 
 onMounted(() => {
+  if (typeof window !== 'undefined') {
+    isTouchDevice.value = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+  }
   updateScrollMetrics();
   if (scrollContainerRef.value && typeof ResizeObserver !== 'undefined') {
     resizeObserver = new ResizeObserver(() => {
@@ -3358,6 +3428,74 @@ watch(() => editorStore.selectedWidgetId, async (newId) => {
     }
   }
 });
+
+// ==============================================================
+// iPad Touch & Long-Press Widget Operations
+// ==============================================================
+const isTouchDevice = ref(false);
+const touchActionWidgetId = ref<string | null>(null);
+let widgetTouchTimer: ReturnType<typeof setTimeout> | null = null;
+let widgetTouchStartX = 0;
+let widgetTouchStartY = 0;
+
+function handleWidgetTouchStart(widget: any, e: TouchEvent) {
+  if (props.isPreviewModal || props.isMiniPreview) return;
+  if (e.touches.length !== 1) return;
+
+  const t = e.touches[0];
+  widgetTouchStartX = t.clientX;
+  widgetTouchStartY = t.clientY;
+
+  if (widgetTouchTimer) clearTimeout(widgetTouchTimer);
+  widgetTouchTimer = setTimeout(() => {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([30, 20]);
+    }
+    handleSelectThisPage();
+    editorStore.selectWidget(widget.id);
+    touchActionWidgetId.value = widget.id;
+  }, 360);
+}
+
+function handleWidgetTouchMove(e: TouchEvent) {
+  if (widgetTouchTimer && e.touches.length === 1) {
+    const t = e.touches[0];
+    const dist = Math.hypot(t.clientX - widgetTouchStartX, t.clientY - widgetTouchStartY);
+    // If finger moves > 8px, user is scrolling the artboard content vertically
+    if (dist > 8) {
+      clearTimeout(widgetTouchTimer);
+      widgetTouchTimer = null;
+    }
+  }
+}
+
+function handleWidgetTouchEnd() {
+  if (widgetTouchTimer) {
+    clearTimeout(widgetTouchTimer);
+    widgetTouchTimer = null;
+  }
+}
+
+function moveWidgetStep(currentIndex: number, delta: number) {
+  const targetIndex = currentIndex + delta;
+  if (targetIndex >= 0 && targetIndex < inFlowWidgets.value.length) {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(20);
+    editorStore.moveWidget(currentIndex, targetIndex);
+  }
+}
+
+function duplicateThisWidget(widgetId: string) {
+  if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(20);
+  editorStore.duplicateWidget(widgetId);
+  editorStore.showToast('Widget duplicated.');
+}
+
+function deleteThisWidget(widgetId: string) {
+  if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(25);
+  editorStore.removeWidget(widgetId);
+  touchActionWidgetId.value = null;
+  editorStore.showToast('Widget removed.');
+}
 
 function handleWidgetClick(widget: any) {
   if (wasDraggingRecently.value) return;

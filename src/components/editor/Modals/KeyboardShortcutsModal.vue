@@ -199,3 +199,4 @@ const historyShortcuts = computed<ShortcutItem[]>(() => [
   { label: 'Shortcuts Guide', keys: ['?'] }
 ]);
 </script>
+

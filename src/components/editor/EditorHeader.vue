@@ -26,15 +26,15 @@
       <!-- Title Container & Save Status -->
       <div class="flex flex-row items-center gap-[8px] shrink-0 max-w-full">
         <!-- Dynamic-Width Title Input: Span dictates 100% of width, absolute input overlays it to eliminate all browser min-width/placeholder constraints -->
-        <div class="relative inline-flex items-center font-707 text-bodytext text-black font-light p-0 m-0">
+        <div class="relative inline-flex items-center font-707 text-bodytext text-black font-light p-0 m-0 max-w-[140px] sm:max-w-[220px] md:max-w-[340px]">
           <span 
-            class="invisible whitespace-pre pointer-events-none select-none p-0 m-0 border-0 font-707 text-bodytext font-light leading-[20px]"
+            class="invisible whitespace-pre pointer-events-none select-none p-0 m-0 border-0 font-707 text-bodytext font-light leading-[20px] truncate max-w-full"
             aria-hidden="true"
           >{{ editorStore.projectTitle || 'atmos x ASICS Gel Kayano Pandan RSVP Form' }}</span>
           <input 
             v-model="editorStore.projectTitle"
             placeholder="atmos x ASICS Gel Kayano Pandan RSVP Form"
-            class="absolute inset-0 w-full h-full bg-transparent p-0 m-0 font-707 text-bodytext text-black font-light leading-[20px] border-none outline-none focus:outline-none"
+            class="absolute inset-0 w-full h-full bg-transparent p-0 m-0 font-707 text-bodytext text-black font-light leading-[20px] border-none outline-none focus:outline-none truncate"
           />
         </div>
 

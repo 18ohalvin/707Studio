@@ -1,7 +1,7 @@
 <template>
   <!-- Right Bottom Controls Dock (Figma Node 97:3400) - Cleanly hides when setup drawer opens to prevent dock collisions -->
   <div 
-    class="fixed right-[24px] bottom-[20px] z-[60] select-none backdrop-blur-[4px] bg-[#f5f5f5]/20 border border-black/10 border-solid flex gap-[8px] items-center p-[6px] rounded-[14px] shadow-[0px_12px_40px_0px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
+    class="fixed right-[12px] sm:right-[16px] md:right-[24px] bottom-[16px] md:bottom-[20px] z-[60] select-none backdrop-blur-[4px] bg-[#f5f5f5]/20 border border-black/10 border-solid flex gap-[4px] md:gap-[8px] items-center p-[4px] md:p-[6px] rounded-[14px] shadow-[0px_12px_40px_0px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
     :class="[
       isRightSidebarOpen 
         ? 'opacity-0 pointer-events-none translate-y-2' 
@@ -13,7 +13,7 @@
       <button 
         type="button"
         @click="isZoomMenuOpen = !isZoomMenuOpen"
-        class="backdrop-blur-[4px] bg-[#ececec]/20 hover:bg-[#ececec] active:bg-[#e0e0e0] text-black border-[0.5px] border-black/10 hover:border-black/25 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex gap-[6px] h-[40px] items-center justify-center overflow-clip p-[8px] relative rounded-[8px] shrink-0 min-w-[76px] px-2.5 apple-press cursor-pointer transition-all duration-200"
+        class="backdrop-blur-[4px] bg-[#ececec]/20 hover:bg-[#ececec] active:bg-[#e0e0e0] text-black border-[0.5px] border-black/10 hover:border-black/25 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex gap-[4px] md:gap-[6px] h-[40px] items-center justify-center overflow-clip p-[6px] md:p-[8px] relative rounded-[8px] shrink-0 min-w-[62px] md:min-w-[76px] px-2 md:px-2.5 apple-press cursor-pointer transition-all duration-200"
         title="Zoom Options & Presets"
       >
         <div class="relative shrink-0 size-[16px]">
@@ -130,8 +130,8 @@
       </button>
     </div>
 
-    <!-- 4. Keyboard Shortcuts Cheatsheet Button (Crisp Solid Black) -->
-    <div class="flex items-center justify-center relative rounded-[8px] shrink-0 size-[40px]">
+    <!-- 4. Keyboard Shortcuts Cheatsheet Button (Desktop with Physical Keyboard) -->
+    <div class="hidden lg:flex items-center justify-center relative rounded-[8px] shrink-0 size-[40px]">
       <button 
         type="button"
         @click="$emit('open-shortcuts')"

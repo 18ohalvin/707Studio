@@ -95,8 +95,30 @@
             </div>
           </div>
 
-          <!-- Quick Action Buttons on Hover -->
-          <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
+          <!-- Quick Action Buttons (Direct touch actions on iPad/tablet, hover on desktop) -->
+          <div class="flex items-center gap-1 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0 ml-2">
+            <!-- Move Up -->
+            <button 
+              type="button"
+              :disabled="index === 0"
+              @click.stop="editorStore.moveWidget(index, index - 1)"
+              class="apple-glass-icon-btn size-[26px] flex items-center justify-center rounded-[6px] text-black disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
+              title="Move Up"
+            >
+              <ChevronUp class="w-3.5 h-3.5" />
+            </button>
+
+            <!-- Move Down -->
+            <button 
+              type="button"
+              :disabled="index === editorStore.currentPage.widget_tree.length - 1"
+              @click.stop="editorStore.moveWidget(index, index + 1)"
+              class="apple-glass-icon-btn size-[26px] flex items-center justify-center rounded-[6px] text-black disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
+              title="Move Down"
+            >
+              <ChevronDown class="w-3.5 h-3.5" />
+            </button>
+
             <!-- Edit / Adjust -->
             <button 
               type="button"
@@ -138,7 +160,7 @@ import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import type { WidgetItem } from '../../types/editor.ts';
-import { GripVertical, SlidersHorizontal, Copy, Trash2, Layers } from 'lucide-vue-next';
+import { GripVertical, SlidersHorizontal, Copy, Trash2, Layers, ChevronUp, ChevronDown } from 'lucide-vue-next';
 import { ticketFieldMeta } from './ticket/ticketFields.ts';
 
 defineProps<{

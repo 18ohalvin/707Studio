@@ -1,13 +1,18 @@
 <template>
-  <!-- Main Adobe-Style Interactive Canvas Stage -->
+  <!-- Main Adobe-Style Interactive Canvas Stage (iPad Touch & Desktop Ready) -->
   <main 
     ref="canvasRef"
     @mousedown="handleCanvasMouseDown"
+    @touchstart="handleCanvasTouchStart"
+    @touchmove="handleCanvasTouchMove"
+    @touchend="handleCanvasTouchEnd"
+    @touchcancel="handleCanvasTouchEnd"
     @click.self="handleCanvasClick"
     @dblclick="handleCanvasDoubleClick"
     class="flex-1 bg-white relative overflow-hidden flex flex-col items-center justify-center select-none"
+    style="touch-action: none;"
     :class="[
-      isPanning ? 'cursor-grabbing' : (isSpacePressed ? 'cursor-grab' : 'cursor-default')
+      isPanning || isTouchPanning ? 'cursor-grabbing' : (isSpacePressed ? 'cursor-grab' : 'cursor-default')
     ]"
     data-node-id="63:37"
   >
@@ -296,6 +301,7 @@ watch(() => editorStore.isPagesOpen, () => {
 // Adobe Artwork Canvas Pan / Zoom State
 const isSpacePressed = ref(false);
 const isPanning = ref(false);
+const isTouchPanning = ref(false);
 const isWheelActive = ref(false);
 let wheelEndTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -303,6 +309,20 @@ let startClientX = 0;
 let startClientY = 0;
 let initialPanX = 0;
 let initialPanY = 0;
+
+// iPad Touch Gesture State (1-finger Pan, 2-finger Pinch Zoom, Horizontal Swipe Slides)
+let touchStartX = 0;
+let touchStartY = 0;
+let lastTouchX = 0;
+let lastTouchY = 0;
+let touchStartTime = 0;
+let isPinching = false;
+let initialPinchDistance = 0;
+let initialPinchZoom = 100;
+let initialPinchMidX = 0;
+let initialPinchMidY = 0;
+let lastTapTime = 0;
+let isTouchOriginArtboard = false;
 
 function isInputElement(target: EventTarget | null): boolean {
   if (!target || !(target instanceof HTMLElement)) return false;
@@ -341,9 +361,6 @@ function handleKeyDown(e: KeyboardEvent) {
     e.preventDefault();
     return;
   }
-
-  const isCmdOrCtrl = e.metaKey || e.ctrlKey;
-  const key = e.key.toLowerCase();
 
   // 1. History (Undo: Cmd+Z, Redo: Cmd+Shift+Z or Cmd+Y)
   if (isCmdOrCtrl && key === 'z') {
@@ -516,6 +533,137 @@ function handleCanvasDoubleClick(e: MouseEvent) {
   const target = e.target as HTMLElement | null;
   if (target && !target.closest('.apple-card-hover') && !target.closest('[data-name="Template Container"]')) {
     editorStore.focusPage(editorStore.activePageIndex);
+  }
+}
+
+// ==============================================================
+// iPad & Touch Operations: 1-Finger Pan, 2-Finger Pinch Zoom, Slide/Swipe
+// ==============================================================
+function handleCanvasTouchStart(e: TouchEvent) {
+  // Ignore touches inside modals, floating sidebars, or active input fields
+  const target = e.target as HTMLElement | null;
+  if (target && (target.closest('aside, [role="dialog"], input, textarea:focus, select, button, .apple-dock-shelf') || isInputElement(target))) {
+    return;
+  }
+
+  if (e.touches.length === 1) {
+    const t = e.touches[0];
+    touchStartX = t.clientX;
+    touchStartY = t.clientY;
+    lastTouchX = t.clientX;
+    lastTouchY = t.clientY;
+    touchStartTime = Date.now();
+    initialPanX = editorStore.panX;
+    initialPanY = editorStore.panY;
+
+    // Check if the touch originated inside an artboard frame or scrollable content
+    isTouchOriginArtboard = Boolean(target && target.closest('[data-artboard-frame], .artboard-scroll-container'));
+
+    // Check double-tap on canvas background (to zoom-fit & center active page)
+    const now = Date.now();
+    if (now - lastTapTime < 320 && !isTouchOriginArtboard) {
+      editorStore.focusPage(editorStore.activePageIndex);
+      lastTapTime = 0;
+      return;
+    }
+    lastTapTime = now;
+
+    // Only initiate canvas panning if touch is outside the phone content or in pages overview
+    if (!isTouchOriginArtboard || editorStore.isPagesOpen) {
+      isTouchPanning.value = true;
+    }
+  } else if (e.touches.length >= 2) {
+    // 2-Finger Pinch-to-Zoom & Pan (Universal across the entire viewport)
+    isTouchPanning.value = false;
+    isPinching = true;
+    const t1 = e.touches[0];
+    const t2 = e.touches[1];
+    initialPinchDistance = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+    initialPinchZoom = editorStore.zoomLevel;
+    initialPinchMidX = (t1.clientX + t2.clientX) / 2;
+    initialPinchMidY = (t1.clientY + t2.clientY) / 2;
+    initialPanX = editorStore.panX;
+    initialPanY = editorStore.panY;
+  }
+}
+
+function handleCanvasTouchMove(e: TouchEvent) {
+  if (isPinching && e.touches.length >= 2) {
+    e.preventDefault();
+    const t1 = e.touches[0];
+    const t2 = e.touches[1];
+    const curDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+    const curMidX = (t1.clientX + t2.clientX) / 2;
+    const curMidY = (t1.clientY + t2.clientY) / 2;
+
+    if (initialPinchDistance > 10) {
+      const scale = curDist / initialPinchDistance;
+      const targetZoom = Math.min(Math.max(initialPinchZoom * scale, 20), 320);
+
+      if (canvasRef.value) {
+        const rect = canvasRef.value.getBoundingClientRect();
+        const cursorX = initialPinchMidX - (rect.left + rect.width / 2);
+        const cursorY = initialPinchMidY - (rect.top + rect.height / 2);
+        const scaleRatio = targetZoom / initialPinchZoom;
+        editorStore.panX = cursorX - (cursorX - initialPanX) * scaleRatio + (curMidX - initialPinchMidX);
+        editorStore.panY = cursorY - (cursorY - initialPanY) * scaleRatio + (curMidY - initialPinchMidY);
+      }
+      editorStore.isFitMode = false;
+      editorStore.zoomLevel = Math.round(targetZoom * 10) / 10;
+    }
+  } else if (isTouchPanning.value && e.touches.length === 1) {
+    const t = e.touches[0];
+    lastTouchX = t.clientX;
+    lastTouchY = t.clientY;
+    const deltaX = t.clientX - touchStartX;
+    const deltaY = t.clientY - touchStartY;
+
+    // Freeform 1-finger canvas pan
+    editorStore.panX = initialPanX + deltaX;
+    editorStore.panY = initialPanY + deltaY;
+    e.preventDefault();
+  }
+}
+
+function handleCanvasTouchEnd(e: TouchEvent) {
+  if (isPinching && e.touches.length < 2) {
+    isPinching = false;
+  }
+  if (isTouchPanning.value && e.touches.length === 0) {
+    isTouchPanning.value = false;
+    const duration = Date.now() - touchStartTime;
+    const deltaX = lastTouchX - touchStartX;
+    const deltaY = lastTouchY - touchStartY;
+
+    // Fluid Horizontal Swipe to Slide Between Pages (iPad gesture)
+    if (duration < 360 && Math.abs(deltaX) > 65 && Math.abs(deltaX) > Math.abs(deltaY) * 1.3) {
+      if (deltaX < -65) {
+        // Swipe Left -> Navigate to Next Page
+        if (editorStore.activePageIndex < editorStore.pages.length - 1) {
+          editorStore.selectPage(editorStore.activePageIndex + 1);
+          const pageTitle = editorStore.currentPage?.page_name || editorStore.inferPageName(editorStore.currentPage, editorStore.activePageIndex) || `Page ${editorStore.activePageIndex + 1}`;
+          editorStore.showToast(`Page ${editorStore.activePageIndex + 1}: ${pageTitle}`);
+          return;
+        }
+      } else if (deltaX > 65) {
+        // Swipe Right -> Navigate to Previous Page
+        if (editorStore.activePageIndex > 0) {
+          editorStore.selectPage(editorStore.activePageIndex - 1);
+          const pageTitle = editorStore.currentPage?.page_name || editorStore.inferPageName(editorStore.currentPage, editorStore.activePageIndex) || `Page ${editorStore.activePageIndex + 1}`;
+          editorStore.showToast(`Page ${editorStore.activePageIndex + 1}: ${pageTitle}`);
+          return;
+        }
+      }
+    }
+
+    // Re-center smoothly if user panned slightly
+    if (!editorStore.isPagesOpen) {
+      const expectedPanX = editorStore.getPageCenterOffsetX(editorStore.activePageIndex);
+      if (Math.abs(editorStore.panX - expectedPanX) < 50 && Math.abs(editorStore.panY) < 50) {
+        editorStore.panX = expectedPanX;
+        editorStore.panY = 0;
+      }
+    }
   }
 }
 

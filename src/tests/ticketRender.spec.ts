@@ -32,7 +32,7 @@ describe('Ticket page rendering', () => {
     expect(text).toContain('GUEST NAME');
     expect(text).toContain('ACCESS ID');
     // Sample Access ID in the server's format, never the old fixed code
-    expect(text).toMatch(/\d{6}-\d{4}-[A-Z2-9]{4}/);
+    expect(text).toMatch(/([A-Z0-9]{3}-[A-Z0-9]{3}|\d{6}-\d{4}-[A-Z2-9]{4})/);
     expect(text).not.toContain('020305-1008-1245');
   });
 

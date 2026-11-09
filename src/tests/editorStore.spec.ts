@@ -531,7 +531,8 @@ describe('707 Activation Builder Stores', () => {
     editorStore.addWidget('MultipleChoice', undefined, { heading: 'Select Model' });
     expect(editorStore.currentPage.page_name).toBe('Select Model');
 
-    // 5. Drop a GuestEPass on page 2 -> auto-updates to Pass & Confirmation
+    // 5. Drop a GuestEPass on page 2 (with form prerequisite on page 1) -> auto-updates to Pass & Confirmation
+    editorStore.pages[0].widget_tree.push({ id: 'form_1', type: 'RegistrationForm', props: {} });
     editorStore.addWidget('GuestEPass');
     expect(editorStore.currentPage.page_name).toBe('Pass & Confirmation');
 
