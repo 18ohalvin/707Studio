@@ -148,6 +148,21 @@
         </div>
       </button>
     </div>
+
+    <!-- 5. Mobile-Only: 1-Tap Zoom Toggle (Fit / 100%) -->
+    <div 
+      class="sm:hidden flex items-center justify-center relative rounded-[8px] shrink-0 size-[40px] apple-dock-item"
+    >
+      <button 
+        type="button"
+        @click="editorStore.toggleFitOr100()"
+        class="backdrop-blur-[4px] bg-[#ececec]/20 hover:bg-[#ececec] active:bg-[#e0e0e0] text-black border-[0.5px] border-black/10 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-center overflow-clip p-[8px] relative rounded-[8px] shrink-0 size-[40px] apple-press cursor-pointer transition-all duration-200"
+        :title="Math.abs(editorStore.zoomLevel - 100) < 5 ? 'Fit to Screen' : 'Zoom 100%'"
+      >
+        <Maximize2 v-if="Math.abs(editorStore.zoomLevel - 100) < 5" class="w-4 h-4 text-black" />
+        <Minimize2 v-else class="w-4 h-4 text-black" />
+      </button>
+    </div>
   </div>
 </template>
 
@@ -155,7 +170,7 @@
 import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
-import { Image as ImageIcon } from 'lucide-vue-next';
+import { Image as ImageIcon, Maximize2, Minimize2 } from 'lucide-vue-next';
 
 defineEmits<{
   (e: 'toggle-layers'): void;

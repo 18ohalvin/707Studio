@@ -1,7 +1,7 @@
 <template>
   <!-- Right Bottom Controls Dock (Figma Node 97:3400) - Cleanly hides when setup drawer opens to prevent dock collisions -->
   <div 
-    class="fixed right-[12px] sm:right-[16px] md:right-[24px] bottom-[16px] md:bottom-[20px] z-[60] select-none backdrop-blur-[4px] bg-[#f5f5f5]/20 border border-black/10 border-solid flex gap-[4px] md:gap-[8px] items-center p-[4px] md:p-[6px] rounded-[14px] shadow-[0px_12px_40px_0px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
+    class="hidden sm:flex fixed right-[12px] sm:right-[16px] md:right-[24px] bottom-[16px] md:bottom-[20px] z-[60] select-none backdrop-blur-[4px] bg-[#f5f5f5]/20 border border-black/10 border-solid gap-[4px] md:gap-[8px] items-center p-[4px] md:p-[6px] rounded-[14px] shadow-[0px_12px_40px_0px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
     :class="[
       isRightSidebarOpen 
         ? 'opacity-0 pointer-events-none translate-y-2' 

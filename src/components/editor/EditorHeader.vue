@@ -1,11 +1,11 @@
 <template>
-  <header class="absolute top-0 left-0 right-0 z-40 isolate content-stretch flex items-center justify-between px-[20px] h-[48px] w-full select-none transition-all">
+  <header class="absolute top-0 left-0 right-0 z-40 isolate content-stretch flex items-center justify-between px-[12px] sm:px-[20px] h-[48px] w-full select-none transition-all">
     <!-- The header's frost lives on this layer, not on <header>: a blur on the
          header itself would trap every menu inside it (profile, notifications,
          history), leaving them nothing to blur — they showed fully transparent. -->
     <div class="absolute inset-0 -z-10 pointer-events-none bg-white/20 [backdrop-filter:blur(4px)] [-webkit-backdrop-filter:blur(4px)]" aria-hidden="true" />
     <!-- Left: Normal Mode (Back Button, Title Input, Save Status) -->
-    <div v-if="!editorStore.isPreviewMode" class="content-stretch flex gap-[10px] md:gap-[14px] items-center flex-1 min-w-0 mr-4">
+    <div v-if="!editorStore.isPreviewMode" class="content-stretch flex gap-[8px] sm:gap-[14px] items-center flex-1 min-w-0 mr-2 sm:mr-4">
       <!-- Back Navigation Button (Return to Dashboard or Superadmin Dev) -->
       <button 
         type="button"
@@ -17,9 +17,9 @@
       </button>
 
       <!-- Title Container & Save Status -->
-      <div class="flex flex-row items-center gap-[8px] shrink-0 max-w-full">
+      <div class="flex flex-row items-center gap-[6px] sm:gap-[8px] shrink-0 max-w-full">
         <!-- Dynamic-Width Title Input: Span dictates 100% of width, absolute input overlays it to eliminate all browser min-width/placeholder constraints -->
-        <div class="relative inline-flex items-center font-707 text-bodytext text-black font-light p-0 m-0 max-w-[140px] sm:max-w-[220px] md:max-w-[340px]">
+        <div class="relative inline-flex items-center font-707 text-bodytext text-black font-light p-0 m-0 max-w-[100px] xs:max-w-[130px] sm:max-w-[220px] md:max-w-[340px]">
           <span 
             class="invisible whitespace-pre pointer-events-none select-none p-0 m-0 border-0 font-707 text-bodytext font-light leading-[20px] truncate max-w-full"
             aria-hidden="true"
@@ -48,11 +48,11 @@
           />
 
           <!-- Status Label -->
-          <p class="font-707 text-legal-micro font-medium text-black whitespace-nowrap">
+          <p class="hidden xs:inline font-707 text-legal-micro font-medium text-black whitespace-nowrap">
             {{ editorStore.isTemplateMode ? 'Template Studio' : publishBadge.label }}
           </p>
 
-          <span class="text-neutral-300 font-light text-[10px]">·</span>
+          <span class="hidden xs:inline text-neutral-300 font-light text-[10px]">·</span>
 
           <!-- Compact Save Status -->
           <p class="font-707 text-legal-micro font-normal text-neutral-500 whitespace-nowrap">
@@ -70,35 +70,36 @@
     </div>
 
     <!-- Right: Test Your Form, Ask for Review & Avatar proportioned for 48px Header -->
-    <div class="content-stretch flex gap-[10px] items-center shrink-0">
-      <!-- Review requests / publish notices (Hidden in preview mode) -->
-      <NotificationsMenu v-if="!editorStore.isTemplateMode && !editorStore.isPreviewMode" />
+    <div class="content-stretch flex gap-[6px] sm:gap-[10px] items-center shrink-0">
+      <!-- Review requests / publish notices & build history (Desktop & Tablet only) -->
+      <div v-if="!editorStore.isTemplateMode && !editorStore.isPreviewMode" class="hidden sm:flex items-center gap-[10px]">
+        <NotificationsMenu />
 
-      <!-- Build history: a plain icon, like the bell beside it (Hidden in preview mode) -->
-      <div v-if="!editorStore.isTemplateMode && !editorStore.isPreviewMode" class="relative flex items-center" ref="historyRef">
-        <button
-          type="button"
-          @click="showHistory = !showHistory"
-          class="relative size-[24px] flex items-center justify-center apple-press cursor-pointer hover:opacity-75 transition-opacity border-0 outline-none bg-transparent p-0 shrink-0 text-black group"
-          :class="showHistory ? 'opacity-100' : ''"
-          title="Project history — every submission and published version"
-          aria-label="Project history"
-        >
-          <History class="w-[18px] h-[18px] stroke-[1.35] transition-transform duration-200 group-hover:scale-105" />
-        </button>
-        <ProjectHistoryPanel v-if="showHistory" :anchor="historyRef" @close="showHistory = false" />
+        <div class="relative flex items-center" ref="historyRef">
+          <button
+            type="button"
+            @click="showHistory = !showHistory"
+            class="relative size-[24px] flex items-center justify-center apple-press cursor-pointer hover:opacity-75 transition-opacity border-0 outline-none bg-transparent p-0 shrink-0 text-black group"
+            :class="showHistory ? 'opacity-100' : ''"
+            title="Project history — every submission and published version"
+            aria-label="Project history"
+          >
+            <History class="w-[18px] h-[18px] stroke-[1.35] transition-transform duration-200 group-hover:scale-105" />
+          </button>
+          <ProjectHistoryPanel v-if="showHistory" :anchor="historyRef" @close="showHistory = false" />
+        </div>
       </div>
 
       <!-- Preview / Editor Mode Toggle Button -->
       <button 
         @click="editorStore.togglePreviewMode()"
         :class="editorStore.isPreviewMode ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn text-black'"
-        class="content-stretch flex items-center justify-center gap-1.5 overflow-clip px-[14px] h-[32px] rounded-[8px] apple-press cursor-pointer transition-all ml-[6px]"
+        class="content-stretch flex items-center justify-center gap-1.5 overflow-clip px-[8px] sm:px-[14px] h-[32px] rounded-[8px] apple-press cursor-pointer transition-all ml-[2px] sm:ml-[6px]"
         :title="editorStore.isPreviewMode ? 'Exit preview mode and return to canvas editor' : 'Test the campaign as a guest: fill in forms and pick options'"
       >
         <Edit3 v-if="editorStore.isPreviewMode" class="w-3.5 h-3.5 text-white" />
         <Eye v-else class="w-3.5 h-3.5 text-black" />
-        <span class="font-707 font-medium text-[13px] whitespace-nowrap" :class="editorStore.isPreviewMode ? 'text-white' : 'text-black'">
+        <span class="hidden sm:inline font-707 font-medium text-[13px] whitespace-nowrap" :class="editorStore.isPreviewMode ? 'text-white' : 'text-black'">
           {{ editorStore.isPreviewMode ? 'Exit Preview' : 'Preview' }}
         </span>
       </button>
@@ -109,10 +110,10 @@
         type="button"
         :disabled="isTransitioning"
         @click="handleDecline"
-        class="apple-glass-btn text-black flex items-center justify-center px-[12px] h-[32px] rounded-[8px] apple-press cursor-pointer disabled:opacity-50"
+        class="apple-glass-btn text-black flex items-center justify-center px-[10px] sm:px-[12px] h-[32px] rounded-[8px] apple-press cursor-pointer disabled:opacity-50"
         title="Send back to the brand with a note"
       >
-        <span class="font-707 font-medium text-[13px] whitespace-nowrap">Request Changes</span>
+        <span class="font-707 font-medium text-[12px] sm:text-[13px] whitespace-nowrap">Request Changes</span>
       </button>
 
       <!-- Primary CTA: depends on whether the project is live and what changed (Hidden in preview mode) -->
@@ -120,12 +121,12 @@
         v-if="!editorStore.isPreviewMode"
         @click="handlePrimaryCtaClick"
         :disabled="primaryCta.disabled || isTransitioning"
-        class="content-stretch flex items-center justify-center gap-1.5 overflow-clip px-[14px] h-[32px] rounded-[8px] apple-press"
+        class="content-stretch flex items-center justify-center gap-1 sm:gap-1.5 overflow-clip px-[10px] sm:px-[14px] h-[32px] rounded-[8px] apple-press shadow-xs"
         :class="primaryCta.disabled ? 'apple-glass-btn cursor-default' : (primaryCta.state === 'live' ? 'apple-glass-btn hover:border-black/30 cursor-pointer shadow-xs' : 'apple-glass-btn-dark cursor-pointer')"
         :title="primaryCta.title"
       >
         <Check v-if="primaryCta.state === 'live'" class="w-3.5 h-3.5 text-moss-600" />
-        <span class="font-707 font-medium text-[13px] whitespace-nowrap" :class="primaryCta.disabled ? 'text-neutral-600' : (primaryCta.state === 'live' ? 'text-black font-semibold' : 'text-white')">
+        <span class="font-707 font-medium text-[12px] sm:text-[13px] whitespace-nowrap" :class="primaryCta.disabled ? 'text-neutral-600' : (primaryCta.state === 'live' ? 'text-black font-semibold' : 'text-white')">
           {{ isTransitioning ? 'Working…' : primaryCta.label }}
         </span>
         <Copy v-if="primaryCta.state === 'live'" class="w-3 h-3 text-neutral-400 ml-0.5" />

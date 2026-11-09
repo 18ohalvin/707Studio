@@ -227,15 +227,18 @@ export const useEditorStore = defineStore('editor', () => {
 
   function updateFitZoom(containerWidth: number, containerHeight: number) {
     if (!containerHeight || !containerWidth) return;
-    // Guaranteed non-overlapping safe viewport: 48px header + 24px top margin + 54px floating dock + 20px bottom margin + 34px clearance = 180px
-    const availableH = Math.max(300, containerHeight - 180);
-    const availableW = Math.max(300, containerWidth - 96);
+    const isMobile = containerWidth < 640;
+    // Guaranteed non-overlapping safe viewport:
+    // Mobile: 48px header + 16px top + 52px floating dock + 20px bottom = ~136px
+    // Desktop: 48px header + 24px top margin + 54px floating dock + 20px bottom margin + 34px clearance = 180px
+    const availableH = isMobile ? Math.max(260, containerHeight - 140) : Math.max(300, containerHeight - 180);
+    const availableW = isMobile ? Math.max(260, containerWidth - 24) : Math.max(300, containerWidth - 96);
     
     // iPhone 16/17 Pro dimensions: 393 x 852
     const scaleH = availableH / 852;
     const scaleW = availableW / 393;
     const rawFit = Math.min(scaleH, scaleW);
-    const calculated = Math.min(100, Math.max(45, Math.round(rawFit * 100)));
+    const calculated = Math.min(100, Math.max(isMobile ? 35 : 45, Math.round(rawFit * 100)));
     fitZoomLevel.value = calculated;
 
     if (isFitMode.value) {
@@ -243,6 +246,18 @@ export const useEditorStore = defineStore('editor', () => {
       panX.value = getPageCenterOffsetX(activePageIndex.value, calculated);
       panY.value = 0;
     }
+  }
+
+  function toggleFitOr100() {
+    if (Math.abs(zoomLevel.value - 100) < 5) {
+      isFitMode.value = true;
+      zoomLevel.value = fitZoomLevel.value;
+    } else {
+      isFitMode.value = false;
+      zoomLevel.value = 100;
+    }
+    panX.value = getPageCenterOffsetX(activePageIndex.value, zoomLevel.value);
+    panY.value = 0;
   }
   const isPreviewMode = ref<boolean>(false);
   const isSaving = ref<boolean>(false);
@@ -2216,6 +2231,7 @@ export const useEditorStore = defineStore('editor', () => {
     fitZoomLevel,
     isFitMode,
     updateFitZoom,
+    toggleFitOr100,
     panX,
     panY,
     resetPan,

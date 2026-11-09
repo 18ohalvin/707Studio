@@ -5,10 +5,12 @@
     ref="sidebarRef"
     @click.stop
     @wheel.stop
-    class="absolute right-[24px] top-1/2 -translate-y-1/2 w-[464px] min-h-[460px] max-h-[calc(100vh-140px)] backdrop-blur-2xl bg-[rgba(255,255,255,0.92)] border border-black/8 content-stretch flex flex-col items-start overflow-y-auto pb-[32px] rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] z-40 select-none transition-all animate-apple-slide-right-center no-scrollbar"
+    class="max-sm:fixed max-sm:inset-x-0 max-sm:bottom-0 max-sm:top-auto max-sm:translate-y-0 max-sm:w-full max-sm:max-w-none max-sm:min-h-0 max-sm:max-h-[82vh] max-sm:rounded-b-none max-sm:rounded-t-[20px] max-sm:border-x-0 max-sm:border-b-0 max-sm:shadow-[0_-16px_40px_rgba(0,0,0,0.18)] sm:absolute sm:right-[24px] sm:top-1/2 sm:-translate-y-1/2 sm:w-[464px] sm:min-h-[460px] max-h-[calc(100vh-140px)] backdrop-blur-2xl bg-[rgba(255,255,255,0.95)] border border-black/8 content-stretch flex flex-col items-start overflow-y-auto pb-[32px] sm:rounded-[12px] shadow-[0px_20px_50px_0px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] z-40 select-none transition-all sm:animate-apple-slide-right-center max-sm:animate-apple-slide-up no-scrollbar"
     data-node-id="181:5929"
     data-name="Text Tool Sidebar"
   >
+    <!-- Mobile Sheet Drag Handle Pill -->
+    <div class="sm:hidden w-10 h-1 bg-black/20 rounded-full mx-auto my-2.5 shrink-0 self-center" />
     <!-- Header -->
     <div class="content-stretch flex flex-col gap-[6px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]" data-node-id="181:5930">
       <div class="content-stretch flex items-center justify-between shrink-0 w-full" data-node-id="181:5931">
