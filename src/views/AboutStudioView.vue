@@ -87,7 +87,7 @@
             :class="isDark ? 'text-neutral-400' : 'text-neutral-500'"
           >
             <p>
-              <strong class="font-medium" :class="isDark ? 'text-neutral-200' : 'text-neutral-800'">Design Architecture in charge:</strong> Alvin Decorous, Lioviani Gavrilla, and 707 IT Team.
+              <strong class="font-medium" :class="isDark ? 'text-neutral-200' : 'text-neutral-800'">Design Architecture & Systems:</strong> Alvin Decorous, Lioviani Gavrilla, and 707 IT Team.
             </p>
             <p>
               <strong class="font-medium" :class="isDark ? 'text-neutral-200' : 'text-neutral-800'">Runway Engineering:</strong> Distributed Edge Gateway, Real-Time Synchronizer, Local-First Drop Engine.
