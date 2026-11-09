@@ -305,40 +305,11 @@
     <footer class="h-[24px] shrink-0 pointer-events-none" />
 
     <!-- Contact Team Modal -->
-    <Transition name="apple-dock-fade">
-      <div 
-        v-if="showContactModal" 
-        class="fixed inset-0 z-50 apple-frost-backdrop flex items-center justify-center p-4 transition-all animate-apple-fade select-none"
-        @click.self="showContactModal = false"
-      >
-        <div class="apple-frost rounded-[12px] border border-black/10 p-6 w-full max-w-[420px] shadow-[0px_20px_50px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.05)] flex flex-col gap-4 animate-apple-pop">
-          <div class="flex items-center justify-between">
-            <h3 class="font-707 font-medium text-[16px] text-black">Contact Team</h3>
-            <button 
-              type="button"
-              @click="showContactModal = false" 
-              class="size-[24px] bg-black/5 hover:bg-black/10 active:bg-black/15 rounded-full flex items-center justify-center cursor-pointer transition-colors"
-              title="Close"
-            >
-              <X class="w-3.5 h-3.5 text-black" />
-            </button>
-          </div>
-          <p class="font-707 text-[13px] text-neutral-600 leading-relaxed">
-            Need custom widgets, tailored brand activations, or design review? Reach out directly to the 707 Design Systems team.
-          </p>
-          <div class="bg-black/[0.03] p-3 rounded-lg border border-black/5 text-[12px] font-707 text-neutral-700">
-            <strong>Lead Designer:</strong> uiux@707designstudio.internal<br />
-            <strong>Slack:</strong> #707-design-studio-help
-          </div>
-          <button 
-            @click="showContactModal = false" 
-            class="w-full bg-black text-white font-707 font-medium text-[13px] h-[36px] rounded-[8px] apple-press cursor-pointer hover:bg-neutral-800 transition-colors"
-          >
-            Got it
-          </button>
-        </div>
-      </div>
-    </Transition>
+    <ContactTeamModal
+      :is-open="showContactModal"
+      @close="showContactModal = false"
+      @dispatched="handleContactDispatched"
+    />
 
     <!-- Notification Toast -->
     <Transition name="apple-dock-fade">
@@ -386,6 +357,7 @@ import SetupProjectModal from '../components/modals/SetupProjectModal.vue';
 import UserProfileModal from '../components/modals/UserProfileModal.vue';
 import AllProjectsModal from '../components/modals/AllProjectsModal.vue';
 import WhatsNewModal from '../components/modals/WhatsNewModal.vue';
+import ContactTeamModal from '../components/modals/ContactTeamModal.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -564,6 +536,10 @@ const adaptiveGreeting = computed(() => {
 function handleOpenWhatsNew() {
   showUserProfileModal.value = false;
   showWhatsNewModal.value = true;
+}
+
+function handleContactDispatched(payload: { category: string; message: string }) {
+  triggerToast(`Inquiry dispatched to 707 Design Desk.`);
 }
 
 function handleOpenSettings() {
