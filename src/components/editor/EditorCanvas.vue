@@ -152,6 +152,7 @@
         v-if="!editorStore.isPagesOpen && !editorStore.isPreviewMode && !editorStore.isCropStudioOpen"
         @click.stop
         @open-settings="showProjectSettingsModal = true"
+        @open-shortcuts="showShortcutsModal = true"
       />
     </Transition>
 
@@ -159,6 +160,12 @@
     <ProjectInfoSettingsModal
       :is-open="showProjectSettingsModal || editorStore.isProjectSettingsOpen"
       @close="showProjectSettingsModal = false; editorStore.isProjectSettingsOpen = false"
+    />
+
+    <!-- Keyboard Shortcuts Guide Modal -->
+    <KeyboardShortcutsModal
+      :is-open="showShortcutsModal"
+      @close="showShortcutsModal = false"
     />
 
     <!-- Media Gallery Side Drawer (Figma Node 171:5023) -->
@@ -267,10 +274,12 @@ import EPassSetupSidebar from './EPassSetupSidebar.vue';
 import TicketSetupSidebar from './TicketSetupSidebar.vue';
 import LayersSidebar from './LayersSidebar.vue';
 import ProjectInfoSettingsModal from './Modals/ProjectInfoSettingsModal.vue';
+import KeyboardShortcutsModal from './Modals/KeyboardShortcutsModal.vue';
 
 const editorStore = useEditorStore();
 const canvasRef = ref<HTMLElement | null>(null);
 const showProjectSettingsModal = ref(false);
+const showShortcutsModal = ref(false);
 
 // Overview / Canvas Mode Zoom Transition State
 const isModeTransitioning = ref(false);
@@ -303,6 +312,10 @@ function isInputElement(target: EventTarget | null): boolean {
 
 function handleKeyDown(e: KeyboardEvent) {
   if (e.key === 'Escape' || e.code === 'Escape') {
+    if (showShortcutsModal.value) {
+      showShortcutsModal.value = false;
+      return;
+    }
     editorStore.closeAllSidebars();
     editorStore.selectWidget(null);
     return;
@@ -310,6 +323,16 @@ function handleKeyDown(e: KeyboardEvent) {
 
   // Never intercept shortcuts while typing in an input / textarea
   if (isInputElement(e.target)) return;
+
+  const isCmdOrCtrl = e.metaKey || e.ctrlKey;
+  const key = e.key.toLowerCase();
+
+  // 0. Toggle Shortcuts Guide (? or Cmd+/)
+  if ((isCmdOrCtrl && key === '/') || (!isCmdOrCtrl && e.key === '?')) {
+    e.preventDefault();
+    showShortcutsModal.value = !showShortcutsModal.value;
+    return;
+  }
 
   if (e.code === 'Space') {
     if (!isSpacePressed.value) {

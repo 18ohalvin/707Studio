@@ -97,7 +97,7 @@
             ? 'backdrop-blur-[4px] bg-[#ececec]/20 hover:bg-[#ececec] active:bg-[#e0e0e0] text-black border-[0.5px] border-black/10 hover:border-black/25 shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer' 
             : 'backdrop-blur-[4px] bg-[#ececec]/20 border-[0.5px] border-black/5 cursor-not-allowed shadow-none opacity-40 text-black'
         ]"
-        :title="editorStore.canUndo ? 'Undo' : 'Nothing to undo'"
+        :title="editorStore.canUndo ? 'Undo (⌘Z)' : 'Nothing to undo'"
       >
         <div 
           class="relative shrink-0 size-[18px] transition-opacity"
@@ -119,7 +119,7 @@
             ? 'backdrop-blur-[4px] bg-[#ececec]/20 hover:bg-[#ececec] active:bg-[#e0e0e0] text-black border-[0.5px] border-black/10 hover:border-black/25 shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer' 
             : 'backdrop-blur-[4px] bg-[#ececec]/20 border-[0.5px] border-black/5 cursor-not-allowed shadow-none opacity-40 text-black'
         ]"
-        :title="editorStore.canRedo ? 'Redo' : 'Nothing to redo'"
+        :title="editorStore.canRedo ? 'Redo (⌘⇧Z)' : 'Nothing to redo'"
       >
         <div 
           class="relative shrink-0 size-[18px] transition-opacity"
@@ -130,7 +130,19 @@
       </button>
     </div>
 
-    <!-- 4. Settings Gear Button (Crisp Solid Black) -->
+    <!-- 4. Keyboard Shortcuts Cheatsheet Button (Crisp Solid Black) -->
+    <div class="flex items-center justify-center relative rounded-[8px] shrink-0 size-[40px]">
+      <button 
+        type="button"
+        @click="$emit('open-shortcuts')"
+        class="backdrop-blur-[4px] bg-[#ececec]/20 hover:bg-[#ececec] active:bg-[#e0e0e0] text-black border-[0.5px] border-black/10 hover:border-black/25 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-center overflow-clip p-[8px] relative rounded-[8px] shrink-0 size-[40px] apple-press cursor-pointer transition-all duration-200"
+        title="Keyboard Shortcuts (⌘/ or ?)"
+      >
+        <Command class="w-[17px] h-[17px] text-black stroke-[1.8]" />
+      </button>
+    </div>
+
+    <!-- 5. Settings Gear Button (Crisp Solid Black) -->
     <div class="flex items-center justify-center relative rounded-[8px] shrink-0 size-[40px]">
       <button 
         @click="$emit('open-settings')"
@@ -149,10 +161,11 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
-import { Check } from 'lucide-vue-next';
+import { Check, Command } from 'lucide-vue-next';
 
 defineEmits<{
   (e: 'open-settings'): void;
+  (e: 'open-shortcuts'): void;
 }>();
 
 const editorStore = useEditorStore();
