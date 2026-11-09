@@ -107,7 +107,7 @@
             :href="whatsappUrl" 
             target="_blank" 
             rel="noopener noreferrer"
-            class="inline-flex items-center justify-center gap-2 px-6 h-[42px] rounded-full text-[13px] font-sans font-medium transition-all apple-press cursor-pointer shadow-xs"
+            class="inline-flex items-center justify-center gap-2 px-6 h-[42px] rounded-full text-[13px] font-sans font-medium transition-all apple-press apple-specular-pill cursor-pointer shadow-xs"
             :class="isDark 
               ? 'bg-white text-black hover:bg-neutral-200' 
               : 'bg-black text-white hover:bg-neutral-800'"

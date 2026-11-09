@@ -1,10 +1,10 @@
 <template>
-  <!-- A fixed one-screen layout: nothing on this page scrolls, so the door never loses its place. -->
   <div 
     class="h-[100dvh] w-full font-sans tracking-normal flex flex-col overflow-hidden overscroll-none select-none transition-colors duration-200"
     :class="isDark ? 'bg-[#0a0a0a] text-white' : 'bg-[#f4f4f5] text-black'"
     data-name="Door Scanner"
   >
+    <!-- A fixed one-screen layout: nothing on this page scrolls, so the door never loses its place. -->
     <header 
       class="w-full h-[48px] px-3 flex items-center justify-between gap-3 shrink-0 z-30 border-b"
       :class="isDark ? 'bg-[#141414] border-white/10 text-white' : 'bg-white border-black/10 text-black'"

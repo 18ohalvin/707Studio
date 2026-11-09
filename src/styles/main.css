@@ -628,6 +628,26 @@ button[data-cta],
   --apple-smooth: cubic-bezier(0.25, 1, 0.5, 1);
 }
 
+/* ==========================================================================
+   APPLE FLUID PAGE & ROUTE TRANSITIONS (macOS Native Feel)
+   ========================================================================== */
+.apple-page-enter-active,
+.apple-page-leave-active {
+  transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.apple-page-enter-from {
+  opacity: 0;
+  transform: scale3d(0.994, 0.994, 1) translateY(4px);
+}
+
+.apple-page-leave-to {
+  opacity: 0;
+  transform: scale3d(1.004, 1.004, 1);
+}
+
 @keyframes applePopIn {
   0% {
     opacity: 0;
@@ -937,35 +957,51 @@ button[data-cta],
   will-change: transform, opacity;
 }
 
-/* Tactile Apple Press Feedback - Rock solid layout with zero hover twitching / jumping */
+/* Tactile Apple Press Feedback - True macOS / iOS Spring Touch & Click Feedback */
 .apple-press {
-  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease, color 0.15s ease;
-  transform: translateZ(0);
+  transition: transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1),
+              background-color 0.15s ease,
+              border-color 0.15s ease,
+              box-shadow 0.2s ease,
+              opacity 0.15s ease,
+              color 0.15s ease;
+  transform: translateZ(0) scale3d(1, 1, 1);
+  transform-origin: center center;
+  will-change: transform;
   -webkit-font-smoothing: antialiased;
 }
 
 .apple-press:hover {
-  transform: none !important;
+  /* Keep scale 1 on hover to prevent mouse cursor jitter */
+  transform: translateZ(0) scale3d(1, 1, 1);
 }
 
 .apple-press:active {
-  transform: none !important;
-  opacity: 0.85;
+  /* Tactile spring compression on press */
+  transform: translateZ(0) scale3d(0.972, 0.972, 1) !important;
+  opacity: 0.9;
+  transition-duration: 0.08s;
 }
 
 .apple-press-subtle {
-  transition: opacity 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
-  transform: translateZ(0);
+  transition: transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1),
+              opacity 0.15s ease,
+              background-color 0.15s ease,
+              border-color 0.15s ease;
+  transform: translateZ(0) scale3d(1, 1, 1);
+  transform-origin: center center;
+  will-change: transform;
   -webkit-font-smoothing: antialiased;
 }
 
 .apple-press-subtle:hover {
-  transform: none !important;
+  transform: translateZ(0) scale3d(1, 1, 1);
 }
 
 .apple-press-subtle:active {
-  transform: none !important;
+  transform: translateZ(0) scale3d(0.962, 0.962, 1) !important;
   opacity: 0.85;
+  transition-duration: 0.08s;
 }
 
 /* Global Zero Jitter / Shaking Engine for all UI Buttons & Interactive Controls */
@@ -987,20 +1023,11 @@ a[role="button"],
 }
 
 button:hover,
-button:active,
 [role="button"]:hover,
-[role="button"]:active,
 .apple-glass-btn:hover,
-.apple-glass-btn:active,
 .apple-glass-btn-dark:hover,
-.apple-glass-btn-dark:active,
-.apple-glass-icon-btn:hover,
-.apple-glass-icon-btn:active,
-.apple-press:hover,
-.apple-press:active,
-.apple-press-subtle:hover,
-.apple-press-subtle:active {
-  transform: none !important;
+.apple-glass-icon-btn:hover {
+  transform: translateZ(0);
 }
 
 .apple-card-hover {
@@ -1094,28 +1121,75 @@ button:active,
   transform: translateY(100%);
 }
 
-/* Apple Popover Transition System (Anchored directly on trigger icon/button) */
+/* Apple Popover Transition System (Anchored directly on trigger icon/button with visionOS Spring) */
 .apple-popover-fade-enter-active,
 .apple-popover-fade-leave-active {
   transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .apple-popover-fade-enter-active .apple-popover-box {
-  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.28s cubic-bezier(0.34, 1.45, 0.64, 1), opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top right;
+  will-change: transform, opacity;
 }
 
 .apple-popover-fade-leave-active .apple-popover-box {
-  transition: transform 0.16s ease-in, opacity 0.14s ease-in;
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.14s ease-in;
+  transform-origin: top right;
+  will-change: transform, opacity;
 }
 
 .apple-popover-fade-enter-from .apple-popover-box {
   opacity: 0;
-  transform: translateY(-6px) scale(0.96);
+  transform: translateY(-8px) scale(0.94);
 }
 
 .apple-popover-fade-leave-to .apple-popover-box {
   opacity: 0;
   transform: translateY(-4px) scale(0.98);
+}
+
+/* Flagship Apple Specular Sheen (High-tech glint across flagship pills & buttons) */
+.apple-specular-pill {
+  position: relative;
+  overflow: hidden;
+}
+
+.apple-specular-pill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+  transition: left 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.apple-specular-pill:hover::after {
+  left: 150%;
+}
+
+/* Staggered Entrance Cascades for Lists & Grid Items */
+.apple-stagger-1 { animation-delay: 35ms !important; }
+.apple-stagger-2 { animation-delay: 70ms !important; }
+.apple-stagger-3 { animation-delay: 105ms !important; }
+.apple-stagger-4 { animation-delay: 140ms !important; }
+.apple-stagger-5 { animation-delay: 175ms !important; }
+.apple-stagger-6 { animation-delay: 210ms !important; }
+
+/* Accessibility: Gracefully respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .apple-page-enter-active,
+  .apple-page-leave-active,
+  .animate-apple-pop,
+  .animate-apple-scale,
+  .animate-apple-slide-up {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Luxury Scroll Mask for Landing Page & Floating Lists */

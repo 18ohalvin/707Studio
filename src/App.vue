@@ -7,7 +7,11 @@
   >
     <DesktopOnlyGuard v-if="!isPublicDrop" />
     <ProjectLoadingScreen v-if="!isPublicDrop" />
-    <router-view />
+    <router-view v-slot="{ Component, route: currentRoute }">
+      <Transition name="apple-page" mode="out-in">
+        <component :is="Component" :key="currentRoute.path" />
+      </Transition>
+    </router-view>
     <GlassDialog />
   </div>
 </template>
