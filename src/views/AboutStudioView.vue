@@ -87,7 +87,7 @@
             :class="isDark ? 'text-neutral-400' : 'text-neutral-500'"
           >
             <p>
-              <strong class="font-medium" :class="isDark ? 'text-neutral-200' : 'text-neutral-800'">Design Architecture & Systems:</strong> Alvin Decorous, 707 Core Team, Tokyo & Jakarta Creative Ops.
+              <strong class="font-medium" :class="isDark ? 'text-neutral-200' : 'text-neutral-800'">Design Architecture in charge:</strong> Alvin Decorous, Lioviani Gavrilla, and 707 IT Team.
             </p>
             <p>
               <strong class="font-medium" :class="isDark ? 'text-neutral-200' : 'text-neutral-800'">Runway Engineering:</strong> Distributed Edge Gateway, Real-Time Synchronizer, Local-First Drop Engine.
@@ -101,8 +101,8 @@
           </div>
         </div>
 
-        <!-- Contact Support: Clean Professional Button & Hyperlink Text -->
-        <div class="pt-2 flex flex-wrap items-center gap-4">
+        <!-- Contact Support: Clean Professional Button -->
+        <div class="pt-2 flex items-center">
           <a 
             :href="whatsappUrl" 
             target="_blank" 
@@ -116,16 +116,6 @@
             <span>Contact Support</span>
             <ArrowUpRight class="w-3.5 h-3.5 stroke-[2]" />
           </a>
-
-          <a 
-            :href="whatsappUrl" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            class="text-[13px] font-sans font-normal underline underline-offset-4 hover:opacity-75 transition-opacity"
-            :class="isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black'"
-          >
-            WhatsApp: +62 812-7720-8270
-          </a>
         </div>
       </div>
     </main>
@@ -135,7 +125,7 @@
       class="w-full h-[52px] px-6 flex items-center justify-between text-[12px] font-sans font-light shrink-0 select-none border-t"
       :class="isDark ? 'text-neutral-500 border-white/[0.08]' : 'text-neutral-400 border-black/[0.06]'"
     >
-      <span>2026. THE7 707 COMPANY. All rights reserved.</span>
+      <span>2026. THE 707 COMPANY. All rights reserved.</span>
       <span class="text-[11px] opacity-75 font-sans">EVENTS.707.CO.ID</span>
     </footer>
   </div>
