@@ -242,7 +242,7 @@
                     :class="isDark ? 'bg-white/10 hover:bg-white/20 border-white/20 text-white' : 'bg-white hover:bg-neutral-100 border-black/10 text-neutral-700'"
                     :title="`Copy live link: ${absoluteLink(item.live_path)}`"
                   >
-                    <Check v-if="copiedKey === item.id" class="w-3 h-3 text-emerald-400" />
+                    <Check v-if="copiedKey === item.id" class="w-3 h-3 text-moss-400" />
                     <LinkIcon v-else class="w-3 h-3" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'" />
                     <span>{{ copiedKey === item.id ? 'Copied' : 'Link' }}</span>
                   </button>
@@ -403,7 +403,7 @@ function statusBadgeClasses(item: NotificationItem) {
       return 'bg-amber-950/60 text-amber-300 border-amber-800/60';
     }
     if (item.kind === 'published') {
-      return 'bg-emerald-950/60 text-emerald-300 border-emerald-800/60';
+      return 'bg-moss-950/60 text-moss-300 border-moss-700/50';
     }
     return 'bg-rose-950/60 text-rose-300 border-rose-800/60';
   }
@@ -411,7 +411,7 @@ function statusBadgeClasses(item: NotificationItem) {
     return 'bg-amber-50 text-amber-700 border-amber-200/80';
   }
   if (item.kind === 'published') {
-    return 'bg-emerald-50 text-emerald-700 border-emerald-200/80';
+    return 'bg-moss-50 text-moss-700 border-moss-200/80';
   }
   return 'bg-rose-50 text-rose-700 border-rose-200/80';
 }

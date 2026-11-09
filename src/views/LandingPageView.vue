@@ -62,7 +62,7 @@
               class="relative size-[22px] rounded-full bg-black text-white flex items-center justify-center font-707 text-[10px] font-semibold tracking-tight shadow-xs select-none transition-transform duration-200 group-hover:scale-105"
             >
               {{ userInitials }}
-              <span class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-emerald-500 border border-white" />
+              <span class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-moss-500 border border-white" />
             </div>
             <User 
               v-else 
@@ -317,7 +317,7 @@
         v-if="showNotificationToast" 
         class="fixed top-[64px] right-[24px] z-50 apple-frost border border-white/60 rounded-2xl p-4 shadow-[0px_12px_40px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.06)] flex items-center gap-3 animate-apple-slide-up select-none"
       >
-        <div class="size-2 rounded-full bg-emerald-500 animate-ping" />
+        <div class="size-2 rounded-full bg-moss-500 animate-ping" />
         <p class="font-707 text-[12px] text-black font-medium">{{ toastMessage }}</p>
         <button @click="showNotificationToast = false" class="text-neutral-400 hover:text-black ml-2 font-bold cursor-pointer">×</button>
       </div>

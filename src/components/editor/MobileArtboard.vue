@@ -65,7 +65,7 @@
           <button 
             type="button"
             @click.stop="savePageName" 
-            class="size-3.5 flex items-center justify-center text-emerald-600 hover:text-emerald-700 cursor-pointer"
+            class="size-3.5 flex items-center justify-center text-moss-600 hover:text-moss-700 cursor-pointer"
             title="Save Name"
           >
             <Check class="w-3 h-3" />
@@ -499,7 +499,7 @@
                   <div class="text-[8px] text-neutral-500 font-mono">MINS</div>
                 </div>
                 <div class="bg-neutral-900 border border-neutral-800 rounded p-1.5 text-center">
-                  <div class="text-base font-black font-mono text-emerald-400">42</div>
+                  <div class="text-base font-black font-mono text-moss-400">42</div>
                   <div class="text-[8px] text-neutral-500 font-mono">SECS</div>
                 </div>
               </div>
@@ -584,7 +584,7 @@
                 >
                   <div>
                     <div class="font-bold font-707">{{ session.label }}</div>
-                    <div class="text-[9px] text-emerald-600 font-medium">● {{ session.remaining }} spots remaining</div>
+                    <div class="text-[9px] text-moss-600 font-medium">● {{ session.remaining }} spots remaining</div>
                   </div>
                   <div class="w-3.5 h-3.5 rounded-full border-2 border-black flex items-center justify-center">
                     <div v-if="sIdx === 0" class="w-1.5 h-1.5 rounded-full bg-black"></div>
@@ -5642,7 +5642,7 @@ function getQueueStatus(widget: any) {
     };
   }
 
-  // 3. Emerald Solid / Pulse (ahead === 0) - Active Turn
+  // 3. Earthy Moss Solid / Pulse (ahead === 0) - Active Turn
   if (ahead === 0) {
     return {
       kind: 'calling',
@@ -5650,7 +5650,7 @@ function getQueueStatus(widget: any) {
       serving,
       partySize: pSize,
       ahead,
-      accentColor: '#059669', // Emerald
+      accentColor: '#7b8b67', // Earthy Moss (No neon green)
       vibingText: "It's your turn! Proceed to gate.",
       aheadDisplay: 'Now Calling',
       progressPercent: 100

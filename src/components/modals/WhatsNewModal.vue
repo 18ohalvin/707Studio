@@ -91,7 +91,7 @@
                         class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9.5px] font-light"
                         :class="isDark ? 'bg-white/10 text-neutral-300' : 'bg-neutral-100 text-neutral-700'"
                       >
-                        <span class="size-1.5 rounded-full animate-pulse" :class="isDark ? 'bg-emerald-400' : 'bg-neutral-800'" />
+                        <span class="size-1.5 rounded-full animate-pulse" :class="isDark ? 'bg-moss-400' : 'bg-neutral-800'" />
                         <span>Ready to deploy</span>
                       </div>
                     </div>
@@ -228,7 +228,7 @@
                       <!-- Pass Header -->
                       <div class="flex items-center justify-between">
                         <div class="flex items-center gap-1.5">
-                          <div class="size-2 rounded-full animate-pulse" :class="isDark ? 'bg-emerald-400' : 'bg-neutral-900'" />
+                          <div class="size-2 rounded-full animate-pulse" :class="isDark ? 'bg-moss-400' : 'bg-neutral-900'" />
                           <span class="text-[11px] font-medium" :class="isDark ? 'text-white' : 'text-black'">Store VIP Pass</span>
                         </div>
                         <span class="text-[9.5px] font-light" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">#PASS-2038</span>

@@ -74,7 +74,7 @@
               >
                 {{ userInitials }}
                 <span 
-                  class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-emerald-500 border"
+                  class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-moss-500 border"
                   :class="isDark ? 'border-[#0a0a0a]' : 'border-white'"
                 />
               </div>
@@ -335,7 +335,7 @@
               >
                 {{ userInitials }}
                 <span 
-                  class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-emerald-500 border" 
+                  class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-moss-500 border" 
                   :class="isDark ? 'border-[#0a0a0a]' : 'border-white'"
                 />
               </div>

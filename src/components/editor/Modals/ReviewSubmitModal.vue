@@ -53,7 +53,7 @@
               data-node-id="224:8980"
               data-name="codicon:copy"
             >
-              <Check v-if="copied" class="w-3.5 h-3.5 text-emerald-600" />
+              <Check v-if="copied" class="w-3.5 h-3.5 text-moss-600" />
               <Copy v-else class="w-3.5 h-3.5" />
             </button>
           </div>

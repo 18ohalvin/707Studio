@@ -83,7 +83,7 @@
             {{ logoColorMode === 'black' ? 'Black Mode' : 'Normal Mode' }}
           </span>
         </div>
-        <span class="font-707 text-[11px] text-emerald-600 font-medium shrink-0">● On Ticket PDF</span>
+        <span class="font-707 text-[11px] text-moss-600 font-medium shrink-0">● On Ticket PDF</span>
       </div>
 
       <!-- Appearance Mode: Normal vs Black Mode -->

@@ -48,7 +48,7 @@
           >
             <div class="relative size-[22px] rounded-full bg-white text-black flex items-center justify-center font-707 text-[10px] font-semibold tracking-tight shadow-xs select-none transition-transform duration-200 group-hover:scale-105">
               {{ userInitials }}
-              <span class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-emerald-500 border border-[#0a0a0a]" />
+              <span class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-moss-500 border border-[#0a0a0a]" />
             </div>
           </button>
 
@@ -193,8 +193,8 @@
 
         <!-- SUBROUTE 1: REVIEW GATE -->
         <div v-if="currentTab === 'review'" class="flex flex-col gap-6">
-          <div v-if="pendingProjects.length === 0" class="py-20 text-center flex flex-col items-center justify-center gap-3 bg-[#141414] rounded-[16px] border border-white/10 shadow-xs">
-            <div class="size-12 rounded-full bg-emerald-950/60 text-emerald-400 flex items-center justify-center border border-emerald-800/40">
+          <div v-if="pendingProjects.length === 0" class="py-20 text-center flex flex-col items-center justify-center gap-3 bg-transparent rounded-[16px] border border-white/[0.08]">
+            <div class="size-12 rounded-full bg-moss-950/60 text-moss-300 flex items-center justify-center border border-moss-700/50">
               <CheckCircle2 class="size-6 stroke-[1.6]" />
             </div>
             <div class="flex flex-col gap-1 items-center">
@@ -209,7 +209,7 @@
             <div 
               v-for="p in pendingProjects" 
               :key="p.id"
-              class="p-6 bg-[#141414] rounded-[16px] border border-white/10 shadow-xs hover:border-white/20 hover:shadow-md transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+              class="p-6 bg-transparent rounded-[16px] border border-white/[0.08] hover:border-white/20 hover:bg-white/[0.02] transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-6"
             >
               <div class="flex flex-col gap-2 min-w-0">
                 <div class="flex items-center gap-2">
@@ -328,7 +328,7 @@
                     <span class="truncate max-w-[180px] text-neutral-300">{{ p.title }}</span>
                     <span 
                       class="text-[9.5px] font-mono px-1.5 py-0.2 rounded border uppercase font-medium"
-                      :class="isLiveProject(p) ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800/50' : 'bg-white/[0.06] text-neutral-400 border-white/10'"
+                      :class="isLiveProject(p) ? 'bg-moss-950/60 text-moss-300 border-moss-700/50' : 'bg-white/[0.06] text-neutral-400 border-white/10'"
                     >
                       {{ formatProjectStatus(p) }}
                     </span>
@@ -336,32 +336,25 @@
                 </div>
               </div>
 
-              <div class="flex items-center justify-between pt-3 border-t border-white/[0.08]">
-                <div class="flex items-center gap-2">
-                  <button
-                    type="button"
-                    @click="openBrandDetailsModal(brand)"
-                    class="text-[11.5px] font-mono uppercase text-neutral-400 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0"
-                  >
-                    Settings
-                  </button>
-                  <span class="text-neutral-600">·</span>
-                  <button
-                    type="button"
-                    @click="handleCreateCampaignForBrand(brand)"
-                    class="text-[11.5px] font-mono uppercase text-neutral-300 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0"
-                  >
-                    + Drop
-                  </button>
-                </div>
+              <div class="flex items-center justify-between pt-3.5 border-t border-white/[0.08]">
+                <button
+                  type="button"
+                  @click="openBrandDetailsModal(brand)"
+                  class="h-[32px] px-3 rounded-[8px] border border-white/15 bg-white/[0.04] hover:bg-white/[0.08] text-[11.5px] font-mono uppercase tracking-wider text-neutral-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                  title="Configure brand name and slug"
+                >
+                  <Settings class="w-3.5 h-3.5 text-neutral-400" />
+                  <span>Settings</span>
+                </button>
 
                 <button
                   type="button"
-                  @click="openBrandInStudio(brand)"
-                  class="h-[30px] px-3 rounded-[6px] bg-white text-black hover:bg-neutral-200 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1 font-semibold"
+                  @click="handleCreateCampaignForBrand(brand)"
+                  class="h-[32px] px-3.5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11.5px] font-mono uppercase tracking-wider font-semibold transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs"
+                  title="Create new drop for this brand"
                 >
-                  <span>Studio</span>
-                  <ChevronRight class="w-3 h-3" />
+                  <Plus class="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span>New Drop</span>
                 </button>
               </div>
             </div>
@@ -407,7 +400,7 @@
                   </span>
                   <span 
                     class="text-[9.5px] font-mono px-1.5 py-0.5 rounded border uppercase font-medium"
-                    :class="tpl.status === 'published' ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800/50' : 'bg-white/[0.06] text-neutral-400 border-white/10'"
+                    :class="tpl.status === 'published' ? 'bg-moss-950/60 text-moss-300 border-moss-700/50' : 'bg-white/[0.06] text-neutral-400 border-white/10'"
                   >
                     {{ tpl.status || 'published' }}
                   </span>
@@ -453,35 +446,379 @@
 
         <!-- SUBROUTE 4: TEAM ROSTER -->
         <div v-else-if="currentTab === 'roster'" class="flex flex-col gap-6">
-          <!-- Search & Action Toolbar -->
-          <div class="flex items-center justify-between gap-4">
-            <div class="relative w-full max-w-[340px]">
-              <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-neutral-500" />
-              <input 
-                v-model="userSearchQuery"
-                type="text" 
-                placeholder="Filter members by name, email, or role..." 
-                class="w-full h-[36px] pl-9 pr-3 rounded-[8px] border border-white/10 bg-[#141414] text-[13px] text-white placeholder:text-neutral-500 focus:outline-none focus:border-white/30 transition-colors font-mono"
-              />
-            </div>
+          
+          <!-- 1. Executive Summary Metric Bar -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <button 
+              type="button"
+              @click="selectedRoleFilter = 'all'"
+              class="p-3.5 rounded-[12px] text-left transition-all cursor-pointer border"
+              :class="selectedRoleFilter === 'all' ? 'bg-white/[0.08] border-white/30 shadow-xs' : 'bg-[#141414] border-white/10 hover:border-white/20'"
+            >
+              <div class="text-[11px] font-mono uppercase tracking-wider text-neutral-400">Total Personnel</div>
+              <div class="text-[22px] font-medium text-white font-707 mt-1">{{ teamUsers.length }}</div>
+              <div class="text-[11px] font-mono text-neutral-500 mt-0.5">Active studio accounts</div>
+            </button>
 
             <button 
-              type="button" 
-              @click="showAddUserModal = true" 
-              class="h-[36px] px-3.5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs font-semibold shrink-0"
+              type="button"
+              @click="selectedRoleFilter = 'superadmin'"
+              class="p-3.5 rounded-[12px] text-left transition-all cursor-pointer border"
+              :class="selectedRoleFilter === 'superadmin' ? 'bg-white/[0.08] border-white/30 shadow-xs' : 'bg-[#141414] border-white/10 hover:border-white/20'"
             >
-              <Plus class="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>Invite Member</span>
+              <div class="text-[11px] font-mono uppercase tracking-wider text-neutral-400">Superadmins</div>
+              <div class="text-[22px] font-medium text-white font-707 mt-1">{{ superadminCount }}</div>
+              <div class="text-[11px] font-mono text-neutral-500 mt-0.5">Global Atelier Leads</div>
+            </button>
+
+            <button 
+              type="button"
+              @click="selectedRoleFilter = 'editor'"
+              class="p-3.5 rounded-[12px] text-left transition-all cursor-pointer border"
+              :class="selectedRoleFilter === 'editor' ? 'bg-white/[0.08] border-white/30 shadow-xs' : 'bg-[#141414] border-white/10 hover:border-white/20'"
+            >
+              <div class="text-[11px] font-mono uppercase tracking-wider text-neutral-400">Brand PICs</div>
+              <div class="text-[22px] font-medium text-white font-707 mt-1">{{ brandPicCount }}</div>
+              <div class="text-[11px] font-mono text-neutral-500 mt-0.5">Campaign Managers</div>
+            </button>
+
+            <button 
+              type="button"
+              @click="selectedRoleFilter = 'gate'"
+              class="p-3.5 rounded-[12px] text-left transition-all cursor-pointer border"
+              :class="selectedRoleFilter === 'gate' ? 'bg-white/[0.08] border-white/30 shadow-xs' : 'bg-[#141414] border-white/10 hover:border-white/20'"
+            >
+              <div class="text-[11px] font-mono uppercase tracking-wider text-neutral-400">Door PICs</div>
+              <div class="text-[22px] font-medium text-white font-707 mt-1">{{ gatePicCount }}</div>
+              <div class="text-[11px] font-mono text-neutral-500 mt-0.5">Field Scanner Stations</div>
             </button>
           </div>
 
-          <div class="bg-[#141414] rounded-[16px] border border-white/10 overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
+          <!-- 2. Search, Role Filter Tabs & Action Toolbar -->
+          <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+            <!-- Search & Filters -->
+            <div class="flex flex-wrap items-center gap-2.5 flex-1 min-w-0">
+              <!-- Search Input -->
+              <div class="relative w-full sm:w-[260px]">
+                <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-neutral-500" />
+                <input 
+                  v-model="userSearchQuery" 
+                  type="text" 
+                  placeholder="Filter personnel..." 
+                  class="w-full h-[36px] pl-9 pr-3 rounded-[8px] border border-white/10 bg-[#141414] text-[13px] text-white placeholder:text-neutral-500 focus:outline-none focus:border-white/30 transition-colors font-mono"
+                />
+              </div>
+
+              <!-- Segmented Role Tabs -->
+              <div class="flex items-center gap-1 p-0.5 bg-[#141414] border border-white/10 rounded-[8px]">
+                <button
+                  type="button"
+                  @click="selectedRoleFilter = 'all'"
+                  class="px-2.5 py-1 rounded-[6px] text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none"
+                  :class="selectedRoleFilter === 'all' ? 'bg-white text-black font-semibold' : 'text-neutral-400 hover:text-white bg-transparent'"
+                >
+                  All ({{ teamUsers.length }})
+                </button>
+                <button
+                  type="button"
+                  @click="selectedRoleFilter = 'superadmin'"
+                  class="px-2.5 py-1 rounded-[6px] text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none"
+                  :class="selectedRoleFilter === 'superadmin' ? 'bg-white text-black font-semibold' : 'text-neutral-400 hover:text-white bg-transparent'"
+                >
+                  Admins ({{ superadminCount }})
+                </button>
+                <button
+                  type="button"
+                  @click="selectedRoleFilter = 'editor'"
+                  class="px-2.5 py-1 rounded-[6px] text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none"
+                  :class="selectedRoleFilter === 'editor' ? 'bg-white text-black font-semibold' : 'text-neutral-400 hover:text-white bg-transparent'"
+                >
+                  Brand PICs ({{ brandPicCount }})
+                </button>
+                <button
+                  type="button"
+                  @click="selectedRoleFilter = 'gate'"
+                  class="px-2.5 py-1 rounded-[6px] text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none"
+                  :class="selectedRoleFilter === 'gate' ? 'bg-white text-black font-semibold' : 'text-neutral-400 hover:text-white bg-transparent'"
+                >
+                  Door PICs ({{ gatePicCount }})
+                </button>
+              </div>
+
+              <!-- Brand House Scope Dropdown -->
+              <select 
+                v-model="selectedBrandFilter"
+                class="h-[36px] px-3 rounded-[8px] border border-white/10 bg-[#141414] text-[11.5px] text-neutral-300 font-mono outline-none focus:border-white/30 cursor-pointer"
+              >
+                <option value="all">All Brands Access</option>
+                <option v-for="b in brandStore.brands" :key="b.id" :value="b.slug">{{ b.name }}</option>
+              </select>
+            </div>
+
+            <!-- View Toggle & Invite Member -->
+            <div class="flex items-center gap-2.5 shrink-0 self-end lg:self-center">
+              <!-- View Mode Toggle -->
+              <div class="flex items-center gap-1 p-0.5 bg-[#141414] border border-white/10 rounded-[8px]">
+                <button
+                  type="button"
+                  @click="rosterViewMode = 'grouped'"
+                  class="p-1.5 rounded-[6px] transition-colors cursor-pointer border-none"
+                  :class="rosterViewMode === 'grouped' ? 'bg-white text-black' : 'text-neutral-400 hover:text-white bg-transparent'"
+                  title="Grouped by Role Cards"
+                >
+                  <LayoutGrid class="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  @click="rosterViewMode = 'table'"
+                  class="p-1.5 rounded-[6px] transition-colors cursor-pointer border-none"
+                  :class="rosterViewMode === 'table' ? 'bg-white text-black' : 'text-neutral-400 hover:text-white bg-transparent'"
+                  title="Compact Table View"
+                >
+                  <ListFilter class="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <!-- Invite Member Button -->
+              <button 
+                type="button" 
+                @click="showAddUserModal = true" 
+                class="h-[36px] px-3.5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs font-semibold shrink-0"
+              >
+                <Plus class="w-3.5 h-3.5 stroke-[2.5]" />
+                <span>Invite Member</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Empty State when filtered results are empty -->
+          <div v-if="filteredTeamUsers.length === 0" class="py-16 text-center flex flex-col items-center justify-center gap-2 rounded-[16px] border border-white/10 bg-[#141414]">
+            <p class="text-[14px] text-white font-medium">No personnel found</p>
+            <p class="text-[12px] font-mono text-neutral-400">Try adjusting your search query or role filter.</p>
+          </div>
+
+          <!-- 3A. Grouped Role Sections View (Cleaner, Better Organized) -->
+          <div v-else-if="rosterViewMode === 'grouped'" class="flex flex-col gap-8">
+            
+            <!-- SECTION 1: SUPERADMINS -->
+            <div v-if="superadminUsers.length > 0" class="flex flex-col gap-3">
+              <div class="flex items-center justify-between pb-2 border-b border-white/[0.08]">
+                <div class="flex items-center gap-2">
+                  <ShieldCheck class="w-4 h-4 text-white" />
+                  <h3 class="text-[14px] font-medium text-white uppercase tracking-wider font-mono">Superadmins & Leads</h3>
+                  <span class="px-2 py-0.2 rounded-full bg-white text-black text-[10px] font-mono font-bold">{{ superadminUsers.length }}</span>
+                </div>
+                <span class="text-[11px] font-mono text-neutral-400">Full Atelier Governance & Runway Sign-off</span>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
+                <div 
+                  v-for="user in superadminUsers" 
+                  :key="user.id"
+                  class="p-4 rounded-[14px] bg-[#141414] border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between gap-4 shadow-xs"
+                >
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <div class="relative size-10 rounded-full bg-white text-black flex items-center justify-center font-707 text-[12px] font-semibold tracking-tight shrink-0">
+                        {{ user.name.slice(0, 2).toUpperCase() }}
+                        <span class="absolute -bottom-0.5 -right-0.5 size-[7px] rounded-full bg-moss-500 border border-[#141414]" />
+                      </div>
+                      <div class="flex flex-col min-w-0">
+                        <span class="font-medium text-white truncate text-[14px]">{{ user.name }}</span>
+                        <span class="text-[11.5px] font-mono text-neutral-400 truncate">{{ user.email }}</span>
+                      </div>
+                    </div>
+                    <span class="px-2 py-0.5 rounded bg-white text-black font-semibold font-mono text-[9.5px] uppercase tracking-wider shrink-0">
+                      Superadmin
+                    </span>
+                  </div>
+
+                  <div class="flex items-center justify-between pt-2.5 border-t border-white/[0.06] text-[11px] font-mono">
+                    <span class="px-2 py-0.5 rounded bg-white/[0.06] text-neutral-300 border border-white/5">
+                      Global Atelier (All Brands)
+                    </span>
+
+                    <div class="flex items-center gap-2">
+                      <button
+                        type="button"
+                        @click="openPasswordModal(user)"
+                        class="text-neutral-400 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0 uppercase"
+                        title="Reset Passkey"
+                      >
+                        Passkey ↺
+                      </button>
+                      <span class="text-neutral-600">·</span>
+                      <button
+                        type="button"
+                        @click="openEditUserModal(user)"
+                        class="text-neutral-400 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0 uppercase"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 2: BRAND MANAGERS & PICS -->
+            <div v-if="brandPicUsers.length > 0" class="flex flex-col gap-3">
+              <div class="flex items-center justify-between pb-2 border-b border-white/[0.08]">
+                <div class="flex items-center gap-2">
+                  <Building2 class="w-4 h-4 text-moss-300" />
+                  <h3 class="text-[14px] font-medium text-white uppercase tracking-wider font-mono">Brand Managers & PICs</h3>
+                  <span class="px-2 py-0.2 rounded-full bg-moss-950/60 text-moss-300 border border-moss-700/50 text-[10px] font-mono font-bold">{{ brandPicUsers.length }}</span>
+                </div>
+                <span class="text-[11px] font-mono text-neutral-400">Campaign Creation & Hub Operations</span>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
+                <div 
+                  v-for="user in brandPicUsers" 
+                  :key="user.id"
+                  class="p-4 rounded-[14px] bg-[#141414] border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between gap-4 shadow-xs"
+                >
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <div class="relative size-10 rounded-full bg-neutral-800 text-white flex items-center justify-center font-707 text-[12px] font-semibold tracking-tight shrink-0 border border-white/10">
+                        {{ user.name.slice(0, 2).toUpperCase() }}
+                        <span class="absolute -bottom-0.5 -right-0.5 size-[7px] rounded-full bg-moss-500 border border-[#141414]" />
+                      </div>
+                      <div class="flex flex-col min-w-0">
+                        <span class="font-medium text-white truncate text-[14px]">{{ user.name }}</span>
+                        <span class="text-[11.5px] font-mono text-neutral-400 truncate">{{ user.email }}</span>
+                      </div>
+                    </div>
+                    <span class="px-2 py-0.5 rounded bg-moss-950/60 text-moss-300 border border-moss-700/50 font-mono text-[9.5px] uppercase tracking-wider shrink-0 font-medium">
+                      Brand PIC
+                    </span>
+                  </div>
+
+                  <div class="flex items-center justify-between pt-2.5 border-t border-white/[0.06] text-[11px] font-mono">
+                    <div class="flex items-center flex-wrap gap-1">
+                      <span 
+                        v-for="b in user.assignedBrands" 
+                        :key="b" 
+                        class="px-2 py-0.5 rounded bg-white/[0.06] text-neutral-300 border border-white/5 uppercase"
+                      >
+                        {{ formatBrandName(b) }}
+                      </span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                      <button
+                        type="button"
+                        @click="openPasswordModal(user)"
+                        class="text-neutral-400 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0 uppercase"
+                        title="Reset Passkey"
+                      >
+                        Passkey ↺
+                      </button>
+                      <span class="text-neutral-600">·</span>
+                      <button
+                        type="button"
+                        @click="openEditUserModal(user)"
+                        class="text-neutral-400 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0 uppercase"
+                      >
+                        Edit
+                      </button>
+                      <span class="text-neutral-600">·</span>
+                      <button
+                        type="button"
+                        @click="handleRemoveUser(user)"
+                        class="text-neutral-500 hover:text-red-400 transition-colors cursor-pointer bg-transparent border-none p-0 uppercase"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 3: FIELD & DOOR ENTRANCE PICS -->
+            <div v-if="gateUsers.length > 0" class="flex flex-col gap-3">
+              <div class="flex items-center justify-between pb-2 border-b border-white/[0.08]">
+                <div class="flex items-center gap-2">
+                  <ScanLine class="w-4 h-4 text-neutral-300" />
+                  <h3 class="text-[14px] font-medium text-white uppercase tracking-wider font-mono">Field Staff & Door Entrance PICs</h3>
+                  <span class="px-2 py-0.2 rounded-full bg-white/[0.08] text-neutral-300 border border-white/10 text-[10px] font-mono font-bold">{{ gateUsers.length }}</span>
+                </div>
+                <span class="text-[11px] font-mono text-neutral-400">Scoped Scanner Devices & Station Shifts</span>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
+                <div 
+                  v-for="user in gateUsers" 
+                  :key="user.id"
+                  class="p-4 rounded-[14px] bg-[#141414] border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between gap-4 shadow-xs"
+                >
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <div class="relative size-10 rounded-full bg-neutral-900 text-white flex items-center justify-center font-707 text-[12px] font-semibold tracking-tight shrink-0 border border-white/10">
+                        {{ user.name.slice(0, 2).toUpperCase() }}
+                        <span class="absolute -bottom-0.5 -right-0.5 size-[7px] rounded-full bg-moss-500 border border-[#141414]" />
+                      </div>
+                      <div class="flex flex-col min-w-0">
+                        <span class="font-medium text-white truncate text-[14px]">{{ user.name }}</span>
+                        <div class="flex items-center gap-2 text-[11px] font-mono text-neutral-400">
+                          <span v-if="user.deviceLabel">{{ user.deviceLabel }}</span>
+                          <span v-if="user.deviceLabel && user.stationMode">·</span>
+                          <span v-if="user.stationMode" class="capitalize">{{ user.stationMode === 'both' ? 'In/Out' : user.stationMode }} Station</span>
+                        </div>
+                      </div>
+                    </div>
+                    <span class="px-2 py-0.5 rounded bg-white/[0.08] text-neutral-300 border border-white/10 font-mono text-[9.5px] uppercase tracking-wider shrink-0 font-medium">
+                      Door PIC
+                    </span>
+                  </div>
+
+                  <div class="flex items-center justify-between pt-2.5 border-t border-white/[0.06] text-[11px] font-mono">
+                    <span class="text-neutral-400 text-[10.5px]">
+                      {{ user.expiresAt ? 'Valid: ' + formatDate(user.expiresAt) : 'Active Shift' }}
+                    </span>
+
+                    <div class="flex items-center gap-2">
+                      <button
+                        type="button"
+                        @click="openPasswordModal(user)"
+                        class="text-neutral-400 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0 uppercase"
+                        title="Reset Passkey"
+                      >
+                        Passkey ↺
+                      </button>
+                      <span class="text-neutral-600">·</span>
+                      <button
+                        type="button"
+                        @click="openEditUserModal(user)"
+                        class="text-neutral-400 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0 uppercase"
+                      >
+                        Edit
+                      </button>
+                      <span class="text-neutral-600">·</span>
+                      <button
+                        type="button"
+                        @click="handleRemoveUser(user)"
+                        class="text-neutral-500 hover:text-red-400 transition-colors cursor-pointer bg-transparent border-none p-0 uppercase"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- 3B. Compact Table View (Clean and Structured) -->
+          <div v-else class="bg-[#141414] rounded-[16px] border border-white/10 overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="border-b border-white/[0.08] bg-white/[0.02] text-[11px] font-mono uppercase text-neutral-400 tracking-wider">
                   <th class="py-3 px-5 font-normal">Member</th>
                   <th class="py-3 px-4 font-normal">Role</th>
-                  <th class="py-3 px-4 font-normal">Brand Access</th>
+                  <th class="py-3 px-4 font-normal">Brand Scope</th>
                   <th class="py-3 px-5 font-normal text-right">Actions</th>
                 </tr>
               </thead>
@@ -493,8 +830,9 @@
                 >
                   <td class="py-3.5 px-5">
                     <div class="flex items-center gap-3">
-                      <div class="size-8 rounded-full bg-white text-black flex items-center justify-center font-707 text-[11px] font-semibold tracking-tight shrink-0">
+                      <div class="relative size-8 rounded-full bg-white text-black flex items-center justify-center font-707 text-[11px] font-semibold tracking-tight shrink-0">
                         {{ user.name.slice(0, 2).toUpperCase() }}
+                        <span class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-moss-500 border border-[#0a0a0a]" />
                       </div>
                       <div class="flex flex-col min-w-0">
                         <span class="font-medium text-white truncate">{{ user.name }}</span>
@@ -503,10 +841,11 @@
                     </div>
                   </td>
                   <td class="py-3.5 px-4 font-mono">
-                    <span class="px-2 py-0.5 rounded text-[11px] uppercase font-medium"
-                      :class="user.role === 'superadmin' ? 'bg-white text-black font-semibold' : 'bg-white/[0.06] text-neutral-300 border border-white/10'"
+                    <span 
+                      class="px-2 py-0.5 rounded text-[10.5px] uppercase font-medium"
+                      :class="user.role === 'superadmin' ? 'bg-white text-black font-semibold' : user.role === 'gate' ? 'bg-white/[0.08] text-neutral-300 border border-white/10' : 'bg-moss-950/60 text-moss-300 border border-moss-700/50'"
                     >
-                      {{ user.role }}
+                      {{ user.role === 'editor' ? 'Brand PIC' : user.role === 'gate' ? 'Door PIC' : user.role }}
                     </span>
                   </td>
                   <td class="py-3.5 px-4 font-mono text-[11px]">
@@ -514,9 +853,9 @@
                       <span 
                         v-for="b in user.assignedBrands" 
                         :key="b" 
-                        class="px-1.5 py-0.5 rounded bg-white/[0.06] text-neutral-300 border border-white/5"
+                        class="px-1.5 py-0.5 rounded bg-white/[0.06] text-neutral-300 border border-white/5 uppercase"
                       >
-                        {{ b === 'all' ? 'Global Atelier' : b }}
+                        {{ formatBrandName(b) }}
                       </span>
                     </div>
                   </td>
@@ -539,6 +878,7 @@
                       </button>
                       <span class="text-neutral-600">·</span>
                       <button
+                        v-if="user.role !== 'superadmin'"
                         type="button"
                         @click="handleRemoveUser(user)"
                         class="text-neutral-500 hover:text-red-400 transition-colors cursor-pointer bg-transparent border-none p-0 uppercase"
@@ -760,6 +1100,7 @@
                   >
                     <option value="editor">Editor (Brand PIC)</option>
                     <option value="superadmin">Superadmin</option>
+                    <option value="gate">Door PIC (Gate Staff)</option>
                   </select>
                 </div>
 
@@ -835,6 +1176,31 @@
                   required 
                   class="w-full h-[36px] px-3 rounded-[8px] bg-white/[0.05] border border-white/15 text-[12.5px] font-sans font-light text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all"
                 />
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div class="flex flex-col gap-1">
+                  <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Role</label>
+                  <select 
+                    v-model="editUserRole" 
+                    class="w-full h-[36px] px-3 rounded-[8px] bg-[#1a1a1a] border border-white/15 text-[12.5px] font-sans font-light text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all"
+                  >
+                    <option value="editor">Editor (Brand PIC)</option>
+                    <option value="superadmin">Superadmin</option>
+                    <option value="gate">Door PIC (Gate Staff)</option>
+                  </select>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                  <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Brand House</label>
+                  <select 
+                    v-model="editUserBrand" 
+                    class="w-full h-[36px] px-3 rounded-[8px] bg-[#1a1a1a] border border-white/15 text-[12.5px] font-sans font-light text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all"
+                  >
+                    <option value="all">All Brands</option>
+                    <option v-for="b in brandStore.brands" :key="b.id" :value="b.slug">{{ b.name }}</option>
+                  </select>
+                </div>
               </div>
 
               <div class="pt-2 flex justify-end gap-2">
@@ -1114,10 +1480,11 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { 
-  Plus, X, ExternalLink, ChevronRight, ChevronLeft, Layers, Building2, Boxes, Users, CheckCircle2, Search
+  Plus, X, ExternalLink, ChevronRight, ChevronLeft, Layers, Building2, Boxes, Users, CheckCircle2, Search,
+  Settings, ShieldCheck, ScanLine, LayoutGrid, ListFilter
 } from 'lucide-vue-next';
 
-import { useAuthStore, type UserAccount } from '../stores/authStore.ts';
+import { useAuthStore, type UserAccount, type UserRole } from '../stores/authStore.ts';
 import { useBrandStore } from '../stores/brandStore.ts';
 import { useEditorStore } from '../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../constants/figmaAssets.ts';
@@ -1281,15 +1648,53 @@ const filteredFoundryTemplates = computed(() => {
 });
 
 const userSearchQuery = ref('');
+const selectedRoleFilter = ref<'all' | 'superadmin' | 'editor' | 'gate'>('all');
+const selectedBrandFilter = ref<string>('all');
+const rosterViewMode = ref<'grouped' | 'table'>('grouped');
+
+const superadminCount = computed(() => teamUsers.value.filter(u => u.role === 'superadmin').length);
+const brandPicCount = computed(() => teamUsers.value.filter(u => u.role === 'editor' || (!u.role && u.role !== 'superadmin' && u.role !== 'gate')).length);
+const gatePicCount = computed(() => teamUsers.value.filter(u => u.role === 'gate').length);
+
 const filteredTeamUsers = computed(() => {
   const q = userSearchQuery.value.trim().toLowerCase();
-  if (!q) return teamUsers.value;
-  return teamUsers.value.filter(u => 
-    u.name.toLowerCase().includes(q) || 
-    u.email.toLowerCase().includes(q) || 
-    (u.role && u.role.toLowerCase().includes(q))
-  );
+  const role = selectedRoleFilter.value;
+  const brand = selectedBrandFilter.value;
+
+  return teamUsers.value.filter(u => {
+    // Role filter
+    if (role === 'superadmin' && u.role !== 'superadmin') return false;
+    if (role === 'editor' && u.role !== 'editor' && u.role) return false;
+    if (role === 'gate' && u.role !== 'gate') return false;
+
+    // Brand filter
+    if (brand !== 'all') {
+      const brands = u.assignedBrands || [];
+      if (!brands.includes('all') && !brands.includes(brand)) return false;
+    }
+
+    // Search query
+    if (q) {
+      const matchName = u.name.toLowerCase().includes(q);
+      const matchEmail = u.email.toLowerCase().includes(q);
+      const matchRole = (u.role || 'editor').toLowerCase().includes(q);
+      const matchBrand = (u.assignedBrands || []).some(b => b.toLowerCase().includes(q));
+      if (!matchName && !matchEmail && !matchRole && !matchBrand) return false;
+    }
+
+    return true;
+  });
 });
+
+const superadminUsers = computed(() => filteredTeamUsers.value.filter(u => u.role === 'superadmin'));
+const brandPicUsers = computed(() => filteredTeamUsers.value.filter(u => u.role === 'editor' || (!u.role && u.role !== 'superadmin' && u.role !== 'gate')));
+const gateUsers = computed(() => filteredTeamUsers.value.filter(u => u.role === 'gate'));
+
+function formatBrandName(slugOrId: string): string {
+  if (slugOrId === 'all') return 'Global Atelier';
+  const found = brandStore.brands.find(b => b.slug === slugOrId || b.id === slugOrId);
+  return found ? found.name : slugOrId;
+}
 
 const userInitials = computed(() => {
   const name = authStore.currentUser?.name || 'Superadmin Lead';
@@ -1385,11 +1790,6 @@ onMounted(async () => {
 onUnmounted(() => {
   window.removeEventListener('keydown', handleGlobalKeydown);
 });
-
-function openBrandInStudio(brand?: Brand) {
-  if (brand) brandStore.setActiveBrand(brand);
-  router.push('/editor');
-}
 
 function handleCreateCampaignForBrand(brand: Brand) {
   brandStore.setActiveBrand(brand);
@@ -1535,11 +1935,15 @@ const showEditUserModal = ref(false);
 const targetUserForEdit = ref<UserAccount | null>(null);
 const editUserName = ref('');
 const editUserEmail = ref('');
+const editUserRole = ref<UserRole>('editor');
+const editUserBrand = ref<string>('all');
 
 function openEditUserModal(user: UserAccount) {
   targetUserForEdit.value = user;
   editUserName.value = user.name;
   editUserEmail.value = user.email;
+  editUserRole.value = user.role || 'editor';
+  editUserBrand.value = user.assignedBrands?.[0] || 'all';
   showEditUserModal.value = true;
 }
 
@@ -1548,7 +1952,9 @@ async function handleEditUserSubmit() {
   try {
     await authStore.updateUser(targetUserForEdit.value.id, {
       name: editUserName.value.trim(),
-      email: editUserEmail.value.trim()
+      email: editUserEmail.value.trim(),
+      role: editUserRole.value,
+      assignedBrands: [editUserBrand.value]
     });
     editorStore.showToast('Account updated.');
     showEditUserModal.value = false;

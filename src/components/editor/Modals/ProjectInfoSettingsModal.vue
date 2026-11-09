@@ -161,7 +161,7 @@
             <!-- The real public link, copyable once the campaign is live -->
             <div class="flex items-center gap-2 w-full rounded-[8px] bg-black/[0.04] border border-black/5 px-3 py-2">
               <div class="flex flex-col min-w-0 flex-1">
-                <span class="font-707 text-[10.5px] uppercase tracking-wider" :class="projectIsLive ? 'text-emerald-700' : 'text-neutral-500'">
+                <span class="font-707 text-[10.5px] uppercase tracking-wider" :class="projectIsLive ? 'text-moss-700' : 'text-neutral-500'">
                   {{ projectIsLive ? 'Live link' : 'Link — works once published' }}
                 </span>
                 <span class="font-707 text-[12px] text-black truncate font-mono" :title="publicLink">{{ publicLink }}</span>

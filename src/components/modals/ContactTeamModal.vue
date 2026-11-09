@@ -35,10 +35,10 @@
                   <span 
                     class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium border"
                     :class="isDark 
-                      ? 'bg-emerald-950/60 text-emerald-300 border-emerald-800/60' 
-                      : 'bg-emerald-50 text-emerald-700 border-emerald-200/80'"
+                      ? 'bg-moss-950/60 text-moss-300 border-moss-700/50' 
+                      : 'bg-moss-50 text-moss-700 border-moss-200/80'"
                   >
-                    <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span class="size-1.5 rounded-full bg-moss-500 animate-pulse" />
                     Online
                   </span>
                 </div>
@@ -132,7 +132,7 @@
                 @click="copy('slack', '#707-design-studio-help')"
                 class="px-2.5 h-[28px] rounded-[6px] text-[11px] font-medium border flex items-center gap-1.5 transition-all apple-press cursor-pointer shrink-0"
                 :class="copiedKey === 'slack'
-                  ? 'bg-emerald-500 text-white border-emerald-500'
+                  ? 'bg-moss-600 text-white border-moss-600'
                   : (isDark 
                     ? 'bg-white/10 hover:bg-white/20 border-white/15 text-white' 
                     : 'bg-white hover:bg-neutral-50 border-black/10 text-neutral-800 shadow-2xs')"
@@ -193,7 +193,7 @@
                   @click="copy('email', 'uiux@707designstudio.internal')"
                   class="px-2.5 h-[28px] rounded-[6px] text-[11px] font-medium border flex items-center gap-1.5 transition-all apple-press cursor-pointer"
                   :class="copiedKey === 'email'
-                    ? 'bg-emerald-500 text-white border-emerald-500'
+                    ? 'bg-moss-600 text-white border-moss-600'
                     : (isDark 
                       ? 'bg-white/10 hover:bg-white/20 border-white/15 text-white' 
                       : 'bg-white hover:bg-neutral-50 border-black/10 text-neutral-800 shadow-2xs')"
@@ -266,7 +266,7 @@
               :disabled="isSubmitting || !dispatchMessage.trim()"
               class="w-full h-[36px] rounded-[8px] font-sans text-[12.5px] font-medium flex items-center justify-center gap-1.5 apple-press cursor-pointer transition-all disabled:opacity-40"
               :class="isSubmitted
-                ? 'bg-emerald-600 text-white'
+                ? 'bg-moss-600 text-white'
                 : (isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800 shadow-xs')"
             >
               <Check v-if="isSubmitted" class="w-3.5 h-3.5" />

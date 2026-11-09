@@ -414,7 +414,7 @@
           <div class="relative z-30 flex items-center justify-between w-full border-b border-white/10 pb-4 backdrop-blur-sm">
             <div class="flex items-center gap-3">
               <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10.5px] font-medium bg-white/10 border border-white/15 text-white tracking-normal">
-                <span class="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span class="size-1.5 rounded-full bg-moss-400 animate-pulse" />
                 LIVE STAGE SELECTION
               </span>
               <span class="text-[13px] text-white/20 hidden sm:inline">|</span>
@@ -519,7 +519,7 @@
                   <!-- Card Header: Pass & Status -->
                   <div class="flex items-center justify-between w-full border-b border-white/10 pb-4 relative z-10">
                     <div class="flex items-center gap-2">
-                      <span class="size-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                      <span class="size-2 rounded-full bg-moss-400 shadow-[0_0_8px_rgba(123,139,103,0.8)]" />
                       <span class="text-[12px] font-medium text-white tracking-normal uppercase">Winner Selected</span>
                     </div>
                     <span class="text-[11.5px] font-mono text-white/50">#1 OF 1</span>
@@ -549,7 +549,7 @@
 
                     <div class="flex flex-col items-end">
                       <span class="text-[10px] text-white/40 uppercase tracking-normal">Venue Gate</span>
-                      <span class="text-emerald-300 font-medium mt-0.5">Admit 1 Guest</span>
+                      <span class="text-moss-300 font-medium mt-0.5">Admit 1 Guest</span>
                     </div>
                   </div>
                 </div>
@@ -572,7 +572,7 @@
                   <div class="flex flex-col min-w-0 flex-1">
                     <div class="flex items-center gap-2">
                       <span class="text-[10.5px] font-mono text-white/60 uppercase tracking-normal">Winner #{{ idx + 1 }}</span>
-                      <span v-if="s.checked_in_at" class="text-[9.5px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-light">
+                      <span v-if="s.checked_in_at" class="text-[9.5px] px-1.5 py-0.2 rounded-full bg-moss-500/20 text-moss-300 border border-moss-500/30 font-light">
                         At Venue
                       </span>
                     </div>

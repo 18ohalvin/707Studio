@@ -131,7 +131,7 @@
         :class="primaryCta.disabled ? 'apple-glass-btn cursor-default' : (primaryCta.state === 'live' ? 'apple-glass-btn hover:border-black/30 cursor-pointer shadow-xs' : 'apple-glass-btn-dark cursor-pointer')"
         :title="primaryCta.title"
       >
-        <Check v-if="primaryCta.state === 'live'" class="w-3.5 h-3.5 text-emerald-600" />
+        <Check v-if="primaryCta.state === 'live'" class="w-3.5 h-3.5 text-moss-600" />
         <span class="font-707 font-medium text-[13px] whitespace-nowrap" :class="primaryCta.disabled ? 'text-neutral-600' : (primaryCta.state === 'live' ? 'text-black font-semibold' : 'text-white')">
           {{ isTransitioning ? 'Working…' : primaryCta.label }}
         </span>
@@ -163,7 +163,7 @@
             <!-- Status Dot: Oxblood pulse if superadmin, green static if editor -->
             <span 
               class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full border border-white"
-              :class="peer.role === 'superadmin' ? 'bg-[#7e2c32] animate-pulse' : 'bg-emerald-500'" 
+              :class="peer.role === 'superadmin' ? 'bg-[#7e2c32] animate-pulse' : 'bg-moss-500'" 
             />
           </div>
 
@@ -197,7 +197,7 @@
             class="relative size-full rounded-full bg-black text-white flex items-center justify-center font-707 text-[10.5px] font-semibold tracking-tight select-none"
           >
             {{ userInitials }}
-            <span class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-emerald-500 border border-white" />
+            <span class="absolute -bottom-0.5 -right-0.5 size-[6px] rounded-full bg-moss-500 border border-white" />
           </div>
           <User v-else class="w-3.5 h-3.5 text-black stroke-[1.5]" />
         </button>
@@ -268,9 +268,9 @@ const publishBadge = computed(() => {
     return { label: `Live${version} · update in review`, dot: 'bg-amber-500', class: 'border-amber-300 bg-amber-50 text-amber-900', title: 'Visitors see the live version until the update is published' };
   }
   if (hasChanges.value) {
-    return { label: `Live${version} · unpublished changes`, dot: 'bg-amber-500', class: 'border-emerald-300 bg-emerald-50 text-emerald-900', title: 'Visitors still see the live version. Submit your update to publish these edits.' };
+    return { label: `Live${version} · unpublished changes`, dot: 'bg-amber-500', class: 'border-moss-300 bg-moss-50 text-moss-900', title: 'Visitors still see the live version. Submit your update to publish these edits.' };
   }
-  return { label: `Live${version}`, dot: 'bg-emerald-500', class: 'border-emerald-300 bg-emerald-50 text-emerald-900', title: 'Visitors see exactly what is in the editor' };
+  return { label: `Live${version}`, dot: 'bg-moss-500', class: 'border-moss-300 bg-moss-50 text-moss-900', title: 'Visitors see exactly what is in the editor' };
 });
 
 const primaryCta = computed(() => {

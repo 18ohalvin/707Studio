@@ -12,7 +12,7 @@ const COLLABORATOR_COLORS = [
   '#8f7c50', // Muted Bronze
   '#2563eb', // Royal Blue
   '#7c3aed', // Editorial Purple
-  '#0d9488', // Nordic Teal
+  '#667557', // Earthy Moss
 ];
 
 function pickColorForUser(id: string): string {

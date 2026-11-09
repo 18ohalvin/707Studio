@@ -192,7 +192,7 @@
                   {{ logoColorMode === 'black' ? 'Black Mode' : 'Normal Mode' }}
                 </span>
               </div>
-              <span class="font-707 text-[11px] text-emerald-600 font-medium shrink-0">● Visible</span>
+              <span class="font-707 text-[11px] text-moss-600 font-medium shrink-0">● Visible</span>
             </div>
             <p v-else class="font-707 text-[11px] text-neutral-400 leading-normal">
               Upload a brand logo in your Hero Banner setup to automatically display it at the top of this pass.
@@ -286,8 +286,8 @@
             type="button"
             @click="queuePreviewState = 'calling'"
             class="h-[30px] rounded-[6px] text-[10.5px] font-707 font-medium flex items-center justify-center cursor-pointer transition-colors"
-            :class="queuePreviewState === 'calling' ? 'bg-[#059669] text-white font-semibold shadow-2xs' : 'text-neutral-600 hover:text-black'"
-            title="Emerald: Your Turn (0 ahead)"
+            :class="queuePreviewState === 'calling' ? 'bg-[#7b8b67] text-white font-semibold shadow-2xs' : 'text-neutral-600 hover:text-black'"
+            title="Moss: Your Turn (0 ahead)"
           >
             Turn
           </button>

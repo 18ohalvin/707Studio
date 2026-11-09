@@ -5,7 +5,7 @@
       class="absolute top-[56px] left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5 px-4 py-2 rounded-full bg-black text-white border border-white/20 shadow-[0_8px_24px_rgba(0,0,0,0.3)] select-none backdrop-blur-md animate-in fade-in slide-in-from-top-2 duration-200"
     >
       <!-- Pulsing Live Indicator -->
-      <span class="size-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+      <span class="size-2 rounded-full bg-moss-400 animate-pulse shrink-0" />
 
       <!-- Following Information -->
       <div class="flex items-center gap-1.5 font-707 text-[12px] tracking-normal">

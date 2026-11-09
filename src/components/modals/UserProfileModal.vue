@@ -34,9 +34,9 @@
               <div v-else class="size-full bg-black text-white flex items-center justify-center font-sans font-light tracking-normal text-[12px] font-medium tracking-tight">
                 {{ userInitials }}
               </div>
-              <!-- Green live status dot -->
+              <!-- Moss live status dot -->
               <span 
-                class="absolute bottom-0 right-0 size-[8px] rounded-full bg-emerald-500 border"
+                class="absolute bottom-0 right-0 size-[8px] rounded-full bg-moss-500 border"
                 :class="isDark ? 'border-[#141414]' : 'border-white'"
               />
             </div>
@@ -64,7 +64,7 @@
                   class="inline-flex items-center gap-1 px-1.5 py-[1px] rounded-[4px] text-[10px] font-sans font-light tracking-normal font-medium shrink-0"
                   :class="isDark ? 'bg-white/10 border-[0.5px] border-white/15 text-neutral-300' : 'bg-neutral-100 border-[0.5px] border-black/10 text-neutral-700'"
                 >
-                  <CheckCircle2 class="w-2.5 h-2.5 text-emerald-500" />
+                  <CheckCircle2 class="w-2.5 h-2.5 text-moss-500" />
                   Verified
                 </span>
                 <span 

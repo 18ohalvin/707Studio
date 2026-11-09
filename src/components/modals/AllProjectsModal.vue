@@ -263,7 +263,7 @@
                     :class="isDark ? 'hover:bg-white/10 text-neutral-300 hover:text-white' : 'hover:bg-black/5 text-neutral-600 hover:text-black'"
                     :title="copiedKey === project.id ? 'Copied' : `Copy live link: ${liveLinkFor(project)}`"
                   >
-                    <Check v-if="copiedKey === project.id" class="w-3.5 h-3.5 text-emerald-400" />
+                    <Check v-if="copiedKey === project.id" class="w-3.5 h-3.5 text-moss-400" />
                     <LinkIcon v-else class="w-3.5 h-3.5" />
                   </button>
                   <button 
@@ -375,7 +375,7 @@
                   :class="isDark ? 'hover:bg-white/10 text-neutral-300 hover:text-white' : 'hover:bg-black/5 text-neutral-500 hover:text-black'"
                   :title="copiedKey === project.id ? 'Copied' : `Copy live link: ${liveLinkFor(project)}`"
                 >
-                  <Check v-if="copiedKey === project.id" class="w-3.5 h-3.5 text-emerald-400" />
+                  <Check v-if="copiedKey === project.id" class="w-3.5 h-3.5 text-moss-400" />
                   <LinkIcon v-else class="w-3.5 h-3.5" />
                 </button>
                 <button 
@@ -561,7 +561,7 @@ function getStatusBadgeClass(status?: string): string {
   switch (status) {
     case 'approved':
     case 'published':
-      return 'bg-emerald-50 text-emerald-800 border-emerald-300';
+      return 'bg-moss-50 text-moss-800 border-moss-300';
     case 'pending_review':
       return 'bg-amber-50 text-amber-800 border-amber-300';
     default:
@@ -573,7 +573,7 @@ function getStatusDotClass(status?: string): string {
   switch (status) {
     case 'approved':
     case 'published':
-      return 'bg-emerald-500';
+      return 'bg-moss-500';
     case 'pending_review':
       return 'bg-amber-500 animate-ping';
     default:
