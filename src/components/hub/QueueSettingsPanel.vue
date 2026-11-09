@@ -1,10 +1,10 @@
 <template>
   <div class="w-full flex flex-col gap-5 font-sans font-light tracking-normal" @click="activeInfoKey = null">
     <!-- Header banner -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 sm:p-6 rounded-[16px] border border-black/10 bg-white">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 sm:p-6 rounded-[16px] border" :class="isDark ? 'border-white/10 bg-[#141414] text-white' : 'border-black/10 bg-white text-black'">
       <div class="flex flex-col">
         <div class="flex items-center gap-2">
-          <p class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Venue Capacity & Access</p>
+          <p class="text-[11px] uppercase tracking-normal font-medium" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Venue Capacity & Access</p>
           <span class="px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-moss-50 text-moss-700 border border-moss-200">
             Active
           </span>
@@ -13,7 +13,8 @@
             <button
               type="button"
               @click="toggleInfo('header')"
-              class="size-4 rounded-full text-neutral-400 hover:text-black flex items-center justify-center transition-colors cursor-pointer"
+              class="size-4 rounded-full flex items-center justify-center transition-colors cursor-pointer"
+              :class="isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-400 hover:text-black'"
               title="About this section"
             >
               <Info class="w-3.5 h-3.5" />
@@ -27,7 +28,7 @@
             </div>
           </div>
         </div>
-        <h2 class="text-[20px] sm:text-[22px] font-medium tracking-tight mt-1 text-black">Queue & Capacity</h2>
+        <h2 class="text-[20px] sm:text-[22px] font-medium tracking-tight mt-1" :class="isDark ? 'text-white' : 'text-black'">Queue & Capacity</h2>
       </div>
 
       <div class="flex items-center gap-2">
@@ -35,7 +36,8 @@
           type="button"
           @click="loadSettings"
           :disabled="isLoading"
-          class="h-[36px] px-3.5 rounded-[9px] border border-black/15 bg-white text-[12px] font-medium hover:bg-black/5 disabled:opacity-40 transition-colors cursor-pointer flex items-center gap-1.5"
+          class="h-[36px] px-3.5 rounded-[9px] border text-[12px] font-medium disabled:opacity-40 transition-colors cursor-pointer flex items-center gap-1.5"
+          :class="isDark ? 'border-white/15 bg-white/5 text-white hover:bg-white/10' : 'border-black/15 bg-white text-neutral-700 hover:bg-black/5'"
         >
           <RefreshCw class="w-3.5 h-3.5" :class="isLoading ? 'animate-spin' : ''" />
           <span>Refresh</span>
@@ -44,7 +46,8 @@
           type="button"
           @click="saveSettings"
           :disabled="isSaving"
-          class="apple-cta-btn h-[36px] px-4 rounded-[9px] bg-black text-white text-[12px] font-medium cursor-pointer disabled:opacity-40 flex items-center gap-1.5 transition-all shadow-xs"
+          class="apple-cta-btn h-[36px] px-4 rounded-[9px] text-[12px] font-medium cursor-pointer disabled:opacity-40 flex items-center gap-1.5 transition-all shadow-xs"
+          :class="isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'"
         >
           <Check class="w-3.5 h-3.5" />
           <span>{{ isSaving ? 'Saving…' : 'Save Changes' }}</span>
@@ -53,12 +56,12 @@
     </div>
 
     <!-- Segmented Navigation Pills: [ Live Queue & Venue ] vs [ Notification & Rules Setup ] -->
-    <div class="flex items-center gap-1.5 p-1 bg-neutral-100 rounded-[12px] border border-black/8 w-fit select-none">
+    <div class="flex items-center gap-1.5 p-1 rounded-[12px] border w-fit select-none" :class="isDark ? 'bg-white/[0.06] border-white/10' : 'bg-neutral-100 border-black/8'">
       <button
         type="button"
         @click="activePanelTab = 'operations'"
         class="h-[34px] px-4 rounded-[8px] text-[12.5px] font-sans flex items-center gap-2 transition-all cursor-pointer"
-        :class="activePanelTab === 'operations' ? 'bg-white text-black font-medium shadow-xs' : 'text-neutral-500 hover:text-black font-light'"
+        :class="activePanelTab === 'operations' ? (isDark ? 'bg-white text-black font-medium shadow-xs' : 'bg-white text-black font-medium shadow-xs') : (isDark ? 'text-neutral-400 hover:text-white font-light' : 'text-neutral-500 hover:text-black font-light')"
       >
         <Users class="w-3.5 h-3.5" />
         <span>Live Queue & Venue</span>
@@ -69,7 +72,7 @@
         type="button"
         @click="activePanelTab = 'settings'"
         class="h-[34px] px-4 rounded-[8px] text-[12.5px] font-sans flex items-center gap-2 transition-all cursor-pointer"
-        :class="activePanelTab === 'settings' ? 'bg-white text-black font-medium shadow-xs' : 'text-neutral-500 hover:text-black font-light'"
+        :class="activePanelTab === 'settings' ? (isDark ? 'bg-white text-black font-medium shadow-xs' : 'bg-white text-black font-medium shadow-xs') : (isDark ? 'text-neutral-400 hover:text-white font-light' : 'text-neutral-500 hover:text-black font-light')"
       >
         <SlidersHorizontal class="w-3.5 h-3.5" />
         <span>Notification & Rules Setup</span>
@@ -83,17 +86,18 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         
         <!-- Card 1: Venue Headcount & Capacity Meter -->
-        <div class="p-5 sm:p-6 rounded-[16px] border border-black/10 bg-white flex flex-col justify-between gap-5 shadow-xs">
+        <div class="p-5 sm:p-6 rounded-[16px] border flex flex-col justify-between gap-5 shadow-xs" :class="isDark ? 'border-white/10 bg-[#141414] text-white' : 'border-black/10 bg-white text-black'">
           <div>
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-1.5">
-                <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Venue Headcount</span>
+                <span class="text-[11px] uppercase tracking-normal font-medium" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Venue Headcount</span>
                 <!-- Info Tooltip -->
                 <div class="relative inline-flex items-center" @click.stop>
                   <button
                     type="button"
                     @click="toggleInfo('headcount')"
-                    class="size-4 rounded-full text-neutral-400 hover:text-black flex items-center justify-center transition-colors cursor-pointer"
+                    class="size-4 rounded-full flex items-center justify-center transition-colors cursor-pointer"
+                    :class="isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-400 hover:text-black'"
                   >
                     <Info class="w-3 h-3" />
                   </button>
@@ -107,7 +111,7 @@
                 </div>
               </div>
 
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-black/5 text-neutral-700 border border-black/10">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium border" :class="isDark ? 'bg-white/10 text-white border-white/15' : 'bg-black/5 text-neutral-700 border-black/10'">
                 <span class="size-1.5 rounded-full" :style="{ backgroundColor: barColor }" />
                 {{ capacityPercent >= 100 ? 'Venue Full' : 'Accepting Entry' }}
               </span>
@@ -115,7 +119,7 @@
 
             <div class="flex items-baseline justify-between gap-2 mt-4">
               <div class="flex items-baseline gap-2">
-                <span class="text-[34px] sm:text-[38px] leading-none font-medium font-sans tabular-nums text-black">{{ insideCount }}</span>
+                <span class="text-[34px] sm:text-[38px] leading-none font-medium font-sans tabular-nums" :class="isDark ? 'text-white' : 'text-black'">{{ insideCount }}</span>
                 <span class="text-[13px] text-neutral-400 font-light">/ {{ form.maxCapacity }} Pax Inside</span>
               </div>
 
@@ -129,24 +133,25 @@
 
             <!-- Capacity Progress Bar -->
             <div class="w-full mt-3 flex flex-col gap-1.5">
-              <div class="w-full h-[7px] bg-black/[0.06] rounded-full overflow-hidden">
+              <div class="w-full h-[7px] rounded-full overflow-hidden" :class="isDark ? 'bg-white/10' : 'bg-black/[0.06]'">
                 <div
                   class="h-full rounded-full transition-all duration-500 ease-out"
                   :style="{ width: `${capacityPercent}%`, backgroundColor: barColor }"
                 />
               </div>
-              <div class="flex items-center justify-between text-[11px] text-neutral-500 font-light">
+              <div class="flex items-center justify-between text-[11px] font-light" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">
                 <span>{{ capacityPercent }}% Occupied</span>
                 <span>Limit: {{ form.maxCapacity }} pax</span>
               </div>
             </div>
           </div>
 
-          <div class="pt-2.5 border-t border-black/5 flex items-center justify-end text-[11.5px]">
+          <div class="pt-2.5 border-t flex items-center justify-end text-[11.5px]" :class="isDark ? 'border-white/10' : 'border-black/5'">
             <button 
               type="button" 
               @click="activePanelTab = 'settings'" 
-              class="text-neutral-500 hover:text-black underline underline-offset-2 cursor-pointer font-light"
+              class="underline underline-offset-2 cursor-pointer font-light"
+              :class="isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black'"
             >
               Adjust Limit →
             </button>
@@ -154,17 +159,18 @@
         </div>
 
         <!-- Card 2: Gate Queue Operations (Strictly Read-Only Monitor — No calling buttons) -->
-        <div class="p-5 sm:p-6 rounded-[16px] border border-black/10 bg-white flex flex-col justify-between gap-5 shadow-xs">
+        <div class="p-5 sm:p-6 rounded-[16px] border flex flex-col justify-between gap-5 shadow-xs" :class="isDark ? 'border-white/10 bg-[#141414] text-white' : 'border-black/10 bg-white text-black'">
           <div>
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-1.5">
-                <span class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Gate Line Status</span>
+                <span class="text-[11px] uppercase tracking-normal font-medium" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Gate Line Status</span>
                 <!-- Info Tooltip -->
                 <div class="relative inline-flex items-center" @click.stop>
                   <button
                     type="button"
                     @click="toggleInfo('gate_status')"
-                    class="size-4 rounded-full text-neutral-400 hover:text-black flex items-center justify-center transition-colors cursor-pointer"
+                    class="size-4 rounded-full flex items-center justify-center transition-colors cursor-pointer"
+                    :class="isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-400 hover:text-black'"
                   >
                     <Info class="w-3 h-3" />
                   </button>
@@ -178,7 +184,7 @@
                 </div>
               </div>
 
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-neutral-100 text-neutral-700 border border-black/10">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium border" :class="isDark ? 'bg-white/10 text-neutral-300 border-white/15' : 'bg-neutral-100 text-neutral-700 border-black/10'">
                 <span class="size-1.5 rounded-full bg-moss-600 animate-pulse" />
                 Live Monitor
               </span>
@@ -186,17 +192,17 @@
 
             <div class="grid grid-cols-2 gap-3 mt-4">
               <!-- Currently Serving Readout -->
-              <div class="p-3.5 rounded-[12px] bg-neutral-50 border border-black/5 flex flex-col">
+              <div class="p-3.5 rounded-[12px] border flex flex-col" :class="isDark ? 'bg-white/[0.04] border-white/10 text-white' : 'bg-neutral-50 border-black/5 text-black'">
                 <span class="text-[10.5px] uppercase tracking-normal text-neutral-400 font-medium">Currently Serving</span>
-                <span class="text-[28px] sm:text-[32px] font-medium font-sans tabular-nums text-black leading-tight mt-0.5">
+                <span class="text-[28px] sm:text-[32px] font-medium font-sans tabular-nums leading-tight mt-0.5" :class="isDark ? 'text-white' : 'text-black'">
                   #{{ form.currentCalledNumber }}
                 </span>
               </div>
 
               <!-- Waiting in Queue Readout -->
-              <div class="p-3.5 rounded-[12px] bg-neutral-50 border border-black/5 flex flex-col">
+              <div class="p-3.5 rounded-[12px] border flex flex-col" :class="isDark ? 'bg-white/[0.04] border-white/10 text-white' : 'bg-neutral-50 border-black/5 text-black'">
                 <span class="text-[10.5px] uppercase tracking-normal text-neutral-400 font-medium">Waiting in Line</span>
-                <span class="text-[28px] sm:text-[32px] font-medium font-sans tabular-nums text-black leading-tight mt-0.5">
+                <span class="text-[28px] sm:text-[32px] font-medium font-sans tabular-nums leading-tight mt-0.5" :class="isDark ? 'text-white' : 'text-black'">
                   {{ waitingCount }}
                 </span>
               </div>
@@ -204,36 +210,37 @@
           </div>
 
           <!-- Launch Scanner Shortcut -->
-          <div class="pt-2.5 border-t border-black/5 flex items-center justify-between">
+          <div class="pt-2.5 border-t flex items-center justify-between" :class="isDark ? 'border-white/10' : 'border-black/5'">
             <span class="text-[11.5px] text-neutral-400 font-light">Door Scanner Station</span>
             <a
               :href="scannerHref"
               target="_blank"
               rel="noopener"
-              class="h-[34px] px-3.5 rounded-[9px] bg-black text-white hover:bg-neutral-800 text-[12px] font-medium flex items-center gap-1.5 transition-colors apple-press cursor-pointer shadow-xs"
+              class="h-[34px] px-3.5 rounded-[9px] text-[12px] font-medium flex items-center gap-1.5 transition-colors apple-press cursor-pointer shadow-xs"
+              :class="isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'"
             >
               <ScanLine class="w-3.5 h-3.5" />
               <span>Launch Door Scanner</span>
-              <ArrowUpRight class="w-3 h-3 text-neutral-400" />
+              <ArrowUpRight class="w-3 h-3" :class="isDark ? 'text-black/60' : 'text-neutral-400'" />
             </a>
           </div>
         </div>
       </div>
 
       <!-- Card 3: Notification Readiness & Health Status -->
-      <div class="p-5 rounded-[16px] border border-black/10 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+      <div class="p-5 rounded-[16px] border flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs" :class="isDark ? 'border-white/10 bg-[#141414] text-white' : 'border-black/10 bg-white text-black'">
         <div class="flex items-center gap-3">
-          <div class="size-9 rounded-[10px] bg-neutral-100 flex items-center justify-center shrink-0">
-            <BellRing class="w-4 h-4 text-neutral-700" />
+          <div class="size-9 rounded-[10px] flex items-center justify-center shrink-0" :class="isDark ? 'bg-white/10 text-white' : 'bg-neutral-100 text-neutral-700'">
+            <BellRing class="w-4 h-4" />
           </div>
           <div class="flex items-center gap-2.5 text-[12.5px]">
-            <span class="font-medium text-black">Guest Alerts:</span>
-            <span class="flex items-center gap-1 text-neutral-600 font-light">
+            <span class="font-medium" :class="isDark ? 'text-white' : 'text-black'">Guest Alerts:</span>
+            <span class="flex items-center gap-1 font-light" :class="isDark ? 'text-neutral-300' : 'text-neutral-600'">
               <span class="size-1.5 rounded-full" :class="form.emailNotificationEnabled !== false ? 'bg-moss-600' : 'bg-neutral-300'" />
               Email (Default) {{ form.emailNotificationEnabled !== false ? 'On' : 'Off' }}
             </span>
             <span class="text-neutral-300">•</span>
-            <span class="flex items-center gap-1 text-neutral-600 font-light">
+            <span class="flex items-center gap-1 font-light" :class="isDark ? 'text-neutral-300' : 'text-neutral-600'">
               <span class="size-1.5 rounded-full" :class="form.waEnabled && form.waConnection?.connected ? 'bg-moss-600' : 'bg-neutral-300'" />
               WhatsApp (Additional) {{ form.waEnabled && form.waConnection?.connected ? 'On' : 'Off' }}
             </span>
@@ -243,7 +250,8 @@
         <button
           type="button"
           @click="activePanelTab = 'settings'"
-          class="h-[32px] px-3 rounded-[8px] border border-black/15 hover:bg-black/5 text-[12px] font-medium text-neutral-700 flex items-center gap-1 transition-colors cursor-pointer shrink-0"
+          class="h-[32px] px-3 rounded-[8px] border text-[12px] font-medium flex items-center gap-1 transition-colors cursor-pointer shrink-0"
+          :class="isDark ? 'border-white/15 bg-white/5 text-white hover:bg-white/10' : 'border-black/15 hover:bg-black/5 text-neutral-700'"
         >
           <span>Configure Alerts →</span>
         </button>
@@ -256,16 +264,23 @@
     <div v-else class="flex flex-col gap-5">
       
       <!-- Card A: Venue Limits & Queue Rules (Clean, compact, no paragraph clutter) -->
-      <div class="p-5 sm:p-6 rounded-[16px] border border-black/10 bg-white flex flex-col gap-4 shadow-xs">
-        <div class="flex items-center justify-between pb-3 border-b border-black/10">
+      <div
+        class="p-5 sm:p-6 rounded-[16px] border flex flex-col gap-4 shadow-xs"
+        :class="isDark ? 'border-white/10 bg-[#141414] text-white' : 'border-black/10 bg-white text-black'"
+      >
+        <div
+          class="flex items-center justify-between pb-3 border-b"
+          :class="isDark ? 'border-white/10' : 'border-black/10'"
+        >
           <div class="flex items-center gap-1.5">
-            <h3 class="text-[15px] font-medium text-black">Venue Limits & Rules</h3>
+            <h3 class="text-[15px] font-medium" :class="isDark ? 'text-white' : 'text-black'">Venue Limits & Rules</h3>
             <!-- Info Tooltip -->
             <div class="relative inline-flex items-center" @click.stop>
               <button
                 type="button"
                 @click="toggleInfo('rules')"
-                class="size-4 rounded-full text-neutral-400 hover:text-black flex items-center justify-center transition-colors cursor-pointer"
+                class="size-4 rounded-full flex items-center justify-center transition-colors cursor-pointer"
+                :class="isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-400 hover:text-black'"
               >
                 <Info class="w-3 h-3" />
               </button>
@@ -282,11 +297,14 @@
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <!-- Rule 1: Maximum Venue Limit -->
-          <div class="p-3.5 rounded-[12px] bg-neutral-50/70 border border-black/5 flex flex-col gap-2">
+          <div
+            class="p-3.5 rounded-[12px] border flex flex-col gap-2"
+            :class="isDark ? 'bg-white/[0.04] border-white/10' : 'bg-neutral-50/70 border-black/5'"
+          >
             <div class="flex items-center justify-between">
-              <label for="queue-max-capacity" class="text-[12.5px] font-medium text-black">Venue Limit</label>
+              <label for="queue-max-capacity" class="text-[12.5px] font-medium" :class="isDark ? 'text-white' : 'text-black'">Venue Limit</label>
               <div class="relative inline-flex items-center" @click.stop>
-                <button type="button" @click="toggleInfo('rule_limit')" class="text-neutral-400 hover:text-black cursor-pointer">
+                <button type="button" @click="toggleInfo('rule_limit')" :class="isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-400 hover:text-black'" class="cursor-pointer">
                   <Info class="w-3 h-3" />
                 </button>
                 <div v-if="activeInfoKey === 'rule_limit'" class="absolute bottom-full right-0 mb-2 w-56 p-2 rounded-[8px] bg-black text-white text-[10.5px] font-light leading-tight shadow-lg z-30 animate-apple-pop">
@@ -295,27 +313,37 @@
                 </div>
               </div>
             </div>
-            <div class="flex items-center rounded-[8px] border border-black/15 bg-white overflow-hidden h-[34px] divide-x divide-black/10 focus-within:border-black transition-colors w-full">
+            <div
+              class="flex items-center rounded-[8px] border overflow-hidden h-[34px] divide-x transition-colors w-full"
+              :class="isDark ? 'border-white/15 bg-white/[0.06] divide-white/10 focus-within:border-white' : 'border-black/15 bg-white divide-black/10 focus-within:border-black'"
+            >
               <input
                 id="queue-max-capacity"
                 v-model.number="form.maxCapacity"
                 type="number"
                 min="1"
                 max="2000"
-                class="flex-1 h-full min-w-0 px-2.5 text-[13.5px] font-medium font-sans tabular-nums text-black bg-transparent border-none outline-none"
+                class="flex-1 h-full min-w-0 px-2.5 text-[13.5px] font-medium font-sans tabular-nums bg-transparent border-none outline-none"
+                :class="isDark ? 'text-white placeholder:text-neutral-500' : 'text-black'"
               />
-              <span class="px-2.5 h-full flex items-center justify-center text-[10.5px] font-medium text-neutral-400 bg-black/[0.02] uppercase">
+              <span
+                class="px-2.5 h-full flex items-center justify-center text-[10.5px] font-medium uppercase"
+                :class="isDark ? 'text-neutral-400 bg-white/[0.04]' : 'text-neutral-400 bg-black/[0.02]'"
+              >
                 Pax
               </span>
             </div>
           </div>
 
           <!-- Rule 2: Standby Alert Distance -->
-          <div class="p-3.5 rounded-[12px] bg-neutral-50/70 border border-black/5 flex flex-col gap-2">
+          <div
+            class="p-3.5 rounded-[12px] border flex flex-col gap-2"
+            :class="isDark ? 'bg-white/[0.04] border-white/10' : 'bg-neutral-50/70 border-black/5'"
+          >
             <div class="flex items-center justify-between">
-              <label for="queue-notify-threshold" class="text-[12.5px] font-medium text-black">Standby Alert</label>
+              <label for="queue-notify-threshold" class="text-[12.5px] font-medium" :class="isDark ? 'text-white' : 'text-black'">Standby Alert</label>
               <div class="relative inline-flex items-center" @click.stop>
-                <button type="button" @click="toggleInfo('rule_alert')" class="text-neutral-400 hover:text-black cursor-pointer">
+                <button type="button" @click="toggleInfo('rule_alert')" :class="isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-400 hover:text-black'" class="cursor-pointer">
                   <Info class="w-3 h-3" />
                 </button>
                 <div v-if="activeInfoKey === 'rule_alert'" class="absolute bottom-full right-0 mb-2 w-56 p-2 rounded-[8px] bg-black text-white text-[10.5px] font-light leading-tight shadow-lg z-30 animate-apple-pop">
@@ -324,27 +352,37 @@
                 </div>
               </div>
             </div>
-            <div class="flex items-center rounded-[8px] border border-black/15 bg-white overflow-hidden h-[34px] divide-x divide-black/10 focus-within:border-black transition-colors w-full">
+            <div
+              class="flex items-center rounded-[8px] border overflow-hidden h-[34px] divide-x transition-colors w-full"
+              :class="isDark ? 'border-white/15 bg-white/[0.06] divide-white/10 focus-within:border-white' : 'border-black/15 bg-white divide-black/10 focus-within:border-black'"
+            >
               <input
                 id="queue-notify-threshold"
                 v-model.number="form.notifyThreshold"
                 type="number"
                 min="1"
                 max="100"
-                class="flex-1 h-full min-w-0 px-2.5 text-[13.5px] font-medium font-sans tabular-nums text-black bg-transparent border-none outline-none"
+                class="flex-1 h-full min-w-0 px-2.5 text-[13.5px] font-medium font-sans tabular-nums bg-transparent border-none outline-none"
+                :class="isDark ? 'text-white placeholder:text-neutral-500' : 'text-black'"
               />
-              <span class="px-2.5 h-full flex items-center justify-center text-[10.5px] font-medium text-neutral-400 bg-black/[0.02] uppercase">
+              <span
+                class="px-2.5 h-full flex items-center justify-center text-[10.5px] font-medium uppercase"
+                :class="isDark ? 'text-neutral-400 bg-white/[0.04]' : 'text-neutral-400 bg-black/[0.02]'"
+              >
                 Ahead
               </span>
             </div>
           </div>
 
           <!-- Rule 3: Missed Turn Margin -->
-          <div class="p-3.5 rounded-[12px] bg-neutral-50/70 border border-black/5 flex flex-col gap-2">
+          <div
+            class="p-3.5 rounded-[12px] border flex flex-col gap-2"
+            :class="isDark ? 'bg-white/[0.04] border-white/10' : 'bg-neutral-50/70 border-black/5'"
+          >
             <div class="flex items-center justify-between">
-              <label for="queue-skipped-tolerance" class="text-[12.5px] font-medium text-black">Missed Turn Margin</label>
+              <label for="queue-skipped-tolerance" class="text-[12.5px] font-medium" :class="isDark ? 'text-white' : 'text-black'">Missed Turn Margin</label>
               <div class="relative inline-flex items-center" @click.stop>
-                <button type="button" @click="toggleInfo('rule_margin')" class="text-neutral-400 hover:text-black cursor-pointer">
+                <button type="button" @click="toggleInfo('rule_margin')" :class="isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-400 hover:text-black'" class="cursor-pointer">
                   <Info class="w-3 h-3" />
                 </button>
                 <div v-if="activeInfoKey === 'rule_margin'" class="absolute bottom-full right-0 mb-2 w-56 p-2 rounded-[8px] bg-black text-white text-[10.5px] font-light leading-tight shadow-lg z-30 animate-apple-pop">
@@ -353,16 +391,23 @@
                 </div>
               </div>
             </div>
-            <div class="flex items-center rounded-[8px] border border-black/15 bg-white overflow-hidden h-[34px] divide-x divide-black/10 focus-within:border-black transition-colors w-full">
+            <div
+              class="flex items-center rounded-[8px] border overflow-hidden h-[34px] divide-x transition-colors w-full"
+              :class="isDark ? 'border-white/15 bg-white/[0.06] divide-white/10 focus-within:border-white' : 'border-black/15 bg-white divide-black/10 focus-within:border-black'"
+            >
               <input
                 id="queue-skipped-tolerance"
                 v-model.number="form.skippedTolerance"
                 type="number"
                 min="1"
                 max="50"
-                class="flex-1 h-full min-w-0 px-2.5 text-[13.5px] font-medium font-sans tabular-nums text-black bg-transparent border-none outline-none"
+                class="flex-1 h-full min-w-0 px-2.5 text-[13.5px] font-medium font-sans tabular-nums bg-transparent border-none outline-none"
+                :class="isDark ? 'text-white placeholder:text-neutral-500' : 'text-black'"
               />
-              <span class="px-2.5 h-full flex items-center justify-center text-[10.5px] font-medium text-neutral-400 bg-black/[0.02] uppercase">
+              <span
+                class="px-2.5 h-full flex items-center justify-center text-[10.5px] font-medium uppercase"
+                :class="isDark ? 'text-neutral-400 bg-white/[0.04]' : 'text-neutral-400 bg-black/[0.02]'"
+              >
                 Turns
               </span>
             </div>
@@ -371,18 +416,25 @@
       </div>
 
       <!-- Card B: Notification Channels (WhatsApp vs Email Switcher) -->
-      <div class="p-5 sm:p-6 rounded-[16px] border border-black/10 bg-white flex flex-col gap-5 shadow-xs">
+      <div
+        class="p-5 sm:p-6 rounded-[16px] border flex flex-col gap-5 shadow-xs"
+        :class="isDark ? 'border-white/10 bg-[#141414] text-white' : 'border-black/10 bg-white text-black'"
+      >
         
         <!-- Channels Sub-Tab Switcher -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-black/10">
+        <div
+          class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b"
+          :class="isDark ? 'border-white/10' : 'border-black/10'"
+        >
           <div class="flex items-center gap-1.5">
-            <h3 class="text-[15px] font-medium text-black">Guest Notification Channels</h3>
+            <h3 class="text-[15px] font-medium" :class="isDark ? 'text-white' : 'text-black'">Guest Notification Channels</h3>
             <!-- Info Tooltip -->
             <div class="relative inline-flex items-center" @click.stop>
               <button
                 type="button"
                 @click="toggleInfo('channels')"
-                class="size-4 rounded-full text-neutral-400 hover:text-black flex items-center justify-center transition-colors cursor-pointer"
+                class="size-4 rounded-full flex items-center justify-center transition-colors cursor-pointer"
+                :class="isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-400 hover:text-black'"
               >
                 <Info class="w-3 h-3" />
               </button>
@@ -397,12 +449,15 @@
           </div>
 
           <!-- Channel Pills -->
-          <div class="flex items-center gap-1 p-1 bg-neutral-100 rounded-[9px] border border-black/5 w-fit">
+          <div
+            class="flex items-center gap-1 p-1 rounded-[9px] border w-fit"
+            :class="isDark ? 'bg-white/[0.04] border-white/10' : 'bg-neutral-100 border-black/5'"
+          >
             <button
               type="button"
               @click="activeNotificationTab = 'email'"
               class="h-[30px] px-3 rounded-[6px] text-[12px] font-sans flex items-center gap-1.5 transition-all cursor-pointer"
-              :class="activeNotificationTab === 'email' ? 'bg-white text-black font-medium shadow-xs' : 'text-neutral-500 hover:text-black font-light'"
+              :class="activeNotificationTab === 'email' ? (isDark ? 'bg-white/15 text-white font-medium shadow-xs' : 'bg-white text-black font-medium shadow-xs') : (isDark ? 'text-neutral-400 hover:text-white font-light' : 'text-neutral-500 hover:text-black font-light')"
             >
               <Mail class="w-3.5 h-3.5" />
               <span>Email Confirmations (Primary)</span>
@@ -412,7 +467,7 @@
               type="button"
               @click="activeNotificationTab = 'whatsapp'"
               class="h-[30px] px-3 rounded-[6px] text-[12px] font-sans flex items-center gap-1.5 transition-all cursor-pointer"
-              :class="activeNotificationTab === 'whatsapp' ? 'bg-white text-black font-medium shadow-xs' : 'text-neutral-500 hover:text-black font-light'"
+              :class="activeNotificationTab === 'whatsapp' ? (isDark ? 'bg-white/15 text-white font-medium shadow-xs' : 'bg-white text-black font-medium shadow-xs') : (isDark ? 'text-neutral-400 hover:text-white font-light' : 'text-neutral-500 hover:text-black font-light')"
             >
               <Smartphone class="w-3.5 h-3.5" />
               <span>WhatsApp Alerts (Additional)</span>
@@ -420,23 +475,26 @@
           </div>
         </div>
 
-<!-- ============================================================== -->
+        <!-- ============================================================== -->
         <!-- CHANNEL 1: REALISTIC EMAIL CLIENT PREVIEW (Primary)            -->
         <!-- ============================================================== -->
         <div v-if="activeNotificationTab === 'email'" class="flex flex-col gap-5">
           
           <!-- Email Master Switch -->
-          <div class="p-3.5 sm:p-4 rounded-[12px] bg-neutral-50 border border-black/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div
+            class="p-3.5 sm:p-4 rounded-[12px] border flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+            :class="isDark ? 'bg-white/[0.04] border-white/10' : 'bg-neutral-50 border-black/5'"
+          >
             <div class="flex items-center gap-3">
               <label class="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" v-model="form.emailNotificationEnabled" class="sr-only peer" />
-                <div class="w-9 h-5 bg-neutral-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-black"></div>
+                <div class="w-9 h-5 bg-neutral-300 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-black dark:peer-checked:bg-white dark:peer-checked:after:bg-black"></div>
               </label>
               <div class="flex items-center gap-1.5">
-                <span class="text-[13px] font-medium text-black">Automated Email Confirmations</span>
+                <span class="text-[13px] font-medium" :class="isDark ? 'text-white' : 'text-black'">Automated Email Confirmations</span>
                 <!-- Info Tooltip -->
                 <div class="relative inline-flex items-center" @click.stop>
-                  <button type="button" @click="toggleInfo('email_toggle')" class="text-neutral-400 hover:text-black cursor-pointer">
+                  <button type="button" @click="toggleInfo('email_toggle')" :class="isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-400 hover:text-black'" class="cursor-pointer">
                     <Info class="w-3 h-3" />
                   </button>
                   <div v-if="activeInfoKey === 'email_toggle'" class="absolute bottom-full left-0 mb-2 w-56 p-2 rounded-[8px] bg-black text-white text-[10.5px] font-light leading-tight shadow-lg z-30 animate-apple-pop">
@@ -447,19 +505,25 @@
               </div>
             </div>
 
-            <div class="flex items-center gap-2 px-2.5 py-1 rounded-[7px] bg-moss-50 border border-moss-200 text-[11.5px] text-moss-800 font-medium">
+            <div
+              class="flex items-center gap-2 px-2.5 py-1 rounded-[7px] border text-[11.5px] font-medium"
+              :class="isDark ? 'bg-moss-950/40 border-moss-500/30 text-moss-300' : 'bg-moss-50 border-moss-200 text-moss-800'"
+            >
               <span class="size-1.5 rounded-full bg-moss-600" />
               <span>SMTP Active</span>
             </div>
           </div>
 
           <!-- Email Stages Selector -->
-          <div class="flex items-center gap-1.5 p-1 rounded-[9px] bg-neutral-100 border border-black/5 w-fit">
+          <div
+            class="flex items-center gap-1.5 p-1 rounded-[9px] border w-fit"
+            :class="isDark ? 'bg-white/[0.04] border-white/10' : 'bg-neutral-100 border-black/5'"
+          >
             <button
               type="button"
               @click="activeEmailTab = 'pass'"
               class="px-3 py-1 rounded-[6px] text-[11.5px] font-sans flex items-center gap-1.5 transition-all cursor-pointer"
-              :class="activeEmailTab === 'pass' ? 'bg-white text-black font-medium shadow-xs' : 'text-neutral-500 hover:text-black font-light'"
+              :class="activeEmailTab === 'pass' ? (isDark ? 'bg-white/15 text-white font-medium shadow-xs' : 'bg-white text-black font-medium shadow-xs') : (isDark ? 'text-neutral-400 hover:text-white font-light' : 'text-neutral-500 hover:text-black font-light')"
             >
               <QrCode class="w-3 h-3" />
               <span>1. Ticket & Pass Email</span>
@@ -469,7 +533,7 @@
               type="button"
               @click="activeEmailTab = 'ready'"
               class="px-3 py-1 rounded-[6px] text-[11.5px] font-sans flex items-center gap-1.5 transition-all cursor-pointer"
-              :class="activeEmailTab === 'ready' ? 'bg-white text-black font-medium shadow-xs' : 'text-neutral-500 hover:text-black font-light'"
+              :class="activeEmailTab === 'ready' ? (isDark ? 'bg-white/15 text-white font-medium shadow-xs' : 'bg-white text-black font-medium shadow-xs') : (isDark ? 'text-neutral-400 hover:text-white font-light' : 'text-neutral-500 hover:text-black font-light')"
             >
               <UserCheck class="w-3 h-3" />
               <span>2. Entry Call Email</span>
@@ -483,33 +547,36 @@
             <div class="flex flex-col gap-3">
               <!-- Subject -->
               <div class="flex flex-col gap-1">
-                <label class="text-[11.5px] font-medium uppercase tracking-normal text-neutral-500">Email Subject Line</label>
+                <label class="text-[11.5px] font-medium uppercase tracking-normal" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Email Subject Line</label>
                 <input
                   v-model="currentEmailTemplate.subject"
                   type="text"
-                  class="w-full h-[36px] px-3 rounded-[8px] bg-neutral-50 border border-black/15 text-[12.5px] font-sans font-light text-black outline-none focus:border-black focus:bg-white transition-all placeholder:text-neutral-400"
+                  class="w-full h-[36px] px-3 rounded-[8px] border text-[12.5px] font-sans font-light outline-none transition-all"
+                  :class="isDark ? 'bg-white/[0.06] border-white/15 text-white focus:border-white focus:bg-white/[0.1] placeholder:text-neutral-500' : 'bg-neutral-50 border-black/15 text-black focus:border-black focus:bg-white placeholder:text-neutral-400'"
                   placeholder="e.g. Your ticket for {{campaign}}"
                 />
               </div>
 
               <!-- Main Heading -->
               <div class="flex flex-col gap-1">
-                <label class="text-[11.5px] font-medium uppercase tracking-normal text-neutral-500">Email Heading</label>
+                <label class="text-[11.5px] font-medium uppercase tracking-normal" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Email Heading</label>
                 <input
                   v-model="currentEmailTemplate.heading"
                   type="text"
-                  class="w-full h-[36px] px-3 rounded-[8px] bg-neutral-50 border border-black/15 text-[12.5px] font-sans font-light text-black outline-none focus:border-black focus:bg-white transition-all placeholder:text-neutral-400"
+                  class="w-full h-[36px] px-3 rounded-[8px] border text-[12.5px] font-sans font-light outline-none transition-all"
+                  :class="isDark ? 'bg-white/[0.06] border-white/15 text-white focus:border-white focus:bg-white/[0.1] placeholder:text-neutral-500' : 'bg-neutral-50 border-black/15 text-black focus:border-black focus:bg-white placeholder:text-neutral-400'"
                   placeholder="e.g. Your ticket"
                 />
               </div>
 
               <!-- Body Copy -->
               <div class="flex flex-col gap-1">
-                <label class="text-[11.5px] font-medium uppercase tracking-normal text-neutral-500">Body Copy / Instructions</label>
+                <label class="text-[11.5px] font-medium uppercase tracking-normal" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Body Copy / Instructions</label>
                 <textarea
                   v-model="currentEmailTemplate.body"
                   rows="4"
-                  class="w-full p-3 rounded-[10px] bg-neutral-50 border border-black/15 text-[12.5px] leading-relaxed font-sans font-light text-black outline-none focus:border-black focus:bg-white transition-all resize-y placeholder:text-neutral-400"
+                  class="w-full p-3 rounded-[10px] border text-[12.5px] leading-relaxed font-sans font-light outline-none transition-all resize-y"
+                  :class="isDark ? 'bg-white/[0.06] border-white/15 text-white focus:border-white focus:bg-white/[0.1] placeholder:text-neutral-500' : 'bg-neutral-50 border-black/15 text-black focus:border-black focus:bg-white placeholder:text-neutral-400'"
                   placeholder="Enter email body copy..."
                 />
               </div>
@@ -521,7 +588,8 @@
                   :key="v.key"
                   type="button"
                   @click="insertEmailTag(v.key)"
-                  class="px-2 py-0.5 rounded-[5px] bg-neutral-100 hover:bg-neutral-200 text-[10.5px] font-medium text-neutral-800 cursor-pointer flex items-center gap-1 transition-colors"
+                  class="px-2 py-0.5 rounded-[5px] text-[10.5px] font-medium cursor-pointer flex items-center gap-1 transition-colors"
+                  :class="isDark ? 'bg-white/10 hover:bg-white/15 text-neutral-200' : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-800'"
                   :title="v.description"
                 >
                   <span>+ {{ v.label }}</span>
@@ -530,45 +598,54 @@
             </div>
 
             <!-- Right: AUTHENTIC REALISTIC EMAIL CLIENT UI (Apple Mail / Gmail Chrome) -->
-            <div class="rounded-[16px] border border-black/12 overflow-hidden bg-[#f0f0f2] shadow-sm select-none flex flex-col font-sans">
+            <div
+              class="rounded-[16px] border overflow-hidden shadow-sm select-none flex flex-col font-sans"
+              :class="isDark ? 'border-white/15 bg-[#1e1e1e]' : 'border-black/12 bg-[#f0f0f2]'"
+            >
               <!-- Realistic Email Client Header Chrome (macOS Apple Mail Style) -->
-              <div class="px-4 py-3 bg-[#e8e8ea] border-b border-black/10 flex items-center justify-between">
+              <div
+                class="px-4 py-3 border-b flex items-center justify-between"
+                :class="isDark ? 'bg-[#2a2a2c] border-white/10' : 'bg-[#e8e8ea] border-black/10'"
+              >
                 <div class="flex items-center gap-1.5">
                   <span class="size-2.5 rounded-full bg-[#ff5f57] border border-black/10" />
                   <span class="size-2.5 rounded-full bg-[#febc2e] border border-black/10" />
                   <span class="size-2.5 rounded-full bg-[#28c840] border border-black/10" />
                 </div>
-                <span class="text-[11px] text-neutral-500 font-medium truncate max-w-[220px]">
+                <span class="text-[11px] font-medium truncate max-w-[220px]" :class="isDark ? 'text-neutral-300' : 'text-neutral-500'">
                   {{ renderedEmailSubject || 'Email Preview' }}
                 </span>
-                <span class="text-[10px] text-neutral-400 font-light">Inbox</span>
+                <span class="text-[10px] font-light" :class="isDark ? 'text-neutral-400' : 'text-neutral-400'">Inbox</span>
               </div>
 
               <!-- Email Client Metadata Envelope -->
-              <div class="px-4 py-2.5 bg-white border-b border-black/5 flex flex-col gap-1 text-[11px] text-neutral-500">
+              <div
+                class="px-4 py-2.5 border-b flex flex-col gap-1 text-[11px]"
+                :class="isDark ? 'bg-[#18181a] border-white/5 text-neutral-400' : 'bg-white border-black/5 text-neutral-500'"
+              >
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-1.5">
-                    <span class="font-medium text-black">From:</span>
-                    <span class="text-neutral-700 font-normal">{{ activeBrandName }} &lt;tickets@events.707.co.id&gt;</span>
+                    <span class="font-medium" :class="isDark ? 'text-white' : 'text-black'">From:</span>
+                    <span :class="isDark ? 'text-neutral-300 font-normal' : 'text-neutral-700 font-normal'">{{ activeBrandName }} &lt;tickets@events.707.co.id&gt;</span>
                   </div>
                   <span class="text-[10px] text-neutral-400">14:32</span>
                 </div>
                 <div class="flex items-center gap-1.5">
-                  <span class="font-medium text-black">To:</span>
-                  <span class="text-neutral-700 font-light">Sarah Jenkins &lt;s.jenkins@example.com&gt;</span>
+                  <span class="font-medium" :class="isDark ? 'text-white' : 'text-black'">To:</span>
+                  <span :class="isDark ? 'text-neutral-300 font-light' : 'text-neutral-700 font-light'">Sarah Jenkins &lt;s.jenkins@example.com&gt;</span>
                 </div>
                 <div class="flex items-center gap-1.5">
-                  <span class="font-medium text-black">Subject:</span>
-                  <span class="text-black font-medium">{{ renderedEmailSubject }}</span>
+                  <span class="font-medium" :class="isDark ? 'text-white' : 'text-black'">Subject:</span>
+                  <span :class="isDark ? 'text-white font-medium' : 'text-black font-medium'">{{ renderedEmailSubject }}</span>
                 </div>
               </div>
 
               <!-- Realistic Email Body Sheet (Matches server mailer.ts shell) -->
-              <div class="p-4 sm:p-5 bg-[#f6f6f8] flex justify-center">
-                <div class="w-full max-w-[390px] bg-white rounded-[14px] border border-black/8 p-5 sm:p-6 shadow-xs flex flex-col gap-4 text-black">
+              <div class="p-4 sm:p-5 flex justify-center" :class="isDark ? 'bg-[#121214]' : 'bg-[#f6f6f8]'">
+                <div class="w-full max-w-[390px] rounded-[14px] border p-5 sm:p-6 shadow-xs flex flex-col gap-4" :class="isDark ? 'bg-[#1a1a1c] border-white/10 text-white' : 'bg-white border-black/8 text-black'">
                   
                   <!-- Email Top Brand Logo / Banner -->
-                  <div class="flex items-center justify-between pb-3 border-b border-black/5">
+                  <div class="flex items-center justify-between pb-3 border-b" :class="isDark ? 'border-white/10' : 'border-black/5'">
                     <!-- Brand logo if set, otherwise active brand name -->
                     <div class="flex items-center gap-2">
                       <img 
@@ -577,43 +654,43 @@
                         :alt="activeBrandName" 
                         class="h-5 w-auto object-contain max-w-[120px]" 
                       />
-                      <span v-else class="text-[14px] font-medium text-black tracking-normal">
+                      <span v-else class="text-[14px] font-medium tracking-normal" :class="isDark ? 'text-white' : 'text-black'">
                         {{ activeBrandName }}
                       </span>
                     </div>
 
-                    <!-- Official 707 brandmark (Solid Black) -->
-                    <img :src="FIGMA_ASSETS.logo707Brand" alt="707" class="h-3.5 w-auto object-contain" />
+                    <!-- Official 707 brandmark -->
+                    <img :src="FIGMA_ASSETS.logo707Brand" alt="707" class="h-3.5 w-auto object-contain" :class="isDark ? 'invert' : ''" />
                   </div>
 
                   <!-- Email Content -->
                   <div class="flex flex-col gap-1.5">
-                    <h4 class="text-[17px] font-medium text-black leading-snug">
+                    <h4 class="text-[17px] font-medium leading-snug" :class="isDark ? 'text-white' : 'text-black'">
                       {{ renderedEmailHeading }}
                     </h4>
-                    <p class="text-[12.5px] text-neutral-600 font-light leading-[19px] whitespace-pre-wrap">
+                    <p class="text-[12.5px] font-light leading-[19px] whitespace-pre-wrap" :class="isDark ? 'text-neutral-300' : 'text-neutral-600'">
                       {{ renderedEmailBody }}
                     </p>
                   </div>
 
                   <!-- Live CTA Button -->
                   <div class="pt-1">
-                    <div class="w-full h-[36px] rounded-[8px] bg-black text-white text-[12px] font-medium flex items-center justify-center shadow-xs">
+                    <div class="w-full h-[36px] rounded-[8px] text-[12px] font-medium flex items-center justify-center shadow-xs" :class="isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white'">
                       VIEW LIVE QUEUE PASS
                     </div>
                   </div>
 
                   <!-- Attached Ticket Card -->
-                  <div class="p-2.5 rounded-[9px] bg-neutral-50 border border-black/8 flex items-center justify-between text-[11px]">
+                  <div class="p-2.5 rounded-[9px] border flex items-center justify-between text-[11px]" :class="isDark ? 'bg-white/[0.04] border-white/10' : 'bg-neutral-50 border-black/8'">
                     <div class="flex items-center gap-2">
                       <span class="px-1.5 py-0.5 rounded-[4px] bg-red-100 text-red-700 font-medium text-[9px]">PDF</span>
-                      <span class="font-medium text-neutral-800 truncate max-w-[170px]">ticket-sarah-707-K92F.pdf</span>
+                      <span class="font-medium truncate max-w-[170px]" :class="isDark ? 'text-neutral-200' : 'text-neutral-800'">ticket-sarah-707-K92F.pdf</span>
                     </div>
                     <span class="text-[10px] text-neutral-400 font-sans">248 KB</span>
                   </div>
 
                   <!-- Footer note -->
-                  <p class="text-[10.5px] text-neutral-400 font-light leading-normal pt-2 border-t border-black/5 text-center">
+                  <p class="text-[10.5px] font-light leading-normal pt-2 border-t text-center" :class="isDark ? 'border-white/10 text-neutral-400' : 'border-black/5 text-neutral-400'">
                     Keep this email. Your ticket is the attached PDF. Show it at the entrance door.
                   </p>
                 </div>
@@ -623,22 +700,26 @@
         </div>
 
 <!-- ============================================================== -->
+                <!-- ============================================================== -->
         <!-- CHANNEL 2: WHATSAPP NOTIFICATIONS (Additional)                 -->
         <!-- ============================================================== -->
         <div v-else class="flex flex-col gap-5">
           
           <!-- Master Switch & Connection Bar (Clean, no copy bloat) -->
-          <div class="p-3.5 sm:p-4 rounded-[12px] bg-neutral-50 border border-black/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div
+            class="p-3.5 sm:p-4 rounded-[12px] border flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+            :class="isDark ? 'bg-white/[0.04] border-white/10' : 'bg-neutral-50 border-black/5'"
+          >
             <div class="flex items-center gap-3">
               <label class="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" v-model="form.waEnabled" class="sr-only peer" />
-                <div class="w-9 h-5 bg-neutral-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-black"></div>
+                <div class="w-9 h-5 bg-neutral-300 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-black dark:peer-checked:bg-white dark:peer-checked:after:bg-black"></div>
               </label>
               <div class="flex items-center gap-1.5">
-                <span class="text-[13px] font-medium text-black">Automated WhatsApp Alerts</span>
+                <span class="text-[13px] font-medium" :class="isDark ? 'text-white' : 'text-black'">Automated WhatsApp Alerts</span>
                 <!-- Info Tooltip -->
                 <div class="relative inline-flex items-center" @click.stop>
-                  <button type="button" @click="toggleInfo('wa_toggle')" class="text-neutral-400 hover:text-black cursor-pointer">
+                  <button type="button" @click="toggleInfo('wa_toggle')" :class="isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-400 hover:text-black'" class="cursor-pointer">
                     <Info class="w-3 h-3" />
                   </button>
                   <div v-if="activeInfoKey === 'wa_toggle'" class="absolute bottom-full left-0 mb-2 w-56 p-2 rounded-[8px] bg-black text-white text-[10.5px] font-light leading-tight shadow-lg z-30 animate-apple-pop">
@@ -651,7 +732,11 @@
 
             <!-- Device Connection Pill / Action -->
             <div class="flex items-center gap-2">
-              <div v-if="form.waConnection?.connected" class="flex items-center gap-2 px-3 py-1 rounded-[7px] bg-moss-50 border border-moss-200 text-[11.5px] text-moss-800 font-medium">
+              <div
+                v-if="form.waConnection?.connected"
+                class="flex items-center gap-2 px-3 py-1 rounded-[7px] border text-[11.5px] font-medium"
+                :class="isDark ? 'bg-moss-950/40 border-moss-500/30 text-moss-300' : 'bg-moss-50 border-moss-200 text-moss-800'"
+              >
                 <span class="size-1.5 rounded-full bg-moss-600" />
                 <span>+{{ form.waConnection.phoneNumber }}</span>
                 <button type="button" @click="disconnectWhatsAppDevice" class="ml-1 text-neutral-400 hover:text-oxblood-600 transition-colors" title="Disconnect device">
@@ -662,7 +747,8 @@
                 v-else
                 type="button"
                 @click="openWhatsAppQrModal"
-                class="h-[32px] px-3 rounded-[7px] bg-black text-white hover:bg-neutral-800 text-[11.5px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                class="h-[32px] px-3 rounded-[7px] text-[11.5px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                :class="isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'"
               >
                 <QrCode class="w-3 h-3" />
                 <span>Link Device via QR</span>
@@ -672,12 +758,13 @@
 
           <!-- Secondary Toolbar: Advanced Gateway, Test Message, Delivery Logs -->
           <div class="flex flex-wrap items-center justify-between gap-2 pt-0.5">
-            <span class="text-[11px] text-neutral-400 font-light">Tools:</span>
+            <span class="text-[11px] font-light" :class="isDark ? 'text-neutral-400' : 'text-neutral-400'">Tools:</span>
             <div class="flex items-center gap-1.5">
               <button
                 type="button"
                 @click="openLinkModal"
-                class="h-[30px] px-2.5 rounded-[7px] border border-black/15 hover:bg-black/5 text-[11px] font-medium text-neutral-700 flex items-center gap-1 transition-colors cursor-pointer"
+                class="h-[30px] px-2.5 rounded-[7px] border text-[11px] font-medium flex items-center gap-1 transition-colors cursor-pointer"
+                :class="isDark ? 'border-white/15 bg-white/5 text-neutral-200 hover:bg-white/10' : 'border-black/15 bg-white hover:bg-black/5 text-neutral-700'"
                 title="Configure custom API gateway"
               >
                 <Link2 class="w-3 h-3" />
@@ -687,7 +774,8 @@
               <button
                 type="button"
                 @click="openTestModal"
-                class="h-[30px] px-2.5 rounded-[7px] border border-black/15 hover:bg-black/5 text-[11px] font-medium text-neutral-700 flex items-center gap-1 transition-colors cursor-pointer"
+                class="h-[30px] px-2.5 rounded-[7px] border text-[11px] font-medium flex items-center gap-1 transition-colors cursor-pointer"
+                :class="isDark ? 'border-white/15 bg-white/5 text-neutral-200 hover:bg-white/10' : 'border-black/15 bg-white hover:bg-black/5 text-neutral-700'"
               >
                 <Send class="w-3 h-3" />
                 <span>Send Test</span>
@@ -696,7 +784,8 @@
               <button
                 type="button"
                 @click="openLogsModal"
-                class="h-[30px] px-2.5 rounded-[7px] border border-black/15 hover:bg-black/5 text-[11px] font-medium text-neutral-700 flex items-center gap-1 transition-colors cursor-pointer"
+                class="h-[30px] px-2.5 rounded-[7px] border text-[11px] font-medium flex items-center gap-1 transition-colors cursor-pointer"
+                :class="isDark ? 'border-white/15 bg-white/5 text-neutral-200 hover:bg-white/10' : 'border-black/15 bg-white hover:bg-black/5 text-neutral-700'"
               >
                 <History class="w-3 h-3" />
                 <span>Delivery Logs</span>
@@ -714,7 +803,7 @@
                 type="button"
                 @click="selectActiveWaStage(s.id)"
                 class="px-3 py-1 rounded-[7px] text-[11.5px] font-sans flex items-center gap-1 transition-all cursor-pointer"
-                :class="(form.activeWaStage || activeStageId) === s.id ? 'bg-black text-white font-medium shadow-xs' : 'bg-neutral-100 text-neutral-600 hover:text-black font-light'"
+                :class="(form.activeWaStage || activeStageId) === s.id ? (isDark ? 'bg-white text-black font-medium shadow-xs' : 'bg-black text-white font-medium shadow-xs') : (isDark ? 'bg-white/5 text-neutral-300 hover:text-white font-light' : 'bg-neutral-100 text-neutral-600 hover:text-black font-light')"
               >
                 <component :is="s.icon" class="w-3 h-3" />
                 <span>{{ s.title }}</span>
@@ -727,14 +816,15 @@
               <!-- Left: Text Editor -->
               <div class="flex flex-col gap-2.5">
                 <div class="flex items-center justify-between">
-                  <span class="text-[11.5px] font-medium text-black">Message Content</span>
-                  <span class="text-[10.5px] text-neutral-400 font-sans">{{ (form.waTemplates[activeStageId] || '').length }} chars</span>
+                  <span class="text-[11.5px] font-medium" :class="isDark ? 'text-white' : 'text-black'">Message Content</span>
+                  <span class="text-[10.5px] font-sans" :class="isDark ? 'text-neutral-400' : 'text-neutral-400'">{{ (form.waTemplates[activeStageId] || '').length }} chars</span>
                 </div>
 
                 <textarea
                   v-model="form.waTemplates[activeStageId]"
                   rows="4"
-                  class="w-full p-3 rounded-[10px] bg-neutral-50 border border-black/15 text-[12.5px] leading-relaxed font-sans font-light text-black outline-none focus:border-black focus:bg-white transition-all resize-y placeholder:text-neutral-400"
+                  class="w-full p-3 rounded-[10px] border text-[12.5px] leading-relaxed font-sans font-light outline-none transition-all resize-y"
+                  :class="isDark ? 'bg-white/[0.06] border-white/15 text-white focus:border-white focus:bg-white/[0.1] placeholder:text-neutral-500' : 'bg-neutral-50 border-black/15 text-black focus:border-black focus:bg-white placeholder:text-neutral-400'"
                   placeholder="Enter message copy..."
                 />
 
@@ -745,7 +835,8 @@
                     :key="t.key"
                     type="button"
                     @click="insertTag(t.key)"
-                    class="px-2 py-0.5 rounded-[5px] bg-neutral-100 hover:bg-neutral-200 text-[10.5px] font-medium text-neutral-800 cursor-pointer flex items-center gap-1 transition-colors"
+                    class="px-2 py-0.5 rounded-[5px] text-[10.5px] font-medium cursor-pointer flex items-center gap-1 transition-colors"
+                    :class="isDark ? 'bg-white/10 hover:bg-white/15 text-neutral-200' : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-800'"
                     :title="t.description"
                   >
                     <span>+ {{ t.label }}</span>
@@ -754,9 +845,15 @@
               </div>
 
               <!-- Right: Live WhatsApp Chat Bubble Preview -->
-              <div class="rounded-[14px] border border-black/10 overflow-hidden bg-[#efeae2] flex flex-col shadow-xs select-none">
+              <div
+                class="rounded-[14px] border overflow-hidden flex flex-col shadow-xs select-none"
+                :class="isDark ? 'border-white/15 bg-[#0b141a]' : 'border-black/10 bg-[#efeae2]'"
+              >
                 <!-- Chat Header -->
-                <div class="px-3.5 py-2 bg-[#075e54] text-white flex items-center justify-between text-[11.5px]">
+                <div
+                  class="px-3.5 py-2 text-white flex items-center justify-between text-[11.5px]"
+                  :class="isDark ? 'bg-[#1f2c34]' : 'bg-[#075e54]'"
+                >
                   <div class="flex items-center gap-2">
                     <div class="size-5 rounded-full bg-white/20 flex items-center justify-center font-medium text-[9px]">
                       707
@@ -768,13 +865,16 @@
 
                 <!-- Chat Canvas & Message Bubble -->
                 <div class="p-3.5 min-h-[140px] flex flex-col justify-end gap-2">
-                  <div class="max-w-[90%] self-start bg-white rounded-[10px] rounded-tl-[2px] p-2.5 shadow-xs border border-black/5 flex flex-col gap-1">
-                    <p class="text-[11.5px] leading-relaxed text-black whitespace-pre-wrap font-sans font-light">
+                  <div
+                    class="max-w-[90%] self-start rounded-[10px] rounded-tl-[2px] p-2.5 shadow-xs border flex flex-col gap-1"
+                    :class="isDark ? 'bg-[#202c33] border-white/5 text-white' : 'bg-white border-black/5 text-black'"
+                  >
+                    <p class="text-[11.5px] leading-relaxed whitespace-pre-wrap font-sans font-light" :class="isDark ? 'text-white' : 'text-black'">
                       {{ renderedPreviewText }}
                     </p>
-                    <div class="flex items-center justify-end gap-1 text-[9px] text-neutral-400 pt-0.5">
+                    <div class="flex items-center justify-end gap-1 text-[9px] pt-0.5" :class="isDark ? 'text-neutral-400' : 'text-neutral-400'">
                       <span>{{ previewTime }}</span>
-                      <span class="text-moss-700">✓✓</span>
+                      <span class="text-moss-400">✓✓</span>
                     </div>
                   </div>
                 </div>
@@ -793,60 +893,73 @@
       class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-apple-fade"
       @click.self="closeWhatsAppQrModal"
     >
-      <div class="w-full max-w-[580px] bg-white rounded-[24px] shadow-2xl border border-black/10 overflow-hidden flex flex-col font-sans font-light tracking-normal animate-apple-pop">
-        <div class="p-6 border-b border-black/10 flex items-center justify-between bg-neutral-50/50">
+      <div
+        class="w-full max-w-[580px] rounded-[24px] shadow-2xl border overflow-hidden flex flex-col font-sans font-light tracking-normal animate-apple-pop"
+        :class="isDark ? 'bg-[#141414] border-white/15 text-white' : 'bg-white border-black/10 text-black'"
+      >
+        <div
+          class="p-6 border-b flex items-center justify-between"
+          :class="isDark ? 'border-white/10 bg-white/[0.02]' : 'border-black/10 bg-neutral-50/50'"
+        >
           <div class="flex items-center gap-3">
-            <div class="size-10 rounded-[12px] bg-black text-white flex items-center justify-center shadow-xs">
+            <div
+              class="size-10 rounded-[12px] flex items-center justify-center shadow-xs"
+              :class="isDark ? 'bg-white text-black' : 'bg-black text-white'"
+            >
               <QrCode class="w-5 h-5" />
             </div>
             <div>
-              <h3 class="text-[17px] font-medium text-black tracking-tight">Link WhatsApp Device</h3>
-              <p class="text-[12px] text-neutral-500">Scan QR from WhatsApp Settings &gt; Linked Devices.</p>
+              <h3 class="text-[17px] font-medium tracking-tight" :class="isDark ? 'text-white' : 'text-black'">Link WhatsApp Device</h3>
+              <p class="text-[12px]" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Scan QR from WhatsApp Settings &gt; Linked Devices.</p>
             </div>
           </div>
           <button
             type="button"
             @click="closeWhatsAppQrModal"
-            class="size-8 rounded-[8px] hover:bg-black/5 flex items-center justify-center text-neutral-400 hover:text-black cursor-pointer transition-colors"
+            class="size-8 rounded-[8px] flex items-center justify-center cursor-pointer transition-colors"
+            :class="isDark ? 'hover:bg-white/10 text-neutral-400 hover:text-white' : 'hover:bg-black/5 text-neutral-400 hover:text-black'"
           >
             <X class="w-4 h-4" />
           </button>
         </div>
 
         <!-- Error Alert if any -->
-        <div v-if="waDeviceStatus.error" class="mx-6 mt-5 p-3.5 rounded-[12px] bg-red-50 border border-red-200 flex items-start justify-between gap-3 text-red-800 text-[12px]">
+        <div v-if="waDeviceStatus.error" class="mx-6 mt-5 p-3.5 rounded-[12px] bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/40 flex items-start justify-between gap-3 text-red-800 dark:text-red-300 text-[12px]">
           <div class="flex items-start gap-2">
             <AlertTriangle class="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
             <span>{{ waDeviceStatus.error }}</span>
           </div>
-          <button type="button" @click="openWhatsAppQrModal" class="px-2.5 py-1 rounded-[6px] bg-red-100 hover:bg-red-200 font-medium text-[11px] shrink-0 cursor-pointer">
+          <button type="button" @click="openWhatsAppQrModal" class="px-2.5 py-1 rounded-[6px] bg-red-100 dark:bg-red-900/50 hover:bg-red-200 dark:hover:bg-red-900/80 font-medium text-[11px] shrink-0 cursor-pointer">
             Retry
           </button>
         </div>
 
         <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
           <!-- Steps -->
-          <div class="flex flex-col gap-3.5 text-[12.5px]">
+          <div class="flex flex-col gap-3.5 text-[12.5px]" :class="isDark ? 'text-neutral-300' : 'text-neutral-700'">
             <div class="flex items-start gap-2.5">
-              <span class="size-5 rounded-full bg-black text-white text-[10px] font-medium flex items-center justify-center shrink-0 mt-0.5">1</span>
+              <span class="size-5 rounded-full text-[10px] font-medium flex items-center justify-center shrink-0 mt-0.5" :class="isDark ? 'bg-white text-black' : 'bg-black text-white'">1</span>
               <span>Open WhatsApp on your phone</span>
             </div>
             <div class="flex items-start gap-2.5">
-              <span class="size-5 rounded-full bg-black text-white text-[10px] font-medium flex items-center justify-center shrink-0 mt-0.5">2</span>
-              <span>Go to <strong>Settings</strong> &gt; <strong>Linked Devices</strong></span>
+              <span class="size-5 rounded-full text-[10px] font-medium flex items-center justify-center shrink-0 mt-0.5" :class="isDark ? 'bg-white text-black' : 'bg-black text-white'">2</span>
+              <span>Go to <strong :class="isDark ? 'text-white' : 'text-black'">Settings</strong> &gt; <strong :class="isDark ? 'text-white' : 'text-black'">Linked Devices</strong></span>
             </div>
             <div class="flex items-start gap-2.5">
-              <span class="size-5 rounded-full bg-black text-white text-[10px] font-medium flex items-center justify-center shrink-0 mt-0.5">3</span>
-              <span>Tap <strong>Link a Device</strong></span>
+              <span class="size-5 rounded-full text-[10px] font-medium flex items-center justify-center shrink-0 mt-0.5" :class="isDark ? 'bg-white text-black' : 'bg-black text-white'">3</span>
+              <span>Tap <strong :class="isDark ? 'text-white' : 'text-black'">Link a Device</strong></span>
             </div>
             <div class="flex items-start gap-2.5">
-              <span class="size-5 rounded-full bg-black text-white text-[10px] font-medium flex items-center justify-center shrink-0 mt-0.5">4</span>
+              <span class="size-5 rounded-full text-[10px] font-medium flex items-center justify-center shrink-0 mt-0.5" :class="isDark ? 'bg-white text-black' : 'bg-black text-white'">4</span>
               <span>Point your phone at this QR code</span>
             </div>
           </div>
 
           <!-- QR Code Frame -->
-          <div class="flex flex-col items-center justify-center p-4 bg-neutral-50 rounded-[18px] border border-black/8 min-h-[220px]">
+          <div
+            class="flex flex-col items-center justify-center p-4 rounded-[18px] border min-h-[220px]"
+            :class="isDark ? 'bg-white/[0.04] border-white/10' : 'bg-neutral-50 border-black/8'"
+          >
             <div v-if="waDeviceStatus.qr" class="size-48 bg-white p-2 rounded-[12px] border border-black/10 shadow-xs flex items-center justify-center">
               <img :src="waDeviceStatus.qr" alt="WhatsApp Link QR" class="size-full object-contain" />
             </div>
@@ -857,9 +970,17 @@
           </div>
         </div>
 
-        <div class="p-4 border-t border-black/10 bg-neutral-50 flex items-center justify-between text-[11.5px] text-neutral-400">
+        <div
+          class="p-4 border-t flex items-center justify-between text-[11.5px] text-neutral-400"
+          :class="isDark ? 'border-white/10 bg-white/[0.02]' : 'border-black/10 bg-neutral-50'"
+        >
           <span>Encrypted point-to-point connection</span>
-          <button type="button" @click="closeWhatsAppQrModal" class="text-neutral-600 hover:text-black font-medium cursor-pointer">
+          <button
+            type="button"
+            @click="closeWhatsAppQrModal"
+            class="font-medium cursor-pointer"
+            :class="isDark ? 'text-neutral-300 hover:text-white' : 'text-neutral-600 hover:text-black'"
+          >
             Close
           </button>
         </div>
@@ -874,20 +995,31 @@
       class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-apple-fade"
       @click.self="showLinkModal = false"
     >
-      <div class="w-full max-w-[540px] bg-white rounded-[24px] shadow-2xl border border-black/10 overflow-hidden flex flex-col font-sans font-light tracking-normal animate-apple-pop">
-        <div class="p-6 border-b border-black/10 flex items-center justify-between bg-neutral-50/50">
+      <div
+        class="w-full max-w-[540px] rounded-[24px] shadow-2xl border overflow-hidden flex flex-col font-sans font-light tracking-normal animate-apple-pop"
+        :class="isDark ? 'bg-[#141414] border-white/15 text-white' : 'bg-white border-black/10 text-black'"
+      >
+        <div
+          class="p-6 border-b flex items-center justify-between"
+          :class="isDark ? 'border-white/10 bg-white/[0.02]' : 'border-black/10 bg-neutral-50/50'"
+        >
           <div>
-            <h3 class="text-[17px] font-medium text-black">Advanced Gateway Settings</h3>
-            <p class="text-[12px] text-neutral-500">Configure third-party WhatsApp API gateways.</p>
+            <h3 class="text-[17px] font-medium" :class="isDark ? 'text-white' : 'text-black'">Advanced Gateway Settings</h3>
+            <p class="text-[12px]" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Configure third-party WhatsApp API gateways.</p>
           </div>
-          <button type="button" @click="showLinkModal = false" class="size-8 rounded-[8px] hover:bg-black/5 flex items-center justify-center text-neutral-400 hover:text-black cursor-pointer">
+          <button
+            type="button"
+            @click="showLinkModal = false"
+            class="size-8 rounded-[8px] flex items-center justify-center cursor-pointer transition-colors"
+            :class="isDark ? 'hover:bg-white/10 text-neutral-400 hover:text-white' : 'hover:bg-black/5 text-neutral-400 hover:text-black'"
+          >
             <X class="w-4 h-4" />
           </button>
         </div>
 
         <div class="p-6 flex flex-col gap-4 overflow-y-auto max-h-[70vh]">
           <div class="flex flex-col gap-1.5">
-            <label class="text-[12px] font-medium text-neutral-600">Gateway Provider</label>
+            <label class="text-[12px] font-medium" :class="isDark ? 'text-neutral-300' : 'text-neutral-600'">Gateway Provider</label>
             <div class="grid grid-cols-4 gap-2">
               <button
                 v-for="p in (['fonnte', 'wablas', 'meta', 'custom'] as const)"
@@ -895,7 +1027,7 @@
                 type="button"
                 @click="onGatewayPresetChange(p)"
                 class="h-[34px] rounded-[8px] text-[12px] font-medium capitalize border transition-all cursor-pointer"
-                :class="gatewayPreset === p ? 'bg-black text-white border-black shadow-xs' : 'bg-neutral-50 text-neutral-600 border-black/10 hover:bg-neutral-100'"
+                :class="gatewayPreset === p ? (isDark ? 'bg-white text-black border-white shadow-xs' : 'bg-black text-white border-black shadow-xs') : (isDark ? 'bg-white/5 text-neutral-300 border-white/10 hover:bg-white/10' : 'bg-neutral-50 text-neutral-600 border-black/10 hover:bg-neutral-100')"
               >
                 {{ p }}
               </button>
@@ -903,40 +1035,57 @@
           </div>
 
           <div class="flex flex-col gap-1.5">
-            <label class="text-[12px] font-medium text-neutral-600">Sender Phone Number</label>
+            <label class="text-[12px] font-medium" :class="isDark ? 'text-neutral-300' : 'text-neutral-600'">Sender Phone Number</label>
             <input
               v-model="linkPhone"
               type="text"
               placeholder="+62 812-3456-7890"
-              class="w-full h-[40px] px-3.5 rounded-[10px] bg-neutral-50 border border-black/15 text-[13px] outline-none focus:border-black focus:bg-white transition-all font-sans"
+              class="w-full h-[40px] px-3.5 rounded-[10px] border text-[13px] outline-none transition-all font-sans"
+              :class="isDark ? 'bg-white/[0.06] border-white/15 text-white placeholder:text-neutral-500 focus:border-white focus:bg-white/[0.1]' : 'bg-neutral-50 border-black/15 text-black placeholder:text-neutral-400 focus:border-black focus:bg-white'"
             />
           </div>
 
           <div class="flex flex-col gap-1.5">
-            <label class="text-[12px] font-medium text-neutral-600">Gateway API URL</label>
+            <label class="text-[12px] font-medium" :class="isDark ? 'text-neutral-300' : 'text-neutral-600'">Gateway API URL</label>
             <input
               v-model="linkGatewayUrl"
               type="text"
-              class="w-full h-[40px] px-3.5 rounded-[10px] bg-neutral-50 border border-black/15 text-[13px] outline-none focus:border-black focus:bg-white transition-all font-sans"
+              class="w-full h-[40px] px-3.5 rounded-[10px] border text-[13px] outline-none transition-all font-sans"
+              :class="isDark ? 'bg-white/[0.06] border-white/15 text-white placeholder:text-neutral-500 focus:border-white focus:bg-white/[0.1]' : 'bg-neutral-50 border-black/15 text-black placeholder:text-neutral-400 focus:border-black focus:bg-white'"
             />
           </div>
 
           <div class="flex flex-col gap-1.5">
-            <label class="text-[12px] font-medium text-neutral-600">API Key / Token</label>
+            <label class="text-[12px] font-medium" :class="isDark ? 'text-neutral-300' : 'text-neutral-600'">API Key / Token</label>
             <input
               v-model="linkApiToken"
               type="password"
               placeholder="Enter gateway API token"
-              class="w-full h-[40px] px-3.5 rounded-[10px] bg-neutral-50 border border-black/15 text-[13px] outline-none focus:border-black focus:bg-white transition-all font-sans"
+              class="w-full h-[40px] px-3.5 rounded-[10px] border text-[13px] outline-none transition-all font-sans"
+              :class="isDark ? 'bg-white/[0.06] border-white/15 text-white placeholder:text-neutral-500 focus:border-white focus:bg-white/[0.1]' : 'bg-neutral-50 border-black/15 text-black placeholder:text-neutral-400 focus:border-black focus:bg-white'"
             />
           </div>
         </div>
 
-        <div class="p-5 border-t border-black/10 bg-neutral-50 flex items-center justify-end gap-2.5">
-          <button type="button" @click="showLinkModal = false" class="h-[36px] px-4 rounded-[10px] border border-black/15 hover:bg-neutral-100 text-[12.5px] font-medium text-neutral-700 cursor-pointer">
+        <div
+          class="p-5 border-t flex items-center justify-end gap-2.5"
+          :class="isDark ? 'border-white/10 bg-white/[0.02]' : 'border-black/10 bg-neutral-50'"
+        >
+          <button
+            type="button"
+            @click="showLinkModal = false"
+            class="h-[36px] px-4 rounded-[10px] border text-[12.5px] font-medium cursor-pointer"
+            :class="isDark ? 'border-white/15 hover:bg-white/10 text-neutral-300' : 'border-black/15 hover:bg-neutral-100 text-neutral-700'"
+          >
             Cancel
           </button>
-          <button type="button" @click="handleConfirmLink" :disabled="isLinking" class="h-[36px] px-5 rounded-[10px] bg-black text-white hover:bg-neutral-800 text-[12.5px] font-medium cursor-pointer shadow-xs disabled:opacity-50">
+          <button
+            type="button"
+            @click="handleConfirmLink"
+            :disabled="isLinking"
+            class="h-[36px] px-5 rounded-[10px] text-[12.5px] font-medium cursor-pointer shadow-xs disabled:opacity-50"
+            :class="isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'"
+          >
             {{ isLinking ? 'Connecting…' : 'Save Gateway' }}
           </button>
         </div>
@@ -951,43 +1100,77 @@
       class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-apple-fade"
       @click.self="showTestModal = false"
     >
-      <div class="w-full max-w-[460px] bg-white rounded-[24px] shadow-2xl border border-black/10 overflow-hidden flex flex-col font-sans font-light tracking-normal animate-apple-pop">
-        <div class="p-6 border-b border-black/10 flex items-center justify-between bg-neutral-50/50">
+      <div
+        class="w-full max-w-[460px] rounded-[24px] shadow-2xl border overflow-hidden flex flex-col font-sans font-light tracking-normal animate-apple-pop"
+        :class="isDark ? 'bg-[#141414] border-white/15 text-white' : 'bg-white border-black/10 text-black'"
+      >
+        <div
+          class="p-6 border-b flex items-center justify-between"
+          :class="isDark ? 'border-white/10 bg-white/[0.02]' : 'border-black/10 bg-neutral-50/50'"
+        >
           <div>
-            <h3 class="text-[17px] font-medium text-black">Send Test Notification</h3>
-            <p class="text-[12px] text-neutral-500">Dispatch a test message to your phone.</p>
+            <h3 class="text-[17px] font-medium" :class="isDark ? 'text-white' : 'text-black'">Send Test Notification</h3>
+            <p class="text-[12px]" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Dispatch a test message to your phone.</p>
           </div>
-          <button type="button" @click="showTestModal = false" class="size-8 rounded-[8px] hover:bg-black/5 flex items-center justify-center text-neutral-400 hover:text-black cursor-pointer">
+          <button
+            type="button"
+            @click="showTestModal = false"
+            class="size-8 rounded-[8px] flex items-center justify-center cursor-pointer transition-colors"
+            :class="isDark ? 'hover:bg-white/10 text-neutral-400 hover:text-white' : 'hover:bg-black/5 text-neutral-400 hover:text-black'"
+          >
             <X class="w-4 h-4" />
           </button>
         </div>
 
         <div class="p-6 flex flex-col gap-4">
           <div class="flex flex-col gap-1.5">
-            <label class="text-[12px] font-medium text-neutral-600">Recipient Phone Number</label>
+            <label class="text-[12px] font-medium" :class="isDark ? 'text-neutral-300' : 'text-neutral-600'">Recipient Phone Number</label>
             <input
               v-model="testPhone"
               type="text"
               placeholder="+62 812-3456-7890"
-              class="w-full h-[40px] px-3.5 rounded-[10px] bg-neutral-50 border border-black/15 text-[13px] outline-none focus:border-black focus:bg-white transition-all font-sans"
+              class="w-full h-[40px] px-3.5 rounded-[10px] border text-[13px] outline-none transition-all font-sans"
+              :class="isDark ? 'bg-white/[0.06] border-white/15 text-white placeholder:text-neutral-500 focus:border-white focus:bg-white/[0.1]' : 'bg-neutral-50 border-black/15 text-black placeholder:text-neutral-400 focus:border-black focus:bg-white'"
             />
           </div>
 
-          <div class="p-3.5 rounded-[12px] bg-neutral-50 border border-black/5 text-[12px] text-neutral-600 leading-relaxed">
+          <div
+            class="p-3.5 rounded-[12px] border text-[12px] leading-relaxed"
+            :class="isDark ? 'bg-white/[0.04] border-white/10 text-neutral-300' : 'bg-neutral-50 border-black/5 text-neutral-600'"
+          >
             Message Preview:
-            <p class="italic mt-1 text-black font-sans font-light whitespace-pre-wrap">"{{ testPreviewMessage }}"</p>
+            <p class="italic mt-1 font-sans font-light whitespace-pre-wrap" :class="isDark ? 'text-white' : 'text-black'">"{{ testPreviewMessage }}"</p>
           </div>
         </div>
 
-        <div class="p-5 border-t border-black/10 bg-neutral-50 flex items-center justify-between">
-          <button type="button" @click="handleDirectWhatsAppOpen" class="text-[12px] text-neutral-600 hover:text-black underline cursor-pointer">
+        <div
+          class="p-5 border-t flex items-center justify-between"
+          :class="isDark ? 'border-white/10 bg-white/[0.02]' : 'border-black/10 bg-neutral-50'"
+        >
+          <button
+            type="button"
+            @click="handleDirectWhatsAppOpen"
+            class="text-[12px] underline cursor-pointer"
+            :class="isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black'"
+          >
             Open in WhatsApp App
           </button>
           <div class="flex items-center gap-2">
-            <button type="button" @click="showTestModal = false" class="h-[36px] px-4 rounded-[10px] border border-black/15 hover:bg-neutral-100 text-[12.5px] font-medium text-neutral-700 cursor-pointer">
+            <button
+              type="button"
+              @click="showTestModal = false"
+              class="h-[36px] px-4 rounded-[10px] border text-[12.5px] font-medium cursor-pointer"
+              :class="isDark ? 'border-white/15 hover:bg-white/10 text-neutral-300' : 'border-black/15 hover:bg-neutral-100 text-neutral-700'"
+            >
               Cancel
             </button>
-            <button type="button" @click="handleSendTestMessage" :disabled="isSendingTest" class="h-[36px] px-5 rounded-[10px] bg-black text-white hover:bg-neutral-800 text-[12.5px] font-medium cursor-pointer shadow-xs disabled:opacity-50">
+            <button
+              type="button"
+              @click="handleSendTestMessage"
+              :disabled="isSendingTest"
+              class="h-[36px] px-5 rounded-[10px] text-[12.5px] font-medium cursor-pointer shadow-xs disabled:opacity-50"
+              :class="isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'"
+            >
               {{ isSendingTest ? 'Sending…' : 'Send Test' }}
             </button>
           </div>
@@ -1003,22 +1186,42 @@
       class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-apple-fade"
       @click.self="showLogsModal = false"
     >
-      <div class="w-full max-w-[720px] bg-white rounded-[24px] shadow-2xl border border-black/10 overflow-hidden flex flex-col font-sans font-light tracking-normal max-h-[85vh] animate-apple-pop">
-        <div class="p-6 border-b border-black/10 flex items-center justify-between bg-neutral-50/50">
+      <div
+        class="w-full max-w-[720px] rounded-[24px] shadow-2xl border overflow-hidden flex flex-col font-sans font-light tracking-normal max-h-[85vh] animate-apple-pop"
+        :class="isDark ? 'bg-[#141414] border-white/15 text-white' : 'bg-white border-black/10 text-black'"
+      >
+        <div
+          class="p-6 border-b flex items-center justify-between"
+          :class="isDark ? 'border-white/10 bg-white/[0.02]' : 'border-black/10 bg-neutral-50/50'"
+        >
           <div class="flex items-center gap-3">
-            <div class="size-10 rounded-[12px] bg-black text-white flex items-center justify-center shadow-xs">
+            <div
+              class="size-10 rounded-[12px] flex items-center justify-center shadow-xs"
+              :class="isDark ? 'bg-white text-black' : 'bg-black text-white'"
+            >
               <History class="w-5 h-5" />
             </div>
             <div>
-              <h3 class="text-[17px] font-medium text-black">WhatsApp Notification Logs</h3>
-              <p class="text-[12px] text-neutral-500">Real-time record of dispatched alerts.</p>
+              <h3 class="text-[17px] font-medium" :class="isDark ? 'text-white' : 'text-black'">WhatsApp Notification Logs</h3>
+              <p class="text-[12px]" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Real-time record of dispatched alerts.</p>
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <button type="button" @click="refreshLogs" class="size-8 rounded-[8px] hover:bg-black/5 flex items-center justify-center text-neutral-500 cursor-pointer" title="Refresh">
+            <button
+              type="button"
+              @click="refreshLogs"
+              class="size-8 rounded-[8px] flex items-center justify-center cursor-pointer transition-colors"
+              :class="isDark ? 'hover:bg-white/10 text-neutral-400 hover:text-white' : 'hover:bg-black/5 text-neutral-500'"
+              title="Refresh"
+            >
               <RefreshCw class="w-4 h-4" :class="isLoadingLogs ? 'animate-spin' : ''" />
             </button>
-            <button type="button" @click="showLogsModal = false" class="size-8 rounded-[8px] hover:bg-black/5 flex items-center justify-center text-neutral-400 hover:text-black cursor-pointer">
+            <button
+              type="button"
+              @click="showLogsModal = false"
+              class="size-8 rounded-[8px] flex items-center justify-center cursor-pointer transition-colors"
+              :class="isDark ? 'hover:bg-white/10 text-neutral-400 hover:text-white' : 'hover:bg-black/5 text-neutral-400 hover:text-black'"
+            >
               <X class="w-4 h-4" />
             </button>
           </div>
@@ -1031,28 +1234,32 @@
           </div>
           <div v-else-if="!waLogs || waLogs.length === 0" class="flex flex-col items-center justify-center py-12 text-neutral-400 gap-1">
             <MessageSquare class="w-8 h-8 opacity-40" />
-            <p class="text-[13px] font-medium text-neutral-600 mt-2">No notification logs recorded yet</p>
+            <p class="text-[13px] font-medium mt-2" :class="isDark ? 'text-neutral-300' : 'text-neutral-600'">No notification logs recorded yet</p>
             <p class="text-[12px] text-neutral-400 font-light">Dispatched WhatsApp alerts will be archived here.</p>
           </div>
           <div v-else class="flex flex-col gap-2">
             <div
               v-for="log in waLogs"
               :key="log.id"
-              class="p-3.5 rounded-[12px] border border-black/5 bg-neutral-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[12px]"
+              class="p-3.5 rounded-[12px] border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[12px]"
+              :class="isDark ? 'border-white/10 bg-white/[0.04]' : 'border-black/5 bg-neutral-50/60'"
             >
               <div class="flex items-center gap-3">
                 <span
                   class="size-2 rounded-full shrink-0"
                   :class="log.status === 'delivered' || log.status === 'sent' ? 'bg-moss-600' : 'bg-oxblood-600'"
                 />
-                <span class="font-medium text-black">{{ log.phone }}</span>
-                <span class="px-2 py-0.5 rounded-[4px] bg-black/5 text-[10px] uppercase font-sans text-neutral-600">
+                <span class="font-medium" :class="isDark ? 'text-white' : 'text-black'">{{ log.phone }}</span>
+                <span
+                  class="px-2 py-0.5 rounded-[4px] text-[10px] uppercase font-sans"
+                  :class="isDark ? 'bg-white/10 text-neutral-300' : 'bg-black/5 text-neutral-600'"
+                >
                   {{ log.event || 'alert' }}
                 </span>
               </div>
               <div class="flex items-center gap-3 text-neutral-400 text-[11px] font-sans">
                 <span>{{ formatLogTime(log.timestamp) }}</span>
-                <span :class="log.status === 'delivered' || log.status === 'sent' ? 'text-moss-700 font-medium' : 'text-oxblood-600 font-medium'">
+                <span :class="log.status === 'delivered' || log.status === 'sent' ? (isDark ? 'text-moss-400 font-medium' : 'text-moss-700 font-medium') : (isDark ? 'text-red-400 font-medium' : 'text-oxblood-600 font-medium')">
                   {{ log.status }}
                 </span>
               </div>
@@ -1060,8 +1267,16 @@
           </div>
         </div>
 
-        <div class="p-4 border-t border-black/10 bg-neutral-50 flex items-center justify-end">
-          <button type="button" @click="showLogsModal = false" class="h-[34px] px-4 rounded-[8px] bg-black text-white hover:bg-neutral-800 text-[12px] font-medium cursor-pointer">
+        <div
+          class="p-4 border-t flex items-center justify-end"
+          :class="isDark ? 'border-white/10 bg-white/[0.02]' : 'border-black/10 bg-neutral-50'"
+        >
+          <button
+            type="button"
+            @click="showLogsModal = false"
+            class="h-[34px] px-4 rounded-[8px] text-[12px] font-medium cursor-pointer"
+            :class="isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'"
+          >
             Close
           </button>
         </div>
@@ -1074,6 +1289,7 @@
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { useBrandStore } from '../../stores/brandStore.ts';
+import { useAuthStore } from '../../stores/authStore.ts';
 import {
   RefreshCw,
   Check,
@@ -1132,6 +1348,7 @@ interface StageDefinition {
 const props = defineProps<{
   pageId: string;
   rows?: Submission[];
+  dark?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -1140,6 +1357,8 @@ const emit = defineEmits<{
 
 const editorStore = useEditorStore();
 const brandStore = useBrandStore();
+const authStore = useAuthStore();
+const isDark = computed(() => props.dark ?? authStore.isSuperAdmin);
 const isLoading = ref(false);
 const isSaving = ref(false);
 const activePanelTab = ref<'operations' | 'settings'>('operations');

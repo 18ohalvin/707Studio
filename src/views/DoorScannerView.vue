@@ -106,6 +106,7 @@
         :operator="operatorName"
         :assigned-mode="authStore.currentUser?.stationMode"
         :event-config="selectedProject.event_config || selectedProject.pages?.[0]?.page_settings?.eventConfig"
+        :dark="isDark"
         standalone
         @updated="mergeRows"
         @refresh="refresh"

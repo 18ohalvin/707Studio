@@ -535,6 +535,7 @@
               :export-name="exportBaseName"
               :has-live-queue="hasLiveQueue"
               :page-id="selectedProject.id"
+              :dark="isDark"
               @updated="mergeRows"
               @removed="removeRows"
               @toast="toast"
@@ -545,6 +546,7 @@
               v-else-if="activeTab === 'queue'"
               :page-id="selectedProjectId"
               :rows="rows"
+              :dark="isDark"
               @toast="toast"
             />
 
@@ -554,6 +556,7 @@
               :rows="rows"
               :export-name="exportBaseName"
               :campaign-title="selectedProject.title"
+              :dark="isDark"
               @updated="mergeRows"
               @toast="toast"
             />
@@ -565,6 +568,7 @@
         v-if="gateOpen && selectedProject"
         :project-id="selectedProject.id"
         :project-title="selectedProject.title"
+        :dark="isDark"
         @close="gateOpen = false"
         @toast="toast"
       />

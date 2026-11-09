@@ -1,23 +1,30 @@
 <template>
   <Teleport to="body">
     <div
-      class="fixed inset-0 z-[80] bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4 font-sans font-light tracking-normal select-none"
+      class="fixed inset-0 z-[80] bg-black/60 backdrop-blur-[2px] flex items-center justify-center p-4 font-sans font-light tracking-normal select-none"
       @click.self="$emit('close')"
     >
-      <div class="w-full max-w-[640px] max-h-[88vh] rounded-[16px] bg-white border border-black/10 shadow-[0px_20px_60px_rgba(0,0,0,0.2)] flex flex-col overflow-hidden">
+      <div
+        class="w-full max-w-[640px] max-h-[88vh] rounded-[16px] border flex flex-col overflow-hidden"
+        :class="isDark ? 'bg-[#141414] border-white/15 text-white shadow-[0px_20px_60px_rgba(0,0,0,0.85)]' : 'bg-white border-black/10 text-black shadow-[0px_20px_60px_rgba(0,0,0,0.2)]'"
+      >
         <!-- Header -->
-        <div class="flex items-start justify-between gap-4 px-6 pt-5 pb-3 border-b border-black/5">
+        <div
+          class="flex items-start justify-between gap-4 px-6 pt-5 pb-3 border-b"
+          :class="isDark ? 'border-white/10' : 'border-black/5'"
+        >
           <div class="min-w-0">
-            <div class="flex items-center gap-1.5 text-neutral-400 text-[11px] font-medium">
-              <ShieldCheck class="w-3.5 h-3.5 text-moss-700" />
+            <div class="flex items-center gap-1.5 text-[11px] font-medium" :class="isDark ? 'text-neutral-400' : 'text-neutral-400'">
+              <ShieldCheck class="w-3.5 h-3.5" :class="isDark ? 'text-moss-400' : 'text-moss-700'" />
               <span>Gate Management</span>
             </div>
-            <p class="text-[18px] font-medium leading-tight truncate text-black mt-0.5">{{ projectTitle }}</p>
+            <p class="text-[18px] font-medium leading-tight truncate mt-0.5" :class="isDark ? 'text-white' : 'text-black'">{{ projectTitle }}</p>
           </div>
           <button
             type="button"
             @click="$emit('close')"
-            class="size-[28px] rounded-[7px] hover:bg-neutral-100 flex items-center justify-center cursor-pointer shrink-0 text-neutral-400 hover:text-black transition-colors"
+            class="size-[28px] rounded-[7px] flex items-center justify-center cursor-pointer shrink-0 transition-colors"
+            :class="isDark ? 'hover:bg-white/10 text-neutral-400 hover:text-white' : 'hover:bg-neutral-100 text-neutral-400 hover:text-black'"
             title="Close"
           >
             <X class="w-4 h-4" />
@@ -25,24 +32,29 @@
         </div>
 
         <!-- Tabs: Assigned Devices vs Add Device (Hidden if no devices added yet) -->
-        <div v-if="accounts.length > 0" class="flex items-center gap-6 px-6 border-b border-black/10 bg-white">
+        <div
+          v-if="accounts.length > 0"
+          class="flex items-center gap-6 px-6 border-b"
+          :class="isDark ? 'border-white/10 bg-[#141414]' : 'border-black/10 bg-white'"
+        >
           <button
             type="button"
             @click="activeTab = 'stations'"
             style="outline: none; box-shadow: none; -webkit-tap-highlight-color: transparent;"
             class="py-2.5 text-[12.5px] transition-colors relative cursor-pointer flex items-center gap-1.5 outline-none focus:outline-none focus-visible:outline-none ring-0 focus:ring-0 border-0 bg-transparent select-none"
-            :class="activeTab === 'stations' ? 'text-black font-medium' : 'text-neutral-500 hover:text-black font-light'"
+            :class="activeTab === 'stations' ? (isDark ? 'text-white font-medium' : 'text-black font-medium') : (isDark ? 'text-neutral-400 hover:text-white font-light' : 'text-neutral-500 hover:text-black font-light')"
           >
             <span>Assigned Devices</span>
             <span
               class="px-1.5 py-0.2 rounded-full text-[10.5px] tabular-nums"
-              :class="activeTab === 'stations' ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-600'"
+              :class="activeTab === 'stations' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : (isDark ? 'bg-white/10 text-neutral-300' : 'bg-neutral-100 text-neutral-600')"
             >
               {{ accounts.length }}
             </span>
             <span
               v-if="activeTab === 'stations'"
-              class="absolute bottom-0 left-0 right-0 h-[2px] bg-black rounded-full pointer-events-none"
+              class="absolute bottom-0 left-0 right-0 h-[2px] rounded-full pointer-events-none"
+              :class="isDark ? 'bg-white' : 'bg-black'"
             />
           </button>
 
@@ -51,13 +63,14 @@
             @click="activeTab = 'create'"
             style="outline: none; box-shadow: none; -webkit-tap-highlight-color: transparent;"
             class="py-2.5 text-[12.5px] transition-colors relative cursor-pointer flex items-center gap-1 outline-none focus:outline-none focus-visible:outline-none ring-0 focus:ring-0 border-0 bg-transparent select-none"
-            :class="activeTab === 'create' ? 'text-black font-medium' : 'text-neutral-500 hover:text-black font-light'"
+            :class="activeTab === 'create' ? (isDark ? 'text-white font-medium' : 'text-black font-medium') : (isDark ? 'text-neutral-400 hover:text-white font-light' : 'text-neutral-500 hover:text-black font-light')"
           >
             <Plus class="w-3.5 h-3.5" />
             <span>Add Device & Assign PIC</span>
             <span
               v-if="activeTab === 'create'"
-              class="absolute bottom-0 left-0 right-0 h-[2px] bg-black rounded-full pointer-events-none"
+              class="absolute bottom-0 left-0 right-0 h-[2px] rounded-full pointer-events-none"
+              :class="isDark ? 'bg-white' : 'bg-black'"
             />
           </button>
         </div>
@@ -119,14 +132,15 @@
           <!-- TAB 1: ASSIGNED DEVICES (Active Compact Ledger Cards) -->
           <div v-if="activeTab === 'stations'" class="flex flex-col gap-3">
             <!-- Header bar with Quick Add shortcut -->
-            <div class="flex items-center justify-between text-[11.5px] text-neutral-400 px-0.5">
+            <div class="flex items-center justify-between text-[11.5px] px-0.5" :class="isDark ? 'text-neutral-400' : 'text-neutral-400'">
               <span>Active Scanner Devices ({{ accounts.length }})</span>
               <div class="flex items-center gap-3">
                 <button
                   type="button"
                   @click="load"
                   :disabled="loading || busy"
-                  class="hover:text-black flex items-center gap-1 cursor-pointer disabled:opacity-40"
+                  class="flex items-center gap-1 cursor-pointer disabled:opacity-40"
+                  :class="isDark ? 'hover:text-white' : 'hover:text-black'"
                 >
                   <RefreshCw class="w-3 h-3" :class="loading ? 'animate-spin' : ''" />
                   <span>Refresh</span>
@@ -134,7 +148,8 @@
                 <button
                   type="button"
                   @click="activeTab = 'create'"
-                  class="text-black font-medium hover:underline flex items-center gap-1 cursor-pointer"
+                  class="font-medium hover:underline flex items-center gap-1 cursor-pointer"
+                  :class="isDark ? 'text-white' : 'text-black'"
                 >
                   <Plus class="w-3 h-3" />
                   <span>Add Device</span>
@@ -147,17 +162,22 @@
             <!-- Empty state -->
             <div
               v-else-if="!accounts.length"
-              class="py-12 px-4 text-center rounded-[12px] border border-dashed border-black/15 bg-neutral-50/50 flex flex-col items-center gap-2.5"
+              class="py-12 px-4 text-center rounded-[12px] border border-dashed flex flex-col items-center gap-2.5"
+              :class="isDark ? 'border-white/15 bg-white/[0.02]' : 'border-black/15 bg-neutral-50/50'"
             >
-              <div class="size-11 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-400">
+              <div
+                class="size-11 rounded-full flex items-center justify-center"
+                :class="isDark ? 'bg-white/10 text-neutral-300' : 'bg-neutral-100 text-neutral-400'"
+              >
                 <Tablet class="w-5 h-5" />
               </div>
-              <p class="text-[13.5px] text-neutral-800 font-medium">No scanner devices assigned yet</p>
+              <p class="text-[13.5px] font-medium" :class="isDark ? 'text-white' : 'text-neutral-800'">No scanner devices assigned yet</p>
               <p class="text-[12px] text-neutral-400 max-w-[280px]">Add physical tablets and assign the staff members (PIC) in charge of scanning at each gate.</p>
               <button
                 type="button"
                 @click="activeTab = 'create'"
-                class="mt-1 h-[32px] px-4 rounded-[7px] bg-black text-white text-[12px] font-medium hover:bg-neutral-800 transition-colors cursor-pointer flex items-center gap-1.5"
+                class="mt-1 h-[32px] px-4 rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer flex items-center gap-1.5"
+                :class="isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'"
               >
                 <Plus class="w-3.5 h-3.5" />
                 <span>Add First Device</span>
@@ -169,16 +189,18 @@
               <div
                 v-for="a in accounts"
                 :key="a.id"
-                class="rounded-[12px] border border-black/10 bg-white p-3.5 hover:border-black/25 transition-all flex flex-col justify-between gap-3 shadow-2xs group relative"
+                class="rounded-[12px] border p-3.5 transition-all flex flex-col justify-between gap-3 shadow-2xs group relative"
+                :class="isDark ? 'border-white/10 bg-white/[0.04] hover:border-white/20' : 'border-black/10 bg-white hover:border-black/25'"
               >
                 <!-- Top Row: Device Name & Store Branch + Status & Menu -->
                 <div class="flex items-start justify-between gap-2">
                   <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-1.5 flex-wrap">
-                      <h4 class="text-[13.5px] font-medium text-black tracking-tight">{{ parseDeviceName(a) }}</h4>
+                      <h4 class="text-[13.5px] font-medium tracking-tight" :class="isDark ? 'text-white' : 'text-black'">{{ parseDeviceName(a) }}</h4>
                       <span
                         v-if="parseBranch(a)"
-                        class="px-1.5 py-0.5 rounded-[4px] bg-neutral-100 text-[10.5px] font-medium text-neutral-600 truncate max-w-[130px]"
+                        class="px-1.5 py-0.5 rounded-[4px] text-[10.5px] font-medium truncate max-w-[130px]"
+                        :class="isDark ? 'bg-white/10 text-neutral-300' : 'bg-neutral-100 text-neutral-600'"
                       >
                         {{ parseBranch(a) }}
                       </span>
@@ -190,15 +212,26 @@
                         v-model="editPicName"
                         type="text"
                         placeholder="PIC Name"
-                        class="h-[26px] px-2 rounded-[5px] border border-black/25 text-[11.5px] outline-none w-full bg-white"
+                        class="h-[26px] px-2 rounded-[5px] border text-[11.5px] outline-none w-full"
+                        :class="isDark ? 'border-white/20 bg-white/[0.08] text-white focus:border-white' : 'border-black/25 bg-white text-black focus:border-black'"
                         @keydown.enter="savePic(a)"
                       />
-                      <button type="button" @click="savePic(a)" class="h-[26px] px-2 rounded-[5px] bg-black text-white text-[11px] font-medium cursor-pointer">Save</button>
-                      <button type="button" @click="editingPicId = null" class="h-[26px] px-2 rounded-[5px] border text-[11px] cursor-pointer">✕</button>
+                      <button
+                        type="button"
+                        @click="savePic(a)"
+                        class="h-[26px] px-2 rounded-[5px] text-[11px] font-medium cursor-pointer"
+                        :class="isDark ? 'bg-white text-black' : 'bg-black text-white'"
+                      >Save</button>
+                      <button
+                        type="button"
+                        @click="editingPicId = null"
+                        class="h-[26px] px-2 rounded-[5px] border text-[11px] cursor-pointer"
+                        :class="isDark ? 'border-white/20 text-neutral-300 hover:bg-white/10' : 'border-black/15 text-neutral-700 hover:bg-black/5'"
+                      >✕</button>
                     </div>
-                    <p v-else class="text-[12px] text-neutral-500 mt-1 flex items-center gap-1.5 truncate">
-                      <span class="text-neutral-400">PIC:</span>
-                      <strong class="text-neutral-900 font-medium truncate">{{ a.username }}</strong>
+                    <p v-else class="text-[12px] text-neutral-400 mt-1 flex items-center gap-1.5 truncate">
+                      <span>PIC:</span>
+                      <strong class="font-medium truncate" :class="isDark ? 'text-white' : 'text-neutral-900'">{{ a.username }}</strong>
                     </p>
                   </div>
 
@@ -214,7 +247,8 @@
                       <button
                         type="button"
                         @click.stop="openMenuId = openMenuId === a.id ? null : a.id"
-                        class="size-[24px] rounded-[5px] hover:bg-neutral-100 flex items-center justify-center text-neutral-400 hover:text-black cursor-pointer transition-colors"
+                        class="size-[24px] rounded-[5px] flex items-center justify-center cursor-pointer transition-colors"
+                        :class="isDark ? 'hover:bg-white/10 text-neutral-400 hover:text-white' : 'hover:bg-neutral-100 text-neutral-400 hover:text-black'"
                         title="More options"
                       >
                         <MoreHorizontal class="w-3.5 h-3.5" />
@@ -223,54 +257,57 @@
                       <!-- Dropdown Popover -->
                       <div
                         v-if="openMenuId === a.id"
-                        class="absolute right-0 top-[calc(100%+4px)] z-30 w-[175px] bg-white border border-black/10 rounded-[10px] shadow-[0_12px_30px_rgba(0,0,0,0.12)] p-1 flex flex-col gap-0.5 text-[11.5px] animate-apple-pop"
+                        class="absolute right-0 top-[calc(100%+4px)] z-30 w-[175px] rounded-[10px] p-1 flex flex-col gap-0.5 text-[11.5px] animate-apple-pop"
+                        :class="isDark ? 'bg-[#1e1e1e] border border-white/15 shadow-[0_12px_30px_rgba(0,0,0,0.6)] text-white' : 'bg-white border border-black/10 shadow-[0_12px_30px_rgba(0,0,0,0.12)] text-black'"
                         @click.stop
                       >
                         <button
                           type="button"
                           @click="startEditPic(a); openMenuId = null"
-                          class="w-full px-2.5 py-1.5 rounded-[6px] hover:bg-neutral-100 text-left flex items-center gap-2 text-neutral-700 hover:text-black cursor-pointer"
+                          class="w-full px-2.5 py-1.5 rounded-[6px] text-left flex items-center gap-2 cursor-pointer"
+                          :class="isDark ? 'hover:bg-white/10 text-neutral-200' : 'hover:bg-neutral-100 text-neutral-700 hover:text-black'"
                         >
                           <Edit3 class="w-3.5 h-3.5 text-neutral-400" />
                           <span>Edit PIC Handler</span>
                         </button>
 
-                        <div class="h-px bg-black/5 my-0.5" />
+                        <div class="h-px my-0.5" :class="isDark ? 'bg-white/10' : 'bg-black/5'" />
                         <p class="px-2.5 pt-1 text-[9.5px] uppercase tracking-normal text-neutral-400 font-medium">Switch Role</p>
                         <button
                           type="button"
                           @click="updateStationMode(a, 'in'); openMenuId = null"
-                          class="w-full px-2.5 py-1 rounded-[5px] hover:bg-neutral-100 text-left flex items-center justify-between text-[11px] cursor-pointer"
-                          :class="a.stationMode === 'in' ? 'font-medium text-black' : 'text-neutral-600'"
+                          class="w-full px-2.5 py-1 rounded-[5px] text-left flex items-center justify-between text-[11px] cursor-pointer"
+                          :class="a.stationMode === 'in' ? (isDark ? 'font-medium text-white bg-white/10' : 'font-medium text-black bg-neutral-100') : (isDark ? 'text-neutral-300 hover:bg-white/5' : 'text-neutral-600 hover:bg-neutral-100')"
                         >
                           <span>Entrance (In)</span>
-                          <Check v-if="a.stationMode === 'in'" class="w-3 h-3 text-black" />
+                          <Check v-if="a.stationMode === 'in'" class="w-3 h-3" :class="isDark ? 'text-white' : 'text-black'" />
                         </button>
                         <button
                           type="button"
                           @click="updateStationMode(a, 'out'); openMenuId = null"
-                          class="w-full px-2.5 py-1 rounded-[5px] hover:bg-neutral-100 text-left flex items-center justify-between text-[11px] cursor-pointer"
-                          :class="a.stationMode === 'out' ? 'font-medium text-black' : 'text-neutral-600'"
+                          class="w-full px-2.5 py-1 rounded-[5px] text-left flex items-center justify-between text-[11px] cursor-pointer"
+                          :class="a.stationMode === 'out' ? (isDark ? 'font-medium text-white bg-white/10' : 'font-medium text-black bg-neutral-100') : (isDark ? 'text-neutral-300 hover:bg-white/5' : 'text-neutral-600 hover:bg-neutral-100')"
                         >
                           <span>Exit (Out)</span>
-                          <Check v-if="a.stationMode === 'out'" class="w-3 h-3 text-black" />
+                          <Check v-if="a.stationMode === 'out'" class="w-3 h-3" :class="isDark ? 'text-white' : 'text-black'" />
                         </button>
                         <button
                           type="button"
                           @click="updateStationMode(a, 'both'); openMenuId = null"
-                          class="w-full px-2.5 py-1 rounded-[5px] hover:bg-neutral-100 text-left flex items-center justify-between text-[11px] cursor-pointer"
-                          :class="a.stationMode === 'both' ? 'font-medium text-black' : 'text-neutral-600'"
+                          class="w-full px-2.5 py-1 rounded-[5px] text-left flex items-center justify-between text-[11px] cursor-pointer"
+                          :class="a.stationMode === 'both' ? (isDark ? 'font-medium text-white bg-white/10' : 'font-medium text-black bg-neutral-100') : (isDark ? 'text-neutral-300 hover:bg-white/5' : 'text-neutral-600 hover:bg-neutral-100')"
                         >
                           <span>Dual (In & Out)</span>
-                          <Check v-if="a.stationMode === 'both'" class="w-3 h-3 text-black" />
+                          <Check v-if="a.stationMode === 'both'" class="w-3 h-3" :class="isDark ? 'text-white' : 'text-black'" />
                         </button>
 
-                        <div class="h-px bg-black/5 my-0.5" />
+                        <div class="h-px my-0.5" :class="isDark ? 'bg-white/10' : 'bg-black/5'" />
 
                         <button
                           type="button"
                           @click="extendHours(a, 8); openMenuId = null"
-                          class="w-full px-2.5 py-1.5 rounded-[6px] hover:bg-neutral-100 text-left flex items-center gap-2 text-neutral-700 hover:text-black cursor-pointer"
+                          class="w-full px-2.5 py-1.5 rounded-[6px] text-left flex items-center gap-2 cursor-pointer"
+                          :class="isDark ? 'hover:bg-white/10 text-neutral-200' : 'hover:bg-neutral-100 text-neutral-700 hover:text-black'"
                         >
                           <Clock class="w-3.5 h-3.5 text-neutral-400" />
                           <span>Extend +8 Hours</span>
@@ -279,7 +316,8 @@
                         <button
                           type="button"
                           @click="resetPassword(a); openMenuId = null"
-                          class="w-full px-2.5 py-1.5 rounded-[6px] hover:bg-neutral-100 text-left flex items-center gap-2 text-neutral-700 hover:text-black cursor-pointer"
+                          class="w-full px-2.5 py-1.5 rounded-[6px] text-left flex items-center gap-2 cursor-pointer"
+                          :class="isDark ? 'hover:bg-white/10 text-neutral-200' : 'hover:bg-neutral-100 text-neutral-700 hover:text-black'"
                         >
                           <KeyRound class="w-3.5 h-3.5 text-neutral-400" />
                           <span>Reset Passcode</span>
@@ -288,20 +326,22 @@
                         <button
                           type="button"
                           @click="toggleSuspend(a); openMenuId = null"
-                          class="w-full px-2.5 py-1.5 rounded-[6px] hover:bg-neutral-100 text-left flex items-center gap-2 text-neutral-700 hover:text-black cursor-pointer"
+                          class="w-full px-2.5 py-1.5 rounded-[6px] text-left flex items-center gap-2 cursor-pointer"
+                          :class="isDark ? 'hover:bg-white/10 text-neutral-200' : 'hover:bg-neutral-100 text-neutral-700 hover:text-black'"
                         >
                           <Shield class="w-3.5 h-3.5 text-neutral-400" />
                           <span>{{ a.status === 'suspended' ? 'Activate Device' : 'Suspend Tablet' }}</span>
                         </button>
 
-                        <div class="h-px bg-black/5 my-0.5" />
+                        <div class="h-px my-0.5" :class="isDark ? 'bg-white/10' : 'bg-black/5'" />
 
                         <button
                           type="button"
                           @click="remove(a); openMenuId = null"
-                          class="w-full px-2.5 py-1.5 rounded-[6px] hover:bg-oxblood-50 text-left flex items-center gap-2 text-oxblood-700 cursor-pointer"
+                          class="w-full px-2.5 py-1.5 rounded-[6px] text-left flex items-center gap-2 cursor-pointer"
+                          :class="isDark ? 'hover:bg-red-950/40 text-red-400' : 'hover:bg-oxblood-50 text-oxblood-700'"
                         >
-                          <Trash2 class="w-3.5 h-3.5 text-oxblood-600" />
+                          <Trash2 class="w-3.5 h-3.5" :class="isDark ? 'text-red-400' : 'text-oxblood-600'" />
                           <span>Remove Device</span>
                         </button>
                       </div>
@@ -310,7 +350,10 @@
                 </div>
 
                 <!-- Bottom Row: Role Badge + Shift Validity + Passcode Action -->
-                <div class="flex items-center justify-between pt-2 border-t border-black/5 text-[11px]">
+                <div
+                  class="flex items-center justify-between pt-2 border-t text-[11px]"
+                  :class="isDark ? 'border-white/10' : 'border-black/5'"
+                >
                   <div class="flex items-center gap-2 min-w-0">
                     <span class="px-2 py-0.5 rounded-[5px] text-[10.5px] font-medium" :class="roleBadgeClass(a.stationMode)">
                       {{ roleLabel(a.stationMode) }}
@@ -323,10 +366,11 @@
                   <button
                     type="button"
                     @click="resetPassword(a)"
-                    class="h-[25px] px-2 rounded-[5px] border border-black/15 bg-white hover:bg-neutral-50 text-neutral-700 text-[10.5px] font-medium flex items-center gap-1 cursor-pointer transition-colors shadow-2xs shrink-0"
+                    class="h-[25px] px-2 rounded-[5px] border text-[10.5px] font-medium flex items-center gap-1 cursor-pointer transition-colors shadow-2xs shrink-0"
+                    :class="isDark ? 'border-white/15 bg-white/5 hover:bg-white/10 text-neutral-200' : 'border-black/15 bg-white hover:bg-neutral-50 text-neutral-700'"
                     title="Generate new passcode for this device"
                   >
-                    <KeyRound class="w-3 h-3 text-neutral-500" />
+                    <KeyRound class="w-3 h-3 text-neutral-400" />
                     <span>Passcode</span>
                   </button>
                 </div>
@@ -337,21 +381,24 @@
           <!-- TAB 2: ADD DEVICE & ASSIGN PIC (Compact Sleek Form) -->
           <form v-else-if="activeTab === 'create'" class="flex flex-col gap-3.5 py-1" @submit.prevent="create">
             <div>
-              <p class="text-[13.5px] font-medium text-black">Assign New Door PIC</p>
-              <p class="text-[11.5px] text-neutral-500 mt-0.5">Register a scanner tablet and assign field staff access with station role.</p>
+              <p class="text-[13.5px] font-medium" :class="isDark ? 'text-white' : 'text-black'">Assign New Door PIC</p>
+              <p class="text-[11.5px] mt-0.5" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Register a scanner tablet and assign field staff access with station role.</p>
             </div>
 
             <!-- Row 1: Device Selection (Tab / iPad) + Staff PIC Name in a single line -->
             <div class="flex items-end gap-3">
               <!-- Device Selection Pill -->
               <div class="shrink-0 flex flex-col gap-1.5">
-                <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Device</label>
-                <div class="inline-flex p-0.5 rounded-[8px] bg-neutral-100 border border-black/5 h-[38px] items-center">
+                <label class="text-[11px] uppercase tracking-normal font-medium" :class="isDark ? 'text-neutral-400' : 'text-neutral-400'">Device</label>
+                <div
+                  class="inline-flex p-0.5 rounded-[8px] border h-[38px] items-center"
+                  :class="isDark ? 'bg-white/[0.04] border-white/10' : 'bg-neutral-100 border-black/5'"
+                >
                   <button
                     type="button"
                     @click="selectDeviceType('tab')"
                     class="h-[32px] px-3 rounded-[6px] text-[12px] font-medium transition-all cursor-pointer flex items-center gap-1.5 select-none"
-                    :class="selectedDeviceType === 'tab' ? 'bg-white text-black shadow-2xs font-medium' : 'text-neutral-500 hover:text-black font-light'"
+                    :class="selectedDeviceType === 'tab' ? (isDark ? 'bg-white text-black shadow-2xs font-medium' : 'bg-white text-black shadow-2xs font-medium') : (isDark ? 'text-neutral-400 hover:text-white font-light' : 'text-neutral-500 hover:text-black font-light')"
                   >
                     <Tablet class="w-3.5 h-3.5" />
                     <span>Tab {{ nextTabNumber }}</span>
@@ -360,7 +407,7 @@
                     type="button"
                     @click="selectDeviceType('ipad')"
                     class="h-[32px] px-3 rounded-[6px] text-[12px] font-medium transition-all cursor-pointer flex items-center gap-1.5 select-none"
-                    :class="selectedDeviceType === 'ipad' ? 'bg-white text-black shadow-2xs font-medium' : 'text-neutral-500 hover:text-black font-light'"
+                    :class="selectedDeviceType === 'ipad' ? (isDark ? 'bg-white text-black shadow-2xs font-medium' : 'bg-white text-black shadow-2xs font-medium') : (isDark ? 'text-neutral-400 hover:text-white font-light' : 'text-neutral-500 hover:text-black font-light')"
                   >
                     <Tablet class="w-3.5 h-3.5" />
                     <span>iPad {{ nextIpadNumber }}</span>
@@ -370,14 +417,15 @@
 
               <!-- Staff PIC Name Input Box -->
               <div class="flex-1 min-w-0 flex flex-col gap-1.5">
-                <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Staff PIC Name *</label>
+                <label class="text-[11px] uppercase tracking-normal font-medium" :class="isDark ? 'text-neutral-400' : 'text-neutral-400'">Staff PIC Name *</label>
                 <input
                   v-model="username"
                   type="text"
                   required
                   autocomplete="off"
                   placeholder="Staff PIC Name (e.g. Budi Santoso)"
-                  class="h-[38px] px-3.5 rounded-[8px] bg-neutral-50 hover:bg-white focus:bg-white border border-black/15 focus:border-black text-[13px] outline-none transition-all w-full"
+                  class="h-[38px] px-3.5 rounded-[8px] border text-[13px] outline-none transition-all w-full"
+                  :class="isDark ? 'bg-white/[0.06] border-white/15 text-white placeholder:text-neutral-500 focus:border-white focus:bg-white/[0.1]' : 'bg-neutral-50 hover:bg-white focus:bg-white border-black/15 focus:border-black text-black placeholder:text-neutral-400'"
                 />
               </div>
             </div>
@@ -386,30 +434,34 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <!-- Store Branch / Gate Location -->
               <div class="flex flex-col gap-1.5">
-                <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Store Branch / Gate</label>
+                <label class="text-[11px] uppercase tracking-normal font-medium" :class="isDark ? 'text-neutral-400' : 'text-neutral-400'">Store Branch / Gate</label>
                 <input
                   v-model="storeBranch"
                   type="text"
                   autocomplete="off"
                   placeholder="Store Branch (e.g. Grand Indonesia)"
-                  class="h-[38px] px-3.5 rounded-[8px] bg-neutral-50 hover:bg-white focus:bg-white border border-black/15 focus:border-black text-[13px] outline-none transition-all w-full"
+                  class="h-[38px] px-3.5 rounded-[8px] border text-[13px] outline-none transition-all w-full"
+                  :class="isDark ? 'bg-white/[0.06] border-white/15 text-white placeholder:text-neutral-500 focus:border-white focus:bg-white/[0.1]' : 'bg-neutral-50 hover:bg-white focus:bg-white border-black/15 focus:border-black text-black placeholder:text-neutral-400'"
                 />
               </div>
 
               <!-- Station Role Selection Bar with Dropdown Popup -->
               <div class="flex flex-col gap-1.5 relative role-dropdown-container">
-                <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Station Role</label>
+                <label class="text-[11px] uppercase tracking-normal font-medium" :class="isDark ? 'text-neutral-400' : 'text-neutral-400'">Station Role</label>
                 <button
                   type="button"
                   @click="roleDropdownOpen = !roleDropdownOpen; shiftDropdownOpen = false"
-                  class="w-full h-[38px] px-3 rounded-[8px] bg-neutral-50 hover:bg-neutral-100/80 border border-black/15 flex items-center justify-between gap-2 text-[13px] font-medium text-black transition-colors cursor-pointer select-none"
-                  :class="roleDropdownOpen ? 'border-black bg-white ring-1 ring-black/10' : ''"
+                  class="w-full h-[38px] px-3 rounded-[8px] border flex items-center justify-between gap-2 text-[13px] font-medium transition-colors cursor-pointer select-none"
+                  :class="[
+                    isDark ? 'bg-white/[0.06] border-white/15 text-white hover:bg-white/10' : 'bg-neutral-50 hover:bg-neutral-100/80 border-black/15 text-black',
+                    roleDropdownOpen ? (isDark ? 'border-white bg-white/10 ring-1 ring-white/20' : 'border-black bg-white ring-1 ring-black/10') : ''
+                  ]"
                 >
                   <div class="flex items-center gap-2 min-w-0">
                     <component
                       :is="stationMode === 'in' ? LogIn : stationMode === 'out' ? LogOut : ArrowLeftRight"
                       class="w-3.5 h-3.5 shrink-0"
-                      :class="stationMode === 'in' ? 'text-moss-600' : stationMode === 'out' ? 'text-amber-600' : 'text-neutral-700'"
+                      :class="stationMode === 'in' ? 'text-moss-400' : stationMode === 'out' ? 'text-amber-400' : (isDark ? 'text-neutral-300' : 'text-neutral-700')"
                     />
                     <span class="truncate">{{ roleLabel(stationMode) }}</span>
                   </div>
@@ -420,54 +472,55 @@
                 <Transition name="apple-pop">
                   <div
                     v-if="roleDropdownOpen"
-                    class="absolute top-full left-0 right-0 mt-1 z-30 rounded-[10px] bg-white border border-black/10 shadow-[0px_8px_24px_rgba(0,0,0,0.12)] p-1 flex flex-col gap-0.5"
+                    class="absolute top-full left-0 right-0 mt-1 z-30 rounded-[10px] p-1 flex flex-col gap-0.5 border"
+                    :class="isDark ? 'bg-[#1e1e1e] border-white/15 shadow-[0px_8px_24px_rgba(0,0,0,0.6)] text-white' : 'bg-white border-black/10 shadow-[0px_8px_24px_rgba(0,0,0,0.12)] text-black'"
                   >
                     <button
                       type="button"
                       @click="selectRole('in')"
                       class="w-full px-2.5 py-2 rounded-[7px] text-left flex items-center justify-between text-[12.5px] cursor-pointer transition-colors"
-                      :class="stationMode === 'in' ? 'bg-black/5 font-medium text-black' : 'hover:bg-neutral-50 text-neutral-700'"
+                      :class="stationMode === 'in' ? (isDark ? 'bg-white/10 font-medium text-white' : 'bg-black/5 font-medium text-black') : (isDark ? 'hover:bg-white/5 text-neutral-200' : 'hover:bg-neutral-50 text-neutral-700')"
                     >
                       <div class="flex items-center gap-2">
-                        <LogIn class="w-3.5 h-3.5 text-moss-600 shrink-0" />
+                        <LogIn class="w-3.5 h-3.5 text-moss-500 shrink-0" />
                         <div>
                           <p class="leading-none text-[12.5px]">Entrance Gate</p>
                           <p class="text-[10.5px] text-neutral-400 mt-0.5 leading-none">Admit incoming guests</p>
                         </div>
                       </div>
-                      <Check v-if="stationMode === 'in'" class="w-3.5 h-3.5 text-black shrink-0" />
+                      <Check v-if="stationMode === 'in'" class="w-3.5 h-3.5 shrink-0" :class="isDark ? 'text-white' : 'text-black'" />
                     </button>
 
                     <button
                       type="button"
                       @click="selectRole('out')"
                       class="w-full px-2.5 py-2 rounded-[7px] text-left flex items-center justify-between text-[12.5px] cursor-pointer transition-colors"
-                      :class="stationMode === 'out' ? 'bg-black/5 font-medium text-black' : 'hover:bg-neutral-50 text-neutral-700'"
+                      :class="stationMode === 'out' ? (isDark ? 'bg-white/10 font-medium text-white' : 'bg-black/5 font-medium text-black') : (isDark ? 'hover:bg-white/5 text-neutral-200' : 'hover:bg-neutral-50 text-neutral-700')"
                     >
                       <div class="flex items-center gap-2">
-                        <LogOut class="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                        <LogOut class="w-3.5 h-3.5 text-amber-500 shrink-0" />
                         <div>
                           <p class="leading-none text-[12.5px]">Exit Gate</p>
                           <p class="text-[10.5px] text-neutral-400 mt-0.5 leading-none">Check-out departing guests</p>
                         </div>
                       </div>
-                      <Check v-if="stationMode === 'out'" class="w-3.5 h-3.5 text-black shrink-0" />
+                      <Check v-if="stationMode === 'out'" class="w-3.5 h-3.5 shrink-0" :class="isDark ? 'text-white' : 'text-black'" />
                     </button>
 
                     <button
                       type="button"
                       @click="selectRole('both')"
                       class="w-full px-2.5 py-2 rounded-[7px] text-left flex items-center justify-between text-[12.5px] cursor-pointer transition-colors"
-                      :class="stationMode === 'both' ? 'bg-black/5 font-medium text-black' : 'hover:bg-neutral-50 text-neutral-700'"
+                      :class="stationMode === 'both' ? (isDark ? 'bg-white/10 font-medium text-white' : 'bg-black/5 font-medium text-black') : (isDark ? 'hover:bg-white/5 text-neutral-200' : 'hover:bg-neutral-50 text-neutral-700')"
                     >
                       <div class="flex items-center gap-2">
-                        <ArrowLeftRight class="w-3.5 h-3.5 text-neutral-700 shrink-0" />
+                        <ArrowLeftRight class="w-3.5 h-3.5 shrink-0" :class="isDark ? 'text-neutral-300' : 'text-neutral-700'" />
                         <div>
                           <p class="leading-none text-[12.5px]">Dual Station</p>
                           <p class="text-[10.5px] text-neutral-400 mt-0.5 leading-none">Both Entrance & Exit</p>
                         </div>
                       </div>
-                      <Check v-if="stationMode === 'both'" class="w-3.5 h-3.5 text-black shrink-0" />
+                      <Check v-if="stationMode === 'both'" class="w-3.5 h-3.5 shrink-0" :class="isDark ? 'text-white' : 'text-black'" />
                     </button>
                   </div>
                 </Transition>
@@ -477,18 +530,21 @@
             <!-- Row 3: Shift Validity Selection Bar with Dropdown Popup -->
             <div class="flex flex-col gap-1.5 relative shift-dropdown-container">
               <div class="flex items-center justify-between">
-                <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">Shift Validity</label>
+                <label class="text-[11px] uppercase tracking-normal font-medium" :class="isDark ? 'text-neutral-400' : 'text-neutral-400'">Shift Validity</label>
                 <span class="text-[11px] text-neutral-400">{{ shiftDurationSummary }}</span>
               </div>
 
               <button
                 type="button"
                 @click="shiftDropdownOpen = !shiftDropdownOpen; roleDropdownOpen = false"
-                class="w-full h-[38px] px-3 rounded-[8px] bg-neutral-50 hover:bg-neutral-100/80 border border-black/15 flex items-center justify-between gap-2 text-[13px] font-medium text-black transition-colors cursor-pointer select-none"
-                :class="shiftDropdownOpen ? 'border-black bg-white ring-1 ring-black/10' : ''"
+                class="w-full h-[38px] px-3 rounded-[8px] border flex items-center justify-between gap-2 text-[13px] font-medium transition-colors cursor-pointer select-none"
+                :class="[
+                  isDark ? 'bg-white/[0.06] border-white/15 text-white hover:bg-white/10' : 'bg-neutral-50 hover:bg-neutral-100/80 border-black/15 text-black',
+                  shiftDropdownOpen ? (isDark ? 'border-white bg-white/10 ring-1 ring-white/20' : 'border-black bg-white ring-1 ring-black/10') : ''
+                ]"
               >
                 <div class="flex items-center gap-2 min-w-0">
-                  <Clock class="w-3.5 h-3.5 text-neutral-500 shrink-0" />
+                  <Clock class="w-3.5 h-3.5 text-neutral-400 shrink-0" />
                   <span class="truncate">{{ shiftPresets.find(p => p.id === selectedPreset)?.label || 'Today (23:59)' }}</span>
                 </div>
                 <ChevronDown class="w-3.5 h-3.5 text-neutral-400 shrink-0 transition-transform duration-200" :class="shiftDropdownOpen ? 'rotate-180' : ''" />
@@ -498,7 +554,8 @@
               <Transition name="apple-pop">
                 <div
                   v-if="shiftDropdownOpen"
-                  class="absolute top-full left-0 right-0 mt-1 z-30 rounded-[10px] bg-white border border-black/10 shadow-[0px_8px_24px_rgba(0,0,0,0.12)] p-1 flex flex-col gap-0.5"
+                  class="absolute top-full left-0 right-0 mt-1 z-30 rounded-[10px] p-1 flex flex-col gap-0.5 border"
+                  :class="isDark ? 'bg-[#1e1e1e] border-white/15 shadow-[0px_8px_24px_rgba(0,0,0,0.6)] text-white' : 'bg-white border-black/10 shadow-[0px_8px_24px_rgba(0,0,0,0.12)] text-black'"
                 >
                   <button
                     v-for="p in shiftPresets"
@@ -506,13 +563,13 @@
                     type="button"
                     @click="selectShift(p.id)"
                     class="w-full px-2.5 py-2 rounded-[7px] text-left flex items-center justify-between text-[12.5px] cursor-pointer transition-colors"
-                    :class="selectedPreset === p.id ? 'bg-black/5 font-medium text-black' : 'hover:bg-neutral-50 text-neutral-700'"
+                    :class="selectedPreset === p.id ? (isDark ? 'bg-white/10 font-medium text-white' : 'bg-black/5 font-medium text-black') : (isDark ? 'hover:bg-white/5 text-neutral-200' : 'hover:bg-neutral-50 text-neutral-700')"
                   >
                     <div class="flex items-center gap-2">
                       <Clock class="w-3.5 h-3.5 text-neutral-400 shrink-0" />
                       <span>{{ p.label }}</span>
                     </div>
-                    <Check v-if="selectedPreset === p.id" class="w-3.5 h-3.5 text-black shrink-0" />
+                    <Check v-if="selectedPreset === p.id" class="w-3.5 h-3.5 shrink-0" :class="isDark ? 'text-white' : 'text-black'" />
                   </button>
                 </div>
               </Transition>
@@ -522,20 +579,25 @@
                 <input
                   v-model="customExpires"
                   type="datetime-local"
-                  class="h-[36px] w-full px-3 rounded-[8px] border border-black/15 text-[12.5px] outline-none focus:border-black bg-white"
+                  class="h-[36px] w-full px-3 rounded-[8px] border text-[12.5px] outline-none"
+                  :class="isDark ? 'border-white/15 bg-white/[0.06] text-white focus:border-white' : 'border-black/15 bg-white text-black focus:border-black'"
                 />
               </div>
             </div>
 
-            <p v-if="error" class="text-[12px] text-oxblood-700 font-medium">{{ error }}</p>
+            <p v-if="error" class="text-[12px] font-medium" :class="isDark ? 'text-red-400' : 'text-oxblood-700'">{{ error }}</p>
 
             <!-- Submit Bar -->
-            <div class="flex items-center justify-between gap-3 pt-2 border-t border-black/5">
+            <div
+              class="flex items-center justify-between gap-3 pt-2 border-t"
+              :class="isDark ? 'border-white/10' : 'border-black/5'"
+            >
               <p class="text-[11.5px] text-neutral-400">Passcode will be generated automatically.</p>
               <button
                 type="submit"
                 :disabled="busy || !username.trim()"
-                class="h-[36px] px-4 rounded-[8px] bg-black text-white text-[12.5px] font-medium cursor-pointer hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-default transition-all shadow-2xs"
+                class="h-[36px] px-4 rounded-[8px] text-[12.5px] font-medium cursor-pointer disabled:opacity-40 disabled:cursor-default transition-all shadow-2xs"
+                :class="isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'"
               >
                 Register Device & Passcode
               </button>
@@ -570,9 +632,17 @@ import {
   ChevronDown
 } from 'lucide-vue-next';
 import { apiFetch } from '../../services/apiClient.ts';
+import { useAuthStore } from '../../stores/authStore.ts';
 
-const props = defineProps<{ projectId: string; projectTitle: string }>();
+const props = defineProps<{
+  projectId: string;
+  projectTitle: string;
+  dark?: boolean;
+}>();
 const emit = defineEmits<{ (e: 'close'): void; (e: 'toast', msg: string): void }>();
+
+const authStore = useAuthStore();
+const isDark = computed(() => props.dark ?? authStore.isSuperAdmin);
 
 interface GateAccount {
   id: string;

@@ -2,16 +2,20 @@
   <div class="flex flex-col gap-4 w-full font-sans font-light tracking-normal" @click="showInfo = false">
     
     <!-- Top Action & Info Bar -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-black/10">
+    <div
+      class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b"
+      :class="isDark ? 'border-white/10' : 'border-black/10'"
+    >
       <div class="flex items-center gap-2">
-        <h2 class="text-[16px] font-medium text-black tracking-normal">Raffle & Stage Draw</h2>
+        <h2 class="text-[16px] font-medium tracking-normal" :class="isDark ? 'text-white' : 'text-black'">Raffle & Stage Draw</h2>
         
         <!-- Info Tooltip -->
         <div class="relative inline-flex items-center" @click.stop>
           <button
             type="button"
             @click="showInfo = !showInfo"
-            class="size-4 rounded-full text-neutral-400 hover:text-black flex items-center justify-center transition-colors cursor-pointer"
+            class="size-4 rounded-full flex items-center justify-center transition-colors cursor-pointer"
+            :class="isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-400 hover:text-black'"
             title="Draw rules & cryptographic fairness"
           >
             <Info class="w-3.5 h-3.5" />
@@ -25,9 +29,9 @@
           </div>
         </div>
 
-        <span class="text-neutral-300">•</span>
-        <span class="text-[12px] text-neutral-500 font-light">
-          <strong class="font-medium text-black tabular-nums">{{ eligible.length }}</strong> eligible candidates
+        <span :class="isDark ? 'text-neutral-600' : 'text-neutral-300'">•</span>
+        <span class="text-[12px] font-light" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">
+          <strong class="font-medium tabular-nums" :class="isDark ? 'text-white' : 'text-black'">{{ eligible.length }}</strong> eligible candidates
         </span>
       </div>
 
@@ -35,10 +39,11 @@
       <button
         type="button"
         @click="openStageMode"
-        class="h-[34px] px-3.5 rounded-[9px] bg-black text-white hover:bg-neutral-800 text-[12px] font-medium flex items-center gap-2 cursor-pointer transition-colors apple-press shadow-xs shrink-0"
+        class="h-[34px] px-3.5 rounded-[9px] text-[12px] font-medium flex items-center gap-2 cursor-pointer transition-colors apple-press shadow-xs shrink-0"
+        :class="isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'"
         title="Open full-screen stage mode for live projector display"
       >
-        <Maximize2 class="w-3.5 h-3.5 text-neutral-300" />
+        <Maximize2 class="w-3.5 h-3.5" :class="isDark ? 'text-neutral-600' : 'text-neutral-300'" />
         <span>Launch Stage Screen</span>
       </button>
     </div>
@@ -49,20 +54,26 @@
       <!-- ============================================================== -->
       <!-- LEFT: DRAW CONFIGURATION CONSOLE                               -->
       <!-- ============================================================== -->
-      <div class="rounded-[16px] border border-black/10 bg-white p-5 flex flex-col gap-4 shadow-xs">
+      <div
+        class="rounded-[16px] border p-5 flex flex-col gap-4 shadow-xs"
+        :class="isDark ? 'border-white/10 bg-[#141414] text-white' : 'border-black/10 bg-white text-black'"
+      >
         
         <!-- Section 1: Candidate Pool -->
         <div class="flex flex-col gap-2">
-          <span class="text-[11px] font-medium uppercase tracking-normal text-neutral-500">Candidate Pool</span>
+          <span class="text-[11px] font-medium uppercase tracking-normal" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Candidate Pool</span>
           
-          <div class="grid grid-cols-2 gap-1.5 p-1 bg-neutral-100 rounded-[10px] border border-black/5">
+          <div
+            class="grid grid-cols-2 gap-1.5 p-1 rounded-[10px] border"
+            :class="isDark ? 'bg-white/[0.04] border-white/10' : 'bg-neutral-100 border-black/5'"
+          >
             <button
               v-for="opt in poolOptions"
               :key="opt.value"
               type="button"
               @click="poolRule = opt.value"
               class="px-2.5 py-2 rounded-[8px] text-[11.5px] font-sans flex flex-col items-start transition-all cursor-pointer text-left"
-              :class="poolRule === opt.value ? 'bg-white text-black font-medium shadow-xs' : 'text-neutral-500 hover:text-black font-light'"
+              :class="poolRule === opt.value ? (isDark ? 'bg-white/15 text-white font-medium shadow-xs' : 'bg-white text-black font-medium shadow-xs') : (isDark ? 'text-neutral-400 hover:text-white font-light' : 'text-neutral-500 hover:text-black font-light')"
             >
               <div class="flex items-center justify-between w-full">
                 <span class="truncate">{{ opt.shortLabel }}</span>
@@ -76,28 +87,36 @@
             <input 
               v-model="excludePastWinners" 
               type="checkbox" 
-              class="size-3.5 rounded border-black/20 accent-black cursor-pointer" 
+              class="size-3.5 rounded cursor-pointer" 
+              :class="isDark ? 'border-white/20 accent-white' : 'border-black/20 accent-black'"
             />
-            <span class="text-[12px] text-neutral-600 font-light select-none">Exclude previous winners</span>
+            <span class="text-[12px] font-light select-none" :class="isDark ? 'text-neutral-300' : 'text-neutral-600'">Exclude previous winners</span>
           </label>
         </div>
 
         <!-- Section 2: Winner Count Stepper + Quick Presets -->
-        <div class="flex flex-col gap-2 pt-1 border-t border-black/5">
+        <div
+          class="flex flex-col gap-2 pt-1 border-t"
+          :class="isDark ? 'border-white/10' : 'border-black/5'"
+        >
           <div class="flex items-center justify-between text-[11.5px]">
-            <span class="text-[11px] font-medium uppercase tracking-normal text-neutral-500">
+            <span class="text-[11px] font-medium uppercase tracking-normal" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">
               {{ isWaitlistDraw ? 'Candidates to Release' : 'Winners to Draw' }}
             </span>
-            <span class="text-neutral-400 font-mono text-[10.5px]">max {{ eligible.length }}</span>
+            <span class="font-mono text-[10.5px]" :class="isDark ? 'text-neutral-400' : 'text-neutral-400'">max {{ eligible.length }}</span>
           </div>
 
           <div class="flex items-center gap-2">
             <!-- Stepper -->
-            <div class="flex items-center bg-neutral-100 rounded-[9px] border border-black/5 p-0.5">
+            <div
+              class="flex items-center rounded-[9px] border p-0.5"
+              :class="isDark ? 'bg-white/[0.04] border-white/10' : 'bg-neutral-100 border-black/5'"
+            >
               <button
                 type="button"
                 @click="winnerCount = Math.max(1, winnerCount - 1)"
-                class="size-8 rounded-[7px] hover:bg-white flex items-center justify-center text-neutral-700 hover:text-black cursor-pointer transition-colors"
+                class="size-8 rounded-[7px] flex items-center justify-center cursor-pointer transition-colors"
+                :class="isDark ? 'hover:bg-white/10 text-neutral-300 hover:text-white' : 'hover:bg-white text-neutral-700 hover:text-black'"
                 title="Decrease"
               >
                 <Minus class="w-3.5 h-3.5" />
@@ -108,11 +127,13 @@
                 min="1"
                 :max="Math.max(1, eligible.length)"
                 class="w-12 h-8 bg-transparent text-center text-[13px] font-medium font-mono tabular-nums outline-none"
+                :class="isDark ? 'text-white' : 'text-black'"
               />
               <button
                 type="button"
                 @click="winnerCount = Math.min(Math.max(1, eligible.length), winnerCount + 1)"
-                class="size-8 rounded-[7px] hover:bg-white flex items-center justify-center text-neutral-700 hover:text-black cursor-pointer transition-colors"
+                class="size-8 rounded-[7px] flex items-center justify-center cursor-pointer transition-colors"
+                :class="isDark ? 'hover:bg-white/10 text-neutral-300 hover:text-white' : 'hover:bg-white text-neutral-700 hover:text-black'"
                 title="Increase"
               >
                 <Plus class="w-3.5 h-3.5" />
@@ -127,7 +148,7 @@
                 type="button"
                 @click="winnerCount = Math.min(preset, Math.max(1, eligible.length))"
                 class="flex-1 h-8 rounded-[8px] text-[11.5px] font-sans font-medium transition-all cursor-pointer flex items-center justify-center"
-                :class="winnerCount === preset ? 'bg-black text-white shadow-xs' : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-light'"
+                :class="winnerCount === preset ? (isDark ? 'bg-white text-black shadow-xs' : 'bg-black text-white shadow-xs') : (isDark ? 'bg-white/5 hover:bg-white/10 text-neutral-300 font-light' : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-light')"
               >
                 {{ preset }}
               </button>
@@ -136,13 +157,17 @@
         </div>
 
         <!-- Section 3: Draw Trigger Action -->
-        <div class="flex flex-col gap-2 pt-2 border-t border-black/5">
+        <div
+          class="flex flex-col gap-2 pt-2 border-t"
+          :class="isDark ? 'border-white/10' : 'border-black/5'"
+        >
           <button
             id="raffle-draw-btn"
             type="button"
             :disabled="!eligible.length || isDrawing || isSaving"
             @click="draw"
-            class="apple-press h-[42px] rounded-[10px] bg-black text-white text-[13px] font-medium flex items-center justify-center gap-2 cursor-pointer hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-xs"
+            class="apple-press h-[42px] rounded-[10px] text-[13px] font-medium flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-xs"
+            :class="isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'"
           >
             <Shuffle class="w-4 h-4" :class="isDrawing ? 'animate-spin' : ''" />
             <span>{{ isDrawing ? 'Drawing…' : (drawn.length ? 'Draw Again' : (isWaitlistDraw ? `Release ${winnerCount} from Waitlist` : `Draw ${winnerCount} Winner${winnerCount > 1 ? 's' : ''}`)) }}</span>
@@ -160,13 +185,23 @@
       <div class="flex flex-col gap-4 min-w-0">
         
         <!-- CARD A: ACTIVE STAGING / DRAW RESULTS -->
-        <div class="rounded-[16px] border border-black/10 bg-white p-5 flex flex-col gap-4 shadow-xs min-h-[220px]">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-black/5">
+        <div
+          class="rounded-[16px] border p-5 flex flex-col gap-4 shadow-xs min-h-[220px]"
+          :class="isDark ? 'border-white/10 bg-[#141414] text-white' : 'border-black/10 bg-white text-black'"
+        >
+          <div
+            class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b"
+            :class="isDark ? 'border-white/10' : 'border-black/5'"
+          >
             <div class="flex items-center gap-2">
-              <span class="text-[14px] font-medium text-black">
+              <span class="text-[14px] font-medium" :class="isDark ? 'text-white' : 'text-black'">
                 {{ drawn.length ? (isWaitlistDraw ? 'Waitlist Candidates Drawn' : 'Staged Winners') : 'Active Draw Stage' }}
               </span>
-              <span v-if="drawn.length" class="px-2 py-0.5 rounded-[5px] bg-amber-50 border border-amber-200 text-amber-800 text-[10.5px] font-medium">
+              <span
+                v-if="drawn.length"
+                class="px-2 py-0.5 rounded-[5px] text-[10.5px] font-medium border"
+                :class="isDark ? 'bg-amber-950/40 border-amber-500/30 text-amber-300' : 'bg-amber-50 border-amber-200 text-amber-800'"
+              >
                 {{ drawn.length }} selected · Not saved yet
               </span>
             </div>
@@ -177,7 +212,8 @@
                 v-if="isSaving && prepStep"
                 type="button"
                 @click="ticketSender.cancel()"
-                class="h-[30px] px-3 rounded-[8px] border border-black/15 text-[12px] hover:bg-black/5 cursor-pointer"
+                class="h-[30px] px-3 rounded-[8px] border text-[12px] cursor-pointer"
+                :class="isDark ? 'border-white/15 hover:bg-white/10 text-neutral-300' : 'border-black/15 hover:bg-black/5 text-neutral-700'"
               >
                 Stop
               </button>
@@ -186,7 +222,8 @@
                   type="button"
                   :disabled="isSaving"
                   @click="drawn = []"
-                  class="h-[30px] px-3 rounded-[8px] border border-black/15 text-[12px] hover:bg-black/5 cursor-pointer disabled:opacity-40 transition-colors"
+                  class="h-[30px] px-3 rounded-[8px] border text-[12px] cursor-pointer disabled:opacity-40 transition-colors"
+                  :class="isDark ? 'border-white/15 hover:bg-white/10 text-neutral-300' : 'border-black/15 hover:bg-black/5 text-neutral-700'"
                 >
                   Discard
                 </button>
@@ -194,7 +231,8 @@
                   type="button"
                   :disabled="isSaving"
                   @click="draw"
-                  class="h-[30px] px-3 rounded-[8px] border border-black/15 text-[12px] hover:bg-black/5 cursor-pointer disabled:opacity-40 transition-colors flex items-center gap-1.5"
+                  class="h-[30px] px-3 rounded-[8px] border text-[12px] cursor-pointer disabled:opacity-40 transition-colors flex items-center gap-1.5"
+                  :class="isDark ? 'border-white/15 hover:bg-white/10 text-neutral-300' : 'border-black/15 hover:bg-black/5 text-neutral-700'"
                 >
                   <RotateCcw class="w-3 h-3" />
                   <span>Re-roll</span>
@@ -204,7 +242,8 @@
                   type="button"
                   :disabled="isSaving"
                   @click="confirmWinners"
-                  class="apple-press h-[30px] px-3.5 rounded-[8px] bg-black text-white text-[12px] font-medium hover:bg-neutral-800 cursor-pointer disabled:opacity-50 flex items-center gap-1.5 shadow-xs transition-colors"
+                  class="apple-press h-[30px] px-3.5 rounded-[8px] text-[12px] font-medium cursor-pointer disabled:opacity-50 flex items-center gap-1.5 shadow-xs transition-colors"
+                  :class="isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'"
                 >
                   <Check class="w-3.5 h-3.5" />
                   <span>{{ isSaving ? (prepStep ? `Preparing tickets ${prepStep.done}/${prepStep.total}…` : 'Saving…') : (isWaitlistDraw ? `Release ${drawn.length} from Waitlist` : `Confirm & Save ${drawn.length} Winner${drawn.length === 1 ? '' : 's'}`) }}</span>
@@ -215,11 +254,14 @@
 
           <!-- State 1: Shuffling live animation in Admin View -->
           <div v-if="isDrawing" class="flex-1 flex flex-col items-center justify-center py-10 gap-2.5">
-            <div class="size-10 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-800 animate-pulse">
+            <div
+              class="size-10 rounded-full flex items-center justify-center animate-pulse"
+              :class="isDark ? 'bg-white/10 text-white' : 'bg-neutral-100 text-neutral-800'"
+            >
               <Sparkles class="w-5 h-5 animate-spin" />
             </div>
-            <p class="text-[24px] font-medium tabular-nums tracking-tight text-black">{{ shuffleName }}</p>
-            <p class="text-[11.5px] text-neutral-500 font-light">Cycling through {{ eligible.length }} verified entries…</p>
+            <p class="text-[24px] font-medium tabular-nums tracking-tight" :class="isDark ? 'text-white' : 'text-black'">{{ shuffleName }}</p>
+            <p class="text-[11.5px] font-light" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Cycling through {{ eligible.length }} verified entries…</p>
           </div>
 
           <!-- State 2: Winner(s) Drawn in Admin View -->
@@ -227,25 +269,36 @@
             <div
               v-for="(s, i) in drawn"
               :key="s.id"
-              class="p-3 rounded-[12px] bg-neutral-50/80 border border-black/5 flex items-center gap-3"
+              class="p-3 rounded-[12px] border flex items-center gap-3"
+              :class="isDark ? 'bg-white/[0.04] border-white/10' : 'bg-neutral-50/80 border-black/5'"
             >
-              <div class="size-9 rounded-full bg-black text-white flex items-center justify-center text-[11px] font-medium shrink-0">
+              <div
+                class="size-9 rounded-full flex items-center justify-center text-[11px] font-medium shrink-0"
+                :class="isDark ? 'bg-white text-black' : 'bg-black text-white'"
+              >
                 {{ initials(guestName(s)) }}
               </div>
               <div class="flex flex-col min-w-0 flex-1">
                 <div class="flex items-center gap-1.5">
-                  <span class="text-[10px] font-mono text-neutral-400 font-medium">#{{ i + 1 }}</span>
-                  <span class="text-[13px] font-medium text-black truncate">{{ guestName(s) }}</span>
+                  <span class="text-[10px] font-mono font-medium" :class="isDark ? 'text-neutral-400' : 'text-neutral-400'">#{{ i + 1 }}</span>
+                  <span class="text-[13px] font-medium truncate" :class="isDark ? 'text-white' : 'text-black'">{{ guestName(s) }}</span>
                 </div>
-                <span class="text-[11px] text-neutral-500 font-light truncate">
+                <span class="text-[11px] font-light truncate" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">
                   {{ maskEmail(guestEmail(s)) || guestPhone(s) || '—' }}
                 </span>
               </div>
               <div class="flex flex-col items-end gap-1 shrink-0">
-                <span class="text-[11px] font-mono text-neutral-600 bg-white px-2 py-0.5 rounded-[5px] border border-black/5">
+                <span
+                  class="text-[11px] font-mono px-2 py-0.5 rounded-[5px] border"
+                  :class="isDark ? 'text-neutral-300 bg-white/5 border-white/10' : 'text-neutral-600 bg-white border-black/5'"
+                >
                   {{ accessId(s) }}
                 </span>
-                <span v-if="s.checked_in_at" class="text-[9.5px] px-1.5 py-0.2 rounded-full bg-moss-50 text-moss-700 border border-moss-200">
+                <span
+                  v-if="s.checked_in_at"
+                  class="text-[9.5px] px-1.5 py-0.2 rounded-full border"
+                  :class="isDark ? 'bg-moss-950/40 text-moss-300 border-moss-500/30' : 'bg-moss-50 text-moss-700 border-moss-200'"
+                >
                   At venue
                 </span>
               </div>
@@ -254,22 +307,34 @@
 
           <!-- State 3: Idle / Empty State -->
           <div v-else class="flex-1 flex flex-col items-center justify-center text-center py-10 gap-2.5 select-none">
-            <div class="size-11 rounded-[12px] bg-neutral-100 flex items-center justify-center text-neutral-600">
+            <div
+              class="size-11 rounded-[12px] flex items-center justify-center"
+              :class="isDark ? 'bg-white/10 text-neutral-300' : 'bg-neutral-100 text-neutral-600'"
+            >
               <Gift class="w-5 h-5" />
             </div>
-            <p class="text-[13.5px] font-medium text-black">Ready to Draw</p>
-            <p class="text-[12px] text-neutral-500 font-light max-w-[340px] leading-relaxed">
+            <p class="text-[13.5px] font-medium" :class="isDark ? 'text-white' : 'text-black'">Ready to Draw</p>
+            <p class="text-[12px] font-light max-w-[340px] leading-relaxed" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">
               Select your candidate pool and winner count on the left, then click Draw. You can re-roll as often as needed before confirming.
             </p>
           </div>
         </div>
 
         <!-- CARD B: CONFIRMED WINNERS ROSTER -->
-        <div class="rounded-[16px] border border-black/10 bg-white p-5 flex flex-col gap-3 shadow-xs">
-          <div class="flex items-center justify-between pb-2.5 border-b border-black/5">
+        <div
+          class="rounded-[16px] border p-5 flex flex-col gap-3 shadow-xs"
+          :class="isDark ? 'border-white/10 bg-[#141414] text-white' : 'border-black/10 bg-white text-black'"
+        >
+          <div
+            class="flex items-center justify-between pb-2.5 border-b"
+            :class="isDark ? 'border-white/10' : 'border-black/5'"
+          >
             <div class="flex items-center gap-2">
-              <h3 class="text-[14px] font-medium text-black">Confirmed Winners</h3>
-              <span class="px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-700 text-[11px] font-medium tabular-nums">
+              <h3 class="text-[14px] font-medium" :class="isDark ? 'text-white' : 'text-black'">Confirmed Winners</h3>
+              <span
+                class="px-2 py-0.5 rounded-full text-[11px] font-medium tabular-nums"
+                :class="isDark ? 'bg-white/10 text-neutral-200' : 'bg-neutral-100 text-neutral-700'"
+              >
                 {{ winners.length }}
               </span>
             </div>
@@ -278,7 +343,8 @@
               v-if="winners.length"
               type="button"
               @click="exportWinners"
-              class="h-[30px] px-3 rounded-[8px] border border-black/15 text-[11.5px] hover:bg-black/5 cursor-pointer flex items-center gap-1.5 transition-colors font-medium text-neutral-700"
+              class="h-[30px] px-3 rounded-[8px] border text-[11.5px] cursor-pointer flex items-center gap-1.5 transition-colors font-medium"
+              :class="isDark ? 'border-white/15 hover:bg-white/10 text-neutral-300' : 'border-black/15 hover:bg-black/5 text-neutral-700'"
             >
               <Download class="w-3.5 h-3.5" />
               <span>Export CSV</span>
@@ -289,24 +355,38 @@
             No winners confirmed yet. Drawn candidates will appear here once saved.
           </p>
 
-          <div v-else class="flex flex-col divide-y divide-black/5 max-h-[360px] overflow-y-auto pr-1">
+          <div
+            v-else
+            class="flex flex-col divide-y max-h-[360px] overflow-y-auto pr-1"
+            :class="isDark ? 'divide-white/10' : 'divide-black/5'"
+          >
             <div 
               v-for="(s, idx) in winners" 
               :key="s.id" 
               class="flex items-center gap-3 py-2.5 first:pt-1 last:pb-1"
             >
               <span class="w-6 text-[11px] font-mono text-neutral-400 tabular-nums">#{{ idx + 1 }}</span>
-              <div class="size-7 rounded-full bg-neutral-100 border border-black/5 flex items-center justify-center text-[10.5px] font-medium shrink-0">
+              <div
+                class="size-7 rounded-full border flex items-center justify-center text-[10.5px] font-medium shrink-0"
+                :class="isDark ? 'bg-white/10 border-white/10 text-white' : 'bg-neutral-100 border-black/5 text-black'"
+              >
                 {{ initials(guestName(s)) }}
               </div>
               <div class="flex flex-col min-w-0 flex-1">
-                <span class="text-[12.5px] font-medium text-black truncate">{{ guestName(s) }}</span>
-                <span class="text-[10.5px] text-neutral-400 font-light truncate">{{ maskEmail(guestEmail(s)) || guestPhone(s) || '—' }}</span>
+                <span class="text-[12.5px] font-medium truncate" :class="isDark ? 'text-white' : 'text-black'">{{ guestName(s) }}</span>
+                <span class="text-[10.5px] font-light truncate" :class="isDark ? 'text-neutral-400' : 'text-neutral-400'">{{ maskEmail(guestEmail(s)) || guestPhone(s) || '—' }}</span>
               </div>
-              <span class="text-[11px] font-mono text-neutral-500 bg-neutral-50 px-2 py-0.5 rounded-[5px] border border-black/5">
+              <span
+                class="text-[11px] font-mono px-2 py-0.5 rounded-[5px] border"
+                :class="isDark ? 'text-neutral-300 bg-white/5 border-white/10' : 'text-neutral-500 bg-neutral-50 border-black/5'"
+              >
                 {{ accessId(s) }}
               </span>
-              <span v-if="s.checked_in_at" class="text-[10px] px-1.5 py-0.5 rounded-full bg-moss-50 text-moss-700 border border-moss-200 font-light">
+              <span
+                v-if="s.checked_in_at"
+                class="text-[10px] px-1.5 py-0.5 rounded-full border font-light"
+                :class="isDark ? 'bg-moss-950/40 text-moss-300 border-moss-500/30' : 'bg-moss-50 text-moss-700 border-moss-200'"
+              >
                 At venue
               </span>
             </div>
@@ -606,6 +686,7 @@ import {
 } from 'lucide-vue-next';
 import { glassConfirm } from '../../services/glassDialog.ts';
 import { useTicketSender } from './useTicketSender.ts';
+import { useAuthStore } from '../../stores/authStore.ts';
 import {
   type Submission, normalizeStatus, guestName, guestEmail, guestPhone, initials, accessId, maskEmail,
   secureSample, secureRandomInt, bulkSetStatus, buildCsv, customFieldKeys, downloadText
@@ -615,12 +696,16 @@ const props = defineProps<{
   rows: Submission[];
   exportName: string;
   campaignTitle?: string;
+  dark?: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: 'updated', rows: Submission[]): void;
   (e: 'toast', msg: string): void;
 }>();
+
+const authStore = useAuthStore();
+const isDark = computed(() => props.dark ?? authStore.isSuperAdmin);
 
 type PoolRule = 'registered' | 'confirmed' | 'checked_in' | 'waitlisted';
 const poolOptions: { value: PoolRule; label: string; shortLabel: string; hint: string }[] = [

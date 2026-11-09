@@ -13,11 +13,14 @@
             v-model="search"
             type="text"
             placeholder="Search guest, pass ID, phone…"
-            class="w-full h-[36px] pl-9 pr-8 rounded-[8px] bg-neutral-100/80 hover:bg-neutral-100 focus:bg-white border border-transparent focus:border-black/20 text-[12.5px] font-sans font-light text-black placeholder:text-neutral-400 outline-none transition-all"
+            class="w-full h-[36px] pl-9 pr-8 rounded-[8px] border text-[12.5px] font-sans font-light outline-none transition-all"
+            :class="isDark 
+              ? 'bg-white/5 hover:bg-white/10 focus:bg-[#1a1a1a] border-white/10 focus:border-white/30 text-white placeholder:text-neutral-500' 
+              : 'bg-neutral-100/80 hover:bg-neutral-100 focus:bg-white border-transparent focus:border-black/20 text-black placeholder:text-neutral-400'"
           />
           <kbd v-if="!search" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono text-neutral-400">⌘K</kbd>
-          <button v-else type="button" @click="search = ''" class="absolute right-2 top-1/2 -translate-y-1/2 size-5 rounded-full hover:bg-black/10 flex items-center justify-center cursor-pointer">
-            <X class="w-3 h-3 text-neutral-500" />
+          <button v-else type="button" @click="search = ''" class="absolute right-2 top-1/2 -translate-y-1/2 size-5 rounded-full flex items-center justify-center cursor-pointer transition-colors" :class="isDark ? 'hover:bg-white/10 text-neutral-400 hover:text-white' : 'hover:bg-black/10 text-neutral-500'">
+            <X class="w-3 h-3" />
           </button>
         </div>
 
@@ -29,9 +32,11 @@
             type="button"
             @click="setPrimaryView(t.id)"
             class="px-3 py-1.5 rounded-[6px] transition-all cursor-pointer whitespace-nowrap font-medium text-[12px]"
-            :class="primaryView === t.id ? 'bg-black text-white shadow-2xs' : 'text-neutral-500 hover:text-black hover:bg-black/[0.04]'"
+            :class="primaryView === t.id 
+              ? (isDark ? 'bg-white text-black shadow-2xs' : 'bg-black text-white shadow-2xs') 
+              : (isDark ? 'text-neutral-400 hover:text-white hover:bg-white/10' : 'text-neutral-500 hover:text-black hover:bg-black/[0.04]')"
           >
-            {{ t.label }} <span class="tabular-nums text-[11px] ml-1" :class="primaryView === t.id ? 'text-white/70' : 'text-neutral-400'">{{ t.count }}</span>
+            {{ t.label }} <span class="tabular-nums text-[11px] ml-1" :class="primaryView === t.id ? (isDark ? 'text-black/70' : 'text-white/70') : 'text-neutral-400'">{{ t.count }}</span>
           </button>
         </div>
       </div>
@@ -44,10 +49,11 @@
           id="guest-add-walkin"
           type="button"
           @click="openAddGuestModal"
-          class="h-[34px] px-3.5 rounded-[8px] border border-black/15 bg-white hover:bg-neutral-50 flex items-center gap-1.5 text-[12px] font-medium cursor-pointer transition-colors apple-press"
+          class="h-[34px] px-3.5 rounded-[8px] border flex items-center gap-1.5 text-[12px] font-medium cursor-pointer transition-colors apple-press"
+          :class="isDark ? 'border-white/10 bg-[#141414] hover:bg-white/10 text-white' : 'border-black/15 bg-white hover:bg-neutral-50 text-neutral-700 hover:text-black'"
           title="Manually register a walk-in guest or VIP"
         >
-          <UserPlus class="w-3.5 h-3.5 text-neutral-700" />
+          <UserPlus class="w-3.5 h-3.5" :class="isDark ? 'text-white' : 'text-neutral-700'" />
           <span>Add Guest</span>
         </button>
 
@@ -56,7 +62,8 @@
           id="guest-export-csv"
           type="button"
           @click="exportCsv(selected.size ? selectedRows : sortedRows)"
-          class="h-[34px] px-3 rounded-[8px] border border-black/15 bg-white hover:bg-neutral-50 flex items-center gap-1.5 text-[12px] font-medium cursor-pointer transition-colors text-neutral-700 hover:text-black"
+          class="h-[34px] px-3 rounded-[8px] border flex items-center gap-1.5 text-[12px] font-medium cursor-pointer transition-colors"
+          :class="isDark ? 'border-white/10 bg-[#141414] hover:bg-white/10 text-white' : 'border-black/15 bg-white hover:bg-neutral-50 text-neutral-700 hover:text-black'"
           :title="selected.size ? 'Export selected guests' : 'Export filtered guests'"
         >
           <Download class="w-3.5 h-3.5" />
@@ -68,8 +75,11 @@
           <button
             type="button"
             @click="isColumnsOpen = !isColumnsOpen"
-            class="h-[34px] px-2.5 rounded-[8px] border border-black/15 bg-white hover:bg-neutral-50 flex items-center gap-1.5 text-[12px] font-medium cursor-pointer transition-colors text-neutral-700 hover:text-black"
-            :class="hasSecondaryFilters ? 'border-moss-600 text-moss-800' : ''"
+            class="h-[34px] px-2.5 rounded-[8px] border flex items-center gap-1.5 text-[12px] font-medium cursor-pointer transition-colors"
+            :class="[
+              hasSecondaryFilters ? 'border-moss-600 text-moss-800' : '',
+              isDark ? 'border-white/10 bg-[#141414] hover:bg-white/10 text-white' : 'border-black/15 bg-white hover:bg-neutral-50 text-neutral-700 hover:text-black'
+            ]"
             title="Display options & filters"
           >
             <SlidersHorizontal class="w-3.5 h-3.5" />
@@ -77,13 +87,14 @@
           </button>
 
           <Transition name="hub-pop">
-            <div v-if="isColumnsOpen" class="absolute right-0 top-[calc(100%+6px)] z-40 w-[240px] bg-white border border-black/10 rounded-[12px] shadow-[0px_20px_50px_rgba(0,0,0,0.16)] p-2 font-sans font-light tracking-normal">
+            <div v-if="isColumnsOpen" class="absolute right-0 top-[calc(100%+6px)] z-40 w-[240px] rounded-[12px] border p-2 font-sans font-light tracking-normal" :class="isDark ? 'bg-[#141414] border-white/10 text-white shadow-[0px_20px_50px_rgba(0,0,0,0.6)]' : 'bg-white border-black/10 text-black shadow-[0px_20px_50px_rgba(0,0,0,0.16)]'">
               <!-- Event Date Filter inside dropdown if multiple dates -->
-              <div v-if="availableDates.length > 1" class="pb-2 mb-2 border-b border-black/5">
+              <div v-if="availableDates.length > 1" class="pb-2 mb-2 border-b" :class="isDark ? 'border-white/10' : 'border-black/5'">
                 <p class="px-2 text-[10px] uppercase tracking-normal text-neutral-400 mb-1">Event Date</p>
                 <select 
                   v-model="dateFilter"
-                  class="w-full h-[30px] px-2 rounded-[6px] bg-black/[0.04] text-[11.5px] font-sans text-black focus:outline-none cursor-pointer border-0"
+                  class="w-full h-[30px] px-2 rounded-[6px] text-[11.5px] font-sans focus:outline-none cursor-pointer border-0"
+                  :class="isDark ? 'bg-white/10 text-white' : 'bg-black/[0.04] text-black'"
                 >
                   <option value="all">All Dates ({{ props.rows.length }})</option>
                   <option v-for="d in availableDates" :key="d" :value="d">{{ d }}</option>
@@ -91,8 +102,8 @@
               </div>
 
               <!-- Duplicates only toggle -->
-              <div v-if="duplicateCount > 0" class="pb-2 mb-2 border-b border-black/5">
-                <label class="flex items-center justify-between px-2 py-1 text-[12px] cursor-pointer hover:bg-black/5 rounded-[6px]">
+              <div v-if="duplicateCount > 0" class="pb-2 mb-2 border-b" :class="isDark ? 'border-white/10' : 'border-black/5'">
+                <label class="flex items-center justify-between px-2 py-1 text-[12px] cursor-pointer rounded-[6px]" :class="isDark ? 'hover:bg-white/10' : 'hover:bg-black/5'">
                   <span>Duplicates only ({{ duplicateCount }})</span>
                   <input type="checkbox" v-model="duplicatesOnly" class="accent-black rounded" />
                 </label>
@@ -103,13 +114,14 @@
               <label
                 v-for="col in toggleableColumns"
                 :key="col.key"
-                class="flex items-center gap-2 px-2 py-1.5 rounded-[6px] hover:bg-black/5 cursor-pointer text-[12px]"
+                class="flex items-center gap-2 px-2 py-1.5 rounded-[6px] cursor-pointer text-[12px]"
+                :class="isDark ? 'hover:bg-white/10 text-neutral-200' : 'hover:bg-black/5 text-neutral-700'"
               >
                 <input type="checkbox" class="accent-black rounded" :checked="!hiddenColumns.has(col.key)" @change="toggleColumn(col.key)" />
                 <span class="truncate">{{ col.label }}</span>
               </label>
 
-              <div class="h-px bg-black/5 my-1.5" />
+              <div class="h-px my-1.5" :class="isDark ? 'bg-white/10' : 'bg-black/5'" />
               <div class="flex items-center justify-between px-2 py-1 text-[12px]">
                 <span>Compact mode</span>
                 <button type="button" @click="compact = !compact" class="hub-switch" :class="compact ? 'is-on' : ''" role="switch"><span /></button>
@@ -123,8 +135,8 @@
     <!-- Result Meta Line -->
     <div class="flex items-center justify-between text-[11.5px] text-neutral-400 select-none -mt-1 px-0.5">
       <span class="tabular-nums">
-        Showing <b class="text-black font-medium">{{ sortedRows.length }}</b> of {{ rows.length }} guests
-        <template v-if="hasActiveFilters"> · <button type="button" @click="clearFilters" class="underline underline-offset-2 hover:text-black cursor-pointer text-neutral-500">Reset</button></template>
+        Showing <b class="font-medium" :class="isDark ? 'text-white' : 'text-black'">{{ sortedRows.length }}</b> of {{ rows.length }} guests
+        <template v-if="hasActiveFilters"> · <button type="button" @click="clearFilters" class="underline underline-offset-2 cursor-pointer" :class="isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black'">Reset</button></template>
       </span>
       <span class="hidden md:inline">Click any guest row to view full pass details</span>
     </div>
@@ -139,10 +151,10 @@
       }"
       :class="showStickyHeader ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-3 pointer-events-none'"
     >
-      <div class="w-full border border-black/10 rounded-[10px] bg-white/95 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.08)] overflow-hidden pointer-events-auto">
+      <div class="w-full border rounded-[10px] backdrop-blur-md overflow-hidden pointer-events-auto" :class="isDark ? 'border-white/10 bg-[#141414]/95 text-white shadow-[0_4px_20px_rgba(0,0,0,0.5)]' : 'border-black/10 bg-white/95 text-black shadow-[0_4px_20px_rgba(0,0,0,0.08)]'">
         <div ref="floatingScrollRef" class="overflow-x-auto w-full no-scrollbar" @scroll="onFloatingScroll">
           <table class="w-full text-left border-collapse min-w-[760px]" :style="{ width: tableWidth ? `${tableWidth}px` : '100%' }">
-            <thead class="bg-neutral-50/90 border-b border-black/[0.08]">
+            <thead class="border-b" :class="isDark ? 'bg-[#181818]/90 border-white/10' : 'bg-neutral-50/90 border-black/[0.08]'">
               <tr class="text-[10.5px] uppercase tracking-normal text-neutral-400 select-none">
                 <th class="w-[40px] pl-4 pr-1 py-2.5" :style="getColStyle(0)">
                   <input
@@ -165,13 +177,15 @@
                     v-if="col.sortable"
                     type="button"
                     @click="toggleSort(col.key)"
-                    class="inline-flex items-center gap-1 uppercase tracking-normal hover:text-black cursor-pointer font-normal"
-                    :class="sortKey === col.key ? 'text-black font-medium' : ''"
+                    class="inline-flex items-center gap-1 uppercase tracking-normal cursor-pointer font-normal"
+                    :class="[
+                      sortKey === col.key ? (isDark ? 'text-white font-medium' : 'text-black font-medium') : (isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black')
+                    ]"
                   >
                     {{ col.label }}
                     <ArrowUpDown v-if="sortKey !== col.key" class="w-3 h-3 opacity-30" />
-                    <ArrowUp v-else-if="sortDir === 'asc'" class="w-3 h-3 text-black" />
-                    <ArrowDown v-else class="w-3 h-3 text-black" />
+                    <ArrowUp v-else-if="sortDir === 'asc'" class="w-3 h-3" :class="isDark ? 'text-white' : 'text-black'" />
+                    <ArrowDown v-else class="w-3 h-3" :class="isDark ? 'text-white' : 'text-black'" />
                   </button>
                   <span v-else>{{ col.label }}</span>
                 </th>
@@ -183,10 +197,10 @@
     </div>
 
     <!-- Table Container (Clean Editorial Ledger) -->
-    <div ref="tableContainerRef" class="w-full border border-black/[0.06] rounded-[12px] overflow-hidden bg-white shadow-2xs">
+    <div ref="tableContainerRef" class="w-full border rounded-[12px] overflow-hidden shadow-2xs" :class="isDark ? 'border-white/10 bg-[#141414] text-white' : 'border-black/[0.06] bg-white text-black'">
       <div class="overflow-x-auto w-full" ref="tableScrollRef" @scroll="onMainTableScroll">
         <table class="w-full text-left border-collapse min-w-[760px]" ref="tableRef">
-          <thead class="bg-neutral-50/60 border-b border-black/[0.06]">
+          <thead class="border-b" :class="isDark ? 'bg-[#181818]/80 border-white/10' : 'bg-neutral-50/60 border-black/[0.06]'">
             <tr class="text-[10.5px] uppercase tracking-normal text-neutral-400 select-none">
               <th class="w-[40px] pl-4 pr-1 py-3">
                 <input
@@ -203,13 +217,15 @@
                   v-if="col.sortable"
                   type="button"
                   @click="toggleSort(col.key)"
-                  class="inline-flex items-center gap-1 uppercase tracking-normal hover:text-black cursor-pointer font-normal"
-                  :class="sortKey === col.key ? 'text-black font-medium' : ''"
+                  class="inline-flex items-center gap-1 uppercase tracking-normal cursor-pointer font-normal"
+                  :class="[
+                    sortKey === col.key ? (isDark ? 'text-white font-medium' : 'text-black font-medium') : (isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black')
+                  ]"
                 >
                   {{ col.label }}
                   <ArrowUpDown v-if="sortKey !== col.key" class="w-3 h-3 opacity-30" />
-                  <ArrowUp v-else-if="sortDir === 'asc'" class="w-3 h-3 text-black" />
-                  <ArrowDown v-else class="w-3 h-3 text-black" />
+                  <ArrowUp v-else-if="sortDir === 'asc'" class="w-3 h-3" :class="isDark ? 'text-white' : 'text-black'" />
+                  <ArrowDown v-else class="w-3 h-3" :class="isDark ? 'text-white' : 'text-black'" />
                 </button>
                 <span v-else>{{ col.label }}</span>
               </th>
@@ -219,11 +235,14 @@
             <tr
               v-for="(s, idx) in pagedRows"
               :key="s.id"
-              class="group border-b border-black/[0.04] last:border-b-0 transition-colors cursor-pointer animate-apple-slide-up"
+              class="group last:border-b-0 transition-colors cursor-pointer animate-apple-slide-up"
               :style="{ animationDelay: `${Math.min(idx, 12) * 20}ms` }"
               :class="[
-                selected.has(s.id) ? 'bg-black/[0.025]' : 'hover:bg-neutral-50/70',
-                drawerId === s.id ? 'bg-black/[0.035]' : ''
+                isDark ? 'border-b border-white/[0.06]' : 'border-b border-black/[0.04]',
+                selected.has(s.id) 
+                  ? (isDark ? 'bg-white/[0.08]' : 'bg-black/[0.025]') 
+                  : (isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-neutral-50/70'),
+                drawerId === s.id ? (isDark ? 'bg-white/[0.06]' : 'bg-black/[0.035]') : ''
               ]"
               @click="openDrawer(s.id)"
             >
@@ -236,7 +255,7 @@
                 <td v-if="col.key === 'guest'" class="px-3.5" :class="rowPad">
                   <div class="flex flex-col min-w-0">
                     <div class="flex items-center gap-2">
-                      <span class="text-[13px] font-medium text-black truncate max-w-[260px]">{{ guestName(s) }}</span>
+                      <span class="text-[13px] font-medium truncate max-w-[260px]" :class="isDark ? 'text-white' : 'text-black'">{{ guestName(s) }}</span>
                       <span
                         v-if="s.duplicate_of"
                         class="shrink-0 px-1.5 py-0.2 rounded-[4px] bg-bronze-50 border border-bronze-200 text-bronze-800 text-[9.5px] font-medium tracking-wide"
@@ -249,33 +268,34 @@
                   </div>
                 </td>
 
-                <td v-else-if="col.key === 'email'" class="px-3.5 text-[12px] text-neutral-600 whitespace-nowrap" :class="rowPad">{{ guestEmail(s) || '—' }}</td>
+                <td v-else-if="col.key === 'email'" class="px-3.5 text-[12px] whitespace-nowrap" :class="[rowPad, isDark ? 'text-neutral-400' : 'text-neutral-600']">{{ guestEmail(s) || '—' }}</td>
 
                 <!-- 2. Queue Number (Quiet monospaced text, no solid black block) -->
                 <td v-else-if="col.key === 'queue_number'" class="px-3.5 whitespace-nowrap" :class="rowPad">
                   <span
                     v-if="s.queue_number"
-                    class="font-mono text-[12px] text-neutral-600 font-medium tabular-nums"
+                    class="font-mono text-[12px] font-medium tabular-nums"
+                    :class="isDark ? 'text-neutral-300' : 'text-neutral-600'"
                   >
                     #{{ String(s.queue_number).padStart(3, '0') }}
                   </span>
-                  <span v-else class="text-neutral-300 font-mono text-[12px]">—</span>
+                  <span v-else class="text-neutral-400 font-mono text-[12px]">—</span>
                 </td>
 
-                <td v-else-if="col.key === 'phone'" class="px-3.5 text-[12px] text-neutral-600 font-mono whitespace-nowrap" :class="rowPad">
+                <td v-else-if="col.key === 'phone'" class="px-3.5 text-[12px] font-mono whitespace-nowrap" :class="[rowPad, isDark ? 'text-neutral-300' : 'text-neutral-600']">
                   <a v-if="guestPhone(s)" :href="whatsappLink(guestPhone(s))" target="_blank" rel="noopener" @click.stop class="hover:underline underline-offset-2">{{ guestPhone(s) }}</a>
-                  <span v-else class="text-neutral-300">—</span>
+                  <span v-else class="text-neutral-400">—</span>
                 </td>
 
                 <!-- 3. Access Pass ID (Quiet monospace) -->
                 <td v-else-if="col.key === 'access'" class="px-3.5 whitespace-nowrap" :class="rowPad">
-                  <span class="font-mono text-[11px] text-neutral-500 tracking-wider">{{ accessId(s) }}</span>
+                  <span class="font-mono text-[11px] tracking-wider" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">{{ accessId(s) }}</span>
                 </td>
 
-                <td v-else-if="col.key === 'campaign'" class="px-3.5 text-[12px] text-neutral-600 whitespace-nowrap max-w-[180px] truncate" :class="rowPad">{{ campaignTitle(s.page_id) }}</td>
+                <td v-else-if="col.key === 'campaign'" class="px-3.5 text-[12px] whitespace-nowrap max-w-[180px] truncate" :class="[rowPad, isDark ? 'text-neutral-400' : 'text-neutral-600']">{{ campaignTitle(s.page_id) }}</td>
 
-                <td v-else-if="col.key === 'party_size'" class="px-3.5 text-[12px] text-neutral-600 font-mono whitespace-nowrap" :class="rowPad">
-                  <span v-if="(Number(s.party_size) || 1) > 1" class="px-1.5 py-0.5 rounded-[4px] bg-black/5 text-neutral-700 text-[11px] font-medium">
+                <td v-else-if="col.key === 'party_size'" class="px-3.5 text-[12px] font-mono whitespace-nowrap" :class="rowPad">
+                  <span v-if="(Number(s.party_size) || 1) > 1" class="px-1.5 py-0.5 rounded-[4px] text-[11px] font-medium" :class="isDark ? 'bg-white/10 text-neutral-300' : 'bg-black/5 text-neutral-700'">
                     {{ s.party_size }} pax
                   </span>
                   <span v-else class="text-neutral-400 text-[11px]">1</span>
@@ -300,7 +320,7 @@
                     type="button"
                     @click="toggleCheckIn(s)"
                     class="inline-flex items-center gap-1.5 text-[11.5px] px-2 py-0.5 rounded-[6px] cursor-pointer transition-colors"
-                    :class="s.checked_in_at ? 'text-moss-700 hover:bg-moss-50' : 'text-neutral-400 hover:text-black hover:bg-black/5'"
+                    :class="s.checked_in_at ? 'text-moss-400 hover:bg-moss-950/40' : (isDark ? 'text-neutral-400 hover:text-white hover:bg-white/10' : 'text-neutral-400 hover:text-black hover:bg-black/5')"
                     :title="s.checked_in_at ? 'Undo check-in' : 'Mark as checked in'"
                   >
                     <span v-if="s.checked_in_at" class="size-1.5 rounded-full bg-moss-600" />
@@ -309,23 +329,22 @@
                 </td>
 
                 <td v-else-if="col.key === 'checked_out_at'" class="px-3.5 whitespace-nowrap text-[11.5px]" :class="rowPad">
-                  <span v-if="s.checked_out_at" class="text-neutral-600 font-mono tabular-nums">
+                  <span v-if="s.checked_out_at" class="font-mono tabular-nums" :class="isDark ? 'text-neutral-400' : 'text-neutral-600'">
                     {{ formatTime(s.checked_out_at) }}
                   </span>
                   <span v-else-if="s.checked_in_at" class="inline-flex items-center gap-1 text-[10.5px] font-medium text-moss-700 bg-moss-50 border border-moss-200 px-2 py-0.5 rounded-full">
                     <span class="size-1 rounded-full bg-moss-600" />
                     Inside
                   </span>
-                  <span v-else-if="s.checked_in_at" class="text-neutral-300">—</span>
-                  <span v-else class="text-neutral-300">—</span>
+                  <span v-else class="text-neutral-400">—</span>
                 </td>
 
                 <td v-else-if="col.key === 'created_at'" class="px-3.5 text-[11.5px] text-neutral-400 whitespace-nowrap tabular-nums" :class="rowPad">{{ formatDateTime(s.created_at) }}</td>
 
                 <!-- Custom answer columns -->
-                <td v-else class="px-3.5 text-[12px] text-neutral-600 whitespace-nowrap max-w-[200px] truncate" :class="rowPad" :title="formatCustomAnswer(s, col.key)">
+                <td v-else class="px-3.5 text-[12px] whitespace-nowrap max-w-[200px] truncate" :class="[rowPad, isDark ? 'text-neutral-300' : 'text-neutral-600']" :title="formatCustomAnswer(s, col.key)">
                   <span v-if="formatCustomAnswer(s, col.key)">{{ formatCustomAnswer(s, col.key) }}</span>
-                  <span v-else class="text-neutral-300">—</span>
+                  <span v-else class="text-neutral-400">—</span>
                 </td>
               </template>
             </tr>
@@ -333,19 +352,19 @@
         </table>
 
         <!-- Load more -->
-        <div v-if="sortedRows.length > renderLimit" class="flex justify-center py-4 border-t border-[#efefef]">
-          <button type="button" @click="renderLimit += 150" class="px-4 py-1.5 rounded-[8px] border border-black/15 text-[12px] font-medium hover:bg-black hover:text-white transition-colors cursor-pointer">
+        <div v-if="sortedRows.length > renderLimit" class="flex justify-center py-4 border-t" :class="isDark ? 'border-white/10' : 'border-[#efefef]'">
+          <button type="button" @click="renderLimit += 150" class="px-4 py-1.5 rounded-[8px] border text-[12px] font-medium transition-colors cursor-pointer" :class="isDark ? 'border-white/15 text-white hover:bg-white hover:text-black' : 'border-black/15 text-black hover:bg-black hover:text-white'">
             Show {{ Math.min(150, sortedRows.length - renderLimit) }} more
           </button>
         </div>
 
         <!-- Empty -->
         <div v-if="!sortedRows.length" class="flex flex-col items-center justify-center py-16 text-center select-none">
-          <div class="size-12 rounded-full bg-black/5 flex items-center justify-center text-neutral-400 mb-3">
+          <div class="size-12 rounded-full flex items-center justify-center mb-3" :class="isDark ? 'bg-white/10 text-neutral-300' : 'bg-black/5 text-neutral-400'">
             <Users class="w-6 h-6 stroke-[1.5]" />
           </div>
-          <h3 class="font-medium text-[15px] text-black mb-1">{{ rows.length ? 'No guests match' : 'No guests yet' }}</h3>
-          <p class="text-[12px] text-neutral-500 max-w-[340px]">
+          <h3 class="font-medium text-[15px] mb-1" :class="isDark ? 'text-white' : 'text-black'">{{ rows.length ? 'No guests match' : 'No guests yet' }}</h3>
+          <p class="text-[12px] max-w-[340px]" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">
             {{ rows.length ? 'Try a different search or clear the filters.' : 'Entries appear here the moment someone submits your published campaign.' }}
           </p>
         </div>
@@ -358,7 +377,8 @@
         <div
           v-if="statusMenu"
           ref="statusMenuRef"
-          class="fixed z-[80] w-[190px] bg-white border border-black/10 rounded-[12px] shadow-[0px_20px_50px_rgba(0,0,0,0.18)] p-1.5 font-sans font-light tracking-normal"
+          class="fixed z-[80] w-[190px] border rounded-[12px] p-1.5 font-sans font-light tracking-normal"
+          :class="isDark ? 'bg-[#1a1a1a] border-white/10 text-white shadow-[0px_20px_50px_rgba(0,0,0,0.6)]' : 'bg-white border-black/10 text-black shadow-[0px_20px_50px_rgba(0,0,0,0.18)]'"
           :style="{ top: `${statusMenu.y}px`, left: `${statusMenu.x}px` }"
         >
           <button
@@ -366,7 +386,8 @@
             :key="o.value"
             type="button"
             @click="applyStatus([statusMenu.id], o.value)"
-            class="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[7px] hover:bg-black/5 cursor-pointer text-[12px] text-left"
+            class="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[7px] cursor-pointer text-[12px] text-left transition-colors"
+            :class="isDark ? 'hover:bg-white/10 text-white' : 'hover:bg-black/5 text-black'"
           >
             <span class="size-2 rounded-full border" :class="o.value === 'winner' ? 'bg-black border-black' : [statusDotClass(o.value), 'border-transparent']" />
             <span class="flex-1">{{ o.label }}</span>
@@ -440,26 +461,27 @@
     <!-- Guest detail drawer -->
     <Teleport to="body">
       <Transition name="hub-fade">
-        <div v-if="drawerRow" class="fixed inset-0 z-[75] bg-white/40 backdrop-blur-[2px]" @click="drawerId = null" />
+        <div v-if="drawerRow" class="fixed inset-0 z-[75] backdrop-blur-[2px]" :class="isDark ? 'bg-black/75' : 'bg-white/40'" @click="drawerId = null" />
       </Transition>
       <Transition name="hub-drawer">
         <aside
           v-if="drawerRow"
-          class="fixed top-0 right-0 bottom-0 z-[76] w-full sm:w-[440px] apple-frost-strong border-l border-black/10 shadow-[-24px_0_60px_rgba(0,0,0,0.12)] flex flex-col font-sans font-light tracking-normal"
+          class="fixed top-0 right-0 bottom-0 z-[76] w-full sm:w-[440px] border-l flex flex-col font-sans font-light tracking-normal"
+          :class="isDark ? 'bg-[#141414] border-white/10 text-white shadow-[-24px_0_60px_rgba(0,0,0,0.6)]' : 'apple-frost-strong border-black/10 text-black shadow-[-24px_0_60px_rgba(0,0,0,0.12)]'"
           role="dialog"
           aria-label="Guest details"
         >
-          <div class="flex items-center justify-between px-5 h-[56px] border-b border-black/5 shrink-0">
+          <div class="flex items-center justify-between px-5 h-[56px] border-b shrink-0" :class="isDark ? 'border-white/10' : 'border-black/5'">
             <div class="flex items-center gap-1">
-              <button type="button" @click="stepDrawer(-1)" class="size-8 rounded-[8px] hover:bg-black/5 flex items-center justify-center cursor-pointer disabled:opacity-30" :disabled="drawerIndex <= 0" title="Previous guest">
+              <button type="button" @click="stepDrawer(-1)" class="size-8 rounded-[8px] flex items-center justify-center cursor-pointer disabled:opacity-30 transition-colors" :class="isDark ? 'hover:bg-white/10 text-white' : 'hover:bg-black/5 text-black'" :disabled="drawerIndex <= 0" title="Previous guest">
                 <ChevronUp class="w-4 h-4" />
               </button>
-              <button type="button" @click="stepDrawer(1)" class="size-8 rounded-[8px] hover:bg-black/5 flex items-center justify-center cursor-pointer disabled:opacity-30" :disabled="drawerIndex >= sortedRows.length - 1" title="Next guest">
+              <button type="button" @click="stepDrawer(1)" class="size-8 rounded-[8px] flex items-center justify-center cursor-pointer disabled:opacity-30 transition-colors" :class="isDark ? 'hover:bg-white/10 text-white' : 'hover:bg-black/5 text-black'" :disabled="drawerIndex >= sortedRows.length - 1" title="Next guest">
                 <ChevronDown class="w-4 h-4" />
               </button>
               <span class="text-[11px] text-neutral-400 ml-1 tabular-nums">{{ drawerIndex + 1 }} / {{ sortedRows.length }}</span>
             </div>
-            <button type="button" @click="drawerId = null" class="size-[32px] bg-black/5 hover:bg-black/10 rounded-full flex items-center justify-center cursor-pointer" title="Close">
+            <button type="button" @click="drawerId = null" class="size-[32px] rounded-full flex items-center justify-center cursor-pointer transition-colors" :class="isDark ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-black/5 hover:bg-black/10 text-black'" title="Close">
               <X class="w-4 h-4" />
             </button>
           </div>
@@ -467,20 +489,20 @@
           <div class="flex-1 min-h-0 overflow-y-auto px-5 py-6 flex flex-col gap-6">
             <!-- Identity -->
             <div class="flex items-center gap-4">
-              <div class="size-14 rounded-full flex items-center justify-center text-[17px] font-medium shrink-0" :class="normalizeStatus(drawerRow.status) === 'winner' ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-700 border border-black/5'">
+              <div class="size-14 rounded-full flex items-center justify-center text-[17px] font-medium shrink-0" :class="normalizeStatus(drawerRow.status) === 'winner' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : (isDark ? 'bg-white/10 text-white border border-white/10' : 'bg-neutral-100 text-neutral-700 border border-black/5')">
                 {{ initials(guestName(drawerRow)) }}
               </div>
               <div class="min-w-0">
-                <h3 class="text-[19px] leading-[24px] font-medium truncate">{{ guestName(drawerRow) }}</h3>
+                <h3 class="text-[19px] leading-[24px] font-medium truncate" :class="isDark ? 'text-white' : 'text-black'">{{ guestName(drawerRow) }}</h3>
                 <p v-if="drawerRow.duplicate_of" class="text-[11px] text-bronze-800 bg-bronze-50 border border-bronze-200 rounded-[6px] px-2 py-1 mt-1 w-fit">
                   Registered more than once — this is an extra entry. Its pass still works at the door.
                 </p>
-                <p class="text-[12px] text-neutral-500 truncate">{{ guestEmail(drawerRow) || 'No email provided' }}</p>
+                <p class="text-[12px] truncate" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">{{ guestEmail(drawerRow) || 'No email provided' }}</p>
               </div>
             </div>
 
             <!-- Access ID card -->
-            <div class="w-full shrink-0 min-h-[168px] rounded-[14px] bg-[#0c0d0e] text-white p-4 relative overflow-hidden flex flex-col justify-between gap-3 shadow-[0_4px_20px_rgba(0,0,0,0.12)]">
+            <div class="w-full shrink-0 min-h-[168px] rounded-[14px] bg-[#0c0d0e] text-white p-4 relative overflow-hidden flex flex-col justify-between gap-3 shadow-[0_4px_20px_rgba(0,0,0,0.12)] border border-white/10">
               <div class="absolute inset-0 opacity-[0.07] hub-grid pointer-events-none" />
               <div class="flex items-center justify-between gap-3 relative z-10">
                 <p class="text-[10px] uppercase tracking-normal text-white/50 font-medium">Access ID</p>
@@ -521,15 +543,15 @@
 
             <!-- Status -->
             <div class="flex flex-col gap-2">
-              <p class="text-[10.5px] uppercase tracking-normal text-neutral-500 font-medium">Status</p>
-              <div class="grid grid-cols-3 gap-1 p-1 rounded-[10px] bg-black/[0.04] border border-black/5">
+              <p class="text-[10.5px] uppercase tracking-normal font-medium" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Status</p>
+              <div class="grid grid-cols-3 gap-1 p-1 rounded-[10px] border" :class="isDark ? 'bg-white/5 border-white/10' : 'bg-black/[0.04] border-black/5'">
                 <button
                   v-for="o in STATUS_OPTIONS"
                   :key="o.value"
                   type="button"
                   @click="applyStatus([drawerRow.id], o.value)"
                   class="h-[30px] rounded-[7px] text-[11.5px] cursor-pointer transition-all"
-                  :class="normalizeStatus(drawerRow.status) === o.value ? (o.value === 'winner' ? 'bg-black text-white font-medium' : 'bg-white text-black font-medium shadow-[0_1px_2px_rgba(0,0,0,0.08)]') : 'text-neutral-500 hover:text-black font-light'"
+                  :class="normalizeStatus(drawerRow.status) === o.value ? (o.value === 'winner' ? (isDark ? 'bg-white text-black font-medium' : 'bg-black text-white font-medium') : (isDark ? 'bg-white/20 text-white font-medium' : 'bg-white text-black font-medium shadow-[0_1px_2px_rgba(0,0,0,0.08)]')) : (isDark ? 'text-neutral-400 hover:text-white font-light' : 'text-neutral-500 hover:text-black font-light')"
                 >
                   {{ o.label }}
                 </button>
@@ -538,63 +560,65 @@
 
             <!-- Answers -->
             <div class="flex flex-col gap-2">
-              <p class="text-[10.5px] uppercase tracking-normal text-neutral-500 font-medium">Form answers</p>
-              <div class="rounded-[12px] border border-black/8 bg-white divide-y divide-black/5">
+              <p class="text-[10.5px] uppercase tracking-normal font-medium" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Form answers</p>
+              <div class="rounded-[12px] border divide-y" :class="isDark ? 'border-white/10 bg-white/[0.04] divide-white/10 text-neutral-300' : 'border-black/8 bg-white divide-black/5 text-black'">
                 <div class="flex items-start justify-between gap-4 px-3.5 py-2.5">
-                  <span class="text-[12px] text-neutral-500 font-light">WhatsApp</span>
-                  <a v-if="guestPhone(drawerRow)" :href="whatsappLink(guestPhone(drawerRow))" target="_blank" rel="noopener" class="text-[12px] font-mono text-right hover:underline underline-offset-2">{{ guestPhone(drawerRow) }}</a>
-                  <span v-else class="text-[12px] text-neutral-300">—</span>
+                  <span class="text-[12px] font-light" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">WhatsApp</span>
+                  <a v-if="guestPhone(drawerRow)" :href="whatsappLink(guestPhone(drawerRow))" target="_blank" rel="noopener" class="text-[12px] font-mono text-right hover:underline underline-offset-2" :class="isDark ? 'text-white' : 'text-black'">{{ guestPhone(drawerRow) }}</a>
+                  <span v-else class="text-[12px] text-neutral-400">—</span>
                 </div>
                 <div v-for="k in drawerAnswerKeys" :key="k" class="flex items-start justify-between gap-4 px-3.5 py-2.5">
-                  <span class="text-[12px] text-neutral-500 font-light shrink-0 max-w-[45%]">{{ formatColumnLabel(k) }}</span>
-                  <span class="text-[12px] text-right break-words min-w-0 font-light">{{ formatCustomAnswer(drawerRow, k) || '—' }}</span>
+                  <span class="text-[12px] font-light shrink-0 max-w-[45%]" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">{{ formatColumnLabel(k) }}</span>
+                  <span class="text-[12px] text-right break-words min-w-0 font-light" :class="isDark ? 'text-white' : 'text-black'">{{ formatCustomAnswer(drawerRow, k) || '—' }}</span>
                 </div>
               </div>
             </div>
 
             <!-- Meta -->
             <div class="flex flex-col gap-2">
-              <p class="text-[10.5px] uppercase tracking-normal text-neutral-500 font-medium">Record</p>
-              <div class="rounded-[12px] border border-black/8 bg-white divide-y divide-black/5 text-[12px]">
+              <p class="text-[10.5px] uppercase tracking-normal font-medium" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Record</p>
+              <div class="rounded-[12px] border divide-y text-[12px]" :class="isDark ? 'border-white/10 bg-white/[0.04] divide-white/10 text-neutral-300' : 'border-black/8 bg-white divide-black/5 text-black'">
                 <div v-if="drawerRow.queue_number" class="flex justify-between px-3.5 py-2.5">
-                  <span class="text-neutral-500 font-light">Queue Number</span>
-                  <span class="font-mono font-medium text-black">#{{ drawerRow.queue_number }}</span>
+                  <span class="font-light" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Queue Number</span>
+                  <span class="font-mono font-medium" :class="isDark ? 'text-white' : 'text-black'">#{{ drawerRow.queue_number }}</span>
                 </div>
                 <div v-if="(Number(drawerRow.party_size) || 1) > 1" class="flex justify-between px-3.5 py-2.5">
-                  <span class="text-neutral-500 font-light">Party Size</span>
-                  <span class="font-medium text-black">{{ drawerRow.party_size }} pax</span>
+                  <span class="font-light" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Party Size</span>
+                  <span class="font-medium" :class="isDark ? 'text-white' : 'text-black'">{{ drawerRow.party_size }} pax</span>
                 </div>
-                <div class="flex justify-between px-3.5 py-2.5"><span class="text-neutral-500 font-light">Campaign</span><span class="text-right truncate ml-4 font-light">{{ campaignTitle(drawerRow.page_id) }}</span></div>
+                <div class="flex justify-between px-3.5 py-2.5"><span class="font-light" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Campaign</span><span class="text-right truncate ml-4 font-light" :class="isDark ? 'text-white' : 'text-black'">{{ campaignTitle(drawerRow.page_id) }}</span></div>
                 <div v-if="drawerRow.checked_in_at" class="flex justify-between px-3.5 py-2.5">
-                  <span class="text-neutral-500 font-light">Checked In</span>
-                  <span class="tabular-nums font-mono text-black font-medium">{{ formatDateTime(drawerRow.checked_in_at) }}</span>
+                  <span class="font-light" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Checked In</span>
+                  <span class="tabular-nums font-mono font-medium" :class="isDark ? 'text-white' : 'text-black'">{{ formatDateTime(drawerRow.checked_in_at) }}</span>
                 </div>
                 <div v-if="drawerRow.checked_out_at" class="flex justify-between px-3.5 py-2.5">
-                  <span class="text-neutral-500 font-light">Checked Out</span>
-                  <span class="tabular-nums font-mono text-black font-medium">{{ formatDateTime(drawerRow.checked_out_at) }}</span>
+                  <span class="font-light" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Checked Out</span>
+                  <span class="tabular-nums font-mono font-medium" :class="isDark ? 'text-white' : 'text-black'">{{ formatDateTime(drawerRow.checked_out_at) }}</span>
                 </div>
-                <div class="flex justify-between px-3.5 py-2.5"><span class="text-neutral-500 font-light">Submitted</span><span class="tabular-nums font-light">{{ formatDateTime(drawerRow.created_at) }}</span></div>
-                <div class="flex justify-between px-3.5 py-2.5"><span class="text-neutral-500 font-light">Record ID</span><span class="font-mono text-[11px] text-neutral-500 truncate ml-4 font-light">{{ drawerRow.id }}</span></div>
+                <div class="flex justify-between px-3.5 py-2.5"><span class="font-light" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Submitted</span><span class="tabular-nums font-light" :class="isDark ? 'text-white' : 'text-black'">{{ formatDateTime(drawerRow.created_at) }}</span></div>
+                <div class="flex justify-between px-3.5 py-2.5"><span class="font-light" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Record ID</span><span class="font-mono text-[11px] truncate ml-4 font-light text-neutral-400">{{ drawerRow.id }}</span></div>
               </div>
             </div>
           </div>
 
           <!-- Drawer footer -->
-          <div class="flex items-center gap-2 px-5 py-4 border-t border-black/5 shrink-0">
+          <div class="flex items-center gap-2 px-5 py-4 border-t shrink-0" :class="isDark ? 'border-white/10' : 'border-black/5'">
             <template v-if="drawerRow.checked_in_at && (!drawerRow.checked_out_at || new Date(drawerRow.checked_out_at) < new Date(drawerRow.checked_in_at))">
               <button
                 type="button"
                 @click="toggleCheckOut(drawerRow)"
-                class="flex-1 h-[40px] rounded-[10px] text-[12.5px] font-medium flex items-center justify-center gap-2 cursor-pointer transition-colors bg-neutral-900 text-white hover:bg-black"
+                class="flex-1 h-[40px] rounded-[10px] text-[12.5px] font-medium flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                :class="isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-neutral-900 text-white hover:bg-black'"
                 title="Mark guest as checked out and left venue"
               >
-                <LogOut class="w-4 h-4 text-moss-400" />
+                <LogOut class="w-4 h-4 text-moss-500" />
                 Check out guest
               </button>
               <button
                 type="button"
                 @click="toggleCheckIn(drawerRow)"
-                class="h-[40px] px-3 rounded-[10px] border border-black/15 text-[11.5px] text-neutral-600 hover:bg-black/5 flex items-center justify-center gap-1.5 cursor-pointer transition-colors font-light"
+                class="h-[40px] px-3 rounded-[10px] border text-[11.5px] flex items-center justify-center gap-1.5 cursor-pointer transition-colors font-light"
+                :class="isDark ? 'border-white/15 text-white hover:bg-white/10' : 'border-black/15 text-neutral-600 hover:bg-black/5'"
                 title="Undo check-in"
               >
                 <RotateCw class="w-3.5 h-3.5" />
@@ -605,7 +629,8 @@
               <button
                 type="button"
                 @click="toggleCheckOut(drawerRow)"
-                class="flex-1 h-[40px] rounded-[10px] text-[12.5px] font-medium flex items-center justify-center gap-2 cursor-pointer transition-colors border border-black/15 hover:bg-black/5"
+                class="flex-1 h-[40px] rounded-[10px] text-[12.5px] font-medium flex items-center justify-center gap-2 cursor-pointer transition-colors border"
+                :class="isDark ? 'border-white/20 text-white hover:bg-white/10' : 'border-black/15 text-black hover:bg-black/5'"
                 title="Guest returned or checkout was accidental"
               >
                 <RotateCw class="w-4 h-4" />
@@ -616,7 +641,8 @@
               <button
                 type="button"
                 @click="toggleCheckIn(drawerRow)"
-                class="flex-1 h-[40px] rounded-[10px] text-[12.5px] font-medium flex items-center justify-center gap-2 cursor-pointer transition-colors bg-black text-white hover:bg-neutral-800"
+                class="flex-1 h-[40px] rounded-[10px] text-[12.5px] font-medium flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                :class="isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'"
               >
                 <LogIn class="w-4 h-4" />
                 Check in guest
@@ -633,52 +659,55 @@
     <!-- Add Walk-In Guest Modal -->
     <Teleport to="body">
       <Transition name="hub-fade">
-        <div v-if="isAddGuestOpen" class="fixed inset-0 z-[80] bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 select-none font-sans font-light tracking-normal" @click.self="isAddGuestOpen = false">
-          <div class="relative w-full max-w-[420px] bg-white rounded-[20px] border border-black/10 shadow-[0_24px_60px_rgba(0,0,0,0.18)] p-6 flex flex-col gap-4 animate-apple-pop text-black">
+        <div v-if="isAddGuestOpen" class="fixed inset-0 z-[80] bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 select-none font-sans font-light tracking-normal" @click.self="isAddGuestOpen = false">
+          <div class="relative w-full max-w-[420px] rounded-[20px] border p-6 flex flex-col gap-4 animate-apple-pop" :class="isDark ? 'bg-[#141414] border-white/15 text-white shadow-[0_24px_60px_rgba(0,0,0,0.85)]' : 'bg-white border-black/10 text-black shadow-[0_24px_60px_rgba(0,0,0,0.18)]'">
             <div class="flex items-center justify-between">
               <div>
                 <h3 class="text-[17px] font-medium tracking-tight">Add Walk-In Guest</h3>
-                <p class="text-[12px] text-neutral-500 mt-0.5 font-light">Quickly register an on-site attendee or VIP.</p>
+                <p class="text-[12px] mt-0.5 font-light" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Quickly register an on-site attendee or VIP.</p>
               </div>
-              <button type="button" @click="isAddGuestOpen = false" class="size-7 rounded-full bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center cursor-pointer transition-colors">
+              <button type="button" @click="isAddGuestOpen = false" class="size-7 rounded-full flex items-center justify-center cursor-pointer transition-colors" :class="isDark ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-neutral-100 hover:bg-neutral-200 text-black'">
                 <X class="w-3.5 h-3.5" />
               </button>
             </div>
 
             <form @submit.prevent="handleAddGuestSubmit" class="flex flex-col gap-3.5 mt-1">
               <div class="flex flex-col gap-1">
-                <label class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Guest Name *</label>
+                <label class="text-[11px] uppercase tracking-normal font-medium" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Guest Name *</label>
                 <input
                   v-model="newGuest.name"
                   type="text"
                   required
                   placeholder="Full name"
-                  class="h-[38px] px-3 rounded-[8px] border border-black/15 text-[13px] outline-none focus:border-black font-light"
+                  class="h-[38px] px-3 rounded-[8px] border text-[13px] outline-none font-light transition-all"
+                  :class="isDark ? 'bg-white/[0.06] border-white/15 text-white placeholder:text-neutral-500 focus:border-white focus:bg-white/[0.1]' : 'bg-white border-black/15 text-black placeholder:text-neutral-400 focus:border-black'"
                 />
               </div>
 
               <div class="grid grid-cols-2 gap-2.5">
                 <div class="flex flex-col gap-1">
-                  <label class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Email</label>
+                  <label class="text-[11px] uppercase tracking-normal font-medium" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Email</label>
                   <input
                     v-model="newGuest.email"
                     type="email"
                     placeholder="guest@example.com"
-                    class="h-[38px] px-3 rounded-[8px] border border-black/15 text-[13px] outline-none focus:border-black font-light"
+                    class="h-[38px] px-3 rounded-[8px] border text-[13px] outline-none font-light transition-all"
+                    :class="isDark ? 'bg-white/[0.06] border-white/15 text-white placeholder:text-neutral-500 focus:border-white focus:bg-white/[0.1]' : 'bg-white border-black/15 text-black placeholder:text-neutral-400 focus:border-black'"
                   />
                 </div>
                 <div class="flex flex-col gap-1">
-                  <label class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">WhatsApp / Phone</label>
+                  <label class="text-[11px] uppercase tracking-normal font-medium" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">WhatsApp / Phone</label>
                   <input
                     v-model="newGuest.phone"
                     type="tel"
                     placeholder="+62 8..."
-                    class="h-[38px] px-3 rounded-[8px] border border-black/15 text-[13px] outline-none focus:border-black font-light"
+                    class="h-[38px] px-3 rounded-[8px] border text-[13px] outline-none font-light transition-all"
+                    :class="isDark ? 'bg-white/[0.06] border-white/15 text-white placeholder:text-neutral-500 focus:border-white focus:bg-white/[0.1]' : 'bg-white border-black/15 text-black placeholder:text-neutral-400 focus:border-black'"
                   />
                 </div>
               </div>
 
-              <div class="flex items-center justify-between p-3 rounded-[10px] bg-neutral-50 border border-black/5">
+              <div class="flex items-center justify-between p-3 rounded-[10px] border" :class="isDark ? 'bg-white/[0.04] border-white/10 text-white' : 'bg-neutral-50 border-black/5 text-black'">
                 <div class="flex flex-col">
                   <span class="text-[12.5px] font-medium">Check in immediately</span>
                   <span class="text-[11px] text-neutral-400">Mark as present at venue right now</span>
@@ -690,14 +719,16 @@
                 <button
                   type="button"
                   @click="isAddGuestOpen = false"
-                  class="h-[36px] px-4 rounded-[8px] border border-black/15 text-[12.5px] font-medium hover:bg-black/5 cursor-pointer"
+                  class="h-[36px] px-4 rounded-[8px] border text-[12.5px] font-medium cursor-pointer transition-colors"
+                  :class="isDark ? 'border-white/15 text-white hover:bg-white/10' : 'border-black/15 text-neutral-700 hover:bg-black/5'"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   :disabled="isAddingGuest || !newGuest.name.trim()"
-                  class="h-[36px] px-5 rounded-[8px] bg-black text-white text-[12.5px] font-medium hover:bg-neutral-800 disabled:opacity-40 cursor-pointer apple-press flex items-center gap-1.5"
+                  class="h-[36px] px-5 rounded-[8px] text-[12.5px] font-medium disabled:opacity-40 cursor-pointer apple-press flex items-center gap-1.5 transition-colors"
+                  :class="isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'"
                 >
                   <span>{{ isAddingGuest ? 'Adding…' : 'Register Guest' }}</span>
                 </button>
@@ -718,6 +749,7 @@ import {
   Check, Circle, CircleCheck, Users, Trash2, Copy, LogIn, LogOut, Mail, RotateCw, Calendar, UserPlus, SlidersHorizontal
 } from 'lucide-vue-next';
 import { useTicketSender } from './useTicketSender.ts';
+import { useAuthStore } from '../../stores/authStore.ts';
 import { apiJson } from '../../services/apiClient.ts';
 import {
   type Submission, type GuestStatus, STATUS_OPTIONS, normalizeStatus, statusLabel, statusBadgeClass, statusDotClass,
@@ -732,9 +764,13 @@ const props = withDefaults(defineProps<{
   exportName: string;
   hasLiveQueue?: boolean;
   pageId?: string;
+  dark?: boolean;
 }>(), {
   hasLiveQueue: false
 });
+
+const authStore = useAuthStore();
+const isDark = computed(() => props.dark ?? authStore.isSuperAdmin);
 
 const emit = defineEmits<{
   (e: 'updated', rows: Submission[]): void;

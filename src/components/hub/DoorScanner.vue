@@ -88,18 +88,18 @@
       <section class="min-h-0 flex flex-col gap-2">
         <!-- 707 UI Horizontal Progress Bar & Live Capacity (shown when queueEnabled) -->
         <div v-if="queueEnabled" class="shrink-0 flex flex-col gap-1.5 px-1 pt-0.5">
-          <div class="flex items-center justify-between text-[11px] uppercase tracking-normal text-neutral-500 font-medium">
+          <div class="flex items-center justify-between text-[11px] uppercase tracking-normal font-medium" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">
             <span class="flex items-center gap-1.5">
               <span class="size-2 rounded-full transition-colors duration-300" :style="{ backgroundColor: barColor }" />
               Live Booth Capacity
             </span>
-            <span class="tabular-nums font-mono text-[13px] text-black font-medium">
-              <span class="apple-counter-ticker">{{ insideCount }}</span> <span class="text-neutral-400 font-normal">/ {{ maxCapacity }}</span>
+            <span class="tabular-nums font-mono text-[13px] font-medium" :class="isDark ? 'text-white' : 'text-black'">
+              <span class="apple-counter-ticker">{{ insideCount }}</span> <span :class="isDark ? 'text-neutral-400' : 'text-neutral-400'" class="font-normal">/ {{ maxCapacity }}</span>
               <span class="ml-1.5 text-[11px] font-normal" :style="{ color: barColor }">({{ capacityPercent }}%)</span>
             </span>
           </div>
           <!-- 3px Left-to-Right Progress Bar with 707 direction colors -->
-          <div class="w-full h-[4px] bg-black/[0.08] rounded-full overflow-hidden">
+          <div class="w-full h-[4px] rounded-full overflow-hidden" :class="isDark ? 'bg-white/10' : 'bg-black/[0.08]'">
             <div
               class="h-full rounded-full transition-all duration-500 ease-out"
               :style="{ width: `${capacityPercent}%`, backgroundColor: barColor }"
@@ -110,12 +110,15 @@
         <!-- Counts: small, one line, nothing else -->
         <div class="shrink-0 flex items-baseline justify-between gap-4 px-1 h-[26px]">
           <p v-for="stat in stats" :key="stat.label" class="flex items-baseline gap-1.5 min-w-0">
-            <span class="text-[10.5px] uppercase tracking-normal text-neutral-500 whitespace-nowrap">{{ stat.label }}</span>
-            <span class="text-[16px] leading-none font-medium tabular-nums" :class="stat.muted ? 'text-neutral-400' : 'text-black'">{{ stat.value }}</span>
+            <span class="text-[10.5px] uppercase tracking-normal whitespace-nowrap" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">{{ stat.label }}</span>
+            <span class="text-[16px] leading-none font-medium tabular-nums" :class="stat.muted ? 'text-neutral-400' : (isDark ? 'text-white' : 'text-black')">{{ stat.value }}</span>
           </p>
         </div>
 
-        <div class="flex-1 min-h-0 rounded-[16px] border border-black/10 bg-white p-3 flex flex-col gap-2.5">
+        <div
+          class="flex-1 min-h-0 rounded-[16px] border p-3 flex flex-col gap-2.5"
+          :class="isDark ? 'border-white/10 bg-[#141414] text-white' : 'border-black/10 bg-white text-black'"
+        >
           <form class="flex items-stretch gap-2 shrink-0" @submit.prevent="onEnter">
             <div class="relative flex-1">
               <KeyRound class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
@@ -129,21 +132,30 @@
                 autocapitalize="characters"
                 spellcheck="false"
                 placeholder="Last 4 of Access ID or WhatsApp"
-                class="w-full h-[52px] pl-11 pr-11 rounded-[12px] bg-black/[0.04] border border-black/15 text-[24px] font-medium font-mono tracking-normal uppercase text-black placeholder:text-neutral-400 placeholder:text-[14px] placeholder:tracking-normal placeholder:font-normal placeholder:normal-case outline-none focus:border-black focus:bg-white transition-colors"
+                class="w-full h-[52px] pl-11 pr-11 rounded-[12px] border text-[24px] font-medium font-mono tracking-normal uppercase placeholder:text-[14px] placeholder:tracking-normal placeholder:font-normal placeholder:normal-case outline-none transition-colors"
+                :class="isDark ? 'bg-white/[0.06] border-white/15 text-white placeholder:text-neutral-500 focus:border-white focus:bg-white/[0.1]' : 'bg-black/[0.04] border-black/15 text-black placeholder:text-neutral-400 focus:border-black focus:bg-white'"
               />
-              <button v-if="codeInput" type="button" @pointerdown.prevent="clearInput" class="absolute right-2 top-1/2 -translate-y-1/2 size-[36px] rounded-[9px] active:bg-black/10 flex items-center justify-center cursor-pointer text-neutral-500" title="Clear">
+              <button
+                v-if="codeInput"
+                type="button"
+                @pointerdown.prevent="clearInput"
+                class="absolute right-2 top-1/2 -translate-y-1/2 size-[36px] rounded-[9px] flex items-center justify-center cursor-pointer transition-colors"
+                :class="isDark ? 'active:bg-white/15 text-neutral-400 hover:text-white' : 'active:bg-black/10 text-neutral-500'"
+                title="Clear"
+              >
                 <X class="w-5 h-5" />
               </button>
             </div>
             <button
               type="button"
               @click="view = 'log'"
-              class="h-[52px] px-4 rounded-[12px] border border-black/15 bg-white text-[15px] font-medium flex items-center gap-2.5 cursor-pointer active:bg-black/10 transition-colors shrink-0"
+              class="h-[52px] px-4 rounded-[12px] border text-[15px] font-medium flex items-center gap-2.5 cursor-pointer transition-colors shrink-0"
+              :class="isDark ? 'border-white/15 bg-white/5 text-white hover:bg-white/10 active:bg-white/15' : 'border-black/15 bg-white text-black active:bg-black/10'"
               title="Who is inside, and cancel a wrong admit"
             >
               <ListChecks class="w-5 h-5" />
               Log
-              <span class="tabular-nums text-[12px] px-1.5 py-0.5 rounded-full bg-black/10">{{ insideCount }}</span>
+              <span class="tabular-nums text-[12px] px-1.5 py-0.5 rounded-full" :class="isDark ? 'bg-white/15 text-white' : 'bg-black/10 text-black'">{{ insideCount }}</span>
             </button>
           </form>
 
@@ -155,17 +167,18 @@
                 :key="m.guest.id"
                 type="button"
                 @click="openConfirm(m.guest)"
-                class="shrink-0 w-full flex items-center gap-3 px-3 h-[clamp(46px,7.4vh,60px)] rounded-[12px] border border-black/10 text-left cursor-pointer active:bg-black/10 transition-colors"
+                class="shrink-0 w-full flex items-center gap-3 px-3 h-[clamp(46px,7.4vh,60px)] rounded-[12px] border text-left cursor-pointer transition-colors"
+                :class="isDark ? 'border-white/10 bg-white/[0.04] hover:bg-white/[0.08] active:bg-white/15' : 'border-black/10 bg-white active:bg-black/10'"
               >
-                <div class="size-9 rounded-full bg-neutral-100 border border-black/5 flex items-center justify-center text-[12px] font-medium shrink-0">{{ initials(guestName(m.guest)) }}</div>
+                <div class="size-9 rounded-full flex items-center justify-center text-[12px] font-medium shrink-0" :class="isDark ? 'bg-white/10 border border-white/10 text-white' : 'bg-neutral-100 border border-black/5 text-black'">{{ initials(guestName(m.guest)) }}</div>
                 <div class="min-w-0 flex-1">
-                  <p class="text-[16px] font-medium leading-tight truncate flex items-center gap-2">
+                  <p class="text-[16px] font-medium leading-tight truncate flex items-center gap-2" :class="isDark ? 'text-white' : 'text-black'">
                     {{ guestName(m.guest) }}
-                    <span v-if="isVip(m.guest)" class="shrink-0 px-1.5 py-0.5 rounded-[5px] bg-black text-white text-[10px] font-medium tracking-normal">VIP</span>
+                    <span v-if="isVip(m.guest)" class="shrink-0 px-1.5 py-0.5 rounded-[5px] text-[10px] font-medium tracking-normal" :class="isDark ? 'bg-white text-black' : 'bg-black text-white'">VIP</span>
                   </p>
-                  <p class="text-[12.5px] text-neutral-500 leading-tight truncate">
-                    <span :class="m.via === 'code' ? 'text-black font-medium' : ''">ID ···<span class="font-mono">{{ codeTail(m.guest) }}</span></span>
-                    <template v-if="phoneTail(m.guest)"> · <span :class="m.via === 'phone' ? 'text-black font-medium' : ''">WA ···{{ phoneTail(m.guest) }}</span></template>
+                  <p class="text-[12.5px] leading-tight truncate" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">
+                    <span :class="m.via === 'code' ? (isDark ? 'text-white font-medium' : 'text-black font-medium') : ''">ID ···<span class="font-mono">{{ codeTail(m.guest) }}</span></span>
+                    <template v-if="phoneTail(m.guest)"> · <span :class="m.via === 'phone' ? (isDark ? 'text-white font-medium' : 'text-black font-medium') : ''">WA ···{{ phoneTail(m.guest) }}</span></template>
                   </p>
                 </div>
                 <span class="shrink-0 px-2 py-0.5 rounded-full text-[11px] font-medium border" :class="matchChipClass(m.guest)">{{ matchChipLabel(m.guest) }}</span>
@@ -175,19 +188,23 @@
             </template>
             <div v-else-if="queueEnabled" class="flex-1 min-h-0 flex flex-col gap-2 overflow-hidden">
               <!-- Multi-person Auto-Batch & Serving Dispatch Header -->
-              <div class="p-2 sm:p-2.5 rounded-[12px] bg-black/[0.03] border border-black/5 flex flex-col gap-2 shrink-0">
+              <div
+                class="p-2 sm:p-2.5 rounded-[12px] border flex flex-col gap-2 shrink-0"
+                :class="isDark ? 'bg-white/[0.04] border-white/10' : 'bg-black/[0.03] border-black/5'"
+              >
                 <div class="flex items-center justify-between gap-2">
                   <!-- Left: Serving #XX with quick -1 / +1 step -->
                   <div class="flex items-center gap-2">
-                    <Volume2 class="w-3.5 h-3.5 text-neutral-600 shrink-0" />
-                    <span class="text-[11px] font-mono uppercase tracking-normal text-neutral-500">Serving</span>
-                    <span class="px-2 py-0.5 rounded-[6px] bg-black text-white font-mono text-[13px] font-medium">#{{ currentCalledNumber }}</span>
+                    <Volume2 class="w-3.5 h-3.5 shrink-0" :class="isDark ? 'text-neutral-400' : 'text-neutral-600'" />
+                    <span class="text-[11px] font-mono uppercase tracking-normal" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Serving</span>
+                    <span class="px-2 py-0.5 rounded-[6px] font-mono text-[13px] font-medium" :class="isDark ? 'bg-white text-black' : 'bg-black text-white'">#{{ currentCalledNumber }}</span>
                     <div class="flex items-center gap-1 ml-0.5">
                       <button
                         type="button"
                         @click="stepQueueCaller(-1)"
                         :disabled="currentCalledNumber <= 1"
-                        class="size-6 rounded-[5px] border border-black/15 bg-white text-[11px] font-mono font-medium hover:bg-black/5 disabled:opacity-30 cursor-pointer flex items-center justify-center transition-colors"
+                        class="size-6 rounded-[5px] border text-[11px] font-mono font-medium disabled:opacity-30 cursor-pointer flex items-center justify-center transition-colors"
+                        :class="isDark ? 'border-white/15 bg-white/10 text-white hover:bg-white/20' : 'border-black/15 bg-white text-black hover:bg-black/5'"
                         title="Step back to previous number"
                       >
                         -
@@ -195,7 +212,8 @@
                       <button
                         type="button"
                         @click="stepQueueCaller(1)"
-                        class="size-6 rounded-[5px] border border-black/15 bg-white text-[11px] font-mono font-medium hover:bg-black/5 cursor-pointer flex items-center justify-center transition-colors"
+                        class="size-6 rounded-[5px] border text-[11px] font-mono font-medium cursor-pointer flex items-center justify-center transition-colors"
+                        :class="isDark ? 'border-white/15 bg-white/10 text-white hover:bg-white/20' : 'border-black/15 bg-white text-black hover:bg-black/5'"
                         title="Step to next number"
                       >
                         +
@@ -210,10 +228,10 @@
                       type="button"
                       @click="autoCallQueue = !autoCallQueue"
                       class="h-[28px] px-2.5 rounded-[7px] text-[11px] font-medium border flex items-center gap-1.5 cursor-pointer transition-colors"
-                      :class="autoCallQueue ? 'bg-moss-50 text-moss-800 border-moss-300' : 'bg-white text-neutral-500 border-black/15 hover:bg-black/5'"
+                      :class="autoCallQueue ? (isDark ? 'bg-moss-950/50 text-moss-300 border-moss-500/40' : 'bg-moss-50 text-moss-800 border-moss-300') : (isDark ? 'bg-white/5 text-neutral-300 border-white/15 hover:bg-white/10' : 'bg-white text-neutral-500 border-black/15 hover:bg-black/5')"
                       title="When visitors exit, automatically batch-call waiting guests to fill open spots"
                     >
-                      <span class="size-1.5 rounded-full" :class="autoCallQueue ? 'bg-moss-600' : 'bg-neutral-300'" />
+                      <span class="size-1.5 rounded-full" :class="autoCallQueue ? 'bg-moss-500' : 'bg-neutral-400'" />
                       <span>Auto-Call: <strong>{{ autoCallQueue ? 'ON' : 'OFF' }}</strong></span>
                     </button>
 
@@ -222,11 +240,12 @@
                       type="button"
                       @click="triggerBatchCall(availableSpots > 0 ? availableSpots : 1)"
                       :disabled="isBatchCalling || !waitingQueueGuests.length"
-                      class="h-[28px] px-3 rounded-[7px] bg-black text-white text-[11.5px] font-medium hover:bg-neutral-800 cursor-pointer flex items-center gap-1.5 active:bg-neutral-700 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs transition-colors"
+                      class="h-[28px] px-3 rounded-[7px] text-[11.5px] font-medium cursor-pointer flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs transition-colors"
+                      :class="isDark ? 'bg-white text-black hover:bg-neutral-200 active:bg-neutral-300' : 'bg-black text-white hover:bg-neutral-800 active:bg-neutral-700'"
                       title="Dispatch WhatsApp notification to next guest(s) in line"
                     >
                       <RefreshCw v-if="isBatchCalling" class="w-3.5 h-3.5 animate-spin" />
-                      <BellRing v-else class="w-3.5 h-3.5 text-moss-500" />
+                      <BellRing v-else class="w-3.5 h-3.5" :class="isDark ? 'text-moss-600' : 'text-moss-500'" />
                       <span>Call Next ({{ availableSpots > 0 ? `${availableSpots} Spots` : '1 Pax' }})</span>
                     </button>
                   </div>
@@ -235,7 +254,7 @@
 
               <!-- Currently Called Guests Shelf -->
               <div v-if="currentlyCalledGuests.length" class="flex flex-col gap-1 shrink-0">
-                <div class="flex items-center justify-between px-1 text-[10.5px] uppercase tracking-normal text-moss-800 font-medium">
+                <div class="flex items-center justify-between px-1 text-[10.5px] uppercase tracking-normal font-medium" :class="isDark ? 'text-moss-300' : 'text-moss-800'">
                   <span class="flex items-center gap-1.5">
                     <span class="size-2 rounded-full bg-moss-600" />
                     Currently Calling ({{ currentlyCalledGuests.length }})
@@ -246,21 +265,22 @@
                   <div
                     v-for="guest in currentlyCalledGuests"
                     :key="guest.id"
-                    class="w-full flex items-center justify-between p-2 rounded-[10px] border border-moss-200 bg-moss-50/70 transition-colors"
+                    class="w-full flex items-center justify-between p-2 rounded-[10px] border transition-colors"
+                    :class="isDark ? 'border-moss-500/30 bg-moss-950/40' : 'border-moss-200 bg-moss-50/70'"
                   >
                     <div class="flex items-center gap-2.5 min-w-0">
                       <span class="size-7 rounded-[7px] bg-moss-600 text-white font-mono font-medium text-[12px] flex items-center justify-center shrink-0 shadow-2xs">
                         #{{ getGuestQueueNumber(guest) }}
                       </span>
                       <div class="min-w-0">
-                        <p class="text-[13px] font-medium text-black truncate flex items-center gap-1.5">
+                        <p class="text-[13px] font-medium truncate flex items-center gap-1.5" :class="isDark ? 'text-white' : 'text-black'">
                           {{ guestName(guest) }}
-                          <span v-if="isVip(guest)" class="px-1 py-0.2 rounded bg-black text-white text-[9px] font-medium tracking-normal">VIP</span>
-                          <span v-if="getPartySize(guest) > 1" class="px-1.5 py-0.2 rounded bg-black/10 text-neutral-700 text-[10px] font-mono font-medium">
+                          <span v-if="isVip(guest)" class="px-1 py-0.2 rounded text-[9px] font-medium tracking-normal" :class="isDark ? 'bg-white text-black' : 'bg-black text-white'">VIP</span>
+                          <span v-if="getPartySize(guest) > 1" class="px-1.5 py-0.2 rounded text-[10px] font-mono font-medium" :class="isDark ? 'bg-white/10 text-neutral-300' : 'bg-black/10 text-neutral-700'">
                             {{ getPartySize(guest) }} pax
                           </span>
                         </p>
-                        <p class="text-[11px] text-neutral-500 font-mono">
+                        <p class="text-[11px] font-mono" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">
                           ID ···{{ codeTail(guest) }} <template v-if="phoneTail(guest)"> · WA ···{{ phoneTail(guest) }}</template>
                         </p>
                       </div>
@@ -290,27 +310,27 @@
                     @click="openConfirm(guest)"
                     class="w-full flex items-center justify-between p-2 rounded-[10px] border text-left transition-colors cursor-pointer"
                     :class="getGuestQueueNumber(guest) === currentCalledNumber
-                      ? 'border-moss-400 bg-moss-50/50 shadow-2xs'
-                      : (isGuestInside(guest) ? 'border-black/5 bg-neutral-100 opacity-60' : 'border-black/10 bg-white hover:bg-black/5 active:bg-black/10')"
+                      ? (isDark ? 'border-moss-500/40 bg-moss-950/40 shadow-2xs' : 'border-moss-400 bg-moss-50/50 shadow-2xs')
+                      : (isGuestInside(guest) ? (isDark ? 'border-white/5 bg-white/[0.02] opacity-60' : 'border-black/5 bg-neutral-100 opacity-60') : (isDark ? 'border-white/10 bg-white/[0.04] hover:bg-white/[0.08] active:bg-white/15' : 'border-black/10 bg-white hover:bg-black/5 active:bg-black/10'))"
                   >
                     <div class="flex items-center gap-2.5 min-w-0">
                       <span
                         class="size-7 rounded-[7px] flex items-center justify-center font-mono font-medium text-[12px] shrink-0"
                         :class="getGuestQueueNumber(guest) === currentCalledNumber
                           ? 'bg-moss-600 text-white shadow-2xs'
-                          : (isGuestInside(guest) ? 'bg-neutral-300 text-neutral-600' : 'bg-black/10 text-neutral-800')"
+                          : (isGuestInside(guest) ? (isDark ? 'bg-neutral-700 text-neutral-300' : 'bg-neutral-300 text-neutral-600') : (isDark ? 'bg-white/15 text-white' : 'bg-black/10 text-neutral-800'))"
                       >
                         #{{ getGuestQueueNumber(guest) }}
                       </span>
                       <div class="min-w-0">
-                        <p class="text-[13px] font-medium text-black truncate flex items-center gap-1.5">
+                        <p class="text-[13px] font-medium truncate flex items-center gap-1.5" :class="isDark ? 'text-white' : 'text-black'">
                           {{ guestName(guest) }}
-                          <span v-if="isVip(guest)" class="px-1 py-0.2 rounded bg-black text-white text-[9px] font-medium tracking-wider">VIP</span>
-                          <span v-if="getPartySize(guest) > 1" class="px-1.5 py-0.2 rounded bg-black/10 text-neutral-700 text-[10px] font-mono font-medium">
+                          <span v-if="isVip(guest)" class="px-1 py-0.2 rounded text-[9px] font-medium tracking-wider" :class="isDark ? 'bg-white text-black' : 'bg-black text-white'">VIP</span>
+                          <span v-if="getPartySize(guest) > 1" class="px-1.5 py-0.2 rounded text-[10px] font-mono font-medium" :class="isDark ? 'bg-white/10 text-neutral-300' : 'bg-black/10 text-neutral-700'">
                             {{ getPartySize(guest) }} pax
                           </span>
                         </p>
-                        <p class="text-[11px] text-neutral-500 font-mono">
+                        <p class="text-[11px] font-mono" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">
                           ID ···{{ codeTail(guest) }} <template v-if="phoneTail(guest)"> · WA ···{{ phoneTail(guest) }}</template>
                         </p>
                       </div>
@@ -319,23 +339,29 @@
                     <div class="flex items-center gap-2 shrink-0">
                       <span
                         v-if="isGuestInside(guest)"
-                        class="text-[10.5px] font-medium px-2 py-0.5 rounded-full bg-neutral-200 text-neutral-700 border border-neutral-300"
+                        class="text-[10.5px] font-medium px-2 py-0.5 rounded-full border"
+                        :class="isDark ? 'bg-neutral-800 text-neutral-300 border-neutral-700' : 'bg-neutral-200 text-neutral-700 border-neutral-300'"
                       >
                         Inside
                       </span>
                       <span
                         v-else-if="getGuestQueueNumber(guest) === currentCalledNumber"
-                        class="text-[10.5px] font-medium px-2 py-0.5 rounded-full bg-moss-100 text-moss-800 border border-moss-300"
+                        class="text-[10.5px] font-medium px-2 py-0.5 rounded-full border"
+                        :class="isDark ? 'bg-moss-950/60 text-moss-300 border-moss-500/40' : 'bg-moss-100 text-moss-800 border-moss-300'"
                       >
                         Now Serving
                       </span>
                       <span
                         v-else
-                        class="text-[10.5px] font-medium px-2 py-0.5 rounded-full bg-black/5 text-neutral-600 border border-black/5"
+                        class="text-[10.5px] font-medium px-2 py-0.5 rounded-full border"
+                        :class="isDark ? 'bg-white/10 text-neutral-300 border-white/10' : 'bg-black/5 text-neutral-600 border-black/5'"
                       >
                         In Line
                       </span>
-                      <span class="text-[11px] font-medium text-black bg-white px-2 py-1 rounded-[6px] border border-black/15 shadow-2xs">
+                      <span
+                        class="text-[11px] font-medium px-2 py-1 rounded-[6px] border shadow-2xs"
+                        :class="isDark ? 'text-white bg-white/10 border-white/15' : 'text-black bg-white border-black/15'"
+                      >
                         {{ isGuestInside(guest) ? 'View' : 'Admit' }}
                       </span>
                     </div>
@@ -357,19 +383,28 @@
                 :key="k"
                 type="button"
                 @pointerdown.prevent="press(k)"
-                class="col-span-2 h-[clamp(48px,9vh,72px)] rounded-[8px] bg-black/[0.05] text-[clamp(20px,3.6vh,28px)] font-medium font-mono active:bg-black active:text-white cursor-pointer"
-                :class="ki === 0 ? KEY_ROW_START[ri] : ''"
+                class="col-span-2 h-[clamp(48px,9vh,72px)] rounded-[8px] text-[clamp(20px,3.6vh,28px)] font-medium font-mono cursor-pointer transition-colors"
+                :class="[
+                  ki === 0 ? KEY_ROW_START[ri] : '',
+                  isDark ? 'bg-white/[0.08] hover:bg-white/15 text-white active:bg-white active:text-black border border-white/5' : 'bg-black/[0.05] hover:bg-black/[0.08] text-black active:bg-black active:text-white'
+                ]"
               >{{ k }}</button>
               <button
                 v-if="ri === KEY_ROWS.length - 1"
                 type="button"
                 @pointerdown.prevent="backspace"
-                class="col-span-3 h-[clamp(48px,9vh,72px)] rounded-[8px] bg-black/[0.09] flex items-center justify-center active:bg-black active:text-white cursor-pointer"
+                class="col-span-3 h-[clamp(48px,9vh,72px)] rounded-[8px] flex items-center justify-center cursor-pointer transition-colors"
+                :class="isDark ? 'bg-white/[0.12] hover:bg-white/20 text-white active:bg-white active:text-black border border-white/5' : 'bg-black/[0.09] hover:bg-black/[0.13] text-black active:bg-black active:text-white'"
                 title="Delete"
               ><Delete class="w-6 h-6" /></button>
             </template>
           </div>
-          <button type="button" @click="toggleKeyboard" class="shrink-0 self-end text-[12px] text-neutral-500 underline underline-offset-2 cursor-pointer -mt-1">
+          <button
+            type="button"
+            @click="toggleKeyboard"
+            class="shrink-0 self-end text-[12px] underline underline-offset-2 cursor-pointer -mt-1"
+            :class="isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black'"
+          >
             {{ systemKeyboard ? 'Use on-screen keypad' : 'Use tablet keyboard' }}
           </button>
         </div>
@@ -377,16 +412,31 @@
     </div>
 
     <!-- ============ LOG ============ -->
-    <section v-if="view === 'log'" class="h-full w-full min-h-0 rounded-[16px] border border-black/10 bg-white flex flex-col overflow-hidden">
-      <div class="flex items-center gap-3 px-4 h-[64px] shrink-0 border-b border-black/10">
-        <button type="button" @click="view = 'scan'" class="h-[44px] px-4 rounded-[10px] bg-black text-white text-[15px] font-medium flex items-center gap-2 cursor-pointer active:bg-neutral-700 shrink-0">
+    <section
+      v-if="view === 'log'"
+      class="h-full w-full min-h-0 rounded-[16px] border flex flex-col overflow-hidden"
+      :class="isDark ? 'border-white/10 bg-[#141414] text-white' : 'border-black/10 bg-white text-black'"
+    >
+      <div
+        class="flex items-center gap-3 px-4 h-[64px] shrink-0 border-b"
+        :class="isDark ? 'border-white/10' : 'border-black/10'"
+      >
+        <button
+          type="button"
+          @click="view = 'scan'"
+          class="h-[44px] px-4 rounded-[10px] text-[15px] font-medium flex items-center gap-2 cursor-pointer transition-colors shrink-0"
+          :class="isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'"
+        >
           <ArrowLeft class="w-5 h-5" /> Scan
         </button>
         <div class="min-w-0">
-          <p class="text-[10.5px] uppercase tracking-normal text-neutral-500 leading-none">Check-in log</p>
-          <p class="text-[20px] font-medium leading-tight tabular-nums">{{ loggedIn.length }} <span class="text-[13px] text-neutral-500 font-normal">guests inside</span></p>
+          <p class="text-[10.5px] uppercase tracking-normal leading-none" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Check-in log</p>
+          <p class="text-[20px] font-medium leading-tight tabular-nums" :class="isDark ? 'text-white' : 'text-black'">{{ loggedIn.length }} <span class="text-[13px] font-normal" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">guests inside</span></p>
         </div>
-        <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-moss-50 border border-moss-200 text-[11px] font-mono text-moss-800 shrink-0">
+        <div
+          class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-mono shrink-0"
+          :class="isDark ? 'bg-moss-950/40 border-moss-500/30 text-moss-300' : 'bg-moss-50 border-moss-200 text-moss-800'"
+        >
           <span class="size-1.5 rounded-full bg-moss-600" />
           <span>Live Synced</span>
         </div>
@@ -394,10 +444,11 @@
           type="button"
           @click="syncLog"
           :disabled="isSyncingLog"
-          class="h-[40px] px-3 rounded-[10px] border border-black/15 bg-white text-[13px] font-medium flex items-center gap-1.5 cursor-pointer hover:bg-black/5 active:bg-black/10 transition-colors shrink-0"
+          class="h-[40px] px-3 rounded-[10px] border text-[13px] font-medium flex items-center gap-1.5 cursor-pointer transition-colors shrink-0"
+          :class="isDark ? 'border-white/15 bg-white/5 text-white hover:bg-white/10' : 'border-black/15 bg-white text-black hover:bg-black/5'"
           title="Force refresh check-in data across all scanners"
         >
-          <RefreshCw class="w-3.5 h-3.5 text-neutral-700" :class="{ 'animate-spin': isSyncingLog }" />
+          <RefreshCw class="w-3.5 h-3.5" :class="[{ 'animate-spin': isSyncingLog }, isDark ? 'text-neutral-300' : 'text-neutral-700']" />
           <span class="hidden md:inline">Sync Now</span>
         </button>
         <div class="relative flex-1 max-w-[420px] ml-auto">
@@ -407,31 +458,38 @@
             type="text"
             autocomplete="off"
             placeholder="Search name, code or WhatsApp"
-            class="w-full h-[42px] pl-9 pr-9 rounded-[10px] bg-black/[0.04] border border-black/15 text-[14px] outline-none focus:border-black focus:bg-white transition-colors"
+            class="w-full h-[42px] pl-9 pr-9 rounded-[10px] border text-[14px] outline-none transition-colors"
+            :class="isDark ? 'bg-white/[0.06] border-white/15 text-white placeholder:text-neutral-500 focus:border-white focus:bg-white/[0.1]' : 'bg-black/[0.04] border-black/15 text-black placeholder:text-neutral-400 focus:border-black focus:bg-white'"
           />
-          <button v-if="logQuery" type="button" @click="logQuery = ''" class="absolute right-1.5 top-1/2 -translate-y-1/2 size-[30px] rounded-[8px] active:bg-black/10 flex items-center justify-center cursor-pointer text-neutral-500"><X class="w-4 h-4" /></button>
+          <button v-if="logQuery" type="button" @click="logQuery = ''" class="absolute right-1.5 top-1/2 -translate-y-1/2 size-[30px] rounded-[8px] flex items-center justify-center cursor-pointer" :class="isDark ? 'active:bg-white/15 text-neutral-400 hover:text-white' : 'active:bg-black/10 text-neutral-500'"><X class="w-4 h-4" /></button>
         </div>
       </div>
 
-      <div class="flex-1 min-h-0 overflow-y-auto overscroll-contain divide-y divide-black/5">
+      <div
+        class="flex-1 min-h-0 overflow-y-auto overscroll-contain divide-y"
+        :class="isDark ? 'divide-white/10' : 'divide-black/5'"
+      >
         <div v-for="g in visibleLog" :key="g.id" class="flex items-center gap-4 px-4 h-[68px]">
-          <div class="size-10 rounded-full bg-neutral-100 border border-black/5 flex items-center justify-center text-[13px] font-medium shrink-0">{{ initials(guestName(g)) }}</div>
+          <div
+            class="size-10 rounded-full border flex items-center justify-center text-[13px] font-medium shrink-0"
+            :class="isDark ? 'bg-white/10 border-white/10 text-white' : 'bg-neutral-100 border-black/5 text-black'"
+          >{{ initials(guestName(g)) }}</div>
           <div class="min-w-0 flex-1">
-            <p class="text-[17px] font-medium leading-tight truncate flex items-center gap-2">
+            <p class="text-[17px] font-medium leading-tight truncate flex items-center gap-2" :class="isDark ? 'text-white' : 'text-black'">
               {{ guestName(g) }}
-              <span v-if="isVip(g)" class="shrink-0 px-1.5 py-0.5 rounded-[5px] bg-black text-white text-[10px] font-medium tracking-normal">VIP</span>
+              <span v-if="isVip(g)" class="shrink-0 px-1.5 py-0.5 rounded-[5px] text-[10px] font-medium tracking-normal" :class="isDark ? 'bg-white text-black' : 'bg-black text-white'">VIP</span>
             </p>
-            <p class="text-[13px] text-neutral-500 leading-tight truncate">
+            <p class="text-[13px] leading-tight truncate" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">
               ID ···<span class="font-mono">{{ codeTail(g) }}</span>
               <template v-if="phoneTail(g)"> · WA ···{{ phoneTail(g) }}</template>
-              · in at {{ formatTime(g.checked_in_at) }}<template v-if="g.checked_in_by"> · by <span class="font-medium text-neutral-800">{{ g.checked_in_by }}</span></template>
+              · in at {{ formatTime(g.checked_in_at) }}<template v-if="g.checked_in_by"> · by <span class="font-medium" :class="isDark ? 'text-white' : 'text-neutral-800'">{{ g.checked_in_by }}</span></template>
             </p>
           </div>
           <template v-if="cancelArmed === g.id">
-            <button type="button" @click="cancelArmed = null" class="h-[44px] px-4 rounded-[10px] border border-black/15 text-[14px] font-medium active:bg-black/10 cursor-pointer">Keep</button>
+            <button type="button" @click="cancelArmed = null" class="h-[44px] px-4 rounded-[10px] border text-[14px] font-medium cursor-pointer" :class="isDark ? 'border-white/15 hover:bg-white/10 text-neutral-300' : 'border-black/15 hover:bg-black/5 text-neutral-700'">Keep</button>
             <button type="button" @click="cancelEntry(g)" class="h-[44px] px-4 rounded-[10px] bg-oxblood-700 text-white text-[14px] font-medium active:bg-oxblood-800 cursor-pointer">Yes, cancel entry</button>
           </template>
-          <button v-else type="button" @click="armCancel(g.id)" class="h-[44px] px-4 rounded-[10px] border border-black/15 text-[14px] font-medium active:bg-black/10 cursor-pointer flex items-center gap-2">
+          <button v-else type="button" @click="armCancel(g.id)" class="h-[44px] px-4 rounded-[10px] border text-[14px] font-medium cursor-pointer flex items-center gap-2" :class="isDark ? 'border-white/15 hover:bg-white/10 text-neutral-300' : 'border-black/15 hover:bg-black/5 text-neutral-700'">
             <Undo2 class="w-4 h-4" /> Cancel entry
           </button>
         </div>
@@ -441,57 +499,71 @@
 
     <!-- ============ Confirm the guest (nobody is admitted before this) ============ -->
     <Transition name="hud-result">
-      <div v-if="pending" class="absolute inset-0 z-20 rounded-[16px] bg-white border border-black/10 flex flex-col overflow-hidden">
+      <div
+        v-if="pending"
+        class="absolute inset-0 z-20 rounded-[16px] border flex flex-col overflow-hidden"
+        :class="isDark ? 'bg-[#141414] border-white/15 text-white' : 'bg-white border-black/10 text-black'"
+      >
         <div class="flex-1 min-h-0 flex flex-col items-center justify-center text-center px-8 py-6 gap-2 overflow-y-auto">
           <div class="flex items-center gap-2">
-            <span class="text-[12px] uppercase tracking-normal text-neutral-500">{{ mode === 'in' ? 'Is this the guest?' : 'Check this guest out?' }}</span>
-            <span v-if="pending.queue_number" class="px-2 py-0.5 rounded-[6px] bg-black/5 border border-black/10 font-mono text-[12px] font-medium text-black tabular-nums">
+            <span class="text-[12px] uppercase tracking-normal" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">{{ mode === 'in' ? 'Is this the guest?' : 'Check this guest out?' }}</span>
+            <span
+              v-if="pending.queue_number"
+              class="px-2 py-0.5 rounded-[6px] border font-mono text-[12px] font-medium tabular-nums"
+              :class="isDark ? 'bg-white/10 border-white/15 text-white' : 'bg-black/5 border-black/10 text-black'"
+            >
               Antrian #{{ pending.queue_number }}
             </span>
           </div>
-          <p class="text-[clamp(28px,6vh,54px)] font-medium leading-tight max-w-full truncate">{{ guestName(pending) }}</p>
-          <p v-if="isVip(pending)" class="px-3 py-1 rounded-[8px] bg-black text-white text-[13px] font-medium tracking-normal">VIP</p>
+          <p class="text-[clamp(28px,6vh,54px)] font-medium leading-tight max-w-full truncate" :class="isDark ? 'text-white' : 'text-black'">{{ guestName(pending) }}</p>
+          <p v-if="isVip(pending)" class="px-3 py-1 rounded-[8px] text-[13px] font-medium tracking-normal" :class="isDark ? 'bg-white text-black' : 'bg-black text-white'">VIP</p>
 
           <dl class="mt-2 grid grid-cols-2 gap-x-10 gap-y-2.5 text-left max-w-[640px] w-full">
             <div>
-              <dt class="text-[10.5px] uppercase tracking-normal text-neutral-500">Access ID</dt>
-              <dd class="text-[19px] font-medium font-mono tracking-normal">···{{ codeTail(pending) }}</dd>
+              <dt class="text-[10.5px] uppercase tracking-normal" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Access ID</dt>
+              <dd class="text-[19px] font-medium font-mono tracking-normal" :class="isDark ? 'text-white' : 'text-black'">···{{ codeTail(pending) }}</dd>
             </div>
             <div v-if="phoneTail(pending)">
-              <dt class="text-[10.5px] uppercase tracking-normal text-neutral-500">WhatsApp</dt>
-              <dd class="text-[19px] font-medium font-mono tracking-normal">···{{ phoneTail(pending) }}</dd>
+              <dt class="text-[10.5px] uppercase tracking-normal" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">WhatsApp</dt>
+              <dd class="text-[19px] font-medium font-mono tracking-normal" :class="isDark ? 'text-white' : 'text-black'">···{{ phoneTail(pending) }}</dd>
             </div>
             <div v-if="guestEmail(pending)">
-              <dt class="text-[10.5px] uppercase tracking-normal text-neutral-500">Email</dt>
-              <dd class="text-[15px] truncate">{{ maskEmail(guestEmail(pending)) }}</dd>
+              <dt class="text-[10.5px] uppercase tracking-normal" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Email</dt>
+              <dd class="text-[15px] truncate" :class="isDark ? 'text-neutral-200' : 'text-black'">{{ maskEmail(guestEmail(pending)) }}</dd>
             </div>
             <div v-if="guestType(pending)">
-              <dt class="text-[10.5px] uppercase tracking-normal text-neutral-500">Pass</dt>
-              <dd class="text-[15px]">{{ guestType(pending) }}</dd>
+              <dt class="text-[10.5px] uppercase tracking-normal" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Pass</dt>
+              <dd class="text-[15px]" :class="isDark ? 'text-neutral-200' : 'text-black'">{{ guestType(pending) }}</dd>
             </div>
             <div v-if="pendingSessions" class="col-span-2">
-              <dt class="text-[10.5px] uppercase tracking-normal text-neutral-500">Access valid for</dt>
-              <dd class="text-[15px]">{{ pendingSessions }}</dd>
+              <dt class="text-[10.5px] uppercase tracking-normal" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Access valid for</dt>
+              <dd class="text-[15px]" :class="isDark ? 'text-neutral-200' : 'text-black'">{{ pendingSessions }}</dd>
             </div>
           </dl>
 
           <!-- Party Size Stepper (Entrance Gate only) -->
-          <div v-if="mode === 'in'" class="mt-2 flex items-center justify-between p-3.5 rounded-[12px] bg-black/[0.03] border border-black/10 max-w-[640px] w-full">
+          <div
+            v-if="mode === 'in'"
+            class="mt-2 flex items-center justify-between p-3.5 rounded-[12px] border max-w-[640px] w-full"
+            :class="isDark ? 'bg-white/[0.04] border-white/10' : 'bg-black/[0.03] border-black/10'"
+          >
             <div class="text-left">
-              <p class="text-[11px] uppercase tracking-normal text-neutral-500 font-medium">Party Size (Headcount)</p>
-              <p class="text-[12.5px] text-neutral-500">Primary guest and accompanying party</p>
+              <p class="text-[11px] uppercase tracking-normal font-medium" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Party Size (Headcount)</p>
+              <p class="text-[12.5px]" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">Primary guest and accompanying party</p>
             </div>
             <div class="flex items-center gap-3">
               <button
                 type="button"
                 @click="pendingPartySize = Math.max(1, pendingPartySize - 1)"
-                class="size-10 rounded-[8px] bg-white border border-black/15 text-[20px] font-medium flex items-center justify-center cursor-pointer active:bg-black/10 transition-colors shadow-sm select-none"
+                class="size-10 rounded-[8px] border text-[20px] font-medium flex items-center justify-center cursor-pointer transition-colors shadow-sm select-none"
+                :class="isDark ? 'bg-white/10 border-white/15 text-white hover:bg-white/20 active:bg-white/25' : 'bg-white border-black/15 text-black hover:bg-black/5 active:bg-black/10'"
               >-</button>
-              <span class="text-[22px] font-medium tabular-nums min-w-[32px] text-center font-mono">{{ pendingPartySize }}</span>
+              <span class="text-[22px] font-medium tabular-nums min-w-[32px] text-center font-mono" :class="isDark ? 'text-white' : 'text-black'">{{ pendingPartySize }}</span>
               <button
                 type="button"
                 @click="pendingPartySize = Math.min(10, pendingPartySize + 1)"
-                class="size-10 rounded-[8px] bg-white border border-black/15 text-[20px] font-medium flex items-center justify-center cursor-pointer active:bg-black/10 transition-colors shadow-sm select-none"
+                class="size-10 rounded-[8px] border text-[20px] font-medium flex items-center justify-center cursor-pointer transition-colors shadow-sm select-none"
+                :class="isDark ? 'bg-white/10 border-white/15 text-white hover:bg-white/20 active:bg-white/25' : 'bg-white border-black/15 text-black hover:bg-black/5 active:bg-black/10'"
               >+</button>
             </div>
           </div>
@@ -499,13 +571,22 @@
           <p v-if="pendingProblem" class="mt-3 px-4 py-3 rounded-[12px] text-[14px] font-medium max-w-[640px] w-full" :class="pendingProblem.class">{{ pendingProblem.text }}</p>
         </div>
 
-        <div class="shrink-0 flex items-stretch gap-3 p-4 border-t border-black/10">
-          <button type="button" @click="cancelConfirm" class="flex-1 h-[64px] rounded-[14px] border border-black/20 text-[17px] font-medium active:bg-black/10 cursor-pointer">Not this guest</button>
+        <div
+          class="shrink-0 flex items-stretch gap-3 p-4 border-t"
+          :class="isDark ? 'border-white/10 bg-white/[0.02]' : 'border-black/10 bg-neutral-50'"
+        >
+          <button
+            type="button"
+            @click="cancelConfirm"
+            class="flex-1 h-[64px] rounded-[14px] border text-[17px] font-medium cursor-pointer transition-colors"
+            :class="isDark ? 'border-white/20 text-neutral-300 hover:bg-white/10' : 'border-black/20 text-neutral-700 hover:bg-black/5'"
+          >Not this guest</button>
           <button
             type="button"
             :disabled="Boolean(pendingProblem) || isChecking"
             @click="confirmPending"
-            class="flex-[1.6] h-[64px] rounded-[14px] bg-black text-white text-[19px] font-medium active:bg-neutral-700 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 transition-colors"
+            class="flex-[1.6] h-[64px] rounded-[14px] text-[19px] font-medium cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 transition-colors"
+            :class="isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'"
           >
             <component :is="mode === 'in' ? LogIn : LogOut" class="w-6 h-6" />
             {{ mode === 'in' ? (insideCount + pendingPartySize > maxCapacity ? 'Capacity Exceeded (Blocked)' : (pendingPartySize > 1 ? `Admit (${pendingPartySize} people)` : 'Admit')) : 'Check out' }}
@@ -551,6 +632,7 @@ import {
   ChevronRight, RefreshCw, BellRing
 } from 'lucide-vue-next';
 import type { EventConfig } from '../../types/editor.ts';
+import { useAuthStore } from '../../stores/authStore.ts';
 import {
   type Submission, type CheckInResult, checkInCode, patchSubmission, guestName, guestType, guestEmail, accessId, initials,
   formatTime, formatValue, normalizeStatus, findGuestsByShortCode, codeTail, phoneTail, maskEmail,
@@ -566,6 +648,7 @@ const props = defineProps<{
   /** On its own page (/hub/scanner): fullscreen covers the whole page. */
   standalone?: boolean;
   assignedMode?: 'in' | 'out' | 'both';
+  dark?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -573,6 +656,9 @@ const emit = defineEmits<{
   (e: 'toast', msg: string): void;
   (e: 'refresh'): void;
 }>();
+
+const authStore = useAuthStore();
+const isDark = computed(() => props.dark ?? authStore.isSuperAdmin);
 
 /** How long a result stays up: a clean admit clears fast so the queue keeps moving; problems stay long enough to read. */
 const HOLD_OK_MS = 1400;
