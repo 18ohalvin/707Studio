@@ -94,7 +94,7 @@
               Live Booth Capacity
             </span>
             <span class="tabular-nums font-mono text-[13px] text-black font-medium">
-              {{ insideCount }} <span class="text-neutral-400 font-normal">/ {{ maxCapacity }}</span>
+              <span class="apple-counter-ticker">{{ insideCount }}</span> <span class="text-neutral-400 font-normal">/ {{ maxCapacity }}</span>
               <span class="ml-1.5 text-[11px] font-normal" :style="{ color: barColor }">({{ capacityPercent }}%)</span>
             </span>
           </div>

@@ -1785,7 +1785,7 @@ more</span>
                 v-else-if="widget.props?.showQrCode !== false && !(isLivePass && livePass!.waitlisted)" 
                 class="w-full flex items-start justify-start pt-[4px]"
               >
-                <div class="size-[132px] border-[0.5px] border-black bg-transparent rounded-[6px] p-[10px] flex items-center justify-center relative overflow-hidden shadow-xs">
+                <div class="size-[132px] border-[0.5px] border-black bg-transparent rounded-[6px] p-[10px] flex items-center justify-center relative overflow-hidden shadow-xs apple-hologram-card">
                   <!-- Live page: the real, scannable pass for this guest -->
                   <template v-if="isLivePass">
                     <img v-if="livePass!.status === 'ready' && livePassQr" :src="livePassQr" :alt="`QR code for ${livePass!.code}`" class="size-full object-contain [image-rendering:pixelated]" />

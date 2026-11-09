@@ -1,10 +1,10 @@
 <template>
-  <!-- Center Bottom Toolbar Container (Figma Node 63:3395) -->
-  <div class="fixed left-1/2 -translate-x-1/2 bottom-[20px] z-[60] select-none backdrop-blur-[4px] bg-[#f5f5f5]/20 border border-black/10 border-solid flex gap-[8px] items-center p-[6px] rounded-[14px] shadow-[0px_12px_40px_0px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.03)]">
+  <!-- Center Bottom Toolbar Container (Figma Node 63:3395) with macOS Dock Magnification -->
+  <div class="fixed left-1/2 -translate-x-1/2 bottom-[20px] z-[60] select-none backdrop-blur-[4px] bg-[#f5f5f5]/20 border border-black/10 border-solid flex gap-[8px] items-center p-[6px] rounded-[14px] shadow-[0px_12px_40px_0px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.03)] apple-dock-shelf">
 
     <!-- 1. Plus / Add Block Button -->
     <div 
-      class="flex items-center justify-center relative rounded-[8px] shrink-0 size-[40px]"
+      class="flex items-center justify-center relative rounded-[8px] shrink-0 size-[40px] apple-dock-item"
       @mouseenter="hoveredButtonKey = 'add'"
       @mouseleave="hoveredButtonKey = null"
     >
@@ -41,7 +41,7 @@
 
     <!-- 2. Media Gallery Tool Button (Beside +) -->
     <div 
-      class="flex items-center justify-center relative rounded-[8px] shrink-0 size-[40px]"
+      class="flex items-center justify-center relative rounded-[8px] shrink-0 size-[40px] apple-dock-item"
       @mouseenter="hoveredButtonKey = 'media'"
       @mouseleave="hoveredButtonKey = null"
     >
@@ -74,7 +74,7 @@
 
     <!-- 3. Layers Tool Button -->
     <div 
-      class="flex items-center justify-center relative rounded-[8px] shrink-0 size-[40px]"
+      class="flex items-center justify-center relative rounded-[8px] shrink-0 size-[40px] apple-dock-item"
       @mouseenter="hoveredButtonKey = 'layers'"
       @mouseleave="hoveredButtonKey = null"
     >
@@ -111,7 +111,7 @@
 
     <!-- 4. Pages / Mini Overview Button (Selected: Black Solid + White Icon, Unselected: Ultra-Frosted Glass + Black Icon) -->
     <div 
-      class="flex items-center justify-center relative rounded-[8px] shrink-0 size-[40px]"
+      class="flex items-center justify-center relative rounded-[8px] shrink-0 size-[40px] apple-dock-item"
       @mouseenter="hoveredButtonKey = 'pages'"
       @mouseleave="hoveredButtonKey = null"
     >

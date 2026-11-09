@@ -1261,6 +1261,55 @@ button:hover,
   transform: rotate(0deg) translate3d(20%, 20%, 0);
 }
 
+/* ==========================================================================
+   macOS DOCK PARABOLIC MAGNIFICATION ENGINE
+   ========================================================================== */
+.apple-dock-shelf {
+  display: flex;
+  align-items: center;
+  transform: translateZ(0);
+}
+
+.apple-dock-item {
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 0.22s ease;
+  transform-origin: bottom center;
+  will-change: transform;
+}
+
+.apple-dock-item:hover {
+  transform: scale3d(1.14, 1.14, 1) translateY(-3px) !important;
+  z-index: 30;
+}
+
+/* Sibling neighbor magnification in CSS using has() */
+.apple-dock-item:has(+ .apple-dock-item:hover),
+.apple-dock-item:hover + .apple-dock-item {
+  transform: scale3d(1.06, 1.06, 1) translateY(-1.5px) !important;
+  z-index: 20;
+}
+
+/* ==========================================================================
+   PRECISION ODOMETER NUMBER TICKER
+   ========================================================================== */
+@keyframes appleTickerPop {
+  0% {
+    transform: translateY(-4px);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.apple-counter-ticker {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  animation: appleTickerPop 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
 /* Accessibility: Gracefully respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .apple-page-enter-active,
