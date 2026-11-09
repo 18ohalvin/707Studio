@@ -468,7 +468,7 @@
             >
               <div class="text-[11px] font-mono uppercase tracking-wider text-neutral-400">Superadmins</div>
               <div class="text-[22px] font-medium text-white font-707 mt-1">{{ superadminCount }}</div>
-              <div class="text-[11px] font-mono text-neutral-500 mt-0.5">Global Atelier Leads</div>
+              <div class="text-[11px] font-mono text-neutral-500 mt-0.5">Global Superadmin Leads</div>
             </button>
 
             <button 
@@ -608,7 +608,7 @@
                   <h3 class="text-[14px] font-medium text-white uppercase tracking-wider font-mono">Superadmins & Leads</h3>
                   <span class="px-2 py-0.2 rounded-full bg-white text-black text-[10px] font-mono font-bold">{{ superadminUsers.length }}</span>
                 </div>
-                <span class="text-[11px] font-mono text-neutral-400">Full Atelier Governance & Runway Sign-off</span>
+                <span class="text-[11px] font-mono text-neutral-400">Full Governance & Runway Sign-off</span>
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
@@ -635,7 +635,7 @@
 
                   <div class="flex items-center justify-between pt-2.5 border-t border-white/[0.06] text-[11px] font-mono">
                     <span class="px-2 py-0.5 rounded bg-white/[0.06] text-neutral-300 border border-white/5">
-                      Global Atelier (All Brands)
+                      Global (All Brands)
                     </span>
 
                     <div class="flex items-center gap-2">
@@ -894,7 +894,7 @@
 
           <!-- Bottom Maintenance Bar -->
           <div class="pt-2 flex items-center justify-between text-[11px] font-mono text-neutral-500">
-            <span>707 ATELIER GOVERNANCE</span>
+            <span>707 DEV GOVERNANCE</span>
             <button 
               @click="handleClearMediaConfirm" 
               class="hover:text-red-400 transition-colors cursor-pointer bg-transparent border-none p-0 text-[11px] font-mono text-neutral-500"
@@ -1696,7 +1696,7 @@ const brandPicUsers = computed(() => filteredTeamUsers.value.filter(u => u.role 
 const gateUsers = computed(() => filteredTeamUsers.value.filter(u => u.role === 'gate'));
 
 function formatBrandName(slugOrId: string): string {
-  if (slugOrId === 'all') return 'Global Atelier';
+  if (slugOrId === 'all') return 'Global (All Brands)';
   const found = brandStore.brands.find(b => b.slug === slugOrId || b.id === slugOrId);
   return found ? found.name : slugOrId;
 }

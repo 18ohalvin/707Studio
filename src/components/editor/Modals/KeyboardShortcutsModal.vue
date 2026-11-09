@@ -17,7 +17,7 @@
             </div>
             <div>
               <h3 class="font-707 font-medium text-[15.5px] text-black tracking-tight">Keyboard Shortcuts</h3>
-              <p class="font-707 text-[11px] text-neutral-500 font-light">707 Studio Studio-Grade Canvas Controls</p>
+              <p class="font-707 text-[11px] text-neutral-500 font-light">Canvas & Viewport Controls</p>
             </div>
           </div>
           <button 
@@ -145,7 +145,6 @@
             <span class="size-1.5 rounded-full bg-moss-600 animate-pulse" />
             <span>Press <kbd class="px-1 py-0.5 rounded bg-black/5 font-mono text-[10px] font-medium text-black">?</kbd> anytime to toggle this cheatsheet</span>
           </div>
-          <span class="text-[10.5px] font-mono text-neutral-400">707 Atelier Studio</span>
         </div>
       </div>
     </div>

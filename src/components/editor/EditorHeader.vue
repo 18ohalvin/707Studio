@@ -4,24 +4,17 @@
          header itself would trap every menu inside it (profile, notifications,
          history), leaving them nothing to blur — they showed fully transparent. -->
     <div class="absolute inset-0 -z-10 pointer-events-none bg-white/20 [backdrop-filter:blur(4px)] [-webkit-backdrop-filter:blur(4px)]" aria-hidden="true" />
-    <!-- Left: Normal Mode (707 Logo, Title Input, Save Status) -->
-    <div v-if="!editorStore.isPreviewMode" class="content-stretch flex gap-[16px] md:gap-[20px] items-center flex-1 min-w-0 mr-4">
-      <!-- 707 Official Logo from Figma (Click to return to Landing Page or Superadmin Templates) -->
-      <a 
-        href="/"
+    <!-- Left: Normal Mode (Back Button, Title Input, Save Status) -->
+    <div v-if="!editorStore.isPreviewMode" class="content-stretch flex gap-[10px] md:gap-[14px] items-center flex-1 min-w-0 mr-4">
+      <!-- Back Navigation Button (Return to Dashboard or Superadmin Dev) -->
+      <button 
+        type="button"
         @click.prevent="navigateHome" 
-        class="h-[18px] relative shrink-0 flex items-center cursor-pointer hover:opacity-85 transition-opacity" 
-        :title="editorStore.isTemplateMode ? 'Back to Superadmin Templates' : 'Back to Design Studio'"
+        class="size-[28px] -ml-1 rounded-full flex items-center justify-center text-neutral-600 hover:text-black hover:bg-black/5 transition-colors cursor-pointer shrink-0" 
+        :title="editorStore.isTemplateMode ? 'Back to Templates' : 'Back to Dashboard'"
       >
-        <img 
-          :src="FIGMA_ASSETS.logoDesignStudio" 
-          alt="707 Design Studio" 
-          class="h-[18px] w-auto object-contain pointer-events-none"
-          @error="handleLogoError"
-        />
-        <!-- Fallback if localhost asset server isn't running -->
-        <span v-if="logoFailed" class="font-black text-black text-xs tracking-tighter">707 DESIGN STUDIO</span>
-      </a>
+        <ChevronLeft class="w-4 h-4 stroke-[2]" />
+      </button>
 
       <!-- Title Container & Save Status -->
       <div class="flex flex-row items-center gap-[8px] shrink-0 max-w-full">
@@ -226,7 +219,7 @@ import { useAuthStore } from '../../stores/authStore.ts';
 import { useBrandStore } from '../../stores/brandStore.ts';
 import { usePresenceStore } from '../../stores/presenceStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
-import { Eye, Edit3, User, History, Check, Copy } from 'lucide-vue-next';
+import { Eye, Edit3, User, History, Check, Copy, ChevronLeft } from 'lucide-vue-next';
 import ProjectHistoryPanel from './ProjectHistoryPanel.vue';
 import NotificationsMenu from '../common/NotificationsMenu.vue';
 import UserProfileModal from '../modals/UserProfileModal.vue';
