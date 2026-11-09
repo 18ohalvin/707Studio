@@ -349,12 +349,12 @@
 
                 <button
                   type="button"
-                  @click="handleCreateCampaignForBrand(brand)"
+                  @click="handleAddPicForBrand(brand)"
                   class="h-[32px] px-3.5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11.5px] font-mono uppercase tracking-wider font-semibold transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs"
-                  title="Create new drop for this brand"
+                  :title="`Assign a new team PIC to ${brand.name}`"
                 >
-                  <Plus class="w-3.5 h-3.5 stroke-[2.5]" />
-                  <span>New Drop</span>
+                  <UserPlus class="w-3.5 h-3.5 stroke-[2]" />
+                  <span>+ Add PIC</span>
                 </button>
               </div>
             </div>
@@ -1058,7 +1058,12 @@
         >
           <div class="w-full max-w-[440px] bg-[#141414] rounded-[16px] shadow-[0_24px_70px_rgba(0,0,0,0.6)] border border-white/15 overflow-hidden flex flex-col animate-apple-pop text-white">
             <div class="px-5 py-3.5 border-b border-white/10 flex items-center justify-between">
-              <h3 class="text-[15px] font-medium text-white">Invite Team Member</h3>
+              <div class="flex flex-col">
+                <h3 class="text-[15px] font-medium text-white">Invite Team Member</h3>
+                <span v-if="newUserBrand !== 'all'" class="text-[11px] font-mono text-moss-300">
+                  Assigning to {{ formatBrandName(newUserBrand) }}
+                </span>
+              </div>
               <button 
                 type="button" 
                 @click="showAddUserModal = false" 
@@ -1481,7 +1486,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { 
   Plus, X, ExternalLink, ChevronRight, ChevronLeft, Layers, Building2, Boxes, Users, CheckCircle2, Search,
-  Settings, ShieldCheck, ScanLine, LayoutGrid, ListFilter
+  Settings, ShieldCheck, ScanLine, LayoutGrid, ListFilter, UserPlus
 } from 'lucide-vue-next';
 
 import { useAuthStore, type UserAccount, type UserRole } from '../stores/authStore.ts';
@@ -1791,6 +1796,14 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleGlobalKeydown);
 });
 
+function handleAddPicForBrand(brand: Brand) {
+  newUserName.value = '';
+  newUserEmail.value = '';
+  newUserRole.value = 'editor';
+  newUserBrand.value = brand.slug;
+  showAddUserModal.value = true;
+}
+
 function handleCreateCampaignForBrand(brand: Brand) {
   brandStore.setActiveBrand(brand);
   editorStore.createNewProject(`${brand.name} Campaign Drop`, undefined, []);
@@ -1925,7 +1938,9 @@ async function handleAddUserSubmit() {
     showAddUserModal.value = false;
     newUserName.value = '';
     newUserEmail.value = '';
-    router.push('/dev/roster');
+    if (!currentTab.value) {
+      router.push('/dev/roster');
+    }
   } catch (err: any) {
     editorStore.showToast(err?.message || 'Could not create account.');
   }
