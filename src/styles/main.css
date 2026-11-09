@@ -1267,7 +1267,6 @@ button:hover,
 .apple-dock-shelf {
   display: flex;
   align-items: center;
-  transform: translateZ(0);
 }
 
 .apple-dock-item {
