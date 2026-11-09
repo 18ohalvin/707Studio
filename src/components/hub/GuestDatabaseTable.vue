@@ -219,7 +219,8 @@
             <tr
               v-for="(s, idx) in pagedRows"
               :key="s.id"
-              class="group border-b border-black/[0.04] last:border-b-0 transition-colors cursor-pointer"
+              class="group border-b border-black/[0.04] last:border-b-0 transition-colors cursor-pointer animate-apple-slide-up"
+              :style="{ animationDelay: `${Math.min(idx, 12) * 20}ms` }"
               :class="[
                 selected.has(s.id) ? 'bg-black/[0.025]' : 'hover:bg-neutral-50/70',
                 drawerId === s.id ? 'bg-black/[0.035]' : ''

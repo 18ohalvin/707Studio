@@ -266,9 +266,10 @@
           <!-- Fixed Scrollable Container for 2 Projects limit with Luxury Mask -->
           <div class="w-full h-[96px] overflow-y-auto pr-1 flex flex-col gap-[8px] luxury-scroll-mask overscroll-contain">
             <div 
-              v-for="project in editorStore.userProjects"
+              v-for="(project, idx) in editorStore.userProjects"
               :key="project.id"
-              class="flex items-center justify-between w-full py-1.5 hover:bg-black/[0.03] px-3 rounded-[10px] transition-all group cursor-pointer border border-transparent hover:border-black/5"
+              class="flex items-center justify-between w-full py-1.5 hover:bg-black/[0.03] px-3 rounded-[10px] transition-all group cursor-pointer border border-transparent hover:border-black/5 animate-apple-slide-up"
+              :style="{ animationDelay: `${idx * 45}ms` }"
               data-name="Project Details Container"
               @click="openProject(project.id)"
             >

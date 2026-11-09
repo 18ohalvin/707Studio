@@ -518,16 +518,23 @@
     <Transition name="hud-result">
       <div
         v-if="result"
-        class="absolute inset-0 z-30 rounded-[16px] flex flex-col items-center justify-center text-center px-8 cursor-pointer"
-        :class="resultTheme.bg"
+        class="absolute inset-0 z-30 rounded-[16px] flex flex-col items-center justify-center text-center px-8 cursor-pointer select-none overflow-hidden"
+        :class="[
+          resultTheme.bg,
+          isSuccessResult ? '' : 'animate-apple-shake'
+        ]"
         @click="dismissResult"
       >
-        <div class="size-24 rounded-full flex items-center justify-center mb-4 hud-pop" :class="resultTheme.iconWrap">
+        <!-- Apple Pay / Face ID Success Burst concentric ripples -->
+        <div v-if="isSuccessResult" class="absolute size-44 rounded-full border border-white/20 apple-shockwave pointer-events-none" />
+        <div v-if="isSuccessResult" class="absolute size-64 rounded-full border border-white/10 apple-shockwave pointer-events-none" style="animation-delay: 180ms;" />
+
+        <div class="relative size-24 rounded-full flex items-center justify-center mb-4 apple-faceid-burst" :class="resultTheme.iconWrap">
           <component :is="resultTheme.icon" class="w-12 h-12" />
         </div>
         <p class="text-[14px] uppercase tracking-normal opacity-80">{{ resultTheme.kicker }}</p>
         <p class="text-[clamp(30px,6vh,56px)] font-medium leading-tight mt-2 max-w-full truncate">{{ result.name || resultTheme.title }}</p>
-        <p v-if="result.vip" class="mt-2 px-3 py-1 rounded-[8px] bg-white text-black text-[14px] font-medium tracking-normal">VIP</p>
+        <p v-if="result.vip" class="mt-2 px-3 py-1 rounded-[8px] bg-white text-black text-[14px] font-medium tracking-normal animate-apple-scale">VIP</p>
         <p class="text-[17px] opacity-90 mt-3">{{ result.detail }}</p>
         <p v-if="result.tail" class="text-[14px] opacity-70 mt-1 font-mono tracking-normal">ID ···{{ result.tail }}</p>
         <div class="absolute bottom-0 left-0 h-[4px] bg-white/70 hud-countdown" :style="{ animationDuration: `${result.hold}ms` }" />
@@ -796,6 +803,7 @@ const upcomingQueueGuests = computed(() => {
 type ScanKind = CheckInResult | 'waitlisted' | 'declined' | 'error';
 interface ScanResult { kind: ScanKind; name: string; detail: string; vip: boolean; tail: string; hold: number }
 const result = ref<ScanResult | null>(null);
+const isSuccessResult = computed(() => result.value?.kind === 'admitted' || result.value?.kind === 'checked_out');
 
 /** The guest the door is looking at, before anyone is admitted. */
 const pending = ref<Submission | null>(null);
@@ -1340,11 +1348,11 @@ onUnmounted(() => {
   position: absolute;
   left: 4%;
   right: 4%;
-  height: 2px;
+  height: 2.5px;
   border-radius: 2px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.95), transparent);
-  box-shadow: 0 0 18px 4px rgba(255,255,255,0.35);
-  animation: hud-sweep 2.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  background: linear-gradient(90deg, transparent 0%, rgba(52, 211, 153, 0.25) 20%, rgba(255, 255, 255, 0.95) 50%, rgba(52, 211, 153, 0.25) 80%, transparent 100%);
+  box-shadow: 0 0 20px 4px rgba(52, 211, 153, 0.55), 0 0 4px 1px rgba(255, 255, 255, 0.9);
+  animation: hud-sweep 2.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
 }
 @keyframes hud-sweep {
   0% { top: 4%; opacity: 0; }
