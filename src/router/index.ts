@@ -63,6 +63,16 @@ const routes = [
     redirect: '/dev'
   },
   {
+    path: '/about',
+    name: 'AboutStudio',
+    component: () => import('../views/AboutStudioView.vue'),
+    meta: { public: true }
+  },
+  {
+    path: '/contact',
+    redirect: '/about'
+  },
+  {
     path: '/:brandSlug/:pageSlug',
     name: 'PublicDrop',
     component: () => import('../views/PublicDropView.vue'),

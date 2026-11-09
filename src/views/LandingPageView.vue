@@ -36,16 +36,15 @@
 
       <!-- Right: Contact Link CTA, Bell Notification, Profile Icon Container -->
       <div class="flex items-center gap-[24px]" data-node-id="198:6798" data-name="Icons Container">
-        <!-- 1. Contact Team Hyperlink CTA (Not a button anymore) -->
-        <button 
+        <!-- 1. Contact Team Hyperlink CTA -->
+        <router-link 
           v-if="!authStore.isSuperAdmin"
-          type="button"
-          @click="showContactModal = true"
+          to="/about"
           class="font-707 text-[13px] text-neutral-600 hover:text-black transition-colors cursor-pointer bg-transparent border-0 p-0 whitespace-nowrap hover:underline underline-offset-4"
-          title="Contact 707 Team"
+          title="About 707 Design Studio & Contact Team"
         >
           Contact Team
-        </button>
+        </router-link>
 
         <!-- 2. Bell Notification Icon -->
         <NotificationsMenu v-if="authStore.isAuthenticated" />

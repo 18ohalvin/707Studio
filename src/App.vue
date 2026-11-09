@@ -30,7 +30,7 @@ const brandStore = useBrandStore();
 const editorStore = useEditorStore();
 
 const isPublicDrop = computed(() => {
-  return route.name === 'PublicDrop' || (Boolean(route.meta?.public) && route.name !== 'Login');
+  return route.name === 'PublicDrop' || (Boolean(route.meta?.public) && route.name !== 'Login' && route.name !== 'AboutStudio');
 });
 
 const isDevMode = computed(() => {
