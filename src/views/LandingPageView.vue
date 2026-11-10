@@ -406,11 +406,11 @@ const adaptiveGreeting = computed(() => {
   // Contextual user & brand parameters
   const user = authStore.currentUser;
   const isSuperAdmin = authStore.isSuperAdmin;
-  const activeBrand = brandStore.activeBrand?.name || '';
+  const activeBrand = brandStore.activeBrand?.name || (user?.assignedBrands?.[0] && user.assignedBrands[0] !== 'all' ? user.assignedBrands[0] : '') || '';
   const firstName = user?.name ? user.name.trim().split(/\s+/)[0] : '';
 
-  // Project health & state
-  const userProjects = editorStore.projects;
+  // Project health & state (Strictly scoped to the signed-in account/brand)
+  const userProjects = editorStore.userProjects;
   const liveCount = userProjects.filter(p => p.status === 'published' || p.status === 'approved' || (Number(p.live_version || 0) > 0)).length;
   const draftProject = userProjects.find(p => p.status === 'draft' || !p.status);
 
@@ -419,7 +419,12 @@ const adaptiveGreeting = computed(() => {
 
   // 1. Superadmin Suite Oversight
   if (isSuperAdmin) {
-    const adminPhrases = [
+    const adminPhrases = firstName ? [
+      `Welcome to command, ${firstName}.`,
+      `All brand houses accounted for, ${firstName}.`,
+      `From blueprint to live showcase, ${firstName}.`,
+      `Studio oversight active, ${firstName}.`
+    ] : [
       'All brand houses accounted for.',
       'From blueprint to live showcase.',
       'Studio oversight active.',

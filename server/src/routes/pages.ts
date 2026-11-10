@@ -199,6 +199,7 @@ pagesRouter.post('/:id/history/:entryId/restore', requireAuth, transition((id, r
 // POST /api/pages - Create or update a project's working copy (the editor's autosave)
 pagesRouter.post('/', requireAuth, async (req: Request, res: Response) => {
   const { id, brand_slug, title, slug, widget_tree, pages, page_settings, owner_id, owner_email, created_by } = req.body;
+  const claims = getClaims(res);
 
   const now = new Date().toISOString();
   const pageId = id || `page-${Date.now()}`;
@@ -244,9 +245,9 @@ pagesRouter.post('/', requireAuth, async (req: Request, res: Response) => {
     widget_tree: pageWidgets,
     pages: pageList,
     page_settings: settings,
-    owner_id: owner_id || existing?.owner_id || '',
-    owner_email: owner_email || existing?.owner_email || '',
-    created_by: created_by || existing?.created_by || '',
+    owner_id: owner_id || existing?.owner_id || claims.sub || '',
+    owner_email: owner_email || existing?.owner_email || claims.email || '',
+    created_by: created_by || existing?.created_by || claims.email || '',
     updated_at: now,
     created_at: existing?.created_at || now
   };

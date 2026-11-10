@@ -415,7 +415,7 @@
             Application Received.
           </h2>
           <p class="font-707 text-[13px] text-white/60 leading-relaxed px-2">
-            Your workspace request is with 707 Governance. Superadmin (Alvin) has been notified. You will be able to sign in as soon as access is approved.
+            Your workspace request is with 707 Governance. The Superadmin team has been notified. You will be able to sign in as soon as access is approved.
           </p>
         </div>
 
@@ -711,11 +711,11 @@ async function handleOnboardingBrandSubmit() {
   await submitOnboardingApplication();
 }
 
-// WhatsApp direct link to Superadmin Alvin (+6281277208270)
+// WhatsApp direct link to 707 Superadmin
 const whatsappUrl = computed(() => {
   const applicantInfo = onboardingName.value ? `(${onboardingName.value} - ${email.value})` : `(${email.value})`;
   const brandInfo = onboardingBrand.value ? ` for ${onboardingBrand.value}` : '';
-  const text = encodeURIComponent(`Hi Alvin, I have submitted my 707 Design Studio workspace application ${applicantInfo}${brandInfo}.`);
+  const text = encodeURIComponent(`Hi Superadmin, I have submitted my 707 Design Studio workspace application ${applicantInfo}${brandInfo}.`);
   return `https://wa.me/6281277208270?text=${text}`;
 });
 

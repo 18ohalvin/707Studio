@@ -427,8 +427,90 @@ authRouter.post('/signin', async (req: Request, res: Response) => {
     return res.status(400).json({ success: false, error: 'Please enter your password or PIN.' });
   }
 
-  // The superadmin passkey is the configured studio password, not a constant
-  // in the source.
+  // 1. If an identifier was provided, find that specific account first.
+  // This guarantees each Superadmin (e.g. Lioviani, Alvin) or Brand Editor gets their OWN user object and claims,
+  // never getting overwritten by a generic Superadmin payload.
+  if (identifier) {
+    const candidates = await findAccounts(identifier);
+
+    // Find candidate matching password OR master passkey (for superadmin accounts)
+    const account = candidates.find((c) => {
+      const hash = String(c.password || '');
+      const matchesPassword = hash && verifyPassword(password, hash);
+      const isSuperWithMaster = String(c.role) === 'superadmin' && safeEqual(password, STUDIO_PASSWORD);
+      return matchesPassword || isSuperWithMaster;
+    });
+
+    if (account) {
+      if (String(account.status || 'active') === 'suspended') {
+        return res.status(403).json({
+          success: false,
+          error: 'This account has been suspended. Please contact Superadmin.'
+        });
+      }
+
+      if (String(account.role) === 'gate' && !String(account.assigned_project ?? account.assignedProject ?? '').trim()) {
+        return res.status(403).json({
+          success: false,
+          error: 'This gate account has no campaign assigned. Please contact the campaign owner.'
+        });
+      }
+
+      if (accountExpired(account)) {
+        return res.status(403).json({
+          success: false,
+          error: 'This account has expired. Please contact the campaign owner.'
+        });
+      }
+
+      const stored = String(account.password || '');
+      if (!isHashed(stored)) {
+        await upgradeStoredPassword(account, password);
+      }
+
+      const clientUser = toClientUser(account);
+      const isSuper = String(account.role) === 'superadmin';
+      return res.json({
+        success: true,
+        token: issueToken({
+          sub: String(account.id),
+          email: String(account.email || ''),
+          role: String(account.role || 'editor'),
+          brands: Array.isArray(clientUser.assignedBrands) ? clientUser.assignedBrands.map(String) : (isSuper ? ['all'] : []),
+          ...(String(account.role) === 'gate' ? { project: String(clientUser.assignedProject || '') } : {})
+        }),
+        user: clientUser,
+        isSuperAdmin: isSuper,
+        expiresInMs: SESSION_TTL_MS
+      });
+    }
+
+    // If identifier was provided and didn't match an account, only fall back to master superadmin if identifier explicitly specifies admin
+    const isAdminIdentifier = ['admin', 'superadmin', 'admin@707designstudio.internal'].includes(identifier.toLowerCase());
+    if (isAdminIdentifier && safeEqual(password, STUDIO_PASSWORD)) {
+      return res.json({
+        success: true,
+        token: issueToken(SUPERADMIN_CLAIMS),
+        user: SUPERADMIN_USER,
+        isSuperAdmin: true,
+        expiresInMs: SESSION_TTL_MS
+      });
+    }
+
+    if (!candidates.length) {
+      return res.status(401).json({
+        success: false,
+        error: 'Account not found. Access is restricted to team accounts registered by Superadmin.'
+      });
+    }
+
+    return res.status(401).json({
+      success: false,
+      error: 'Incorrect password. Please verify your credentials and try again.'
+    });
+  }
+
+  // 2. Anonymous / PIN-only Superadmin fallback (when no specific identifier is provided)
   if (safeEqual(password, STUDIO_PASSWORD)) {
     return res.json({
       success: true,
@@ -439,70 +521,7 @@ authRouter.post('/signin', async (req: Request, res: Response) => {
     });
   }
 
-  if (!identifier) {
-    return res.status(401).json({ success: false, error: 'Incorrect master passkey PIN for Superadmin.' });
-  }
-
-  const candidates = await findAccounts(identifier);
-  if (!candidates.length) {
-    return res.status(401).json({
-      success: false,
-      error: 'Account not found. Access is restricted to team accounts registered by Superadmin.'
-    });
-  }
-
-  // The account is the first candidate whose password matches (usually there is only one).
-  const account = candidates.find((c) => {
-    const hash = String(c.password || '');
-    return hash && verifyPassword(password, hash);
-  });
-  if (!account) {
-    return res.status(401).json({
-      success: false,
-      error: 'Incorrect password. Please verify your credentials and try again.'
-    });
-  }
-
-  if (String(account.status || 'active') === 'suspended') {
-    return res.status(403).json({
-      success: false,
-      error: 'This account has been suspended. Please contact Superadmin.'
-    });
-  }
-
-  if (String(account.role) === 'gate' && !String(account.assigned_project ?? account.assignedProject ?? '').trim()) {
-    return res.status(403).json({
-      success: false,
-      error: 'This gate account has no campaign assigned. Please contact the campaign owner.'
-    });
-  }
-
-  if (accountExpired(account)) {
-    return res.status(403).json({
-      success: false,
-      error: 'This account has expired. Please contact the campaign owner.'
-    });
-  }
-
-  const stored = String(account.password || '');
-  if (!isHashed(stored)) {
-    await upgradeStoredPassword(account, password);
-  }
-
-  const clientUser = toClientUser(account);
-  res.json({
-    success: true,
-    token: issueToken({
-      sub: String(account.id),
-      email: String(account.email || ''),
-      role: String(account.role || 'editor'),
-      brands: Array.isArray(clientUser.assignedBrands) ? clientUser.assignedBrands.map(String) : [],
-      ...(String(account.role) === 'gate' ? { project: String(clientUser.assignedProject || '') } : {})
-    }),
-    user: clientUser,
-    isSuperAdmin: String(account.role) === 'superadmin',
-    expiresInMs: SESSION_TTL_MS
-  });
+  return res.status(401).json({ success: false, error: 'Incorrect master passkey PIN for Superadmin.' });
 });
 
 // Tokens are stateless, so signing out is a client-side discard. Kept as an

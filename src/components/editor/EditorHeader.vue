@@ -381,9 +381,8 @@ function handleLogoError() {
 }
 
 const userInitials = computed(() => {
-  if (authStore.isSuperAdmin) return 'SA';
   const name = authStore.currentUser?.name || brandStore.activeBrand?.name || '';
-  if (!name) return '707';
+  if (!name) return authStore.isSuperAdmin ? 'SA' : '707';
   const parts = name.trim().split(/\s+/);
   if (parts.length >= 2) {
     return (parts[0][0] + parts[1][0]).toUpperCase();

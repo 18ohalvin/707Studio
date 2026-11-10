@@ -236,21 +236,19 @@ const isDark = computed(() => {
 });
 
 const displayName = computed(() => {
-  if (authStore.isSuperAdmin) return 'Superadmin Lead';
-  return authStore.currentUser?.name || brandStore.activeBrand?.name || 'Brand Team';
+  return authStore.currentUser?.name || (authStore.isSuperAdmin ? 'Superadmin Lead' : (brandStore.activeBrand?.name || 'Brand Team'));
 });
 
 const userSubtitle = computed(() => {
-  if (authStore.isSuperAdmin) return 'admin@707';
   if (authStore.currentUser?.email) return authStore.currentUser.email;
+  if (authStore.isSuperAdmin) return 'admin@707';
   if (brandStore.activeBrand?.slug) return `@${brandStore.activeBrand.slug}`;
   return 'Brand Editor';
 });
 
 const userInitials = computed(() => {
-  if (authStore.isSuperAdmin) return 'SA';
-  const name = displayName.value;
-  if (!name) return '707';
+  const name = authStore.currentUser?.name || displayName.value;
+  if (!name) return authStore.isSuperAdmin ? 'SA' : '707';
   const parts = name.trim().split(/\s+/);
   if (parts.length >= 2) {
     return (parts[0][0] + parts[1][0]).toUpperCase();

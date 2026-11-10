@@ -69,28 +69,28 @@ export const useAuthStore = defineStore('auth', () => {
         const adminStored = localStorage.getItem(SUPERADMIN_STORAGE_KEY);
         const userStored = localStorage.getItem(CURRENT_USER_STORAGE_KEY);
 
-        if (adminStored === 'true') {
-          isSuperAdmin.value = true;
-          currentUser.value = {
-            id: 'superadmin_master',
-            name: 'Alvin Decorous (Lead Admin)',
-            email: 'admin@707designstudio.internal',
-            role: 'superadmin',
-            assignedBrands: ['all'],
-            status: 'active',
-            createdAt: new Date().toISOString()
-          };
-        } else if (userStored) {
+        if (userStored) {
           try {
             const parsedUser = JSON.parse(userStored);
             currentUser.value = parsedUser;
-            isSuperAdmin.value = parsedUser.role === 'superadmin';
+            isSuperAdmin.value = parsedUser.role === 'superadmin' || adminStored === 'true';
             const brandStore = useBrandStore();
             brandStore.syncActiveBrandWithUser(parsedUser);
           } catch {
             currentUser.value = null;
             isSuperAdmin.value = false;
           }
+        } else if (adminStored === 'true') {
+          isSuperAdmin.value = true;
+          currentUser.value = {
+            id: 'superadmin_master',
+            name: 'Superadmin',
+            email: 'admin@707designstudio.internal',
+            role: 'superadmin',
+            assignedBrands: ['all'],
+            status: 'active',
+            createdAt: new Date().toISOString()
+          };
         } else {
           isSuperAdmin.value = false;
           currentUser.value = null;

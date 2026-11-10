@@ -377,4 +377,54 @@ describe('Multiaccount & Data Isolation Logic', () => {
     editorStore.openProjectById('proj_sarah_secret');
     expect(editorStore.currentProjectId).toBe('proj_sarah_secret');
   });
+
+  it('9. Second superadmin retains their own identity across reloads and is not overwritten by lead admin', () => {
+    const authStore = useAuthStore();
+    authStore.signOut();
+
+    // Simulate second superadmin (Lioviani Gavrilla) session stored in browser
+    const liovianiUser = {
+      id: 'superadmin_lioviani',
+      name: 'Lioviani Gavrilla',
+      email: 'lioviani@707designstudio.internal',
+      role: 'superadmin' as const,
+      assignedBrands: ['all'],
+      status: 'active' as const,
+      createdAt: new Date().toISOString()
+    };
+
+    localStorage.setItem('707_superadmin_auth', 'true');
+    localStorage.setItem('707_current_user', JSON.stringify(liovianiUser));
+    localStorage.setItem('studio_token', 'valid_token_lio');
+    localStorage.removeItem('707_logged_out');
+
+    // Trigger initAuth() as happens on page reload
+    authStore.initAuth();
+
+    expect(authStore.isSuperAdmin).toBe(true);
+    expect(authStore.currentUser?.name).toBe('Lioviani Gavrilla');
+    expect(authStore.currentUser?.email).toBe('lioviani@707designstudio.internal');
+    expect(authStore.currentUser?.name).not.toContain('Alvin');
+  });
+
+  it('10. Newly created project strictly attributes owner_id, owner_email, and created_by to active account', () => {
+    const authStore = useAuthStore();
+    const editorStore = useEditorStore();
+
+    authStore.currentUser = {
+      id: 'user_editor_sarah',
+      name: 'Sarah Chen',
+      email: 'sarah.chen@atmos.co.id',
+      role: 'editor',
+      assignedBrands: ['atmos'],
+      status: 'active',
+      createdAt: new Date().toISOString()
+    };
+    authStore.isSuperAdmin = false;
+
+    const newProj = editorStore.createNewProject('Summer Pop-up', 'atmos');
+    expect(newProj.owner_id).toBe('user_editor_sarah');
+    expect(newProj.owner_email).toBe('sarah.chen@atmos.co.id');
+    expect(newProj.created_by).toBe('Sarah Chen');
+  });
 });
