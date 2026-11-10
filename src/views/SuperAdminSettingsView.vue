@@ -242,13 +242,6 @@
                 </button>
                 <button
                   type="button"
-                  @click="handleDeclineProject(p.id)"
-                  class="h-[36px] px-4 rounded-[8px] border border-white/15 bg-white/[0.05] hover:bg-red-950/40 text-[11.5px] font-mono uppercase tracking-wider text-neutral-300 hover:text-red-400 hover:border-red-800/40 transition-colors cursor-pointer"
-                >
-                  Request Changes
-                </button>
-                <button
-                  type="button"
                   @click="handleApproveProject(p.id)"
                   class="h-[36px] px-5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11.5px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 shadow-xs font-semibold"
                 >

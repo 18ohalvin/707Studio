@@ -232,7 +232,7 @@ const authStore = useAuthStore();
 
 const isDark = computed(() => {
   if (typeof props.dark === 'boolean') return props.dark;
-  return route.path.startsWith('/dev') || (authStore.isSuperAdmin && route.path !== '/');
+  return route.path.startsWith('/dev') || route.path.startsWith('/settings');
 });
 
 const displayName = computed(() => {

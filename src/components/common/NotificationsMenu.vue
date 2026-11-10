@@ -1,6 +1,6 @@
 <template>
   <div class="relative" ref="rootRef">
-    <NotificationBell :has-unread="unreadCount > 0" @click="toggle" />
+    <NotificationBell :has-unread="unreadCount > 0" :dark="isDark" @click="toggle" />
 
     <Teleport to="body">
     <Transition name="notif-pop">
@@ -318,7 +318,7 @@ const authStore = useAuthStore();
 
 const isDark = computed(() => {
   if (typeof props.dark === 'boolean') return props.dark;
-  return route.path.startsWith('/dev') || (authStore.isSuperAdmin && route.path !== '/');
+  return route.path.startsWith('/dev') || route.path.startsWith('/settings');
 });
 
 const rawItems = ref<NotificationItem[]>([]);
