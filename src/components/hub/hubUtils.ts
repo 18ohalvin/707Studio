@@ -131,9 +131,18 @@ export function formatValue(value: any): string {
   if (value === null || value === undefined) return '';
   if (Array.isArray(value)) {
     // Picked sessions are stored as { label, sublabel } so the pass can print them.
-    return value.map(v => (v && typeof v === 'object' ? [v.label, v.sublabel].filter(Boolean).join(' · ') : String(v))).join(', ');
+    return value.map(v => {
+      if (v && typeof v === 'object') {
+        if (v.url && v.name) return `${v.name} (${v.url})`;
+        return [v.label, v.sublabel].filter(Boolean).join(' · ');
+      }
+      return String(v);
+    }).join(', ');
   }
-  if (typeof value === 'object') return JSON.stringify(value);
+  if (typeof value === 'object') {
+    if (value.url && value.name) return `${value.name} (${value.url})`;
+    return JSON.stringify(value);
+  }
   return String(value);
 }
 

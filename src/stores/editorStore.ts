@@ -285,6 +285,7 @@ export const useEditorStore = defineStore('editor', () => {
   const isButtonSidebarOpen = ref<boolean>(false);
   const isChoiceSidebarOpen = ref<boolean>(false);
   const isFormSidebarOpen = ref<boolean>(false);
+  const isDocumentSidebarOpen = ref<boolean>(false);
   const isModalSidebarOpen = ref<boolean>(false);
   const isEPassSidebarOpen = ref<boolean>(false);
   const isTicketSidebarOpen = ref<boolean>(false);
@@ -382,6 +383,7 @@ export const useEditorStore = defineStore('editor', () => {
       const hasFormInput = allWidgets.some(w => 
         w.type === 'FieldInput' || 
         w.type === 'RegistrationForm' ||
+        w.type === 'DocumentUpload' ||
         (w.props?.modalProps && (w.props.modalProps.variant === 'message-field' || w.props.modalProps.fieldType)) ||
         (w.type === 'ModalOverlay' && (w.props?.variant === 'message-field' || w.props?.fieldType))
       );
@@ -761,6 +763,20 @@ export const useEditorStore = defineStore('editor', () => {
           ]
         };
         break;
+      case 'DocumentUpload':
+        defaultProps = {
+          title: 'UPLOAD DOCUMENT',
+          subtitle: 'Upload your file (PDF, PNG, JPG up to 10MB)',
+          required: false,
+          allowedCategories: ['documents', 'images'],
+          allowedExtensions: ['.pdf', '.jpg', '.jpeg', '.png', '.webp'],
+          maxSizeMb: 10,
+          allowMultiple: false,
+          maxFiles: 1,
+          fieldName: 'document_upload',
+          uploadedFiles: []
+        };
+        break;
       case 'TicketField':
         defaultProps = { fields: ['guestName'], align: 'left', logoColorMode: 'black' };
         break;
@@ -867,6 +883,8 @@ export const useEditorStore = defineStore('editor', () => {
       openChoiceSidebar();
     } else if (type === 'RegistrationForm') {
       openFormSidebar();
+    } else if (type === 'DocumentUpload') {
+      openDocumentSidebar();
     } else if (type === 'ModalOverlay') {
       openModalSidebar();
     } else if (type === 'GuestEPass' || type === 'LiveQueuePass') {
@@ -1302,6 +1320,35 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
+  function openDocumentSidebar() {
+    isAddMenuOpen.value = false;
+    isWidgetSidebarOpen.value = false;
+    isMediaSidebarOpen.value = false;
+    isMediaGalleryOpen.value = false;
+    isTextSidebarOpen.value = false;
+    isButtonSidebarOpen.value = false;
+    isChoiceSidebarOpen.value = false;
+    isFormSidebarOpen.value = false;
+    isDocumentSidebarOpen.value = false;
+    isModalSidebarOpen.value = false;
+    isEPassSidebarOpen.value = false;
+    isLayersOpen.value = false;
+    isPagesOpen.value = false;
+    isDocumentSidebarOpen.value = true;
+  }
+
+  function closeDocumentSidebar() {
+    isDocumentSidebarOpen.value = false;
+  }
+
+  function toggleDocumentSidebar() {
+    if (isDocumentSidebarOpen.value) {
+      closeDocumentSidebar();
+    } else {
+      openDocumentSidebar();
+    }
+  }
+
   function openModalSidebar() {
     isAddMenuOpen.value = false;
     isWidgetSidebarOpen.value = false;
@@ -1333,7 +1380,7 @@ export const useEditorStore = defineStore('editor', () => {
   // Ticket setup sidebar gives way so the two never overlap.
   watch(
     () => [isWidgetSidebarOpen.value, isMediaSidebarOpen.value, isTextSidebarOpen.value, isButtonSidebarOpen.value,
-      isChoiceSidebarOpen.value, isFormSidebarOpen.value, isModalSidebarOpen.value, isEPassSidebarOpen.value, isLayersOpen.value],
+      isChoiceSidebarOpen.value, isFormSidebarOpen.value, isDocumentSidebarOpen.value, isModalSidebarOpen.value, isEPassSidebarOpen.value, isLayersOpen.value],
     (open) => {
       if (open.some(Boolean)) isTicketSidebarOpen.value = false;
     }
@@ -1353,6 +1400,7 @@ export const useEditorStore = defineStore('editor', () => {
     isButtonSidebarOpen.value = false;
     isChoiceSidebarOpen.value = false;
     isFormSidebarOpen.value = false;
+    isDocumentSidebarOpen.value = false;
     isModalSidebarOpen.value = false;
     isLayersOpen.value = false;
     isPagesOpen.value = false;
@@ -1380,6 +1428,7 @@ export const useEditorStore = defineStore('editor', () => {
     isButtonSidebarOpen.value = false;
     isChoiceSidebarOpen.value = false;
     isFormSidebarOpen.value = false;
+    isDocumentSidebarOpen.value = false;
     isModalSidebarOpen.value = false;
     isPagesOpen.value = false;
     isLayersOpen.value = true;
@@ -1406,6 +1455,7 @@ export const useEditorStore = defineStore('editor', () => {
     isButtonSidebarOpen.value = false;
     isChoiceSidebarOpen.value = false;
     isFormSidebarOpen.value = false;
+    isDocumentSidebarOpen.value = false;
     isModalSidebarOpen.value = false;
     isLayersOpen.value = false;
     isPagesOpen.value = true;
@@ -1480,6 +1530,7 @@ export const useEditorStore = defineStore('editor', () => {
     isButtonSidebarOpen.value = false;
     isChoiceSidebarOpen.value = false;
     isFormSidebarOpen.value = false;
+    isDocumentSidebarOpen.value = false;
     isModalSidebarOpen.value = false;
     isEPassSidebarOpen.value = false;
     isTicketSidebarOpen.value = false;
@@ -2255,6 +2306,7 @@ export const useEditorStore = defineStore('editor', () => {
     isButtonSidebarOpen,
     isChoiceSidebarOpen,
     isFormSidebarOpen,
+    isDocumentSidebarOpen,
     isModalSidebarOpen,
     isEPassSidebarOpen,
     isLayersOpen,
@@ -2293,6 +2345,9 @@ export const useEditorStore = defineStore('editor', () => {
     openFormSidebar,
     closeFormSidebar,
     toggleFormSidebar,
+    openDocumentSidebar,
+    closeDocumentSidebar,
+    toggleDocumentSidebar,
     openModalSidebar,
     closeModalSidebar,
     toggleModalSidebar,

@@ -667,6 +667,34 @@
             Image Matrix
           </p>
         </div>
+
+        <!-- 8. Document Upload Widget (Option A) -->
+        <div 
+          draggable="true"
+          @dragstart="handleDragStart($event, { type: 'DocumentUpload', label: 'Document Upload', customProps: { title: 'UPLOAD DOCUMENT', subtitle: 'Upload your file (PDF, PNG, JPG up to 10MB)' } })"
+          @dragend="handleDragEnd"
+          @click="addDocumentUploadWidget()"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group w-[84px]"
+          title="Drag to canvas or click to add (Document and multi-format file upload dropzone)"
+        >
+          <div class="border border-[#c9c9c9] flex flex-col justify-between p-2 h-[130px] rounded-[8px] shrink-0 w-[72px] bg-white group-hover:border-black transition-colors shadow-sm overflow-hidden">
+            <!-- Header line -->
+            <div class="flex flex-col gap-1 w-full pt-0.5">
+              <div class="w-3/4 h-1.5 bg-black/80 rounded-[1px]" />
+              <div class="w-full h-1 bg-black/30 rounded-[1px]" />
+            </div>
+            <!-- Frosted upload dashed box -->
+            <div class="w-full flex-1 border border-dashed border-neutral-300 rounded-[4px] bg-neutral-50 flex flex-col items-center justify-center p-1 gap-1 my-1">
+              <FileUp class="size-4 text-black stroke-[1.8]" />
+              <div class="w-4/5 h-1 bg-black/40 rounded-full" />
+            </div>
+            <!-- Mini bottom accent -->
+            <div class="w-full h-1.5 bg-black/80 rounded-[2px]" />
+          </div>
+          <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
+            Document Upload
+          </p>
+        </div>
       </div>
 
       <!-- Filter Buttons (Individual Field Category Tabs) -->
@@ -885,6 +913,7 @@ import {
   Ticket, 
   CalendarCheck,
   LayoutGrid,
+  FileUp,
   Image as ImageIcon
 } from 'lucide-vue-next';
 
@@ -919,6 +948,7 @@ const currentTabFields = computed(() => {
         { name: 'Number', icon: Hash },
         { name: 'Long Text', icon: AlignLeft },
         { name: 'Address', icon: MapPin },
+        { name: 'Document Upload', icon: FileUp },
         { name: 'Dropdown', icon: ChevronDown }
       ];
     case 'Dates':
@@ -1181,9 +1211,15 @@ function getFieldDefaultProps(fieldName: string) {
   };
 }
 
+function addDocumentUploadWidget() {
+  editorStore.addWidget('DocumentUpload');
+}
+
 function addFormField(fieldName: string) {
   if (fieldName === 'RSVP Pass') {
     addEPassWidget();
+  } else if (fieldName === 'Document Upload') {
+    addDocumentUploadWidget();
   } else if (selectedFormTab.value === 'Choices') {
     editorStore.addWidget('MultipleChoice', undefined, getChoiceDefaultProps(fieldName));
   } else {

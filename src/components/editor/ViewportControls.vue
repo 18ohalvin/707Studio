@@ -181,6 +181,7 @@ const isRightSidebarOpen = computed(() => {
     editorStore.isButtonSidebarOpen ||
     editorStore.isChoiceSidebarOpen ||
     editorStore.isFormSidebarOpen ||
+    editorStore.isDocumentSidebarOpen ||
     editorStore.isModalSidebarOpen ||
     editorStore.isEPassSidebarOpen ||
     editorStore.isTicketSidebarOpen;

@@ -22,7 +22,15 @@ export type WidgetType =
   /* Used by the ticket landing page. No renderer case exists for it yet, so a
      PassCTA widget currently displays nothing — needs a display built before
      it is used on a live page. */
-  | 'PassCTA';
+  | 'PassCTA'
+  | 'DocumentUpload';
+
+export interface UploadedFileItem {
+  url: string;
+  name: string;
+  size: number;
+  type: string;
+}
 
 export interface FormFieldItem {
   id: string;
@@ -31,8 +39,24 @@ export interface FormFieldItem {
   type?: string;
   countryCode?: string;
   required?: boolean;
-  value?: string;
+  value?: any;
   errorMessage?: string;
+  allowedTypes?: string[];
+  maxSizeMb?: number;
+  fileData?: UploadedFileItem;
+}
+
+export interface DocumentUploadProps {
+  title: string;
+  subtitle?: string;
+  required?: boolean;
+  allowedCategories?: Array<'documents' | 'images' | 'spreadsheets' | 'all'>;
+  allowedExtensions?: string[];
+  maxSizeMb?: number;
+  allowMultiple?: boolean;
+  maxFiles?: number;
+  fieldName?: string;
+  uploadedFiles?: UploadedFileItem[];
 }
 
 export type ChoiceVariant = 'detailed-card' | 'simple-row' | 'horizontal-block' | 'image-grid';

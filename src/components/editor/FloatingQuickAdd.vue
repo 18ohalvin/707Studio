@@ -187,6 +187,8 @@ const isLevel2Active = computed(() => {
     editorStore.isWidgetSidebarOpen || 
     editorStore.isMediaSidebarOpen || 
     editorStore.isTextSidebarOpen || 
+    editorStore.isFormSidebarOpen ||
+    editorStore.isDocumentSidebarOpen ||
     editorStore.isMediaGalleryOpen;
 });
 

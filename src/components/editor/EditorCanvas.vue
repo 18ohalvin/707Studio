@@ -215,6 +215,13 @@
       @close="editorStore.isFormSidebarOpen = false"
     />
 
+    <!-- Document Upload Setup Sidebar Drawer -->
+    <DocumentSetupSidebar 
+      @click.stop
+      :is-open="editorStore.isDocumentSidebarOpen"
+      @close="editorStore.isDocumentSidebarOpen = false"
+    />
+
     <!-- Pop Up Modal Setup Sidebar Drawer (Figma Node 276:4722) -->
     <ModalSetupSidebar 
       @click.stop
@@ -274,6 +281,7 @@ import TextSetupSidebar from './TextSetupSidebar.vue';
 import ButtonSetupSidebar from './ButtonSetupSidebar.vue';
 import ChoiceSetupSidebar from './ChoiceSetupSidebar.vue';
 import FormSetupSidebar from './FormSetupSidebar.vue';
+import DocumentSetupSidebar from './DocumentSetupSidebar.vue';
 import ModalSetupSidebar from './ModalSetupSidebar.vue';
 import EPassSetupSidebar from './EPassSetupSidebar.vue';
 import TicketSetupSidebar from './TicketSetupSidebar.vue';

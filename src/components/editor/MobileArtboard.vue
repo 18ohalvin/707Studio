@@ -229,7 +229,7 @@
             @dragover.prevent.stop="handleDragOver($event, index)"
             @drop.prevent.stop="handleDrop($event, index)"
             :class="[
-              (widget.type === 'TextBanner' || widget.type === 'MultipleChoice' || widget.type === 'FieldInput' || widget.type === 'RegistrationForm' || widget.type === 'ActionButton') ? 'overflow-visible' : 'overflow-hidden',
+              (widget.type === 'TextBanner' || widget.type === 'MultipleChoice' || widget.type === 'FieldInput' || widget.type === 'RegistrationForm' || widget.type === 'ActionButton' || widget.type === 'DocumentUpload') ? 'overflow-visible' : 'overflow-hidden',
               getWidgetMarginTopClass(index),
               (isHeroWithButtonOnly && widget.type === 'HeroDrop') ? (isLivePage ? 'h-full min-h-[calc(100dvh-48px)] flex-1' : 'h-full min-h-0 flex-1') : '',
               (isHeroWithButtonOnly && (widget.type === 'ActionButton' || widget.type === 'TextBanner')) ? 'shrink-0' : '',
@@ -1075,7 +1075,50 @@
                       <ChevronDown class="w-[12px] h-[12px] text-neutral-400 group-hover/code:text-black transition-colors stroke-[2]" />
                     </div>
 
+                    <!-- Hidden file input for file-type field -->
                     <input 
+                      v-if="field.type === 'file'"
+                      :ref="el => registerDocumentInput(`${widget.id}_${field.id}`, el)"
+                      type="file"
+                      class="hidden"
+                      accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx"
+                      @change="handleRegistrationFormFileChange($event, widget, field)"
+                    />
+
+                    <!-- File Upload Trigger & Uploaded File Pill -->
+                    <div 
+                      v-if="field.type === 'file'"
+                      class="w-full flex items-center justify-between py-0.5 select-none relative z-10"
+                      :class="isLivePage || isPreviewModal ? 'cursor-pointer' : ''"
+                      @click.stop="isLivePage || isPreviewModal ? triggerDocumentPicker(`${widget.id}_${field.id}`) : undefined"
+                    >
+                      <div v-if="uploadingWidgetIds.has(`${widget.id}_${field.id}`)" class="flex items-center gap-2">
+                        <Loader2 class="size-4 text-black animate-spin" />
+                        <span class="font-707 text-[13px] text-black">Uploading document...</span>
+                      </div>
+                      <div v-else-if="field.fileData || field.value" class="flex items-center justify-between w-full">
+                        <div class="flex items-center gap-2 min-w-0">
+                          <FileText class="size-4 text-black shrink-0" />
+                          <span class="font-707 text-[13px] text-black font-medium truncate">{{ field.fileData?.name || field.name }}</span>
+                          <span v-if="field.fileData?.size" class="font-707 text-[11px] text-neutral-400 font-mono">({{ formatFileSize(field.fileData.size) }})</span>
+                        </div>
+                        <button 
+                          v-if="isLivePage || isPreviewModal"
+                          type="button" 
+                          @click.stop="removeRegistrationFormFile(widget, field)"
+                          class="size-5 rounded-full hover:bg-neutral-100 flex items-center justify-center text-neutral-400 hover:text-black shrink-0 cursor-pointer"
+                        >
+                          <X class="size-3" />
+                        </button>
+                      </div>
+                      <div v-else class="flex items-center gap-2 text-[#737373]">
+                        <Paperclip class="size-3.5 shrink-0" />
+                        <span class="font-707 text-[13px]">{{ field.placeholder || `${field.name || 'Upload Document'}${field.required !== false ? '*' : ''}` }}</span>
+                      </div>
+                    </div>
+
+                    <input 
+                      v-else
                       :ref="el => registerInputField(`${widget.id}_${field.id}`, el)"
                       :value="field.value || ''"
                       :type="isDateItem(field) ? 'text' : (field.type || 'text')"
@@ -1145,6 +1188,182 @@
                     </p>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <!-- 7.5. DocumentUpload Widget (Option A - Luxury Document / File Upload Dropzone) -->
+            <div 
+              v-else-if="widget.type === 'DocumentUpload'"
+              class="relative w-full px-[16px] py-[6px] select-none"
+              :class="[
+                shakingFieldIds.has(widget.id) ? 'animate-luxury-jitter' : ''
+              ]"
+              @click.stop="handleDocumentWidgetClick(widget)"
+              data-name="Document Upload Widget"
+            >
+              <!-- Hidden native file input -->
+              <input 
+                :ref="el => registerDocumentInput(widget.id, el)"
+                type="file"
+                class="hidden"
+                :multiple="widget.props.allowMultiple === true"
+                :accept="(widget.props.allowedExtensions || []).join(',')"
+                @change="handleDocumentUploadChange($event, widget)"
+              />
+
+              <!-- Floating Action Toolbar for DocumentUpload (Editor Mode) -->
+              <div 
+                v-if="!isMiniPreview && !isPreviewModal && !isLivePage && (hoveredWidgetId === widget.id || editorStore.selectedWidgetId === widget.id)"
+                class="absolute top-[4px] right-[12px] z-30 apple-glass-modal flex gap-[4px] items-center p-[4px] rounded-[8px] shadow-[0px_4px_16px_rgba(0,0,0,0.18)] border border-black/10 transition-all animate-in fade-in duration-150 select-none"
+              >
+                <!-- Icon 1: Setup Sidebar -->
+                <button 
+                  v-if="!isWidgetSetupModalOpen(widget)"
+                  @click.stop="handleAdjustWidget(widget)"
+                  class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer hover:bg-black/10"
+                  title="Document Setup"
+                >
+                  <SlidersHorizontal class="w-3.5 h-3.5" />
+                </button>
+
+                <!-- Icon 2: Duplicate -->
+                <button 
+                  @click.stop="editorStore.duplicateWidget(widget.id)"
+                  class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer hover:bg-black/10"
+                  title="Duplicate"
+                >
+                  <Copy class="w-3.5 h-3.5" />
+                </button>
+
+                <!-- Icon 3: Move to Page -->
+                <div class="relative">
+                  <button 
+                    @click.stop="toggleMoveMenu(widget.id)"
+                    class="apple-glass-icon-btn size-[24px] flex items-center justify-center rounded-[6px] text-black cursor-pointer hover:bg-black/10"
+                    title="Move to Page"
+                  >
+                    <ArrowRightLeft class="w-3.5 h-3.5" />
+                  </button>
+
+                  <div 
+                    v-if="moveMenuWidgetId === widget.id" 
+                    class="absolute top-full right-0 mt-1 min-w-[160px] bg-white border border-black/10 rounded-[10px] shadow-xl p-1 z-50 animate-in fade-in zoom-in-95 duration-100 flex flex-col gap-0.5"
+                    @click.stop
+                  >
+                    <div class="px-2 py-1 text-[9.5px] uppercase font-mono text-neutral-400 font-medium border-b border-black/5">Move to Page</div>
+                    <button 
+                      v-for="(p, pIdx) in editorStore.pages" 
+                      :key="p.id"
+                      :disabled="pIdx === pageIndex"
+                      @click.stop="editorStore.moveWidgetToPage(widget.id, pIdx); moveMenuWidgetId = null"
+                      class="w-full text-left px-2 py-1.5 rounded-[6px] text-[11px] font-sans font-medium flex items-center justify-between transition-colors"
+                      :class="pIdx === pageIndex ? 'opacity-40 cursor-not-allowed text-neutral-400 bg-neutral-50' : 'hover:bg-black/5 text-neutral-800 cursor-pointer'"
+                    >
+                      <span class="truncate">Page {{ pIdx + 1 }}: {{ p.page_name || 'Untitled' }}</span>
+                      <Check v-if="pIdx === pageIndex" class="w-3 h-3 text-neutral-400 shrink-0" />
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Icon 4: Remove -->
+                <button 
+                  @click.stop="editorStore.removeWidget(widget.id)"
+                  class="apple-glass-icon-btn size-[24px] hover:text-red-600 flex items-center justify-center rounded-[6px] text-black cursor-pointer hover:bg-red-50"
+                  title="Remove"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <!-- Main Upload Box Container -->
+              <div 
+                class="w-full rounded-[14px] border border-dashed transition-all p-5 flex flex-col items-center justify-center text-center gap-2 relative overflow-hidden group/upload"
+                :class="[
+                  widget.props.errorMessage 
+                    ? 'border-[#9b0707] bg-[#fff5f5]' 
+                    : (isSelected && editorStore.selectedWidgetId === widget.id && !isLivePage && !isPreviewModal
+                        ? 'border-black bg-neutral-50 shadow-sm'
+                        : 'border-black/20 hover:border-black/40 bg-white/70 backdrop-blur-sm')
+                ]"
+              >
+                <!-- State 1: Uploading Spinner -->
+                <div v-if="uploadingWidgetIds.has(widget.id)" class="py-4 flex flex-col items-center gap-2">
+                  <Loader2 class="size-6 text-black animate-spin" />
+                  <span class="font-707 text-[12px] font-medium text-black">Uploading document...</span>
+                </div>
+
+                <!-- State 2: Already Uploaded File List -->
+                <div v-else-if="widget.props.uploadedFiles && widget.props.uploadedFiles.length > 0" class="w-full flex flex-col gap-2">
+                  <div class="flex items-center justify-between w-full pb-1 border-b border-black/5">
+                    <span class="font-707 text-[12px] font-medium text-black uppercase tracking-tight">{{ widget.props.title || 'UPLOADED DOCUMENT' }}</span>
+                    <span class="font-707 text-[10.5px] text-[#667557] font-medium flex items-center gap-1">
+                      <Check class="size-3 stroke-[2.5]" />
+                      <span>Ready</span>
+                    </span>
+                  </div>
+
+                  <div 
+                    v-for="(file, fIdx) in widget.props.uploadedFiles" 
+                    :key="file.url || fIdx"
+                    class="w-full flex items-center justify-between p-2.5 rounded-[8px] bg-white border border-black/10 shadow-xs gap-2.5"
+                  >
+                    <div class="flex items-center gap-2.5 min-w-0">
+                      <div class="size-8 rounded-[6px] bg-neutral-100 flex items-center justify-center shrink-0">
+                        <FileText class="size-4 text-black" />
+                      </div>
+                      <div class="flex flex-col text-left min-w-0">
+                        <span class="font-707 text-[12px] font-medium text-black truncate">{{ file.name }}</span>
+                        <span class="font-707 text-[10.5px] text-neutral-400 font-mono">{{ formatFileSize(file.size) }}</span>
+                      </div>
+                    </div>
+                    <button 
+                      v-if="isLivePage || isPreviewModal"
+                      type="button"
+                      @click.stop="removeUploadedDocument(widget, fIdx)"
+                      class="size-6 rounded-full hover:bg-neutral-100 flex items-center justify-center text-neutral-400 hover:text-black cursor-pointer shrink-0 transition-colors"
+                      title="Remove file"
+                    >
+                      <X class="size-3.5" />
+                    </button>
+                  </div>
+
+                  <!-- Optional: Add another button if multiple allowed and not reached max -->
+                  <button 
+                    v-if="(isLivePage || isPreviewModal) && widget.props.allowMultiple && widget.props.uploadedFiles.length < (widget.props.maxFiles || 3)"
+                    type="button"
+                    @click.stop="triggerDocumentPicker(widget.id)"
+                    class="mt-1 w-full py-1.5 rounded-[6px] border border-dashed border-black/20 hover:border-black/50 text-[11px] font-707 font-medium text-neutral-600 hover:text-black flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                  >
+                    <Plus class="size-3" />
+                    <span>Add another document</span>
+                  </button>
+                </div>
+
+                <!-- State 3: Empty Dropzone / Tap to Upload -->
+                <div v-else class="flex flex-col items-center gap-2 py-1 w-full">
+                  <div class="size-10 rounded-full bg-neutral-100 group-hover/upload:bg-neutral-200/80 flex items-center justify-center text-black transition-colors shrink-0">
+                    <FileUp class="size-5 stroke-[1.8]" />
+                  </div>
+                  <div class="flex flex-col items-center">
+                    <p class="font-707 font-medium text-[13px] text-black tracking-tight uppercase">
+                      {{ widget.props.title || 'UPLOAD DOCUMENT' }}{{ widget.props.required ? '*' : '' }}
+                    </p>
+                    <p class="font-707 text-[11.5px] text-[#737373] mt-0.5 max-w-[280px]">
+                      {{ widget.props.subtitle || 'Tap to choose file (PDF, PNG, JPG up to 10MB)' }}
+                    </p>
+                  </div>
+                  <div class="mt-1 px-3 py-1.5 rounded-full bg-black text-white text-[11px] font-707 font-medium tracking-wide flex items-center gap-1.5 shadow-xs">
+                    <span>Browse Files</span>
+                  </div>
+                </div>
+
+                <!-- Error Helper Text -->
+                <p 
+                  v-if="widget.props.errorMessage" 
+                  class="font-707 text-[11px] text-[#9b0707] font-medium pt-1 animate-in fade-in duration-200"
+                >
+                  {{ widget.props.errorMessage }}
+                </p>
               </div>
             </div>
 
@@ -2724,7 +2943,11 @@ import {
   ArrowRightLeft,
   X,
   Search,
-  Calendar
+  Calendar,
+  FileUp,
+  FileText,
+  Paperclip,
+  Loader2
 } from 'lucide-vue-next';
 import { fetchPublicQueueNow } from '../hub/hubUtils.ts';
 import { uploadMediaDirectly } from '../../services/mediaService.ts';
@@ -3522,6 +3745,9 @@ function isWidgetSetupModalOpen(widget: any): boolean {
   if (widget.type === 'RegistrationForm') {
     return editorStore.isFormSidebarOpen;
   }
+  if (widget.type === 'DocumentUpload') {
+    return editorStore.isDocumentSidebarOpen;
+  }
   if (widget.type === 'ModalOverlay') {
     return editorStore.isModalSidebarOpen;
   }
@@ -3547,6 +3773,8 @@ function handleAdjustWidget(widget: any) {
     editorStore.openChoiceSidebar();
   } else if (widget.type === 'RegistrationForm') {
     editorStore.openFormSidebar();
+  } else if (widget.type === 'DocumentUpload') {
+    editorStore.openDocumentSidebar();
   } else if (widget.type === 'ModalOverlay') {
     editorStore.openModalSidebar();
   } else if (widget.type === 'GuestEPass' || widget.type === 'LiveQueuePass') {
@@ -3656,10 +3884,10 @@ function collectPageAnswers(): Record<string, any> {
       const fields = (w.props?.fields || []) as any[];
       fields.forEach((f: any) => {
         const key = f.name || f.label || 'field';
-        const raw = f.value || '';
+        const raw = f.fileData || f.value || '';
         formData[key] = raw;
-        if (f.type === 'email' || /email/i.test(key)) userEmail = raw;
-        if (/name|nama/i.test(key) && String(raw).trim()) nameParts.push({ key, value: String(raw).trim() });
+        if (f.type === 'email' || /email/i.test(key)) userEmail = typeof raw === 'string' ? raw : '';
+        if (/name|nama/i.test(key) && typeof raw === 'string' && raw.trim()) nameParts.push({ key, value: raw.trim() });
         if (f.type === 'tel' || /whats\s?app|phone|telp|telepon|\bwa\b|mobile|hp\b/i.test(key)) {
           const country = String(f.countryCode || '+62').replace(/\D/g, '') || '62';
           const digits = String(raw).replace(/\D/g, '');
@@ -3670,6 +3898,12 @@ function collectPageAnswers(): Record<string, any> {
           }
         }
       });
+    } else if (w.type === 'DocumentUpload') {
+      const key = w.props?.fieldName || w.props?.title || 'Uploaded Document';
+      const files = w.props?.uploadedFiles || [];
+      if (files.length > 0) {
+        formData[key] = w.props?.allowMultiple ? files : files[0];
+      }
     } else if (w.type === 'MultipleChoice') {
       const key = w.props?.question || w.props?.title || w.id;
       const options = (w.props?.options || []) as any[];
@@ -3749,12 +3983,27 @@ function handleButtonClick(widget: any) {
       } else if (w.type === 'RegistrationForm') {
         const fields = (w.props?.fields || []) as any[];
         fields.forEach((f: any) => {
-          if (f.required !== false && (!f.value || !f.value.trim())) {
-            f.errorMessage = `Please enter your ${(f.name || 'details').toLowerCase()}.`;
-            allValid = false;
-            if (!firstInvalidWidget) firstInvalidWidget = w;
+          if (f.required !== false) {
+            if (f.type === 'file' && !f.value && !f.fileData) {
+              f.errorMessage = `Please upload ${(f.name || 'the document').toLowerCase()}.`;
+              allValid = false;
+              if (!firstInvalidWidget) firstInvalidWidget = w;
+              triggerFieldShake(`${w.id}_${f.id}`);
+            } else if (f.type !== 'file' && (!f.value || !String(f.value).trim())) {
+              f.errorMessage = `Please enter your ${(f.name || 'details').toLowerCase()}.`;
+              allValid = false;
+              if (!firstInvalidWidget) firstInvalidWidget = w;
+              triggerFieldShake(`${w.id}_${f.id}`);
+            }
           }
         });
+      } else if (w.type === 'DocumentUpload') {
+        if (w.props?.required && (!w.props.uploadedFiles || !w.props.uploadedFiles.length)) {
+          w.props.errorMessage = `Please upload ${w.props.title || 'the required document'}.`;
+          allValid = false;
+          if (!firstInvalidWidget) firstInvalidWidget = w;
+          triggerFieldShake(w.id);
+        }
       } else if (w.type === 'MultipleChoice' && (w.props?.required || w.props?.limitPlaces)) {
         const options = (w.props?.options || []) as any[];
         let selected = (w.props?.selectedValues || []) as string[];
@@ -4998,6 +5247,168 @@ function handleRegistrationFormItemInput(e: Event, widget: any, field: any) {
     field.errorMessage = '';
   }
 
+  editorStore.updateWidgetProps(widget.id, { fields: [...widget.props.fields] });
+}
+
+/* ---------- Document Upload Handlers & State ---------- */
+const uploadingWidgetIds = ref<Set<string>>(new Set());
+const documentFileInputs = ref<Record<string, HTMLInputElement | null>>({});
+
+function registerDocumentInput(id: string, el: any) {
+  if (el) documentFileInputs.value[id] = el as HTMLInputElement;
+}
+
+function triggerDocumentPicker(id: string) {
+  const input = documentFileInputs.value[id];
+  if (input) input.click();
+}
+
+function formatFileSize(bytes: number): string {
+  if (!bytes) return '0 B';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function handleDocumentWidgetClick(widget: any) {
+  if (wasDraggingRecently.value) return;
+  if (props.isLivePage || props.isPreviewModal) {
+    triggerDocumentPicker(widget.id);
+    return;
+  }
+  if (props.isMiniPreview) return;
+  handleSelectThisPage();
+  editorStore.selectWidget(widget.id);
+  handleAdjustWidget(widget);
+}
+
+async function handleDocumentUploadChange(e: Event, widget: any) {
+  const input = e.target as HTMLInputElement;
+  const files = input.files;
+  if (!files || !files.length) return;
+
+  const allowedExts = widget.props?.allowedExtensions || ['.pdf', '.jpg', '.jpeg', '.png', '.webp'];
+  const maxMb = widget.props?.maxSizeMb || 10;
+  const maxBytes = maxMb * 1024 * 1024;
+  const isMultiple = widget.props?.allowMultiple === true;
+  const maxFiles = widget.props?.maxFiles || 3;
+
+  const currentUploaded = [...(widget.props?.uploadedFiles || [])];
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const ext = `.${file.name.split('.').pop()?.toLowerCase()}`;
+    if (allowedExts.length && !allowedExts.includes(ext)) {
+      editorStore.showToast(`File "${file.name}" format not allowed.`);
+      triggerFieldShake(widget.id);
+      continue;
+    }
+    if (file.size > maxBytes) {
+      editorStore.showToast(`File "${file.name}" exceeds ${maxMb}MB limit.`);
+      triggerFieldShake(widget.id);
+      continue;
+    }
+
+    try {
+      uploadingWidgetIds.value.add(widget.id);
+      const dataUrl = await readFileAsDataUrl(file);
+      const res = await fetch('/api/submissions/upload-document', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: file.name, dataUrl })
+      });
+      const json = await res.json();
+      if (!res.ok || !json?.success) {
+        throw new Error(json?.error || 'Upload failed');
+      }
+
+      if (isMultiple) {
+        if (currentUploaded.length < maxFiles) {
+          currentUploaded.push(json.file);
+        } else {
+          editorStore.showToast(`Maximum ${maxFiles} files allowed.`);
+        }
+      } else {
+        currentUploaded.splice(0, currentUploaded.length, json.file);
+      }
+    } catch (err: any) {
+      editorStore.showToast(err.message || 'Failed to upload document.');
+      triggerFieldShake(widget.id);
+    } finally {
+      uploadingWidgetIds.value.delete(widget.id);
+    }
+  }
+
+  setWidgetProps(widget, {
+    uploadedFiles: currentUploaded,
+    errorMessage: '',
+    value: currentUploaded.length ? (isMultiple ? currentUploaded : currentUploaded[0].url) : ''
+  });
+  input.value = '';
+}
+
+function removeUploadedDocument(widget: any, index: number) {
+  const current = [...(widget.props?.uploadedFiles || [])];
+  current.splice(index, 1);
+  const isMultiple = widget.props?.allowMultiple === true;
+  setWidgetProps(widget, {
+    uploadedFiles: current,
+    value: current.length ? (isMultiple ? current : current[0]?.url || '') : ''
+  });
+}
+
+async function handleRegistrationFormFileChange(e: Event, widget: any, field: any) {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+
+  const maxBytes = 10 * 1024 * 1024;
+  if (file.size > maxBytes) {
+    field.errorMessage = 'File exceeds 10MB limit.';
+    triggerFieldShake(`${widget.id}_${field.id}`);
+    input.value = '';
+    return;
+  }
+
+  try {
+    uploadingWidgetIds.value.add(`${widget.id}_${field.id}`);
+    const dataUrl = await readFileAsDataUrl(file);
+    const res = await fetch('/api/submissions/upload-document', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename: file.name, dataUrl })
+    });
+    const json = await res.json();
+    if (!res.ok || !json?.success) {
+      throw new Error(json?.error || 'Upload failed');
+    }
+
+    field.fileData = json.file;
+    field.value = json.file.url;
+    field.errorMessage = '';
+    editorStore.updateWidgetProps(widget.id, { fields: [...widget.props.fields] });
+  } catch (err: any) {
+    field.errorMessage = err.message || 'Failed to upload.';
+    triggerFieldShake(`${widget.id}_${field.id}`);
+  } finally {
+    uploadingWidgetIds.value.delete(`${widget.id}_${field.id}`);
+    input.value = '';
+  }
+}
+
+function removeRegistrationFormFile(widget: any, field: any) {
+  field.fileData = undefined;
+  field.value = '';
+  field.errorMessage = '';
   editorStore.updateWidgetProps(widget.id, { fields: [...widget.props.fields] });
 }
 

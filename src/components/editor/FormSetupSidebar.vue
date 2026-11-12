@@ -79,7 +79,7 @@
               />
               <!-- Field Type Indicator -->
               <span class="font-707 text-[10px] text-neutral-500 uppercase px-2 py-0.5 rounded bg-neutral-100 shrink-0 font-medium tracking-tight">
-                {{ field.type === 'tel' ? 'WhatsApp' : (field.type === 'date' || field.name.toLowerCase().includes('birth') ? 'Date' : (field.type || 'text')) }}
+                {{ field.type === 'tel' ? 'WhatsApp' : (field.type === 'file' ? 'File / Doc' : (field.type === 'date' || field.name.toLowerCase().includes('birth') ? 'Date' : (field.type || 'text'))) }}
               </span>
             </div>
 
@@ -414,6 +414,7 @@ const availablePresets = [
   { name: 'WhatsApp Number', placeholder: 'WhatsApp Number*', type: 'tel', countryCode: '+62' },
   { name: 'Instagram Handle', placeholder: 'Instagram Handle*', type: 'text' },
   { name: 'Date of Birth', placeholder: 'DD / MM / YYYY', type: 'date' },
+  { name: 'Upload Document / ID', placeholder: 'Upload Document (PDF, JPG, PNG)', type: 'file' },
   { name: 'National ID / KTP', placeholder: 'Enter 16-digit KTP number', type: 'text' },
   { name: 'Custom Field', placeholder: 'Field Details*', type: 'text' }
 ];

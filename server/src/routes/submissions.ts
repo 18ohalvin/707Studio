@@ -1,5 +1,8 @@
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
 import express, { Router, Request, Response } from 'express';
+import { resolveUploadDir } from '../uploads.js';
 import { pool, getDbStatus } from '../db.js';
 import { readDataFile, writeDataFile } from '../fileStorage.js';
 import { requireAuth, getClaims, optionalClaims } from '../auth.js';
@@ -492,6 +495,75 @@ submissionsRouter.put('/:id/send-ticket', requireAuth, express.raw({ type: 'appl
   if (!outcome.success) return res.json({ success: true, result: 'failed', error: outcome.error || 'The mail server refused it.' });
   await markTicketEmailed(id, outcome);
   return res.json({ success: true, result: 'sent' });
+}));
+
+const ALLOWED_DOC_EXTENSIONS = new Set([
+  'pdf', 'doc', 'docx', 'txt', 'rtf',
+  'jpg', 'jpeg', 'png', 'webp', 'heic',
+  'csv', 'xlsx', 'xls'
+]);
+
+const MAX_DOC_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB
+
+// POST /api/submissions/upload-document - Guest document/file upload endpoint
+submissionsRouter.post('/upload-document', route('upload guest document', async (req, res) => {
+  const { filename, dataUrl } = req.body || {};
+  if (!filename || !dataUrl || typeof dataUrl !== 'string') {
+    return res.status(400).json({ success: false, error: 'A filename and document dataUrl are required.' });
+  }
+
+  // Parse original filename and extension
+  const rawName = String(filename).trim();
+  const parts = rawName.split('.');
+  const ext = parts.length > 1 ? parts.pop()!.toLowerCase().trim() : '';
+  if (!ext || !ALLOWED_DOC_EXTENSIONS.has(ext)) {
+    return res.status(400).json({
+      success: false,
+      error: `File type .${ext || 'unknown'} is not supported. Please upload PDF, Word, Excel, or image files.`
+    });
+  }
+
+  // Extract base64 payload
+  let buffer: Buffer;
+  let mimeType = 'application/octet-stream';
+  const dataMatch = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+  if (dataMatch) {
+    mimeType = dataMatch[1];
+    buffer = Buffer.from(dataMatch[2], 'base64');
+  } else {
+    buffer = Buffer.from(dataUrl, 'base64');
+  }
+
+  if (buffer.length === 0) {
+    return res.status(400).json({ success: false, error: 'The uploaded file is empty.' });
+  }
+
+  if (buffer.length > MAX_DOC_SIZE_BYTES) {
+    return res.status(413).json({ success: false, error: 'The file exceeds the 25MB maximum limit.' });
+  }
+
+  const uploadDir = resolveUploadDir();
+  const docsDir = path.join(uploadDir, 'documents');
+  if (!fs.existsSync(docsDir)) {
+    fs.mkdirSync(docsDir, { recursive: true });
+  }
+
+  const unique = `${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+  const savedName = `doc_${unique}.${ext}`;
+  fs.writeFileSync(path.join(docsDir, savedName), buffer);
+
+  const cleanOriginalName = path.basename(rawName).slice(0, 150);
+  const fileUrl = `/uploads/documents/${savedName}`;
+
+  return res.json({
+    success: true,
+    file: {
+      url: fileUrl,
+      name: cleanOriginalName,
+      size: buffer.length,
+      type: mimeType
+    }
+  });
 }));
 
 // POST /api/submissions - Submit raffle or RSVP entry (public)

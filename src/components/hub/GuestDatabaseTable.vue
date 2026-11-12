@@ -569,7 +569,22 @@
                 </div>
                 <div v-for="k in drawerAnswerKeys" :key="k" class="flex items-start justify-between gap-4 px-3.5 py-2.5">
                   <span class="text-[12px] font-light shrink-0 max-w-[45%]" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">{{ formatColumnLabel(k) }}</span>
-                  <span class="text-[12px] text-right break-words min-w-0 font-light" :class="isDark ? 'text-white' : 'text-black'">{{ formatCustomAnswer(drawerRow, k) || '—' }}</span>
+                  <div v-if="isDocumentAnswer(drawerRow.form_data?.[k])" class="flex flex-col items-end gap-1.5">
+                    <a 
+                      v-for="(doc, dIdx) in getDocumentAnswers(drawerRow.form_data?.[k])" 
+                      :key="doc.url || dIdx"
+                      :href="doc.url" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-[11.5px] font-707 font-medium transition-all"
+                      :class="isDark ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-black text-white hover:bg-neutral-800 shadow-xs'"
+                    >
+                      <FileText class="size-3.5" />
+                      <span class="truncate max-w-[160px]">{{ doc.name || 'View Document' }}</span>
+                      <ExternalLink class="size-3 opacity-60" />
+                    </a>
+                  </div>
+                  <span v-else class="text-[12px] text-right break-words min-w-0 font-light" :class="isDark ? 'text-white' : 'text-black'">{{ formatCustomAnswer(drawerRow, k) || '—' }}</span>
                 </div>
               </div>
             </div>
@@ -746,7 +761,8 @@ import { glassConfirm } from '../../services/glassDialog.ts';
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import {
   Search, X, Download, Columns3, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp, ChevronRight,
-  Check, Circle, CircleCheck, Users, Trash2, Copy, LogIn, LogOut, Mail, RotateCw, Calendar, UserPlus, SlidersHorizontal
+  Check, Circle, CircleCheck, Users, Trash2, Copy, LogIn, LogOut, Mail, RotateCw, Calendar, UserPlus, SlidersHorizontal,
+  FileText, ExternalLink
 } from 'lucide-vue-next';
 import { useTicketSender } from './useTicketSender.ts';
 import { useAuthStore } from '../../stores/authStore.ts';
@@ -1308,6 +1324,28 @@ function stepDrawer(delta: number) {
 }
 
 /* ---------- Misc ---------- */
+function isDocumentAnswer(val: any): boolean {
+  if (!val) return false;
+  if (typeof val === 'object' && val.url) return true;
+  if (Array.isArray(val) && val.length > 0 && val[0]?.url) return true;
+  if (typeof val === 'string' && val.startsWith('/uploads/documents/')) return true;
+  return false;
+}
+
+function getDocumentAnswers(val: any): Array<{ url: string; name?: string }> {
+  if (!val) return [];
+  if (Array.isArray(val)) {
+    return val.filter(v => v && v.url).map(v => ({ url: v.url, name: v.name }));
+  }
+  if (typeof val === 'object' && val.url) {
+    return [{ url: val.url, name: val.name }];
+  }
+  if (typeof val === 'string' && val.startsWith('/uploads/documents/')) {
+    return [{ url: val, name: val.split('/').pop() }];
+  }
+  return [];
+}
+
 function whatsappLink(phone: string): string {
   const norm = normalizeWhatsAppNumber(phone);
   return `https://wa.me/${norm}`;
