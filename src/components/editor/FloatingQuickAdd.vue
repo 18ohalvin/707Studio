@@ -1,13 +1,13 @@
 <template>
   <!-- Center Bottom Toolbar Container (Figma Node 63:3395) with macOS Dock Magnification -->
   <div 
-    class="fixed left-1/2 -translate-x-1/2 bottom-[16px] md:bottom-[20px] z-[60] select-none backdrop-blur-[4px] bg-[#f5f5f5]/20 border border-black/10 border-solid flex gap-[4px] md:gap-[8px] items-center p-[4px] md:p-[6px] rounded-[14px] shadow-[0px_12px_40px_0px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.03)] apple-dock-shelf"
+    class="fixed left-1/2 -translate-x-1/2 bottom-[16px] md:bottom-[20px] z-[60] select-none backdrop-blur-[16px] bg-[#f5f5f5]/60 border border-black/10 border-solid flex gap-[2px] md:gap-[4px] items-center p-[4px] rounded-full shadow-[0px_12px_40px_0px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.03)] apple-dock-shelf"
     style="transform: translateX(-50%);"
   >
 
     <!-- 1. Plus / Add Block Button -->
     <div 
-      class="flex items-center justify-center relative rounded-[8px] shrink-0 size-[40px] apple-dock-item"
+      class="flex items-center justify-center relative rounded-full shrink-0 size-[40px] apple-dock-item"
       @mouseenter="hoveredButtonKey = 'add'"
       @mouseleave="hoveredButtonKey = null"
     >
@@ -27,8 +27,8 @@
         @click="editorStore.toggleWidgetSidebar()"
         :class="editorStore.isWidgetSidebarOpen 
           ? 'bg-black text-white shadow-[0_4px_16px_rgba(0,0,0,0.25)]' 
-          : 'backdrop-blur-[4px] bg-[#ececec]/20 hover:bg-[#ececec] active:bg-[#e0e0e0] text-black border-[0.5px] border-black/10 hover:border-black/25 shadow-[0_2px_8px_rgba(0,0,0,0.02)]'"
-        class="flex items-center justify-center overflow-clip p-[8px] relative rounded-[8px] shrink-0 size-[40px] apple-press cursor-pointer transition-all duration-200"
+          : 'bg-transparent hover:bg-black/5 active:bg-black/10 text-black'"
+        class="flex items-center justify-center overflow-clip p-[8px] relative rounded-full shrink-0 size-[40px] apple-press cursor-pointer transition-all duration-200"
         title="Add widgets & blocks"
       >
         <div class="relative shrink-0 size-[18px] transition-transform duration-200">
@@ -44,7 +44,7 @@
 
     <!-- 2. Media Gallery Tool Button (Beside +) -->
     <div 
-      class="flex items-center justify-center relative rounded-[8px] shrink-0 size-[40px] apple-dock-item"
+      class="flex items-center justify-center relative rounded-full shrink-0 size-[40px] apple-dock-item"
       @mouseenter="hoveredButtonKey = 'media'"
       @mouseleave="hoveredButtonKey = null"
     >
@@ -65,8 +65,8 @@
         @click="toggleMediaGallery"
         :class="editorStore.isMediaGalleryOpen 
           ? 'bg-black text-white shadow-[0_4px_16px_rgba(0,0,0,0.25)]' 
-          : 'backdrop-blur-[4px] bg-[#ececec]/20 hover:bg-[#ececec] active:bg-[#e0e0e0] text-black border-[0.5px] border-black/10 hover:border-black/25 shadow-[0_2px_8px_rgba(0,0,0,0.02)]'"
-        class="flex items-center justify-center overflow-clip p-[8px] relative rounded-[8px] shrink-0 size-[40px] apple-press cursor-pointer transition-all duration-200"
+          : 'bg-transparent hover:bg-black/5 active:bg-black/10 text-black'"
+        class="flex items-center justify-center overflow-clip p-[8px] relative rounded-full shrink-0 size-[40px] apple-press cursor-pointer transition-all duration-200"
         title="Media Gallery"
       >
         <div class="relative shrink-0 size-[18px] flex items-center justify-center">
@@ -77,7 +77,7 @@
 
     <!-- 3. Layers Tool Button -->
     <div 
-      class="flex items-center justify-center relative rounded-[8px] shrink-0 size-[40px] apple-dock-item"
+      class="flex items-center justify-center relative rounded-full shrink-0 size-[40px] apple-dock-item"
       @mouseenter="hoveredButtonKey = 'layers'"
       @mouseleave="hoveredButtonKey = null"
     >
@@ -97,8 +97,8 @@
         @click="$emit('toggle-layers')"
         :class="editorStore.isLayersOpen 
           ? 'bg-black text-white shadow-[0_4px_16px_rgba(0,0,0,0.25)]' 
-          : 'backdrop-blur-[4px] bg-[#ececec]/20 hover:bg-[#ececec] active:bg-[#e0e0e0] text-black border-[0.5px] border-black/10 hover:border-black/25 shadow-[0_2px_8px_rgba(0,0,0,0.02)]'"
-        class="flex items-center justify-center overflow-clip p-[8px] relative rounded-[8px] shrink-0 size-[40px] apple-press cursor-pointer transition-all duration-200"
+          : 'bg-transparent hover:bg-black/5 active:bg-black/10 text-black'"
+        class="flex items-center justify-center overflow-clip p-[8px] relative rounded-full shrink-0 size-[40px] apple-press cursor-pointer transition-all duration-200"
         title="View Layers Stack"
       >
         <div class="relative shrink-0 size-[18px] transition-transform duration-200">
@@ -112,9 +112,9 @@
       </button>
     </div>
 
-    <!-- 4. Pages / Mini Overview Button (Selected: Black Solid + White Icon, Unselected: Ultra-Frosted Glass + Black Icon) -->
+    <!-- 4. Pages / Mini Overview Button (Selected: Black Solid + White Icon, Unselected: Transparent + Black Icon) -->
     <div 
-      class="flex items-center justify-center relative rounded-[8px] shrink-0 size-[40px] apple-dock-item"
+      class="flex items-center justify-center relative rounded-full shrink-0 size-[40px] apple-dock-item"
       @mouseenter="hoveredButtonKey = 'pages'"
       @mouseleave="hoveredButtonKey = null"
     >
@@ -134,8 +134,8 @@
         @click="$emit('toggle-pages')"
         :class="editorStore.isPagesOpen 
           ? 'bg-black text-white shadow-[0_4px_16px_rgba(0,0,0,0.25)]' 
-          : 'backdrop-blur-[4px] bg-[#ececec]/20 hover:bg-[#ececec] active:bg-[#e0e0e0] text-black border-[0.5px] border-black/10 hover:border-black/25 shadow-[0_2px_8px_rgba(0,0,0,0.02)]'"
-        class="flex items-center justify-center overflow-clip p-[8px] relative rounded-[8px] shrink-0 size-[40px] apple-press cursor-pointer transition-all duration-200"
+          : 'bg-transparent hover:bg-black/5 active:bg-black/10 text-black'"
+        class="flex items-center justify-center overflow-clip p-[8px] relative rounded-full shrink-0 size-[40px] apple-press cursor-pointer transition-all duration-200"
         title="Toggle Pages Overview"
       >
         <div class="relative shrink-0 size-[18px] transition-transform duration-200">
@@ -151,12 +151,12 @@
 
     <!-- 5. Mobile-Only: 1-Tap Zoom Toggle (Fit / 100%) -->
     <div 
-      class="sm:hidden flex items-center justify-center relative rounded-[8px] shrink-0 size-[40px] apple-dock-item"
+      class="sm:hidden flex items-center justify-center relative rounded-full shrink-0 size-[40px] apple-dock-item"
     >
       <button 
         type="button"
         @click="editorStore.toggleFitOr100()"
-        class="backdrop-blur-[4px] bg-[#ececec]/20 hover:bg-[#ececec] active:bg-[#e0e0e0] text-black border-[0.5px] border-black/10 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-center overflow-clip p-[8px] relative rounded-[8px] shrink-0 size-[40px] apple-press cursor-pointer transition-all duration-200"
+        class="bg-transparent hover:bg-black/5 active:bg-black/10 text-black flex items-center justify-center overflow-clip p-[8px] relative rounded-full shrink-0 size-[40px] apple-press cursor-pointer transition-all duration-200"
         :title="Math.abs(editorStore.zoomLevel - 100) < 5 ? 'Fit to Screen' : 'Zoom 100%'"
       >
         <Maximize2 v-if="Math.abs(editorStore.zoomLevel - 100) < 5" class="w-4 h-4 text-black" />

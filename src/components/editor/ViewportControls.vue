@@ -1,7 +1,7 @@
 <template>
   <!-- Right Bottom Controls Dock (Figma Node 97:3400) - Cleanly hides when setup drawer opens to prevent dock collisions -->
   <div 
-    class="hidden sm:flex fixed right-[12px] sm:right-[16px] md:right-[24px] bottom-[16px] md:bottom-[20px] z-[60] select-none backdrop-blur-[4px] bg-[#f5f5f5]/20 border border-black/10 border-solid gap-[4px] md:gap-[8px] items-center p-[4px] md:p-[6px] rounded-[14px] shadow-[0px_12px_40px_0px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
+    class="hidden sm:flex fixed right-[12px] sm:right-[16px] md:right-[24px] bottom-[16px] md:bottom-[20px] z-[60] select-none backdrop-blur-[16px] bg-[#f5f5f5]/60 border border-black/10 border-solid gap-[2px] md:gap-[4px] items-center p-[4px] rounded-full shadow-[0px_12px_40px_0px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
     :class="[
       isRightSidebarOpen 
         ? 'opacity-0 pointer-events-none translate-y-2' 
@@ -9,17 +9,20 @@
     ]"
   >
     <!-- 1. Zoom Indicator Pill & Popover Menu -->
-    <div class="relative flex h-[40px] items-center justify-center rounded-[8px] shrink-0" ref="zoomMenuRef">
+    <div class="relative flex h-[40px] items-center justify-center rounded-full shrink-0" ref="zoomMenuRef">
       <button 
         type="button"
         @click="isZoomMenuOpen = !isZoomMenuOpen"
-        class="backdrop-blur-[4px] bg-[#ececec]/20 hover:bg-[#ececec] active:bg-[#e0e0e0] text-black border-[0.5px] border-black/10 hover:border-black/25 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex gap-[4px] md:gap-[6px] h-[40px] items-center justify-center overflow-clip p-[6px] md:p-[8px] relative rounded-[8px] shrink-0 min-w-[62px] md:min-w-[76px] px-2 md:px-2.5 apple-press cursor-pointer transition-all duration-200"
+        :class="isZoomMenuOpen 
+          ? 'bg-black text-white shadow-sm' 
+          : 'bg-transparent hover:bg-black/5 active:bg-black/10 text-black'"
+        class="flex gap-[4px] md:gap-[6px] h-[40px] items-center justify-center overflow-clip p-[6px] md:p-[8px] relative rounded-full shrink-0 min-w-[62px] md:min-w-[76px] px-2.5 md:px-3 apple-press cursor-pointer transition-all duration-200"
         title="Zoom Options & Presets"
       >
         <div class="relative shrink-0 size-[16px]">
-          <img alt="Zoom" class="absolute block inset-0 max-w-none size-full brightness-0" :src="FIGMA_ASSETS.zoomIcon" />
+          <img alt="Zoom" class="absolute block inset-0 max-w-none size-full" :class="isZoomMenuOpen ? 'brightness-0 invert' : 'brightness-0'" :src="FIGMA_ASSETS.zoomIcon" />
         </div>
-        <p class="font-707 text-[12px] font-normal text-black whitespace-nowrap">
+        <p class="font-707 text-[12px] font-normal whitespace-nowrap" :class="isZoomMenuOpen ? 'text-white' : 'text-black'">
           <span v-if="editorStore.isFitMode" class="font-medium text-[10.5px] opacity-75">Fit · </span>{{ Math.round(editorStore.zoomLevel) }}%
         </p>
       </button>
@@ -87,15 +90,15 @@
     </div>
 
     <!-- 2. Undo Button (Facing Left, Crisp Solid Black when active, Inactive Dimmed when no changes) -->
-    <div class="flex items-center justify-center relative rounded-[8px] shrink-0 size-[40px]">
+    <div class="flex items-center justify-center relative rounded-full shrink-0 size-[40px]">
       <button 
         @click="editorStore.undo"
         :disabled="!editorStore.canUndo"
-        class="flex items-center justify-center overflow-clip p-[8px] relative rounded-[8px] shrink-0 size-[40px] transition-all duration-200"
+        class="flex items-center justify-center overflow-clip p-[8px] relative rounded-full shrink-0 size-[40px] transition-all duration-200"
         :class="[
           editorStore.canUndo 
-            ? 'backdrop-blur-[4px] bg-[#ececec]/20 hover:bg-[#ececec] active:bg-[#e0e0e0] text-black border-[0.5px] border-black/10 hover:border-black/25 shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer' 
-            : 'backdrop-blur-[4px] bg-[#ececec]/20 border-[0.5px] border-black/5 cursor-not-allowed shadow-none opacity-40 text-black'
+            ? 'bg-transparent hover:bg-black/5 active:bg-black/10 text-black apple-press cursor-pointer' 
+            : 'bg-transparent cursor-not-allowed opacity-30 text-black'
         ]"
         :title="editorStore.canUndo ? 'Undo (⌘Z)' : 'Nothing to undo'"
       >
@@ -109,15 +112,15 @@
     </div>
 
     <!-- 3. Redo Button (Facing Right, Crisp Solid Black when active, Inactive Dimmed when no redo available) -->
-    <div class="flex items-center justify-center relative rounded-[8px] shrink-0 size-[40px]">
+    <div class="flex items-center justify-center relative rounded-full shrink-0 size-[40px]">
       <button 
         @click="editorStore.redo"
         :disabled="!editorStore.canRedo"
-        class="flex items-center justify-center overflow-clip p-[8px] relative rounded-[8px] shrink-0 size-[40px] transition-all duration-200"
+        class="flex items-center justify-center overflow-clip p-[8px] relative rounded-full shrink-0 size-[40px] transition-all duration-200"
         :class="[
           editorStore.canRedo 
-            ? 'backdrop-blur-[4px] bg-[#ececec]/20 hover:bg-[#ececec] active:bg-[#e0e0e0] text-black border-[0.5px] border-black/10 hover:border-black/25 shadow-[0_2px_8px_rgba(0,0,0,0.02)] apple-press cursor-pointer' 
-            : 'backdrop-blur-[4px] bg-[#ececec]/20 border-[0.5px] border-black/5 cursor-not-allowed shadow-none opacity-40 text-black'
+            ? 'bg-transparent hover:bg-black/5 active:bg-black/10 text-black apple-press cursor-pointer' 
+            : 'bg-transparent cursor-not-allowed opacity-30 text-black'
         ]"
         :title="editorStore.canRedo ? 'Redo (⌘⇧Z)' : 'Nothing to redo'"
       >
@@ -131,11 +134,11 @@
     </div>
 
     <!-- 4. Keyboard Shortcuts Cheatsheet Button (Desktop with Physical Keyboard) -->
-    <div class="hidden lg:flex items-center justify-center relative rounded-[8px] shrink-0 size-[40px]">
+    <div class="hidden lg:flex items-center justify-center relative rounded-full shrink-0 size-[40px]">
       <button 
         type="button"
         @click="$emit('open-shortcuts')"
-        class="backdrop-blur-[4px] bg-[#ececec]/20 hover:bg-[#ececec] active:bg-[#e0e0e0] text-black border-[0.5px] border-black/10 hover:border-black/25 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-center overflow-clip p-[8px] relative rounded-[8px] shrink-0 size-[40px] apple-press cursor-pointer transition-all duration-200"
+        class="bg-transparent hover:bg-black/5 active:bg-black/10 text-black flex items-center justify-center overflow-clip p-[8px] relative rounded-full shrink-0 size-[40px] apple-press cursor-pointer transition-all duration-200"
         title="Keyboard Shortcuts (⌘/ or ?)"
       >
         <Command class="w-[17px] h-[17px] text-black stroke-[1.8]" />
@@ -143,10 +146,10 @@
     </div>
 
     <!-- 5. Settings Gear Button (Crisp Solid Black) -->
-    <div class="flex items-center justify-center relative rounded-[8px] shrink-0 size-[40px]">
+    <div class="flex items-center justify-center relative rounded-full shrink-0 size-[40px]">
       <button 
         @click="$emit('open-settings')"
-        class="backdrop-blur-[4px] bg-[#ececec]/20 hover:bg-[#ececec] active:bg-[#e0e0e0] text-black border-[0.5px] border-black/10 hover:border-black/25 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-center overflow-clip p-[8px] relative rounded-[8px] shrink-0 size-[40px] apple-press cursor-pointer transition-all duration-200"
+        class="bg-transparent hover:bg-black/5 active:bg-black/10 text-black flex items-center justify-center overflow-clip p-[8px] relative rounded-full shrink-0 size-[40px] apple-press cursor-pointer transition-all duration-200"
         title="Project Settings"
       >
         <div class="relative shrink-0 size-[18px]">
