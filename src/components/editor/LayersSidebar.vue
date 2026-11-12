@@ -207,7 +207,7 @@ function getWidgetDisplayName(widget: WidgetItem): string {
     case 'TextBanner':
       return widget.props.text ? 'Text' : 'Text (empty)';
     case 'ActionButton':
-      return 'Action Button';
+      return widget.props?.layoutMode === 'dual' ? 'Dual Action Buttons' : 'Action Button';
     case 'MultipleChoice':
       return 'Choice Options';
     case 'RegistrationForm':
@@ -257,7 +257,9 @@ function getWidgetSummary(widget: WidgetItem): string {
     case 'TextBanner':
       return widget.props.text ? String(widget.props.text).replace(/\n/g, ' ') : 'NO TEXT YET';
     case 'ActionButton':
-      return widget.props.label || 'BUTTON CTA';
+      return widget.props?.layoutMode === 'dual'
+        ? `${widget.props?.label || 'AGREE'} · ${widget.props?.secondaryLabel || 'DISAGREE'}`
+        : (widget.props?.label || 'BUTTON CTA');
     case 'MultipleChoice':
       return widget.props.title || widget.props.subtitle || 'MULTIPLE CHOICE OPTIONS';
     case 'RegistrationForm':

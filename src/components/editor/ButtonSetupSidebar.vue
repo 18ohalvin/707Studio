@@ -18,6 +18,12 @@
           <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
             Button Setup
           </p>
+          <span 
+            v-if="layoutMode === 'dual'"
+            class="text-[10px] font-mono tracking-wider uppercase px-2 py-0.5 rounded-full bg-black/5 text-neutral-600 border border-black/10"
+          >
+            Dual Mode
+          </span>
         </div>
         <button 
           @click="$emit('close')"
@@ -50,48 +56,98 @@
 
     <!-- TAB 1: CONTENT -->
     <div v-show="activeTab === 'content'" class="w-full flex flex-col">
-      <!-- Button Text Input -->
-      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
-        <div class="flex flex-col gap-[6px] w-full">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Button Text
-          </p>
-          <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
-            <input 
-              v-model="buttonLabel"
-              placeholder="Button Text (e.g. Enter Raffle)"
-              class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
-            />
+      <!-- Layout Mode Selector: Single Button vs Dual Buttons (Agree / Disagree) -->
+      <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] pb-[18px] shrink-0 w-full border-b border-[#f0f0f0]">
+        <div class="flex items-center justify-between w-full">
+          <div class="flex flex-col">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Button Layout
+            </p>
+            <span class="font-707 text-[11px] text-neutral-400">
+              Single action or paired choices
+            </span>
+          </div>
+          <div class="flex gap-[6px] items-center">
+            <button
+              type="button"
+              @click="layoutMode = 'single'"
+              :class="layoutMode === 'single' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="px-3 h-[30px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer transition-all"
+            >
+              Single
+            </button>
+            <button
+              type="button"
+              @click="layoutMode = 'dual'"
+              :class="layoutMode === 'dual' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="px-3 h-[30px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer transition-all"
+            >
+              Dual (Agree / Disagree)
+            </button>
+          </div>
+        </div>
+
+        <!-- Presets for Dual Mode (Agree / Disagree, Yes / No, etc.) -->
+        <div v-if="layoutMode === 'dual'" class="w-full pt-1">
+          <p class="font-707 text-[11px] font-medium text-neutral-500 mb-2">Dual Action Presets</p>
+          <div class="grid grid-cols-2 gap-2 w-full">
+            <button
+              v-for="p in DUAL_BUTTON_PRESETS"
+              :key="p.id"
+              type="button"
+              @click="applyDualPreset(p)"
+              :class="(buttonLabel.toUpperCase() === p.primaryLabel && secondaryButtonLabel.toUpperCase() === p.secondaryLabel) ? 'border-black bg-black/5 font-medium' : 'border-black/10 hover:border-black/30 bg-white'"
+              class="px-2.5 py-1.5 rounded-[8px] border text-left flex flex-col gap-0.5 transition-all cursor-pointer text-black"
+            >
+              <span class="font-707 text-[11px] font-medium">{{ p.label }}</span>
+              <span class="font-mono text-[9.5px] text-neutral-500 uppercase">{{ p.primaryLabel }} · {{ p.secondaryLabel }}</span>
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- Add Icon Section -->
-      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
-        <div class="flex items-center justify-between w-full">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Button Icon
+      <!-- PRIMARY BUTTON (Single Mode or Dual Mode Primary) -->
+      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
+        <div class="flex flex-col gap-[6px] w-full">
+          <div class="flex items-center justify-between">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              {{ layoutMode === 'dual' ? 'Primary Button Text (Agree / Yes)' : 'Button Text' }}
+            </p>
+            <span v-if="layoutMode === 'dual'" class="text-[10px] font-mono uppercase text-neutral-400">Button 1</span>
+          </div>
+          <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+            <input 
+              v-model="buttonLabel"
+              :placeholder="layoutMode === 'dual' ? 'I AGREE' : 'Button Text (e.g. Enter Raffle)'"
+              class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
+            />
+          </div>
+        </div>
+
+        <!-- Add Icon Section for Primary Button -->
+        <div class="flex items-center justify-between w-full pt-1">
+          <p class="font-707 font-medium text-[12px] leading-[18px] text-neutral-700">
+            {{ layoutMode === 'dual' ? 'Primary Button Icon' : 'Button Icon' }}
           </p>
 
-          <!-- Apple Style Toggle Switch -->
           <button
             type="button"
             role="switch"
             :aria-checked="showIcon"
             @click="toggleIcon"
-            class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+            class="relative inline-flex h-[20px] w-[36px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
             :class="showIcon ? 'bg-black' : 'bg-[#e5e5ea]'"
             title="Toggle Icon"
           >
             <span
               aria-hidden="true"
-              class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
-              :class="showIcon ? 'translate-x-[18px]' : 'translate-x-0'"
+              class="pointer-events-none inline-block h-[16px] w-[16px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+              :class="showIcon ? 'translate-x-[16px]' : 'translate-x-0'"
             />
           </button>
         </div>
 
-        <!-- Icon Presets -->
+        <!-- Primary Icon Presets -->
         <Transition
           enter-active-class="transition duration-200 ease-out"
           enter-from-class="transform opacity-0 -translate-y-2"
@@ -105,7 +161,7 @@
               type="button"
               @click="setIconName('arrow-right')"
               :class="iconName === 'arrow-right' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-              class="shrink-0 whitespace-nowrap content-stretch flex h-[34px] items-center justify-center gap-1.5 px-[14px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+              class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
             >
               <ArrowRight class="size-3.5" /> Arrow
             </button>
@@ -113,7 +169,7 @@
               type="button"
               @click="setIconName('grid')"
               :class="iconName === 'grid' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-              class="shrink-0 whitespace-nowrap content-stretch flex h-[34px] items-center justify-center gap-1.5 px-[14px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+              class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
             >
               <LayoutGrid class="size-3.5" /> Grid
             </button>
@@ -121,7 +177,7 @@
               type="button"
               @click="setIconName('ticket')"
               :class="iconName === 'ticket' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-              class="shrink-0 whitespace-nowrap content-stretch flex h-[34px] items-center justify-center gap-1.5 px-[14px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+              class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
             >
               <Ticket class="size-3.5" /> Pass
             </button>
@@ -129,7 +185,7 @@
               type="button"
               @click="setIconName('whatsapp')"
               :class="iconName === 'whatsapp' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-              class="shrink-0 whitespace-nowrap content-stretch flex h-[34px] items-center justify-center gap-1.5 px-[14px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+              class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
             >
               <Phone class="size-3.5" /> WhatsApp
             </button>
@@ -137,7 +193,105 @@
               type="button"
               @click="setIconName('instagram')"
               :class="iconName === 'instagram' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-              class="shrink-0 whitespace-nowrap content-stretch flex h-[34px] items-center justify-center gap-1.5 px-[14px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
+              class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
+            >
+              <Instagram class="size-3.5" /> Instagram
+            </button>
+          </div>
+        </Transition>
+      </div>
+
+      <!-- SECONDARY BUTTON (Dual Mode Only: Disagree / No) -->
+      <div 
+        v-if="layoutMode === 'dual'"
+        class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full animate-in fade-in duration-150"
+      >
+        <div class="flex flex-col gap-[6px] w-full">
+          <div class="flex items-center justify-between">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Secondary Button Text (Disagree / No)
+            </p>
+            <span class="text-[10px] font-mono uppercase text-neutral-400">Button 2</span>
+          </div>
+          <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+            <input 
+              v-model="secondaryButtonLabel"
+              placeholder="I DISAGREE"
+              class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
+            />
+          </div>
+        </div>
+
+        <!-- Add Icon Section for Secondary Button -->
+        <div class="flex items-center justify-between w-full pt-1">
+          <p class="font-707 font-medium text-[12px] leading-[18px] text-neutral-700">
+            Secondary Button Icon
+          </p>
+
+          <button
+            type="button"
+            role="switch"
+            :aria-checked="secondaryShowIcon"
+            @click="toggleSecondaryIcon"
+            class="relative inline-flex h-[20px] w-[36px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+            :class="secondaryShowIcon ? 'bg-black' : 'bg-[#e5e5ea]'"
+            title="Toggle Secondary Icon"
+          >
+            <span
+              aria-hidden="true"
+              class="pointer-events-none inline-block h-[16px] w-[16px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+              :class="secondaryShowIcon ? 'translate-x-[16px]' : 'translate-x-0'"
+            />
+          </button>
+        </div>
+
+        <!-- Secondary Icon Presets -->
+        <Transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="transform opacity-0 -translate-y-2"
+          enter-to-class="transform opacity-100 translate-y-0"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="transform opacity-100 translate-y-0"
+          leave-to-class="transform opacity-0 -translate-y-2"
+        >
+          <div v-if="secondaryShowIcon" class="flex flex-nowrap overflow-x-auto gap-[8px] items-center -mx-[24px] px-[24px] w-[calc(100%+48px)] pt-1 no-scrollbar">
+            <button 
+              type="button"
+              @click="setSecondaryIconName('arrow-right')"
+              :class="secondaryIconName === 'arrow-right' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
+            >
+              <ArrowRight class="size-3.5" /> Arrow
+            </button>
+            <button 
+              type="button"
+              @click="setSecondaryIconName('grid')"
+              :class="secondaryIconName === 'grid' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
+            >
+              <LayoutGrid class="size-3.5" /> Grid
+            </button>
+            <button 
+              type="button"
+              @click="setSecondaryIconName('ticket')"
+              :class="secondaryIconName === 'ticket' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
+            >
+              <Ticket class="size-3.5" /> Pass
+            </button>
+            <button 
+              type="button"
+              @click="setSecondaryIconName('whatsapp')"
+              :class="secondaryIconName === 'whatsapp' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
+            >
+              <Phone class="size-3.5" /> WhatsApp
+            </button>
+            <button 
+              type="button"
+              @click="setSecondaryIconName('instagram')"
+              :class="secondaryIconName === 'instagram' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
             >
               <Instagram class="size-3.5" /> Instagram
             </button>
@@ -148,9 +302,9 @@
 
     <!-- TAB 2: STYLE & LAYOUT -->
     <div v-show="activeTab === 'style'" class="w-full flex flex-col">
-      <!-- Style Presets -->
+      <!-- Style Presets (Single Mode) -->
       <div 
-        v-if="shouldShowStylePresets"
+        v-if="shouldShowStylePresets && layoutMode === 'single'"
         class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]"
       >
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
@@ -173,6 +327,76 @@
           >
             Primary White
           </button>
+        </div>
+      </div>
+
+      <!-- Style Presets (Dual Mode) -->
+      <div 
+        v-if="shouldShowStylePresets && layoutMode === 'dual'"
+        class="content-stretch flex flex-col gap-[16px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]"
+      >
+        <!-- Primary Variant -->
+        <div class="flex flex-col gap-[8px] w-full">
+          <div class="flex items-center justify-between w-full">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Primary Button Style (Agree / Yes)
+            </p>
+            <span class="text-[10px] font-mono text-neutral-400">Button 1</span>
+          </div>
+          <div class="flex gap-[8px] items-center w-full">
+            <button 
+              type="button"
+              @click="setVariant('black')"
+              :class="currentVariant === 'black' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="flex-1 whitespace-nowrap content-stretch flex h-[34px] items-center justify-center px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
+            >
+              Solid Black
+            </button>
+            <button 
+              type="button"
+              @click="setVariant('white')"
+              :class="currentVariant === 'white' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="flex-1 whitespace-nowrap content-stretch flex h-[34px] items-center justify-center px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
+            >
+              Solid White
+            </button>
+          </div>
+        </div>
+
+        <!-- Secondary Variant -->
+        <div class="flex flex-col gap-[8px] w-full pt-1">
+          <div class="flex items-center justify-between w-full">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Secondary Button Style (Disagree / No)
+            </p>
+            <span class="text-[10px] font-mono text-neutral-400">Button 2</span>
+          </div>
+          <div class="grid grid-cols-3 gap-[6px] items-center w-full">
+            <button 
+              type="button"
+              @click="setSecondaryVariant('white')"
+              :class="currentSecondaryVariant === 'white' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="whitespace-nowrap content-stretch flex h-[34px] items-center justify-center px-[8px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
+            >
+              White
+            </button>
+            <button 
+              type="button"
+              @click="setSecondaryVariant('ghost')"
+              :class="currentSecondaryVariant === 'ghost' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="whitespace-nowrap content-stretch flex h-[34px] items-center justify-center px-[8px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
+            >
+              Outline
+            </button>
+            <button 
+              type="button"
+              @click="setSecondaryVariant('black')"
+              :class="currentSecondaryVariant === 'black' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="whitespace-nowrap content-stretch flex h-[34px] items-center justify-center px-[8px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
+            >
+              Black
+            </button>
+          </div>
         </div>
       </div>
 
@@ -268,12 +492,12 @@
 
     <!-- TAB 3: ACTION & LINK -->
     <div v-show="activeTab === 'action'" class="w-full flex flex-col">
-      <!-- Action Button Link to -->
-      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
+      <!-- 1. PRIMARY BUTTON ACTION (Single or Dual) -->
+      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full" :class="layoutMode === 'dual' ? 'border-b border-[#f0f0f0]' : ''">
         <div class="content-stretch flex items-center justify-between w-full relative">
           <div class="flex flex-col">
             <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
-              Action Trigger
+              {{ layoutMode === 'dual' ? 'Primary Action (Agree / Yes)' : 'Action Trigger' }}
             </p>
             <span class="font-707 text-[11px] text-neutral-400">
               When clicked by guest
@@ -283,7 +507,7 @@
             <button
               type="button"
               @click="isLinkToDropdownOpen = !isLinkToDropdownOpen"
-              class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-[230px] cursor-pointer text-left"
+              class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-[210px] cursor-pointer text-left"
             >
               <span class="font-707 text-[13px] text-black truncate">{{ selectedActionLabel }}</span>
               <ChevronDown 
@@ -292,7 +516,7 @@
               />
             </button>
 
-            <!-- Dropdown Menu (Teleported to body to eliminate frame bleeding) -->
+            <!-- Dropdown Menu -->
             <Teleport to="body">
               <div 
                 v-if="isLinkToDropdownOpen" 
@@ -316,22 +540,155 @@
           </div>
         </div>
 
-        <!-- Conditional URL Input if Link selected -->
-        <div v-if="actionType === 'link'" class="w-full pt-1 animate-in fade-in duration-150">
+        <!-- Conditional URL Input if Link selected for Primary Button -->
+        <div v-if="actionType === 'link'" class="w-full pt-1 flex flex-col gap-3 animate-in fade-in duration-150">
           <div class="flex flex-col gap-1.5 w-full">
-            <span class="font-707 text-[12px] font-medium text-neutral-600">Destination URL</span>
+            <div class="flex items-center justify-between">
+              <span class="font-707 text-[12px] font-medium text-neutral-600">Destination External URL</span>
+              <span class="text-[10px] font-mono text-neutral-400">e.g. https://...</span>
+            </div>
             <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
               <input 
                 v-model="actionUrl" 
-                placeholder="https://..." 
+                placeholder="https://example.com/terms" 
                 class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
               />
             </div>
           </div>
+
+          <!-- Open in New Tab Toggle -->
+          <div class="flex items-center justify-between w-full pt-0.5">
+            <div class="flex flex-col">
+              <span class="font-707 text-[12px] font-medium text-black">Open in New Tab</span>
+              <span class="font-707 text-[10.5px] text-neutral-400">Open external link in a new browser tab</span>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              :aria-checked="openInNewTab"
+              @click="openInNewTab = !openInNewTab"
+              class="relative inline-flex h-[20px] w-[36px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+              :class="openInNewTab ? 'bg-black' : 'bg-[#e5e5ea]'"
+              title="Open in new tab"
+            >
+              <span
+                aria-hidden="true"
+                class="pointer-events-none inline-block h-[16px] w-[16px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+                :class="openInNewTab ? 'translate-x-[16px]' : 'translate-x-0'"
+              />
+            </button>
+          </div>
         </div>
 
-        <!-- Conditional Modal Setup Button if Popup Modal is selected -->
+        <!-- Conditional Modal Setup Button if Popup Modal is selected for Primary Button -->
         <div v-if="actionType === 'modal'" class="w-full pt-1 animate-in fade-in duration-150">
+          <button 
+            type="button"
+            @click="openModalSetup"
+            class="apple-glass-btn-dark w-full h-[38px] rounded-[8px] flex items-center justify-between px-3.5 font-707 font-medium text-[12px] cursor-pointer transition-all shadow-sm"
+          >
+            <span class="flex items-center gap-2">
+              <SlidersHorizontal class="size-3.5" />
+              <span>Configure Pop Up Modal</span>
+            </span>
+            <ArrowRight class="size-3.5 opacity-80" />
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. SECONDARY BUTTON ACTION (Dual Mode Only) -->
+      <div 
+        v-if="layoutMode === 'dual'"
+        class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full animate-in fade-in duration-150"
+      >
+        <div class="content-stretch flex items-center justify-between w-full relative">
+          <div class="flex flex-col">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
+              Secondary Action (Disagree / No)
+            </p>
+            <span class="font-707 text-[11px] text-neutral-400">
+              When clicked by guest
+            </span>
+          </div>
+          <div class="relative" ref="secondaryLinkToBtnRef">
+            <button
+              type="button"
+              @click="isSecondaryLinkToDropdownOpen = !isSecondaryLinkToDropdownOpen"
+              class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-[210px] cursor-pointer text-left"
+            >
+              <span class="font-707 text-[13px] text-black truncate">{{ selectedSecondaryActionLabel }}</span>
+              <ChevronDown 
+                class="size-[15px] text-black transition-transform duration-200 shrink-0 ml-1.5" 
+                :class="isSecondaryLinkToDropdownOpen ? 'rotate-180' : ''"
+              />
+            </button>
+
+            <!-- Secondary Dropdown Menu -->
+            <Teleport to="body">
+              <div 
+                v-if="isSecondaryLinkToDropdownOpen" 
+                ref="secondaryLinkToMenuRef"
+                :style="secondaryLinkToPopoverStyle"
+                class="bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-[0px_8px_30px_rgba(0,0,0,0.15)] py-1 z-50 flex flex-col overflow-y-auto animate-in fade-in duration-150 select-none"
+              >
+                <button
+                  v-for="opt in linkToOptions"
+                  :key="opt.value"
+                  type="button"
+                  @click="selectSecondaryLinkTo(opt.value)"
+                  class="flex items-center justify-between px-[14px] py-[8px] text-left hover:bg-black/5 transition-colors cursor-pointer"
+                  :class="secondaryActionType === opt.value ? 'font-medium text-black bg-black/5' : 'text-neutral-700'"
+                >
+                  <span class="font-707 text-[13px]">{{ opt.label }}</span>
+                  <Check v-if="secondaryActionType === opt.value" class="size-[15px] text-black" />
+                </button>
+              </div>
+            </Teleport>
+          </div>
+        </div>
+
+        <!-- Conditional URL Input if Link selected for Secondary Button -->
+        <div v-if="secondaryActionType === 'link'" class="w-full pt-1 flex flex-col gap-3 animate-in fade-in duration-150">
+          <div class="flex flex-col gap-1.5 w-full">
+            <div class="flex items-center justify-between">
+              <span class="font-707 text-[12px] font-medium text-neutral-600">Secondary External URL</span>
+              <span class="text-[10px] font-mono text-neutral-400">e.g. https://...</span>
+            </div>
+            <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+              <input 
+                v-model="secondaryActionUrl" 
+                placeholder="https://example.com/decline" 
+                class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
+              />
+            </div>
+          </div>
+
+          <!-- Secondary Open in New Tab Toggle -->
+          <div class="flex items-center justify-between w-full pt-0.5">
+            <div class="flex flex-col">
+              <span class="font-707 text-[12px] font-medium text-black">Open in New Tab</span>
+              <span class="font-707 text-[10.5px] text-neutral-400">Open external link in a new browser tab</span>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              :aria-checked="secondaryOpenInNewTab"
+              @click="secondaryOpenInNewTab = !secondaryOpenInNewTab"
+              class="relative inline-flex h-[20px] w-[36px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+              :class="secondaryOpenInNewTab ? 'bg-black' : 'bg-[#e5e5ea]'"
+              title="Open in new tab"
+            >
+              <span
+                aria-hidden="true"
+                class="pointer-events-none inline-block h-[16px] w-[16px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+                :class="secondaryOpenInNewTab ? 'translate-x-[16px]' : 'translate-x-0'"
+              />
+            </button>
+          </div>
+        </div>
+
+        <!-- Conditional Modal Setup Button if Popup Modal is selected for Secondary Button -->
+        <div v-if="secondaryActionType === 'modal'" class="w-full pt-1 animate-in fade-in duration-150">
           <button 
             type="button"
             @click="openModalSetup"
@@ -350,7 +707,7 @@
 </template>
 
 <script setup lang="ts">
-import { CTA_ACTION_OPTIONS, normalizeCtaAction } from './ctaActions.ts';
+import { CTA_ACTION_OPTIONS, normalizeCtaAction, DUAL_BUTTON_PRESETS, type DualButtonPreset } from './ctaActions.ts';
 import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
@@ -515,8 +872,34 @@ const shouldShowStylePresets = computed(() => {
   return true;
 });
 
+// Layout Mode: Single vs Dual Buttons
+const layoutMode = computed({
+  get: () => (targetWidget.value?.props?.layoutMode === 'dual' ? 'dual' : 'single'),
+  set: (val: 'single' | 'dual') => {
+    if (targetWidget.value) {
+      editorStore.updateWidgetProps(targetWidget.value.id, { 
+        layoutMode: val,
+        secondaryLabel: targetWidget.value.props.secondaryLabel || 'DISAGREE',
+        secondaryVariant: targetWidget.value.props.secondaryVariant || 'white',
+        secondaryActionType: targetWidget.value.props.secondaryActionType || 'link',
+        secondaryOpenInNewTab: targetWidget.value.props.secondaryOpenInNewTab ?? true
+      });
+    }
+  }
+});
+
+function applyDualPreset(preset: DualButtonPreset) {
+  if (targetWidget.value) {
+    editorStore.updateWidgetProps(targetWidget.value.id, {
+      layoutMode: 'dual',
+      label: preset.primaryLabel,
+      secondaryLabel: preset.secondaryLabel
+    });
+  }
+}
+
 const buttonLabel = computed({
-  get: () => targetWidget.value?.props?.label || targetWidget.value?.props?.buttonText || targetWidget.value?.props?.ctaLabel || 'BUTTON CTA',
+  get: () => targetWidget.value?.props?.label || targetWidget.value?.props?.buttonText || targetWidget.value?.props?.ctaLabel || (layoutMode.value === 'dual' ? 'AGREE' : 'BUTTON CTA'),
   set: (val: string) => {
     if (targetWidget.value) {
       if (targetWidget.value.type === 'HeroDrop') {
@@ -528,9 +911,28 @@ const buttonLabel = computed({
   }
 });
 
+const secondaryButtonLabel = computed({
+  get: () => targetWidget.value?.props?.secondaryLabel || 'DISAGREE',
+  set: (val: string) => {
+    if (targetWidget.value) {
+      editorStore.updateWidgetProps(targetWidget.value.id, { secondaryLabel: val });
+    }
+  }
+});
+
 const currentVariant = computed(() => {
   return targetWidget.value?.props?.variant || targetWidget.value?.props?.buttonVariant || 'black';
 });
+
+const currentSecondaryVariant = computed(() => {
+  return targetWidget.value?.props?.secondaryVariant || 'white';
+});
+
+function setSecondaryVariant(v: 'white' | 'black' | 'ghost') {
+  if (targetWidget.value) {
+    editorStore.updateWidgetProps(targetWidget.value.id, { secondaryVariant: v });
+  }
+}
 
 const positionModes = computed(() => {
   if (targetWidget.value?.type === 'HeroDrop') {
@@ -553,27 +955,20 @@ const currentStickyScope = computed(() => {
   return targetWidget.value?.props?.stickyScope || 'current';
 });
 
+// Primary Action Dropdown
 const isLinkToDropdownOpen = ref(false);
 const linkToBtnRef = ref<HTMLElement | null>(null);
-const { style: linkToPopoverStyle, menuRef: linkToMenuRef } = useModalPopover(linkToBtnRef, isLinkToDropdownOpen, { align: 'right', width: 240 });
+const { style: linkToPopoverStyle, menuRef: linkToMenuRef } = useModalPopover(linkToBtnRef, isLinkToDropdownOpen, { align: 'right', width: 220 });
+
+// Secondary Action Dropdown
+const isSecondaryLinkToDropdownOpen = ref(false);
+const secondaryLinkToBtnRef = ref<HTMLElement | null>(null);
+const { style: secondaryLinkToPopoverStyle, menuRef: secondaryLinkToMenuRef } = useModalPopover(secondaryLinkToBtnRef, isSecondaryLinkToDropdownOpen, { align: 'right', width: 220 });
 
 const allLinkToOptions = CTA_ACTION_OPTIONS;
 
 const isModalDisallowed = computed(() => {
   return currentPositionMode.value === 'sticky-bottom' && currentStickyScope.value === 'all';
-});
-
-const hasNextPage = computed(() => {
-  return editorStore.activePageIndex < editorStore.pages.length - 1;
-});
-
-const hasFormFields = computed(() => {
-  return editorStore.pages.flatMap(p => p.widget_tree).some(w => 
-    w.type === 'RegistrationForm' || 
-    w.type === 'FieldInput' ||
-    (w.props?.modalProps && (w.props.modalProps.variant === 'message-field' || w.props.modalProps.fieldType)) ||
-    (w.type === 'ModalOverlay' && (w.props?.variant === 'message-field' || w.props?.fieldType))
-  );
 });
 
 const hasEPassInProject = computed(() => {
@@ -588,6 +983,7 @@ const linkToOptions = computed(() => {
   });
 });
 
+// Primary Action Trigger
 const actionType = computed({
   get: () => {
     const current = normalizeCtaAction(targetWidget.value?.props?.actionType);
@@ -628,6 +1024,66 @@ const actionUrl = computed({
   }
 });
 
+const openInNewTab = computed({
+  get: () => targetWidget.value?.props?.openInNewTab ?? false,
+  set: (val: boolean) => {
+    if (targetWidget.value) {
+      editorStore.updateWidgetProps(targetWidget.value.id, { openInNewTab: val });
+    }
+  }
+});
+
+// Secondary Action Trigger
+const secondaryActionType = computed({
+  get: () => {
+    const current = normalizeCtaAction(targetWidget.value?.props?.secondaryActionType);
+    const availableValues = linkToOptions.value.map(o => o.value as string);
+    if (current && availableValues.includes(current)) return current;
+    return 'link';
+  },
+  set: (val: string) => {
+    if (targetWidget.value) {
+      editorStore.updateWidgetProps(targetWidget.value.id, { secondaryActionType: val });
+    }
+  }
+});
+
+const selectedSecondaryActionLabel = computed(() => {
+  const opt = allLinkToOptions.find(o => o.value === secondaryActionType.value);
+  return opt ? opt.label : 'External URL';
+});
+
+function selectSecondaryLinkTo(val: string) {
+  secondaryActionType.value = val;
+  isSecondaryLinkToDropdownOpen.value = false;
+  if (val === 'modal' && targetWidget.value) {
+    if (!targetWidget.value.props.modalProps) {
+      setModalVariant('message-alert');
+    }
+    editorStore.selectWidget(targetWidget.value.id);
+    editorStore.openModalSidebar();
+  }
+}
+
+const secondaryActionUrl = computed({
+  get: () => targetWidget.value?.props?.secondaryUrl || '',
+  set: (val: string) => {
+    if (targetWidget.value) {
+      editorStore.updateWidgetProps(targetWidget.value.id, { secondaryUrl: val });
+    }
+  }
+});
+
+const secondaryOpenInNewTab = computed({
+  get: () => targetWidget.value?.props?.secondaryOpenInNewTab ?? true,
+  set: (val: boolean) => {
+    if (targetWidget.value) {
+      editorStore.updateWidgetProps(targetWidget.value.id, { secondaryOpenInNewTab: val });
+    }
+  }
+});
+
+// Primary Button Icon
 const showIcon = computed({
   get: () => targetWidget.value?.props?.showIcon ?? false,
   set: (val: boolean) => {
@@ -644,6 +1100,36 @@ function toggleIcon() {
 const iconName = computed(() => {
   return targetWidget.value?.props?.iconName || 'arrow-right';
 });
+
+function setIconName(name: string) {
+  if (targetWidget.value) {
+    editorStore.updateWidgetProps(targetWidget.value.id, { iconName: name, showIcon: true });
+  }
+}
+
+// Secondary Button Icon
+const secondaryShowIcon = computed({
+  get: () => targetWidget.value?.props?.secondaryShowIcon ?? false,
+  set: (val: boolean) => {
+    if (targetWidget.value) {
+      editorStore.updateWidgetProps(targetWidget.value.id, { secondaryShowIcon: val });
+    }
+  }
+});
+
+function toggleSecondaryIcon() {
+  secondaryShowIcon.value = !secondaryShowIcon.value;
+}
+
+const secondaryIconName = computed(() => {
+  return targetWidget.value?.props?.secondaryIconName || 'arrow-right';
+});
+
+function setSecondaryIconName(name: string) {
+  if (targetWidget.value) {
+    editorStore.updateWidgetProps(targetWidget.value.id, { secondaryIconName: name, secondaryShowIcon: true });
+  }
+}
 
 function setVariant(variant: 'black' | 'white') {
   if (targetWidget.value) {
@@ -678,12 +1164,6 @@ function setStickyScope(scope: 'current' | 'all' | 'custom') {
       updates.actionType = 'submit';
     }
     editorStore.updateWidgetProps(targetWidget.value.id, updates);
-  }
-}
-
-function setIconName(name: string) {
-  if (targetWidget.value) {
-    editorStore.updateWidgetProps(targetWidget.value.id, { iconName: name, showIcon: true });
   }
 }
 

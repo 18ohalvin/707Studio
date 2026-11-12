@@ -28,3 +28,32 @@ export function ctaActionLabel(value: string | undefined | null): string {
   const action = normalizeCtaAction(value);
   return CTA_ACTION_OPTIONS.find(o => o.value === action)?.label || 'Submit & Next Page';
 }
+
+/**
+ * Normalizes external URLs so that protocol-less inputs like "google.com" or "example.org/path"
+ * are safely prepended with "https://", avoiding accidental relative route navigation.
+ * Also preserves "http://", "https://", "mailto:", and "tel:".
+ */
+export function normalizeExternalUrl(rawUrl: string | undefined | null): string {
+  const url = String(rawUrl || '').trim();
+  if (!url) return '';
+  if (/^(https?:|mailto:|tel:|\/\/)/i.test(url)) {
+    return url;
+  }
+  return `https://${url}`;
+}
+
+export interface DualButtonPreset {
+  id: string;
+  label: string;
+  primaryLabel: string;
+  secondaryLabel: string;
+}
+
+export const DUAL_BUTTON_PRESETS: DualButtonPreset[] = [
+  { id: 'agree-disagree', label: 'Agree / Disagree', primaryLabel: 'I AGREE', secondaryLabel: 'I DISAGREE' },
+  { id: 'yes-no', label: 'Yes / No', primaryLabel: 'YES', secondaryLabel: 'NO' },
+  { id: 'accept-decline', label: 'Accept / Decline', primaryLabel: 'ACCEPT', secondaryLabel: 'DECLINE' },
+  { id: 'confirm-cancel', label: 'Confirm / Cancel', primaryLabel: 'CONFIRM', secondaryLabel: 'CANCEL' }
+];
+

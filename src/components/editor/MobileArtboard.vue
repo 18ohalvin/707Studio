@@ -1444,12 +1444,14 @@
                   </button>
                 </div>
 
+                <!-- Single Button Layout -->
                 <button 
+                  v-if="widget.props.layoutMode !== 'dual'"
                   type="button"
-                  @click.stop="handleActionButtonClick(widget)"
-                  :disabled="isButtonInactive(widget)"
+                  @click.stop="handleActionButtonClick(widget, 'primary')"
+                  :disabled="isButtonInactive(widget, 'primary')"
                   :class="[
-                    isButtonInactive(widget)
+                    isButtonInactive(widget, 'primary')
                       ? ((widget.props.variant === 'white' || widget.props.buttonVariant === 'white')
                           ? '!bg-[#e5e5e5] !text-[#8e8e93] cursor-not-allowed pointer-events-none'
                           : '!bg-[#262626] !text-[#737373] cursor-not-allowed pointer-events-none')
@@ -1464,6 +1466,54 @@
                   <component :is="getButtonIcon(widget)" v-if="widget.props.showIcon" class="size-[16px] shrink-0" />
                   <span class="whitespace-nowrap uppercase">{{ widget.props.label || 'BUTTON CTA' }}</span>
                 </button>
+
+                <!-- Dual Buttons Layout (Agree / Disagree or Yes / No) -->
+                <div 
+                  v-else
+                  class="grid grid-cols-2 gap-2.5 w-full items-stretch"
+                >
+                  <!-- Primary Button (Button 1: Agree / Yes) -->
+                  <button 
+                    type="button"
+                    @click.stop="handleActionButtonClick(widget, 'primary')"
+                    :disabled="isButtonInactive(widget, 'primary')"
+                    :class="[
+                      isButtonInactive(widget, 'primary')
+                        ? ((widget.props.variant === 'white' || widget.props.buttonVariant === 'white')
+                            ? '!bg-[#e5e5e5] !text-[#8e8e93] cursor-not-allowed pointer-events-none'
+                            : '!bg-[#262626] !text-[#737373] cursor-not-allowed pointer-events-none')
+                        : ((widget.props.variant === 'white' || widget.props.buttonVariant === 'white')
+                            ? 'bg-white text-black apple-cta-btn-white border border-black/10'
+                            : 'bg-black text-white apple-cta-btn-dark')
+                    ]"
+                    :style="{ height: `${widget.props.height || 48}px` }"
+                    class="w-full px-[12px] py-[12px] rounded-[0px] flex items-center justify-center gap-[8px] font-707 font-medium text-[13px] leading-[18px] tracking-normal cursor-pointer border-0 outline-none shadow-none"
+                  >
+                    <component :is="getButtonIcon(widget)" v-if="widget.props.showIcon" class="size-[15px] shrink-0" />
+                    <span class="truncate uppercase">{{ widget.props.label || 'AGREE' }}</span>
+                  </button>
+
+                  <!-- Secondary Button (Button 2: Disagree / No) -->
+                  <button 
+                    type="button"
+                    @click.stop="handleActionButtonClick(widget, 'secondary')"
+                    :disabled="isButtonInactive(widget, 'secondary')"
+                    :class="[
+                      isButtonInactive(widget, 'secondary')
+                        ? '!bg-[#e5e5e5] !text-[#8e8e93] cursor-not-allowed pointer-events-none'
+                        : (widget.props.secondaryVariant === 'black'
+                            ? 'bg-black text-white apple-cta-btn-dark'
+                            : widget.props.secondaryVariant === 'ghost'
+                              ? 'bg-transparent text-black border border-black/25 hover:bg-black/5'
+                              : 'bg-white text-black apple-cta-btn-white border border-black/10 hover:bg-neutral-50')
+                    ]"
+                    :style="{ height: `${widget.props.height || 48}px` }"
+                    class="w-full px-[12px] py-[12px] rounded-[0px] flex items-center justify-center gap-[8px] font-707 font-medium text-[13px] leading-[18px] tracking-normal cursor-pointer outline-none shadow-none"
+                  >
+                    <component :is="getSecondaryButtonIcon(widget)" v-if="widget.props.secondaryShowIcon" class="size-[15px] shrink-0" />
+                    <span class="truncate uppercase">{{ widget.props.secondaryLabel || 'DISAGREE' }}</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -2339,12 +2389,14 @@ more</span>
           </button>
         </div>
 
+        <!-- Single Sticky Button -->
         <button 
+          v-if="stickyButtonForThisPage.props?.layoutMode !== 'dual'"
           type="button"
-          @click.stop="handleActionButtonClick(stickyButtonForThisPage)"
-          :disabled="isButtonInactive(stickyButtonForThisPage)"
+          @click.stop="handleActionButtonClick(stickyButtonForThisPage, 'primary')"
+          :disabled="isButtonInactive(stickyButtonForThisPage, 'primary')"
           :class="[
-            isButtonInactive(stickyButtonForThisPage)
+            isButtonInactive(stickyButtonForThisPage, 'primary')
               ? ((stickyButtonForThisPage.props?.variant === 'white' || stickyButtonForThisPage.props?.buttonVariant === 'white')
                   ? '!bg-[#e5e5e5] !text-[#8e8e93] cursor-not-allowed pointer-events-none'
                   : '!bg-[#262626] !text-[#737373] cursor-not-allowed pointer-events-none')
@@ -2363,6 +2415,54 @@ more</span>
           <component :is="getButtonIcon(stickyButtonForThisPage)" v-if="stickyButtonForThisPage.props?.showIcon" class="size-[16px] shrink-0" />
           <span class="whitespace-nowrap uppercase">{{ stickyButtonForThisPage.props?.label || stickyButtonForThisPage.props?.buttonText || stickyButtonForThisPage.props?.ctaLabel || 'BUTTON CTA' }}</span>
         </button>
+
+        <!-- Dual Sticky Buttons (Side by Side) -->
+        <div 
+          v-else
+          class="grid grid-cols-2 gap-2.5 w-full p-2.5 bg-white border-t border-black/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]"
+        >
+          <!-- Primary (Agree / Yes) -->
+          <button 
+            type="button"
+            @click.stop="handleActionButtonClick(stickyButtonForThisPage, 'primary')"
+            :disabled="isButtonInactive(stickyButtonForThisPage, 'primary')"
+            :class="[
+              isButtonInactive(stickyButtonForThisPage, 'primary')
+                ? ((stickyButtonForThisPage.props?.variant === 'white' || stickyButtonForThisPage.props?.buttonVariant === 'white')
+                    ? '!bg-[#e5e5e5] !text-[#8e8e93] cursor-not-allowed pointer-events-none'
+                    : '!bg-[#262626] !text-[#737373] cursor-not-allowed pointer-events-none')
+                : ((stickyButtonForThisPage.props?.variant === 'white' || stickyButtonForThisPage.props?.buttonVariant === 'white')
+                    ? 'bg-white text-black apple-cta-btn-white border border-black/10'
+                    : 'bg-black text-white apple-cta-btn-dark')
+            ]"
+            :style="{ height: `${stickyButtonForThisPage.props?.height || 48}px` }"
+            class="w-full px-[12px] py-[12px] rounded-[0px] flex items-center justify-center gap-[8px] font-707 font-medium text-[13px] leading-[18px] tracking-normal cursor-pointer border-0 outline-none shadow-none"
+          >
+            <component :is="getButtonIcon(stickyButtonForThisPage)" v-if="stickyButtonForThisPage.props?.showIcon" class="size-[15px] shrink-0" />
+            <span class="truncate uppercase">{{ stickyButtonForThisPage.props?.label || 'AGREE' }}</span>
+          </button>
+
+          <!-- Secondary (Disagree / No) -->
+          <button 
+            type="button"
+            @click.stop="handleActionButtonClick(stickyButtonForThisPage, 'secondary')"
+            :disabled="isButtonInactive(stickyButtonForThisPage, 'secondary')"
+            :class="[
+              isButtonInactive(stickyButtonForThisPage, 'secondary')
+                ? '!bg-[#e5e5e5] !text-[#8e8e93] cursor-not-allowed pointer-events-none'
+                : (stickyButtonForThisPage.props?.secondaryVariant === 'black'
+                    ? 'bg-black text-white apple-cta-btn-dark'
+                    : stickyButtonForThisPage.props?.secondaryVariant === 'ghost'
+                      ? 'bg-transparent text-black border border-black/25 hover:bg-black/5'
+                      : 'bg-white text-black apple-cta-btn-white border border-black/10 hover:bg-neutral-50')
+            ]"
+            :style="{ height: `${stickyButtonForThisPage.props?.height || 48}px` }"
+            class="w-full px-[12px] py-[12px] rounded-[0px] flex items-center justify-center gap-[8px] font-707 font-medium text-[13px] leading-[18px] tracking-normal cursor-pointer outline-none shadow-none"
+          >
+            <component :is="getSecondaryButtonIcon(stickyButtonForThisPage)" v-if="stickyButtonForThisPage.props?.secondaryShowIcon" class="size-[15px] shrink-0" />
+            <span class="truncate uppercase">{{ stickyButtonForThisPage.props?.secondaryLabel || 'DISAGREE' }}</span>
+          </button>
+        </div>
       </div>
 
       <!-- Interactive Pop Up Modal Bottom Sheet (Figma Node 276:4722) -->
@@ -2906,7 +3006,7 @@ import { ref, reactive, computed, watch, nextTick, onMounted, onUnmounted, injec
 import QRCode from 'qrcode';
 import { PLACES_KEY, placeStatus, placeKey, configuredLimit, type PlaceStatus } from '../../services/places.ts';
 import { LIVE_PASS_KEY, SESSIONS_ANSWER_KEY, type PassSession } from './livePass.ts';
-import { normalizeCtaAction } from './ctaActions.ts';
+import { normalizeCtaAction, normalizeExternalUrl } from './ctaActions.ts';
 import { responsiveImgAttrs, placeholderStyle, sizedUrl } from '../../services/responsiveImage.ts';
 import { TICKET_CONTEXT_KEY, TICKET_SOURCE_KEY, TICKET_CANVAS, ticketFieldMeta, type TicketFieldKey } from './ticket/ticketFields.ts';
 import { DEFAULT_TRACK_NOTICE, fillTrackNotice } from './trackNotice.ts';
@@ -3786,10 +3886,10 @@ function handleAdjustWidget(widget: any) {
   }
 }
 
-function handleActionButtonClick(widget: any) {
+function handleActionButtonClick(widget: any, target: 'primary' | 'secondary' = 'primary') {
   if (wasDraggingRecently.value) return;
-  if (props.isPreviewModal) {
-    handleButtonClick(widget);
+  if (props.isPreviewModal || props.isLivePage) {
+    handleButtonClick(widget, target);
     return;
   }
   if (props.isMiniPreview) return;
@@ -3800,8 +3900,8 @@ function handleActionButtonClick(widget: any) {
 
 function handleHeroCtaClick(widget: any) {
   if (wasDraggingRecently.value) return;
-  if (props.isPreviewModal) {
-    handleButtonClick(widget);
+  if (props.isPreviewModal || props.isLivePage) {
+    handleButtonClick(widget, 'primary');
     return;
   }
   if (props.isMiniPreview) return;
@@ -3812,6 +3912,18 @@ function handleHeroCtaClick(widget: any) {
 
 function getButtonIcon(widget: any) {
   const iconName = widget.props?.iconName || 'arrow-right';
+  switch (iconName) {
+    case 'grid': return LayoutGrid;
+    case 'ticket': return Ticket;
+    case 'whatsapp': return Phone;
+    case 'instagram': return Instagram;
+    case 'arrow-right':
+    default: return ArrowRight;
+  }
+}
+
+function getSecondaryButtonIcon(widget: any) {
+  const iconName = widget.props?.secondaryIconName || 'arrow-right';
   switch (iconName) {
     case 'grid': return LayoutGrid;
     case 'ticket': return Ticket;
@@ -3966,9 +4078,12 @@ function collectPageAnswers(): Record<string, any> {
   return formData;
 }
 
-function handleButtonClick(widget: any) {
+function handleButtonClick(widget: any, target: 'primary' | 'secondary' = 'primary') {
   if (widget.props?.disabled) return;
-  const actionType = normalizeCtaAction(widget.props?.actionType) || 'submit';
+  const rawAction = target === 'secondary'
+    ? (widget.props?.secondaryActionType || 'link')
+    : (widget.props?.actionType || 'submit');
+  const actionType = normalizeCtaAction(rawAction) || (target === 'secondary' ? 'link' : 'submit');
 
   if (actionType === 'submit') {
     let allValid = true;
@@ -4024,20 +4139,44 @@ function handleButtonClick(widget: any) {
       return;
     }
     goToNextPage(props.isLivePage ? collectPageAnswers() : undefined);
-  } else if (actionType === 'link' && widget.props?.url) {
-    if (widget.props?.openInNewTab) {
-      window.open(widget.props.url, '_blank');
+  } else if (actionType === 'link') {
+    const rawUrl = target === 'secondary'
+      ? (widget.props?.secondaryUrl || widget.props?.url)
+      : widget.props?.url;
+    const shouldOpenNewTab = target === 'secondary'
+      ? (widget.props?.secondaryOpenInNewTab ?? true)
+      : Boolean(widget.props?.openInNewTab);
+    const destination = normalizeExternalUrl(rawUrl);
+    if (!destination) {
+      if (!props.isLivePage) {
+        editorStore.showToast('Please configure a valid destination URL.');
+      }
+      return;
+    }
+    if (shouldOpenNewTab) {
+      window.open(destination, '_blank', 'noopener,noreferrer');
     } else {
-      window.location.href = widget.props.url;
+      window.location.href = destination;
     }
   } else if (actionType === 'modal') {
-    activeTriggeredModal.value = widget.props?.modalProps || {
-      variant: 'message-alert',
-      title: 'Your Pass Has Been Sent',
-      subtitle: 'Please provide a valid email address. We will resend your E-Pass immediately.',
-      buttonText: 'Done',
-      buttonVariant: 'black'
-    };
+    const defaultAlert = target === 'secondary'
+      ? {
+          variant: 'message-alert',
+          title: 'Action Cancelled',
+          subtitle: 'You clicked decline / cancel.',
+          buttonText: 'Close',
+          buttonVariant: 'black'
+        }
+      : {
+          variant: 'message-alert',
+          title: 'Your Pass Has Been Sent',
+          subtitle: 'Please provide a valid email address. We will resend your E-Pass immediately.',
+          buttonText: 'Done',
+          buttonVariant: 'black'
+        };
+    activeTriggeredModal.value = (target === 'secondary' && widget.props?.secondaryModalProps)
+      ? widget.props.secondaryModalProps
+      : (widget.props?.modalProps || defaultAlert);
   } else if (actionType === 'download-pass') {
     downloadPass(widget);
   }
@@ -5629,9 +5768,16 @@ const isPageRequiredFieldsComplete = computed(() => {
   return true;
 });
 
-function isButtonInactive(widget: any): boolean {
+function isButtonInactive(widget: any, target: 'primary' | 'secondary' = 'primary'): boolean {
   if (!widget) return false;
   if (widget.props?.disabled) return true;
+  const rawAction = target === 'secondary'
+    ? (widget.props?.secondaryActionType || 'link')
+    : (widget.props?.actionType || 'submit');
+  const action = normalizeCtaAction(rawAction) || (target === 'secondary' ? 'link' : 'submit');
+  if (action === 'link' || action === 'modal') {
+    return false;
+  }
   if (!isPageRequiredFieldsComplete.value) {
     return true;
   }

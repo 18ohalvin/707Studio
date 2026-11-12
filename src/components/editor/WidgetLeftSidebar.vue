@@ -777,6 +777,30 @@
             White Button
           </p>
         </div>
+
+        <!-- Action Button 3: Dual Action Buttons (Agree & Disagree) -->
+        <div 
+          draggable="true"
+          @dragstart="handleDragStart($event, { type: 'ActionButton', label: 'Dual Buttons (Agree & Disagree)', customProps: { layoutMode: 'dual', label: 'AGREE', variant: 'black', actionType: 'submit', secondaryLabel: 'DISAGREE', secondaryVariant: 'white', secondaryActionType: 'link', secondaryUrl: '', height: 48 } })"
+          @dragend="handleDragEnd"
+          @click="addDualActionButton()"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 cursor-grab active:cursor-grabbing group"
+          title="Drag to canvas or click to add"
+        >
+          <div class="border border-[#c9c9c9] flex flex-col items-center justify-center h-[76px] rounded-[8px] shrink-0 w-[124px] bg-white group-hover:border-black transition-colors shadow-sm px-2 overflow-hidden">
+            <div class="grid grid-cols-2 gap-1 w-full">
+              <div class="bg-black text-white h-[28px] rounded-[0px] flex items-center justify-center font-707 font-medium text-[9px] tracking-tight uppercase px-1 truncate">
+                Agree
+              </div>
+              <div class="bg-[#f2f2f2] text-black border border-black/10 h-[28px] rounded-[0px] flex items-center justify-center font-707 font-medium text-[9px] tracking-tight uppercase px-1 truncate">
+                Disagree
+              </div>
+            </div>
+          </div>
+          <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
+            Dual (Yes / No)
+          </p>
+        </div>
       </div>
     </div>
 
@@ -1233,6 +1257,20 @@ function addActionButton(variant: 'black' | 'white' = 'black') {
     variant: variant,
     actionType: 'submit',
     url: '',
+    height: 48
+  });
+}
+
+function addDualActionButton() {
+  editorStore.addWidget('ActionButton', undefined, {
+    layoutMode: 'dual',
+    label: 'AGREE',
+    variant: 'black',
+    actionType: 'submit',
+    secondaryLabel: 'DISAGREE',
+    secondaryVariant: 'white',
+    secondaryActionType: 'link',
+    secondaryUrl: '',
     height: 48
   });
 }

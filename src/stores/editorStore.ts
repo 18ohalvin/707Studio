@@ -702,10 +702,19 @@ export const useEditorStore = defineStore('editor', () => {
         break;
       case 'ActionButton':
         defaultProps = {
+          layoutMode: 'single', // 'single' | 'dual'
           label: 'BUTTON CTA',
           variant: 'black',
           actionType: 'submit',
           url: '',
+          openInNewTab: false,
+          secondaryLabel: 'DISAGREE',
+          secondaryVariant: 'white',
+          secondaryActionType: 'link',
+          secondaryUrl: '',
+          secondaryOpenInNewTab: true,
+          secondaryShowIcon: false,
+          secondaryIconName: 'arrow-right',
           modalType: 'center',
           positionMode: 'in-flow',
           stickyScope: 'current',
