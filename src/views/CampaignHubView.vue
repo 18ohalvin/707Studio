@@ -530,6 +530,7 @@
             <GuestDatabaseTable
               v-if="activeTab === 'guests'"
               :rows="rows"
+              :pages="selectedProject.pages"
               :campaign-title="campaignTitle"
               :show-campaign-column="false"
               :export-name="exportBaseName"

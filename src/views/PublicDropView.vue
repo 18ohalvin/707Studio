@@ -278,7 +278,15 @@ function handleTouchEnd(e: TouchEvent) {
 
 function handleNextPage(pageFormData?: Record<string, any>, targetPageId?: string) {
   if (pageFormData && typeof pageFormData === 'object') {
-    Object.assign(collectedFormData.value, pageFormData);
+    const prevMap = (collectedFormData.value._field_map || {}) as Record<string, string>;
+    const nextMap = (pageFormData._field_map || {}) as Record<string, string>;
+    for (const [k, v] of Object.entries(pageFormData)) {
+      if (k === '_field_map') continue;
+      collectedFormData.value[k] = v;
+    }
+    if (Object.keys(prevMap).length || Object.keys(nextMap).length) {
+      collectedFormData.value._field_map = { ...prevMap, ...nextMap };
+    }
   }
 
   let nextIdx = -1;

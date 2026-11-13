@@ -70,7 +70,7 @@ export function statusDotClass(status?: string): string {
 
 const SYSTEM_KEYS = new Set([
   'fullName', 'email', 'submittedAt', 'name', 'firstName', 'lastName',
-  'event_iso_date', 'event_date', 'eventDate', 'Access Valid For', 'Event Date', 'Date',
+  'event_iso_date', 'event_date', 'eventDate', 'Access Valid For', 'Event Date',
   'selected_sessions', 'selectedSessions',
   'queue_number', 'queueNumber', 'queue_status', 'party_size', 'partySize',
   'wa_notified_states', 'answers', 'formType', 'deviceInfo',
@@ -82,7 +82,7 @@ const SYSTEM_KEYS = new Set([
 const PHONE_RE = /whats\s?app|phone|telp|telepon|\bwa\b|mobile|hp\b/i;
 const NAME_RE = /name|nama/i;
 const EMAIL_RE = /e-?mail/i;
-const INTERNAL_KEY_RE = /^(_|internal|csrf|token|session|event_iso|queue_|party_|wa_notified)/i;
+const INTERNAL_KEY_RE = /^(_|internal|csrf|token|session|event_iso|queue_|party_|wa_notified|multiplechoice_|fieldinput_|documentupload_|registrationform_)/i;
 
 const FIRST_NAME_RE = /first|given|depan/i;
 const LAST_NAME_RE = /last|family|sur\s?name|belakang/i;
@@ -256,7 +256,22 @@ function csvCell(value: string): string {
   return /[",\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
 }
 
-export function buildCsv(rows: Submission[], extraKeys: string[], campaignTitle: (pageId: string) => string): string {
+export interface CsvColumnSpec {
+  key: string;
+  label: string;
+  getValue?: (s: Submission) => string;
+}
+
+export function buildCsv(
+  rows: Submission[],
+  extraColumns: Array<string | CsvColumnSpec>,
+  campaignTitle: (pageId: string) => string
+): string {
+  const normalizedCols: CsvColumnSpec[] = extraColumns.map(c =>
+    typeof c === 'string'
+      ? { key: c, label: c.replace(/\*+$/g, '').trim() || c }
+      : c
+  );
   const hasQueue = rows.some(r => Number(r.queue_number) > 0);
   const header = [
     ...(hasQueue ? ['Queue No'] : []),
@@ -268,7 +283,7 @@ export function buildCsv(rows: Submission[], extraKeys: string[], campaignTitle:
     'Status',
     'Checked In At',
     'Checked Out At',
-    ...extraKeys,
+    ...normalizedCols.map(c => c.label),
     'Submitted At'
   ];
   const lines = rows.map(s => [
@@ -281,13 +296,17 @@ export function buildCsv(rows: Submission[], extraKeys: string[], campaignTitle:
     statusLabel(s.status),
     s.checked_in_at ? new Date(s.checked_in_at).toISOString() : '',
     s.checked_out_at ? new Date(s.checked_out_at).toISOString() : '',
-    ...extraKeys.map(k => {
-      const v = s.form_data?.[k];
+    ...normalizedCols.map(col => {
+      if (col.getValue) return col.getValue(s);
+      const v = s.form_data?.[col.key];
       if (v !== undefined && v !== null && String(v).trim()) {
         const f = formatValue(v);
         if (f && f !== '—' && !f.includes('Single Day Admission')) return f;
       }
-      if (/multiplechoice|book\s*your\s*spot|spot|session/i.test(k)) return '5K RUN + RAFFLE ENTRIES';
+      const isLegacyAtmos = s.page_id === 'proj-1792652006255' || String(s.brand_slug || '').toLowerCase() === 'atmos';
+      if (isLegacyAtmos && /multiplechoice|book\s*your\s*spot|spot|session/i.test(col.key)) {
+        return '5K RUN + RAFFLE ENTRIES';
+      }
       return formatValue(v);
     }),
     new Date(s.created_at).toISOString()

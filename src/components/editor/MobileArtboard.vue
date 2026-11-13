@@ -4186,9 +4186,10 @@ function composeGuestName(parts: { key: string; value: string }[]): string {
   return parts.filter(p => (seen.has(p.value.toLowerCase()) ? false : (seen.add(p.value.toLowerCase()), true))).map(p => p.value).join(' ');
 }
 
-/** The guest's answers on this page, keyed by field label. Empty when the page has no fields. */
+/** The guest's answers on this page, keyed by field label with a stable ID index (`_field_map`). */
 function collectPageAnswers(): Record<string, any> {
   const formData: Record<string, any> = {};
+  const fieldMap: Record<string, string> = {};
   let userEmail = '';
   let userPhone = '';
   // Every name-like field in the order the guest sees them (First Name, Last Name, ...), joined below
@@ -4199,6 +4200,7 @@ function collectPageAnswers(): Record<string, any> {
       const key = w.props?.label || w.props?.placeholder || w.id;
       const raw = w.props?.value || '';
       formData[key] = raw;
+      if (w.id) fieldMap[`fi:${w.id}`] = key;
       if (w.props?.inputType === 'email' || /email/i.test(key)) userEmail = raw;
       if (/name|nama/i.test(key) && String(raw).trim()) nameParts.push({ key, value: String(raw).trim() });
       if (isPhoneField(w) || /whats\s?app|phone|telp|telepon|\bwa\b|mobile|hp\b/i.test(key)) {
@@ -4213,13 +4215,14 @@ function collectPageAnswers(): Record<string, any> {
     } else if (w.type === 'RegistrationForm') {
       const fields = (w.props?.fields || []) as any[];
       fields.forEach((f: any) => {
-        const key = f.name || f.label || 'field';
+        const key = f.name || f.label || f.placeholder || 'field';
         const raw = f.type === 'file'
           ? (f.allowMultiple && Array.isArray(f.uploadedFiles) && f.uploadedFiles.length
               ? f.uploadedFiles
               : (f.uploadedFiles?.[0] || f.fileData || f.value || ''))
           : (f.fileData || f.value || '');
         formData[key] = raw;
+        if (w.id && f.id) fieldMap[`rf:${w.id}:${f.id}`] = key;
         if (f.type === 'email' || /email/i.test(key)) userEmail = typeof raw === 'string' ? raw : '';
         if (/name|nama/i.test(key) && typeof raw === 'string' && raw.trim()) nameParts.push({ key, value: raw.trim() });
         if (f.type === 'tel' || /whats\s?app|phone|telp|telepon|\bwa\b|mobile|hp\b/i.test(key)) {
@@ -4238,6 +4241,7 @@ function collectPageAnswers(): Record<string, any> {
       if (files.length > 0) {
         formData[key] = w.props?.allowMultiple ? files : files[0];
       }
+      if (w.id) fieldMap[`doc:${w.id}`] = key;
     } else if (w.type === 'MultipleChoice') {
       const key = w.props?.question || w.props?.title || w.id;
       const options = (w.props?.options || []) as any[];
@@ -4253,11 +4257,16 @@ function collectPageAnswers(): Record<string, any> {
         .filter((opt: any) => selected.includes(opt.id))
         .map((opt: any) => opt.label || opt.id);
       formData[key] = labels;
+      if (w.id) fieldMap[`mc:${w.id}`] = key;
       if (w.id && key !== w.id) {
         formData[w.id] = labels;
       }
     }
   });
+
+  if (Object.keys(fieldMap).length > 0) {
+    formData._field_map = fieldMap;
+  }
 
   const sessions = selectedSessionsIn(activePage.value.widget_tree);
   if (sessions.length) {

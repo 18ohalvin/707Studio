@@ -88,6 +88,19 @@
 
           <Transition name="hub-pop">
             <div v-if="isColumnsOpen" class="absolute right-0 top-[calc(100%+6px)] z-40 w-[240px] rounded-[12px] border p-2 font-sans font-light tracking-normal" :class="isDark ? 'bg-[#141414] border-white/10 text-white shadow-[0px_20px_50px_rgba(0,0,0,0.6)]' : 'bg-white border-black/10 text-black shadow-[0px_20px_50px_rgba(0,0,0,0.16)]'">
+              <!-- Columns & Filters Popover -->
+              <div class="pb-2 mb-2 border-b flex items-center justify-between px-2" :class="isDark ? 'border-white/10' : 'border-black/5'">
+                <span class="text-[10px] uppercase tracking-[0.12em] text-neutral-400">Display & Columns</span>
+                <button
+                  type="button"
+                  @click="resetColumnPrefs"
+                  class="text-[10.5px] font-medium underline underline-offset-2 cursor-pointer"
+                  :class="isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black'"
+                >
+                  Reset
+                </button>
+              </div>
+
               <!-- Event Date Filter inside dropdown if multiple dates -->
               <div v-if="availableDates.length > 1" class="pb-2 mb-2 border-b" :class="isDark ? 'border-white/10' : 'border-black/5'">
                 <p class="px-2 text-[10px] uppercase tracking-normal text-neutral-400 mb-1">Event Date</p>
@@ -109,17 +122,52 @@
                 </label>
               </div>
 
-              <!-- Visible columns list -->
-              <p class="px-2 pt-0.5 pb-1 text-[10px] uppercase tracking-[0.12em] text-neutral-400">Columns</p>
-              <label
-                v-for="col in toggleableColumns"
-                :key="col.key"
-                class="flex items-center gap-2 px-2 py-1.5 rounded-[6px] cursor-pointer text-[12px]"
-                :class="isDark ? 'hover:bg-white/10 text-neutral-200' : 'hover:bg-black/5 text-neutral-700'"
-              >
-                <input type="checkbox" class="accent-black rounded" :checked="!hiddenColumns.has(col.key)" @change="toggleColumn(col.key)" />
-                <span class="truncate">{{ col.label }}</span>
-              </label>
+              <div class="max-h-[260px] overflow-y-auto no-scrollbar">
+                <!-- Editor Form Fields -->
+                <template v-if="formToggleColumns.length">
+                  <p class="px-2 pt-0.5 pb-1 text-[10px] uppercase tracking-[0.12em] text-neutral-400">Form Fields</p>
+                  <label
+                    v-for="col in formToggleColumns"
+                    :key="col.key"
+                    class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-[6px] cursor-pointer text-[12px]"
+                    :class="isDark ? 'hover:bg-white/10 text-neutral-200' : 'hover:bg-black/5 text-neutral-700'"
+                  >
+                    <span class="flex items-center gap-2 min-w-0">
+                      <input type="checkbox" class="accent-black rounded shrink-0" :checked="!hiddenColumns.has(col.key)" @change="toggleColumn(col.key)" />
+                      <span class="truncate">{{ col.label }}</span>
+                    </span>
+                    <span v-if="col.kind" class="text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded-[4px] shrink-0" :class="isDark ? 'bg-white/10 text-neutral-400' : 'bg-black/[0.05] text-neutral-500'">
+                      {{ col.kind }}
+                    </span>
+                  </label>
+                </template>
+
+                <!-- System / Operational Columns -->
+                <p class="px-2 pt-2 pb-1 text-[10px] uppercase tracking-[0.12em] text-neutral-400">System</p>
+                <label
+                  v-for="col in systemToggleColumns"
+                  :key="col.key"
+                  class="flex items-center gap-2 px-2 py-1.5 rounded-[6px] cursor-pointer text-[12px]"
+                  :class="isDark ? 'hover:bg-white/10 text-neutral-200' : 'hover:bg-black/5 text-neutral-700'"
+                >
+                  <input type="checkbox" class="accent-black rounded shrink-0" :checked="!hiddenColumns.has(col.key)" @change="toggleColumn(col.key)" />
+                  <span class="truncate">{{ col.label }}</span>
+                </label>
+
+                <!-- Archived / Legacy Columns -->
+                <template v-if="archivedToggleColumns.length">
+                  <p class="px-2 pt-2 pb-1 text-[10px] uppercase tracking-[0.12em] text-neutral-400">Archived Fields</p>
+                  <label
+                    v-for="col in archivedToggleColumns"
+                    :key="col.key"
+                    class="flex items-center gap-2 px-2 py-1.5 rounded-[6px] cursor-pointer text-[12px]"
+                    :class="isDark ? 'hover:bg-white/10 text-neutral-200' : 'hover:bg-black/5 text-neutral-700'"
+                  >
+                    <input type="checkbox" class="accent-black rounded shrink-0" :checked="!hiddenColumns.has(col.key)" @change="toggleColumn(col.key)" />
+                    <span class="truncate">{{ col.label }}</span>
+                  </label>
+                </template>
+              </div>
 
               <div class="h-px my-1.5" :class="isDark ? 'bg-white/10' : 'bg-black/5'" />
               <div class="flex items-center justify-between px-2 py-1 text-[12px]">
@@ -129,6 +177,67 @@
             </div>
           </Transition>
         </div>
+      </div>
+    </div>
+
+    <!-- Dynamic Form Facet Filters & Schema Sync Bar -->
+    <div
+      v-if="facetFilterFields.length || hasFileSchemaFields || formToggleColumns.length"
+      class="flex flex-wrap items-center gap-2 w-full select-none -mt-1"
+    >
+      <span
+        v-if="formToggleColumns.length"
+        class="inline-flex items-center gap-1.5 h-[28px] px-2.5 rounded-[7px] text-[11px] font-medium border"
+        :class="isDark ? 'border-white/10 bg-white/[0.04] text-neutral-300' : 'border-black/10 bg-neutral-100/80 text-neutral-600'"
+        title="Columns are automatically synced from your Editor form design"
+      >
+        <span class="size-1.5 rounded-full bg-moss-500" />
+        {{ formToggleColumns.length }} Form {{ formToggleColumns.length === 1 ? 'Field' : 'Fields' }} Synced
+      </span>
+
+      <div
+        v-for="f in facetFilterFields"
+        :key="f.key"
+        class="inline-flex items-center h-[28px] rounded-[7px] border px-2 text-[11.5px] transition-colors"
+        :class="[
+          fieldFilters[f.key]
+            ? (isDark ? 'border-white/40 bg-white/15 text-white' : 'border-black bg-black text-white')
+            : (isDark ? 'border-white/10 bg-[#141414] text-neutral-300' : 'border-black/10 bg-white text-neutral-700')
+        ]"
+      >
+        <span class="mr-1.5 opacity-65 text-[10.5px] uppercase tracking-wide truncate max-w-[110px]">{{ f.label }}:</span>
+        <select
+          :value="fieldFilters[f.key] || ''"
+          @change="setFieldFilter(f.key, ($event.target as HTMLSelectElement).value)"
+          class="bg-transparent text-[11.5px] font-medium outline-none cursor-pointer pr-1 max-w-[140px]"
+          :class="fieldFilters[f.key] ? (isDark ? 'text-white' : 'text-white') : (isDark ? 'text-white' : 'text-black')"
+        >
+          <option value="" class="text-black bg-white">All</option>
+          <option v-for="opt in fieldFilterOptions(f, rows)" :key="opt" :value="opt" class="text-black bg-white">
+            {{ opt }}
+          </option>
+        </select>
+      </div>
+
+      <div
+        v-if="hasFileSchemaFields"
+        class="inline-flex items-center h-[28px] rounded-[7px] border px-2 text-[11.5px] transition-colors"
+        :class="[
+          uploadFilter !== 'all'
+            ? (isDark ? 'border-white/40 bg-white/15 text-white' : 'border-black bg-black text-white')
+            : (isDark ? 'border-white/10 bg-[#141414] text-neutral-300' : 'border-black/10 bg-white text-neutral-700')
+        ]"
+      >
+        <span class="mr-1.5 opacity-65 text-[10.5px] uppercase tracking-wide">Uploads:</span>
+        <select
+          v-model="uploadFilter"
+          class="bg-transparent text-[11.5px] font-medium outline-none cursor-pointer pr-1"
+          :class="uploadFilter !== 'all' ? 'text-white' : (isDark ? 'text-white' : 'text-black')"
+        >
+          <option value="all" class="text-black bg-white">All ({{ rows.length }})</option>
+          <option value="has" class="text-black bg-white">With Files ({{ fileUploadedRowCount }})</option>
+          <option value="missing" class="text-black bg-white">Missing ({{ Math.max(0, rows.length - fileUploadedRowCount) }})</option>
+        </select>
       </div>
     </div>
 
@@ -268,7 +377,10 @@
                   </div>
                 </td>
 
-                <td v-else-if="col.key === 'email'" class="px-3.5 text-[12px] whitespace-nowrap" :class="[rowPad, isDark ? 'text-neutral-400' : 'text-neutral-600']">{{ guestEmail(s) || '—' }}</td>
+                <td v-else-if="col.key === 'email'" class="px-3.5 text-[12px] whitespace-nowrap" :class="[rowPad, isDark ? 'text-neutral-400' : 'text-neutral-600']">
+                  <a v-if="guestEmail(s)" :href="`mailto:${guestEmail(s)}`" @click.stop class="hover:underline underline-offset-2">{{ guestEmail(s) }}</a>
+                  <span v-else class="text-neutral-400">—</span>
+                </td>
 
                 <!-- 2. Queue Number (Quiet monospaced text, no solid black block) -->
                 <td v-else-if="col.key === 'queue_number'" class="px-3.5 whitespace-nowrap" :class="rowPad">
@@ -341,9 +453,97 @@
 
                 <td v-else-if="col.key === 'created_at'" class="px-3.5 text-[11.5px] text-neutral-400 whitespace-nowrap tabular-nums" :class="rowPad">{{ formatDateTime(s.created_at) }}</td>
 
-                <!-- Custom answer columns -->
-                <td v-else class="px-3.5 text-[12px] whitespace-nowrap max-w-[200px] truncate" :class="[rowPad, isDark ? 'text-neutral-300' : 'text-neutral-600']" :title="formatCustomAnswer(s, col.key)">
-                  <span v-if="formatCustomAnswer(s, col.key)">{{ formatCustomAnswer(s, col.key) }}</span>
+                <!-- Dynamic Form Schema & Archived Custom Columns -->
+                <td
+                  v-else
+                  class="px-3.5 text-[12px] whitespace-nowrap max-w-[230px]"
+                  :class="[rowPad, isDark ? 'text-neutral-300' : 'text-neutral-700']"
+                  :title="formatColumnCellText(s, col)"
+                >
+                  <!-- 1. File / Image Upload Cells -->
+                  <template v-if="getColDocuments(s, col).length">
+                    <div class="flex items-center gap-1.5" @click.stop>
+                      <button
+                        type="button"
+                        @click="openDocPreview(getColDocuments(s, col), 0, `${guestName(s)} — ${col.label}`)"
+                        class="inline-flex items-center gap-1.5 pl-1 pr-2 py-0.5 rounded-[6px] border text-[11px] font-medium cursor-pointer transition-colors max-w-[175px]"
+                        :class="isDark ? 'border-white/15 bg-white/10 hover:bg-white/20 text-white' : 'border-black/12 bg-neutral-100 hover:bg-black hover:text-white text-black'"
+                      >
+                        <img
+                          v-if="isImageDocument(getColDocuments(s, col)[0])"
+                          :src="getColDocuments(s, col)[0].url"
+                          alt=""
+                          class="size-4 rounded-[3px] object-cover shrink-0 bg-neutral-200"
+                        />
+                        <FileText v-else class="w-3.5 h-3.5 shrink-0 opacity-75" />
+                        <span class="truncate">{{ getColDocuments(s, col)[0].name }}</span>
+                      </button>
+                      <span
+                        v-if="getColDocuments(s, col).length > 1"
+                        class="text-[10px] font-mono px-1.5 py-0.5 rounded-[4px]"
+                        :class="isDark ? 'bg-white/10 text-neutral-300' : 'bg-black/5 text-neutral-600'"
+                      >
+                        +{{ getColDocuments(s, col).length - 1 }}
+                      </span>
+                    </div>
+                  </template>
+
+                  <!-- 2. Choice / Select Option Pills -->
+                  <template v-else-if="(col.kind === 'choice' || col.kind === 'select') && getColChoiceChips(s, col).length">
+                    <div class="flex items-center gap-1 overflow-hidden">
+                      <span
+                        v-for="chip in getColChoiceChips(s, col).slice(0, 2)"
+                        :key="chip"
+                        class="inline-flex items-center px-2 py-0.5 rounded-[5px] text-[11px] font-normal border truncate max-w-[155px]"
+                        :class="isDark ? 'border-white/15 bg-white/[0.07] text-neutral-200' : 'border-black/10 bg-neutral-100 text-neutral-800'"
+                      >
+                        {{ chip }}
+                      </span>
+                      <span
+                        v-if="getColChoiceChips(s, col).length > 2"
+                        class="text-[10px] font-mono text-neutral-400 shrink-0"
+                      >
+                        +{{ getColChoiceChips(s, col).length - 2 }}
+                      </span>
+                    </div>
+                  </template>
+
+                  <!-- 3. Phone / Email / URL smart links -->
+                  <template v-else-if="col.kind === 'phone' && formatColumnCellText(s, col)">
+                    <a
+                      :href="whatsappLink(formatColumnCellText(s, col))"
+                      target="_blank"
+                      rel="noopener"
+                      @click.stop
+                      class="font-mono hover:underline underline-offset-2"
+                    >
+                      {{ formatColumnCellText(s, col) }}
+                    </a>
+                  </template>
+                  <template v-else-if="col.kind === 'email' && formatColumnCellText(s, col)">
+                    <a
+                      :href="`mailto:${formatColumnCellText(s, col)}`"
+                      @click.stop
+                      class="hover:underline underline-offset-2 truncate block"
+                    >
+                      {{ formatColumnCellText(s, col) }}
+                    </a>
+                  </template>
+                  <template v-else-if="/^https?:\/\//i.test(formatColumnCellText(s, col))">
+                    <a
+                      :href="formatColumnCellText(s, col)"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      @click.stop
+                      class="inline-flex items-center gap-1 hover:underline underline-offset-2 truncate max-w-[200px]"
+                    >
+                      <span class="truncate">{{ formatColumnCellText(s, col) }}</span>
+                      <ExternalLink class="w-3 h-3 shrink-0 opacity-60" />
+                    </a>
+                  </template>
+
+                  <!-- 4. Standard text / date -->
+                  <span v-else-if="formatColumnCellText(s, col)" class="block truncate">{{ formatColumnCellText(s, col) }}</span>
                   <span v-else class="text-neutral-400">—</span>
                 </td>
               </template>
@@ -364,8 +564,14 @@
             <Users class="w-6 h-6 stroke-[1.5]" />
           </div>
           <h3 class="font-medium text-[15px] mb-1" :class="isDark ? 'text-white' : 'text-black'">{{ rows.length ? 'No guests match' : 'No guests yet' }}</h3>
-          <p class="text-[12px] max-w-[340px]" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">
-            {{ rows.length ? 'Try a different search or clear the filters.' : 'Entries appear here the moment someone submits your published campaign.' }}
+          <p class="text-[12px] max-w-[380px]" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">
+            {{
+              rows.length
+                ? 'Try a different search or clear the filters.'
+                : (formToggleColumns.length
+                    ? `${formToggleColumns.length} form ${formToggleColumns.length === 1 ? 'column' : 'columns'} from your Editor design ${formToggleColumns.length === 1 ? 'is' : 'are'} synced above and ready for submissions.`
+                    : 'Entries appear here the moment someone submits your published campaign.')
+            }}
           </p>
         </div>
       </div>
@@ -567,24 +773,43 @@
                   <a v-if="guestPhone(drawerRow)" :href="whatsappLink(guestPhone(drawerRow))" target="_blank" rel="noopener" class="text-[12px] font-mono text-right hover:underline underline-offset-2" :class="isDark ? 'text-white' : 'text-black'">{{ guestPhone(drawerRow) }}</a>
                   <span v-else class="text-[12px] text-neutral-400">—</span>
                 </div>
-                <div v-for="k in drawerAnswerKeys" :key="k" class="flex items-start justify-between gap-4 px-3.5 py-2.5">
-                  <span class="text-[12px] font-light shrink-0 max-w-[45%]" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">{{ formatColumnLabel(k) }}</span>
-                  <div v-if="isDocumentAnswer(drawerRow.form_data?.[k])" class="flex flex-col items-end gap-1.5">
-                    <a 
-                      v-for="(doc, dIdx) in getDocumentAnswers(drawerRow.form_data?.[k])" 
-                      :key="doc.url || dIdx"
-                      :href="doc.url" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-[11.5px] font-707 font-medium transition-all"
-                      :class="isDark ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-black text-white hover:bg-neutral-800 shadow-xs'"
-                    >
-                      <FileText class="size-3.5" />
-                      <span class="truncate max-w-[160px]">{{ doc.name || 'View Document' }}</span>
-                      <ExternalLink class="size-3 opacity-60" />
-                    </a>
+                <div v-for="item in drawerFieldItems" :key="item.key" class="flex items-start justify-between gap-4 px-3.5 py-2.5">
+                  <span class="text-[12px] font-light shrink-0 max-w-[45%]" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">{{ item.label }}</span>
+                  <div v-if="item.docs.length" class="flex flex-col items-end gap-1.5">
+                    <div v-for="(doc, dIdx) in item.docs" :key="doc.url || dIdx" class="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        @click="openDocPreview(item.docs, dIdx, `${guestName(drawerRow)} — ${item.label}`)"
+                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-[11.5px] font-707 font-medium cursor-pointer transition-all"
+                        :class="isDark ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-black text-white hover:bg-neutral-800 shadow-xs'"
+                      >
+                        <img v-if="isImageDocument(doc)" :src="doc.url" alt="" class="size-4 rounded-[3px] object-cover bg-white/20" />
+                        <FileText v-else class="size-3.5" />
+                        <span class="truncate max-w-[150px]">{{ doc.name || 'Preview File' }}</span>
+                      </button>
+                      <a
+                        :href="doc.url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="size-7 rounded-[6px] border flex items-center justify-center transition-colors"
+                        :class="isDark ? 'border-white/15 text-neutral-300 hover:bg-white/10' : 'border-black/15 text-neutral-700 hover:bg-black/5'"
+                        title="Open in new tab"
+                      >
+                        <ExternalLink class="size-3.5" />
+                      </a>
+                    </div>
                   </div>
-                  <span v-else class="text-[12px] text-right break-words min-w-0 font-light" :class="isDark ? 'text-white' : 'text-black'">{{ formatCustomAnswer(drawerRow, k) || '—' }}</span>
+                  <div v-else-if="item.chips.length" class="flex flex-wrap justify-end gap-1 max-w-[55%]">
+                    <span
+                      v-for="chip in item.chips"
+                      :key="chip"
+                      class="inline-flex items-center px-2 py-0.5 rounded-[5px] text-[11px] font-normal border"
+                      :class="isDark ? 'border-white/15 bg-white/10 text-white' : 'border-black/10 bg-neutral-100 text-neutral-800'"
+                    >
+                      {{ chip }}
+                    </span>
+                  </div>
+                  <span v-else class="text-[12px] text-right break-words min-w-0 font-light" :class="item.text ? (isDark ? 'text-white' : 'text-black') : 'text-neutral-400'">{{ item.text || '—' }}</span>
                 </div>
               </div>
             </div>
@@ -753,6 +978,90 @@
         </div>
       </Transition>
     </Teleport>
+
+    <!-- Document / Image Lightbox Preview Modal -->
+    <Teleport to="body">
+      <Transition name="hub-fade">
+        <div
+          v-if="docPreview"
+          class="fixed inset-0 z-[95] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 font-sans font-light"
+          @click.self="docPreview = null"
+        >
+          <div class="relative w-full max-w-[760px] max-h-[88vh] bg-[#111111] border border-white/15 text-white rounded-[16px] overflow-hidden shadow-2xl flex flex-col animate-apple-pop">
+            <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/10 shrink-0">
+              <div class="flex items-center gap-2 min-w-0">
+                <FileText class="w-4 h-4 text-neutral-400 shrink-0" />
+                <div class="min-w-0">
+                  <p class="text-[12.5px] font-medium truncate">{{ docPreview.title }}</p>
+                  <p class="text-[11px] text-neutral-400 truncate">
+                    {{ docPreview.docs[docPreview.index]?.name || 'Document' }}
+                    <span v-if="docPreview.docs.length > 1"> ({{ docPreview.index + 1 }} / {{ docPreview.docs.length }})</span>
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <template v-if="docPreview.docs.length > 1">
+                  <button
+                    type="button"
+                    @click="docPreview.index = (docPreview.index - 1 + docPreview.docs.length) % docPreview.docs.length"
+                    class="h-[30px] px-2.5 rounded-[7px] border border-white/15 text-[11.5px] hover:bg-white/10 cursor-pointer"
+                  >
+                    Prev
+                  </button>
+                  <button
+                    type="button"
+                    @click="docPreview.index = (docPreview.index + 1) % docPreview.docs.length"
+                    class="h-[30px] px-2.5 rounded-[7px] border border-white/15 text-[11.5px] hover:bg-white/10 cursor-pointer"
+                  >
+                    Next
+                  </button>
+                </template>
+                <a
+                  v-if="docPreview.docs[docPreview.index]?.url"
+                  :href="docPreview.docs[docPreview.index].url"
+                  :download="docPreview.docs[docPreview.index].name || true"
+                  class="h-[30px] px-3 rounded-[7px] bg-white text-black text-[11.5px] font-medium inline-flex items-center gap-1.5 hover:bg-neutral-200"
+                >
+                  <Download class="w-3.5 h-3.5" />
+                  <span>Download</span>
+                </a>
+                <a
+                  v-if="docPreview.docs[docPreview.index]?.url"
+                  :href="docPreview.docs[docPreview.index].url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="size-[30px] rounded-[7px] border border-white/15 flex items-center justify-center hover:bg-white/10"
+                  title="Open in new tab"
+                >
+                  <ExternalLink class="w-3.5 h-3.5" />
+                </a>
+                <button
+                  type="button"
+                  @click="docPreview = null"
+                  class="size-[30px] rounded-[7px] border border-white/15 flex items-center justify-center hover:bg-white/10 cursor-pointer"
+                >
+                  <X class="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+            <div class="flex-1 min-h-[300px] max-h-[75vh] bg-black/60 flex items-center justify-center p-4 overflow-auto">
+              <img
+                v-if="docPreview.docs[docPreview.index] && isImageDocument(docPreview.docs[docPreview.index])"
+                :src="docPreview.docs[docPreview.index].url"
+                :alt="docPreview.docs[docPreview.index].name"
+                class="max-w-full max-h-[68vh] object-contain rounded-[6px]"
+              />
+              <iframe
+                v-else-if="docPreview.docs[docPreview.index]?.url"
+                :src="docPreview.docs[docPreview.index].url"
+                class="w-full h-[68vh] bg-white rounded-[6px] border-0"
+                title="Document preview"
+              />
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -767,14 +1076,21 @@ import {
 import { useTicketSender } from './useTicketSender.ts';
 import { useAuthStore } from '../../stores/authStore.ts';
 import { apiJson } from '../../services/apiClient.ts';
+import type { ActivationPage } from '../../types/editor.ts';
 import {
   type Submission, type GuestStatus, STATUS_OPTIONS, normalizeStatus, statusLabel, statusBadgeClass, statusDotClass,
   guestName, guestEmail, guestPhone, normalizeWhatsAppNumber, customFieldKeys, formatValue, initials, accessId, formatDateTime, formatTime,
   buildCsv, downloadText, patchSubmission, bulkSetStatus, bulkDelete
 } from './hubUtils.ts';
+import {
+  type FormFieldDef, type SchemaFieldKind, type DocumentAttachment,
+  extractProjectFormSchema, resolveFieldValue, formatSchemaAnswer, archivedAnswerKeys,
+  extractDocuments, isImageDocument, extractChoiceChips, fieldFilterOptions
+} from './formSchema.ts';
 
 const props = withDefaults(defineProps<{
   rows: Submission[];
+  pages?: ActivationPage[];
   campaignTitle: (pageId: string) => string;
   showCampaignColumn: boolean;
   exportName: string;
@@ -782,7 +1098,8 @@ const props = withDefaults(defineProps<{
   pageId?: string;
   dark?: boolean;
 }>(), {
-  hasLiveQueue: false
+  hasLiveQueue: false,
+  pages: () => []
 });
 
 const authStore = useAuthStore();
@@ -862,8 +1179,35 @@ const statusFilter = ref<'all' | GuestStatus>('all');
 const checkFilter = ref<'any' | 'in' | 'inside' | 'checked_out' | 'out'>('any');
 const dateFilter = ref<string>('all');
 const duplicatesOnly = ref(false);
+const fieldFilters = ref<Record<string, string>>({});
+const uploadFilter = ref<'all' | 'has' | 'missing'>('all');
 const duplicateCount = computed(() => props.rows.filter(r => r.duplicate_of).length);
 const searchRef = ref<HTMLInputElement | null>(null);
+
+const schemaFields = computed<FormFieldDef[]>(() => extractProjectFormSchema(props.pages));
+
+const facetFilterFields = computed<FormFieldDef[]>(() => {
+  return schemaFields.value.filter(
+    f => (f.kind === 'select' || f.kind === 'choice') && fieldFilterOptions(f, props.rows).length > 0
+  );
+});
+
+const hasFileSchemaFields = computed(() => {
+  return schemaFields.value.some(f => f.kind === 'file');
+});
+
+const fileUploadedRowCount = computed(() => {
+  const fileFields = schemaFields.value.filter(f => f.kind === 'file');
+  if (!fileFields.length) return 0;
+  return props.rows.filter(s => fileFields.some(f => extractDocuments(resolveFieldValue(s, f)).length > 0)).length;
+});
+
+function setFieldFilter(fieldKey: string, val: string) {
+  const next = { ...fieldFilters.value };
+  if (val) next[fieldKey] = val;
+  else delete next[fieldKey];
+  fieldFilters.value = next;
+}
 
 function matchesDate(r: Submission, targetDate: string): boolean {
   const d = String(r.form_data?.event_date || r.form_data?.eventDate || r.form_data?.['Access Valid For'] || '');
@@ -951,18 +1295,29 @@ function setPrimaryView(v: PrimaryView) {
   }
 }
 
+const hasFieldFilter = computed(() => Object.keys(fieldFilters.value).length > 0 || uploadFilter.value !== 'all');
 const hasSecondaryFilters = computed(() => dateFilter.value !== 'all' || duplicatesOnly.value);
-const hasActiveFilters = computed(() => !!search.value.trim() || primaryView.value !== 'all' || hasSecondaryFilters.value);
+const hasActiveFilters = computed(() => !!search.value.trim() || primaryView.value !== 'all' || hasSecondaryFilters.value || hasFieldFilter.value);
 
 function clearFilters() {
   search.value = '';
   setPrimaryView('all');
   dateFilter.value = 'all';
   duplicatesOnly.value = false;
+  fieldFilters.value = {};
+  uploadFilter.value = 'all';
 }
 
 const filteredRows = computed(() => {
   const q = search.value.trim().toLowerCase();
+  const activeFieldEntries = Object.entries(fieldFilters.value)
+    .map(([key, wanted]) => ({
+      field: schemaFields.value.find(f => f.key === key),
+      wanted: wanted.toLowerCase()
+    }))
+    .filter((entry): entry is { field: FormFieldDef; wanted: string } => Boolean(entry.field && entry.wanted));
+  const fileFields = schemaFields.value.filter(f => f.kind === 'file');
+
   return props.rows.filter(s => {
     if (dateFilter.value !== 'all' && !matchesDate(s, dateFilter.value)) return false;
     if (statusFilter.value !== 'all' && normalizeStatus(s.status) !== statusFilter.value) return false;
@@ -971,8 +1326,27 @@ const filteredRows = computed(() => {
     if (checkFilter.value === 'checked_out' && (!s.checked_out_at || (s.checked_in_at && new Date(s.checked_out_at) < new Date(s.checked_in_at)))) return false;
     if (checkFilter.value === 'out' && s.checked_in_at) return false;
     if (duplicatesOnly.value && !s.duplicate_of) return false;
+
+    for (const { field, wanted } of activeFieldEntries) {
+      const chips = extractChoiceChips(resolveFieldValue(s, field)).map(c => c.toLowerCase());
+      if (!chips.includes(wanted)) return false;
+    }
+
+    if (uploadFilter.value !== 'all' && fileFields.length) {
+      const hasDoc = fileFields.some(f => extractDocuments(resolveFieldValue(s, f)).length > 0);
+      if (uploadFilter.value === 'has' && !hasDoc) return false;
+      if (uploadFilter.value === 'missing' && hasDoc) return false;
+    }
+
     if (!q) return true;
-    const hay = [guestName(s), guestEmail(s), guestPhone(s), accessId(s), ...Object.values(s.form_data || {}).map(formatValue)]
+    const hay = [
+      guestName(s),
+      guestEmail(s),
+      guestPhone(s),
+      accessId(s),
+      ...schemaFields.value.map(f => formatSchemaAnswer(s, f)),
+      ...Object.values(s.form_data || {}).map(formatValue)
+    ]
       .join(' ')
       .toLowerCase();
     return hay.includes(q);
@@ -980,39 +1354,76 @@ const filteredRows = computed(() => {
 });
 
 /* ---------- Columns ---------- */
-interface Col { key: string; label: string; sortable?: boolean; thClass?: string; custom?: boolean }
+interface Col {
+  key: string;
+  label: string;
+  sortable?: boolean;
+  thClass?: string;
+  custom?: boolean;
+  group?: 'system' | 'form' | 'archived';
+  kind?: SchemaFieldKind;
+  fieldDef?: FormFieldDef;
+}
 
-const customKeys = computed(() => customFieldKeys(props.rows));
+const archivedKeys = computed(() => archivedAnswerKeys(props.rows, schemaFields.value));
+
+const dynamicFormFields = computed(() =>
+  schemaFields.value.filter(
+    f => !(f.isPrimaryIdentity && (f.identityRole === 'name' || f.identityRole === 'phone' || f.identityRole === 'email'))
+  )
+);
 
 const allColumns = computed<Col[]>(() => {
   const cols: Col[] = [];
 
   // When live queue is active on project or submissions have queue numbers, show Queue No first
   if (isLiveQueueProject.value) {
-    cols.push({ key: 'queue_number', label: 'Queue No', sortable: true });
+    cols.push({ key: 'queue_number', label: 'Queue No', sortable: true, group: 'system' });
   }
 
   cols.push(
-    { key: 'guest', label: 'Guest', sortable: true },
-    { key: 'phone', label: 'WhatsApp' },
-    { key: 'access', label: 'Access ID' }
+    { key: 'guest', label: 'Guest', sortable: true, group: 'system' },
+    { key: 'email', label: 'Email', sortable: true, group: 'system' },
+    { key: 'phone', label: 'WhatsApp', group: 'system' },
+    { key: 'access', label: 'Access ID', group: 'system' }
   );
 
-  if (props.showCampaignColumn) cols.push({ key: 'campaign', label: 'Campaign', sortable: true });
+  if (props.showCampaignColumn) cols.push({ key: 'campaign', label: 'Campaign', sortable: true, group: 'system' });
 
   if (isLiveQueueProject.value && props.rows.some(r => (Number(r.party_size) || 1) > 1)) {
-    cols.push({ key: 'party_size', label: 'Party Size', sortable: true });
+    cols.push({ key: 'party_size', label: 'Party Size', sortable: true, group: 'system' });
   }
 
-  // Genuine custom form questions only (clean, non-system)
-  customKeys.value.forEach(k => cols.push({ key: k, label: formatColumnLabel(k), sortable: true, custom: true }));
+  // Editor-driven Form Field columns (always shown in exact design order, even at 0 rows)
+  dynamicFormFields.value.forEach(f => {
+    cols.push({
+      key: f.key,
+      label: f.label,
+      sortable: true,
+      custom: true,
+      group: 'form',
+      kind: f.kind,
+      fieldDef: f
+    });
+  });
+
+  // Archived/legacy form keys from older submissions not in current Editor schema
+  archivedKeys.value.forEach(k => {
+    cols.push({
+      key: k,
+      label: formatColumnLabel(k),
+      sortable: true,
+      custom: true,
+      group: 'archived'
+    });
+  });
 
   // Status and attendance timestamps
   cols.push(
-    { key: 'status', label: 'Status', sortable: true },
-    { key: 'checked_in_at', label: 'Check-in', sortable: true },
-    { key: 'checked_out_at', label: 'Check-out', sortable: true },
-    { key: 'created_at', label: 'Submitted', sortable: true }
+    { key: 'status', label: 'Status', sortable: true, group: 'system' },
+    { key: 'checked_in_at', label: 'Check-in', sortable: true, group: 'system' },
+    { key: 'checked_out_at', label: 'Check-out', sortable: true, group: 'system' },
+    { key: 'created_at', label: 'Submitted', sortable: true, group: 'system' }
   );
   return cols;
 });
@@ -1020,7 +1431,29 @@ const allColumns = computed<Col[]>(() => {
 function formatColumnLabel(k: string): string {
   if (/^multiplechoice_/i.test(k) || /^(spot|session|spot\s*\/\s*session)$/i.test(k.trim())) return 'Spot / Session';
   if (/^fieldinput_/i.test(k)) return 'Custom Field';
-  return k;
+  return k.replace(/\*+$/g, '').trim() || k;
+}
+
+function getColDocuments(s: Submission, col: Col): DocumentAttachment[] {
+  if (col.fieldDef) {
+    return extractDocuments(resolveFieldValue(s, col.fieldDef));
+  }
+  return extractDocuments(s.form_data?.[col.key]);
+}
+
+function getColChoiceChips(s: Submission, col: Col): string[] {
+  if (col.fieldDef) {
+    return extractChoiceChips(resolveFieldValue(s, col.fieldDef));
+  }
+  return extractChoiceChips(s.form_data?.[col.key]);
+}
+
+function formatColumnCellText(s: Submission | null, col: Col): string {
+  if (!s) return '';
+  if (col.fieldDef) {
+    return formatSchemaAnswer(s, col.fieldDef);
+  }
+  return formatCustomAnswer(s, col.key);
 }
 
 function formatCustomAnswer(s: Submission | null, key: string): string {
@@ -1032,61 +1465,83 @@ function formatCustomAnswer(s: Submission | null, key: string): string {
       return formatted;
     }
   }
-  // Fallback for Multiple Choice session/spot columns
-  const isSpotOrSession =
-    /multiplechoice|book\s*your\s*spot|spot|session/i.test(key) ||
-    /spot\s*\/\s*session/i.test(formatColumnLabel(key));
+  const isLegacyAtmos = s.page_id === 'proj-1792652006255' || String(s.brand_slug || '').toLowerCase() === 'atmos';
+  if (isLegacyAtmos) {
+    const isSpotOrSession =
+      /multiplechoice|book\s*your\s*spot|spot|session/i.test(key) ||
+      /spot\s*\/\s*session/i.test(formatColumnLabel(key));
 
-  if (isSpotOrSession) {
-    const fallback =
-      s.form_data?.['BOOK YOUR SPOT'] ||
-      s.form_data?.['multiplechoice_1793178196321'] ||
-      s.form_data?.['Access Valid For'] ||
-      s.form_data?.['selected_sessions'] ||
-      s.form_data?.['sessions'] ||
-      s.form_data?.['Spot / Session'] ||
-      s.form_data?.['SPOT / SESSION'] ||
-      s.form_data?.['spot / session'];
-    if (fallback) {
-      const formatted = formatValue(fallback);
-      if (formatted && formatted.trim() && formatted.trim() !== '—' && !formatted.includes('Single Day Admission')) {
-        return formatted;
+    if (isSpotOrSession) {
+      const fallback =
+        s.form_data?.['BOOK YOUR SPOT'] ||
+        s.form_data?.['multiplechoice_1793178196321'] ||
+        s.form_data?.['Access Valid For'] ||
+        s.form_data?.['selected_sessions'] ||
+        s.form_data?.['sessions'] ||
+        s.form_data?.['Spot / Session'] ||
+        s.form_data?.['SPOT / SESSION'] ||
+        s.form_data?.['spot / session'];
+      if (fallback) {
+        const formatted = formatValue(fallback);
+        if (formatted && formatted.trim() && formatted.trim() !== '—' && !formatted.includes('Single Day Admission')) {
+          return formatted;
+        }
       }
+      return '5K RUN + RAFFLE ENTRIES';
     }
-    return '5K RUN + RAFFLE ENTRIES';
   }
   return '';
 }
 
-const STORAGE_KEY = 'hub_guest_table_prefs';
-const DEFAULT_HIDDEN = ['party_size', 'checked_out_at', 'created_at'];
-const savedPrefs = (() => {
+const DEFAULT_HIDDEN = ['email', 'party_size', 'checked_out_at', 'created_at'];
+function prefsStorageKey(pageId?: string): string {
+  return pageId ? `hub_guest_table_prefs:${pageId}` : 'hub_guest_table_prefs';
+}
+function loadTablePrefs(pageId?: string) {
   try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-    if (!parsed.v || parsed.v < 2) {
-      return { hidden: DEFAULT_HIDDEN, compact: parsed.compact, v: 2 };
+    const raw = localStorage.getItem(prefsStorageKey(pageId)) || localStorage.getItem('hub_guest_table_prefs') || '{}';
+    const parsed = JSON.parse(raw);
+    if (!parsed.v || parsed.v < 3) {
+      return { hidden: DEFAULT_HIDDEN, compact: !!parsed.compact, v: 3 };
     }
     return parsed;
   } catch {
-    return { hidden: DEFAULT_HIDDEN, v: 2 };
+    return { hidden: DEFAULT_HIDDEN, compact: false, v: 3 };
   }
-})();
-const hiddenColumns = ref<Set<string>>(new Set(savedPrefs.hidden ?? DEFAULT_HIDDEN));
-const compact = ref<boolean>(!!savedPrefs.compact);
+}
+
+const initialPrefs = loadTablePrefs(props.pageId);
+const hiddenColumns = ref<Set<string>>(new Set(initialPrefs.hidden ?? DEFAULT_HIDDEN));
+const compact = ref<boolean>(!!initialPrefs.compact);
 const isColumnsOpen = ref(false);
 const columnsMenuRef = ref<HTMLElement | null>(null);
 
+watch(() => props.pageId, (nextId) => {
+  const prefs = loadTablePrefs(nextId);
+  hiddenColumns.value = new Set(prefs.hidden ?? DEFAULT_HIDDEN);
+  compact.value = !!prefs.compact;
+  fieldFilters.value = {};
+  uploadFilter.value = 'all';
+});
+
 watch([hiddenColumns, compact], () => {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    localStorage.setItem(prefsStorageKey(props.pageId), JSON.stringify({
       hidden: [...hiddenColumns.value],
       compact: compact.value,
-      v: 2
+      v: 3
     }));
   } catch { /* ignore */ }
 }, { deep: true });
 
+function resetColumnPrefs() {
+  hiddenColumns.value = new Set(DEFAULT_HIDDEN);
+}
+
 const toggleableColumns = computed(() => allColumns.value.filter(c => c.key !== 'guest'));
+const formToggleColumns = computed(() => toggleableColumns.value.filter(c => c.group === 'form'));
+const systemToggleColumns = computed(() => toggleableColumns.value.filter(c => c.group === 'system'));
+const archivedToggleColumns = computed(() => toggleableColumns.value.filter(c => c.group === 'archived'));
 const visibleColumns = computed(() => allColumns.value.filter(c => !hiddenColumns.value.has(c.key)));
 
 function toggleColumn(key: string) {
@@ -1120,8 +1575,10 @@ function sortValue(s: Submission, key: string): string | number {
     case 'checked_in_at': return s.checked_in_at ? new Date(s.checked_in_at).getTime() : 0;
     case 'checked_out_at': return s.checked_out_at ? new Date(s.checked_out_at).getTime() : 0;
     case 'created_at': return new Date(s.created_at).getTime();
+    case 'email': return guestEmail(s).toLowerCase();
     default: {
-      const v = formatCustomAnswer(s, key) || formatValue(s.form_data?.[key]);
+      const col = allColumns.value.find(c => c.key === key);
+      const v = col ? formatColumnCellText(s, col) : (formatCustomAnswer(s, key) || formatValue(s.form_data?.[key]));
       const n = Number(v);
       return v !== '' && !isNaN(n) ? n : v.toLowerCase();
     }
@@ -1142,7 +1599,7 @@ const sortedRows = computed(() => {
 
 const renderLimit = ref(150);
 const pagedRows = computed(() => sortedRows.value.slice(0, renderLimit.value));
-watch([search, statusFilter, checkFilter, duplicatesOnly, dateFilter], () => (renderLimit.value = 150));
+watch([search, statusFilter, checkFilter, duplicatesOnly, dateFilter, fieldFilters, uploadFilter], () => (renderLimit.value = 150));
 
 /* ---------- Selection ---------- */
 const selected = ref<Set<string>>(new Set());
@@ -1299,18 +1756,60 @@ function exportCsv(rows: Submission[]) {
     return;
   }
   const stamp = new Date().toISOString().slice(0, 10);
-  downloadText(`707-guests-${props.exportName}-${stamp}.csv`, buildCsv(rows, customKeys.value, props.campaignTitle));
+  const exportCols = allColumns.value
+    .filter(c => c.group === 'form' || c.group === 'archived')
+    .map(c => ({
+      key: c.key,
+      label: c.label,
+      getValue: (s: Submission) => formatColumnCellText(s, c)
+    }));
+  downloadText(`707-guests-${props.exportName}-${stamp}.csv`, buildCsv(rows, exportCols, props.campaignTitle));
   emit('toast', `Exported ${rows.length} guest${rows.length === 1 ? '' : 's'} to CSV.`);
 }
 
-/* ---------- Drawer ---------- */
+/* ---------- Drawer & Document Preview Lightbox ---------- */
+const docPreview = ref<{ docs: DocumentAttachment[]; index: number; title: string } | null>(null);
+function openDocPreview(docs: DocumentAttachment[], index = 0, title = 'Document Preview') {
+  if (!docs.length) return;
+  docPreview.value = { docs, index, title };
+}
+
 const drawerId = ref<string | null>(null);
 const drawerRow = computed(() => props.rows.find(r => r.id === drawerId.value) || null);
 const drawerIndex = computed(() => sortedRows.value.findIndex(r => r.id === drawerId.value));
-const drawerAnswerKeys = computed(() => {
-  if (!drawerRow.value) return [];
-  const own = Object.keys(drawerRow.value.form_data || {});
-  return customFieldKeys([drawerRow.value]).filter(k => own.includes(k));
+
+const drawerFieldItems = computed(() => {
+  const row = drawerRow.value;
+  if (!row) return [];
+
+  const items: Array<{ key: string; label: string; docs: DocumentAttachment[]; chips: string[]; text: string }> = [];
+
+  // 1. All non-WhatsApp fields from the Editor schema in exact order (including Email if collected)
+  for (const f of schemaFields.value) {
+    if (f.isPrimaryIdentity && (f.identityRole === 'name' || f.identityRole === 'phone')) continue;
+    const raw = resolveFieldValue(row, f);
+    const docs = extractDocuments(raw);
+    const chips = !docs.length && (f.kind === 'choice' || f.kind === 'select') ? extractChoiceChips(raw) : [];
+    const text = formatSchemaAnswer(row, f);
+    items.push({ key: f.key, label: f.label, docs, chips, text });
+  }
+
+  // 2. Any archived / legacy form_data keys present on this row
+  const own = Object.keys(row.form_data || {});
+  const archivedForRow = customFieldKeys([row]).filter(k => own.includes(k) && archivedKeys.value.includes(k));
+  for (const k of archivedForRow) {
+    const raw = row.form_data?.[k];
+    const docs = extractDocuments(raw);
+    items.push({
+      key: `arch:${k}`,
+      label: formatColumnLabel(k),
+      docs,
+      chips: [],
+      text: formatCustomAnswer(row, k)
+    });
+  }
+
+  return items;
 });
 
 function openDrawer(id: string) {
@@ -1324,28 +1823,6 @@ function stepDrawer(delta: number) {
 }
 
 /* ---------- Misc ---------- */
-function isDocumentAnswer(val: any): boolean {
-  if (!val) return false;
-  if (typeof val === 'object' && val.url) return true;
-  if (Array.isArray(val) && val.length > 0 && val[0]?.url) return true;
-  if (typeof val === 'string' && val.startsWith('/uploads/documents/')) return true;
-  return false;
-}
-
-function getDocumentAnswers(val: any): Array<{ url: string; name?: string }> {
-  if (!val) return [];
-  if (Array.isArray(val)) {
-    return val.filter(v => v && v.url).map(v => ({ url: v.url, name: v.name }));
-  }
-  if (typeof val === 'object' && val.url) {
-    return [{ url: val.url, name: val.name }];
-  }
-  if (typeof val === 'string' && val.startsWith('/uploads/documents/')) {
-    return [{ url: val, name: val.split('/').pop() }];
-  }
-  return [];
-}
-
 function whatsappLink(phone: string): string {
   const norm = normalizeWhatsAppNumber(phone);
   return `https://wa.me/${norm}`;
@@ -1361,7 +1838,8 @@ async function copy(text: string) {
 }
 
 function handleEscape() {
-  if (statusMenu.value) statusMenu.value = null;
+  if (docPreview.value) docPreview.value = null;
+  else if (statusMenu.value) statusMenu.value = null;
   else if (drawerId.value) drawerId.value = null;
   else if (selected.value.size) selected.value = new Set();
 }
