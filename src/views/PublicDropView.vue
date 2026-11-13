@@ -39,7 +39,7 @@
     >
       <!-- Mobile-only experience: full-bleed on phones; on larger screens the same 393x852 phone frame as the editor's mobile preview -->
       <main 
-        class="public-drop-frame w-full min-h-[100dvh] h-[100dvh] bg-[#f5f5f5] flex flex-col relative flex-1"
+        class="public-drop-frame w-full min-h-[100dvh] h-[100dvh] bg-[#f5f5f5] flex flex-col relative flex-1 overflow-hidden"
         style="-webkit-overflow-scrolling: touch;"
         @touchstart="handleTouchStart"
         @touchend="handleTouchEnd"
@@ -58,7 +58,7 @@
           :is-selected="false"
           :is-preview-modal="true"
           :is-live-page="true"
-          class="w-full h-full min-h-[100dvh] flex flex-col flex-1"
+          class="w-full h-full min-h-0 flex flex-col flex-1"
           @next-page="handleNextPage"
           @prev-page="handlePrevPage"
         />
@@ -674,8 +674,7 @@ watch(
     height: min(852px, calc(100dvh - 48px));
     margin: 24px 0;
     border-radius: 40px;
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden;
     scrollbar-width: none;
     box-shadow: 0 24px 80px rgba(0, 0, 0, 0.4);
     /* makes position:fixed children (bars, toasts) stay inside the frame */

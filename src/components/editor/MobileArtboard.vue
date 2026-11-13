@@ -5,7 +5,7 @@
       isTicketPage
         ? 'w-[340px] h-auto shrink-0'
         : isLivePage 
-        ? 'w-full h-full min-h-[100dvh] flex flex-col flex-1' 
+        ? 'w-full h-full min-h-0 flex flex-col flex-1 overflow-hidden' 
         : (isPreviewModal
             ? 'w-full h-full min-h-0 flex flex-col flex-1 overflow-hidden'
             : 'w-[393px] h-[852px] shrink-0')
@@ -107,7 +107,7 @@
         isTicketPage
           ? ((isPreviewModal || isLivePage) ? 'w-[340px] h-auto border-none shadow-none' : 'border-[0.5px] w-[340px] h-auto min-h-[240px]')
           : isLivePage
-          ? 'w-full h-full min-h-[100dvh] flex-1 border-none shadow-none'
+          ? 'w-full h-full min-h-0 flex-1 border-none shadow-none'
           : (isPreviewModal
               ? 'w-full h-full min-h-0 flex-1 border-none shadow-none'
               : (isMiniPreview 
@@ -161,7 +161,7 @@
           isDragOver ? 'bg-neutral-200/60' : '',
           isTicketPage ? '!overflow-visible flex-none pt-[20px] pb-[20px]' : '',
           isSingleFullScreenHero ? 'overflow-hidden cursor-default' : (isArtboardDragging ? 'cursor-grabbing' : (isContentScrollable ? 'cursor-grab' : 'cursor-default')),
-          isSingleFullScreenHero ? 'overflow-hidden' : 'overflow-y-auto'
+          (isSingleFullScreenHero || isAnyBottomSheetOpen) ? 'overflow-hidden' : 'overflow-y-auto'
         ]"
         style="scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch;"
         @dragenter.prevent="handleDragEnter"
@@ -230,7 +230,7 @@
             :class="[
               (widget.type === 'TextBanner' || widget.type === 'MultipleChoice' || widget.type === 'FieldInput' || widget.type === 'RegistrationForm' || widget.type === 'ActionButton' || widget.type === 'DocumentUpload') ? 'overflow-visible' : 'overflow-hidden',
               getWidgetMarginTopClass(index),
-              (isHeroWithButtonOnly && widget.type === 'HeroDrop') ? (isLivePage ? 'h-full min-h-[calc(100dvh-48px)] flex-1' : 'h-full min-h-0 flex-1') : '',
+              (isHeroWithButtonOnly && widget.type === 'HeroDrop') ? 'h-full min-h-0 flex-1' : '',
               (isHeroWithButtonOnly && (widget.type === 'ActionButton' || widget.type === 'TextBanner')) ? 'shrink-0' : '',
               'group relative cursor-pointer w-full',
               (isHeroWithButtonOnly && widget.type === 'HeroDrop') ? '' : 'shrink-0'
@@ -3116,38 +3116,66 @@ more</span>
           v-if="showGenderSelectorSheet"
           class="absolute inset-0 z-[60] flex flex-col justify-end overflow-hidden"
           @click.stop="closeGenderSelectorSheet"
+          @touchstart.stop
+          @touchmove.stop
+          @touchend.stop
         >
           <!-- Frosted Dark Backdrop -->
-          <div class="absolute inset-0 bg-black/40 backdrop-blur-md transition-opacity" />
+          <div
+            class="absolute inset-0 bg-black/40 backdrop-blur-md transition-opacity"
+            :style="{ opacity: genderSheetDragY > 0 ? Math.max(0.2, 1 - genderSheetDragY / 260) : undefined }"
+          />
 
           <!-- Bottom Sheet Card (707 Swiss Architectural Monochrome, Sharp 0px Border Radius) -->
           <div
             @click.stop
-            class="relative z-10 w-full bg-white border-t border-black text-black rounded-none shadow-[0px_-8px_30px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden"
+            @touchstart.stop="handleGenderSheetTouchStart"
+            @touchmove="handleGenderSheetTouchMove"
+            @touchend.stop="handleGenderSheetTouchEnd"
+            @touchcancel.stop="handleGenderSheetTouchEnd"
+            class="apple-bottom-sheet-card relative z-10 w-full max-h-[85%] bg-white border-t border-black text-black rounded-none shadow-[0px_-8px_30px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden"
+            :class="isGenderSheetDragging ? 'transition-none' : 'transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]'"
+            :style="{ transform: genderSheetDragY > 0 ? `translateY(${genderSheetDragY}px)` : undefined }"
             data-name="Gender Selector Bottom Sheet"
           >
-            <!-- Sheet Header -->
-            <div class="px-[20px] py-[16px] flex items-center justify-between shrink-0 border-b-[0.5px] border-black bg-white">
-              <span class="font-707 font-medium text-[14px] leading-tight text-black tracking-normal uppercase">
-                SELECT GENDER
-              </span>
-              <button
-                type="button"
-                @click.stop="closeGenderSelectorSheet"
-                class="font-707 text-[12px] font-medium uppercase tracking-wider text-black hover:text-neutral-500 transition-colors cursor-pointer border-none bg-transparent p-0 m-0"
-              >
-                CLOSE
-              </button>
+            <!-- Swipe Handle & Sheet Header -->
+            <div
+              @mousedown="handleGenderHeaderMouseDown"
+              class="shrink-0 bg-white border-b-[0.5px] border-black select-none touch-none cursor-grab active:cursor-grabbing"
+            >
+              <div class="pt-[8px] pb-[2px] flex justify-center">
+                <div class="w-[36px] h-[3px] bg-black/25 rounded-none" />
+              </div>
+              <div class="px-[20px] pt-[6px] pb-[14px] flex items-center justify-between">
+                <span class="font-707 font-medium text-[14px] leading-tight text-black tracking-normal uppercase">
+                  SELECT GENDER
+                </span>
+                <button
+                  type="button"
+                  @click.stop="closeGenderSelectorSheet"
+                  @mousedown.stop
+                  class="font-707 text-[12px] font-medium uppercase tracking-wider text-black hover:text-neutral-500 transition-colors cursor-pointer border-none bg-transparent p-0 m-0"
+                >
+                  CLOSE
+                </button>
+              </div>
             </div>
 
-            <!-- Options List -->
-            <div class="flex flex-col pb-4">
+            <!-- Options List (Scrollable on constrained viewports) -->
+            <div
+              ref="genderListRef"
+              @wheel.stop="handleGenderListWheel"
+              @mousedown="handleGenderListMouseDown"
+              class="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y no-scrollbar flex flex-col pb-[max(16px,env(safe-area-inset-bottom))] select-none"
+              :class="isGenderListDragging ? 'cursor-grabbing' : 'cursor-grab'"
+              style="-webkit-overflow-scrolling: touch;"
+            >
               <button
                 v-for="genderOpt in GOOGLE_GENDER_PRESETS"
                 :key="genderOpt"
                 type="button"
                 @click.stop="selectGenderOption(genderOpt)"
-                class="flex items-center justify-between h-[48px] px-[20px] border-b-[0.5px] border-[#f0f0f0] hover:bg-[#fafafa] transition-colors cursor-pointer select-none group rounded-none text-left border-x-0 border-t-0 w-full"
+                class="flex items-center justify-between shrink-0 h-[48px] px-[20px] border-b-[0.5px] border-[#f0f0f0] hover:bg-[#fafafa] transition-colors cursor-pointer select-none group rounded-none text-left border-x-0 border-t-0 w-full"
                 :class="getCurrentGenderValue() === genderOpt ? 'bg-[#f7f7f7]' : 'bg-transparent'"
               >
                 <span
@@ -3525,6 +3553,7 @@ const hoveredWidgetId = ref<string | null>(null);
 
 const scrollContainerRef = ref<HTMLElement | null>(null);
 const modalScrollRef = ref<HTMLElement | null>(null);
+const genderListRef = ref<HTMLElement | null>(null);
 const isScrolling = ref(false);
 const isContentScrollable = ref(false);
 const scrollIndicatorTop = ref(0);
@@ -3534,6 +3563,7 @@ let scrollTimeout: any = null;
 // Drag-to-scroll (Click + Hold to scroll) State & Handlers
 const isArtboardDragging = ref(false);
 const isModalDragging = ref(false);
+const isGenderListDragging = ref(false);
 const wasDraggingRecently = ref(false);
 let dragSuppressTimer: any = null;
 
@@ -3551,11 +3581,12 @@ function isInputElement(target: EventTarget | null): boolean {
   return tagName === 'input' || tagName === 'textarea' || tagName === 'select' || target.isContentEditable;
 }
 
-function handleArtboardMouseDown(e: MouseEvent) {
-  if (e.button !== 0 || props.isMiniPreview) return;
-  if (isInputElement(e.target)) return;
-  const targetContainer = scrollContainerRef.value;
-  if (!targetContainer || isSingleFullScreenHero.value) return;
+function startDragToScroll(
+  e: MouseEvent,
+  targetContainer: HTMLElement | null,
+  setDragging: (val: boolean) => void
+) {
+  if (e.button !== 0 || isInputElement(e.target) || !targetContainer) return;
 
   const startY = e.clientY;
   const startScrollTop = targetContainer.scrollTop;
@@ -3565,7 +3596,7 @@ function handleArtboardMouseDown(e: MouseEvent) {
     const deltaY = moveEvent.clientY - startY;
     if (!hasMoved && Math.abs(deltaY) > 3) {
       hasMoved = true;
-      isArtboardDragging.value = true;
+      setDragging(true);
     }
     if (hasMoved && targetContainer) {
       targetContainer.scrollTop = startScrollTop - deltaY;
@@ -3580,7 +3611,7 @@ function handleArtboardMouseDown(e: MouseEvent) {
       markDragged();
     }
     setTimeout(() => {
-      isArtboardDragging.value = false;
+      setDragging(false);
     }, 10);
   }
 
@@ -3588,41 +3619,23 @@ function handleArtboardMouseDown(e: MouseEvent) {
   window.addEventListener('mouseup', onMouseUp);
 }
 
+function handleArtboardMouseDown(e: MouseEvent) {
+  if (props.isMiniPreview || isSingleFullScreenHero.value) return;
+  startDragToScroll(e, scrollContainerRef.value, (val) => {
+    isArtboardDragging.value = val;
+  });
+}
+
 function handleModalMouseDown(e: MouseEvent) {
-  if (e.button !== 0) return;
-  if (isInputElement(e.target)) return;
-  const targetContainer = modalScrollRef.value;
-  if (!targetContainer) return;
+  startDragToScroll(e, modalScrollRef.value, (val) => {
+    isModalDragging.value = val;
+  });
+}
 
-  const startY = e.clientY;
-  const startScrollTop = targetContainer.scrollTop;
-  let hasMoved = false;
-
-  function onMouseMove(moveEvent: MouseEvent) {
-    const deltaY = moveEvent.clientY - startY;
-    if (!hasMoved && Math.abs(deltaY) > 3) {
-      hasMoved = true;
-      isModalDragging.value = true;
-    }
-    if (hasMoved && targetContainer) {
-      targetContainer.scrollTop = startScrollTop - deltaY;
-      moveEvent.preventDefault();
-    }
-  }
-
-  function onMouseUp() {
-    window.removeEventListener('mousemove', onMouseMove);
-    window.removeEventListener('mouseup', onMouseUp);
-    if (hasMoved) {
-      markDragged();
-    }
-    setTimeout(() => {
-      isModalDragging.value = false;
-    }, 10);
-  }
-
-  window.addEventListener('mousemove', onMouseMove);
-  window.addEventListener('mouseup', onMouseUp);
+function handleGenderListMouseDown(e: MouseEvent) {
+  startDragToScroll(e, genderListRef.value, (val) => {
+    isGenderListDragging.value = val;
+  });
 }
 
 function handleScroll(e: Event) {
@@ -3657,15 +3670,28 @@ function updateScrollMetrics() {
   }
 }
 
+function scrollContainerByWheel(e: WheelEvent, container: HTMLElement | null) {
+  if (e.ctrlKey || e.metaKey) return;
+  e.stopPropagation();
+  if (container) {
+    container.scrollTop += e.deltaY;
+  }
+}
+
 function handleArtboardWheel(e: WheelEvent) {
   if (e.ctrlKey || e.metaKey || props.isMiniPreview) return;
   e.stopPropagation();
 
-  // If modal bottom sheet is currently open, scroll the modal content container
-  if (isModalOverlayVisible.value && modalScrollRef.value) {
-    modalScrollRef.value.scrollTop += e.deltaY;
+  // Route wheel events to active bottom sheets instead of scrolling the artboard behind them
+  if (isModalOverlayVisible.value) {
+    if (modalScrollRef.value) modalScrollRef.value.scrollTop += e.deltaY;
     return;
   }
+  if (showGenderSelectorSheet.value) {
+    if (genderListRef.value) genderListRef.value.scrollTop += e.deltaY;
+    return;
+  }
+  if (isAnyBottomSheetOpen.value) return;
 
   // Otherwise scroll artboard widget container
   if (scrollContainerRef.value && !isSingleFullScreenHero.value) {
@@ -3674,11 +3700,11 @@ function handleArtboardWheel(e: WheelEvent) {
 }
 
 function handleModalWheel(e: WheelEvent) {
-  if (e.ctrlKey || e.metaKey) return;
-  e.stopPropagation();
-  if (modalScrollRef.value) {
-    modalScrollRef.value.scrollTop += e.deltaY;
-  }
+  scrollContainerByWheel(e, modalScrollRef.value);
+}
+
+function handleGenderListWheel(e: WheelEvent) {
+  scrollContainerByWheel(e, genderListRef.value);
 }
 
 function scrollToWidget(id: string) {
@@ -5016,6 +5042,11 @@ function isDateField(widget: any): boolean {
 const GOOGLE_GENDER_PRESETS = ['Female', 'Male', 'Custom'] as const;
 
 const showGenderSelectorSheet = ref(false);
+const genderSheetDragY = ref(0);
+const isGenderSheetDragging = ref(false);
+let genderSheetTouchStartY = 0;
+let genderSheetCanDismiss = false;
+
 const targetGenderContext = ref<{
   widgetId?: string;
   fieldId?: string;
@@ -5025,6 +5056,9 @@ const targetGenderContext = ref<{
 
 function openGenderSelectorSheet(widget?: any, field?: any) {
   if (wasDraggingRecently.value || isDesignCanvas.value) return;
+  (document.activeElement as HTMLElement | null)?.blur?.();
+  genderSheetDragY.value = 0;
+  isGenderSheetDragging.value = false;
   targetGenderContext.value = {
     widgetId: widget?.id,
     fieldId: field?.id,
@@ -5037,6 +5071,75 @@ function openGenderSelectorSheet(widget?: any, field?: any) {
 function closeGenderSelectorSheet() {
   showGenderSelectorSheet.value = false;
   targetGenderContext.value = null;
+  genderSheetDragY.value = 0;
+  isGenderSheetDragging.value = false;
+}
+
+function handleGenderSheetTouchStart(e: TouchEvent) {
+  if (!e.touches.length) return;
+  genderSheetTouchStartY = e.touches[0].clientY;
+  const listEl = genderListRef.value;
+  const touchedInsideList = Boolean(listEl && e.target instanceof Node && listEl.contains(e.target));
+  // Allow swipe-to-dismiss from the header anywhere, or from the options list when already at its top
+  genderSheetCanDismiss = !touchedInsideList || (listEl?.scrollTop ?? 0) <= 0;
+}
+
+function handleGenderSheetTouchMove(e: TouchEvent) {
+  if (!e.touches.length || !genderSheetCanDismiss) return;
+  const deltaY = e.touches[0].clientY - genderSheetTouchStartY;
+  const listEl = genderListRef.value;
+  const isAtListTop = !listEl || listEl.scrollTop <= 0;
+
+  if (deltaY > 6 && isAtListTop) {
+    if (e.cancelable) e.preventDefault();
+    e.stopPropagation();
+    isGenderSheetDragging.value = true;
+    genderSheetDragY.value = deltaY;
+  } else if (deltaY < 0 && isGenderSheetDragging.value) {
+    genderSheetDragY.value = 0;
+  }
+}
+
+function handleGenderSheetTouchEnd() {
+  if (isGenderSheetDragging.value && genderSheetDragY.value > 56) {
+    isGenderSheetDragging.value = false;
+    closeGenderSelectorSheet();
+    return;
+  }
+  isGenderSheetDragging.value = false;
+  genderSheetDragY.value = 0;
+  genderSheetCanDismiss = false;
+}
+
+function handleGenderHeaderMouseDown(e: MouseEvent) {
+  if (e.button !== 0) return;
+  const startY = e.clientY;
+
+  function onMouseMove(moveEvent: MouseEvent) {
+    const deltaY = moveEvent.clientY - startY;
+    if (deltaY > 3) {
+      isGenderSheetDragging.value = true;
+      genderSheetDragY.value = deltaY;
+      moveEvent.preventDefault();
+    } else if (isGenderSheetDragging.value) {
+      genderSheetDragY.value = 0;
+    }
+  }
+
+  function onMouseUp() {
+    window.removeEventListener('mousemove', onMouseMove);
+    window.removeEventListener('mouseup', onMouseUp);
+    if (isGenderSheetDragging.value && genderSheetDragY.value > 56) {
+      isGenderSheetDragging.value = false;
+      closeGenderSelectorSheet();
+      return;
+    }
+    isGenderSheetDragging.value = false;
+    genderSheetDragY.value = 0;
+  }
+
+  window.addEventListener('mousemove', onMouseMove);
+  window.addEventListener('mouseup', onMouseUp);
 }
 
 function getCurrentGenderValue(): string {
@@ -5048,6 +5151,7 @@ function getCurrentGenderValue(): string {
 }
 
 function selectGenderOption(gender: string) {
+  if (wasDraggingRecently.value) return;
   const ctx = targetGenderContext.value;
   if (!ctx) {
     closeGenderSelectorSheet();
@@ -5181,6 +5285,7 @@ const calculatedAge = computed(() => {
 
 function openDateSelectorSheet(widget?: any, field?: any) {
   if (wasDraggingRecently.value) return;
+  (document.activeElement as HTMLElement | null)?.blur?.();
   targetDateContext.value = {
     widgetId: widget?.id,
     fieldId: field?.id,
@@ -5919,6 +6024,16 @@ const isModalOverlayVisible = computed(() => {
     return true;
   }
   return false;
+});
+
+const isAnyBottomSheetOpen = computed(() => {
+  return (
+    isModalOverlayVisible.value ||
+    showGenderSelectorSheet.value ||
+    showDateSelectorSheet.value ||
+    showCountryCodeSheet.value ||
+    showTrackNoticeSheet.value
+  );
 });
 
 const modalDisplayProps = computed(() => {
