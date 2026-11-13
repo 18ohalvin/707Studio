@@ -546,13 +546,13 @@ function handleAddChoicePage() {
       required: true
     });
     editorStore.addWidget('ActionButton', undefined, {
-      label: 'SUBMIT →',
+      label: 'SUBMIT',
       variant: 'black',
       buttonVariant: 'black',
       actionType: 'submit',
       positionMode: 'in-flow',
       height: 48,
-      showIcon: true
+      showIcon: false
     });
     editorStore.showToast('Choice page added with navigation button');
   }

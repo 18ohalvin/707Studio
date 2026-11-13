@@ -654,12 +654,18 @@
 
     <!-- TAB 3: ACTION CTA -->
     <div v-show="activeTab === 'cta'" class="w-full flex flex-col">
-      <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
+      <div
+        class="content-stretch flex flex-col gap-[12px] items-start p-[24px] shrink-0 w-full"
+        :class="isCtaEnabled ? 'pb-[18px] border-b border-[#f0f0f0]' : ''"
+      >
         <!-- Title row with Apple Style Toggle Switch -->
         <div class="flex items-center justify-between w-full">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Add CTA Button
-          </p>
+          <div class="flex items-center gap-1.5">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Add CTA Button
+            </p>
+            <InfoHint text="Enable one button or dual buttons (e.g. Yes / No) directly on or pinned under this banner." />
+          </div>
 
           <!-- Modern Elegant Apple Style Toggle Switch -->
           <button
@@ -678,217 +684,21 @@
             />
           </button>
         </div>
-
-        <!-- CTA Options Container -->
-        <Transition
-          enter-active-class="transition duration-200 ease-out"
-          enter-from-class="transform opacity-0 -translate-y-2"
-          enter-to-class="transform opacity-100 translate-y-0"
-          leave-active-class="transition duration-150 ease-in"
-          leave-from-class="transform opacity-100 translate-y-0"
-          leave-to-class="transform opacity-0 -translate-y-2"
-        >
-          <div v-if="isCtaEnabled" class="flex flex-col gap-[12px] w-full pt-1">
-            <!-- Button Text Input -->
-            <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
-              <input 
-                v-model="buttonText"
-                placeholder="Button Text (e.g. Enter Raffle)"
-                class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
-              />
-            </div>
-
-            <!-- Button Style Preset (Primary Black vs Primary White) -->
-            <div class="content-stretch flex flex-col gap-[10px] items-start w-full pt-1">
-              <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-                Button Style Preset
-              </p>
-              <div class="flex gap-[8px] items-center w-full">
-                <button 
-                  type="button"
-                  @click="setButtonVariant('black')"
-                  :class="buttonVariant === 'black' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                  class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[16px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
-                >
-                  Primary Black
-                </button>
-                <button 
-                  type="button"
-                  @click="setButtonVariant('white')"
-                  :class="buttonVariant === 'white' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                  class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[16px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
-                >
-                  Primary White
-                </button>
-              </div>
-            </div>
-
-            <!-- Position Selector (Standard vs Sticky Bottom) -->
-            <div class="flex items-center justify-between w-full pt-1">
-              <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-                Position
-              </p>
-              <div class="flex gap-[6px] items-center">
-                <button 
-                  v-for="pos in ctaPositionModes" 
-                  :key="pos.value"
-                  @click="setCtaPositionMode(pos.value)"
-                  :class="ctaPositionMode === pos.value ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-                  class="w-[96px] h-[32px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer"
-                >
-                  {{ pos.label }}
-                </button>
-              </div>
-            </div>
-
-            <!-- Sticky Notice -->
-            <Transition
-              enter-active-class="transition duration-200 ease-out"
-              enter-from-class="transform opacity-0 -translate-y-2"
-              enter-to-class="transform opacity-100 translate-y-0"
-              leave-active-class="transition duration-150 ease-in"
-              leave-from-class="transform opacity-100 translate-y-0"
-              leave-to-class="transform opacity-0 -translate-y-2"
-            >
-              <div v-if="ctaPositionMode === 'sticky-bottom'" class="flex items-center justify-between w-full pt-1">
-                <span class="font-707 text-[12px] text-neutral-500">
-                  Applied to this page only
-                </span>
-                <span class="font-707 text-[10px] text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-[4px] border border-neutral-200">
-                  Current Page Only
-                </span>
-              </div>
-            </Transition>
-
-            <!-- Link to Dropdown -->
-            <div class="content-stretch flex items-center justify-between w-full pt-1 relative">
-              <div class="flex items-center gap-1.5">
-                <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
-                  Link to
-                </p>
-                <InfoHint text="Choose what happens when a guest taps this banner button." />
-              </div>
-              <div class="relative" ref="linkToBtnRef">
-                <button
-                  type="button"
-                  @click="isLinkToDropdownOpen = !isLinkToDropdownOpen"
-                  class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-[240px] cursor-pointer text-left"
-                >
-                  <span class="font-707 text-[13px] text-black">{{ selectedActionLabel }}</span>
-                  <ChevronDown 
-                    class="size-[15px] text-black transition-transform duration-200" 
-                    :class="isLinkToDropdownOpen ? 'rotate-180' : ''"
-                  />
-                </button>
-
-                <!-- Dropdown Menu (Teleported to body to eliminate frame bleeding) -->
-                <Teleport to="body">
-                  <div 
-                    v-if="isLinkToDropdownOpen" 
-                    ref="linkToMenuRef"
-                    :style="linkToPopoverStyle"
-                    class="bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-[0px_8px_30px_rgba(0,0,0,0.15)] py-1 z-50 flex flex-col overflow-y-auto animate-in fade-in duration-150 select-none"
-                  >
-                    <button
-                      v-for="opt in linkToOptions"
-                      :key="opt.value"
-                      type="button"
-                      @click="selectLinkTo(opt.value)"
-                      class="flex items-center justify-between px-[14px] py-[8px] text-left hover:bg-black/5 transition-colors cursor-pointer"
-                      :class="ctaActionType === opt.value ? 'font-medium text-black bg-black/5' : 'text-neutral-700'"
-                    >
-                      <span class="font-707 text-[13px]">{{ opt.label }}</span>
-                      <Check v-if="ctaActionType === opt.value" class="size-[15px] text-black" />
-                    </button>
-                  </div>
-                </Teleport>
-              </div>
-            </div>
-
-            <!-- Conditional Target Page Picker if Submit & Go to Page is selected -->
-            <div v-if="ctaActionType === 'submit'" class="content-stretch flex items-center justify-between w-full pt-1 relative animate-in fade-in duration-150">
-              <div class="flex items-center gap-1.5">
-                <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
-                  Target Page
-                </p>
-                <InfoHint text="Pick where to go after tapping the button. Defaults to the next page, or pick any page to skip steps." />
-              </div>
-              <div class="relative" ref="targetPageBtnRef">
-                <button
-                  type="button"
-                  @click="isTargetPageDropdownOpen = !isTargetPageDropdownOpen"
-                  class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-[240px] cursor-pointer text-left"
-                >
-                  <span class="font-707 text-[13px] text-black truncate">{{ selectedTargetPageLabel }}</span>
-                  <ChevronDown 
-                    class="size-[15px] text-black transition-transform duration-200 shrink-0 ml-1.5" 
-                    :class="isTargetPageDropdownOpen ? 'rotate-180' : ''"
-                  />
-                </button>
-                <Teleport to="body">
-                  <div 
-                    v-if="isTargetPageDropdownOpen" 
-                    ref="targetPageMenuRef"
-                    :style="targetPagePopoverStyle"
-                    class="bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-[0px_8px_30px_rgba(0,0,0,0.15)] py-1 z-50 flex flex-col overflow-y-auto animate-in fade-in duration-150 select-none"
-                  >
-                    <button
-                      type="button"
-                      @click="selectTargetPage('')"
-                      class="flex items-center justify-between px-[14px] py-[8px] text-left hover:bg-black/5 transition-colors cursor-pointer"
-                      :class="!ctaTargetPageId ? 'font-medium text-black bg-black/5' : 'text-neutral-700'"
-                    >
-                      <span class="font-707 text-[13px]">Next Page (Default)</span>
-                      <Check v-if="!ctaTargetPageId" class="size-[15px] text-black" />
-                    </button>
-                    <button
-                      v-for="p in funnelTargetPages"
-                      :key="p.id"
-                      type="button"
-                      :disabled="p.isCurrent"
-                      @click="selectTargetPage(p.id)"
-                      class="flex items-center justify-between px-[14px] py-[8px] text-left transition-colors"
-                      :class="[
-                        p.isCurrent ? 'opacity-40 cursor-not-allowed text-neutral-400' : 'hover:bg-black/5 cursor-pointer',
-                        ctaTargetPageId === p.id ? 'font-medium text-black bg-black/5' : 'text-neutral-700'
-                      ]"
-                    >
-                      <span class="font-707 text-[12.5px] truncate pr-2">{{ p.label }}<span v-if="p.isCurrent"> (Current)</span></span>
-                      <Check v-if="ctaTargetPageId === p.id" class="size-[15px] text-black shrink-0" />
-                    </button>
-                  </div>
-                </Teleport>
-              </div>
-            </div>
-
-            <!-- Conditional URL Input if External URL is selected -->
-            <div v-if="ctaActionType === 'link'" class="w-full pt-1 animate-in fade-in duration-150">
-              <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
-                <input 
-                  v-model="ctaUrl" 
-                  placeholder="https://..." 
-                  class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
-                />
-              </div>
-            </div>
-
-            <!-- Conditional Modal Setup Button if Popup Modal is selected -->
-            <div v-if="ctaActionType === 'modal'" class="w-full pt-1 animate-in fade-in duration-150">
-              <button 
-                type="button"
-                @click="openModalSetup"
-                class="apple-glass-btn-dark w-full h-[38px] rounded-[8px] flex items-center justify-between px-3.5 font-707 font-medium text-[12px] cursor-pointer transition-all shadow-sm"
-              >
-                <span class="flex items-center gap-2">
-                  <SlidersHorizontal class="size-3.5" />
-                  <span>Configure Pop Up Modal</span>
-                </span>
-                <ArrowRight class="size-3.5 opacity-80" />
-              </button>
-            </div>
-          </div>
-        </Transition>
       </div>
+
+      <!-- Unified Single & Dual CTA Configuration Sections -->
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="transform opacity-0 -translate-y-2"
+        enter-to-class="transform opacity-100 translate-y-0"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="transform opacity-100 translate-y-0"
+        leave-to-class="transform opacity-0 -translate-y-2"
+      >
+        <div v-if="isCtaEnabled && targetWidget" class="w-full flex flex-col">
+          <CtaButtonConfigSections :widget="targetWidget" section="all" control-width-class="w-[210px]" />
+        </div>
+      </Transition>
     </div>
   </aside>
 </template>
@@ -896,14 +706,14 @@
 <script setup lang="ts">
 import { LOGO_HEIGHT, clampLogoHeight, LOGO_VERTICAL_POSITION, clampLogoVerticalPosition } from './logoSize.ts';
 import { sizedUrl } from '../../services/responsiveImage.ts';
-import { CTA_ACTION_OPTIONS, normalizeCtaAction, getFunnelTargetPages } from './ctaActions.ts';
 import { ref, computed, watch, nextTick } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
-import { AlignLeft, AlignCenter, AlignRight, ChevronDown, Check, Trash2, Plus, SlidersHorizontal, ArrowRight, Crop, Image as ImageIcon, Type, MousePointerClick } from 'lucide-vue-next';
+import { AlignLeft, AlignCenter, AlignRight, ChevronDown, Check, Trash2, Plus, Crop, Image as ImageIcon, Type, MousePointerClick } from 'lucide-vue-next';
 import { uploadMediaDirectly } from '../../services/mediaService.ts';
 import { useModalPopover } from '../common/modalPopover.ts';
 import InfoHint from '../common/InfoHint.vue';
+import CtaButtonConfigSections from './CtaButtonConfigSections.vue';
 import type { WidgetItem } from '../../types/editor.ts';
 
 const props = defineProps<{
@@ -1099,141 +909,19 @@ const isDragOverLogo = ref(false);
 const badge = ref('');
 const headline = ref('');
 const subheadline = ref('');
-const buttonText = ref('');
-const buttonVariant = ref<'black' | 'white'>('black');
 const textAlign = ref<'left' | 'center' | 'right'>('left');
 const textPosition = ref<'bottom' | 'center' | 'top'>('bottom');
 const isBannerTextEnabled = ref(false);
 
-function setButtonVariant(variant: 'black' | 'white') {
-  buttonVariant.value = variant;
-  updateHeroProps({
-    buttonVariant: variant,
-    variant: variant
-  });
-}
-
 const isOverlayEnabled = ref(false);
 const overlayOpacity = ref(50);
-const isCtaEnabled = ref(false);
 
-const ctaPositionModes = [
-  { label: 'In Banner', value: 'in-flow' },
-  { label: 'Sticky Bottom', value: 'sticky-bottom' }
-] as const;
-
-const ctaPositionMode = ref<'in-flow' | 'sticky-bottom'>('in-flow');
-const ctaStickyScope = ref<'current' | 'all' | 'custom'>('current');
-const ctaStickyPageIds = ref<string[]>([]);
-const isLinkToDropdownOpen = ref(false);
-const linkToBtnRef = ref<HTMLElement | null>(null);
-const { style: linkToPopoverStyle, menuRef: linkToMenuRef } = useModalPopover(linkToBtnRef, isLinkToDropdownOpen, { align: 'right', width: 240 });
-
-const allLinkToOptions = CTA_ACTION_OPTIONS;
-
-const isCtaModalDisallowed = computed(() => {
-  return ctaPositionMode.value === 'sticky-bottom' && ctaStickyScope.value === 'all';
+const isCtaEnabled = computed(() => {
+  const p = targetWidget.value?.props;
+  if (!p) return false;
+  if (typeof p.isCtaEnabled === 'boolean') return p.isCtaEnabled;
+  return !!(p.buttonText || p.ctaLabel || p.showButton);
 });
-
-const linkToOptions = computed(() => {
-  return allLinkToOptions.filter(opt => {
-    if (opt.value === 'download-pass') {
-      return editorStore.pages.flatMap(p => p.widget_tree).some(w => w.type === 'GuestEPass' || w.type === 'LiveQueuePass');
-    }
-    if (opt.value === 'modal') return !isCtaModalDisallowed.value;
-    return true;
-  });
-});
-
-const ctaActionType = ref<string>('submit');
-const ctaTargetPageId = ref<string>('');
-const ctaUrl = ref('');
-
-const isTargetPageDropdownOpen = ref(false);
-const targetPageBtnRef = ref<HTMLElement | null>(null);
-const { style: targetPagePopoverStyle, menuRef: targetPageMenuRef } = useModalPopover(targetPageBtnRef, isTargetPageDropdownOpen, { align: 'right', width: 240 });
-
-const funnelTargetPages = computed(() => {
-  return getFunnelTargetPages(editorStore.pages, editorStore.currentPage?.id);
-});
-
-const selectedTargetPageLabel = computed(() => {
-  if (!ctaTargetPageId.value) return 'Next Page (Default)';
-  const match = funnelTargetPages.value.find(p => p.id === ctaTargetPageId.value);
-  return match ? match.label : 'Next Page (Default)';
-});
-
-function selectTargetPage(id: string) {
-  ctaTargetPageId.value = id;
-  isTargetPageDropdownOpen.value = false;
-  updateHeroProps({
-    targetPageId: id,
-    ctaTargetPageId: id
-  });
-}
-
-const selectedActionLabel = computed(() => {
-  const availableValues = linkToOptions.value.map(o => o.value);
-  if (!availableValues.includes(ctaActionType.value as any)) {
-    ctaActionType.value = availableValues[0] || 'link';
-  }
-  const opt = allLinkToOptions.find(o => o.value === ctaActionType.value);
-  return opt ? opt.label : (linkToOptions.value[0]?.label || 'External URL');
-});
-
-function selectLinkTo(val: string) {
-  ctaActionType.value = val;
-  isLinkToDropdownOpen.value = false;
-  const currentProps = targetWidget.value?.props || {};
-  const defaultModalProps = currentProps.modalProps || {
-    variant: 'message-alert',
-    title: 'Your Pass Has Been Sent',
-    subtitle: 'Please provide a valid email address. We will resend your E-Pass immediately.',
-    buttonText: 'Done',
-    buttonVariant: 'black'
-  };
-  updateHeroProps({ 
-    actionType: val,
-    ctaActionType: val,
-    modalProps: defaultModalProps
-  });
-  if (val === 'modal') {
-    editorStore.openModalSidebar();
-  }
-}
-
-function openModalSetup() {
-  const targetId = getTargetWidgetId();
-  if (targetId) {
-    const currentProps = targetWidget.value?.props || {};
-    if (!currentProps.modalProps) {
-      updateHeroProps({
-        modalProps: {
-          variant: 'message-alert',
-          title: 'Your Pass Has Been Sent',
-          subtitle: 'Please provide a valid email address. We will resend your E-Pass immediately.',
-          buttonText: 'Done',
-          buttonVariant: 'black'
-        }
-      });
-    }
-    editorStore.openModalSidebar();
-  }
-}
-
-function setCtaPositionMode(mode: 'in-flow' | 'sticky-bottom') {
-  ctaPositionMode.value = mode;
-  ctaStickyScope.value = 'current';
-  ctaStickyPageIds.value = [editorStore.currentPage.id];
-  updateHeroProps({ 
-    positionMode: mode,
-    ctaPositionMode: mode,
-    stickyScope: 'current',
-    ctaStickyScope: 'current',
-    stickyPageIds: [editorStore.currentPage.id],
-    ctaStickyPageIds: [editorStore.currentPage.id]
-  });
-}
 
 function toggleBrandLogo() {
   if (!isTopPosition.value) return;
@@ -1335,17 +1023,20 @@ function toggleOverlay() {
 }
 
 function toggleCta() {
-  isCtaEnabled.value = !isCtaEnabled.value;
-  const updatedButtonText = isCtaEnabled.value ? (buttonText.value || 'Action') : '';
-  if (isCtaEnabled.value && !buttonText.value) {
-    buttonText.value = 'Action';
-  }
+  const next = !isCtaEnabled.value;
+  const p = targetWidget.value?.props || {};
+  const existingText = p.buttonText || p.ctaLabel || p.label || '';
+  const updatedButtonText = next ? (existingText || 'Action') : '';
+  const currentVar = p.variant || p.buttonVariant || 'black';
   updateHeroProps({
-    isCtaEnabled: isCtaEnabled.value,
-    showButton: isCtaEnabled.value,
+    isCtaEnabled: next,
+    showButton: next,
     buttonText: updatedButtonText,
-    buttonVariant: buttonVariant.value || 'black',
-    variant: buttonVariant.value || 'black'
+    ctaLabel: updatedButtonText,
+    buttonVariant: currentVar,
+    variant: currentVar,
+    layoutMode: p.layoutMode || 'single',
+    dualOrientation: p.dualOrientation || 'horizontal'
   });
 }
 
@@ -1466,8 +1157,6 @@ watch(targetWidget, (widget) => {
     } else {
       headlineStyle.value = 'h1';
     }
-    buttonText.value = widget.props.buttonText || widget.props.ctaLabel || '';
-    buttonVariant.value = widget.props.buttonVariant || widget.props.variant || 'black';
     textAlign.value = widget.props.textAlign || 'left';
     textPosition.value = widget.props.textPosition || 'bottom';
     currentImageUrl.value = widget.props.imageUrl || '';
@@ -1485,19 +1174,6 @@ watch(targetWidget, (widget) => {
       isOverlayEnabled.value = false;
     }
     overlayOpacity.value = typeof widget.props.overlayOpacity === 'number' ? widget.props.overlayOpacity : 50;
-
-    if (typeof widget.props.isCtaEnabled === 'boolean') {
-      isCtaEnabled.value = widget.props.isCtaEnabled;
-    } else {
-      isCtaEnabled.value = !!(widget.props.buttonText || widget.props.ctaLabel || widget.props.showButton);
-    }
-
-    ctaPositionMode.value = widget.props.ctaPositionMode || widget.props.positionMode || 'in-flow';
-    ctaStickyScope.value = widget.props.ctaStickyScope || widget.props.stickyScope || 'current';
-    ctaStickyPageIds.value = widget.props.ctaStickyPageIds || widget.props.stickyPageIds || [editorStore.currentPage.id];
-    ctaActionType.value = normalizeCtaAction(widget.props.ctaActionType || widget.props.actionType) || 'submit';
-    ctaTargetPageId.value = widget.props.targetPageId || widget.props.ctaTargetPageId || '';
-    ctaUrl.value = widget.props.ctaUrl || widget.props.url || '';
 
     if (typeof widget.props.showBannerText === 'boolean') {
       isBannerTextEnabled.value = widget.props.showBannerText;
@@ -1566,17 +1242,6 @@ watch(overlayOpacity, (newVal) => {
   updateHeroProps({ overlayOpacity: newVal });
 });
 
-watch(isCtaEnabled, (newVal) => {
-  updateHeroProps({ isCtaEnabled: newVal, showButton: newVal });
-});
-
-watch(ctaUrl, (newUrl) => {
-  updateHeroProps({ 
-    url: newUrl, 
-    ctaUrl: newUrl 
-  });
-});
-
 watch(() => editorStore.selectedMediaRatio, (newRatio) => {
   if (newRatio) {
     selectedRatio.value = newRatio;
@@ -1599,21 +1264,6 @@ watch(headline, (newHeadline) => {
 watch(subheadline, (newSub) => {
   updateHeroProps({ subheadline: newSub, subtitle: newSub });
   nextTick(() => autoResize(subheadlineRef.value));
-});
-
-watch(buttonText, (newBtn) => {
-  updateHeroProps({ 
-    buttonText: newBtn, 
-    showButton: !!newBtn, 
-    ctaLabel: newBtn 
-  });
-});
-
-watch(buttonVariant, (newVariant) => {
-  updateHeroProps({ 
-    buttonVariant: newVariant,
-    variant: newVariant
-  });
 });
 
 watch(textAlign, (newAlign) => {

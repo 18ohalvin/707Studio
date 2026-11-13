@@ -455,7 +455,7 @@
 
               <!-- Banner Text Content Overlay if present (Presets: Top, Center, Bottom) -->
               <div 
-                v-if="((widget.props.showBannerText ?? true) && (widget.props.title || widget.props.headline || widget.props.subtitle || widget.props.subheadline)) || ((widget.props.isCtaEnabled ?? (!!widget.props.buttonText || !!widget.props.ctaLabel || !!widget.props.showButton)) && (widget.props.buttonText || widget.props.ctaLabel || widget.props.showButton))" 
+                v-if="((widget.props.showBannerText ?? true) && (widget.props.title || widget.props.headline || widget.props.subtitle || widget.props.subheadline)) || ((widget.props.isCtaEnabled ?? (!!widget.props.buttonText || !!widget.props.ctaLabel || !!widget.props.showButton)) && (widget.props.layoutMode === 'dual' || widget.props.buttonText || widget.props.ctaLabel || widget.props.showButton))" 
                 class="absolute left-0 right-0 px-[16px] z-20 flex flex-col transition-all duration-200"
                 :class="[
                   widget.props.textPosition === 'top' ? ((index === 0 && (widget.props.isBrandLogoEnabled || widget.props.brandLogoUrl)) ? 'top-0 pt-[68px] pb-[24px]' : 'top-0 pt-[36px] pb-[24px]') : 
@@ -504,20 +504,23 @@
 
                 <!-- CTA Button automatically under subheadline with auto light/dark color adaptation (only rendered in-flow if not sticky bottom) -->
                 <div 
-                  v-if="(widget.props.isCtaEnabled ?? (!!widget.props.buttonText || !!widget.props.ctaLabel || !!widget.props.showButton)) && (widget.props.buttonText || widget.props.ctaLabel || widget.props.showButton) && widget.props.ctaPositionMode !== 'sticky-bottom' && widget.props.positionMode !== 'sticky-bottom'" 
+                  v-if="(widget.props.isCtaEnabled ?? (!!widget.props.buttonText || !!widget.props.ctaLabel || !!widget.props.showButton)) && (widget.props.layoutMode === 'dual' || widget.props.buttonText || widget.props.ctaLabel || widget.props.showButton) && widget.props.ctaPositionMode !== 'sticky-bottom' && widget.props.positionMode !== 'sticky-bottom'" 
                   class="mt-4 flex"
                   :class="[
-                    widget.props.textAlign === 'center' ? 'justify-center w-full' : 
-                    widget.props.textAlign === 'right' ? 'justify-end w-full' : 
-                    'justify-start'
+                    widget.props.layoutMode === 'dual'
+                      ? 'w-full'
+                      : (widget.props.textAlign === 'center'
+                          ? 'justify-center w-full'
+                          : (widget.props.textAlign === 'right' ? 'justify-end w-full' : 'justify-start'))
                   ]"
                 >
                   <button 
+                    v-if="widget.props.layoutMode !== 'dual'"
                     type="button"
-                    @click.stop="handleHeroCtaClick(widget)"
-                    :disabled="isButtonInactive(widget)"
+                    @click.stop="handleHeroCtaClick(widget, 'primary')"
+                    :disabled="isButtonInactive(widget, 'primary')"
                     :class="[
-                      isButtonInactive(widget)
+                      isButtonInactive(widget, 'primary')
                         ? ((widget.props.variant === 'white' || widget.props.buttonVariant === 'white')
                             ? '!bg-[#e5e5e5] !text-[#8e8e93] cursor-not-allowed pointer-events-none'
                             : '!bg-[#262626] !text-[#737373] cursor-not-allowed pointer-events-none')
@@ -531,8 +534,34 @@
                       'font-707 font-medium text-btn h-[48px] px-[16px] py-[12px] cursor-pointer whitespace-nowrap flex items-center justify-center uppercase border-0 border-none outline-none'
                     ]"
                   >
-                    {{ widget.props.buttonText || widget.props.ctaLabel || 'Action' }}
+                    {{ widget.props.buttonText || widget.props.ctaLabel || widget.props.label || 'Action' }}
                   </button>
+
+                  <!-- Dual CTA Buttons Inside Hero Banner -->
+                  <div
+                    v-else
+                    :class="widget.props.dualOrientation === 'vertical' ? 'flex flex-col gap-2 w-full items-stretch' : 'grid grid-cols-2 gap-2.5 w-full items-stretch'"
+                  >
+                    <button
+                      type="button"
+                      @click.stop="handleHeroCtaClick(widget, 'primary')"
+                      :disabled="isButtonInactive(widget, 'primary')"
+                      :class="getDualPrimaryButtonClass(widget, !widget.props.isSolidSpace)"
+                      class="w-full h-[48px] px-[12px] py-[12px] rounded-[0px] flex items-center justify-center gap-[8px] font-707 font-medium text-[13px] leading-[18px] tracking-normal cursor-pointer outline-none shadow-none"
+                    >
+                      <span class="truncate uppercase">{{ widget.props.buttonText || widget.props.ctaLabel || widget.props.label || 'YES' }}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      @click.stop="handleHeroCtaClick(widget, 'secondary')"
+                      :disabled="isButtonInactive(widget, 'secondary')"
+                      :class="getDualSecondaryButtonClass(widget, !widget.props.isSolidSpace)"
+                      class="w-full h-[48px] px-[12px] py-[12px] rounded-[0px] flex items-center justify-center gap-[8px] font-707 font-medium text-[13px] leading-[18px] tracking-normal cursor-pointer outline-none shadow-none"
+                    >
+                      <span class="truncate uppercase">{{ widget.props.secondaryLabel || 'NO' }}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1577,8 +1606,6 @@
                   :style="{ height: `${widget.props.height || 48}px` }"
                   class="w-full px-[16px] py-[12px] rounded-[0px] flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none"
                 >
-                  <!-- Action Icon -->
-                  <component :is="getButtonIcon(widget)" v-if="widget.props.showIcon" class="size-[16px] shrink-0" />
                   <span class="whitespace-nowrap uppercase">{{ widget.props.label || 'BUTTON CTA' }}</span>
                 </button>
 
@@ -1592,17 +1619,9 @@
                     type="button"
                     @click.stop="handleActionButtonClick(widget, 'primary')"
                     :disabled="isButtonInactive(widget, 'primary')"
-                    :class="[
-                      isButtonInactive(widget, 'primary')
-                        ? ((widget.props.variant === 'white' || widget.props.buttonVariant === 'white')
-                            ? '!bg-[#e5e5e5] !text-[#8e8e93] cursor-not-allowed pointer-events-none'
-                            : '!bg-[#262626] !text-[#737373] cursor-not-allowed pointer-events-none')
-                        : ((widget.props.variant === 'white' || widget.props.buttonVariant === 'white')
-                            ? 'bg-white text-black apple-cta-btn-white border border-black/10'
-                            : 'bg-black text-white apple-cta-btn-dark')
-                    ]"
+                    :class="getDualPrimaryButtonClass(widget)"
                     :style="{ height: `${widget.props.height || 48}px` }"
-                    class="w-full px-[12px] py-[12px] rounded-[0px] flex items-center justify-center gap-[8px] font-707 font-medium text-[13px] leading-[18px] tracking-normal cursor-pointer border-0 outline-none shadow-none"
+                    class="w-full px-[12px] py-[12px] rounded-[0px] flex items-center justify-center gap-[8px] font-707 font-medium text-[13px] leading-[18px] tracking-normal cursor-pointer outline-none shadow-none"
                   >
                     <span class="truncate uppercase">{{ widget.props.label || 'YES' }}</span>
                   </button>
@@ -1612,15 +1631,7 @@
                     type="button"
                     @click.stop="handleActionButtonClick(widget, 'secondary')"
                     :disabled="isButtonInactive(widget, 'secondary')"
-                    :class="[
-                      isButtonInactive(widget, 'secondary')
-                        ? '!bg-[#e5e5e5] !text-[#8e8e93] cursor-not-allowed pointer-events-none'
-                        : (widget.props.secondaryVariant === 'black'
-                            ? 'bg-black text-white apple-cta-btn-dark'
-                            : widget.props.secondaryVariant === 'ghost'
-                              ? 'bg-transparent text-black border border-black/25 hover:bg-black/5'
-                              : 'bg-white text-black apple-cta-btn-white border border-black/10 hover:bg-neutral-50')
-                    ]"
+                    :class="getDualSecondaryButtonClass(widget)"
                     :style="{ height: `${widget.props.height || 48}px` }"
                     class="w-full px-[12px] py-[12px] rounded-[0px] flex items-center justify-center gap-[8px] font-707 font-medium text-[13px] leading-[18px] tracking-normal cursor-pointer outline-none shadow-none"
                   >
@@ -2524,34 +2535,33 @@ more</span>
           :style="{ height: `${stickyButtonForThisPage.props?.height || 48}px` }"
           class="w-full px-[16px] py-[12px] rounded-none flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 border-none outline-none shadow-none"
         >
-          <!-- Action Icon -->
-          <component :is="getButtonIcon(stickyButtonForThisPage)" v-if="stickyButtonForThisPage.props?.showIcon" class="size-[16px] shrink-0" />
+          <!-- Action Icon (E-Pass / Queue Pass download buttons only) -->
+          <component
+            :is="getButtonIcon(stickyButtonForThisPage)"
+            v-if="(stickyButtonForThisPage.type === 'GuestEPass' || stickyButtonForThisPage.type === 'LiveQueuePass') && stickyButtonForThisPage.props?.showIcon"
+            class="size-[16px] shrink-0"
+          />
           <span class="whitespace-nowrap uppercase">{{ stickyButtonForThisPage.props?.label || stickyButtonForThisPage.props?.buttonText || stickyButtonForThisPage.props?.ctaLabel || 'BUTTON CTA' }}</span>
         </button>
 
         <!-- Dual Sticky Buttons (Side-by-Side or Stacked) -->
         <div 
           v-else
-          :class="stickyButtonForThisPage.props?.dualOrientation === 'vertical' ? 'flex flex-col gap-2 w-full p-2.5 bg-white border-t border-black/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]' : 'grid grid-cols-2 gap-2.5 w-full p-2.5 bg-white border-t border-black/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]'"
+          :class="[
+            stickyButtonForThisPage.props?.dualOrientation === 'vertical' ? 'flex flex-col gap-2 w-full p-2.5' : 'grid grid-cols-2 gap-2.5 w-full p-2.5',
+            isStickyButtonOnDarkBackground ? 'bg-transparent' : 'bg-white border-t border-black/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]'
+          ]"
         >
           <!-- Primary (Yes / Agree) -->
           <button 
             type="button"
             @click.stop="handleActionButtonClick(stickyButtonForThisPage, 'primary')"
             :disabled="isButtonInactive(stickyButtonForThisPage, 'primary')"
-            :class="[
-              isButtonInactive(stickyButtonForThisPage, 'primary')
-                ? ((stickyButtonForThisPage.props?.variant === 'white' || stickyButtonForThisPage.props?.buttonVariant === 'white')
-                    ? '!bg-[#e5e5e5] !text-[#8e8e93] cursor-not-allowed pointer-events-none'
-                    : '!bg-[#262626] !text-[#737373] cursor-not-allowed pointer-events-none')
-                : ((stickyButtonForThisPage.props?.variant === 'white' || stickyButtonForThisPage.props?.buttonVariant === 'white')
-                    ? 'bg-white text-black apple-cta-btn-white border border-black/10'
-                    : 'bg-black text-white apple-cta-btn-dark')
-            ]"
+            :class="getDualPrimaryButtonClass(stickyButtonForThisPage, isStickyButtonOnDarkBackground)"
             :style="{ height: `${stickyButtonForThisPage.props?.height || 48}px` }"
-            class="w-full px-[12px] py-[12px] rounded-[0px] flex items-center justify-center gap-[8px] font-707 font-medium text-[13px] leading-[18px] tracking-normal cursor-pointer border-0 outline-none shadow-none"
+            class="w-full px-[12px] py-[12px] rounded-[0px] flex items-center justify-center gap-[8px] font-707 font-medium text-[13px] leading-[18px] tracking-normal cursor-pointer outline-none shadow-none"
           >
-            <span class="truncate uppercase">{{ stickyButtonForThisPage.props?.label || 'YES' }}</span>
+            <span class="truncate uppercase">{{ stickyButtonForThisPage.props?.label || stickyButtonForThisPage.props?.buttonText || stickyButtonForThisPage.props?.ctaLabel || 'YES' }}</span>
           </button>
 
           <!-- Secondary (No / Disagree) -->
@@ -2559,15 +2569,7 @@ more</span>
             type="button"
             @click.stop="handleActionButtonClick(stickyButtonForThisPage, 'secondary')"
             :disabled="isButtonInactive(stickyButtonForThisPage, 'secondary')"
-            :class="[
-              isButtonInactive(stickyButtonForThisPage, 'secondary')
-                ? '!bg-[#e5e5e5] !text-[#8e8e93] cursor-not-allowed pointer-events-none'
-                : (stickyButtonForThisPage.props?.secondaryVariant === 'black'
-                    ? 'bg-black text-white apple-cta-btn-dark'
-                    : stickyButtonForThisPage.props?.secondaryVariant === 'ghost'
-                      ? 'bg-transparent text-black border border-black/25 hover:bg-black/5'
-                      : 'bg-white text-black apple-cta-btn-white border border-black/10 hover:bg-neutral-50')
-            ]"
+            :class="getDualSecondaryButtonClass(stickyButtonForThisPage, isStickyButtonOnDarkBackground)"
             :style="{ height: `${stickyButtonForThisPage.props?.height || 48}px` }"
             class="w-full px-[12px] py-[12px] rounded-[0px] flex items-center justify-center gap-[8px] font-707 font-medium text-[13px] leading-[18px] tracking-normal cursor-pointer outline-none shadow-none"
           >
@@ -3425,7 +3427,7 @@ const hasNavigationButton = computed(() => {
   const tree = activePage.value?.widget_tree || [];
   return tree.some((w: any) => {
     if (w.type === 'ActionButton') return true;
-    if (w.type === 'HeroDrop' && (w.props?.isCtaEnabled || w.props?.buttonText || w.props?.showButton)) return true;
+    if (w.type === 'HeroDrop' && (w.props?.isCtaEnabled || w.props?.buttonText || w.props?.ctaLabel || w.props?.showButton)) return true;
     return false;
   });
 });
@@ -3456,13 +3458,13 @@ async function openMissingButtonModal() {
 function addNextActionButton() {
   handleSelectThisPage();
   editorStore.addWidget('ActionButton', undefined, {
-    label: 'CONTINUE →',
+    label: 'CONTINUE',
     variant: 'black',
     buttonVariant: 'black',
     actionType: 'submit',
     positionMode: 'in-flow',
     height: 48,
-    showIcon: true
+    showIcon: false
   });
   editorStore.showToast(`Action button added to Page ${pageNumber.value}`);
 }
@@ -4088,10 +4090,10 @@ function handleActionButtonClick(widget: any, target: 'primary' | 'secondary' = 
   handleAdjustWidget(widget);
 }
 
-function handleHeroCtaClick(widget: any) {
+function handleHeroCtaClick(widget: any, target: 'primary' | 'secondary' = 'primary') {
   if (wasDraggingRecently.value) return;
   if (props.isPreviewModal || props.isLivePage) {
-    handleButtonClick(widget, 'primary');
+    handleButtonClick(widget, target);
     return;
   }
   if (props.isMiniPreview) return;
@@ -4276,7 +4278,7 @@ function handleButtonClick(widget: any, target: 'primary' | 'secondary' = 'prima
   if (widget.props?.disabled) return;
   const rawAction = target === 'secondary'
     ? (widget.props?.secondaryActionType || 'link')
-    : (widget.props?.actionType || 'submit');
+    : (widget.props?.actionType || widget.props?.ctaActionType || 'submit');
   const actionType = normalizeCtaAction(rawAction) || (target === 'secondary' ? 'link' : 'submit');
 
   if (actionType === 'submit') {
@@ -4338,8 +4340,8 @@ function handleButtonClick(widget: any, target: 'primary' | 'secondary' = 'prima
     goToNextPage(props.isLivePage ? collectPageAnswers() : undefined, targetPageId);
   } else if (actionType === 'link') {
     const rawUrl = target === 'secondary'
-      ? (widget.props?.secondaryUrl || widget.props?.url)
-      : widget.props?.url;
+      ? (widget.props?.secondaryUrl || widget.props?.url || widget.props?.ctaUrl)
+      : (widget.props?.url || widget.props?.ctaUrl);
     const shouldOpenNewTab = target === 'secondary'
       ? (widget.props?.secondaryOpenInNewTab ?? true)
       : Boolean(widget.props?.openInNewTab);
@@ -6123,7 +6125,7 @@ function isButtonInactive(widget: any, target: 'primary' | 'secondary' = 'primar
   if (widget.props?.disabled) return true;
   const rawAction = target === 'secondary'
     ? (widget.props?.secondaryActionType || 'link')
-    : (widget.props?.actionType || 'submit');
+    : (widget.props?.actionType || widget.props?.ctaActionType || 'submit');
   const action = normalizeCtaAction(rawAction) || (target === 'secondary' ? 'link' : 'submit');
   if (action === 'link' || action === 'modal') {
     return false;
@@ -6132,6 +6134,33 @@ function isButtonInactive(widget: any, target: 'primary' | 'secondary' = 'primar
     return true;
   }
   return false;
+}
+
+function getDualPrimaryButtonClass(widget: any, fallbackOnDark = false): string {
+  const variant = widget?.props?.variant || widget?.props?.buttonVariant;
+  const isWhite = variant === 'white' || (!variant && fallbackOnDark);
+  if (isButtonInactive(widget, 'primary')) {
+    return isWhite
+      ? '!bg-[#e5e5e5] !text-[#8e8e93] cursor-not-allowed pointer-events-none'
+      : '!bg-[#262626] !text-[#737373] cursor-not-allowed pointer-events-none';
+  }
+  return isWhite
+    ? 'bg-white text-black apple-cta-btn-white border border-black/10'
+    : 'bg-black text-white apple-cta-btn-dark';
+}
+
+function getDualSecondaryButtonClass(widget: any, onDarkBg = false): string {
+  if (isButtonInactive(widget, 'secondary')) {
+    return '!bg-[#e5e5e5] !text-[#8e8e93] cursor-not-allowed pointer-events-none';
+  }
+  const sec = widget?.props?.secondaryVariant;
+  if (sec === 'black') return 'bg-black text-white apple-cta-btn-dark';
+  if (sec === 'ghost') {
+    return onDarkBg
+      ? 'bg-transparent text-white border border-white/50 hover:bg-white/10'
+      : 'bg-transparent text-black border border-black/25 hover:bg-black/5';
+  }
+  return 'bg-white text-black apple-cta-btn-white border border-black/10 hover:bg-neutral-50';
 }
 
 function handleModalDoneClick() {
@@ -6276,7 +6305,7 @@ const stickyButtonForThisPage = computed(() => {
   const heroWithStickyCta = activePage.value.widget_tree.find(w => 
     w.type === 'HeroDrop' && 
     (w.props?.isCtaEnabled ?? (!!w.props?.buttonText || !!w.props?.ctaLabel || !!w.props?.showButton)) && 
-    (w.props?.buttonText || w.props?.ctaLabel || w.props?.showButton) &&
+    (w.props?.layoutMode === 'dual' || w.props?.buttonText || w.props?.ctaLabel || w.props?.showButton) &&
     (w.props?.ctaPositionMode === 'sticky-bottom' || w.props?.positionMode === 'sticky-bottom')
   );
   if (heroWithStickyCta) return heroWithStickyCta;

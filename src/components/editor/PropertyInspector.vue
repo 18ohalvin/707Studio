@@ -285,12 +285,6 @@
             placeholder="https://..."
           />
         </div>
-        <div class="pt-2 border-t border-[#232730] space-y-2">
-          <label class="flex items-center gap-2 text-xs text-neutral-300 cursor-pointer">
-            <input type="checkbox" v-model="editorStore.selectedWidget.props.showIcon" class="rounded accent-white" />
-            Show Leading Icon
-          </label>
-        </div>
       </div>
       <!-- Block Actions -->
       <div class="pt-4 border-t border-[#232730]">

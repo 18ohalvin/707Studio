@@ -129,6 +129,34 @@ describe('Button CTA Enhancement (Dual Action Buttons & Independent Actions)', (
       expect(normalizeCtaAction('modal')).toBe('modal');
       expect(normalizeCtaAction('download-pass')).toBe('download-pass');
     });
+
+    it('creates HeroDrop with dual-ready CTA defaults and no leading icon', () => {
+      const editorStore = useEditorStore();
+      const hero = editorStore.addWidget('HeroDrop', undefined, {
+        isCtaEnabled: true,
+        layoutMode: 'dual',
+        dualOrientation: 'vertical',
+        buttonText: 'YES',
+        actionType: 'submit',
+        secondaryLabel: 'NO',
+        secondaryVariant: 'ghost',
+        secondaryActionType: 'link',
+        secondaryUrl: 'https://707.co.id/shop'
+      });
+
+      expect(hero.type).toBe('HeroDrop');
+      expect(hero.props.showIcon).toBe(false);
+      expect(hero.props.layoutMode).toBe('dual');
+      expect(hero.props.dualOrientation).toBe('vertical');
+      expect(hero.props.buttonText).toBe('YES');
+      expect(hero.props.secondaryLabel).toBe('NO');
+      expect(hero.props.secondaryVariant).toBe('ghost');
+      expect(hero.props.secondaryActionType).toBe('link');
+      expect(hero.props.secondaryUrl).toBe('https://707.co.id/shop');
+
+      const btn = editorStore.addWidget('ActionButton');
+      expect(btn.props.showIcon).toBe(false);
+    });
   });
 
   describe('Gender Dropdown Presets', () => {
