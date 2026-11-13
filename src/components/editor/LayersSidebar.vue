@@ -27,7 +27,7 @@
       </div>
       <div class="flex items-center justify-between w-full">
         <p class="font-707 font-normal text-[12px] leading-[16px] text-neutral-500" data-node-id="184:6144">
-          Select blocks to assemble your campaign page.
+          Drag to reorder.
         </p>
         <span 
           v-if="editorStore.isCurrentPageDynamicFit"

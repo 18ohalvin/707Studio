@@ -13,7 +13,7 @@
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
         <div class="flex items-center gap-2">
           <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
-            Media & Banner Setup
+            Media
           </p>
         </div>
         <button 
@@ -107,7 +107,7 @@
       <!-- Ratio Presets -->
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Ratio Presets
+          Aspect Ratio
         </p>
         <div class="flex flex-nowrap overflow-x-auto gap-[8px] items-center -mx-[24px] px-[24px] w-[calc(100%+48px)] pb-1 no-scrollbar">
           <button 
@@ -127,10 +127,10 @@
             type="button"
             @click="editorStore.openCropStudio"
             class="w-full flex items-center justify-center gap-2 h-[38px] rounded-[8px] bg-black text-white hover:bg-neutral-800 transition-colors shadow-sm font-707 text-[12px] font-medium cursor-pointer"
-            title="Open photo cropping, zooming, and repositioning studio"
+            title="Crop image"
           >
             <Crop class="size-3.5 text-white" />
-            <span>Crop & Reposition</span>
+            <span>Crop</span>
           </button>
           <button
             v-if="isCustomPositionOrZoom"
@@ -855,9 +855,9 @@ defineEmits<{
 type TabType = 'media' | 'style' | 'cta';
 const activeTab = ref<TabType>('media');
 const tabs = [
-  { id: 'media' as const, label: 'Media & Brand', icon: ImageIcon },
-  { id: 'style' as const, label: 'Text & Scrim', icon: Type },
-  { id: 'cta' as const, label: 'Action CTA', icon: MousePointerClick }
+  { id: 'media' as const, label: 'Media', icon: ImageIcon },
+  { id: 'style' as const, label: 'Text', icon: Type },
+  { id: 'cta' as const, label: 'Button', icon: MousePointerClick }
 ];
 
 const editorStore = useEditorStore();

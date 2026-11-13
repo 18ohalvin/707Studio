@@ -16,13 +16,13 @@
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
         <div class="flex items-center gap-2">
           <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
-            Button Setup
+            Button
           </p>
           <span 
             v-if="layoutMode === 'dual'"
             class="text-[10px] font-mono tracking-wider uppercase px-2 py-0.5 rounded-full bg-black/5 text-neutral-600 border border-black/10"
           >
-            Dual Mode
+            Dual
           </span>
         </div>
         <button 
@@ -59,14 +59,9 @@
       <!-- Layout Mode Selector: Single Button vs Dual Buttons (Yes / No) -->
       <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] pb-[18px] shrink-0 w-full border-b border-[#f0f0f0]">
         <div class="flex items-center justify-between w-full">
-          <div class="flex flex-col">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Button Layout
-            </p>
-            <span class="font-707 text-[11px] text-neutral-400">
-              Single action or dual options
-            </span>
-          </div>
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Layout
+          </p>
           <div class="flex gap-[6px] items-center">
             <button
               type="button"
@@ -82,21 +77,16 @@
               :class="layoutMode === 'dual' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
               class="px-3 h-[30px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer transition-all"
             >
-              Dual (Yes / No)
+              Dual
             </button>
           </div>
         </div>
 
         <!-- Grid Alignment (Left-Right vs Top-Bottom Stack) -->
         <div v-if="layoutMode === 'dual'" class="flex items-center justify-between w-full pt-2 border-t border-black/5">
-          <div class="flex flex-col">
-            <p class="font-707 font-medium text-[12px] text-neutral-800">
-              Grid Alignment
-            </p>
-            <span class="font-707 text-[10.5px] text-neutral-400">
-              Side-by-side or stacked layout
-            </span>
-          </div>
+          <p class="font-707 font-medium text-[12px] text-neutral-800">
+            Direction
+          </p>
           <div class="flex gap-[6px] items-center">
             <button
               type="button"
@@ -104,7 +94,7 @@
               :class="dualOrientation === 'horizontal' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
               class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer transition-all"
             >
-              Left & Right
+              Side by Side
             </button>
             <button
               type="button"
@@ -112,7 +102,7 @@
               :class="dualOrientation === 'vertical' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
               class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer transition-all"
             >
-              Top & Bottom
+              Stacked
             </button>
           </div>
         </div>
@@ -123,9 +113,8 @@
         <div class="flex flex-col gap-[6px] w-full">
           <div class="flex items-center justify-between">
             <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              {{ layoutMode === 'dual' ? 'Yes / Primary Button Text' : 'Button Text' }}
+              {{ layoutMode === 'dual' ? 'Button 1 Label' : 'Label' }}
             </p>
-            <span v-if="layoutMode === 'dual'" class="text-[10px] font-mono uppercase text-neutral-400">Button 1</span>
           </div>
           <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
             <input 
@@ -145,9 +134,8 @@
         <div class="flex flex-col gap-[6px] w-full">
           <div class="flex items-center justify-between">
             <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              No / Secondary Button Text
+              Button 2 Label
             </p>
-            <span class="text-[10px] font-mono uppercase text-neutral-400">Button 2</span>
           </div>
           <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
             <input 
@@ -168,7 +156,7 @@
         class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]"
       >
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Button Style Preset
+          Style
         </p>
         <div class="flex gap-[8px] items-center w-full">
           <button 
@@ -177,7 +165,7 @@
             :class="currentVariant === 'black' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
             class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[16px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
           >
-            Primary Black
+            Black
           </button>
           <button 
             type="button"
@@ -185,7 +173,7 @@
             :class="currentVariant === 'white' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
             class="flex-1 whitespace-nowrap content-stretch flex h-[36px] items-center justify-center px-[16px] py-[6px] rounded-[8px] text-[12px] font-707 cursor-pointer"
           >
-            Primary White
+            White
           </button>
         </div>
       </div>
@@ -197,12 +185,9 @@
       >
         <!-- Primary Variant -->
         <div class="flex flex-col gap-[8px] w-full">
-          <div class="flex items-center justify-between w-full">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Yes / Primary Style
-            </p>
-            <span class="text-[10px] font-mono text-neutral-400">Button 1</span>
-          </div>
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Button 1 Style
+          </p>
           <div class="flex gap-[8px] items-center w-full">
             <button 
               type="button"
@@ -210,7 +195,7 @@
               :class="currentVariant === 'black' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
               class="flex-1 whitespace-nowrap content-stretch flex h-[34px] items-center justify-center px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
             >
-              Solid Black
+              Black
             </button>
             <button 
               type="button"
@@ -218,19 +203,16 @@
               :class="currentVariant === 'white' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
               class="flex-1 whitespace-nowrap content-stretch flex h-[34px] items-center justify-center px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
             >
-              Solid White
+              White
             </button>
           </div>
         </div>
 
         <!-- Secondary Variant -->
         <div class="flex flex-col gap-[8px] w-full pt-1">
-          <div class="flex items-center justify-between w-full">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              No / Secondary Style
-            </p>
-            <span class="text-[10px] font-mono text-neutral-400">Button 2</span>
-          </div>
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Button 2 Style
+          </p>
           <div class="grid grid-cols-3 gap-[6px] items-center w-full">
             <button 
               type="button"
@@ -355,14 +337,9 @@
       <!-- 1. PRIMARY BUTTON ACTION (Single or Dual Yes Button) -->
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full" :class="layoutMode === 'dual' ? 'border-b border-[#f0f0f0]' : ''">
         <div class="content-stretch flex items-center justify-between w-full relative">
-          <div class="flex flex-col">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
-              {{ layoutMode === 'dual' ? 'Yes / Primary Action' : 'Action Trigger' }}
-            </p>
-            <span class="font-707 text-[11px] text-neutral-400">
-              When clicked by guest
-            </span>
-          </div>
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
+            {{ layoutMode === 'dual' ? 'Button 1 Action' : 'On Click' }}
+          </p>
           <div class="relative" ref="linkToBtnRef">
             <button
               type="button"
@@ -403,14 +380,11 @@
         <!-- Conditional URL Input if Link selected for Primary Button -->
         <div v-if="actionType === 'link'" class="w-full pt-1 flex flex-col gap-3 animate-in fade-in duration-150">
           <div class="flex flex-col gap-1.5 w-full">
-            <div class="flex items-center justify-between">
-              <span class="font-707 text-[12px] font-medium text-neutral-600">Destination External URL</span>
-              <span class="text-[10px] font-mono text-neutral-400">e.g. https://...</span>
-            </div>
+            <span class="font-707 text-[12px] font-medium text-neutral-600">URL</span>
             <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
               <input 
                 v-model="actionUrl" 
-                placeholder="https://example.com/checkout" 
+                placeholder="https://example.com" 
                 class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
               />
             </div>
@@ -418,10 +392,7 @@
 
           <!-- Open in New Tab Toggle -->
           <div class="flex items-center justify-between w-full pt-0.5">
-            <div class="flex flex-col">
-              <span class="font-707 text-[12px] font-medium text-black">Open in New Tab</span>
-              <span class="font-707 text-[10.5px] text-neutral-400">Open external link in a new browser tab</span>
-            </div>
+            <span class="font-707 text-[12px] font-medium text-black">Open in New Tab</span>
             <button
               type="button"
               role="switch"
@@ -449,7 +420,7 @@
           >
             <span class="flex items-center gap-2">
               <SlidersHorizontal class="size-3.5" />
-              <span>Configure Pop Up Modal</span>
+              <span>Edit Pop Up</span>
             </span>
             <ArrowRight class="size-3.5 opacity-80" />
           </button>
@@ -462,14 +433,9 @@
         class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full animate-in fade-in duration-150"
       >
         <div class="content-stretch flex items-center justify-between w-full relative">
-          <div class="flex flex-col">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
-              No / Secondary Action
-            </p>
-            <span class="font-707 text-[11px] text-neutral-400">
-              When clicked by guest
-            </span>
-          </div>
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
+            Button 2 Action
+          </p>
           <div class="relative" ref="secondaryLinkToBtnRef">
             <button
               type="button"
@@ -510,14 +476,11 @@
         <!-- Conditional URL Input if Link selected for Secondary Button -->
         <div v-if="secondaryActionType === 'link'" class="w-full pt-1 flex flex-col gap-3 animate-in fade-in duration-150">
           <div class="flex flex-col gap-1.5 w-full">
-            <div class="flex items-center justify-between">
-              <span class="font-707 text-[12px] font-medium text-neutral-600">Destination External URL</span>
-              <span class="text-[10px] font-mono text-neutral-400">e.g. https://...</span>
-            </div>
+            <span class="font-707 text-[12px] font-medium text-neutral-600">URL</span>
             <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
               <input 
                 v-model="secondaryActionUrl" 
-                placeholder="https://example.com/cancel" 
+                placeholder="https://example.com" 
                 class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
               />
             </div>
@@ -525,10 +488,7 @@
 
           <!-- Secondary Open in New Tab Toggle -->
           <div class="flex items-center justify-between w-full pt-0.5">
-            <div class="flex flex-col">
-              <span class="font-707 text-[12px] font-medium text-black">Open in New Tab</span>
-              <span class="font-707 text-[10.5px] text-neutral-400">Open external link in a new browser tab</span>
-            </div>
+            <span class="font-707 text-[12px] font-medium text-black">Open in New Tab</span>
             <button
               type="button"
               role="switch"
@@ -556,7 +516,7 @@
           >
             <span class="flex items-center gap-2">
               <SlidersHorizontal class="size-3.5" />
-              <span>Configure Pop Up Modal</span>
+              <span>Edit Pop Up</span>
             </span>
             <ArrowRight class="size-3.5 opacity-80" />
           </button>
@@ -601,8 +561,8 @@ type TabType = 'content' | 'style' | 'action';
 const activeTab = ref<TabType>('content');
 const tabs = [
   { id: 'content' as const, label: 'Content', icon: Type },
-  { id: 'style' as const, label: 'Style & Layout', icon: Layout },
-  { id: 'action' as const, label: 'Action & Link', icon: Link2 }
+  { id: 'style' as const, label: 'Style', icon: Layout },
+  { id: 'action' as const, label: 'Action', icon: Link2 }
 ];
 
 const editorStore = useEditorStore();

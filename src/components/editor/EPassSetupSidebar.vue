@@ -17,7 +17,7 @@
         <div class="flex items-center gap-2">
           <component :is="isLiveQueueMode ? Users : Ticket" class="size-4 text-black" />
           <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
-            {{ isLiveQueueMode ? 'Live Queue Pass Setup' : 'Guest E-Pass Setup' }}
+            {{ isLiveQueueMode ? 'Queue Pass' : 'E-Pass' }}
           </p>
         </div>
         <button 
@@ -53,18 +53,13 @@
     <div v-show="activeTab === 'details'" class="w-full flex flex-col">
       <!-- PDF ticket design (Ticket page) -->
       <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
-        <div class="flex flex-col">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Downloadable PDF Ticket</p>
-          <p class="font-707 text-[11px] text-neutral-500">
-            Configured on the Ticket page for guests to download.
-          </p>
-        </div>
+        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">PDF Ticket</p>
         <button
           type="button"
           @click="openTicketDesign"
           class="apple-glass-btn-dark w-full h-[38px] rounded-[8px] flex items-center justify-between px-3.5 font-707 font-medium text-[12px] cursor-pointer transition-all shadow-sm"
         >
-          <span>{{ editorStore.ticketPageIndex >= 0 ? 'Open Ticket page' : 'Design PDF Ticket' }}</span>
+          <span>{{ editorStore.ticketPageIndex >= 0 ? 'Edit Ticket Page' : 'Create Ticket Page' }}</span>
           <ChevronRight class="w-3.5 h-3.5" />
         </button>
       </div>
@@ -89,7 +84,7 @@
         <!-- Event Venue -->
         <div class="flex flex-col gap-[6px] w-full">
           <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
-            Venue Location
+            Venue
           </p>
           <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
             <input 
@@ -609,14 +604,9 @@
       <!-- Section 4: Troubleshoot / Disclaimer Notice Section -->
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
         <div class="flex items-center justify-between w-full">
-          <div class="flex flex-col">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Troubleshoot & Help Notice
-            </p>
-            <p class="font-707 text-[11px] text-neutral-500">
-              {{ showFooterNotice ? 'Visible under valid sessions list' : 'Hidden from ticket' }}
-            </p>
-          </div>
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Help Notice
+          </p>
 
           <!-- Modern Elegant Apple Style Toggle Switch -->
           <button
@@ -647,7 +637,7 @@
         >
           <div v-if="showFooterNotice" class="flex flex-col gap-[12px] w-full pt-1">
             <div class="flex flex-col gap-1 w-full">
-              <span class="font-707 text-[11px] font-medium text-neutral-600">Notice Title</span>
+              <span class="font-707 text-[11px] font-medium text-neutral-600">Heading</span>
               <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[34px] items-center px-[12px] rounded-[6px] w-full bg-white transition-colors">
                 <input 
                   v-model="footerNoticeTitle"
@@ -657,7 +647,7 @@
               </div>
             </div>
             <div class="flex flex-col gap-1 w-full">
-              <span class="font-707 text-[11px] font-medium text-neutral-600">Notice Message</span>
+              <span class="font-707 text-[11px] font-medium text-neutral-600">Message</span>
               <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[34px] items-center px-[12px] rounded-[6px] w-full bg-white transition-colors">
                 <input 
                   v-model="footerNoticeText"
@@ -670,7 +660,7 @@
             <!-- Hyperlink on Selected Word -->
             <div class="flex flex-col gap-[10px] w-full pt-1 border-t border-[#f0f0f0]">
               <div class="flex items-center justify-between">
-                <span class="font-707 text-[11px] font-medium text-neutral-600">Hyperlink Function</span>
+                <span class="font-707 text-[11px] font-medium text-neutral-600">Link Action</span>
               </div>
 
               <!-- Action Type Segmented Control -->
@@ -689,13 +679,13 @@
                   :class="footerNoticeActionType === 'modal' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
                   class="flex-1 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center px-[12px] py-[4px] rounded-[6px] text-[11px] font-707 cursor-pointer"
                 >
-                  Open Modal
+                  Open Pop Up
                 </button>
               </div>
 
               <!-- Word(s) to Hyperlink -->
               <div class="flex flex-col gap-1 w-full">
-                <span class="font-707 text-[10px] text-neutral-500">Selected Word(s) to Hyperlink</span>
+                <span class="font-707 text-[10px] text-neutral-500">Link Text</span>
                 <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[32px] items-center px-[10px] rounded-[6px] w-full bg-white transition-colors">
                   <input 
                     v-model="footerNoticeLinkWords"
@@ -707,7 +697,7 @@
 
               <!-- Conditional URL input if 'link' -->
               <div v-if="footerNoticeActionType === 'link'" class="flex flex-col gap-1 w-full animate-in fade-in duration-150">
-                <span class="font-707 text-[10px] text-neutral-500">Link Destination URL</span>
+                <span class="font-707 text-[10px] text-neutral-500">URL</span>
                 <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[32px] items-center px-[10px] rounded-[6px] w-full bg-white transition-colors">
                   <input 
                     v-model="footerNoticeLinkUrl"
@@ -726,7 +716,7 @@
                 >
                   <span class="flex items-center gap-1.5">
                     <SlidersHorizontal class="size-3" />
-                    <span>Configure Pop Up Modal</span>
+                    <span>Edit Pop Up</span>
                   </span>
                   <ArrowRight class="size-3 opacity-80" />
                 </button>
@@ -786,9 +776,9 @@ const isLiveQueueMode = computed(() => {
 });
 
 const tabs = computed(() => [
-  { id: 'details' as const, label: 'Pass Details', icon: FileText },
-  { id: 'display' as const, label: isLiveQueueMode.value ? 'Display & Queue' : 'Display & QR', icon: isLiveQueueMode.value ? Users : QrCode },
-  { id: 'action' as const, label: 'Action & Notice', icon: SlidersHorizontal }
+  { id: 'details' as const, label: 'Details', icon: FileText },
+  { id: 'display' as const, label: isLiveQueueMode.value ? 'Queue' : 'Display', icon: isLiveQueueMode.value ? Users : QrCode },
+  { id: 'action' as const, label: 'Actions', icon: SlidersHorizontal }
 ]);
 
 const showCtaButtonClass = computed(() => {

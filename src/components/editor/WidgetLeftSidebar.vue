@@ -11,7 +11,7 @@
     <!-- Mobile Sheet Drag Handle Pill -->
     <div class="sm:hidden w-10 h-1 bg-black/20 rounded-full mx-auto my-2.5 shrink-0 self-center" />
     <!-- Widget Container & Header -->
-    <div class="content-stretch flex flex-col gap-[6px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+    <div class="content-stretch flex flex-col items-start p-[24px] pb-[16px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
         <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
           Widgets
@@ -24,9 +24,6 @@
           <img :src="FIGMA_ASSETS.closeIcon" class="w-3.5 h-3.5" alt="Close" />
         </button>
       </div>
-      <p class="font-707 font-normal text-[12px] leading-[16px] text-neutral-500">
-        Drag or click blocks to assemble your campaign.
-      </p>
     </div>
 
     <!-- Category Filter Tabs (Sticky Top) -->

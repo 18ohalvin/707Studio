@@ -15,7 +15,7 @@
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
         <div class="flex items-center gap-2">
           <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
-            Form Setup
+            Form
           </p>
         </div>
         <button 
@@ -53,7 +53,7 @@
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
         <div class="flex items-center justify-between w-full">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Active Fields ({{ fields.length }})
+            Fields ({{ fields.length }})
           </p>
         </div>
 
@@ -110,10 +110,7 @@
       <!-- Smart Suggestion: Dedicated Visual Choice Page (Item 2a) -->
       <div class="px-[24px] pt-4 pb-0 w-full">
         <div class="p-3 rounded-[10px] bg-neutral-50/90 border border-black/5 flex items-center justify-between gap-3">
-          <div class="flex flex-col min-w-0">
-            <span class="font-707 text-[12px] font-medium text-black">Need size or model choices?</span>
-            <span class="font-707 text-[10.5px] text-neutral-400 font-light truncate">Add a visual Choice Matrix on the next page.</span>
-          </div>
+          <span class="font-707 text-[12px] font-medium text-black truncate">Need size or item choices?</span>
           <button 
             type="button"
             @click="handleAddChoicePage"
@@ -128,7 +125,7 @@
       <!-- Section: Add Preset Fields -->
       <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] shrink-0 w-full">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Add Preset Fields
+          Quick Add
         </p>
         <div class="flex flex-wrap gap-2 w-full">
           <button 
@@ -152,7 +149,7 @@
         <!-- Widget Title -->
         <div class="flex flex-col gap-[6px] w-full">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Widget Title
+            Heading
           </p>
           <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
             <input 
@@ -166,7 +163,7 @@
         <!-- Title Typography Style Dropdown -->
         <div class="flex flex-col gap-[6px] w-full pt-1">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Title Font Style
+            Heading Size
           </p>
           <div class="relative w-full" ref="titleDropdownRef">
             <button 
@@ -212,14 +209,9 @@
 
         <!-- Subtitle Text -->
         <div class="flex flex-col gap-[6px] w-full pt-1">
-          <div class="flex items-center justify-between">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Subtitle Text
-            </p>
-            <span class="font-707 text-[11px] text-neutral-400">
-              Body Text (12px)
-            </span>
-          </div>
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Subtitle
+          </p>
           <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
             <input 
               v-model="subtitle"
@@ -235,29 +227,19 @@
     <div v-show="activeTab === 'rules'" class="w-full flex flex-col">
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Field Validation Summary
+          Field Summary
         </p>
 
         <!-- Stats Overview Cards -->
         <div class="grid grid-cols-2 gap-2.5 w-full">
           <div class="p-3 rounded-[8px] bg-neutral-50 border border-neutral-200/80 flex flex-col gap-0.5">
-            <span class="text-[11px] font-707 text-neutral-500 font-normal">Required Fields</span>
+            <span class="text-[11px] font-707 text-neutral-500 font-normal">Required</span>
             <span class="text-[16px] font-707 font-bold text-black">{{ requiredFieldsCount }} / {{ fields.length }}</span>
           </div>
           <div class="p-3 rounded-[8px] bg-neutral-50 border border-neutral-200/80 flex flex-col gap-0.5">
-            <span class="text-[11px] font-707 text-neutral-500 font-normal">Optional Fields</span>
+            <span class="text-[11px] font-707 text-neutral-500 font-normal">Optional</span>
             <span class="text-[16px] font-707 font-bold text-neutral-600">{{ fields.length - requiredFieldsCount }}</span>
           </div>
-        </div>
-
-        <div class="p-3 rounded-[8px] bg-neutral-50 border border-neutral-200/60 flex flex-col gap-1.5 w-full mt-1">
-          <span class="text-[11px] font-707 font-medium text-neutral-800 flex items-center gap-1.5">
-            <ShieldCheck class="size-3.5 text-black" />
-            <span>Automatic Validation</span>
-          </span>
-          <p class="text-[11px] font-707 text-neutral-500 leading-relaxed font-normal">
-            Email format, phone numbers, and required fields are validated automatically on guest devices.
-          </p>
         </div>
       </div>
     </div>
@@ -284,9 +266,9 @@ defineEmits<{
 type TabType = 'fields' | 'style' | 'rules';
 const activeTab = ref<TabType>('fields');
 const tabs = [
-  { id: 'fields' as const, label: 'Form Fields', icon: List },
-  { id: 'style' as const, label: 'Typography', icon: Type },
-  { id: 'rules' as const, label: 'Validation', icon: ShieldCheck }
+  { id: 'fields' as const, label: 'Fields', icon: List },
+  { id: 'style' as const, label: 'Style', icon: Type },
+  { id: 'rules' as const, label: 'Summary', icon: ShieldCheck }
 ];
 
 const editorStore = useEditorStore();

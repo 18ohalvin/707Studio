@@ -10,11 +10,11 @@
     <!-- Mobile Sheet Drag Handle Pill -->
     <div class="sm:hidden w-10 h-1 bg-black/20 rounded-full mx-auto my-2.5 shrink-0 self-center" />
     <!-- Header -->
-    <div class="content-stretch flex flex-col items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+    <div class="content-stretch flex flex-col items-start p-[24px] pb-[16px] shrink-0 w-full border-b border-[#f0f0f0]">
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
         <div class="flex items-center gap-2">
           <Ticket class="size-4 text-black" />
-          <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">Ticket Data Block</p>
+          <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">Ticket Info</p>
         </div>
         <button
           @click="$emit('close')"
@@ -24,19 +24,11 @@
           <img :src="FIGMA_ASSETS.closeIcon" class="w-3.5 h-3.5" alt="Close" />
         </button>
       </div>
-      <p class="font-707 text-[12px] text-neutral-500 mt-1">
-        Shows guest data on the PDF ticket. Each guest's own details are filled in when they download it — the canvas shows sample data in the same format.
-      </p>
     </div>
 
     <!-- Data in this block: pick any combination -->
     <div class="flex flex-col gap-[12px] items-start p-[24px] w-full border-b border-[#f0f0f0]">
-      <div class="flex flex-col">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Data in this block</p>
-        <p class="font-707 text-[11px] text-neutral-500">
-          Pick as many as you like — they line up two per row. QR Code, Access Valid For and Brand Logo stand alone in their block.
-        </p>
-      </div>
+      <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Fields</p>
       <div class="grid grid-cols-3 gap-1.5 w-full">
         <button
           v-for="f in TICKET_FIELDS"
@@ -90,10 +82,7 @@
 
       <!-- Appearance Mode: Normal vs Black Mode -->
       <div class="flex flex-col gap-[6px] w-full">
-        <div class="flex items-center justify-between">
-          <span class="font-707 text-[12px] font-medium text-neutral-700">Logo Appearance Mode</span>
-          <span class="font-707 text-[10px] text-neutral-400 uppercase font-mono">{{ logoColorMode }}</span>
-        </div>
+        <span class="font-707 text-[12px] font-medium text-neutral-700">Logo Color</span>
         <div class="grid grid-cols-2 gap-1.5 w-full p-1 rounded-[8px] bg-black/[0.04] border border-black/5">
           <button
             type="button"
@@ -101,7 +90,7 @@
             :class="logoColorMode === 'normal' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
             class="h-[34px] rounded-[6px] text-[11.5px] font-707 flex items-center justify-center gap-1.5 cursor-pointer transition-all"
           >
-            <span>Normal (Original)</span>
+            <span>Original</span>
           </button>
           <button
             type="button"
@@ -109,12 +98,9 @@
             :class="logoColorMode === 'black' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
             class="h-[34px] rounded-[6px] text-[11.5px] font-707 flex items-center justify-center gap-1.5 cursor-pointer transition-all"
           >
-            <span>Black Mode</span>
+            <span>Black</span>
           </button>
         </div>
-        <p class="font-707 text-[10.5px] text-neutral-500 leading-snug">
-          {{ logoColorMode === 'black' ? 'Monochrome black silhouette matching 707 ticket aesthetics.' : 'Original brand logo colors without monochrome filter on ticket page & PDF.' }}
-        </p>
       </div>
 
       <!-- Logo Height Slider (only if current block contains the brand logo) -->
@@ -162,23 +148,19 @@
     </div>
 
     <!-- Remove this block -->
-    <div class="flex items-center justify-between gap-3 px-[24px] pt-[20px] w-full">
-      <p class="font-707 text-[11.5px] text-neutral-500">Don't need this block on the ticket?</p>
+    <div class="flex items-center justify-end px-[24px] pt-[20px] w-full">
       <button
         type="button"
         @click="removeBlock"
-        class="h-[32px] px-3 rounded-[8px] border border-red-200 text-red-700 hover:bg-red-50 text-[12px] font-707 font-medium flex items-center gap-1.5 cursor-pointer"
+        class="h-[34px] w-full px-3 rounded-[8px] border border-red-200 text-red-700 hover:bg-red-50 text-[12px] font-707 font-medium flex items-center justify-center gap-1.5 cursor-pointer"
       >
-        <Trash2 class="w-3.5 h-3.5" /> Remove block
+        <Trash2 class="w-3.5 h-3.5" /> Delete Block
       </button>
     </div>
 
     <!-- Add more -->
     <div class="flex flex-col gap-[12px] items-start p-[24px] w-full">
-      <div class="flex flex-col">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Add another block</p>
-        <p class="font-707 text-[11px] text-neutral-500">Banners are image blocks (upload or gallery); text comes from the Widget menu as on any page.</p>
-      </div>
+      <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Add Block</p>
       <div class="flex flex-wrap gap-1.5 w-full">
         <button
           type="button"

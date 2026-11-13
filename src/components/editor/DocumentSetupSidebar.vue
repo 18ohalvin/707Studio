@@ -16,7 +16,7 @@
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
         <div class="flex items-center gap-2">
           <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
-            Document Upload Setup
+            File Upload
           </p>
         </div>
         <button 
@@ -54,12 +54,12 @@
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
         <div class="flex flex-col gap-[6px] w-full">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Field Label / Title
+            Label
           </p>
           <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
             <input 
               v-model="title"
-              placeholder="e.g. UPLOAD NATIONAL ID / KTP"
+              placeholder="e.g. UPLOAD ID"
               class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase tracking-tight"
             />
           </div>
@@ -68,13 +68,13 @@
         <!-- Subtitle / Instruction -->
         <div class="flex flex-col gap-[6px] w-full pt-1">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Instruction / Subtitle
+            Helper Text
           </p>
           <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex min-h-[38px] items-center px-[14px] py-2 rounded-[8px] w-full bg-white transition-colors">
             <textarea 
               v-model="subtitle"
               rows="2"
-              placeholder="e.g. Upload your government-issued ID card (PDF, JPG, PNG up to 10MB)"
+              placeholder="e.g. Upload a PDF or photo (max 10MB)"
               class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400 resize-none font-normal"
             />
           </div>
@@ -83,23 +83,22 @@
         <!-- Field Name / Identifier in Submissions -->
         <div class="flex flex-col gap-[6px] w-full pt-1">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Database Column Name
+            Field Key
           </p>
           <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
             <input 
               v-model="fieldName"
-              placeholder="e.g. ktp_document"
+              placeholder="e.g. id_card"
               class="w-full text-[13px] font-707 font-mono text-black focus:outline-none placeholder:text-neutral-400"
             />
           </div>
-          <span class="text-[11px] font-707 text-neutral-400">Key used in guest database and CSV exports.</span>
         </div>
       </div>
 
       <!-- Quick Preset Suggestions -->
       <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] shrink-0 w-full">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Quick Presets
+          Presets
         </p>
         <div class="flex flex-wrap gap-2 w-full">
           <button 
@@ -121,7 +120,7 @@
       <!-- Allowed Categories Section -->
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Allowed File Formats
+          Allowed File Types
         </p>
         <div class="grid grid-cols-1 gap-2.5 w-full">
           <button
@@ -156,7 +155,7 @@
       <!-- Max File Size Limit -->
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Max File Size Limit
+          Max Size
         </p>
         <div class="grid grid-cols-4 gap-2 w-full">
           <button
@@ -177,7 +176,7 @@
       <!-- Single vs Multiple Files -->
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Number of Attachments
+          File Limit
         </p>
         <div class="grid grid-cols-2 gap-2 w-full">
           <button
@@ -188,7 +187,7 @@
               ? 'apple-glass-btn-dark font-medium shadow-xs' 
               : 'apple-glass-btn text-neutral-600'"
           >
-            Single Document (1)
+            Single File
           </button>
           <button
             type="button"
@@ -198,7 +197,7 @@
               ? 'apple-glass-btn-dark font-medium shadow-xs' 
               : 'apple-glass-btn text-neutral-600'"
           >
-            Multiple Files (Up to 3)
+            Up to 3 Files
           </button>
         </div>
       </div>
@@ -208,14 +207,9 @@
     <div v-show="activeTab === 'rules'" class="w-full flex flex-col">
       <!-- Required Toggle -->
       <div class="content-stretch flex items-center justify-between p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
-        <div class="flex flex-col">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Required Field
-          </p>
-          <p class="font-707 text-[11px] leading-[16px] text-neutral-400">
-            Guest must upload a valid file before submitting
-          </p>
-        </div>
+        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+          Required
+        </p>
         <button
           type="button"
           @click="isRequired = !isRequired"
@@ -237,7 +231,7 @@
           class="w-full h-[40px] rounded-[8px] border border-red-200 bg-red-50/50 hover:bg-red-50 text-red-600 font-707 text-[12px] font-medium flex items-center justify-center gap-2 transition-colors cursor-pointer"
         >
           <Trash2 class="size-3.5" />
-          <span>Remove Document Upload Widget</span>
+          <span>Delete Upload</span>
         </button>
       </div>
     </div>
@@ -271,8 +265,8 @@ const editorStore = useEditorStore();
 const activeTab = ref<'content' | 'types' | 'rules'>('content');
 
 const tabs = [
-  { id: 'content' as const, label: 'Content', icon: FileText },
-  { id: 'types' as const, label: 'Formats', icon: FileUp },
+  { id: 'content' as const, label: 'General', icon: FileText },
+  { id: 'types' as const, label: 'File Types', icon: FileUp },
   { id: 'rules' as const, label: 'Rules', icon: SlidersHorizontal }
 ];
 
@@ -286,19 +280,19 @@ const targetWidget = computed(() => {
 const formatCategories = [
   {
     id: 'documents',
-    label: 'Documents (PDF, Word)',
+    label: 'Documents',
     icon: FileText,
     extensions: ['.pdf', '.doc', '.docx', '.txt']
   },
   {
     id: 'images',
-    label: 'Images (Photos, Scan)',
+    label: 'Images',
     icon: Image,
     extensions: ['.jpg', '.jpeg', '.png', '.webp', '.heic']
   },
   {
     id: 'spreadsheets',
-    label: 'Spreadsheets (Excel, CSV)',
+    label: 'Spreadsheets',
     icon: Table,
     extensions: ['.xlsx', '.xls', '.csv']
   }

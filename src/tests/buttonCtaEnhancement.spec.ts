@@ -126,13 +126,13 @@ describe('Button CTA Enhancement (Dual Action Buttons & Independent Actions)', (
   });
 
   describe('Gender Dropdown Presets', () => {
-    it('standard Google gender presets include Female, Male, Rather not say, Custom', () => {
-      const GOOGLE_GENDER_PRESETS = ['Female', 'Male', 'Rather not say', 'Custom'] as const;
+    it('standard Google gender presets include Female, Male, Custom (no Rather not say)', () => {
+      const GOOGLE_GENDER_PRESETS = ['Female', 'Male', 'Custom'] as const;
       expect(GOOGLE_GENDER_PRESETS).toContain('Female');
       expect(GOOGLE_GENDER_PRESETS).toContain('Male');
-      expect(GOOGLE_GENDER_PRESETS).toContain('Rather not say');
+      expect(GOOGLE_GENDER_PRESETS).not.toContain('Rather not say');
       expect(GOOGLE_GENDER_PRESETS).toContain('Custom');
-      expect(GOOGLE_GENDER_PRESETS.length).toBe(4);
+      expect(GOOGLE_GENDER_PRESETS.length).toBe(3);
     });
   });
 

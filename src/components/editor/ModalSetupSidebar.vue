@@ -24,7 +24,7 @@
             <ArrowLeft class="w-4 h-4 text-black" />
           </button>
           <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
-            Modal Setup
+            Pop Up
           </p>
         </div>
         <button 
@@ -100,13 +100,13 @@
         class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full"
       >
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Input Field
+          Input
         </p>
 
         <!-- Field Input Type -->
         <div class="flex flex-col gap-[6px] w-full">
           <p class="font-707 text-[12px] text-neutral-600">
-            Input Type
+            Type
           </p>
           <div class="flex gap-2">
             <button 
@@ -125,7 +125,7 @@
         <!-- Input Placeholder -->
         <div class="flex flex-col gap-[6px] w-full">
           <p class="font-707 text-[12px] text-neutral-600">
-            Input Placeholder
+            Placeholder
           </p>
           <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
             <input 
@@ -144,14 +144,9 @@
       >
         <!-- Selection Mode: Multiple vs Single -->
         <div class="flex items-center justify-between w-full">
-          <div class="flex flex-col">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Selection Rule
-            </p>
-            <span class="font-707 text-[11px] text-neutral-400">
-              Allow user to pick one or more
-            </span>
-          </div>
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Selection
+          </p>
           <div class="flex gap-[6px] items-center">
             <button 
               type="button"
@@ -294,7 +289,7 @@
             <!-- Simple Choice: Right Sublabel -->
             <div v-if="currentVariant === 'choice-simple'" class="pl-7">
               <div class="flex items-center justify-between mb-1">
-                <span class="text-[11px] font-707 text-neutral-500">Right Sublabel (Optional)</span>
+                <span class="text-[11px] font-707 text-neutral-500">Right Label</span>
               </div>
               <div class="border-[0.5px] border-[#ccc] focus-within:border-black rounded-[6px] px-2.5 h-[30px] flex items-center bg-white">
                 <input 
@@ -326,7 +321,7 @@
       >
         <div class="flex items-center justify-between w-full">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Image Matrix (3:4)
+            Image Grid
           </p>
           <span class="text-[11px] text-neutral-400 font-mono">4 Slots</span>
         </div>
@@ -414,13 +409,13 @@
       <!-- Action Button CTA Setup -->
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Action CTA Button
+          Button
         </p>
 
         <!-- Button Label -->
         <div class="flex flex-col gap-[6px] w-full">
           <p class="font-707 text-[12px] text-neutral-600 font-medium">
-            Button Text
+            Label
           </p>
           <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
             <input 
@@ -434,15 +429,15 @@
         <!-- Button Action -->
         <div class="flex flex-col gap-[6px] w-full">
           <p class="font-707 text-[12px] text-neutral-600 font-medium">
-            Button Action
+            On Click
           </p>
           <div class="grid grid-cols-3 gap-1.5 w-full">
             <button 
               type="button"
               v-for="act in ([
-                { label: 'Submit & Close', value: 'submit-close' },
+                { label: 'Submit', value: 'submit-close' },
                 { label: 'Next Page', value: 'next_page' },
-                { label: 'External URL', value: 'link' }
+                { label: 'Link URL', value: 'link' }
               ] as const)"
               :key="act.value"
               @click="buttonAction = act.value"
@@ -457,7 +452,7 @@
         <!-- External URL input if Link is active -->
         <div v-if="buttonAction === 'link'" class="flex flex-col gap-[6px] w-full animate-in fade-in duration-150">
           <p class="font-707 text-[12px] text-neutral-600 font-medium">
-            Target URL
+            URL
           </p>
           <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
             <input 
@@ -472,7 +467,7 @@
               v-model="buttonOpenInNewTab" 
               class="rounded accent-black scale-95"
             />
-            <span>Open link in new tab</span>
+            <span>Open in New Tab</span>
           </label>
         </div>
       </div>
@@ -541,8 +536,8 @@ type TabType = 'content' | 'variant' | 'action';
 const activeTab = ref<TabType>('content');
 const tabs = [
   { id: 'content' as const, label: 'Content', icon: FileText },
-  { id: 'variant' as const, label: 'Variant', icon: LayoutGrid },
-  { id: 'action' as const, label: 'Action & Rules', icon: Sliders }
+  { id: 'variant' as const, label: 'Type', icon: LayoutGrid },
+  { id: 'action' as const, label: 'Action', icon: Sliders }
 ];
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];

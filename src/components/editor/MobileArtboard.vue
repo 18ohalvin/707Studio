@@ -872,21 +872,24 @@
                     <ChevronDown class="w-[12px] h-[12px] text-neutral-400 group-hover/code:text-black transition-colors stroke-[2]" />
                   </div>
 
-                  <!-- Dropdown for Gender Field with Standard Google Gender Presets -->
+                  <!-- Gender Selector (707 Form UI Bottom Sheet) -->
                   <div v-if="isGenderField(widget)" class="relative w-full flex items-center z-10">
-                    <select 
+                    <input
                       :value="widget.props.value || ''"
-                      @change="handleFieldInputChange($event, widget)"
-                      :disabled="isDesignCanvas"
-                      class="font-707 font-normal text-[14px] leading-[20px] w-full bg-transparent outline-none border-none p-0 m-0 cursor-pointer appearance-none pr-6 transition-colors"
+                      type="text"
+                      readonly
+                      :placeholder="widget.props.placeholder || `Select Gender${widget.props.required !== false ? '*' : ''}`"
+                      :tabindex="isDesignCanvas ? -1 : 0"
+                      :style="isDesignCanvas ? { pointerEvents: 'none' } : undefined"
+                      @click="openGenderSelectorSheet(widget)"
+                      @keydown.enter.prevent="openGenderSelectorSheet(widget)"
+                      @keydown.space.prevent="openGenderSelectorSheet(widget)"
+                      class="font-707 font-normal text-[14px] leading-[20px] w-full bg-transparent outline-none border-none p-0 m-0 pr-6 transition-colors placeholder:text-[#737373] placeholder:font-normal"
                       :class="[
-                        widget.props.value ? 'text-black' : 'text-[#737373]',
-                        widget.props.stateVariant === 'Wrong alert' ? '!text-[#9b0707]' : ''
+                        widget.props.stateVariant === 'Wrong alert' ? '!text-[#9b0707]' : 'text-black',
+                        isDesignCanvas ? '' : 'cursor-pointer'
                       ]"
-                    >
-                      <option value="" disabled selected>{{ widget.props.placeholder || `Select Gender${widget.props.required !== false ? '*' : ''}` }}</option>
-                      <option v-for="g in GOOGLE_GENDER_PRESETS" :key="g" :value="g">{{ g }}</option>
-                    </select>
+                    />
                     <ChevronDown class="size-3.5 text-neutral-400 pointer-events-none absolute right-0 shrink-0" />
                   </div>
 
@@ -1076,13 +1079,13 @@
                       @change="handleRegistrationFormFileChange($event, widget, field)"
                     />
 
-                    <!-- Dropzone Container: Sharp edges, 707 luxury token styling -->
+                    <!-- Dropzone Container: Sharp edges, light grey 707 token styling -->
                     <div 
                       class="w-full rounded-none border border-dashed transition-all p-4 flex flex-col items-center justify-center text-center gap-2 relative overflow-hidden group/upload cursor-pointer"
                       :class="[
                         field.errorMessage 
-                          ? 'border-[#9b0707] bg-[#fff5f5]' 
-                          : 'border-black/20 hover:border-black/40 bg-white/70 backdrop-blur-sm'
+                          ? 'border-[#9b0707] bg-[#f5eaea]' 
+                          : 'border-black/20 hover:border-black/40 bg-[#ebebeb] hover:bg-[#e5e5e5]'
                       ]"
                       @click.stop="isLivePage || isPreviewModal ? triggerDocumentPicker(`${widget.id}_${field.id}`) : undefined"
                     >
@@ -1093,21 +1096,21 @@
                       </div>
 
                       <!-- State 2: Uploaded File Card -->
-                      <div v-else-if="field.fileData || field.value" class="w-full flex items-center justify-between p-2.5 rounded-none bg-white border border-black/10 shadow-xs gap-2">
+                      <div v-else-if="field.fileData || field.value" class="w-full flex items-center justify-between p-2.5 rounded-none bg-[#e3e3e3] border border-black/10 shadow-xs gap-2">
                         <div class="flex items-center gap-2.5 min-w-0">
-                          <div class="size-8 rounded-none bg-neutral-100 flex items-center justify-center shrink-0">
+                          <div class="size-8 rounded-none bg-[#d8d8d8] flex items-center justify-center shrink-0">
                             <FileText class="size-4 text-black" />
                           </div>
                           <div class="flex flex-col text-left min-w-0">
                             <span class="font-707 text-[12px] font-medium text-black truncate">{{ field.fileData?.name || field.name || 'Document' }}</span>
-                            <span v-if="field.fileData?.size" class="font-707 text-[10.5px] text-neutral-400 font-mono">{{ formatFileSize(field.fileData.size) }}</span>
+                            <span v-if="field.fileData?.size" class="font-707 text-[10.5px] text-neutral-500 font-mono">{{ formatFileSize(field.fileData.size) }}</span>
                           </div>
                         </div>
                         <button 
                           v-if="isLivePage || isPreviewModal"
                           type="button" 
                           @click.stop="removeRegistrationFormFile(widget, field)"
-                          class="size-6 rounded-none hover:bg-neutral-100 flex items-center justify-center text-neutral-400 hover:text-black cursor-pointer shrink-0 transition-colors"
+                          class="size-6 rounded-none hover:bg-black/10 flex items-center justify-center text-neutral-500 hover:text-black cursor-pointer shrink-0 transition-colors"
                           title="Remove file"
                         >
                           <X class="size-3.5" />
@@ -1116,7 +1119,7 @@
 
                       <!-- State 3: Empty Dropzone / Tap to Upload -->
                       <div v-else class="flex flex-col items-center gap-1.5 py-1 w-full">
-                        <div class="size-9 rounded-none bg-neutral-100 group-hover/upload:bg-neutral-200/80 flex items-center justify-center text-black transition-colors shrink-0">
+                        <div class="size-9 rounded-none bg-[#dcdcdc] group-hover/upload:bg-[#d2d2d2] flex items-center justify-center text-black transition-colors shrink-0">
                           <FileUp class="size-4 stroke-[1.8]" />
                         </div>
                         <div class="flex flex-col items-center">
@@ -1155,21 +1158,24 @@
                       <ChevronDown class="w-[12px] h-[12px] text-neutral-400 group-hover/code:text-black transition-colors stroke-[2]" />
                     </div>
 
-                    <!-- Dropdown for Gender Field with Standard Google Gender Presets -->
+                    <!-- Gender Selector (707 Form UI Bottom Sheet) -->
                     <div v-if="isGenderItem(field)" class="relative w-full flex items-center z-10">
-                      <select 
+                      <input
                         :value="field.value || ''"
-                        @change="handleRegistrationFormItemInput($event, widget, field)"
-                        :disabled="isDesignCanvas"
-                        class="font-707 font-normal text-[14px] leading-[20px] w-full bg-transparent outline-none border-none p-0 m-0 cursor-pointer appearance-none pr-6 transition-colors"
+                        type="text"
+                        readonly
+                        :placeholder="field.placeholder || `Select Gender${field.required !== false ? '*' : ''}`"
+                        :tabindex="isDesignCanvas ? -1 : 0"
+                        :style="isDesignCanvas ? { pointerEvents: 'none' } : undefined"
+                        @click="openGenderSelectorSheet(widget, field)"
+                        @keydown.enter.prevent="openGenderSelectorSheet(widget, field)"
+                        @keydown.space.prevent="openGenderSelectorSheet(widget, field)"
+                        class="font-707 font-normal text-[14px] leading-[20px] w-full bg-transparent outline-none border-none p-0 m-0 pr-6 transition-colors placeholder:text-[#737373] placeholder:font-normal"
                         :class="[
-                          field.value ? 'text-black' : 'text-[#737373]',
-                          field.errorMessage ? '!text-[#9b0707]' : ''
+                          field.errorMessage ? '!text-[#9b0707]' : 'text-black',
+                          isDesignCanvas ? '' : 'cursor-pointer'
                         ]"
-                      >
-                        <option value="" disabled selected>{{ field.placeholder || `Select Gender${field.required !== false ? '*' : ''}` }}</option>
-                        <option v-for="g in GOOGLE_GENDER_PRESETS" :key="g" :value="g">{{ g }}</option>
-                      </select>
+                      />
                       <ChevronDown class="size-3.5 text-neutral-400 pointer-events-none absolute right-0 shrink-0" />
                     </div>
 
@@ -1336,10 +1342,10 @@
                 class="w-full rounded-none border border-dashed transition-all p-5 flex flex-col items-center justify-center text-center gap-2 relative overflow-hidden group/upload"
                 :class="[
                   widget.props.errorMessage 
-                    ? 'border-[#9b0707] bg-[#fff5f5]' 
+                    ? 'border-[#9b0707] bg-[#f5eaea]' 
                     : (isSelected && editorStore.selectedWidgetId === widget.id && !isLivePage && !isPreviewModal
-                        ? 'border-black bg-neutral-50 shadow-sm'
-                        : 'border-black/20 hover:border-black/40 bg-white/70 backdrop-blur-sm')
+                        ? 'border-black bg-[#e4e4e4] shadow-sm'
+                        : 'border-black/20 hover:border-black/40 bg-[#ebebeb] hover:bg-[#e5e5e5]')
                 ]"
               >
                 <!-- State 1: Uploading Spinner -->
@@ -1361,22 +1367,22 @@
                   <div 
                     v-for="(file, fIdx) in widget.props.uploadedFiles" 
                     :key="file.url || fIdx"
-                    class="w-full flex items-center justify-between p-2.5 rounded-none bg-white border border-black/10 shadow-xs gap-2.5"
+                    class="w-full flex items-center justify-between p-2.5 rounded-none bg-[#e3e3e3] border border-black/10 shadow-xs gap-2.5"
                   >
                     <div class="flex items-center gap-2.5 min-w-0">
-                      <div class="size-8 rounded-none bg-neutral-100 flex items-center justify-center shrink-0">
+                      <div class="size-8 rounded-none bg-[#d8d8d8] flex items-center justify-center shrink-0">
                         <FileText class="size-4 text-black" />
                       </div>
                       <div class="flex flex-col text-left min-w-0">
                         <span class="font-707 text-[12px] font-medium text-black truncate">{{ file.name }}</span>
-                        <span class="font-707 text-[10.5px] text-neutral-400 font-mono">{{ formatFileSize(file.size) }}</span>
+                        <span class="font-707 text-[10.5px] text-neutral-500 font-mono">{{ formatFileSize(file.size) }}</span>
                       </div>
                     </div>
                     <button 
                       v-if="isLivePage || isPreviewModal"
                       type="button"
                       @click.stop="removeUploadedDocument(widget, fIdx)"
-                      class="size-6 rounded-none hover:bg-neutral-100 flex items-center justify-center text-neutral-400 hover:text-black cursor-pointer shrink-0 transition-colors"
+                      class="size-6 rounded-none hover:bg-black/10 flex items-center justify-center text-neutral-500 hover:text-black cursor-pointer shrink-0 transition-colors"
                       title="Remove file"
                     >
                       <X class="size-3.5" />
@@ -1397,7 +1403,7 @@
 
                 <!-- State 3: Empty Dropzone / Tap to Upload -->
                 <div v-else class="flex flex-col items-center gap-2 py-1 w-full">
-                  <div class="size-9 rounded-none bg-neutral-100 group-hover/upload:bg-neutral-200/80 flex items-center justify-center text-black transition-colors shrink-0">
+                  <div class="size-9 rounded-none bg-[#dcdcdc] group-hover/upload:bg-[#d2d2d2] flex items-center justify-center text-black transition-colors shrink-0">
                     <FileUp class="size-5 stroke-[1.8]" />
                   </div>
                   <div class="flex flex-col items-center">
@@ -3043,6 +3049,64 @@ more</span>
                 class="apple-cta-btn-dark bg-black text-white hover:bg-neutral-900 active:bg-neutral-800 w-full h-[48px] px-[16px] py-[12px] rounded-none flex items-center justify-center gap-[10px] font-707 font-medium text-[14px] leading-[18px] tracking-normal cursor-pointer border-0 outline-none uppercase transition-all"
               >
                 <span>CONFIRM DATE</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Gender Selector Bottom Sheet (707 Design Token Style - Minimalist Monochrome) -->
+      <Transition name="apple-bottom-sheet">
+        <div
+          v-if="showGenderSelectorSheet"
+          class="absolute inset-0 z-[60] flex flex-col justify-end overflow-hidden"
+          @click.stop="closeGenderSelectorSheet"
+        >
+          <!-- Frosted Dark Backdrop -->
+          <div class="absolute inset-0 bg-black/40 backdrop-blur-md transition-opacity" />
+
+          <!-- Bottom Sheet Card (707 Swiss Architectural Monochrome, Sharp 0px Border Radius) -->
+          <div
+            @click.stop
+            class="relative z-10 w-full bg-white border-t border-black text-black rounded-none shadow-[0px_-8px_30px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden"
+            data-name="Gender Selector Bottom Sheet"
+          >
+            <!-- Sheet Header -->
+            <div class="px-[20px] py-[16px] flex items-center justify-between shrink-0 border-b-[0.5px] border-black bg-white">
+              <span class="font-707 font-medium text-[14px] leading-tight text-black tracking-normal uppercase">
+                SELECT GENDER
+              </span>
+              <button
+                type="button"
+                @click.stop="closeGenderSelectorSheet"
+                class="font-707 text-[12px] font-medium uppercase tracking-wider text-black hover:text-neutral-500 transition-colors cursor-pointer border-none bg-transparent p-0 m-0"
+              >
+                CLOSE
+              </button>
+            </div>
+
+            <!-- Options List -->
+            <div class="flex flex-col pb-4">
+              <button
+                v-for="genderOpt in GOOGLE_GENDER_PRESETS"
+                :key="genderOpt"
+                type="button"
+                @click.stop="selectGenderOption(genderOpt)"
+                class="flex items-center justify-between h-[48px] px-[20px] border-b-[0.5px] border-[#f0f0f0] hover:bg-[#fafafa] transition-colors cursor-pointer select-none group rounded-none text-left border-x-0 border-t-0 w-full"
+                :class="getCurrentGenderValue() === genderOpt ? 'bg-[#f7f7f7]' : 'bg-transparent'"
+              >
+                <span
+                  class="font-707 text-[13px] leading-tight uppercase tracking-wide"
+                  :class="getCurrentGenderValue() === genderOpt ? 'text-black font-medium' : 'text-neutral-900 group-hover:text-black'"
+                >
+                  {{ genderOpt }}
+                </span>
+                <span
+                  v-if="getCurrentGenderValue() === genderOpt"
+                  class="font-707 text-[11px] font-medium text-black uppercase tracking-wider"
+                >
+                  SELECTED
+                </span>
               </button>
             </div>
           </div>
@@ -4867,7 +4931,85 @@ function isDateField(widget: any): boolean {
   return widget.props?.inputType === 'date' || label.includes('birth') || label.includes('dob') || label.includes('date') || label.includes('lahir') || placeholder.includes('dd / mm / yyyy');
 }
 
-const GOOGLE_GENDER_PRESETS = ['Female', 'Male', 'Rather not say', 'Custom'] as const;
+const GOOGLE_GENDER_PRESETS = ['Female', 'Male', 'Custom'] as const;
+
+const showGenderSelectorSheet = ref(false);
+const targetGenderContext = ref<{
+  widgetId?: string;
+  fieldId?: string;
+  field?: any;
+  widget?: any;
+} | null>(null);
+
+function openGenderSelectorSheet(widget?: any, field?: any) {
+  if (wasDraggingRecently.value || isDesignCanvas.value) return;
+  targetGenderContext.value = {
+    widgetId: widget?.id,
+    fieldId: field?.id,
+    field,
+    widget
+  };
+  showGenderSelectorSheet.value = true;
+}
+
+function closeGenderSelectorSheet() {
+  showGenderSelectorSheet.value = false;
+  targetGenderContext.value = null;
+}
+
+function getCurrentGenderValue(): string {
+  const ctx = targetGenderContext.value;
+  if (!ctx) return '';
+  if (ctx.field) return ctx.field.value || '';
+  if (ctx.widget?.props?.value) return ctx.widget.props.value || '';
+  return '';
+}
+
+function selectGenderOption(gender: string) {
+  const ctx = targetGenderContext.value;
+  if (!ctx) {
+    closeGenderSelectorSheet();
+    return;
+  }
+
+  if (ctx.field) {
+    ctx.field.value = gender;
+    ctx.field.errorMessage = '';
+  }
+  if (ctx.widget && !ctx.field) {
+    if (!ctx.widget.props) ctx.widget.props = {};
+    ctx.widget.props.value = gender;
+    ctx.widget.props.errorMessage = '';
+    ctx.widget.props.showError = false;
+    ctx.widget.props.stateVariant = 'Default';
+  }
+
+  const widgetId = ctx.widgetId || ctx.widget?.id;
+  const fieldId = ctx.fieldId || ctx.field?.id;
+  if (widgetId && fieldId) {
+    const w = activePage.value?.widget_tree?.find(x => x.id === widgetId);
+    if (w && Array.isArray(w.props?.fields)) {
+      const f = w.props.fields.find((x: any) => x.id === fieldId);
+      if (f) {
+        f.value = gender;
+        f.errorMessage = '';
+        if (!props.isLivePage) {
+          editorStore.updateWidgetProps(w.id, { fields: [...w.props.fields] });
+        }
+      }
+    }
+  } else if (widgetId) {
+    const w = activePage.value?.widget_tree?.find(x => x.id === widgetId);
+    if (w) {
+      w.props = { ...w.props, value: gender, errorMessage: '', showError: false, stateVariant: 'Default' };
+      if (!props.isLivePage) {
+        editorStore.updateWidgetProps(w.id, { value: gender, errorMessage: '', showError: false, stateVariant: 'Default' });
+      }
+    }
+  }
+
+  closeGenderSelectorSheet();
+}
 
 function isGenderField(widget: any): boolean {
   if (!widget || widget.type !== 'FieldInput') return false;

@@ -16,7 +16,7 @@
       <div class="content-stretch flex items-center justify-between shrink-0 w-full">
         <div class="flex items-center gap-2">
           <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap">
-            Choice Setup
+            Choices
           </p>
         </div>
         <button 
@@ -54,7 +54,7 @@
       <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
         <div class="flex items-center justify-between w-full">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Choice Layout
+            Style
           </p>
           <span class="text-[10px] uppercase font-mono text-neutral-400">
             {{ variantLabel }}
@@ -87,9 +87,9 @@
         <!-- Grid Columns Option for Image Matrix (Directly under layout) -->
         <div v-if="variant === 'image-grid'" class="flex flex-col gap-[10px] w-full pt-3 border-t border-[#f0f0f0]">
           <div class="flex items-center justify-between w-full">
-            <span class="font-707 text-[12px] font-medium text-neutral-700">Grid Columns</span>
+            <span class="font-707 text-[12px] font-medium text-neutral-700">Columns</span>
             <span class="font-707 text-[11px] font-medium text-black px-2 py-0.5 bg-neutral-100 rounded-[6px]">
-              {{ gridColumns }} {{ gridColumns === 1 ? 'Column' : 'Columns' }}
+              {{ gridColumns }} {{ gridColumns === 1 ? 'Col' : 'Cols' }}
             </span>
           </div>
 
@@ -121,7 +121,7 @@
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
         <div class="flex flex-col gap-[6px] w-full">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Widget Title
+            Heading
           </p>
           <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
             <input 
@@ -134,7 +134,7 @@
 
         <div class="flex flex-col gap-[6px] w-full">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Subtitle Text
+            Subtitle
           </p>
           <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
             <input 
@@ -489,7 +489,7 @@
       <div class="content-stretch flex flex-col gap-[16px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
         <div class="flex items-center justify-between w-full">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Selection Rule
+            Selection
           </p>
           <div class="flex gap-[6px] items-center">
             <button 
@@ -514,7 +514,7 @@
         <div class="flex flex-col gap-1 w-full">
           <div class="flex items-center justify-between w-full">
             <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Required Field
+              Required
             </p>
             <div class="flex gap-[6px] items-center">
               <button 
@@ -537,7 +537,7 @@
             </div>
           </div>
           <p v-if="limitPlaces" class="font-707 text-[10.5px] text-amber-700 bg-amber-50/80 px-2 py-1 rounded-[5px] border border-amber-200/60 leading-normal mt-1">
-            Locked on while Limit Places is active to prevent bypassing capacity counts.
+            Always on when capacity limit is active.
           </p>
         </div>
       </div>
@@ -546,7 +546,7 @@
       <div class="content-stretch flex flex-col gap-[16px] items-start p-[24px] shrink-0 w-full">
         <div class="flex items-center justify-between w-full">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Limit Places
+            Capacity Limit
           </p>
           <!-- 707 Switch Toggle -->
           <button 
@@ -564,7 +564,7 @@
 
         <div v-if="limitPlaces" class="flex flex-col gap-[12px] w-full pt-1 animate-in fade-in slide-in-from-top-1 duration-150">
           <div class="flex flex-col gap-[8px]">
-            <span class="font-707 text-[12px] font-medium text-neutral-700">Places per option</span>
+            <span class="font-707 text-[12px] font-medium text-neutral-700">Max per Option</span>
             <div class="border border-[#aaa] focus-within:border-black rounded-[8px] px-3.5 h-[38px] flex items-center w-full bg-white transition-colors">
               <input 
                 v-model="globalSlotsCapacity"
@@ -631,8 +631,8 @@ type TabType = 'content' | 'typography' | 'rules';
 const activeTab = ref<TabType>('content');
 const tabs = [
   { id: 'content' as const, label: 'Content', icon: FileText },
-  { id: 'typography' as const, label: 'Typography', icon: Type },
-  { id: 'rules' as const, label: 'Rules & Limits', icon: Sliders }
+  { id: 'typography' as const, label: 'Font', icon: Type },
+  { id: 'rules' as const, label: 'Rules', icon: Sliders }
 ];
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];

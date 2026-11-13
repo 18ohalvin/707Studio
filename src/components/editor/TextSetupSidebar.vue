@@ -12,10 +12,10 @@
     <!-- Mobile Sheet Drag Handle Pill -->
     <div class="sm:hidden w-10 h-1 bg-black/20 rounded-full mx-auto my-2.5 shrink-0 self-center" />
     <!-- Header -->
-    <div class="content-stretch flex flex-col gap-[6px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]" data-node-id="181:5930">
+    <div class="content-stretch flex flex-col gap-[6px] items-start p-[24px] pb-[16px] shrink-0 w-full border-b border-[#f0f0f0]" data-node-id="181:5930">
       <div class="content-stretch flex items-center justify-between shrink-0 w-full" data-node-id="181:5931">
         <p class="font-707 font-medium text-[16px] leading-[22px] text-black whitespace-nowrap" data-node-id="181:5932">
-          Text Setup
+          Text
         </p>
         <button 
           @click="$emit('close')"
@@ -24,21 +24,13 @@
           <img :src="FIGMA_ASSETS.closeIcon" class="w-3.5 h-3.5" alt="Close" />
         </button>
       </div>
-      <p class="font-707 font-normal text-[12px] leading-[16px] text-neutral-500" data-node-id="181:5935">
-        Configure typography, sizing, and alignment.
-      </p>
     </div>
 
     <!-- Section 0: Text Content Input (Direct access from sidebar) -->
     <div class="content-stretch flex flex-col gap-[8px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
-      <div class="flex items-center justify-between w-full">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Text Content
-        </p>
-        <span class="font-707 text-[11px] text-neutral-400">
-          Syncs with canvas
-        </span>
-      </div>
+      <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+        Content
+      </p>
       <div class="border border-[#aaa] focus-within:border-black border-solid flex min-h-[44px] h-auto items-center px-[14px] py-[8px] rounded-[8px] w-full bg-white transition-all shadow-sm">
         <textarea 
           ref="sidebarTextareaRef"
@@ -54,7 +46,7 @@
     <div class="content-stretch flex flex-col items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0] overflow-visible" data-node-id="181:6024">
       <div class="content-stretch flex gap-[32px] items-center justify-between shrink-0 w-full overflow-visible" data-node-id="181:6025">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap shrink-0 w-[140px]" data-node-id="181:6026">
-          Typography Style
+          Font Style
         </p>
         <div class="relative flex-1" ref="dropdownRef">
           <button 
@@ -104,7 +96,7 @@
     <div class="content-stretch flex flex-col items-start p-[24px] shrink-0 w-full" data-node-id="181:6033">
       <div class="content-stretch flex gap-[32px] items-center justify-between shrink-0 w-full" data-node-id="181:6059">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap shrink-0 w-[140px]" data-node-id="181:6060">
-          Text Alignment
+          Alignment
         </p>
         <div class="flex items-center gap-[12px] shrink-0" data-node-id="181:6061">
           <!-- Align Left -->
