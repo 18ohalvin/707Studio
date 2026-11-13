@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useEditorStore } from '../stores/editorStore.ts';
-import { normalizeExternalUrl, DUAL_BUTTON_PRESETS, normalizeCtaAction } from '../components/editor/ctaActions.ts';
+import { normalizeExternalUrl, DUAL_BUTTON_PRESETS, normalizeCtaAction, getFunnelTargetPages, resolveTargetPageIndex } from '../components/editor/ctaActions.ts';
 
 describe('Button CTA Enhancement (Dual Action Buttons & Independent Actions)', () => {
   beforeEach(() => {
@@ -163,6 +163,43 @@ describe('Button CTA Enhancement (Dual Action Buttons & Independent Actions)', (
       expect(widget.props.fields.length).toBe(3);
       expect(widget.props.fields[1].type).toBe('gender');
       expect(widget.props.fields[2].type).toBe('file');
+    });
+  });
+
+  describe('Target page navigation & skipping', () => {
+    const pages = [
+      { id: 'p1', title: 'Landing', kind: 'page' },
+      { id: 'p2', title: 'Size Select', kind: 'page' },
+      { id: 'p3', title: 'Registration', kind: 'page' },
+      { id: 'p_ticket', title: 'E-Pass PDF', kind: 'ticket' }
+    ];
+
+    it('lists non-ticket funnel pages and flags the active page', () => {
+      const options = getFunnelTargetPages(pages, 'p1');
+      expect(options.map(o => o.id)).toEqual(['p1', 'p2', 'p3']);
+      expect(options[0].isCurrent).toBe(true);
+      expect(options[1].isCurrent).toBe(false);
+      expect(options[2].label).toBe('Page 3: Registration');
+    });
+
+    it('advances sequentially when targetPageId is empty or "next"', () => {
+      expect(resolveTargetPageIndex(pages, 0)).toBe(1);
+      expect(resolveTargetPageIndex(pages, 0, '')).toBe(1);
+      expect(resolveTargetPageIndex(pages, 0, 'next')).toBe(1);
+    });
+
+    it('skips intermediate pages when a specific targetPageId is configured', () => {
+      expect(resolveTargetPageIndex(pages, 0, 'p3')).toBe(2);
+    });
+
+    it('falls back to sequential navigation when targetPageId does not exist or points to ticket page', () => {
+      expect(resolveTargetPageIndex(pages, 0, 'missing_id')).toBe(1);
+      expect(resolveTargetPageIndex(pages, 0, 'p_ticket')).toBe(1);
+    });
+
+    it('returns -1 at the end of the funnel or right before a ticket design page', () => {
+      expect(resolveTargetPageIndex(pages, 2)).toBe(-1);
+      expect(resolveTargetPageIndex(pages, 2, '')).toBe(-1);
     });
   });
 });

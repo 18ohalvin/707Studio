@@ -99,6 +99,7 @@ const isLoading = ref(true);
 const errorMessage = ref('');
 const projectPages = ref<ActivationPage[]>([]);
 const activePageIndex = ref<number>(0);
+const pageHistory = ref<number[]>([]);
 const singlePageData = ref<ActivationPage | null>(null);
 const collectedFormData = ref<Record<string, any>>({});
 const submissionPageId = ref<string>('');
@@ -127,6 +128,7 @@ async function loadPage() {
   isLoading.value = true;
   errorMessage.value = '';
   activePageIndex.value = 0;
+  pageHistory.value = [];
   collectedFormData.value = {};
   livePass.status = 'idle';
   livePass.waitlisted = false;
@@ -274,18 +276,28 @@ function handleTouchEnd(e: TouchEvent) {
   }
 }
 
-function handleNextPage(pageFormData?: Record<string, any>) {
+function handleNextPage(pageFormData?: Record<string, any>, targetPageId?: string) {
   if (pageFormData && typeof pageFormData === 'object') {
     Object.assign(collectedFormData.value, pageFormData);
   }
 
-  // Check if there are more steps in the activation funnel
-  if (activePageIndex.value < projectPages.value.length - 1) {
-    // Push history state so Android hardware back button & iOS Safari swipe back gracefully decrement steps
+  let nextIdx = -1;
+  const targetId = String(targetPageId || '').trim();
+  if (targetId && targetId !== 'next') {
+    nextIdx = projectPages.value.findIndex(p => p.id === targetId);
+  }
+  if (nextIdx < 0 && activePageIndex.value < projectPages.value.length - 1) {
+    nextIdx = activePageIndex.value + 1;
+  }
+
+  // Navigate to next step (sequential or targeted page jump)
+  if (nextIdx >= 0 && nextIdx < projectPages.value.length && nextIdx !== activePageIndex.value) {
+    pageHistory.value.push(activePageIndex.value);
+    // Push history state so Android hardware back button & iOS Safari swipe back gracefully return to prior step
     if (typeof window !== 'undefined' && window.history) {
-      window.history.pushState({ stepIndex: activePageIndex.value + 1 }, '', window.location.href);
+      window.history.pushState({ stepIndex: nextIdx }, '', window.location.href);
     }
-    activePageIndex.value++;
+    activePageIndex.value = nextIdx;
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // Advancing onto the pass needs the entry recorded first (the pass shows its
@@ -339,14 +351,22 @@ function campaignGuestType(): string {
 }
 
 function handlePrevPage() {
-  if (activePageIndex.value > 0) {
+  const prev = pageHistory.value.pop();
+  if (typeof prev === 'number' && prev >= 0 && prev < projectPages.value.length) {
+    activePageIndex.value = prev;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (activePageIndex.value > 0) {
     activePageIndex.value--;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
 
 function handlePopState() {
-  if (activePageIndex.value > 0) {
+  const prev = pageHistory.value.pop();
+  if (typeof prev === 'number' && prev >= 0 && prev < projectPages.value.length) {
+    activePageIndex.value = prev;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (activePageIndex.value > 0) {
     activePageIndex.value--;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }

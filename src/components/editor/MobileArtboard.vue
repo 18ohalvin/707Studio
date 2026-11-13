@@ -3122,7 +3122,7 @@ import { ref, reactive, computed, watch, nextTick, onMounted, onUnmounted, injec
 import QRCode from 'qrcode';
 import { PLACES_KEY, placeStatus, placeKey, configuredLimit, type PlaceStatus } from '../../services/places.ts';
 import { LIVE_PASS_KEY, SESSIONS_ANSWER_KEY, type PassSession } from './livePass.ts';
-import { normalizeCtaAction, normalizeExternalUrl } from './ctaActions.ts';
+import { normalizeCtaAction, normalizeExternalUrl, resolveTargetPageIndex } from './ctaActions.ts';
 import { responsiveImgAttrs, placeholderStyle, sizedUrl } from '../../services/responsiveImage.ts';
 import { TICKET_CONTEXT_KEY, TICKET_SOURCE_KEY, TICKET_CANVAS, ticketFieldMeta, type TicketFieldKey } from './ticket/ticketFields.ts';
 import { DEFAULT_TRACK_NOTICE, fillTrackNotice } from './trackNotice.ts';
@@ -3185,7 +3185,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   (e: 'select-page', index: number): void;
-  (e: 'next-page', formData?: Record<string, any>): void;
+  (e: 'next-page', formData?: Record<string, any>, targetPageId?: string): void;
   (e: 'prev-page'): void;
 }>();
 
@@ -4056,16 +4056,16 @@ function getSecondaryButtonIcon(widget: any) {
  * editor's selectPage there did nothing, which left "Next Page" buttons dead
  * on live campaigns.
  */
-function goToNextPage(formData?: Record<string, any>) {
+function goToNextPage(formData?: Record<string, any>, targetPageId?: string) {
   if (props.isLivePage) {
-    emit('next-page', formData);
+    emit('next-page', formData, targetPageId);
     return;
   }
   const currentIdx = typeof props.pageIndex === 'number' ? props.pageIndex : editorStore.activePageIndex;
   // The Ticket page is the PDF design, not a step: the funnel ends before it.
-  const next = editorStore.pages[currentIdx + 1];
-  if (next && next.kind !== 'ticket') {
-    editorStore.selectPage(currentIdx + 1);
+  const nextIdx = resolveTargetPageIndex(editorStore.pages, currentIdx, targetPageId);
+  if (nextIdx >= 0) {
+    editorStore.selectPage(nextIdx);
   } else {
     editorStore.isTestFormModalOpen = true;
   }
@@ -4254,7 +4254,10 @@ function handleButtonClick(widget: any, target: 'primary' | 'secondary' = 'prima
       scrollToWidget(firstInvalidWidget.id);
       return;
     }
-    goToNextPage(props.isLivePage ? collectPageAnswers() : undefined);
+    const targetPageId = target === 'secondary'
+      ? widget.props?.secondaryTargetPageId
+      : (widget.props?.targetPageId || widget.props?.ctaTargetPageId);
+    goToNextPage(props.isLivePage ? collectPageAnswers() : undefined, targetPageId);
   } else if (actionType === 'link') {
     const rawUrl = target === 'secondary'
       ? (widget.props?.secondaryUrl || widget.props?.url)
@@ -6061,7 +6064,7 @@ function handleModalDoneClick() {
 
   // 4. Handle navigation or external URL
   if (btnAction === 'next_page') {
-    goToNextPage(props.isLivePage ? collectPageAnswers() : undefined);
+    goToNextPage(props.isLivePage ? collectPageAnswers() : undefined, mProps.buttonTargetPageId);
   } else if (btnAction === 'link' && btnUrl) {
     if (openInNewTab) {
       window.open(btnUrl, '_blank');

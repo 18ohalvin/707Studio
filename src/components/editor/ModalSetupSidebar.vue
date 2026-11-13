@@ -105,9 +105,12 @@
 
         <!-- Field Input Type -->
         <div class="flex flex-col gap-[6px] w-full">
-          <p class="font-707 text-[12px] text-neutral-600">
-            Type
-          </p>
+          <div class="flex items-center gap-1.5">
+            <p class="font-707 text-[12px] text-neutral-600">
+              Type
+            </p>
+            <InfoHint text="Choose how the pop-up validates the guest's answer (Email, WhatsApp, or plain Text)." />
+          </div>
           <div class="flex gap-2">
             <button 
               type="button"
@@ -144,9 +147,12 @@
       >
         <!-- Selection Mode: Multiple vs Single -->
         <div class="flex items-center justify-between w-full">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Selection
-          </p>
+          <div class="flex items-center gap-1.5">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Selection
+            </p>
+            <InfoHint text="Allow guests to pick multiple options or restrict to a single selection." />
+          </div>
           <div class="flex gap-[6px] items-center">
             <button 
               type="button"
@@ -428,15 +434,18 @@
 
         <!-- Button Action -->
         <div class="flex flex-col gap-[6px] w-full">
-          <p class="font-707 text-[12px] text-neutral-600 font-medium">
-            On Click
-          </p>
+          <div class="flex items-center gap-1.5">
+            <p class="font-707 text-[12px] text-neutral-600 font-medium">
+              On Click
+            </p>
+            <InfoHint text="Action triggered when the guest clicks this pop-up button." />
+          </div>
           <div class="grid grid-cols-3 gap-1.5 w-full">
             <button 
               type="button"
               v-for="act in ([
                 { label: 'Submit', value: 'submit-close' },
-                { label: 'Next Page', value: 'next_page' },
+                { label: 'Go to Page', value: 'next_page' },
                 { label: 'Link URL', value: 'link' }
               ] as const)"
               :key="act.value"
@@ -446,6 +455,62 @@
             >
               {{ act.label }}
             </button>
+          </div>
+        </div>
+
+        <!-- Target Page selector if Go to Page is selected -->
+        <div v-if="buttonAction === 'next_page'" class="flex flex-col gap-[6px] w-full animate-in fade-in duration-150">
+          <div class="flex items-center gap-1.5">
+            <p class="font-707 text-[12px] text-neutral-600 font-medium">
+              Target Page
+            </p>
+            <InfoHint text="Choose which page opens after this pop-up button is clicked." />
+          </div>
+          <div class="relative" ref="modalTargetPageBtnRef">
+            <button
+              type="button"
+              @click="isModalTargetPageDropdownOpen = !isModalTargetPageDropdownOpen"
+              class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-full cursor-pointer text-left"
+            >
+              <span class="font-707 text-[12.5px] text-black truncate">{{ selectedModalTargetPageLabel }}</span>
+              <ChevronDown 
+                class="size-[14px] text-black transition-transform duration-200 shrink-0 ml-1.5" 
+                :class="isModalTargetPageDropdownOpen ? 'rotate-180' : ''"
+              />
+            </button>
+            <Teleport to="body">
+              <div 
+                v-if="isModalTargetPageDropdownOpen" 
+                ref="modalTargetPageMenuRef"
+                :style="modalTargetPagePopoverStyle"
+                class="bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-[0px_8px_30px_rgba(0,0,0,0.15)] py-1 z-50 flex flex-col overflow-y-auto animate-in fade-in duration-150 select-none"
+              >
+                <button
+                  type="button"
+                  @click="selectModalTargetPage('')"
+                  class="flex items-center justify-between px-[14px] py-[8px] text-left hover:bg-black/5 transition-colors cursor-pointer"
+                  :class="!buttonTargetPageId ? 'font-medium text-black bg-black/5' : 'text-neutral-700'"
+                >
+                  <span class="font-707 text-[12.5px]">Next Page (Default)</span>
+                  <Check v-if="!buttonTargetPageId" class="size-[14px] text-black" />
+                </button>
+                <button
+                  v-for="p in funnelTargetPages"
+                  :key="p.id"
+                  type="button"
+                  :disabled="p.isCurrent"
+                  @click="selectModalTargetPage(p.id)"
+                  class="flex items-center justify-between px-[14px] py-[8px] text-left transition-colors"
+                  :class="[
+                    p.isCurrent ? 'opacity-40 cursor-not-allowed text-neutral-400' : 'hover:bg-black/5 cursor-pointer',
+                    buttonTargetPageId === p.id ? 'font-medium text-black bg-black/5' : 'text-neutral-700'
+                  ]"
+                >
+                  <span class="font-707 text-[12.5px] truncate pr-2">{{ p.label }}<span v-if="p.isCurrent"> (Current)</span></span>
+                  <Check v-if="buttonTargetPageId === p.id" class="size-[14px] text-black shrink-0" />
+                </button>
+              </div>
+            </Teleport>
           </div>
         </div>
 
@@ -474,13 +539,11 @@
 
       <!-- Modal Dismiss Behavior -->
       <div class="content-stretch flex items-center justify-between p-[24px] shrink-0 w-full">
-        <div class="flex flex-col">
+        <div class="flex items-center gap-1.5">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
             Dismiss on Backdrop Click
           </p>
-          <p class="font-707 text-[11px] text-neutral-500">
-            Close bottom sheet when tapping outside
-          </p>
+          <InfoHint text="Close pop-up when tapping outside the bottom sheet." />
         </div>
         <button 
           type="button"
@@ -507,6 +570,9 @@ import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import type { ModalVariant, ModalOption, ModalImageSlot } from '../../types/editor.ts';
+import { useModalPopover } from '../common/modalPopover.ts';
+import InfoHint from '../common/InfoHint.vue';
+import { getFunnelTargetPages } from './ctaActions.ts';
 import { 
   Bell, 
   TextCursorInput, 
@@ -718,6 +784,32 @@ const buttonOpenInNewTab = computed({
     updateModalData({ buttonOpenInNewTab: val });
   }
 });
+
+const isModalTargetPageDropdownOpen = ref(false);
+const modalTargetPageBtnRef = ref<HTMLElement | null>(null);
+const { style: modalTargetPagePopoverStyle, menuRef: modalTargetPageMenuRef } = useModalPopover(modalTargetPageBtnRef, isModalTargetPageDropdownOpen, { matchWidth: true });
+
+const funnelTargetPages = computed(() => {
+  return getFunnelTargetPages(editorStore.pages, editorStore.currentPage?.id);
+});
+
+const buttonTargetPageId = computed({
+  get: () => targetModalData.value.buttonTargetPageId || '',
+  set: (val: string) => {
+    updateModalData({ buttonTargetPageId: val });
+  }
+});
+
+const selectedModalTargetPageLabel = computed(() => {
+  if (!buttonTargetPageId.value) return 'Next Page (Default)';
+  const match = funnelTargetPages.value.find(p => p.id === buttonTargetPageId.value);
+  return match ? match.label : 'Next Page (Default)';
+});
+
+function selectModalTargetPage(id: string) {
+  buttonTargetPageId.value = id;
+  isModalTargetPageDropdownOpen.value = false;
+}
 
 const dismissible = computed({
   get: () => targetModalData.value.dismissible ?? true,

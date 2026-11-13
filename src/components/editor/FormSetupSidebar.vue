@@ -110,7 +110,10 @@
       <!-- Smart Suggestion: Dedicated Visual Choice Page (Item 2a) -->
       <div class="px-[24px] pt-4 pb-0 w-full">
         <div class="p-3 rounded-[10px] bg-neutral-50/90 border border-black/5 flex items-center justify-between gap-3">
-          <span class="font-707 text-[12px] font-medium text-black truncate">Need size or item choices?</span>
+          <div class="flex items-center gap-1.5 min-w-0">
+            <span class="font-707 text-[12px] font-medium text-black truncate">Need size or item choices?</span>
+            <InfoHint text="Creates a visual card or image-grid selection step on a new page." />
+          </div>
           <button 
             type="button"
             @click="handleAddChoicePage"
@@ -162,9 +165,12 @@
 
         <!-- Title Typography Style Dropdown -->
         <div class="flex flex-col gap-[6px] w-full pt-1">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Heading Size
-          </p>
+          <div class="flex items-center gap-1.5">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Heading Size
+            </p>
+            <InfoHint text="Typography preset for the form title above the input fields." />
+          </div>
           <div class="relative w-full" ref="titleDropdownRef">
             <button 
               type="button"
@@ -253,6 +259,7 @@ import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import type { FormFieldItem } from '../../types/editor.ts';
 import { ChevronDown, GripVertical, Trash2, Plus, List, Type, ShieldCheck } from 'lucide-vue-next';
 import { useModalPopover } from '../common/modalPopover.ts';
+import InfoHint from '../common/InfoHint.vue';
 
 defineProps<{
   isOpen: boolean;

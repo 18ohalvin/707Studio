@@ -82,9 +82,12 @@
 
         <!-- Field Name / Identifier in Submissions -->
         <div class="flex flex-col gap-[6px] w-full pt-1">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Field Key
-          </p>
+          <div class="flex items-center gap-1.5">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Field Key
+            </p>
+            <InfoHint text="Column name used for this upload in Guest List and CSV exports." />
+          </div>
           <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
             <input 
               v-model="fieldName"
@@ -119,9 +122,12 @@
     <div v-show="activeTab === 'types'" class="w-full flex flex-col">
       <!-- Allowed Categories Section -->
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Allowed File Types
-        </p>
+        <div class="flex items-center gap-1.5">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Allowed File Types
+          </p>
+          <InfoHint text="Restrict which file formats guests can upload." />
+        </div>
         <div class="grid grid-cols-1 gap-2.5 w-full">
           <button
             v-for="cat in formatCategories"
@@ -154,9 +160,12 @@
 
       <!-- Max File Size Limit -->
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Max Size
-        </p>
+        <div class="flex items-center gap-1.5">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Max Size
+          </p>
+          <InfoHint text="Maximum file size allowed per upload (in MB)." />
+        </div>
         <div class="grid grid-cols-4 gap-2 w-full">
           <button
             v-for="size in [2, 5, 10, 25]"
@@ -175,9 +184,12 @@
 
       <!-- Single vs Multiple Files -->
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          File Limit
-        </p>
+        <div class="flex items-center gap-1.5">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            File Limit
+          </p>
+          <InfoHint text="Allow a single file or multiple files in this upload box." />
+        </div>
         <div class="grid grid-cols-2 gap-2 w-full">
           <button
             type="button"
@@ -207,9 +219,12 @@
     <div v-show="activeTab === 'rules'" class="w-full flex flex-col">
       <!-- Required Toggle -->
       <div class="content-stretch flex items-center justify-between p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Required
-        </p>
+        <div class="flex items-center gap-1.5">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Required
+          </p>
+          <InfoHint text="Prevent moving forward until at least one file is uploaded." />
+        </div>
         <button
           type="button"
           @click="isRequired = !isRequired"
@@ -242,6 +257,7 @@
 import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
+import InfoHint from '../common/InfoHint.vue';
 import { 
   FileText, 
   FileUp, 

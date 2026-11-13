@@ -28,7 +28,10 @@
 
     <!-- Data in this block: pick any combination -->
     <div class="flex flex-col gap-[12px] items-start p-[24px] w-full border-b border-[#f0f0f0]">
-      <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Fields</p>
+      <div class="flex items-center gap-1.5">
+        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">Fields</p>
+        <InfoHint text="Pick the guest details and QR blocks printed on the downloadable PDF ticket." />
+      </div>
       <div class="grid grid-cols-3 gap-1.5 w-full">
         <button
           v-for="f in TICKET_FIELDS"
@@ -82,7 +85,10 @@
 
       <!-- Appearance Mode: Normal vs Black Mode -->
       <div class="flex flex-col gap-[6px] w-full">
-        <span class="font-707 text-[12px] font-medium text-neutral-700">Logo Color</span>
+        <div class="flex items-center gap-1.5">
+          <span class="font-707 text-[12px] font-medium text-neutral-700">Logo Color</span>
+          <InfoHint text="Original keeps brand colors; Black converts to pure monochrome for crisp PDF printing." />
+        </div>
         <div class="grid grid-cols-2 gap-1.5 w-full p-1 rounded-[8px] bg-black/[0.04] border border-black/5">
           <button
             type="button"
@@ -189,6 +195,7 @@ import { computed } from 'vue';
 import { Ticket, Plus, Check, Trash2, Image as ImageIcon } from 'lucide-vue-next';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
+import InfoHint from '../common/InfoHint.vue';
 import { sizedUrl } from '../../services/responsiveImage.ts';
 import { TICKET_FIELDS, ticketFieldMeta, type TicketFieldKey } from './ticket/ticketFields.ts';
 

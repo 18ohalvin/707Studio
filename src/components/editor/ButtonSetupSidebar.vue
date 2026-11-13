@@ -59,9 +59,12 @@
       <!-- Layout Mode Selector: Single Button vs Dual Buttons (Yes / No) -->
       <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] pb-[18px] shrink-0 w-full border-b border-[#f0f0f0]">
         <div class="flex items-center justify-between w-full">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Layout
-          </p>
+          <div class="flex items-center gap-1.5">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Layout
+            </p>
+            <InfoHint text="Show one main CTA button or two independent buttons (e.g. Yes / No, Agree / Disagree)." />
+          </div>
           <div class="flex gap-[6px] items-center">
             <button
               type="button"
@@ -245,9 +248,12 @@
       <!-- Position Layout Mode -->
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
         <div class="flex items-center justify-between w-full">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Position
-          </p>
+          <div class="flex items-center gap-1.5">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Position
+            </p>
+            <InfoHint text="Standard places buttons in page flow; Sticky Bottom pins them to the bottom edge." />
+          </div>
           <div class="flex gap-[6px] items-center">
             <button 
               v-for="pos in positionModes" 
@@ -272,9 +278,12 @@
         >
           <div v-if="currentPositionMode === 'sticky-bottom'" class="flex flex-col gap-[10px] w-full pt-1">
             <div class="flex items-center justify-between w-full">
-              <p class="font-707 font-medium text-[12px] text-neutral-600">
-                Apply to Pages
-              </p>
+              <div class="flex items-center gap-1.5">
+                <p class="font-707 font-medium text-[12px] text-neutral-600">
+                  Apply to Pages
+                </p>
+                <InfoHint text="Choose which funnel pages display the pinned sticky button." />
+              </div>
               <div class="flex gap-[6px] items-center">
                 <button 
                   type="button"
@@ -337,9 +346,12 @@
       <!-- 1. PRIMARY BUTTON ACTION (Single or Dual Yes Button) -->
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full" :class="layoutMode === 'dual' ? 'border-b border-[#f0f0f0]' : ''">
         <div class="content-stretch flex items-center justify-between w-full relative">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
-            {{ layoutMode === 'dual' ? 'Button 1 Action' : 'On Click' }}
-          </p>
+          <div class="flex items-center gap-1.5">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
+              {{ layoutMode === 'dual' ? 'Button 1 Action' : 'On Click' }}
+            </p>
+            <InfoHint text="Choose what happens when a guest taps this button." />
+          </div>
           <div class="relative" ref="linkToBtnRef">
             <button
               type="button"
@@ -371,6 +383,62 @@
                 >
                   <span class="font-707 text-[13px]">{{ opt.label }}</span>
                   <Check v-if="actionType === opt.value" class="size-[15px] text-black" />
+                </button>
+              </div>
+            </Teleport>
+          </div>
+        </div>
+
+        <!-- Conditional Target Page Picker if Submit & Go to Page is selected -->
+        <div v-if="actionType === 'submit'" class="flex items-center justify-between w-full pt-1 relative animate-in fade-in duration-150">
+          <div class="flex items-center gap-1.5">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
+              Target Page
+            </p>
+            <InfoHint text="Pick where to go after submitting. Defaults to the next page, or pick another page to skip steps." />
+          </div>
+          <div class="relative" ref="targetPageBtnRef">
+            <button
+              type="button"
+              @click="isTargetPageDropdownOpen = !isTargetPageDropdownOpen"
+              class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-[210px] cursor-pointer text-left"
+            >
+              <span class="font-707 text-[13px] text-black truncate">{{ selectedTargetPageLabel }}</span>
+              <ChevronDown 
+                class="size-[15px] text-black transition-transform duration-200 shrink-0 ml-1.5" 
+                :class="isTargetPageDropdownOpen ? 'rotate-180' : ''"
+              />
+            </button>
+            <Teleport to="body">
+              <div 
+                v-if="isTargetPageDropdownOpen" 
+                ref="targetPageMenuRef"
+                :style="targetPagePopoverStyle"
+                class="bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-[0px_8px_30px_rgba(0,0,0,0.15)] py-1 z-50 flex flex-col overflow-y-auto animate-in fade-in duration-150 select-none"
+              >
+                <button
+                  type="button"
+                  @click="selectTargetPage('')"
+                  class="flex items-center justify-between px-[14px] py-[8px] text-left hover:bg-black/5 transition-colors cursor-pointer"
+                  :class="!targetPageId ? 'font-medium text-black bg-black/5' : 'text-neutral-700'"
+                >
+                  <span class="font-707 text-[13px]">Next Page (Default)</span>
+                  <Check v-if="!targetPageId" class="size-[15px] text-black" />
+                </button>
+                <button
+                  v-for="p in funnelTargetPages"
+                  :key="p.id"
+                  type="button"
+                  :disabled="p.isCurrent"
+                  @click="selectTargetPage(p.id)"
+                  class="flex items-center justify-between px-[14px] py-[8px] text-left transition-colors"
+                  :class="[
+                    p.isCurrent ? 'opacity-40 cursor-not-allowed text-neutral-400' : 'hover:bg-black/5 cursor-pointer',
+                    targetPageId === p.id ? 'font-medium text-black bg-black/5' : 'text-neutral-700'
+                  ]"
+                >
+                  <span class="font-707 text-[12.5px] truncate pr-2">{{ p.label }}<span v-if="p.isCurrent"> (Current)</span></span>
+                  <Check v-if="targetPageId === p.id" class="size-[15px] text-black shrink-0" />
                 </button>
               </div>
             </Teleport>
@@ -433,9 +501,12 @@
         class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full animate-in fade-in duration-150"
       >
         <div class="content-stretch flex items-center justify-between w-full relative">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
-            Button 2 Action
-          </p>
+          <div class="flex items-center gap-1.5">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
+              Button 2 Action
+            </p>
+            <InfoHint text="Set an independent action for the second button (e.g. open a link, pop-up, or skip to a page)." />
+          </div>
           <div class="relative" ref="secondaryLinkToBtnRef">
             <button
               type="button"
@@ -467,6 +538,62 @@
                 >
                   <span class="font-707 text-[13px]">{{ opt.label }}</span>
                   <Check v-if="secondaryActionType === opt.value" class="size-[15px] text-black" />
+                </button>
+              </div>
+            </Teleport>
+          </div>
+        </div>
+
+        <!-- Conditional Target Page Picker for Secondary Button -->
+        <div v-if="secondaryActionType === 'submit'" class="flex items-center justify-between w-full pt-1 relative animate-in fade-in duration-150">
+          <div class="flex items-center gap-1.5">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
+              Target Page
+            </p>
+            <InfoHint text="Pick where Button 2 goes after submitting, or leave as next page." />
+          </div>
+          <div class="relative" ref="secondaryTargetPageBtnRef">
+            <button
+              type="button"
+              @click="isSecondaryTargetPageDropdownOpen = !isSecondaryTargetPageDropdownOpen"
+              class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-[210px] cursor-pointer text-left"
+            >
+              <span class="font-707 text-[13px] text-black truncate">{{ selectedSecondaryTargetPageLabel }}</span>
+              <ChevronDown 
+                class="size-[15px] text-black transition-transform duration-200 shrink-0 ml-1.5" 
+                :class="isSecondaryTargetPageDropdownOpen ? 'rotate-180' : ''"
+              />
+            </button>
+            <Teleport to="body">
+              <div 
+                v-if="isSecondaryTargetPageDropdownOpen" 
+                ref="secondaryTargetPageMenuRef"
+                :style="secondaryTargetPagePopoverStyle"
+                class="bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-[0px_8px_30px_rgba(0,0,0,0.15)] py-1 z-50 flex flex-col overflow-y-auto animate-in fade-in duration-150 select-none"
+              >
+                <button
+                  type="button"
+                  @click="selectSecondaryTargetPage('')"
+                  class="flex items-center justify-between px-[14px] py-[8px] text-left hover:bg-black/5 transition-colors cursor-pointer"
+                  :class="!secondaryTargetPageId ? 'font-medium text-black bg-black/5' : 'text-neutral-700'"
+                >
+                  <span class="font-707 text-[13px]">Next Page (Default)</span>
+                  <Check v-if="!secondaryTargetPageId" class="size-[15px] text-black" />
+                </button>
+                <button
+                  v-for="p in funnelTargetPages"
+                  :key="p.id"
+                  type="button"
+                  :disabled="p.isCurrent"
+                  @click="selectSecondaryTargetPage(p.id)"
+                  class="flex items-center justify-between px-[14px] py-[8px] text-left transition-colors"
+                  :class="[
+                    p.isCurrent ? 'opacity-40 cursor-not-allowed text-neutral-400' : 'hover:bg-black/5 cursor-pointer',
+                    secondaryTargetPageId === p.id ? 'font-medium text-black bg-black/5' : 'text-neutral-700'
+                  ]"
+                >
+                  <span class="font-707 text-[12.5px] truncate pr-2">{{ p.label }}<span v-if="p.isCurrent"> (Current)</span></span>
+                  <Check v-if="secondaryTargetPageId === p.id" class="size-[15px] text-black shrink-0" />
                 </button>
               </div>
             </Teleport>
@@ -527,11 +654,12 @@
 </template>
 
 <script setup lang="ts">
-import { CTA_ACTION_OPTIONS, normalizeCtaAction } from './ctaActions.ts';
+import { CTA_ACTION_OPTIONS, normalizeCtaAction, getFunnelTargetPages } from './ctaActions.ts';
 import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { useModalPopover } from '../common/modalPopover.ts';
+import InfoHint from '../common/InfoHint.vue';
 import { 
   ChevronDown, 
   Check, 
@@ -861,6 +989,59 @@ function selectSecondaryLinkTo(val: string) {
   if (val === 'modal' && targetWidget.value) {
     openModalSetup('secondary');
   }
+}
+
+// Primary & Secondary Target Page Dropdowns
+const isTargetPageDropdownOpen = ref(false);
+const targetPageBtnRef = ref<HTMLElement | null>(null);
+const { style: targetPagePopoverStyle, menuRef: targetPageMenuRef } = useModalPopover(targetPageBtnRef, isTargetPageDropdownOpen, { align: 'right', width: 220 });
+
+const isSecondaryTargetPageDropdownOpen = ref(false);
+const secondaryTargetPageBtnRef = ref<HTMLElement | null>(null);
+const { style: secondaryTargetPagePopoverStyle, menuRef: secondaryTargetPageMenuRef } = useModalPopover(secondaryTargetPageBtnRef, isSecondaryTargetPageDropdownOpen, { align: 'right', width: 220 });
+
+const funnelTargetPages = computed(() => {
+  return getFunnelTargetPages(editorStore.pages, editorStore.currentPage?.id);
+});
+
+const targetPageId = computed({
+  get: () => targetWidget.value?.props?.targetPageId || targetWidget.value?.props?.ctaTargetPageId || '',
+  set: (val: string) => {
+    if (targetWidget.value) {
+      editorStore.updateWidgetProps(targetWidget.value.id, { targetPageId: val, ctaTargetPageId: val });
+    }
+  }
+});
+
+const selectedTargetPageLabel = computed(() => {
+  if (!targetPageId.value) return 'Next Page (Default)';
+  const match = funnelTargetPages.value.find(p => p.id === targetPageId.value);
+  return match ? match.label : 'Next Page (Default)';
+});
+
+function selectTargetPage(id: string) {
+  targetPageId.value = id;
+  isTargetPageDropdownOpen.value = false;
+}
+
+const secondaryTargetPageId = computed({
+  get: () => targetWidget.value?.props?.secondaryTargetPageId || '',
+  set: (val: string) => {
+    if (targetWidget.value) {
+      editorStore.updateWidgetProps(targetWidget.value.id, { secondaryTargetPageId: val });
+    }
+  }
+});
+
+const selectedSecondaryTargetPageLabel = computed(() => {
+  if (!secondaryTargetPageId.value) return 'Next Page (Default)';
+  const match = funnelTargetPages.value.find(p => p.id === secondaryTargetPageId.value);
+  return match ? match.label : 'Next Page (Default)';
+});
+
+function selectSecondaryTargetPage(id: string) {
+  secondaryTargetPageId.value = id;
+  isSecondaryTargetPageDropdownOpen.value = false;
 }
 
 const secondaryActionUrl = computed({

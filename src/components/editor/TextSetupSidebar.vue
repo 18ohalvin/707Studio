@@ -45,9 +45,12 @@
     <!-- Section 1: Typography Style (Figma Node 181:6024) -->
     <div class="content-stretch flex flex-col items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0] overflow-visible" data-node-id="181:6024">
       <div class="content-stretch flex gap-[32px] items-center justify-between shrink-0 w-full overflow-visible" data-node-id="181:6025">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap shrink-0 w-[140px]" data-node-id="181:6026">
-          Font Style
-        </p>
+        <div class="flex items-center gap-1.5 whitespace-nowrap shrink-0 w-[140px]">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black" data-node-id="181:6026">
+            Font Style
+          </p>
+          <InfoHint text="Typography preset and scale from the 707 type system." />
+        </div>
         <div class="relative flex-1" ref="dropdownRef">
           <button 
             type="button"
@@ -143,6 +146,7 @@ import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { ChevronDown, AlignLeft, AlignCenter, AlignRight } from 'lucide-vue-next';
 import { useModalPopover } from '../common/modalPopover.ts';
+import InfoHint from '../common/InfoHint.vue';
 
 defineProps<{
   isOpen: boolean;

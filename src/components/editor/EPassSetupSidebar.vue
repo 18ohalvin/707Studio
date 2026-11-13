@@ -53,7 +53,10 @@
     <div v-show="activeTab === 'details'" class="w-full flex flex-col">
       <!-- PDF ticket design (Ticket page) -->
       <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
-        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">PDF Ticket</p>
+        <div class="flex items-center gap-1.5">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">PDF Ticket</p>
+          <InfoHint text="Customize the downloadable E-Pass PDF template linked to this page." />
+        </div>
         <button
           type="button"
           @click="openTicketDesign"
@@ -111,9 +114,12 @@
 
         <!-- Guest Type Preset -->
         <div class="flex flex-col gap-[6px] w-full pt-1 border-t border-[#f0f0f0]">
-          <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
-            Guest Type
-          </p>
+          <div class="flex items-center gap-1.5">
+            <p class="font-707 font-medium text-[12px] leading-[16px] text-neutral-700">
+              Guest Type
+            </p>
+            <InfoHint text="Label shown under the E-Pass tier badge (e.g. VIP, Regular)." />
+          </div>
           <div class="grid grid-cols-2 gap-1.5 w-full">
             <button
               v-for="preset in GUEST_TYPE_PRESETS"
@@ -604,9 +610,12 @@
       <!-- Section 4: Troubleshoot / Disclaimer Notice Section -->
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full">
         <div class="flex items-center justify-between w-full">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Help Notice
-          </p>
+          <div class="flex items-center gap-1.5">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Help Notice
+            </p>
+            <InfoHint text="Optional footer callout for guests who need help finding their pass email." />
+          </div>
 
           <!-- Modern Elegant Apple Style Toggle Switch -->
           <button
@@ -736,6 +745,7 @@ import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { useModalPopover } from '../common/modalPopover.ts';
+import InfoHint from '../common/InfoHint.vue';
 import { 
   Ticket, 
   Users,

@@ -53,9 +53,12 @@
       <!-- 1. Choice Style Variant (4 Variants with Minimal Icons) -->
       <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
         <div class="flex items-center justify-between w-full">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Style
-          </p>
+          <div class="flex items-center gap-1.5">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Style
+            </p>
+            <InfoHint text="Visual layout used to present choices on the page." />
+          </div>
           <span class="text-[10px] uppercase font-mono text-neutral-400">
             {{ variantLabel }}
           </span>
@@ -488,9 +491,12 @@
       <!-- Selection Mode & Required Rules -->
       <div class="content-stretch flex flex-col gap-[16px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
         <div class="flex items-center justify-between w-full">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Selection
-          </p>
+          <div class="flex items-center gap-1.5">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Selection
+            </p>
+            <InfoHint text="Allow guests to pick multiple options or restrict to a single selection." />
+          </div>
           <div class="flex gap-[6px] items-center">
             <button 
               type="button"
@@ -513,9 +519,12 @@
 
         <div class="flex flex-col gap-1 w-full">
           <div class="flex items-center justify-between w-full">
-            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Required
-            </p>
+            <div class="flex items-center gap-1.5">
+              <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+                Required
+              </p>
+              <InfoHint text="Require at least one choice before submitting or continuing." />
+            </div>
             <div class="flex gap-[6px] items-center">
               <button 
                 type="button"
@@ -545,9 +554,12 @@
       <!-- Places (limit how many guests can take an option) -->
       <div class="content-stretch flex flex-col gap-[16px] items-start p-[24px] shrink-0 w-full">
         <div class="flex items-center justify-between w-full">
-          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-            Capacity Limit
-          </p>
+          <div class="flex items-center gap-1.5">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Capacity Limit
+            </p>
+            <InfoHint text="Cap how many guests can choose each option. Automatically marks full choices unavailable." />
+          </div>
           <!-- 707 Switch Toggle -->
           <button 
             type="button"
@@ -603,6 +615,7 @@ import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { uploadMediaDirectly } from '../../services/mediaService.ts';
 import type { ChoiceVariant, ChoiceOption } from '../../types/editor.ts';
 import { useModalPopover } from '../common/modalPopover.ts';
+import InfoHint from '../common/InfoHint.vue';
 import { 
   Plus, 
   Trash2, 
