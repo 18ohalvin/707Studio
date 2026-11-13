@@ -589,6 +589,10 @@ const targetModalData = computed(() => {
   if (currentWidget.value.props.noticeModalProps) {
     return currentWidget.value.props.noticeModalProps;
   }
+  const modalKey = editorStore.activeModalKey === 'secondaryModalProps' ? 'secondaryModalProps' : 'modalProps';
+  if (currentWidget.value.props[modalKey]) {
+    return currentWidget.value.props[modalKey];
+  }
   if (currentWidget.value.props.modalProps) {
     return currentWidget.value.props.modalProps;
   }
@@ -598,9 +602,10 @@ const targetModalData = computed(() => {
 function updateModalData(propsToUpdate: Record<string, any>) {
   if (!currentWidget.value) return;
   if (currentWidget.value.type === 'ActionButton' || currentWidget.value.type === 'HeroDrop') {
-    const existing = currentWidget.value.props.modalProps || {};
+    const modalKey = editorStore.activeModalKey === 'secondaryModalProps' ? 'secondaryModalProps' : 'modalProps';
+    const existing = currentWidget.value.props[modalKey] || {};
     editorStore.updateWidgetProps(currentWidget.value.id, {
-      modalProps: { ...existing, ...propsToUpdate }
+      [modalKey]: { ...existing, ...propsToUpdate }
     });
   } else if (currentWidget.value.type === 'GuestEPass' || currentWidget.value.type === 'LiveQueuePass') {
     if (currentWidget.value.props.noticeModalProps) {

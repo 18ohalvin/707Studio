@@ -287,6 +287,7 @@ export const useEditorStore = defineStore('editor', () => {
   const isFormSidebarOpen = ref<boolean>(false);
   const isDocumentSidebarOpen = ref<boolean>(false);
   const isModalSidebarOpen = ref<boolean>(false);
+  const activeModalKey = ref<'modalProps' | 'secondaryModalProps'>('modalProps');
   const isEPassSidebarOpen = ref<boolean>(false);
   const isTicketSidebarOpen = ref<boolean>(false);
   const isLayersOpen = ref<boolean>(false);
@@ -703,14 +704,15 @@ export const useEditorStore = defineStore('editor', () => {
       case 'ActionButton':
         defaultProps = {
           layoutMode: 'single', // 'single' | 'dual'
-          label: 'BUTTON CTA',
+          dualOrientation: 'horizontal', // 'horizontal' (left-right) | 'vertical' (top-bottom)
+          label: 'YES',
           variant: 'black',
           actionType: 'submit',
           url: '',
           openInNewTab: false,
-          secondaryLabel: 'DISAGREE',
+          secondaryLabel: 'NO',
           secondaryVariant: 'white',
-          secondaryActionType: 'link',
+          secondaryActionType: 'modal',
           secondaryUrl: '',
           secondaryOpenInNewTab: true,
           secondaryShowIcon: false,
@@ -2317,6 +2319,7 @@ export const useEditorStore = defineStore('editor', () => {
     isFormSidebarOpen,
     isDocumentSidebarOpen,
     isModalSidebarOpen,
+    activeModalKey,
     isEPassSidebarOpen,
     isLayersOpen,
     isPagesOpen,

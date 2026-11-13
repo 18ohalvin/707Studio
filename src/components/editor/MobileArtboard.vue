@@ -375,18 +375,6 @@
                   :style="getOverlayStyle(widget.props)"
                 />
 
-                <!-- Quick Crop & Drag Studio Launcher Pill (Shown when widget is selected in editor mode) -->
-                <button 
-                  v-if="!isPreviewModal && !isLivePage && isSelected && editorStore.selectedWidgetId === widget.id && !isFreeDragTarget(widget)"
-                  type="button"
-                  @click.stop="editorStore.openCropStudio"
-                  class="absolute top-3 right-3 z-30 bg-black/80 hover:bg-black text-white text-[11px] font-707 px-3 py-1.5 rounded-full backdrop-blur-md border border-white/20 shadow-lg flex items-center gap-1.5 transition-all cursor-pointer hover:scale-105 active:scale-95"
-                  title="Open Interactive Photo Crop Studio"
-                >
-                  <Crop class="size-3 text-white" />
-                  <span>Crop & Drag</span>
-                </button>
-
                 <!-- Interactive In-Canvas Free Drag Overlay -->
                 <div 
                   v-if="!isPreviewModal && !isLivePage && isFreeDragTarget(widget)"
@@ -884,7 +872,26 @@
                     <ChevronDown class="w-[12px] h-[12px] text-neutral-400 group-hover/code:text-black transition-colors stroke-[2]" />
                   </div>
 
+                  <!-- Dropdown for Gender Field with Standard Google Gender Presets -->
+                  <div v-if="isGenderField(widget)" class="relative w-full flex items-center z-10">
+                    <select 
+                      :value="widget.props.value || ''"
+                      @change="handleFieldInputChange($event, widget)"
+                      :disabled="isDesignCanvas"
+                      class="font-707 font-normal text-[14px] leading-[20px] w-full bg-transparent outline-none border-none p-0 m-0 cursor-pointer appearance-none pr-6 transition-colors"
+                      :class="[
+                        widget.props.value ? 'text-black' : 'text-[#737373]',
+                        widget.props.stateVariant === 'Wrong alert' ? '!text-[#9b0707]' : ''
+                      ]"
+                    >
+                      <option value="" disabled selected>{{ widget.props.placeholder || `Select Gender${widget.props.required !== false ? '*' : ''}` }}</option>
+                      <option v-for="g in GOOGLE_GENDER_PRESETS" :key="g" :value="g">{{ g }}</option>
+                    </select>
+                    <ChevronDown class="size-3.5 text-neutral-400 pointer-events-none absolute right-0 shrink-0" />
+                  </div>
+
                   <input 
+                    v-else
                     :ref="el => registerInputField(widget.id, el)"
                     :value="widget.props.value || ''"
                     :type="isDateField(widget) ? 'text' : (widget.props.inputType || 'text')"
@@ -1052,11 +1059,84 @@
                   v-for="(field, fIdx) in (widget.props.fields || [])"
                   :key="field.id || fIdx"
                   class="w-full flex flex-col items-start relative pt-[6px]"
-                  :class="isDateItem(field) ? 'cursor-pointer' : 'cursor-text'"
-                  @click.stop="isDateItem(field) ? openDateSelectorSheet(widget, field) : focusRegistrationFormField(widget.id, field.id)"
+                  :class="isDateItem(field) || field.type === 'file' ? 'cursor-pointer' : 'cursor-text'"
+                  @click.stop="isDateItem(field) ? openDateSelectorSheet(widget, field) : (field.type === 'file' ? (isLivePage || isPreviewModal ? triggerDocumentPicker(`${widget.id}_${field.id}`) : undefined) : focusRegistrationFormField(widget.id, field.id))"
                 >
-                  <!-- Input Row with Underline Stack -->
+                  <!-- File Upload: Dropzone style with sharp edges (707 Token UI) -->
                   <div 
+                    v-if="field.type === 'file'"
+                    class="w-full flex flex-col gap-1.5"
+                  >
+                    <!-- Hidden file input for file-type field -->
+                    <input 
+                      :ref="el => registerDocumentInput(`${widget.id}_${field.id}`, el)"
+                      type="file"
+                      class="hidden"
+                      accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx"
+                      @change="handleRegistrationFormFileChange($event, widget, field)"
+                    />
+
+                    <!-- Dropzone Container: Sharp edges, 707 luxury token styling -->
+                    <div 
+                      class="w-full rounded-none border border-dashed transition-all p-4 flex flex-col items-center justify-center text-center gap-2 relative overflow-hidden group/upload cursor-pointer"
+                      :class="[
+                        field.errorMessage 
+                          ? 'border-[#9b0707] bg-[#fff5f5]' 
+                          : 'border-black/20 hover:border-black/40 bg-white/70 backdrop-blur-sm'
+                      ]"
+                      @click.stop="isLivePage || isPreviewModal ? triggerDocumentPicker(`${widget.id}_${field.id}`) : undefined"
+                    >
+                      <!-- State 1: Uploading Spinner -->
+                      <div v-if="uploadingWidgetIds.has(`${widget.id}_${field.id}`)" class="py-2.5 flex flex-col items-center gap-2">
+                        <Loader2 class="size-5 text-black animate-spin" />
+                        <span class="font-707 text-[12px] font-medium text-black">Uploading document...</span>
+                      </div>
+
+                      <!-- State 2: Uploaded File Card -->
+                      <div v-else-if="field.fileData || field.value" class="w-full flex items-center justify-between p-2.5 rounded-none bg-white border border-black/10 shadow-xs gap-2">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                          <div class="size-8 rounded-none bg-neutral-100 flex items-center justify-center shrink-0">
+                            <FileText class="size-4 text-black" />
+                          </div>
+                          <div class="flex flex-col text-left min-w-0">
+                            <span class="font-707 text-[12px] font-medium text-black truncate">{{ field.fileData?.name || field.name || 'Document' }}</span>
+                            <span v-if="field.fileData?.size" class="font-707 text-[10.5px] text-neutral-400 font-mono">{{ formatFileSize(field.fileData.size) }}</span>
+                          </div>
+                        </div>
+                        <button 
+                          v-if="isLivePage || isPreviewModal"
+                          type="button" 
+                          @click.stop="removeRegistrationFormFile(widget, field)"
+                          class="size-6 rounded-none hover:bg-neutral-100 flex items-center justify-center text-neutral-400 hover:text-black cursor-pointer shrink-0 transition-colors"
+                          title="Remove file"
+                        >
+                          <X class="size-3.5" />
+                        </button>
+                      </div>
+
+                      <!-- State 3: Empty Dropzone / Tap to Upload -->
+                      <div v-else class="flex flex-col items-center gap-1.5 py-1 w-full">
+                        <div class="size-9 rounded-none bg-neutral-100 group-hover/upload:bg-neutral-200/80 flex items-center justify-center text-black transition-colors shrink-0">
+                          <FileUp class="size-4 stroke-[1.8]" />
+                        </div>
+                        <div class="flex flex-col items-center">
+                          <p class="font-707 font-medium text-[12.5px] text-black tracking-tight uppercase">
+                            {{ field.name || 'UPLOAD DOCUMENT' }}{{ field.required !== false ? '*' : '' }}
+                          </p>
+                          <p class="font-707 text-[11px] text-[#737373] mt-0.5 max-w-[280px]">
+                            {{ field.placeholder || 'Tap to choose file (PDF, PNG, JPG up to 10MB)' }}
+                          </p>
+                        </div>
+                        <div class="mt-1 px-3 py-1 rounded-none bg-black text-white text-[10.5px] font-707 font-medium tracking-wider uppercase flex items-center gap-1.5 shadow-xs">
+                          <span>Browse Files</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Standard Input Row with Underline Stack (Text, Email, Phone, Date, Gender) -->
+                  <div 
+                    v-else
                     class="w-full flex items-center gap-[8px] pt-[8px] pb-[10px] relative"
                     :class="[
                       shakingFieldIds.has(`${widget.id}_${field.id}`) ? 'animate-luxury-jitter' : ''
@@ -1075,46 +1155,22 @@
                       <ChevronDown class="w-[12px] h-[12px] text-neutral-400 group-hover/code:text-black transition-colors stroke-[2]" />
                     </div>
 
-                    <!-- Hidden file input for file-type field -->
-                    <input 
-                      v-if="field.type === 'file'"
-                      :ref="el => registerDocumentInput(`${widget.id}_${field.id}`, el)"
-                      type="file"
-                      class="hidden"
-                      accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx"
-                      @change="handleRegistrationFormFileChange($event, widget, field)"
-                    />
-
-                    <!-- File Upload Trigger & Uploaded File Pill -->
-                    <div 
-                      v-if="field.type === 'file'"
-                      class="w-full flex items-center justify-between py-0.5 select-none relative z-10"
-                      :class="isLivePage || isPreviewModal ? 'cursor-pointer' : ''"
-                      @click.stop="isLivePage || isPreviewModal ? triggerDocumentPicker(`${widget.id}_${field.id}`) : undefined"
-                    >
-                      <div v-if="uploadingWidgetIds.has(`${widget.id}_${field.id}`)" class="flex items-center gap-2">
-                        <Loader2 class="size-4 text-black animate-spin" />
-                        <span class="font-707 text-[13px] text-black">Uploading document...</span>
-                      </div>
-                      <div v-else-if="field.fileData || field.value" class="flex items-center justify-between w-full">
-                        <div class="flex items-center gap-2 min-w-0">
-                          <FileText class="size-4 text-black shrink-0" />
-                          <span class="font-707 text-[13px] text-black font-medium truncate">{{ field.fileData?.name || field.name }}</span>
-                          <span v-if="field.fileData?.size" class="font-707 text-[11px] text-neutral-400 font-mono">({{ formatFileSize(field.fileData.size) }})</span>
-                        </div>
-                        <button 
-                          v-if="isLivePage || isPreviewModal"
-                          type="button" 
-                          @click.stop="removeRegistrationFormFile(widget, field)"
-                          class="size-5 rounded-full hover:bg-neutral-100 flex items-center justify-center text-neutral-400 hover:text-black shrink-0 cursor-pointer"
-                        >
-                          <X class="size-3" />
-                        </button>
-                      </div>
-                      <div v-else class="flex items-center gap-2 text-[#737373]">
-                        <Paperclip class="size-3.5 shrink-0" />
-                        <span class="font-707 text-[13px]">{{ field.placeholder || `${field.name || 'Upload Document'}${field.required !== false ? '*' : ''}` }}</span>
-                      </div>
+                    <!-- Dropdown for Gender Field with Standard Google Gender Presets -->
+                    <div v-if="isGenderItem(field)" class="relative w-full flex items-center z-10">
+                      <select 
+                        :value="field.value || ''"
+                        @change="handleRegistrationFormItemInput($event, widget, field)"
+                        :disabled="isDesignCanvas"
+                        class="font-707 font-normal text-[14px] leading-[20px] w-full bg-transparent outline-none border-none p-0 m-0 cursor-pointer appearance-none pr-6 transition-colors"
+                        :class="[
+                          field.value ? 'text-black' : 'text-[#737373]',
+                          field.errorMessage ? '!text-[#9b0707]' : ''
+                        ]"
+                      >
+                        <option value="" disabled selected>{{ field.placeholder || `Select Gender${field.required !== false ? '*' : ''}` }}</option>
+                        <option v-for="g in GOOGLE_GENDER_PRESETS" :key="g" :value="g">{{ g }}</option>
+                      </select>
+                      <ChevronDown class="size-3.5 text-neutral-400 pointer-events-none absolute right-0 shrink-0" />
                     </div>
 
                     <input 
@@ -1277,7 +1333,7 @@
 
               <!-- Main Upload Box Container -->
               <div 
-                class="w-full rounded-[14px] border border-dashed transition-all p-5 flex flex-col items-center justify-center text-center gap-2 relative overflow-hidden group/upload"
+                class="w-full rounded-none border border-dashed transition-all p-5 flex flex-col items-center justify-center text-center gap-2 relative overflow-hidden group/upload"
                 :class="[
                   widget.props.errorMessage 
                     ? 'border-[#9b0707] bg-[#fff5f5]' 
@@ -1305,10 +1361,10 @@
                   <div 
                     v-for="(file, fIdx) in widget.props.uploadedFiles" 
                     :key="file.url || fIdx"
-                    class="w-full flex items-center justify-between p-2.5 rounded-[8px] bg-white border border-black/10 shadow-xs gap-2.5"
+                    class="w-full flex items-center justify-between p-2.5 rounded-none bg-white border border-black/10 shadow-xs gap-2.5"
                   >
                     <div class="flex items-center gap-2.5 min-w-0">
-                      <div class="size-8 rounded-[6px] bg-neutral-100 flex items-center justify-center shrink-0">
+                      <div class="size-8 rounded-none bg-neutral-100 flex items-center justify-center shrink-0">
                         <FileText class="size-4 text-black" />
                       </div>
                       <div class="flex flex-col text-left min-w-0">
@@ -1320,7 +1376,7 @@
                       v-if="isLivePage || isPreviewModal"
                       type="button"
                       @click.stop="removeUploadedDocument(widget, fIdx)"
-                      class="size-6 rounded-full hover:bg-neutral-100 flex items-center justify-center text-neutral-400 hover:text-black cursor-pointer shrink-0 transition-colors"
+                      class="size-6 rounded-none hover:bg-neutral-100 flex items-center justify-center text-neutral-400 hover:text-black cursor-pointer shrink-0 transition-colors"
                       title="Remove file"
                     >
                       <X class="size-3.5" />
@@ -1332,7 +1388,7 @@
                     v-if="(isLivePage || isPreviewModal) && widget.props.allowMultiple && widget.props.uploadedFiles.length < (widget.props.maxFiles || 3)"
                     type="button"
                     @click.stop="triggerDocumentPicker(widget.id)"
-                    class="mt-1 w-full py-1.5 rounded-[6px] border border-dashed border-black/20 hover:border-black/50 text-[11px] font-707 font-medium text-neutral-600 hover:text-black flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                    class="mt-1 w-full py-1.5 rounded-none border border-dashed border-black/20 hover:border-black/50 text-[11px] font-707 font-medium text-neutral-600 hover:text-black flex items-center justify-center gap-1 transition-colors cursor-pointer"
                   >
                     <Plus class="size-3" />
                     <span>Add another document</span>
@@ -1341,7 +1397,7 @@
 
                 <!-- State 3: Empty Dropzone / Tap to Upload -->
                 <div v-else class="flex flex-col items-center gap-2 py-1 w-full">
-                  <div class="size-10 rounded-full bg-neutral-100 group-hover/upload:bg-neutral-200/80 flex items-center justify-center text-black transition-colors shrink-0">
+                  <div class="size-9 rounded-none bg-neutral-100 group-hover/upload:bg-neutral-200/80 flex items-center justify-center text-black transition-colors shrink-0">
                     <FileUp class="size-5 stroke-[1.8]" />
                   </div>
                   <div class="flex flex-col items-center">
@@ -1352,7 +1408,7 @@
                       {{ widget.props.subtitle || 'Tap to choose file (PDF, PNG, JPG up to 10MB)' }}
                     </p>
                   </div>
-                  <div class="mt-1 px-3 py-1.5 rounded-full bg-black text-white text-[11px] font-707 font-medium tracking-wide flex items-center gap-1.5 shadow-xs">
+                  <div class="mt-1 px-3.5 py-1.5 rounded-none bg-black text-white text-[11px] font-707 font-medium tracking-wide flex items-center gap-1.5 shadow-xs">
                     <span>Browse Files</span>
                   </div>
                 </div>
@@ -1467,12 +1523,12 @@
                   <span class="whitespace-nowrap uppercase">{{ widget.props.label || 'BUTTON CTA' }}</span>
                 </button>
 
-                <!-- Dual Buttons Layout (Agree / Disagree or Yes / No) -->
+                <!-- Dual Buttons Layout (Yes / No or Independent Dual Options) -->
                 <div 
                   v-else
-                  class="grid grid-cols-2 gap-2.5 w-full items-stretch"
+                  :class="widget.props.dualOrientation === 'vertical' ? 'flex flex-col gap-2 w-full items-stretch' : 'grid grid-cols-2 gap-2.5 w-full items-stretch'"
                 >
-                  <!-- Primary Button (Button 1: Agree / Yes) -->
+                  <!-- Primary Button (Button 1: Yes / Agree) -->
                   <button 
                     type="button"
                     @click.stop="handleActionButtonClick(widget, 'primary')"
@@ -1489,11 +1545,10 @@
                     :style="{ height: `${widget.props.height || 48}px` }"
                     class="w-full px-[12px] py-[12px] rounded-[0px] flex items-center justify-center gap-[8px] font-707 font-medium text-[13px] leading-[18px] tracking-normal cursor-pointer border-0 outline-none shadow-none"
                   >
-                    <component :is="getButtonIcon(widget)" v-if="widget.props.showIcon" class="size-[15px] shrink-0" />
-                    <span class="truncate uppercase">{{ widget.props.label || 'AGREE' }}</span>
+                    <span class="truncate uppercase">{{ widget.props.label || 'YES' }}</span>
                   </button>
 
-                  <!-- Secondary Button (Button 2: Disagree / No) -->
+                  <!-- Secondary Button (Button 2: No / Disagree) -->
                   <button 
                     type="button"
                     @click.stop="handleActionButtonClick(widget, 'secondary')"
@@ -1510,8 +1565,7 @@
                     :style="{ height: `${widget.props.height || 48}px` }"
                     class="w-full px-[12px] py-[12px] rounded-[0px] flex items-center justify-center gap-[8px] font-707 font-medium text-[13px] leading-[18px] tracking-normal cursor-pointer outline-none shadow-none"
                   >
-                    <component :is="getSecondaryButtonIcon(widget)" v-if="widget.props.secondaryShowIcon" class="size-[15px] shrink-0" />
-                    <span class="truncate uppercase">{{ widget.props.secondaryLabel || 'DISAGREE' }}</span>
+                    <span class="truncate uppercase">{{ widget.props.secondaryLabel || 'NO' }}</span>
                   </button>
                 </div>
               </div>
@@ -2416,12 +2470,12 @@ more</span>
           <span class="whitespace-nowrap uppercase">{{ stickyButtonForThisPage.props?.label || stickyButtonForThisPage.props?.buttonText || stickyButtonForThisPage.props?.ctaLabel || 'BUTTON CTA' }}</span>
         </button>
 
-        <!-- Dual Sticky Buttons (Side by Side) -->
+        <!-- Dual Sticky Buttons (Side-by-Side or Stacked) -->
         <div 
           v-else
-          class="grid grid-cols-2 gap-2.5 w-full p-2.5 bg-white border-t border-black/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]"
+          :class="stickyButtonForThisPage.props?.dualOrientation === 'vertical' ? 'flex flex-col gap-2 w-full p-2.5 bg-white border-t border-black/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]' : 'grid grid-cols-2 gap-2.5 w-full p-2.5 bg-white border-t border-black/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]'"
         >
-          <!-- Primary (Agree / Yes) -->
+          <!-- Primary (Yes / Agree) -->
           <button 
             type="button"
             @click.stop="handleActionButtonClick(stickyButtonForThisPage, 'primary')"
@@ -2438,11 +2492,10 @@ more</span>
             :style="{ height: `${stickyButtonForThisPage.props?.height || 48}px` }"
             class="w-full px-[12px] py-[12px] rounded-[0px] flex items-center justify-center gap-[8px] font-707 font-medium text-[13px] leading-[18px] tracking-normal cursor-pointer border-0 outline-none shadow-none"
           >
-            <component :is="getButtonIcon(stickyButtonForThisPage)" v-if="stickyButtonForThisPage.props?.showIcon" class="size-[15px] shrink-0" />
-            <span class="truncate uppercase">{{ stickyButtonForThisPage.props?.label || 'AGREE' }}</span>
+            <span class="truncate uppercase">{{ stickyButtonForThisPage.props?.label || 'YES' }}</span>
           </button>
 
-          <!-- Secondary (Disagree / No) -->
+          <!-- Secondary (No / Disagree) -->
           <button 
             type="button"
             @click.stop="handleActionButtonClick(stickyButtonForThisPage, 'secondary')"
@@ -2459,8 +2512,7 @@ more</span>
             :style="{ height: `${stickyButtonForThisPage.props?.height || 48}px` }"
             class="w-full px-[12px] py-[12px] rounded-[0px] flex items-center justify-center gap-[8px] font-707 font-medium text-[13px] leading-[18px] tracking-normal cursor-pointer outline-none shadow-none"
           >
-            <component :is="getSecondaryButtonIcon(stickyButtonForThisPage)" v-if="stickyButtonForThisPage.props?.secondaryShowIcon" class="size-[15px] shrink-0" />
-            <span class="truncate uppercase">{{ stickyButtonForThisPage.props?.secondaryLabel || 'DISAGREE' }}</span>
+            <span class="truncate uppercase">{{ stickyButtonForThisPage.props?.secondaryLabel || 'NO' }}</span>
           </button>
         </div>
       </div>
@@ -4815,6 +4867,24 @@ function isDateField(widget: any): boolean {
   return widget.props?.inputType === 'date' || label.includes('birth') || label.includes('dob') || label.includes('date') || label.includes('lahir') || placeholder.includes('dd / mm / yyyy');
 }
 
+const GOOGLE_GENDER_PRESETS = ['Female', 'Male', 'Rather not say', 'Custom'] as const;
+
+function isGenderField(widget: any): boolean {
+  if (!widget || widget.type !== 'FieldInput') return false;
+  const label = (widget.props?.label || '').toLowerCase();
+  const inputType = (widget.props?.inputType || '').toLowerCase();
+  return inputType === 'gender' || label.includes('gender') || label.includes('jenis kelamin') || label.includes('sex');
+}
+
+function isGenderItem(field: any): boolean {
+  if (!field) return false;
+  const type = (field.type || '').toLowerCase();
+  const name = (field.name || '').toLowerCase();
+  const placeholder = (field.placeholder || '').toLowerCase();
+  const label = (field.label || '').toLowerCase();
+  return type === 'gender' || name.includes('gender') || label.includes('gender') || placeholder.includes('gender') || name.includes('jenis kelamin') || label.includes('jenis kelamin');
+}
+
 // Interactive Date Selector Bottom Sheet State (Figma Node 276:4722 Token Harmonization)
 const showDateSelectorSheet = ref(false);
 const targetDateContext = ref<{
@@ -5590,21 +5660,28 @@ const modalDisplayProps = computed(() => {
     return activeTriggeredModal.value;
   }
   const selected = editorStore.selectedWidget;
+  const isSecondary = editorStore.activeModalKey === 'secondaryModalProps';
+  if (isSecondary && selected?.props?.secondaryModalProps) {
+    return selected.props.secondaryModalProps;
+  }
   if (selected?.props?.modalProps) {
     return selected.props.modalProps;
   }
   if (selected?.type === 'ModalOverlay') {
     return selected.props;
   }
-  const btnWithModal = activePage.value.widget_tree.find(w => (w.type === 'ActionButton' || w.type === 'HeroDrop') && (w.props?.actionType === 'modal' || w.props?.modalProps));
+  const btnWithModal = activePage.value.widget_tree.find(w => (w.type === 'ActionButton' || w.type === 'HeroDrop') && (w.props?.actionType === 'modal' || w.props?.modalProps || w.props?.secondaryActionType === 'modal' || w.props?.secondaryModalProps));
+  if (isSecondary && btnWithModal?.props?.secondaryModalProps) {
+    return btnWithModal.props.secondaryModalProps;
+  }
   if (btnWithModal?.props?.modalProps) {
     return btnWithModal.props.modalProps;
   }
   return {
     variant: 'message-alert',
-    title: 'Your Pass Has Been Sent',
-    subtitle: 'Please provide a valid email address. We will resend your E-Pass immediately.',
-    buttonText: 'Done',
+    title: isSecondary ? 'Action Cancelled' : 'Your Pass Has Been Sent',
+    subtitle: isSecondary ? 'You clicked decline / cancel.' : 'Please provide a valid email address. We will resend your E-Pass immediately.',
+    buttonText: isSecondary ? 'Close' : 'Done',
     buttonVariant: 'black',
     dismissible: true
   };
@@ -5747,13 +5824,21 @@ const isPageRequiredFieldsComplete = computed(() => {
       const fields = (w.props?.fields || []) as any[];
       for (const f of fields) {
         if (f.required !== false) {
-          const val = (f.value || '').trim();
-          if (!val) return false;
-          if (f.type === 'email' || (f.name || '').toLowerCase().includes('email')) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(val)) return false;
+          if (f.type === 'file') {
+            if (!f.value && !f.fileData) return false;
+          } else {
+            const val = (f.value || '').trim();
+            if (!val) return false;
+            if (f.type === 'email' || (f.name || '').toLowerCase().includes('email')) {
+              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+              if (!emailRegex.test(val)) return false;
+            }
           }
         }
+      }
+    } else if (w.type === 'DocumentUpload') {
+      if (w.props?.required && (!w.props?.uploadedFiles || !w.props?.uploadedFiles.length)) {
+        return false;
       }
     } else if (w.type === 'MultipleChoice') {
       const isReq = w.props?.required !== false;

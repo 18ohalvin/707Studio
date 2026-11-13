@@ -412,6 +412,7 @@ const availablePresets = [
   { name: 'Last Name', placeholder: 'Last Name*', type: 'text' },
   { name: 'Email Address', placeholder: 'Email Address*', type: 'email' },
   { name: 'WhatsApp Number', placeholder: 'WhatsApp Number*', type: 'tel', countryCode: '+62' },
+  { name: 'Gender', placeholder: 'Select Gender*', type: 'gender' },
   { name: 'Instagram Handle', placeholder: 'Instagram Handle*', type: 'text' },
   { name: 'Date of Birth', placeholder: 'DD / MM / YYYY', type: 'date' },
   { name: 'Upload Document / ID', placeholder: 'Upload Document (PDF, JPG, PNG)', type: 'file' },

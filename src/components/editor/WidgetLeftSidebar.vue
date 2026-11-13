@@ -994,6 +994,7 @@ const currentTabFields = computed(() => {
         { name: 'Last Name', icon: User },
         { name: 'Email', icon: Mail },
         { name: 'WhatsApp Number', icon: Phone },
+        { name: 'Gender', icon: User },
         { name: 'National ID / KTP', icon: UserCheck },
         { name: 'Instagram Handle', icon: Instagram }
       ];
@@ -1218,6 +1219,19 @@ function getEPassDefaultProps() {
 function getFieldDefaultProps(fieldName: string) {
   const isEmail = fieldName.toLowerCase().includes('email');
   const isWa = fieldName.toLowerCase().includes('whatsapp') || fieldName.toLowerCase().includes('phone');
+  const isGender = fieldName.toLowerCase().includes('gender');
+  if (isGender) {
+    return {
+      label: 'Gender',
+      placeholder: 'Select Gender*',
+      value: '',
+      required: true,
+      inputType: 'gender',
+      stateVariant: 'Default',
+      errorMessage: 'Please select your gender.',
+      showError: false
+    };
+  }
   const label = fieldName;
   const placeholder = `${fieldName}*`;
   return {

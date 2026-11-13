@@ -56,7 +56,7 @@
 
     <!-- TAB 1: CONTENT -->
     <div v-show="activeTab === 'content'" class="w-full flex flex-col">
-      <!-- Layout Mode Selector: Single Button vs Dual Buttons (Agree / Disagree) -->
+      <!-- Layout Mode Selector: Single Button vs Dual Buttons (Yes / No) -->
       <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] pb-[18px] shrink-0 w-full border-b border-[#f0f0f0]">
         <div class="flex items-center justify-between w-full">
           <div class="flex flex-col">
@@ -64,7 +64,7 @@
               Button Layout
             </p>
             <span class="font-707 text-[11px] text-neutral-400">
-              Single action or paired choices
+              Single action or dual options
             </span>
           </div>
           <div class="flex gap-[6px] items-center">
@@ -82,126 +82,62 @@
               :class="layoutMode === 'dual' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
               class="px-3 h-[30px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer transition-all"
             >
-              Dual (Agree / Disagree)
+              Dual (Yes / No)
             </button>
           </div>
         </div>
 
-        <!-- Presets for Dual Mode (Agree / Disagree, Yes / No, etc.) -->
-        <div v-if="layoutMode === 'dual'" class="w-full pt-1">
-          <p class="font-707 text-[11px] font-medium text-neutral-500 mb-2">Dual Action Presets</p>
-          <div class="grid grid-cols-2 gap-2 w-full">
+        <!-- Grid Alignment (Left-Right vs Top-Bottom Stack) -->
+        <div v-if="layoutMode === 'dual'" class="flex items-center justify-between w-full pt-2 border-t border-black/5">
+          <div class="flex flex-col">
+            <p class="font-707 font-medium text-[12px] text-neutral-800">
+              Grid Alignment
+            </p>
+            <span class="font-707 text-[10.5px] text-neutral-400">
+              Side-by-side or stacked layout
+            </span>
+          </div>
+          <div class="flex gap-[6px] items-center">
             <button
-              v-for="p in DUAL_BUTTON_PRESETS"
-              :key="p.id"
               type="button"
-              @click="applyDualPreset(p)"
-              :class="(buttonLabel.toUpperCase() === p.primaryLabel && secondaryButtonLabel.toUpperCase() === p.secondaryLabel) ? 'border-black bg-black/5 font-medium' : 'border-black/10 hover:border-black/30 bg-white'"
-              class="px-2.5 py-1.5 rounded-[8px] border text-left flex flex-col gap-0.5 transition-all cursor-pointer text-black"
+              @click="dualOrientation = 'horizontal'"
+              :class="dualOrientation === 'horizontal' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer transition-all"
             >
-              <span class="font-707 text-[11px] font-medium">{{ p.label }}</span>
-              <span class="font-mono text-[9.5px] text-neutral-500 uppercase">{{ p.primaryLabel }} · {{ p.secondaryLabel }}</span>
+              Left & Right
+            </button>
+            <button
+              type="button"
+              @click="dualOrientation = 'vertical'"
+              :class="dualOrientation === 'vertical' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer transition-all"
+            >
+              Top & Bottom
             </button>
           </div>
         </div>
       </div>
 
-      <!-- PRIMARY BUTTON (Single Mode or Dual Mode Primary) -->
+      <!-- PRIMARY BUTTON (Single Mode or Dual Mode Yes/Agree Button) -->
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
         <div class="flex flex-col gap-[6px] w-full">
           <div class="flex items-center justify-between">
             <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              {{ layoutMode === 'dual' ? 'Primary Button Text (Agree / Yes)' : 'Button Text' }}
+              {{ layoutMode === 'dual' ? 'Yes / Primary Button Text' : 'Button Text' }}
             </p>
             <span v-if="layoutMode === 'dual'" class="text-[10px] font-mono uppercase text-neutral-400">Button 1</span>
           </div>
           <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
             <input 
               v-model="buttonLabel"
-              :placeholder="layoutMode === 'dual' ? 'I AGREE' : 'Button Text (e.g. Enter Raffle)'"
+              :placeholder="layoutMode === 'dual' ? 'YES' : 'BUTTON CTA'"
               class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
             />
           </div>
         </div>
-
-        <!-- Add Icon Section for Primary Button -->
-        <div class="flex items-center justify-between w-full pt-1">
-          <p class="font-707 font-medium text-[12px] leading-[18px] text-neutral-700">
-            {{ layoutMode === 'dual' ? 'Primary Button Icon' : 'Button Icon' }}
-          </p>
-
-          <button
-            type="button"
-            role="switch"
-            :aria-checked="showIcon"
-            @click="toggleIcon"
-            class="relative inline-flex h-[20px] w-[36px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
-            :class="showIcon ? 'bg-black' : 'bg-[#e5e5ea]'"
-            title="Toggle Icon"
-          >
-            <span
-              aria-hidden="true"
-              class="pointer-events-none inline-block h-[16px] w-[16px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
-              :class="showIcon ? 'translate-x-[16px]' : 'translate-x-0'"
-            />
-          </button>
-        </div>
-
-        <!-- Primary Icon Presets -->
-        <Transition
-          enter-active-class="transition duration-200 ease-out"
-          enter-from-class="transform opacity-0 -translate-y-2"
-          enter-to-class="transform opacity-100 translate-y-0"
-          leave-active-class="transition duration-150 ease-in"
-          leave-from-class="transform opacity-100 translate-y-0"
-          leave-to-class="transform opacity-0 -translate-y-2"
-        >
-          <div v-if="showIcon" class="flex flex-nowrap overflow-x-auto gap-[8px] items-center -mx-[24px] px-[24px] w-[calc(100%+48px)] pt-1 no-scrollbar">
-            <button 
-              type="button"
-              @click="setIconName('arrow-right')"
-              :class="iconName === 'arrow-right' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-              class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
-            >
-              <ArrowRight class="size-3.5" /> Arrow
-            </button>
-            <button 
-              type="button"
-              @click="setIconName('grid')"
-              :class="iconName === 'grid' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-              class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
-            >
-              <LayoutGrid class="size-3.5" /> Grid
-            </button>
-            <button 
-              type="button"
-              @click="setIconName('ticket')"
-              :class="iconName === 'ticket' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-              class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
-            >
-              <Ticket class="size-3.5" /> Pass
-            </button>
-            <button 
-              type="button"
-              @click="setIconName('whatsapp')"
-              :class="iconName === 'whatsapp' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-              class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
-            >
-              <Phone class="size-3.5" /> WhatsApp
-            </button>
-            <button 
-              type="button"
-              @click="setIconName('instagram')"
-              :class="iconName === 'instagram' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-              class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
-            >
-              <Instagram class="size-3.5" /> Instagram
-            </button>
-          </div>
-        </Transition>
       </div>
 
-      <!-- SECONDARY BUTTON (Dual Mode Only: Disagree / No) -->
+      <!-- SECONDARY BUTTON (Dual Mode Only: No/Disagree Button) -->
       <div 
         v-if="layoutMode === 'dual'"
         class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full animate-in fade-in duration-150"
@@ -209,94 +145,18 @@
         <div class="flex flex-col gap-[6px] w-full">
           <div class="flex items-center justify-between">
             <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Secondary Button Text (Disagree / No)
+              No / Secondary Button Text
             </p>
             <span class="text-[10px] font-mono uppercase text-neutral-400">Button 2</span>
           </div>
           <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
             <input 
               v-model="secondaryButtonLabel"
-              placeholder="I DISAGREE"
+              placeholder="NO"
               class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 uppercase"
             />
           </div>
         </div>
-
-        <!-- Add Icon Section for Secondary Button -->
-        <div class="flex items-center justify-between w-full pt-1">
-          <p class="font-707 font-medium text-[12px] leading-[18px] text-neutral-700">
-            Secondary Button Icon
-          </p>
-
-          <button
-            type="button"
-            role="switch"
-            :aria-checked="secondaryShowIcon"
-            @click="toggleSecondaryIcon"
-            class="relative inline-flex h-[20px] w-[36px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
-            :class="secondaryShowIcon ? 'bg-black' : 'bg-[#e5e5ea]'"
-            title="Toggle Secondary Icon"
-          >
-            <span
-              aria-hidden="true"
-              class="pointer-events-none inline-block h-[16px] w-[16px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
-              :class="secondaryShowIcon ? 'translate-x-[16px]' : 'translate-x-0'"
-            />
-          </button>
-        </div>
-
-        <!-- Secondary Icon Presets -->
-        <Transition
-          enter-active-class="transition duration-200 ease-out"
-          enter-from-class="transform opacity-0 -translate-y-2"
-          enter-to-class="transform opacity-100 translate-y-0"
-          leave-active-class="transition duration-150 ease-in"
-          leave-from-class="transform opacity-100 translate-y-0"
-          leave-to-class="transform opacity-0 -translate-y-2"
-        >
-          <div v-if="secondaryShowIcon" class="flex flex-nowrap overflow-x-auto gap-[8px] items-center -mx-[24px] px-[24px] w-[calc(100%+48px)] pt-1 no-scrollbar">
-            <button 
-              type="button"
-              @click="setSecondaryIconName('arrow-right')"
-              :class="secondaryIconName === 'arrow-right' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-              class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
-            >
-              <ArrowRight class="size-3.5" /> Arrow
-            </button>
-            <button 
-              type="button"
-              @click="setSecondaryIconName('grid')"
-              :class="secondaryIconName === 'grid' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-              class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
-            >
-              <LayoutGrid class="size-3.5" /> Grid
-            </button>
-            <button 
-              type="button"
-              @click="setSecondaryIconName('ticket')"
-              :class="secondaryIconName === 'ticket' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-              class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
-            >
-              <Ticket class="size-3.5" /> Pass
-            </button>
-            <button 
-              type="button"
-              @click="setSecondaryIconName('whatsapp')"
-              :class="secondaryIconName === 'whatsapp' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-              class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
-            >
-              <Phone class="size-3.5" /> WhatsApp
-            </button>
-            <button 
-              type="button"
-              @click="setSecondaryIconName('instagram')"
-              :class="secondaryIconName === 'instagram' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
-              class="shrink-0 whitespace-nowrap content-stretch flex h-[32px] items-center justify-center gap-1.5 px-[12px] py-[4px] rounded-[8px] text-[11.5px] font-707 cursor-pointer"
-            >
-              <Instagram class="size-3.5" /> Instagram
-            </button>
-          </div>
-        </Transition>
       </div>
     </div>
 
@@ -339,7 +199,7 @@
         <div class="flex flex-col gap-[8px] w-full">
           <div class="flex items-center justify-between w-full">
             <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Primary Button Style (Agree / Yes)
+              Yes / Primary Style
             </p>
             <span class="text-[10px] font-mono text-neutral-400">Button 1</span>
           </div>
@@ -367,7 +227,7 @@
         <div class="flex flex-col gap-[8px] w-full pt-1">
           <div class="flex items-center justify-between w-full">
             <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-              Secondary Button Style (Disagree / No)
+              No / Secondary Style
             </p>
             <span class="text-[10px] font-mono text-neutral-400">Button 2</span>
           </div>
@@ -492,12 +352,12 @@
 
     <!-- TAB 3: ACTION & LINK -->
     <div v-show="activeTab === 'action'" class="w-full flex flex-col">
-      <!-- 1. PRIMARY BUTTON ACTION (Single or Dual) -->
+      <!-- 1. PRIMARY BUTTON ACTION (Single or Dual Yes Button) -->
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full" :class="layoutMode === 'dual' ? 'border-b border-[#f0f0f0]' : ''">
         <div class="content-stretch flex items-center justify-between w-full relative">
           <div class="flex flex-col">
             <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
-              {{ layoutMode === 'dual' ? 'Primary Action (Agree / Yes)' : 'Action Trigger' }}
+              {{ layoutMode === 'dual' ? 'Yes / Primary Action' : 'Action Trigger' }}
             </p>
             <span class="font-707 text-[11px] text-neutral-400">
               When clicked by guest
@@ -550,7 +410,7 @@
             <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
               <input 
                 v-model="actionUrl" 
-                placeholder="https://example.com/terms" 
+                placeholder="https://example.com/checkout" 
                 class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
               />
             </div>
@@ -584,7 +444,7 @@
         <div v-if="actionType === 'modal'" class="w-full pt-1 animate-in fade-in duration-150">
           <button 
             type="button"
-            @click="openModalSetup"
+            @click="openModalSetup('primary')"
             class="apple-glass-btn-dark w-full h-[38px] rounded-[8px] flex items-center justify-between px-3.5 font-707 font-medium text-[12px] cursor-pointer transition-all shadow-sm"
           >
             <span class="flex items-center gap-2">
@@ -596,7 +456,7 @@
         </div>
       </div>
 
-      <!-- 2. SECONDARY BUTTON ACTION (Dual Mode Only) -->
+      <!-- 2. SECONDARY BUTTON ACTION (Dual Mode Only: No Button) -->
       <div 
         v-if="layoutMode === 'dual'"
         class="content-stretch flex flex-col gap-[14px] items-start p-[24px] shrink-0 w-full animate-in fade-in duration-150"
@@ -604,7 +464,7 @@
         <div class="content-stretch flex items-center justify-between w-full relative">
           <div class="flex flex-col">
             <p class="font-707 font-medium text-[13px] leading-[18px] text-black whitespace-nowrap">
-              Secondary Action (Disagree / No)
+              No / Secondary Action
             </p>
             <span class="font-707 text-[11px] text-neutral-400">
               When clicked by guest
@@ -651,13 +511,13 @@
         <div v-if="secondaryActionType === 'link'" class="w-full pt-1 flex flex-col gap-3 animate-in fade-in duration-150">
           <div class="flex flex-col gap-1.5 w-full">
             <div class="flex items-center justify-between">
-              <span class="font-707 text-[12px] font-medium text-neutral-600">Secondary External URL</span>
+              <span class="font-707 text-[12px] font-medium text-neutral-600">Destination External URL</span>
               <span class="text-[10px] font-mono text-neutral-400">e.g. https://...</span>
             </div>
             <div class="border border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
               <input 
                 v-model="secondaryActionUrl" 
-                placeholder="https://example.com/decline" 
+                placeholder="https://example.com/cancel" 
                 class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
               />
             </div>
@@ -691,7 +551,7 @@
         <div v-if="secondaryActionType === 'modal'" class="w-full pt-1 animate-in fade-in duration-150">
           <button 
             type="button"
-            @click="openModalSetup"
+            @click="openModalSetup('secondary')"
             class="apple-glass-btn-dark w-full h-[38px] rounded-[8px] flex items-center justify-between px-3.5 font-707 font-medium text-[12px] cursor-pointer transition-all shadow-sm"
           >
             <span class="flex items-center gap-2">
@@ -707,7 +567,7 @@
 </template>
 
 <script setup lang="ts">
-import { CTA_ACTION_OPTIONS, normalizeCtaAction, DUAL_BUTTON_PRESETS, type DualButtonPreset } from './ctaActions.ts';
+import { CTA_ACTION_OPTIONS, normalizeCtaAction } from './ctaActions.ts';
 import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
@@ -717,14 +577,11 @@ import {
   Check, 
   ArrowRight, 
   SlidersHorizontal,
-  LayoutGrid, 
-  Ticket, 
-  Phone,
-  Instagram,
   Bell,
   TextCursorInput,
   ListOrdered,
   ListFilter,
+  LayoutGrid,
   Type,
   Layout,
   Link2
@@ -759,30 +616,27 @@ const modalVariants = [
   { id: 'image-matrix' as ModalVariant, label: 'Image Matrix', icon: LayoutGrid }
 ];
 
-const currentModalVariant = computed<ModalVariant>(() => {
-  return targetWidget.value?.props?.modalProps?.variant || 'message-alert';
-});
-
-function setModalVariant(v: ModalVariant) {
+function setModalVariant(v: ModalVariant, target: 'primary' | 'secondary' = 'primary') {
   if (!targetWidget.value) return;
-  const existing = targetWidget.value.props.modalProps || {};
+  const modalKey = target === 'secondary' ? 'secondaryModalProps' : 'modalProps';
+  const existing = targetWidget.value.props[modalKey] || {};
   let updated: Record<string, any> = { ...existing, variant: v };
 
   if (v === 'message-alert') {
-    updated.title = updated.title || 'Your Pass Has Been Sent';
-    updated.subtitle = updated.subtitle || 'Please provide a valid email address. We will resend your E-Pass immediately.';
+    updated.title = updated.title || (target === 'secondary' ? 'Action Cancelled' : 'Your Pass Has Been Sent');
+    updated.subtitle = updated.subtitle || (target === 'secondary' ? 'You have declined or cancelled.' : 'Please provide a valid email address.');
     updated.buttonText = updated.buttonText || 'Done';
     updated.buttonVariant = updated.buttonVariant || 'black';
   } else if (v === 'message-field') {
     updated.title = updated.title || 'Update Your Email';
-    updated.subtitle = updated.subtitle || 'Please provide a valid email address. We will resend your E-Pass immediately.';
+    updated.subtitle = updated.subtitle || 'Please provide a valid email address.';
     updated.fieldPlaceholder = updated.fieldPlaceholder || 'Email*';
     updated.fieldType = updated.fieldType || 'email';
     updated.buttonText = updated.buttonText || 'Done';
     updated.buttonVariant = updated.buttonVariant || 'black';
   } else if (v === 'choice-detailed') {
     updated.title = updated.title || 'Select Arrival Date';
-    updated.subtitle = updated.subtitle || 'Please provide a valid email address. We will resend your E-Pass immediately.';
+    updated.subtitle = updated.subtitle || 'Please provide a valid email address.';
     updated.buttonText = updated.buttonText || 'Done';
     updated.buttonVariant = updated.buttonVariant || 'black';
     updated.options = updated.options || [
@@ -791,34 +645,25 @@ function setModalVariant(v: ModalVariant) {
     ];
   } else if (v === 'choice-simple') {
     updated.title = updated.title || 'Select Arrival Date';
-    updated.subtitle = updated.subtitle || 'Please provide a valid email address. We will resend your E-Pass immediately.';
+    updated.subtitle = updated.subtitle || 'Please provide a valid email address.';
     updated.buttonText = updated.buttonText || 'Done';
     updated.buttonVariant = updated.buttonVariant || 'black';
     updated.options = updated.options || [
       { id: 'opt_1', label: '+62', sublabel: 'Indonesia', selected: true },
       { id: 'opt_2', label: '+65', sublabel: 'Singapore', selected: false }
     ];
-  } else if (v === 'image-matrix') {
-    updated.title = updated.title || 'Select Arrival Date';
-    updated.subtitle = updated.subtitle || 'Please provide a valid email address. We will resend your E-Pass immediately.';
-    updated.buttonText = updated.buttonText || 'Done';
-    updated.buttonVariant = updated.buttonVariant || 'black';
-    updated.imageSlots = updated.imageSlots || [
-      { id: 'slot_1', url: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=400&q=80', label: 'Model 01', selected: true },
-      { id: 'slot_2', url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80', label: 'Model 02', selected: false },
-      { id: 'slot_3', url: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=400&q=80', label: 'Model 03', selected: false },
-      { id: 'slot_4', url: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=400&q=80', label: 'Model 04', selected: false }
-    ];
   }
 
-  editorStore.updateWidgetProps(targetWidget.value.id, { modalProps: updated });
+  editorStore.updateWidgetProps(targetWidget.value.id, { [modalKey]: updated });
 }
 
-function openModalSetup() {
+function openModalSetup(target: 'primary' | 'secondary' = 'primary') {
   if (targetWidget.value) {
-    if (!targetWidget.value.props.modalProps) {
-      setModalVariant('message-alert');
+    const modalKey = target === 'secondary' ? 'secondaryModalProps' : 'modalProps';
+    if (!targetWidget.value.props[modalKey]) {
+      setModalVariant('message-alert', target);
     }
+    editorStore.activeModalKey = modalKey;
     editorStore.selectWidget(targetWidget.value.id);
     editorStore.openModalSidebar();
   }
@@ -879,27 +724,28 @@ const layoutMode = computed({
     if (targetWidget.value) {
       editorStore.updateWidgetProps(targetWidget.value.id, { 
         layoutMode: val,
-        secondaryLabel: targetWidget.value.props.secondaryLabel || 'DISAGREE',
+        secondaryLabel: targetWidget.value.props.secondaryLabel || 'NO',
         secondaryVariant: targetWidget.value.props.secondaryVariant || 'white',
-        secondaryActionType: targetWidget.value.props.secondaryActionType || 'link',
-        secondaryOpenInNewTab: targetWidget.value.props.secondaryOpenInNewTab ?? true
+        secondaryActionType: targetWidget.value.props.secondaryActionType || 'modal',
+        secondaryOpenInNewTab: targetWidget.value.props.secondaryOpenInNewTab ?? true,
+        dualOrientation: targetWidget.value.props.dualOrientation || 'horizontal'
       });
     }
   }
 });
 
-function applyDualPreset(preset: DualButtonPreset) {
-  if (targetWidget.value) {
-    editorStore.updateWidgetProps(targetWidget.value.id, {
-      layoutMode: 'dual',
-      label: preset.primaryLabel,
-      secondaryLabel: preset.secondaryLabel
-    });
+// Dual Buttons Orientation: horizontal (left-right) vs vertical (top-bottom)
+const dualOrientation = computed({
+  get: () => targetWidget.value?.props?.dualOrientation || 'horizontal',
+  set: (val: 'horizontal' | 'vertical') => {
+    if (targetWidget.value) {
+      editorStore.updateWidgetProps(targetWidget.value.id, { dualOrientation: val });
+    }
   }
-}
+});
 
 const buttonLabel = computed({
-  get: () => targetWidget.value?.props?.label || targetWidget.value?.props?.buttonText || targetWidget.value?.props?.ctaLabel || (layoutMode.value === 'dual' ? 'AGREE' : 'BUTTON CTA'),
+  get: () => targetWidget.value?.props?.label || targetWidget.value?.props?.buttonText || targetWidget.value?.props?.ctaLabel || (layoutMode.value === 'dual' ? 'YES' : 'BUTTON CTA'),
   set: (val: string) => {
     if (targetWidget.value) {
       if (targetWidget.value.type === 'HeroDrop') {
@@ -912,7 +758,7 @@ const buttonLabel = computed({
 });
 
 const secondaryButtonLabel = computed({
-  get: () => targetWidget.value?.props?.secondaryLabel || 'DISAGREE',
+  get: () => targetWidget.value?.props?.secondaryLabel || 'NO',
   set: (val: string) => {
     if (targetWidget.value) {
       editorStore.updateWidgetProps(targetWidget.value.id, { secondaryLabel: val });
@@ -1007,11 +853,7 @@ function selectLinkTo(val: string) {
   actionType.value = val;
   isLinkToDropdownOpen.value = false;
   if (val === 'modal' && targetWidget.value) {
-    if (!targetWidget.value.props.modalProps) {
-      setModalVariant('message-alert');
-    }
-    editorStore.selectWidget(targetWidget.value.id);
-    editorStore.openModalSidebar();
+    openModalSetup('primary');
   }
 }
 
@@ -1039,7 +881,7 @@ const secondaryActionType = computed({
     const current = normalizeCtaAction(targetWidget.value?.props?.secondaryActionType);
     const availableValues = linkToOptions.value.map(o => o.value as string);
     if (current && availableValues.includes(current)) return current;
-    return 'link';
+    return 'modal';
   },
   set: (val: string) => {
     if (targetWidget.value) {
@@ -1050,18 +892,14 @@ const secondaryActionType = computed({
 
 const selectedSecondaryActionLabel = computed(() => {
   const opt = allLinkToOptions.find(o => o.value === secondaryActionType.value);
-  return opt ? opt.label : 'External URL';
+  return opt ? opt.label : 'Popup Modal';
 });
 
 function selectSecondaryLinkTo(val: string) {
   secondaryActionType.value = val;
   isSecondaryLinkToDropdownOpen.value = false;
   if (val === 'modal' && targetWidget.value) {
-    if (!targetWidget.value.props.modalProps) {
-      setModalVariant('message-alert');
-    }
-    editorStore.selectWidget(targetWidget.value.id);
-    editorStore.openModalSidebar();
+    openModalSetup('secondary');
   }
 }
 
@@ -1082,54 +920,6 @@ const secondaryOpenInNewTab = computed({
     }
   }
 });
-
-// Primary Button Icon
-const showIcon = computed({
-  get: () => targetWidget.value?.props?.showIcon ?? false,
-  set: (val: boolean) => {
-    if (targetWidget.value) {
-      editorStore.updateWidgetProps(targetWidget.value.id, { showIcon: val });
-    }
-  }
-});
-
-function toggleIcon() {
-  showIcon.value = !showIcon.value;
-}
-
-const iconName = computed(() => {
-  return targetWidget.value?.props?.iconName || 'arrow-right';
-});
-
-function setIconName(name: string) {
-  if (targetWidget.value) {
-    editorStore.updateWidgetProps(targetWidget.value.id, { iconName: name, showIcon: true });
-  }
-}
-
-// Secondary Button Icon
-const secondaryShowIcon = computed({
-  get: () => targetWidget.value?.props?.secondaryShowIcon ?? false,
-  set: (val: boolean) => {
-    if (targetWidget.value) {
-      editorStore.updateWidgetProps(targetWidget.value.id, { secondaryShowIcon: val });
-    }
-  }
-});
-
-function toggleSecondaryIcon() {
-  secondaryShowIcon.value = !secondaryShowIcon.value;
-}
-
-const secondaryIconName = computed(() => {
-  return targetWidget.value?.props?.secondaryIconName || 'arrow-right';
-});
-
-function setSecondaryIconName(name: string) {
-  if (targetWidget.value) {
-    editorStore.updateWidgetProps(targetWidget.value.id, { secondaryIconName: name, secondaryShowIcon: true });
-  }
-}
 
 function setVariant(variant: 'black' | 'white') {
   if (targetWidget.value) {

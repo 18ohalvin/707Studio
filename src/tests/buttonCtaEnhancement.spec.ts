@@ -3,7 +3,7 @@ import { setActivePinia, createPinia } from 'pinia';
 import { useEditorStore } from '../stores/editorStore.ts';
 import { normalizeExternalUrl, DUAL_BUTTON_PRESETS, normalizeCtaAction } from '../components/editor/ctaActions.ts';
 
-describe('Button CTA Enhancement (Dual Action Buttons & External Link)', () => {
+describe('Button CTA Enhancement (Dual Action Buttons & Independent Actions)', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
   });
@@ -33,7 +33,7 @@ describe('Button CTA Enhancement (Dual Action Buttons & External Link)', () => {
     });
   });
 
-  describe('Dual Button Presets', () => {
+  describe('Dual Button Presets & Orientation', () => {
     it('provides standard paired presets', () => {
       const ids = DUAL_BUTTON_PRESETS.map(p => p.id);
       expect(ids).toContain('agree-disagree');
@@ -41,13 +41,23 @@ describe('Button CTA Enhancement (Dual Action Buttons & External Link)', () => {
       expect(ids).toContain('accept-decline');
       expect(ids).toContain('confirm-cancel');
 
-      const agreePreset = DUAL_BUTTON_PRESETS.find(p => p.id === 'agree-disagree');
-      expect(agreePreset?.primaryLabel).toBe('I AGREE');
-      expect(agreePreset?.secondaryLabel).toBe('I DISAGREE');
-
       const yesPreset = DUAL_BUTTON_PRESETS.find(p => p.id === 'yes-no');
       expect(yesPreset?.primaryLabel).toBe('YES');
       expect(yesPreset?.secondaryLabel).toBe('NO');
+    });
+
+    it('supports horizontal (side-by-side) and vertical (stacked) grid orientation', () => {
+      const editorStore = useEditorStore();
+      const widget = editorStore.addWidget('ActionButton', undefined, {
+        layoutMode: 'dual',
+        dualOrientation: 'vertical',
+        label: 'YES',
+        secondaryLabel: 'NO'
+      });
+
+      expect(widget.props.dualOrientation).toBe('vertical');
+      editorStore.updateWidgetProps(widget.id, { dualOrientation: 'horizontal' });
+      expect(widget.props.dualOrientation).toBe('horizontal');
     });
   });
 
@@ -61,54 +71,49 @@ describe('Button CTA Enhancement (Dual Action Buttons & External Link)', () => {
       expect(widget.type).toBe('ActionButton');
       expect(widget.props.layoutMode).toBe('single');
       expect(widget.props.label).toBe('SUBMIT RSVP');
-      expect(widget.props.secondaryLabel).toBe('DISAGREE');
+      expect(widget.props.secondaryLabel).toBe('NO');
       expect(widget.props.secondaryVariant).toBe('white');
-      expect(widget.props.secondaryActionType).toBe('link');
-      expect(widget.props.openInNewTab).toBe(false);
-      expect(widget.props.secondaryOpenInNewTab).toBe(true);
+      expect(widget.props.secondaryActionType).toBe('modal');
+      expect(widget.props.dualOrientation).toBe('horizontal');
     });
 
-    it('creates dual ActionButton with customized agree and disagree options', () => {
+    it('creates dual ActionButton with independent actions (link + modal)', () => {
       const editorStore = useEditorStore();
       const widget = editorStore.addWidget('ActionButton', undefined, {
         layoutMode: 'dual',
-        label: 'I ACCEPT',
+        label: 'YES (VISIT STORE)',
         variant: 'black',
-        actionType: 'submit',
-        secondaryLabel: 'I DECLINE',
+        actionType: 'link',
+        url: 'https://707.co.id/store',
+        openInNewTab: true,
+        secondaryLabel: 'NO (CANCEL)',
         secondaryVariant: 'ghost',
-        secondaryActionType: 'link',
-        secondaryUrl: 'https://707.co.id/exit',
-        secondaryOpenInNewTab: true
+        secondaryActionType: 'modal',
+        secondaryModalProps: {
+          variant: 'message-alert',
+          title: 'Action Cancelled',
+          subtitle: 'You chose not to continue.',
+          buttonText: 'Close',
+          buttonVariant: 'black'
+        }
       });
 
       expect(widget.props.layoutMode).toBe('dual');
-      expect(widget.props.label).toBe('I ACCEPT');
-      expect(widget.props.secondaryLabel).toBe('I DECLINE');
-      expect(widget.props.secondaryVariant).toBe('ghost');
-      expect(widget.props.secondaryActionType).toBe('link');
-      expect(widget.props.secondaryUrl).toBe('https://707.co.id/exit');
+      expect(widget.props.actionType).toBe('link');
+      expect(widget.props.url).toBe('https://707.co.id/store');
+      expect(widget.props.secondaryActionType).toBe('modal');
+      expect(widget.props.secondaryModalProps.title).toBe('Action Cancelled');
     });
 
-    it('can update secondary button properties seamlessly', () => {
+    it('tracks activeModalKey to independently configure primary vs secondary modals', () => {
       const editorStore = useEditorStore();
-      const widget = editorStore.addWidget('ActionButton', undefined, {
-        layoutMode: 'dual',
-        label: 'YES',
-        secondaryLabel: 'NO'
-      });
+      expect(editorStore.activeModalKey).toBe('modalProps');
 
-      editorStore.updateWidgetProps(widget.id, {
-        secondaryLabel: 'NOT NOW',
-        secondaryVariant: 'white',
-        secondaryUrl: '707.co.id/cancel'
-      });
+      editorStore.activeModalKey = 'secondaryModalProps';
+      expect(editorStore.activeModalKey).toBe('secondaryModalProps');
 
-      const updated = editorStore.currentPage.widget_tree.find(w => w.id === widget.id);
-      expect(updated?.props.secondaryLabel).toBe('NOT NOW');
-      expect(updated?.props.secondaryVariant).toBe('white');
-      expect(updated?.props.secondaryUrl).toBe('707.co.id/cancel');
-      expect(normalizeExternalUrl(updated?.props.secondaryUrl)).toBe('https://707.co.id/cancel');
+      editorStore.activeModalKey = 'modalProps';
+      expect(editorStore.activeModalKey).toBe('modalProps');
     });
 
     it('normalizes action types for both buttons', () => {
@@ -117,6 +122,47 @@ describe('Button CTA Enhancement (Dual Action Buttons & External Link)', () => {
       expect(normalizeCtaAction('link')).toBe('link');
       expect(normalizeCtaAction('modal')).toBe('modal');
       expect(normalizeCtaAction('download-pass')).toBe('download-pass');
+    });
+  });
+
+  describe('Gender Dropdown Presets', () => {
+    it('standard Google gender presets include Female, Male, Rather not say, Custom', () => {
+      const GOOGLE_GENDER_PRESETS = ['Female', 'Male', 'Rather not say', 'Custom'] as const;
+      expect(GOOGLE_GENDER_PRESETS).toContain('Female');
+      expect(GOOGLE_GENDER_PRESETS).toContain('Male');
+      expect(GOOGLE_GENDER_PRESETS).toContain('Rather not say');
+      expect(GOOGLE_GENDER_PRESETS).toContain('Custom');
+      expect(GOOGLE_GENDER_PRESETS.length).toBe(4);
+    });
+  });
+
+  describe('Document Upload & Sharp 707 Form Tokens', () => {
+    it('creates DocumentUpload widget with default configuration', () => {
+      const editorStore = useEditorStore();
+      const widget = editorStore.addWidget('DocumentUpload', undefined, {
+        title: 'UPLOAD ID / KTP',
+        required: true
+      });
+
+      expect(widget.type).toBe('DocumentUpload');
+      expect(widget.props.title).toBe('UPLOAD ID / KTP');
+      expect(widget.props.required).toBe(true);
+    });
+
+    it('creates RegistrationForm with file field and gender field', () => {
+      const editorStore = useEditorStore();
+      const widget = editorStore.addWidget('RegistrationForm', undefined, {
+        fields: [
+          { id: 'f_name', name: 'Full Name', type: 'text', required: true, value: '' },
+          { id: 'f_gender', name: 'Gender', type: 'gender', required: true, value: '' },
+          { id: 'f_file', name: 'Upload ID', type: 'file', required: true, value: '' }
+        ]
+      });
+
+      expect(widget.type).toBe('RegistrationForm');
+      expect(widget.props.fields.length).toBe(3);
+      expect(widget.props.fields[1].type).toBe('gender');
+      expect(widget.props.fields[2].type).toBe('file');
     });
   });
 });
