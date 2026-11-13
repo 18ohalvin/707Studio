@@ -1266,7 +1266,7 @@
                       :ref="el => registerInputField(`${widget.id}_${field.id}`, el)"
                       :value="field.value || ''"
                       :type="isDateItem(field) ? 'text' : (field.type || 'text')"
-                      :inputmode="isDateItem(field) ? 'none' : (isPhoneItem(field) ? 'numeric' : (field.type === 'email' || (field.name && field.name.toLowerCase().includes('email')) ? 'email' : 'text'))"
+                      :inputmode="isDateItem(field) ? 'none' : (isPhoneItem(field) ? 'numeric' : (field.type === 'email' || /e-?mail/i.test(field.name || '') ? 'email' : 'text'))"
                       :placeholder="isDateItem(field) ? (field.placeholder || 'DD / MM / YYYY') : (isPhoneItem(field) ? (field.placeholder || 'WhatsApp Number*') : (field.placeholder || `${field.name || 'Field'}${field.required !== false ? '*' : ''}`))"
                       @click="isDateItem(field) ? openDateSelectorSheet(widget, field) : undefined"
                       @input="handleRegistrationFormItemInput($event, widget, field)"
@@ -4201,7 +4201,7 @@ function collectPageAnswers(): Record<string, any> {
       const raw = w.props?.value || '';
       formData[key] = raw;
       if (w.id) fieldMap[`fi:${w.id}`] = key;
-      if (w.props?.inputType === 'email' || /email/i.test(key)) userEmail = raw;
+      if (w.props?.inputType === 'email' || /e-?mail/i.test(key)) userEmail = raw;
       if (/name|nama/i.test(key) && String(raw).trim()) nameParts.push({ key, value: String(raw).trim() });
       if (isPhoneField(w) || /whats\s?app|phone|telp|telepon|\bwa\b|mobile|hp\b/i.test(key)) {
         const country = String(w.props?.countryCode || '+62').replace(/\D/g, '') || '62';
@@ -4223,7 +4223,7 @@ function collectPageAnswers(): Record<string, any> {
           : (f.fileData || f.value || '');
         formData[key] = raw;
         if (w.id && f.id) fieldMap[`rf:${w.id}:${f.id}`] = key;
-        if (f.type === 'email' || /email/i.test(key)) userEmail = typeof raw === 'string' ? raw : '';
+        if (f.type === 'email' || /e-?mail/i.test(key)) userEmail = typeof raw === 'string' ? raw : '';
         if (/name|nama/i.test(key) && typeof raw === 'string' && raw.trim()) nameParts.push({ key, value: raw.trim() });
         if (f.type === 'tel' || /whats\s?app|phone|telp|telepon|\bwa\b|mobile|hp\b/i.test(key)) {
           const country = String(f.countryCode || '+62').replace(/\D/g, '') || '62';
@@ -6205,7 +6205,7 @@ const isPageRequiredFieldsComplete = computed(() => {
       if (isReq) {
         const val = (w.props?.value || '').trim();
         if (!val) return false;
-        if (w.props?.inputType === 'email' || (w.props?.label || '').toLowerCase().includes('email')) {
+        if (w.props?.inputType === 'email' || /e-?mail/i.test(w.props?.label || '')) {
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           if (!emailRegex.test(val)) return false;
         }
@@ -6220,7 +6220,7 @@ const isPageRequiredFieldsComplete = computed(() => {
           } else {
             const val = (f.value || '').trim();
             if (!val) return false;
-            if (f.type === 'email' || (f.name || '').toLowerCase().includes('email')) {
+            if (f.type === 'email' || /e-?mail/i.test(f.name || '')) {
               const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
               if (!emailRegex.test(val)) return false;
             }

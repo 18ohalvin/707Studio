@@ -113,3 +113,73 @@ export function createEntryKeyring(makeKey: () => string = newClientKey) {
     }
   };
 }
+
+const SYNTHETIC_ANSWER_KEYS = new Set(['event_date', 'event_iso_date', 'submittedAt', 'Guest Type']);
+const SYNTHETIC_SESSION_LABELS = new Set([
+  'Single Day Admission',
+  'Daily Rolling Pass',
+  'Multi-Day Admission',
+]);
+const FORM_INPUT_WIDGET_TYPES = new Set([
+  'FieldInput',
+  'RegistrationForm',
+  'DocumentUpload',
+  'MultipleChoice',
+]);
+const PASS_WIDGET_TYPES = new Set(['GuestEPass', 'LiveQueuePass']);
+
+/** True when `answers` contains at least one guest-entered value beyond auto-populated metadata. */
+export function hasRealFormAnswers(answers: Record<string, any> | null | undefined): boolean {
+  if (!answers || typeof answers !== 'object') return false;
+  for (const [key, val] of Object.entries(answers)) {
+    if (!key || key.startsWith('_') || SYNTHETIC_ANSWER_KEYS.has(key)) continue;
+    if (key === 'Access Valid For') {
+      if (Array.isArray(val)) {
+        const hasRealPick = val.some((item) => {
+          if (item && typeof item === 'object') {
+            return !SYNTHETIC_SESSION_LABELS.has(String(item.label || '').trim());
+          }
+          const s = String(item ?? '').trim();
+          return s !== '' && !SYNTHETIC_SESSION_LABELS.has(s);
+        });
+        if (hasRealPick) return true;
+      } else {
+        const s = String(val ?? '').trim();
+        if (s !== '' && !SYNTHETIC_SESSION_LABELS.has(s)) return true;
+      }
+      continue;
+    }
+    if (Array.isArray(val)) {
+      if (val.length > 0) return true;
+    } else if (val && typeof val === 'object') {
+      if (Object.keys(val).length > 0) return true;
+    } else if (String(val ?? '').trim() !== '') {
+      return true;
+    }
+  }
+  return false;
+}
+
+export function pageHasPassWidget(page?: { widget_tree?: Array<{ type?: string }> } | null): boolean {
+  return Boolean(page?.widget_tree?.some((w) => Boolean(w?.type && PASS_WIDGET_TYPES.has(w.type))));
+}
+
+export function pageHasFormInputs(page?: { widget_tree?: Array<{ type?: string }> } | null): boolean {
+  return Boolean(page?.widget_tree?.some((w) => Boolean(w?.type && FORM_INPUT_WIDGET_TYPES.has(w.type))));
+}
+
+/**
+ * Determines whether navigating onto `targetPage` should immediately record the guest's submission.
+ * Submits when entering a pass page, when reaching the final page with answers, or when leaving
+ * form collection onto a terminal/confirmation branch page without form inputs (such as a branched Thank You page).
+ */
+export function shouldSubmitAfterNavigation(opts: {
+  targetPage?: { widget_tree?: Array<{ type?: string }> } | null;
+  targetIdx: number;
+  totalPages: number;
+  answers: Record<string, any>;
+}): boolean {
+  if (pageHasPassWidget(opts.targetPage)) return true;
+  if (!hasRealFormAnswers(opts.answers)) return false;
+  return opts.targetIdx === opts.totalPages - 1 || !pageHasFormInputs(opts.targetPage);
+}

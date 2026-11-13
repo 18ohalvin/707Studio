@@ -1,5 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
-import { postEntry, createEntryKeyring, RETRY_DELAYS_MS } from '../services/submitEntry.ts';
+import {
+  postEntry,
+  createEntryKeyring,
+  RETRY_DELAYS_MS,
+  hasRealFormAnswers,
+  shouldSubmitAfterNavigation,
+} from '../services/submitEntry.ts';
 
 const payload = { page_id: 'proj-1', submission_type: 'raffle', form_data: { fullName: 'Rian', email: 'rian@atmos.co' } };
 const ok = (code = '061026-1136-ABCD') =>
@@ -94,5 +100,78 @@ describe('the key of a registration', () => {
     const { newClientKey } = await import('../services/submitEntry.ts');
     const { clientKeyOf } = await import('../../server/src/submissionHelpers.ts');
     expect(clientKeyOf(newClientKey())).not.toBeNull();
+  });
+});
+
+describe('funnel navigation submission triggers', () => {
+  const heroPage = { widget_tree: [{ type: 'HeroBanner' }, { type: 'ActionButton' }] };
+  const branchYesNoPage = { widget_tree: [{ type: 'HeroBanner' }, { type: 'ActionButton' }, { type: 'ActionButton' }] };
+  const formPage = { widget_tree: [{ type: 'RegistrationForm' }, { type: 'ActionButton' }] };
+  const thankYouPage = { widget_tree: [{ type: 'HeroBanner' }, { type: 'TextBlock' }, { type: 'ActionButton' }] };
+  const passPage = { widget_tree: [{ type: 'GuestEPass' }] };
+
+  it('ignores auto-populated session metadata and _field_map when detecting real answers', () => {
+    expect(hasRealFormAnswers({})).toBe(false);
+    expect(hasRealFormAnswers({
+      _field_map: { 'fi:1': 'Name' },
+      event_date: '28 November 2026',
+      event_iso_date: '2026-11-28',
+      'Access Valid For': [{ id: 'single_day', label: 'Single Day Admission' }],
+    })).toBe(false);
+
+    expect(hasRealFormAnswers({
+      'Access Valid For': [{ id: 's1', label: 'Morning Session 10:00' }],
+    })).toBe(true);
+
+    expect(hasRealFormAnswers({
+      'Full Name': 'Rian Pratama',
+      'E-Mail': 'rian@example.com',
+    })).toBe(true);
+  });
+
+  it('does not submit on Hero -> Yes/No Hero steps before form fields are filled', () => {
+    const emptyCollected = {
+      _field_map: {},
+      'Access Valid For': [{ id: 'single_day', label: 'Single Day Admission' }],
+    };
+    expect(shouldSubmitAfterNavigation({
+      targetPage: branchYesNoPage,
+      targetIdx: 1,
+      totalPages: 5,
+      answers: emptyCollected,
+    })).toBe(false);
+  });
+
+  it('submits immediately when a branched funnel advances from a form onto a non-last Thank You page without an e-pass', () => {
+    // Funnel: [0: Hero, 1: Yes/No, 2: Form, 3: Thank You (YES branch), 4: Rejected (NO branch)]
+    expect(shouldSubmitAfterNavigation({
+      targetPage: thankYouPage,
+      targetIdx: 3,
+      totalPages: 5,
+      answers: { 'Full Name': 'Rian', 'E-Mail': 'rian@example.com' },
+    })).toBe(true);
+  });
+
+  it('waits to submit until the final form step in multi-step form funnels, or on e-pass entry', () => {
+    expect(shouldSubmitAfterNavigation({
+      targetPage: formPage,
+      targetIdx: 2,
+      totalPages: 5,
+      answers: { 'Full Name': 'Rian' },
+    })).toBe(false);
+
+    expect(shouldSubmitAfterNavigation({
+      targetPage: passPage,
+      targetIdx: 2,
+      totalPages: 5,
+      answers: {},
+    })).toBe(true);
+
+    expect(shouldSubmitAfterNavigation({
+      targetPage: heroPage,
+      targetIdx: 4,
+      totalPages: 5,
+      answers: { 'Full Name': 'Rian' },
+    })).toBe(true);
   });
 });

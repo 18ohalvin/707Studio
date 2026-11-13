@@ -51,6 +51,20 @@
         >
           Preview — this campaign is not published yet. Only you and the superadmin can open this link.
         </div>
+        <div
+          v-if="livePass.status === 'error' && livePass.error && !pageHasPass(currentPageData)"
+          class="sticky top-0 z-40 w-full px-4 py-2.5 bg-red-50 border-b border-red-200 text-red-900 font-707 text-[11.5px] leading-[16px] flex items-center justify-between gap-3"
+          role="alert"
+        >
+          <span class="flex-1">{{ livePass.error }}</span>
+          <button
+            type="button"
+            class="shrink-0 px-2.5 py-1 rounded bg-red-900 text-white text-[11px] font-medium hover:bg-red-800"
+            @click="sendSubmission()"
+          >
+            Retry
+          </button>
+        </div>
         <MobileArtboard 
           :key="currentPageData.id || activePageIndex"
           :page="currentPageData"
@@ -87,7 +101,13 @@ import { resolveTicketDesign } from '../components/editor/ticket/ticketDesign.ts
 import { TICKET_SOURCE_KEY, type TicketSource } from '../components/editor/ticket/ticketFields.ts';
 import { stripTextAnswers } from '../components/editor/guestAnswers.ts';
 import { getToken } from '../services/apiClient.ts';
-import { postEntry, createEntryKeyring } from '../services/submitEntry.ts';
+import {
+  postEntry,
+  createEntryKeyring,
+  hasRealFormAnswers,
+  pageHasPassWidget,
+  shouldSubmitAfterNavigation,
+} from '../services/submitEntry.ts';
 import { PLACES_KEY, PLACES_POLL_MS, collectPicks, fetchPlaces, wantsWaitlist, type PlacesMap } from '../services/places.ts';
 import type { ActivationPage } from '../types/editor.ts';
 import { useEditorStore } from '../stores/editorStore.ts';
@@ -130,6 +150,7 @@ async function loadPage() {
   activePageIndex.value = 0;
   pageHistory.value = [];
   collectedFormData.value = {};
+  lastSubmittedFingerprint = '';
   livePass.status = 'idle';
   livePass.waitlisted = false;
   livePass.code = '';
@@ -309,11 +330,14 @@ function handleNextPage(pageFormData?: Record<string, any>, targetPageId?: strin
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // Advancing onto the pass needs the entry recorded first (the pass shows its
-    // server-issued Access ID); so does reaching the end of a funnel that asked
-    // the guest anything.
+    // server-issued Access ID); so does completing forms onto a terminal/branch confirmation page.
     const targetPage = projectPages.value[activePageIndex.value];
-    const isLastPage = activePageIndex.value === projectPages.value.length - 1;
-    if (pageHasPass(targetPage) || (isLastPage && hasAnswers())) {
+    if (shouldSubmitAfterNavigation({
+      targetPage,
+      targetIdx: activePageIndex.value,
+      totalPages: projectPages.value.length,
+      answers: collectedFormData.value,
+    })) {
       sendSubmission();
     }
   } else if (hasAnswers() || projectPages.value.some(pageHasPass)) {
@@ -342,11 +366,11 @@ function setCampaignPages(pages: ActivationPage[], title?: string) {
 }
 
 function pageHasPass(page?: ActivationPage | null): boolean {
-  return Boolean(page?.widget_tree?.some(w => w.type === 'GuestEPass' || w.type === 'LiveQueuePass'));
+  return pageHasPassWidget(page);
 }
 
 function hasAnswers(): boolean {
-  return Object.values(collectedFormData.value).some(v => (Array.isArray(v) ? v.length > 0 : String(v ?? '').trim() !== ''));
+  return hasRealFormAnswers(collectedFormData.value);
 }
 
 /** The pass type (VIP / Public) the campaign's Ticket Summary issues. */
@@ -460,6 +484,7 @@ provide(LIVE_PASS_KEY, livePass);
 
 // One key per set of answers: a retry or a second tap is the same registration, never a second one.
 const entryKeyring = createEntryKeyring();
+let lastSubmittedFingerprint = '';
 
 /**
  * Right after registering, makes the guest's e-ticket (the same file as their download)
@@ -488,10 +513,7 @@ async function sendTicketCopy(entryId: string, entryKey: string) {
 }
 
 async function sendSubmission() {
-  // A funnel can reach "submit" twice (entering the pass page, then the final CTA) — record once.
-  if (livePass.status === 'pending' || livePass.status === 'ready') return;
-  livePass.status = 'pending';
-  livePass.error = '';
+  if (livePass.status === 'pending') return;
 
   const answers: Record<string, any> = {
     ...collectedFormData.value,
@@ -526,6 +548,13 @@ async function sendSubmission() {
     }
   }
 
+  // A funnel can reach "submit" twice for the same answers (entering the pass page, then final CTA) — record once unless answers changed.
+  const answersFingerprint = JSON.stringify(answers);
+  if (livePass.status === 'ready' && answersFingerprint === lastSubmittedFingerprint) return;
+
+  livePass.status = 'pending';
+  livePass.error = '';
+
   // Transient failures (signal drop, server briefly without its database) are retried
   // here, with the pass still showing "Issuing…", before the guest sees an error.
   const picks = collectPicks(projectPages.value);
@@ -553,6 +582,7 @@ async function sendSubmission() {
     livePass.queueNumber = Number(outcome.entry.queue_number) || Number(recorded.queue_number) || 0;
     livePass.partySize = Number(outcome.entry.party_size) || Number(recorded.party_size) || 1;
     livePass.pageId = String(submissionPageId.value || outcome.entry.page_id || '');
+    lastSubmittedFingerprint = answersFingerprint;
     livePass.status = 'ready';
     joinWaitlist = false;
     void refreshPlaces();
