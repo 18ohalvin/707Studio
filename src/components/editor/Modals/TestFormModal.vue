@@ -14,14 +14,14 @@
     >
       <!-- True-to-Scale iPhone 16/17 Pro Titanium Hardware Mockup (Exact 393:852 Pro Screen Aspect Ratio) -->
       <div 
-        class="relative flex flex-col items-center justify-between bg-white rounded-[50px] border-[6px] border-[#222225] shadow-[0_32px_100px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.12)] ring-1 ring-black/40 overflow-hidden animate-apple-pop"
+        class="relative flex flex-col items-center justify-between bg-[#f5f5f5] rounded-[50px] border-[6px] border-[#222225] shadow-[0_32px_100px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.12)] ring-1 ring-black/40 overflow-hidden animate-apple-pop"
         style="width: 393px; height: 852px;"
       >
         <!-- Titanium Outer Light Reflection Bevel -->
         <div class="absolute inset-0 rounded-[44px] pointer-events-none ring-1 ring-white/10 z-40" />
 
         <!-- iOS Status Bar & Dynamic Island Header -->
-        <div class="sticky top-0 left-0 right-0 h-[46px] w-full bg-white/95 backdrop-blur-md z-40 flex items-center justify-between px-7 shrink-0 pointer-events-none select-none">
+        <div class="sticky top-0 left-0 right-0 h-[46px] w-full bg-[#f5f5f5]/95 backdrop-blur-md z-40 flex items-center justify-between px-7 shrink-0 pointer-events-none select-none">
           <!-- Left: Time (9:41) -->
           <span class="font-sans font-semibold text-[13px] text-black tracking-tight">9:41</span>
 
@@ -55,7 +55,7 @@
         </div>
 
         <!-- Live Mobile Screen Viewport (Interactive & Realistic) -->
-        <div class="flex-1 w-full h-full min-h-0 flex flex-col overflow-hidden relative bg-white">
+        <div class="flex-1 w-full h-full min-h-0 flex flex-col overflow-hidden relative bg-[#f5f5f5]">
           <MobileArtboard 
             :key="editorStore.currentPage?.id || editorStore.activePageIndex"
             :page="editorStore.currentPage" 
@@ -68,7 +68,7 @@
         </div>
 
         <!-- iOS Home Bar Indicator (Bottom) -->
-        <div class="sticky bottom-0 left-0 right-0 h-[22px] w-full bg-white/95 backdrop-blur-sm z-40 flex items-center justify-center pointer-events-none shrink-0 select-none">
+        <div class="sticky bottom-0 left-0 right-0 h-[22px] w-full bg-[#f5f5f5]/95 backdrop-blur-sm z-40 flex items-center justify-center pointer-events-none shrink-0 select-none">
           <div class="w-[134px] h-[4.5px] bg-black/60 rounded-full" />
         </div>
       </div>

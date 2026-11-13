@@ -103,7 +103,7 @@
       @wheel="handleArtboardWheel"
       class="relative flex flex-col overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
       :class="[
-        (isPreviewModal || isLivePage) && !isTicketPage ? 'bg-white' : 'bg-[#f5f5f5]',
+        'bg-[#f5f5f5]',
         isTicketPage
           ? ((isPreviewModal || isLivePage) ? 'w-[340px] h-auto border-none shadow-none' : 'border-[0.5px] w-[340px] h-auto min-h-[240px]')
           : isLivePage
@@ -135,8 +135,7 @@
       <div 
         v-if="!isTicketPage"
         @click="handleArtboardClick"
-        class="sticky top-0 left-0 right-0 h-[48px] w-full z-30 flex items-center justify-end px-[16px] shrink-0 cursor-default"
-        :class="(isPreviewModal || isLivePage) ? 'bg-white' : 'bg-[#f5f5f5]'"
+        class="sticky top-0 left-0 right-0 h-[48px] w-full z-30 flex items-center justify-end px-[16px] shrink-0 cursor-default bg-[#f5f5f5]"
       >
         <div class="h-[15px] w-[48px] relative flex items-center justify-end">
           <img 
@@ -158,7 +157,7 @@
         @mousedown="handleArtboardMouseDown"
         class="artboard-scroll-container flex-1 flex flex-col no-scrollbar px-0 pt-0 pb-0 relative overscroll-contain will-change-scroll select-none w-full"
         :class="[
-          (isPreviewModal || isLivePage) && !isTicketPage ? 'bg-white' : 'bg-[#f5f5f5]',
+          'bg-[#f5f5f5]',
           isDragOver ? 'bg-neutral-200/60' : '',
           isTicketPage ? '!overflow-visible flex-none pt-[20px] pb-[20px]' : '',
           isSingleFullScreenHero ? 'overflow-hidden cursor-default' : (isArtboardDragging ? 'cursor-grabbing' : (isContentScrollable ? 'cursor-grab' : 'cursor-default')),
@@ -1123,7 +1122,7 @@
                       :class="[
                         field.errorMessage 
                           ? 'border-[#9b0707] bg-[#f8f1f1]' 
-                          : 'border-black/15 hover:border-black/35 bg-[#f6f6f6] hover:bg-[#f2f2f2]'
+                          : 'border-black/15 hover:border-black/35 bg-[#f0f0f0] hover:bg-[#ebebeb]'
                       ]"
                       @click.stop="isLivePage || isPreviewModal ? triggerDocumentPicker(`${widget.id}_${field.id}`) : undefined"
                     >
@@ -1398,8 +1397,8 @@
                   widget.props.errorMessage 
                     ? 'border-[#9b0707] bg-[#f8f1f1]' 
                     : (isSelected && editorStore.selectedWidgetId === widget.id && !isLivePage && !isPreviewModal
-                        ? 'border-black bg-[#f0f0f0] shadow-sm'
-                        : 'border-black/15 hover:border-black/35 bg-[#f6f6f6] hover:bg-[#f2f2f2]')
+                        ? 'border-black bg-[#eaeaea] shadow-sm'
+                        : 'border-black/15 hover:border-black/35 bg-[#f0f0f0] hover:bg-[#ebebeb]')
                 ]"
               >
                 <!-- State 1: Uploading Spinner -->

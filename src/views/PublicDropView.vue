@@ -1,10 +1,10 @@
 <template>
-  <div class="public-drop-view min-h-[100dvh] w-full bg-white min-[600px]:bg-[#0a0a0c] text-black flex flex-col items-center justify-start relative select-text overflow-x-hidden">
+  <div class="public-drop-view min-h-[100dvh] w-full bg-[#f5f5f5] min-[600px]:bg-[#0a0a0c] text-black flex flex-col items-center justify-start relative select-text overflow-x-hidden">
     <!-- Background subtle ambient lighting for desktop viewers -->
     <div class="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-neutral-800 via-[#0a0a0c] to-[#0a0a0c] hidden min-[600px]:block" />
 
     <!-- Loading State -->
-    <div v-if="isLoading" class="flex-1 w-full min-[600px]:max-w-[393px] min-h-[100dvh] bg-white flex flex-col items-center justify-center p-6 text-center shadow-2xl relative z-10">
+    <div v-if="isLoading" class="flex-1 w-full min-[600px]:max-w-[393px] min-h-[100dvh] bg-[#f5f5f5] flex flex-col items-center justify-center p-6 text-center shadow-2xl relative z-10">
       <div class="size-16 rounded-2xl bg-neutral-900 text-white flex items-center justify-center shadow-xl animate-pulse mb-5">
         <span class="font-black text-xl tracking-tight">707</span>
       </div>
@@ -14,7 +14,7 @@
     </div>
 
     <!-- Error / Not Found State -->
-    <div v-else-if="errorMessage || !currentPageData" class="flex-1 w-full min-[600px]:max-w-[393px] min-h-[100dvh] bg-white flex flex-col items-center justify-center p-8 text-center shadow-2xl relative z-10">
+    <div v-else-if="errorMessage || !currentPageData" class="flex-1 w-full min-[600px]:max-w-[393px] min-h-[100dvh] bg-[#f5f5f5] flex flex-col items-center justify-center p-8 text-center shadow-2xl relative z-10">
       <div class="size-16 rounded-full bg-neutral-100 border border-neutral-200 flex items-center justify-center mb-5 text-neutral-400">
         <AlertCircle class="w-8 h-8" />
       </div>
@@ -39,7 +39,7 @@
     >
       <!-- Mobile-only experience: full-bleed on phones; on larger screens the same 393x852 phone frame as the editor's mobile preview -->
       <main 
-        class="public-drop-frame w-full min-h-[100dvh] h-[100dvh] bg-white flex flex-col relative flex-1"
+        class="public-drop-frame w-full min-h-[100dvh] h-[100dvh] bg-[#f5f5f5] flex flex-col relative flex-1"
         style="-webkit-overflow-scrolling: touch;"
         @touchstart="handleTouchStart"
         @touchend="handleTouchEnd"
