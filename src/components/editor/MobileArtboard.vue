@@ -390,27 +390,17 @@
                     <div v-for="i in 9" :key="i" class="border border-white/30 border-dashed" />
                   </div>
 
-                  <!-- Floating Tool Dock -->
+                  <!-- Floating Status Pill (click outside or press Esc to finish) -->
                   <div 
                     :class="stickyButtonForThisPage ? 'bottom-[68px]' : 'bottom-3'"
-                    class="absolute left-1/2 -translate-x-1/2 bg-black/90 text-white backdrop-blur-xl px-3.5 py-1.5 rounded-full shadow-2xl flex items-center gap-2.5 z-40 border border-white/20 select-none transition-all duration-200"
+                    class="pointer-events-none absolute left-1/2 -translate-x-1/2 bg-black/85 text-white backdrop-blur-xl px-3.5 py-1.5 rounded-full shadow-2xl flex items-center gap-2 z-40 border border-white/15 select-none whitespace-nowrap transition-all duration-200"
                   >
-                    <div class="flex items-center gap-1.5 text-[11px] font-707">
-                      <Move class="size-3.5 text-amber-400 animate-pulse" />
-                      <span>Drag to reposition</span>
-                    </div>
-                    <div class="w-[1px] h-3 bg-white/20" />
-                    <div class="text-[11px] font-mono text-neutral-300">
-                      {{ Math.round(widget.props.imageZoom || 100) }}%
-                    </div>
-                    <div class="w-[1px] h-3 bg-white/20" />
-                    <button 
-                      type="button" 
-                      @click.stop="stopCanvasHeroDrag"
-                      class="bg-white text-black px-2.5 py-0.5 rounded-full text-[10px] font-bold font-707 hover:bg-neutral-200 transition-colors cursor-pointer"
-                    >
-                      Done ✓
-                    </button>
+                    <Move class="size-3 text-white/90 shrink-0" />
+                    <span class="text-[11px] font-707 font-medium">Drag to move</span>
+                    <span class="text-white/30">·</span>
+                    <span class="text-[11px] font-mono text-neutral-300">{{ Math.round(widget.props.imageZoom || 100) }}%</span>
+                    <span class="text-white/30">·</span>
+                    <span class="text-[10.5px] font-707 text-white/75">Click outside</span>
                   </div>
                 </div>
               </template>
@@ -788,52 +778,99 @@
                 </div>
 
                 <!-- Live Preview in Mini Preview Mode & Preview Mode (Pure Semantic Paragraph, Zero JS race conditions, true UI testing) -->
-                <p 
+                <div 
                   v-if="isMiniPreview || isPreviewModal"
-                  class="w-full min-w-0 max-w-full bg-transparent font-707 m-0 whitespace-pre-wrap break-words [overflow-wrap:anywhere] select-none pointer-events-none"
-                  :class="[
-                    getTextTypographyClass(widget),
-                    widget.props.textAlign === 'center' ? 'text-center' : (widget.props.textAlign === 'right' ? 'text-right' : 'text-left'),
-                    widget.props.variant === 'scrim' ? 'text-white' : (!widget.props.text ? 'text-neutral-400 opacity-60' : 'text-black')
-                  ]"
+                  class="flex flex-col gap-[6px] w-full min-w-0 max-w-full select-none pointer-events-none"
                 >
-                  {{ widget.props.text || widget.props.placeholder || 'WRITE YOUR TEXT HERE' }}
-                </p>
+                  <p 
+                    class="w-full min-w-0 max-w-full bg-transparent font-707 m-0 whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
+                    :class="[
+                      getTextTypographyClass(widget),
+                      widget.props.textAlign === 'center' ? 'text-center' : (widget.props.textAlign === 'right' ? 'text-right' : 'text-left'),
+                      widget.props.variant === 'scrim' ? 'text-white' : (!widget.props.text ? 'text-neutral-400 opacity-60' : 'text-black')
+                    ]"
+                  >
+                    {{ widget.props.text || widget.props.placeholder || 'WRITE YOUR TEXT HERE' }}
+                  </p>
+                  <p 
+                    v-if="hasTextBannerBody(widget)"
+                    class="w-full min-w-0 max-w-full bg-transparent font-707 m-0 whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
+                    :class="[
+                      getTextBodyTypographyClass(widget),
+                      widget.props.textAlign === 'center' ? 'text-center' : (widget.props.textAlign === 'right' ? 'text-right' : 'text-left'),
+                      widget.props.variant === 'scrim' ? 'text-white/85' : (!widget.props.bodyText ? 'text-neutral-400 opacity-60' : 'text-neutral-700')
+                    ]"
+                  >
+                    {{ widget.props.bodyText || widget.props.bodyPlaceholder || 'Write body text here...' }}
+                  </p>
+                </div>
 
                 <!-- Full Editable Mode on Canvas with Auto-Sizing CSS Grid -->
                 <div 
                   v-else
-                  class="grid w-full min-w-0 max-w-full relative"
+                  class="flex flex-col gap-[6px] w-full min-w-0 max-w-full"
                 >
-                  <!-- Invisible sizing twin: expands the grid row to the exact wrapped text height -->
-                  <div 
-                    class="col-start-1 row-start-1 invisible w-full min-w-0 max-w-full min-h-0 font-707 p-0 m-0 whitespace-pre-wrap break-words [overflow-wrap:anywhere] pointer-events-none select-none"
-                    :class="[
-                      getTextTypographyClass(widget),
-                      widget.props.textAlign === 'center' ? 'text-center' : (widget.props.textAlign === 'right' ? 'text-right' : 'text-left')
-                    ]"
-                    aria-hidden="true"
-                  >
-                    {{ widget.props.text || widget.props.placeholder || 'WRITE YOUR TEXT HERE' }}
+                  <div class="grid w-full min-w-0 max-w-full relative">
+                    <!-- Invisible sizing twin: expands the grid row to the exact wrapped text height -->
+                    <div 
+                      class="col-start-1 row-start-1 invisible w-full min-w-0 max-w-full min-h-0 font-707 p-0 m-0 whitespace-pre-wrap break-words [overflow-wrap:anywhere] pointer-events-none select-none"
+                      :class="[
+                        getTextTypographyClass(widget),
+                        widget.props.textAlign === 'center' ? 'text-center' : (widget.props.textAlign === 'right' ? 'text-right' : 'text-left')
+                      ]"
+                      aria-hidden="true"
+                    >
+                      {{ widget.props.text || widget.props.placeholder || 'WRITE YOUR TEXT HERE' }}
+                    </div>
+
+                    <!-- Real Textarea overlaid in same grid cell: 100% width and height -->
+                    <textarea
+                      :ref="el => registerTextarea(widget.id, el)"
+                      :value="widget.props.text || ''"
+                      :placeholder="widget.props.placeholder || 'WRITE YOUR TEXT HERE'"
+                      @input="handleTextInput($event, widget.id)"
+                      @focus="handleWidgetClick(widget)"
+                      @blur="handleTextBlur(widget)"
+                      @mousedown.stop
+                      rows="1"
+                      wrap="soft"
+                      class="col-start-1 row-start-1 w-full max-w-full min-w-0 h-full min-h-0 bg-transparent resize-none border-none outline-none font-707 overflow-hidden p-0 m-0 select-text cursor-text relative z-10 block whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
+                      :class="[
+                        getTextTypographyClass(widget),
+                        widget.props.textAlign === 'center' ? 'text-center' : (widget.props.textAlign === 'right' ? 'text-right' : 'text-left')
+                      ]"
+                    />
                   </div>
 
-                  <!-- Real Textarea overlaid in same grid cell: 100% width and height -->
-                  <textarea
-                    :ref="el => registerTextarea(widget.id, el)"
-                    :value="widget.props.text || ''"
-                    :placeholder="widget.props.placeholder || 'WRITE YOUR TEXT HERE'"
-                    @input="handleTextInput($event, widget.id)"
-                    @focus="handleWidgetClick(widget)"
-                    @blur="handleTextBlur(widget)"
-                    @mousedown.stop
-                    rows="1"
-                    wrap="soft"
-                    class="col-start-1 row-start-1 w-full max-w-full min-w-0 h-full min-h-0 bg-transparent resize-none border-none outline-none font-707 overflow-hidden p-0 m-0 select-text cursor-text relative z-10 block whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
-                    :class="[
-                      getTextTypographyClass(widget),
-                      widget.props.textAlign === 'center' ? 'text-center' : (widget.props.textAlign === 'right' ? 'text-right' : 'text-left')
-                    ]"
-                  />
+                  <!-- Optional Body Text Editable Field -->
+                  <div v-if="hasTextBannerBody(widget)" class="grid w-full min-w-0 max-w-full relative">
+                    <div 
+                      class="col-start-1 row-start-1 invisible w-full min-w-0 max-w-full min-h-0 font-707 p-0 m-0 whitespace-pre-wrap break-words [overflow-wrap:anywhere] pointer-events-none select-none"
+                      :class="[
+                        getTextBodyTypographyClass(widget),
+                        widget.props.textAlign === 'center' ? 'text-center' : (widget.props.textAlign === 'right' ? 'text-right' : 'text-left')
+                      ]"
+                      aria-hidden="true"
+                    >
+                      {{ widget.props.bodyText || widget.props.bodyPlaceholder || 'Write body text here...' }}
+                    </div>
+                    <textarea
+                      :value="widget.props.bodyText || ''"
+                      :placeholder="widget.props.bodyPlaceholder || 'Write body text here...'"
+                      @input="handleBodyTextInput($event, widget.id)"
+                      @focus="handleWidgetClick(widget)"
+                      @blur="handleTextBlur(widget)"
+                      @mousedown.stop
+                      rows="1"
+                      wrap="soft"
+                      class="col-start-1 row-start-1 w-full max-w-full min-w-0 h-full min-h-0 bg-transparent resize-none border-none outline-none font-707 overflow-hidden p-0 m-0 select-text cursor-text relative z-10 block whitespace-pre-wrap break-words [overflow-wrap:anywhere]"
+                      :class="[
+                        getTextBodyTypographyClass(widget),
+                        widget.props.textAlign === 'center' ? 'text-center' : (widget.props.textAlign === 'right' ? 'text-right' : 'text-left'),
+                        widget.props.variant === 'scrim' ? 'text-white/85 placeholder:text-white/50' : 'text-neutral-700 placeholder:text-neutral-400'
+                      ]"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -1075,17 +1112,18 @@
                       :ref="el => registerDocumentInput(`${widget.id}_${field.id}`, el)"
                       type="file"
                       class="hidden"
-                      accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx"
+                      :multiple="field.allowMultiple === true"
+                      :accept="resolveUploadExtensions(field).join(',')"
                       @change="handleRegistrationFormFileChange($event, widget, field)"
                     />
 
-                    <!-- Dropzone Container: Sharp edges, light grey 707 token styling -->
+                    <!-- Dropzone Container: Sharp edges, soft light grey 707 token styling -->
                     <div 
                       class="w-full rounded-none border border-dashed transition-all p-4 flex flex-col items-center justify-center text-center gap-2 relative overflow-hidden group/upload cursor-pointer"
                       :class="[
                         field.errorMessage 
-                          ? 'border-[#9b0707] bg-[#f5eaea]' 
-                          : 'border-black/20 hover:border-black/40 bg-[#ebebeb] hover:bg-[#e5e5e5]'
+                          ? 'border-[#9b0707] bg-[#f8f1f1]' 
+                          : 'border-black/15 hover:border-black/35 bg-[#f6f6f6] hover:bg-[#f2f2f2]'
                       ]"
                       @click.stop="isLivePage || isPreviewModal ? triggerDocumentPicker(`${widget.id}_${field.id}`) : undefined"
                     >
@@ -1095,31 +1133,47 @@
                         <span class="font-707 text-[12px] font-medium text-black">Uploading document...</span>
                       </div>
 
-                      <!-- State 2: Uploaded File Card -->
-                      <div v-else-if="field.fileData || field.value" class="w-full flex items-center justify-between p-2.5 rounded-none bg-[#e3e3e3] border border-black/10 shadow-xs gap-2">
-                        <div class="flex items-center gap-2.5 min-w-0">
-                          <div class="size-8 rounded-none bg-[#d8d8d8] flex items-center justify-center shrink-0">
-                            <FileText class="size-4 text-black" />
-                          </div>
-                          <div class="flex flex-col text-left min-w-0">
-                            <span class="font-707 text-[12px] font-medium text-black truncate">{{ field.fileData?.name || field.name || 'Document' }}</span>
-                            <span v-if="field.fileData?.size" class="font-707 text-[10.5px] text-neutral-500 font-mono">{{ formatFileSize(field.fileData.size) }}</span>
-                          </div>
-                        </div>
-                        <button 
-                          v-if="isLivePage || isPreviewModal"
-                          type="button" 
-                          @click.stop="removeRegistrationFormFile(widget, field)"
-                          class="size-6 rounded-none hover:bg-black/10 flex items-center justify-center text-neutral-500 hover:text-black cursor-pointer shrink-0 transition-colors"
-                          title="Remove file"
+                      <!-- State 2: Uploaded File(s) List -->
+                      <div v-else-if="getFieldUploadedFiles(field).length > 0" class="w-full flex flex-col gap-1.5">
+                        <div
+                          v-for="(uFile, fIdx) in getFieldUploadedFiles(field)"
+                          :key="uFile.url || fIdx"
+                          class="w-full flex items-center justify-between p-2.5 rounded-none bg-[#f2f2f2] border border-black/10 shadow-xs gap-2"
                         >
-                          <X class="size-3.5" />
+                          <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="size-8 rounded-none bg-[#e6e6e6] flex items-center justify-center shrink-0">
+                              <FileText class="size-4 text-black" />
+                            </div>
+                            <div class="flex flex-col text-left min-w-0">
+                              <span class="font-707 text-[12px] font-medium text-black truncate">{{ uFile.name || field.name || 'Document' }}</span>
+                              <span v-if="uFile.size" class="font-707 text-[10.5px] text-neutral-500 font-mono">{{ formatFileSize(uFile.size) }}</span>
+                            </div>
+                          </div>
+                          <button 
+                            v-if="isLivePage || isPreviewModal"
+                            type="button" 
+                            @click.stop="removeRegistrationFormFile(widget, field, fIdx)"
+                            class="size-6 rounded-none hover:bg-black/10 flex items-center justify-center text-neutral-500 hover:text-black cursor-pointer shrink-0 transition-colors"
+                            title="Remove file"
+                          >
+                            <X class="size-3.5" />
+                          </button>
+                        </div>
+
+                        <button
+                          v-if="(isLivePage || isPreviewModal) && field.allowMultiple && getFieldUploadedFiles(field).length < (field.maxFiles || 3)"
+                          type="button"
+                          @click.stop="triggerDocumentPicker(`${widget.id}_${field.id}`)"
+                          class="mt-0.5 w-full py-1.5 rounded-none border border-dashed border-black/20 hover:border-black/40 text-[11px] font-707 font-medium text-neutral-600 hover:text-black flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                        >
+                          <Plus class="size-3" />
+                          <span>Add another file</span>
                         </button>
                       </div>
 
                       <!-- State 3: Empty Dropzone / Tap to Upload -->
                       <div v-else class="flex flex-col items-center gap-1.5 py-1 w-full">
-                        <div class="size-9 rounded-none bg-[#dcdcdc] group-hover/upload:bg-[#d2d2d2] flex items-center justify-center text-black transition-colors shrink-0">
+                        <div class="size-9 rounded-none bg-[#ececec] group-hover/upload:bg-[#e5e5e5] flex items-center justify-center text-black transition-colors shrink-0">
                           <FileUp class="size-4 stroke-[1.8]" />
                         </div>
                         <div class="flex flex-col items-center">
@@ -1127,7 +1181,7 @@
                             {{ field.name || 'UPLOAD DOCUMENT' }}{{ field.required !== false ? '*' : '' }}
                           </p>
                           <p class="font-707 text-[11px] text-[#737373] mt-0.5 max-w-[280px]">
-                            {{ field.placeholder || 'Tap to choose file (PDF, PNG, JPG up to 10MB)' }}
+                            {{ field.placeholder || formatUploadHelperSummary(field) }}
                           </p>
                         </div>
                         <div class="mt-1 px-3 py-1 rounded-none bg-black text-white text-[10.5px] font-707 font-medium tracking-wider uppercase flex items-center gap-1.5 shadow-xs">
@@ -1342,10 +1396,10 @@
                 class="w-full rounded-none border border-dashed transition-all p-5 flex flex-col items-center justify-center text-center gap-2 relative overflow-hidden group/upload"
                 :class="[
                   widget.props.errorMessage 
-                    ? 'border-[#9b0707] bg-[#f5eaea]' 
+                    ? 'border-[#9b0707] bg-[#f8f1f1]' 
                     : (isSelected && editorStore.selectedWidgetId === widget.id && !isLivePage && !isPreviewModal
-                        ? 'border-black bg-[#e4e4e4] shadow-sm'
-                        : 'border-black/20 hover:border-black/40 bg-[#ebebeb] hover:bg-[#e5e5e5]')
+                        ? 'border-black bg-[#f0f0f0] shadow-sm'
+                        : 'border-black/15 hover:border-black/35 bg-[#f6f6f6] hover:bg-[#f2f2f2]')
                 ]"
               >
                 <!-- State 1: Uploading Spinner -->
@@ -1367,10 +1421,10 @@
                   <div 
                     v-for="(file, fIdx) in widget.props.uploadedFiles" 
                     :key="file.url || fIdx"
-                    class="w-full flex items-center justify-between p-2.5 rounded-none bg-[#e3e3e3] border border-black/10 shadow-xs gap-2.5"
+                    class="w-full flex items-center justify-between p-2.5 rounded-none bg-[#f2f2f2] border border-black/10 shadow-xs gap-2.5"
                   >
                     <div class="flex items-center gap-2.5 min-w-0">
-                      <div class="size-8 rounded-none bg-[#d8d8d8] flex items-center justify-center shrink-0">
+                      <div class="size-8 rounded-none bg-[#e6e6e6] flex items-center justify-center shrink-0">
                         <FileText class="size-4 text-black" />
                       </div>
                       <div class="flex flex-col text-left min-w-0">
@@ -1403,7 +1457,7 @@
 
                 <!-- State 3: Empty Dropzone / Tap to Upload -->
                 <div v-else class="flex flex-col items-center gap-2 py-1 w-full">
-                  <div class="size-9 rounded-none bg-[#dcdcdc] group-hover/upload:bg-[#d2d2d2] flex items-center justify-center text-black transition-colors shrink-0">
+                  <div class="size-9 rounded-none bg-[#ececec] group-hover/upload:bg-[#e5e5e5] flex items-center justify-center text-black transition-colors shrink-0">
                     <FileUp class="size-5 stroke-[1.8]" />
                   </div>
                   <div class="flex flex-col items-center">
@@ -3123,6 +3177,7 @@ import QRCode from 'qrcode';
 import { PLACES_KEY, placeStatus, placeKey, configuredLimit, type PlaceStatus } from '../../services/places.ts';
 import { LIVE_PASS_KEY, SESSIONS_ANSWER_KEY, type PassSession } from './livePass.ts';
 import { normalizeCtaAction, normalizeExternalUrl, resolveTargetPageIndex } from './ctaActions.ts';
+import { resolveUploadExtensions, formatUploadHelperSummary } from './uploadFieldConfig.ts';
 import { responsiveImgAttrs, placeholderStyle, sizedUrl } from '../../services/responsiveImage.ts';
 import { TICKET_CONTEXT_KEY, TICKET_SOURCE_KEY, TICKET_CANVAS, ticketFieldMeta, type TicketFieldKey } from './ticket/ticketFields.ts';
 import { DEFAULT_TRACK_NOTICE, fillTrackNotice } from './trackNotice.ts';
@@ -3714,6 +3769,26 @@ function handleTextInput(e: Event, widgetId: string) {
   editorStore.updateWidgetProps(widgetId, { text: target.value });
 }
 
+function handleBodyTextInput(e: Event, widgetId: string) {
+  const target = e.target as HTMLTextAreaElement;
+  adjustTextareaHeight(target);
+  editorStore.updateWidgetProps(widgetId, { bodyText: target.value });
+}
+
+function hasTextBannerBody(widget: any): boolean {
+  const p = widget?.props;
+  return Boolean(p?.hasBody || p?.variant === 'title-body' || p?.bodyText !== undefined);
+}
+
+function getTextBodyTypographyClass(widget: any) {
+  return getTextTypographyClass({
+    props: {
+      ...widget?.props,
+      typographyStyle: widget?.props?.bodyTypographyStyle || 'body-text'
+    }
+  });
+}
+
 function handleTextBlur(_widget: any) {
   // Retain unedited/empty text widgets even if user leaves them
 }
@@ -4112,7 +4187,11 @@ function collectPageAnswers(): Record<string, any> {
       const fields = (w.props?.fields || []) as any[];
       fields.forEach((f: any) => {
         const key = f.name || f.label || 'field';
-        const raw = f.fileData || f.value || '';
+        const raw = f.type === 'file'
+          ? (f.allowMultiple && Array.isArray(f.uploadedFiles) && f.uploadedFiles.length
+              ? f.uploadedFiles
+              : (f.uploadedFiles?.[0] || f.fileData || f.value || ''))
+          : (f.fileData || f.value || '');
         formData[key] = raw;
         if (f.type === 'email' || /email/i.test(key)) userEmail = typeof raw === 'string' ? raw : '';
         if (/name|nama/i.test(key) && typeof raw === 'string' && raw.trim()) nameParts.push({ key, value: raw.trim() });
@@ -4572,14 +4651,13 @@ let heroDragInitialY = 50;
 const activeCanvasDragWidgetId = ref<string | null>(null);
 
 function isFreeDragTarget(widget: any): boolean {
-  if (editorStore.isHeroFreeDragActive) {
-    return editorStore.selectedWidgetId === widget.id || (!editorStore.selectedWidgetId && widget.type === 'HeroDrop');
-  }
-  return activeCanvasDragWidgetId.value === widget.id;
+  if (!editorStore.isHeroFreeDragActive) return false;
+  return editorStore.selectedWidgetId === widget.id || (!editorStore.selectedWidgetId && widget.type === 'HeroDrop');
 }
 
 function startCanvasHeroDragMode(widget: any) {
   if (props.isPreviewModal || props.isLivePage) return;
+  editorStore.selectWidget(widget.id);
   activeCanvasDragWidgetId.value = widget.id;
   editorStore.toggleHeroFreeDrag(true);
 }
@@ -5720,48 +5798,90 @@ function removeUploadedDocument(widget: any, index: number) {
   });
 }
 
-async function handleRegistrationFormFileChange(e: Event, widget: any, field: any) {
-  const input = e.target as HTMLInputElement;
-  const file = input.files?.[0];
-  if (!file) return;
-
-  const maxBytes = 10 * 1024 * 1024;
-  if (file.size > maxBytes) {
-    field.errorMessage = 'File exceeds 10MB limit.';
-    triggerFieldShake(`${widget.id}_${field.id}`);
-    input.value = '';
-    return;
+function getFieldUploadedFiles(field: any): any[] {
+  if (Array.isArray(field?.uploadedFiles) && field.uploadedFiles.length > 0) {
+    return field.uploadedFiles;
   }
-
-  try {
-    uploadingWidgetIds.value.add(`${widget.id}_${field.id}`);
-    const dataUrl = await readFileAsDataUrl(file);
-    const res = await fetch('/api/submissions/upload-document', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ filename: file.name, dataUrl })
-    });
-    const json = await res.json();
-    if (!res.ok || !json?.success) {
-      throw new Error(json?.error || 'Upload failed');
-    }
-
-    field.fileData = json.file;
-    field.value = json.file.url;
-    field.errorMessage = '';
-    editorStore.updateWidgetProps(widget.id, { fields: [...widget.props.fields] });
-  } catch (err: any) {
-    field.errorMessage = err.message || 'Failed to upload.';
-    triggerFieldShake(`${widget.id}_${field.id}`);
-  } finally {
-    uploadingWidgetIds.value.delete(`${widget.id}_${field.id}`);
-    input.value = '';
-  }
+  if (field?.fileData) return [field.fileData];
+  if (field?.value) return [{ name: field.name || 'Document', url: field.value, size: 0, type: '' }];
+  return [];
 }
 
-function removeRegistrationFormFile(widget: any, field: any) {
-  field.fileData = undefined;
-  field.value = '';
+async function handleRegistrationFormFileChange(e: Event, widget: any, field: any) {
+  const input = e.target as HTMLInputElement;
+  const files = input.files;
+  if (!files || !files.length) return;
+
+  const allowedExts = resolveUploadExtensions(field).map(ext => ext.toLowerCase());
+  const maxMb = field.maxSizeMb || 10;
+  const maxBytes = maxMb * 1024 * 1024;
+  const isMultiple = field.allowMultiple === true;
+  const maxFiles = field.maxFiles || 3;
+  const currentUploaded = [...getFieldUploadedFiles(field)];
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const ext = `.${file.name.split('.').pop()?.toLowerCase()}`;
+    if (allowedExts.length && !allowedExts.includes(ext)) {
+      field.errorMessage = `File "${file.name}" format not allowed.`;
+      editorStore.showToast(`File "${file.name}" format not allowed.`);
+      triggerFieldShake(`${widget.id}_${field.id}`);
+      continue;
+    }
+    if (file.size > maxBytes) {
+      field.errorMessage = `File "${file.name}" exceeds ${maxMb}MB limit.`;
+      editorStore.showToast(`File "${file.name}" exceeds ${maxMb}MB limit.`);
+      triggerFieldShake(`${widget.id}_${field.id}`);
+      continue;
+    }
+
+    try {
+      uploadingWidgetIds.value.add(`${widget.id}_${field.id}`);
+      const dataUrl = await readFileAsDataUrl(file);
+      const res = await fetch('/api/submissions/upload-document', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: file.name, dataUrl })
+      });
+      const json = await res.json();
+      if (!res.ok || !json?.success) {
+        throw new Error(json?.error || 'Upload failed');
+      }
+
+      if (isMultiple) {
+        if (currentUploaded.length < maxFiles) {
+          currentUploaded.push(json.file);
+        } else {
+          editorStore.showToast(`Maximum ${maxFiles} files allowed.`);
+        }
+      } else {
+        currentUploaded.splice(0, currentUploaded.length, json.file);
+      }
+      field.errorMessage = '';
+    } catch (err: any) {
+      field.errorMessage = err.message || 'Failed to upload.';
+      triggerFieldShake(`${widget.id}_${field.id}`);
+    } finally {
+      uploadingWidgetIds.value.delete(`${widget.id}_${field.id}`);
+    }
+  }
+
+  field.uploadedFiles = currentUploaded;
+  field.fileData = currentUploaded[0];
+  field.value = currentUploaded.length
+    ? (isMultiple ? currentUploaded.map(f => f.url) : currentUploaded[0].url)
+    : '';
+  editorStore.updateWidgetProps(widget.id, { fields: [...widget.props.fields] });
+  input.value = '';
+}
+
+function removeRegistrationFormFile(widget: any, field: any, index = 0) {
+  const current = [...getFieldUploadedFiles(field)];
+  current.splice(index, 1);
+  const isMultiple = field.allowMultiple === true;
+  field.uploadedFiles = current;
+  field.fileData = current[0];
+  field.value = current.length ? (isMultiple ? current.map(f => f.url) : current[0].url) : '';
   field.errorMessage = '';
   editorStore.updateWidgetProps(widget.id, { fields: [...widget.props.fields] });
 }
@@ -5970,7 +6090,8 @@ const isPageRequiredFieldsComplete = computed(() => {
       for (const f of fields) {
         if (f.required !== false) {
           if (f.type === 'file') {
-            if (!f.value && !f.fileData) return false;
+            const uploaded = Array.isArray(f.uploadedFiles) ? f.uploadedFiles.length : 0;
+            if (!uploaded && !f.value && !f.fileData) return false;
           } else {
             const val = (f.value || '').trim();
             if (!val) return false;

@@ -258,6 +258,12 @@ import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import InfoHint from '../common/InfoHint.vue';
+import {
+  UPLOAD_FORMAT_CATEGORIES,
+  getExtensionsForCategories,
+  toggleUploadCategoryList,
+  type UploadFormatCategoryId
+} from './uploadFieldConfig.ts';
 import { 
   FileText, 
   FileUp, 
@@ -293,26 +299,16 @@ const targetWidget = computed(() => {
   return editorStore.currentPage.widget_tree.find(w => w.type === 'DocumentUpload') || null;
 });
 
-const formatCategories = [
-  {
-    id: 'documents',
-    label: 'Documents',
-    icon: FileText,
-    extensions: ['.pdf', '.doc', '.docx', '.txt']
-  },
-  {
-    id: 'images',
-    label: 'Images',
-    icon: Image,
-    extensions: ['.jpg', '.jpeg', '.png', '.webp', '.heic']
-  },
-  {
-    id: 'spreadsheets',
-    label: 'Spreadsheets',
-    icon: Table,
-    extensions: ['.xlsx', '.xls', '.csv']
-  }
-];
+const categoryIconMap: Record<UploadFormatCategoryId, any> = {
+  documents: FileText,
+  images: Image,
+  spreadsheets: Table
+};
+
+const formatCategories = UPLOAD_FORMAT_CATEGORIES.map((c) => ({
+  ...c,
+  icon: categoryIconMap[c.id]
+}));
 
 const presets = [
   {
@@ -367,14 +363,10 @@ const fieldName = computed({
 const allowedCategories = computed({
   get: () => (targetWidget.value?.props?.allowedCategories || ['documents', 'images']) as string[],
   set: (cats: string[]) => {
-    const exts: string[] = [];
-    cats.forEach(c => {
-      const match = formatCategories.find(fc => fc.id === c);
-      if (match) exts.push(...match.extensions);
-    });
+    const exts = getExtensionsForCategories(cats);
     updateProps({ 
       allowedCategories: cats,
-      allowedExtensions: exts.length ? exts : ['.pdf', '.jpg', '.png']
+      allowedExtensions: exts
     });
   }
 });
@@ -394,17 +386,8 @@ const isRequired = computed({
   set: (v) => updateProps({ required: v })
 });
 
-function toggleCategory(catId: string) {
-  const current = [...allowedCategories.value];
-  const idx = current.indexOf(catId);
-  if (idx >= 0) {
-    if (current.length > 1) {
-      current.splice(idx, 1);
-    }
-  } else {
-    current.push(catId);
-  }
-  allowedCategories.value = current;
+function toggleCategory(catId: UploadFormatCategoryId) {
+  allowedCategories.value = toggleUploadCategoryList(allowedCategories.value, catId);
 }
 
 function setAllowMultiple(multiple: boolean) {

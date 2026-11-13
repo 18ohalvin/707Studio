@@ -27,27 +27,62 @@
     </div>
 
     <!-- Section 0: Text Content Input (Direct access from sidebar) -->
-    <div class="content-stretch flex flex-col gap-[8px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
-      <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-        Content
-      </p>
-      <div class="border border-[#aaa] focus-within:border-black border-solid flex min-h-[44px] h-auto items-center px-[14px] py-[8px] rounded-[8px] w-full bg-white transition-all shadow-sm">
-        <textarea 
-          ref="sidebarTextareaRef"
-          v-model="textContent"
-          rows="2"
-          :placeholder="targetWidget?.props?.placeholder || 'WRITE YOUR TEXT HERE'"
-          class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 resize-none bg-transparent leading-[20px] overflow-y-auto max-h-[140px] p-0 m-0"
+    <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0]">
+      <div class="flex flex-col gap-[6px] w-full">
+        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+          {{ hasBodyText ? 'Head Title' : 'Content' }}
+        </p>
+        <div class="border border-[#aaa] focus-within:border-black border-solid flex min-h-[44px] h-auto items-center px-[14px] py-[8px] rounded-[8px] w-full bg-white transition-all shadow-sm">
+          <textarea 
+            ref="sidebarTextareaRef"
+            v-model="textContent"
+            rows="2"
+            :placeholder="targetWidget?.props?.placeholder || (hasBodyText ? 'HEAD TITLE' : 'WRITE YOUR TEXT HERE')"
+            class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 resize-none bg-transparent leading-[20px] overflow-y-auto max-h-[140px] p-0 m-0"
+          />
+        </div>
+      </div>
+
+      <!-- Optional Body Text Toggle & Input -->
+      <div class="flex items-center justify-between w-full pt-1">
+        <div class="flex items-center gap-1.5">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Body Text
+          </p>
+          <InfoHint text="Pair a supporting paragraph directly below the head title." />
+        </div>
+        <button
+          type="button"
+          role="switch"
+          :aria-checked="hasBodyText"
+          @click="toggleBodyText"
+          class="relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+          :class="hasBodyText ? 'bg-black' : 'bg-[#e5e5ea]'"
+        >
+          <span
+            aria-hidden="true"
+            class="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+            :class="hasBodyText ? 'translate-x-[18px]' : 'translate-x-0'"
+          />
+        </button>
+      </div>
+
+      <div v-if="hasBodyText" class="border border-[#aaa] focus-within:border-black border-solid flex min-h-[56px] h-auto items-center px-[14px] py-[8px] rounded-[8px] w-full bg-white transition-all shadow-sm">
+        <textarea
+          v-model="bodyTextContent"
+          rows="3"
+          :placeholder="targetWidget?.props?.bodyPlaceholder || 'Write body text here...'"
+          class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 resize-none bg-transparent leading-[20px] overflow-y-auto max-h-[160px] p-0 m-0"
         />
       </div>
     </div>
 
     <!-- Section 1: Typography Style (Figma Node 181:6024) -->
-    <div class="content-stretch flex flex-col items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0] overflow-visible" data-node-id="181:6024">
+    <div class="content-stretch flex flex-col gap-[12px] items-start p-[24px] shrink-0 w-full border-b border-[#f0f0f0] overflow-visible" data-node-id="181:6024">
       <div class="content-stretch flex gap-[32px] items-center justify-between shrink-0 w-full overflow-visible" data-node-id="181:6025">
         <div class="flex items-center gap-1.5 whitespace-nowrap shrink-0 w-[140px]">
           <p class="font-707 font-medium text-[13px] leading-[18px] text-black" data-node-id="181:6026">
-            Font Style
+            {{ hasBodyText ? 'Title Style' : 'Font Style' }}
           </p>
           <InfoHint text="Typography preset and scale from the 707 type system." />
         </div>
@@ -81,6 +116,54 @@
                 type="button"
                 @click="selectTypography(opt.id)"
                 :class="currentTypographyId === opt.id ? 'bg-black/5 font-medium text-black' : 'text-neutral-700 hover:bg-black/5'"
+                class="w-full text-left px-4 py-2 text-[13px] font-707 flex items-center justify-between transition-colors cursor-pointer border-b border-neutral-100 last:border-b-0"
+              >
+                <div class="flex flex-col">
+                  <span :class="opt.previewClass">{{ opt.label }}</span>
+                  <span class="text-[10px] text-neutral-400 font-normal">{{ opt.desc }}</span>
+                </div>
+                <span class="text-[11px] text-neutral-400 font-mono shrink-0 ml-2">{{ opt.size }}</span>
+              </button>
+            </div>
+          </Teleport>
+        </div>
+      </div>
+
+      <!-- Body Typography Style (visible when Body Text is active) -->
+      <div v-if="hasBodyText" class="content-stretch flex gap-[32px] items-center justify-between shrink-0 w-full overflow-visible">
+        <div class="flex items-center gap-1.5 whitespace-nowrap shrink-0 w-[140px]">
+          <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+            Body Style
+          </p>
+        </div>
+        <div class="relative flex-1" ref="bodyDropdownRef">
+          <button
+            type="button"
+            @click="isBodyDropdownOpen = !isBodyDropdownOpen"
+            class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-full cursor-pointer bg-white"
+          >
+            <span class="font-707 font-normal text-[13px] leading-[18px] text-black whitespace-nowrap truncate">
+              {{ currentBodyTypographyLabel }}
+            </span>
+            <ChevronDown
+              class="w-4 h-4 text-black transition-transform duration-150 shrink-0 ml-2"
+              :class="isBodyDropdownOpen ? 'rotate-180' : ''"
+            />
+          </button>
+
+          <Teleport to="body">
+            <div
+              v-if="isBodyDropdownOpen"
+              ref="bodyMenuRef"
+              :style="bodyPopoverStyle"
+              class="bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-[0px_8px_30px_rgba(0,0,0,0.15)] overflow-y-auto py-1 animate-in fade-in duration-150 select-none"
+            >
+              <button
+                v-for="opt in typographyOptions"
+                :key="opt.id"
+                type="button"
+                @click="selectBodyTypography(opt.id)"
+                :class="currentBodyTypographyId === opt.id ? 'bg-black/5 font-medium text-black' : 'text-neutral-700 hover:bg-black/5'"
                 class="w-full text-left px-4 py-2 text-[13px] font-707 flex items-center justify-between transition-colors cursor-pointer border-b border-neutral-100 last:border-b-0"
               >
                 <div class="flex flex-col">
@@ -159,9 +242,17 @@ defineEmits<{
 const editorStore = useEditorStore();
 const isDropdownOpen = ref(false);
 const dropdownRef = ref<HTMLElement | null>(null);
+const isBodyDropdownOpen = ref(false);
+const bodyDropdownRef = ref<HTMLElement | null>(null);
 const sidebarTextareaRef = ref<HTMLTextAreaElement | null>(null);
 
 const { style: popoverStyle, menuRef } = useModalPopover(dropdownRef, isDropdownOpen, { matchWidth: true });
+const { style: bodyPopoverStyle, menuRef: bodyMenuRef } = useModalPopover(bodyDropdownRef, isBodyDropdownOpen, { matchWidth: true });
+
+const hasBodyText = computed(() => {
+  const p = targetWidget.value?.props;
+  return Boolean(p?.hasBody || p?.variant === 'title-body' || p?.bodyText !== undefined);
+});
 
 const textContent = computed({
   get: () => targetWidget.value?.props?.text || '',
@@ -171,6 +262,34 @@ const textContent = computed({
     }
   }
 });
+
+const bodyTextContent = computed({
+  get: () => targetWidget.value?.props?.bodyText || '',
+  set: (val: string) => {
+    if (targetWidget.value) {
+      editorStore.updateWidgetProps(targetWidget.value.id, { bodyText: val });
+    }
+  }
+});
+
+function toggleBodyText() {
+  if (!targetWidget.value) return;
+  const next = !hasBodyText.value;
+  if (next) {
+    editorStore.updateWidgetProps(targetWidget.value.id, {
+      hasBody: true,
+      variant: 'title-body',
+      bodyText: targetWidget.value.props?.bodyText ?? 'Write supporting body text, instructions, or event details here.',
+      bodyTypographyStyle: targetWidget.value.props?.bodyTypographyStyle || 'body-text'
+    });
+  } else {
+    editorStore.updateWidgetProps(targetWidget.value.id, {
+      hasBody: false,
+      variant: 'editorial',
+      bodyText: undefined
+    });
+  }
+}
 
 const typographyOptions = [
   { id: 'headline-1', label: 'Headline 1', size: '32px', desc: 'Display title / primary punchy headline', previewClass: 'font-medium' },
@@ -200,6 +319,15 @@ const currentTypographyLabel = computed(() => {
   return opt ? opt.label : 'Headline 1';
 });
 
+const currentBodyTypographyId = computed(() => {
+  return targetWidget.value?.props?.bodyTypographyStyle || 'body-text';
+});
+
+const currentBodyTypographyLabel = computed(() => {
+  const opt = typographyOptions.find(o => o.id === currentBodyTypographyId.value);
+  return opt ? opt.label : 'Body Text';
+});
+
 const currentAlignment = computed(() => {
   return targetWidget.value?.props?.textAlign || 'left';
 });
@@ -209,6 +337,13 @@ function selectTypography(id: string) {
     editorStore.updateWidgetProps(targetWidget.value.id, { typographyStyle: id });
   }
   isDropdownOpen.value = false;
+}
+
+function selectBodyTypography(id: string) {
+  if (targetWidget.value) {
+    editorStore.updateWidgetProps(targetWidget.value.id, { bodyTypographyStyle: id });
+  }
+  isBodyDropdownOpen.value = false;
 }
 
 function setAlignment(align: 'left' | 'center' | 'right') {

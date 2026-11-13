@@ -41,9 +41,14 @@ export interface FormFieldItem {
   required?: boolean;
   value?: any;
   errorMessage?: string;
+  allowedCategories?: Array<'documents' | 'images' | 'spreadsheets' | 'all'>;
+  allowedExtensions?: string[];
   allowedTypes?: string[];
   maxSizeMb?: number;
+  allowMultiple?: boolean;
+  maxFiles?: number;
   fileData?: UploadedFileItem;
+  uploadedFiles?: UploadedFileItem[];
 }
 
 export interface DocumentUploadProps {

@@ -325,6 +325,28 @@
           </p>
         </div>
 
+        <!-- 1b. Title & Body (Structured Head Title + Body Text block) -->
+        <div 
+          draggable="true"
+          @dragstart="handleDragStart($event, { type: 'TextBanner', label: 'Title & Body', customProps: { text: 'SECTION HEADING', placeholder: 'HEAD TITLE', bodyText: 'Write supporting body text, instructions, or event details here.', bodyPlaceholder: 'Write body text here...', hasBody: true, typographyStyle: 'heading-3', bodyTypographyStyle: 'body-text', variant: 'title-body', textAlign: 'left' } })"
+          @dragend="handleDragEnd"
+          @click="addTextWidget('title-body')"
+          class="content-stretch flex flex-col gap-[6px] items-center shrink-0 w-[84px] cursor-grab active:cursor-grabbing group"
+          title="Drag to canvas or click to add (Head title + body text paragraph)"
+        >
+          <div class="bg-white group-hover:bg-neutral-50 h-[130px] rounded-[8px] shrink-0 w-[72px] transition-all border border-black/10 group-hover:border-black shadow-sm overflow-hidden flex flex-col justify-center gap-2 p-2.5">
+            <div class="w-4/5 h-2 bg-black rounded-[1px]" />
+            <div class="flex flex-col gap-1 w-full">
+              <div class="w-full h-1 bg-black/35 rounded-full" />
+              <div class="w-5/6 h-1 bg-black/30 rounded-full" />
+              <div class="w-3/4 h-1 bg-black/25 rounded-full" />
+            </div>
+          </div>
+          <p class="font-707 font-normal text-[11px] text-black text-center whitespace-nowrap">
+            Title & Body
+          </p>
+        </div>
+
         <!-- 2. Minimal Bold Title -->
         <div 
           draggable="true"
@@ -1018,7 +1040,7 @@ function addMediaWidget(ratio: string) {
   editorStore.addMediaBannerWidget(ratio);
 }
 
-function addTextWidget(variant: 'headline' | 'body' | 'title' = 'headline') {
+function addTextWidget(variant: 'headline' | 'body' | 'title' | 'title-body' = 'headline') {
   let props: Record<string, any> = {
     text: 'EXCLUSIVE ACCESS DROP\nReserve your spot for the community run and raffle pass.',
     placeholder: 'EXCLUSIVE ACCESS DROP',
@@ -1026,7 +1048,19 @@ function addTextWidget(variant: 'headline' | 'body' | 'title' = 'headline') {
     variant: 'editorial',
     textAlign: 'left'
   };
-  if (variant === 'title') {
+  if (variant === 'title-body') {
+    props = {
+      text: 'SECTION HEADING',
+      placeholder: 'HEAD TITLE',
+      bodyText: 'Write supporting body text, instructions, or event details here.',
+      bodyPlaceholder: 'Write body text here...',
+      hasBody: true,
+      typographyStyle: 'heading-3',
+      bodyTypographyStyle: 'body-text',
+      variant: 'title-body',
+      textAlign: 'left'
+    };
+  } else if (variant === 'title') {
     props = {
       text: 'LIMITED ACCESS DROP',
       placeholder: 'LIMITED ACCESS DROP',

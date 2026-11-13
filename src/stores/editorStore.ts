@@ -440,6 +440,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   function selectPage(index: number) {
     if (index >= 0 && index < pages.value.length) {
+      isHeroFreeDragActive.value = false;
       activePageIndex.value = index;
       selectedWidgetId.value = null;
       if (!isPagesOpen.value) {
@@ -599,6 +600,9 @@ export const useEditorStore = defineStore('editor', () => {
 
   function selectWidget(id: string | null) {
     cleanupEmptyTextWidgets(id || undefined);
+    if (id !== selectedWidgetId.value) {
+      isHeroFreeDragActive.value = false;
+    }
     selectedWidgetId.value = id;
   }
 
@@ -1533,6 +1537,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   function closeAllSidebars() {
     cleanupEmptyTextWidgets();
+    isHeroFreeDragActive.value = false;
     isAddMenuOpen.value = false;
     isWidgetSidebarOpen.value = false;
     isMediaSidebarOpen.value = false;

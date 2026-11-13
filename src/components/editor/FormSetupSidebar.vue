@@ -62,47 +62,153 @@
           <div 
             v-for="(field, index) in fields" 
             :key="field.id"
-            class="flex items-center justify-between p-3 rounded-[8px] bg-white border border-[#e5e5e5] hover:border-black/30 transition-all shadow-xs gap-3"
+            class="flex flex-col rounded-[8px] bg-white border border-[#e5e5e5] hover:border-black/30 transition-all shadow-xs overflow-hidden"
           >
-            <!-- Grip -->
-            <div class="text-neutral-400 hover:text-black shrink-0 cursor-grab">
-              <GripVertical class="size-4" />
+            <div class="flex items-center justify-between p-3 gap-3">
+              <!-- Grip -->
+              <div class="text-neutral-400 hover:text-black shrink-0 cursor-grab">
+                <GripVertical class="size-4" />
+              </div>
+
+              <!-- Field Name Input & Type Badge -->
+              <div class="flex-1 min-w-0 flex items-center gap-2">
+                <input 
+                  v-model="field.name"
+                  @input="updateFieldLabel(index, field.name)"
+                  class="font-707 font-medium text-[13px] text-black bg-transparent outline-none border-b border-transparent focus:border-black py-0.5 w-full min-w-0"
+                  placeholder="Field Label"
+                />
+                <!-- Field Type Indicator -->
+                <span class="font-707 text-[10px] text-neutral-500 uppercase px-2 py-0.5 rounded bg-neutral-100 shrink-0 font-medium tracking-tight">
+                  {{ field.type === 'tel' ? 'WhatsApp' : (field.type === 'file' ? 'File / Doc' : (field.type === 'date' || field.name.toLowerCase().includes('birth') ? 'Date' : (field.type || 'text'))) }}
+                </span>
+              </div>
+
+              <!-- File Upload Setup Expand Toggle (only for file fields) -->
+              <button
+                v-if="field.type === 'file'"
+                type="button"
+                @click="toggleUploadSettings(field.id)"
+                :class="isUploadSettingsOpen(field.id) ? 'apple-glass-btn-dark font-medium' : 'apple-glass-btn text-neutral-700'"
+                class="size-[28px] rounded-[6px] flex items-center justify-center cursor-pointer shrink-0 transition-colors"
+                title="Customize Upload Settings"
+              >
+                <SlidersHorizontal class="size-3.5" />
+              </button>
+
+              <!-- Required Pill Toggle -->
+              <button 
+                type="button"
+                @click="toggleFieldRequired(index)"
+                :class="field.required !== false ? 'apple-glass-btn-dark font-medium shadow-xs' : 'apple-glass-btn'"
+                class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer shrink-0 transition-colors"
+              >
+                {{ field.required !== false ? 'Required' : 'Optional' }}
+              </button>
+
+              <!-- Delete Field Button -->
+              <button 
+                type="button"
+                @click="removeField(index)"
+                :disabled="fields.length <= 1"
+                class="size-7 rounded-[6px] text-neutral-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed shrink-0"
+                title="Remove Field"
+              >
+                <Trash2 class="size-3.5" />
+              </button>
             </div>
 
-            <!-- Field Name Input & Type Badge -->
-            <div class="flex-1 min-w-0 flex items-center gap-2">
-              <input 
-                v-model="field.name"
-                @input="updateFieldLabel(index, field.name)"
-                class="font-707 font-medium text-[13px] text-black bg-transparent outline-none border-b border-transparent focus:border-black py-0.5 w-full min-w-0"
-                placeholder="Field Label"
-              />
-              <!-- Field Type Indicator -->
-              <span class="font-707 text-[10px] text-neutral-500 uppercase px-2 py-0.5 rounded bg-neutral-100 shrink-0 font-medium tracking-tight">
-                {{ field.type === 'tel' ? 'WhatsApp' : (field.type === 'file' ? 'File / Doc' : (field.type === 'date' || field.name.toLowerCase().includes('birth') ? 'Date' : (field.type || 'text'))) }}
-              </span>
+            <!-- Inline File Upload Configuration Drawer (Size, Types, Limit, Helper Copy) -->
+            <div 
+              v-if="field.type === 'file' && isUploadSettingsOpen(field.id)"
+              class="px-3 pb-3 pt-2.5 border-t border-[#f0f0f0] bg-neutral-50/75 flex flex-col gap-3"
+            >
+              <!-- Helper Text -->
+              <div class="flex flex-col gap-1 w-full">
+                <div class="flex items-center gap-1.5">
+                  <span class="font-707 text-[11px] font-medium text-neutral-600">Helper Text</span>
+                  <InfoHint text="Instruction line displayed under the upload box title (leave blank for automatic type & size summary)." />
+                </div>
+                <div class="border-[0.5px] border-[#ccc] focus-within:border-black rounded-[6px] px-2.5 h-[32px] flex items-center bg-white transition-colors">
+                  <input
+                    :value="field.placeholder || ''"
+                    @input="updateFileFieldProps(index, { placeholder: ($event.target as HTMLInputElement).value })"
+                    :placeholder="formatUploadHelperSummary(field)"
+                    class="w-full font-707 text-[11.5px] text-black focus:outline-none placeholder:text-neutral-400"
+                  />
+                </div>
+              </div>
+
+              <!-- Allowed File Types -->
+              <div class="flex flex-col gap-1.5 w-full">
+                <div class="flex items-center gap-1.5">
+                  <span class="font-707 text-[11px] font-medium text-neutral-600">Allowed File Types</span>
+                  <InfoHint text="Restrict which file categories guests can upload in this field." />
+                </div>
+                <div class="grid grid-cols-3 gap-1.5 w-full">
+                  <button
+                    v-for="cat in UPLOAD_FORMAT_CATEGORIES"
+                    :key="cat.id"
+                    type="button"
+                    @click="toggleFileFieldCategory(index, cat.id)"
+                    :class="getFieldCategories(field).includes(cat.id) ? 'bg-black text-white border-black font-medium shadow-xs' : 'bg-white text-neutral-700 border-[#d9d9d9] hover:border-black/40'"
+                    class="h-[30px] px-2 rounded-[6px] border text-[11px] font-707 flex items-center justify-center gap-1 transition-all cursor-pointer truncate"
+                  >
+                    <Check v-if="getFieldCategories(field).includes(cat.id)" class="size-3 shrink-0 stroke-[2.5]" />
+                    <span class="truncate">{{ cat.label }}</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Max Size & File Limit Row -->
+              <div class="grid grid-cols-2 gap-2.5 w-full">
+                <!-- Max Size -->
+                <div class="flex flex-col gap-1.5">
+                  <div class="flex items-center gap-1">
+                    <span class="font-707 text-[11px] font-medium text-neutral-600">Max Size</span>
+                    <InfoHint text="Maximum file size allowed per uploaded file." />
+                  </div>
+                  <div class="grid grid-cols-4 gap-1">
+                    <button
+                      v-for="size in UPLOAD_MAX_SIZE_OPTIONS"
+                      :key="size"
+                      type="button"
+                      @click="updateFileFieldProps(index, { maxSizeMb: size })"
+                      :class="(field.maxSizeMb || 10) === size ? 'bg-black text-white font-medium border-black' : 'bg-white text-neutral-700 border-[#d9d9d9] hover:border-black/40'"
+                      class="h-[28px] rounded-[6px] border font-707 text-[10.5px] flex items-center justify-center transition-all cursor-pointer"
+                    >
+                      {{ size }}MB
+                    </button>
+                  </div>
+                </div>
+
+                <!-- File Limit -->
+                <div class="flex flex-col gap-1.5">
+                  <div class="flex items-center gap-1">
+                    <span class="font-707 text-[11px] font-medium text-neutral-600">File Limit</span>
+                    <InfoHint text="Allow one file or up to 3 files for this field." />
+                  </div>
+                  <div class="grid grid-cols-2 gap-1">
+                    <button
+                      type="button"
+                      @click="updateFileFieldProps(index, { allowMultiple: false, maxFiles: 1 })"
+                      :class="field.allowMultiple !== true ? 'bg-black text-white font-medium border-black' : 'bg-white text-neutral-700 border-[#d9d9d9] hover:border-black/40'"
+                      class="h-[28px] rounded-[6px] border font-707 text-[10.5px] flex items-center justify-center transition-all cursor-pointer"
+                    >
+                      Single
+                    </button>
+                    <button
+                      type="button"
+                      @click="updateFileFieldProps(index, { allowMultiple: true, maxFiles: 3 })"
+                      :class="field.allowMultiple === true ? 'bg-black text-white font-medium border-black' : 'bg-white text-neutral-700 border-[#d9d9d9] hover:border-black/40'"
+                      class="h-[28px] rounded-[6px] border font-707 text-[10.5px] flex items-center justify-center transition-all cursor-pointer"
+                    >
+                      Up to 3
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
-
-            <!-- Required Pill Toggle -->
-            <button 
-              type="button"
-              @click="toggleFieldRequired(index)"
-              :class="field.required !== false ? 'apple-glass-btn-dark font-medium shadow-xs' : 'apple-glass-btn'"
-              class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer shrink-0 transition-colors"
-            >
-              {{ field.required !== false ? 'Required' : 'Optional' }}
-            </button>
-
-            <!-- Delete Field Button -->
-            <button 
-              type="button"
-              @click="removeField(index)"
-              :disabled="fields.length <= 1"
-              class="size-7 rounded-[6px] text-neutral-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed shrink-0"
-              title="Remove Field"
-            >
-              <Trash2 class="size-3.5" />
-            </button>
           </div>
         </div>
       </div>
@@ -257,9 +363,19 @@ import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import type { FormFieldItem } from '../../types/editor.ts';
-import { ChevronDown, GripVertical, Trash2, Plus, List, Type, ShieldCheck } from 'lucide-vue-next';
+import { ChevronDown, GripVertical, Trash2, Plus, List, Type, ShieldCheck, SlidersHorizontal, Check } from 'lucide-vue-next';
 import { useModalPopover } from '../common/modalPopover.ts';
 import InfoHint from '../common/InfoHint.vue';
+import {
+  UPLOAD_FORMAT_CATEGORIES,
+  UPLOAD_MAX_SIZE_OPTIONS,
+  DEFAULT_UPLOAD_CATEGORIES,
+  DEFAULT_UPLOAD_EXTENSIONS,
+  getExtensionsForCategories,
+  toggleUploadCategoryList,
+  formatUploadHelperSummary,
+  type UploadFormatCategoryId
+} from './uploadFieldConfig.ts';
 
 defineProps<{
   isOpen: boolean;
@@ -348,15 +464,61 @@ const requiredFieldsCount = computed(() => {
   return fields.value.filter(f => f.required !== false).length;
 });
 
+const collapsedUploadFieldIds = ref<Set<string>>(new Set());
+
+function isUploadSettingsOpen(fieldId: string): boolean {
+  return !collapsedUploadFieldIds.value.has(fieldId);
+}
+
+function toggleUploadSettings(fieldId: string) {
+  const next = new Set(collapsedUploadFieldIds.value);
+  if (next.has(fieldId)) {
+    next.delete(fieldId);
+  } else {
+    next.add(fieldId);
+  }
+  collapsedUploadFieldIds.value = next;
+}
+
+function getFieldCategories(field: FormFieldItem): UploadFormatCategoryId[] {
+  if (field.allowedCategories && field.allowedCategories.length) {
+    return field.allowedCategories.filter((c): c is UploadFormatCategoryId => c !== 'all');
+  }
+  return [...DEFAULT_UPLOAD_CATEGORIES];
+}
+
 function updateFieldLabel(index: number, newName: string) {
+  if (!currentWidget.value) return;
+  const updated = [...fields.value];
+  const existing = updated[index];
+  updated[index] = {
+    ...existing,
+    name: newName,
+    ...(existing.type === 'file' ? {} : { placeholder: `${newName}*` })
+  };
+  editorStore.updateWidgetProps(currentWidget.value.id, { fields: updated });
+}
+
+function updateFileFieldProps(index: number, patch: Partial<FormFieldItem>) {
   if (!currentWidget.value) return;
   const updated = [...fields.value];
   updated[index] = {
     ...updated[index],
-    name: newName,
-    placeholder: `${newName}*`
+    ...patch
   };
   editorStore.updateWidgetProps(currentWidget.value.id, { fields: updated });
+}
+
+function toggleFileFieldCategory(index: number, catId: UploadFormatCategoryId) {
+  const field = fields.value[index];
+  if (!field) return;
+  const nextCats = toggleUploadCategoryList(field.allowedCategories, catId);
+  const nextExts = getExtensionsForCategories(nextCats);
+  updateFileFieldProps(index, {
+    allowedCategories: nextCats,
+    allowedExtensions: nextExts,
+    allowedTypes: nextExts
+  });
 }
 
 function toggleFieldRequired(index: number) {
@@ -404,13 +566,14 @@ const availablePresets = [
   { name: 'Gender', placeholder: 'Select Gender*', type: 'gender' },
   { name: 'Instagram Handle', placeholder: 'Instagram Handle*', type: 'text' },
   { name: 'Date of Birth', placeholder: 'DD / MM / YYYY', type: 'date' },
-  { name: 'Upload Document / ID', placeholder: 'Upload Document (PDF, JPG, PNG)', type: 'file' },
+  { name: 'Upload Document / ID', placeholder: '', type: 'file' },
   { name: 'National ID / KTP', placeholder: 'Enter 16-digit KTP number', type: 'text' },
   { name: 'Custom Field', placeholder: 'Field Details*', type: 'text' }
 ];
 
 function addFieldPreset(preset: typeof availablePresets[0]) {
   if (!currentWidget.value) return;
+  const isFilePreset = preset.type === 'file';
   const newField: FormFieldItem = {
     id: `f_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
     name: preset.name,
@@ -418,7 +581,17 @@ function addFieldPreset(preset: typeof availablePresets[0]) {
     type: preset.type,
     countryCode: (preset as any).countryCode || undefined,
     required: true,
-    value: ''
+    value: '',
+    ...(isFilePreset
+      ? {
+          allowedCategories: [...DEFAULT_UPLOAD_CATEGORIES],
+          allowedExtensions: [...DEFAULT_UPLOAD_EXTENSIONS],
+          allowedTypes: [...DEFAULT_UPLOAD_EXTENSIONS],
+          maxSizeMb: 10,
+          allowMultiple: false,
+          maxFiles: 1
+        }
+      : {})
   };
   const updated = [...fields.value, newField];
   editorStore.updateWidgetProps(currentWidget.value.id, { fields: updated });

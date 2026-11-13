@@ -2,6 +2,12 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useEditorStore } from '../stores/editorStore.ts';
 import { normalizeExternalUrl, DUAL_BUTTON_PRESETS, normalizeCtaAction, getFunnelTargetPages, resolveTargetPageIndex } from '../components/editor/ctaActions.ts';
+import {
+  getExtensionsForCategories,
+  resolveUploadExtensions,
+  toggleUploadCategoryList,
+  formatUploadHelperSummary
+} from '../components/editor/uploadFieldConfig.ts';
 
 describe('Button CTA Enhancement (Dual Action Buttons & Independent Actions)', () => {
   beforeEach(() => {
@@ -200,6 +206,58 @@ describe('Button CTA Enhancement (Dual Action Buttons & Independent Actions)', (
     it('returns -1 at the end of the funnel or right before a ticket design page', () => {
       expect(resolveTargetPageIndex(pages, 2)).toBe(-1);
       expect(resolveTargetPageIndex(pages, 2, '')).toBe(-1);
+    });
+  });
+
+  describe('Upload Field Config & UX Enhancements', () => {
+    it('resolves allowed extensions and helper summary for RegistrationForm file fields', () => {
+      const exts = getExtensionsForCategories(['images']);
+      expect(exts).toContain('.jpg');
+      expect(exts).toContain('.png');
+      expect(exts).not.toContain('.pdf');
+
+      expect(toggleUploadCategoryList(['images'], 'images')).toEqual(['images']);
+      expect(toggleUploadCategoryList(['images'], 'documents')).toEqual(['images', 'documents']);
+
+      expect(resolveUploadExtensions({ allowedExtensions: ['.png', '.jpg'] })).toEqual(['.png', '.jpg']);
+      expect(formatUploadHelperSummary({ allowedExtensions: ['.png', '.jpg'], maxSizeMb: 5 })).toBe(
+        'Tap to choose file (PNG, JPG up to 5MB)'
+      );
+    });
+
+    it('supports Title & Body structured props on TextBanner widgets', () => {
+      const editorStore = useEditorStore();
+      const widget = editorStore.addWidget('TextBanner', undefined, {
+        text: 'SECTION HEADING',
+        bodyText: 'Supporting copy here',
+        hasBody: true,
+        typographyStyle: 'heading-3',
+        bodyTypographyStyle: 'body-text',
+        variant: 'title-body'
+      });
+
+      expect(widget.type).toBe('TextBanner');
+      expect(widget.props.hasBody).toBe(true);
+      expect(widget.props.text).toBe('SECTION HEADING');
+      expect(widget.props.bodyText).toBe('Supporting copy here');
+      expect(widget.props.bodyTypographyStyle).toBe('body-text');
+    });
+
+    it('exits hero inline reposition mode when deselecting widget or changing page', () => {
+      const editorStore = useEditorStore();
+      const hero = editorStore.addWidget('HeroDrop', undefined, { imageUrl: '/test.jpg', isSolidSpace: false });
+      editorStore.selectWidget(hero.id);
+      editorStore.toggleHeroFreeDrag(true);
+      expect(editorStore.isHeroFreeDragActive).toBe(true);
+
+      editorStore.selectWidget(null);
+      expect(editorStore.isHeroFreeDragActive).toBe(false);
+
+      editorStore.selectWidget(hero.id);
+      editorStore.toggleHeroFreeDrag(true);
+      editorStore.addPage();
+      editorStore.selectPage(0);
+      expect(editorStore.isHeroFreeDragActive).toBe(false);
     });
   });
 });
