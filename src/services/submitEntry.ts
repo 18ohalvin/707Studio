@@ -59,10 +59,14 @@ export async function postEntry(payload: EntryPayload, clientKey: string, opts: 
       await sleep(delays[attempt - 1]);
     }
     try {
+      const body = JSON.stringify({ ...payload, client_key: clientKey });
       const res = await doFetch('/api/submissions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
-        body: JSON.stringify({ ...payload, client_key: clientKey })
+        body,
+        // Let the request finish even if the guest leaves the page (outbound
+        // CTA, closing the tab). Browsers cap keepalive bodies at 64 KB.
+        keepalive: body.length < 60_000
       });
       const json = await res.json().catch(() => null);
       if (res.ok && json?.success && json.data?.ticket_code) {

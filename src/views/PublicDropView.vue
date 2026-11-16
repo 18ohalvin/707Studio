@@ -60,10 +60,17 @@
           <button
             type="button"
             class="shrink-0 px-2.5 py-1 rounded bg-red-900 text-white text-[11px] font-medium hover:bg-red-800"
-            @click="sendSubmission()"
+            @click="retrySubmission()"
           >
             Retry
           </button>
+        </div>
+        <div
+          v-if="livePass.status === 'pending' && !pageHasPass(currentPageData)"
+          class="sticky top-0 z-40 w-full px-4 py-2.5 bg-neutral-900 text-white font-707 text-[11.5px] leading-[16px] text-center"
+          role="status"
+        >
+          Sending your answers…
         </div>
         <MobileArtboard 
           :key="currentPageData.id || activePageIndex"
@@ -297,7 +304,9 @@ function handleTouchEnd(e: TouchEvent) {
   }
 }
 
-function handleNextPage(pageFormData?: Record<string, any>, targetPageId?: string) {
+async function handleNextPage(pageFormData?: Record<string, any>, targetPageId?: string) {
+  // A tap while the answers are being recorded must not start a second advance.
+  if (livePass.status === 'pending' && !pageHasPass(currentPageData.value)) return;
   if (pageFormData && typeof pageFormData === 'object') {
     const prevMap = (collectedFormData.value._field_map || {}) as Record<string, string>;
     const nextMap = (pageFormData._field_map || {}) as Record<string, string>;
@@ -321,29 +330,51 @@ function handleNextPage(pageFormData?: Record<string, any>, targetPageId?: strin
 
   // Navigate to next step (sequential or targeted page jump)
   if (nextIdx >= 0 && nextIdx < projectPages.value.length && nextIdx !== activePageIndex.value) {
-    pageHistory.value.push(activePageIndex.value);
-    // Push history state so Android hardware back button & iOS Safari swipe back gracefully return to prior step
-    if (typeof window !== 'undefined' && window.history) {
-      window.history.pushState({ stepIndex: nextIdx }, '', window.location.href);
-    }
-    activePageIndex.value = nextIdx;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
     // Advancing onto the pass needs the entry recorded first (the pass shows its
     // server-issued Access ID); so does completing forms onto a terminal/branch confirmation page.
-    const targetPage = projectPages.value[activePageIndex.value];
-    if (shouldSubmitAfterNavigation({
+    const targetPage = projectPages.value[nextIdx];
+    const mustRecord = shouldSubmitAfterNavigation({
       targetPage,
-      targetIdx: activePageIndex.value,
+      targetIdx: nextIdx,
       totalPages: projectPages.value.length,
       answers: collectedFormData.value,
-    })) {
-      sendSubmission();
+    });
+
+    if (mustRecord && !pageHasPass(targetPage)) {
+      // No pass to show "Issuing…" on: the next page is a "Thank you" screen.
+      // Record the entry BEFORE showing it, so a guest who closes the tab or
+      // taps an outbound link right away is never told "received" for an
+      // entry the server never got. On failure they stay on the form with Retry.
+      advanceAfterRecordIdx = nextIdx;
+      if (await sendSubmission()) goToPage(nextIdx);
+      return;
     }
+
+    goToPage(nextIdx);
+    if (mustRecord) sendSubmission();
   } else if (hasAnswers() || projectPages.value.some(pageHasPass)) {
     // Already on the final page: execute final submission
     sendSubmission();
   }
+}
+
+/** Index to move to once a gated submission succeeds (Retry continues the funnel). */
+let advanceAfterRecordIdx: number | null = null;
+
+function goToPage(nextIdx: number) {
+  advanceAfterRecordIdx = null;
+  pageHistory.value.push(activePageIndex.value);
+  // Push history state so Android hardware back button & iOS Safari swipe back gracefully return to prior step
+  if (typeof window !== 'undefined' && window.history) {
+    window.history.pushState({ stepIndex: nextIdx }, '', window.location.href);
+  }
+  activePageIndex.value = nextIdx;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function retrySubmission() {
+  const ok = await sendSubmission();
+  if (ok && advanceAfterRecordIdx !== null) goToPage(advanceAfterRecordIdx);
 }
 
 /**
@@ -383,6 +414,7 @@ function campaignGuestType(): string {
 }
 
 function handlePrevPage() {
+  advanceAfterRecordIdx = null;
   const prev = pageHistory.value.pop();
   if (typeof prev === 'number' && prev >= 0 && prev < projectPages.value.length) {
     activePageIndex.value = prev;
@@ -476,7 +508,7 @@ const livePass = reactive<LivePassState>({
     if (livePass.code) {
       void handleRequeue();
     } else {
-      void sendSubmission();
+      void retrySubmission();
     }
   }
 });
@@ -512,8 +544,8 @@ async function sendTicketCopy(entryId: string, entryKey: string) {
   }
 }
 
-async function sendSubmission() {
-  if (livePass.status === 'pending') return;
+async function sendSubmission(): Promise<boolean> {
+  if (livePass.status === 'pending') return false;
 
   const answers: Record<string, any> = {
     ...collectedFormData.value,
@@ -550,7 +582,7 @@ async function sendSubmission() {
 
   // A funnel can reach "submit" twice for the same answers (entering the pass page, then final CTA) — record once unless answers changed.
   const answersFingerprint = JSON.stringify(answers);
-  if (livePass.status === 'ready' && answersFingerprint === lastSubmittedFingerprint) return;
+  if (livePass.status === 'ready' && answersFingerprint === lastSubmittedFingerprint) return true;
 
   livePass.status = 'pending';
   livePass.error = '';
@@ -587,7 +619,7 @@ async function sendSubmission() {
     joinWaitlist = false;
     void refreshPlaces();
     void sendTicketCopy(String(outcome.entry.id || ''), entryKeyring.keyFor(answers));
-    return;
+    return true;
   }
   if (outcome.code === 'slots_full' || outcome.code === 'option_closed') {
     if (outcome.availability) places.value = outcome.availability;
@@ -598,10 +630,11 @@ async function sendSubmission() {
       ? `${names} is now fully reserved. Tap “Try again” to join the waitlist, or go back and choose another.`
       : `${names} is no longer available. Go back and choose another.`;
     livePass.status = 'error';
-    return;
+    return false;
   }
   livePass.error = outcome.message;
   livePass.status = 'error';
+  return false;
 }
 
 async function handleRequeue() {

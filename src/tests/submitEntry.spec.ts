@@ -175,3 +175,26 @@ describe('funnel navigation submission triggers', () => {
     })).toBe(true);
   });
 });
+
+describe('entries survive the guest leaving the page', () => {
+  it('sends normal-size entries with keepalive so an outbound tap or closed tab does not cancel them', async () => {
+    const calls: any[] = [];
+    const fetchImpl = (async (_url: string, init: any) => {
+      calls.push(init);
+      return { ok: true, status: 201, json: async () => ({ success: true, data: { ticket_code: 'abc' } }) };
+    }) as any;
+    const out = await postEntry({ page_id: 'p', submission_type: 'raffle', form_data: { fullName: 'A', email: 'a@b.co' } }, 'key-12345678', { fetchImpl, delays: [] });
+    expect(out.ok).toBe(true);
+    expect(calls[0].keepalive).toBe(true);
+  });
+
+  it('drops keepalive for bodies over the browser 64 KB cap instead of failing', async () => {
+    const calls: any[] = [];
+    const fetchImpl = (async (_url: string, init: any) => {
+      calls.push(init);
+      return { ok: true, status: 201, json: async () => ({ success: true, data: { ticket_code: 'abc' } }) };
+    }) as any;
+    await postEntry({ page_id: 'p', submission_type: 'raffle', form_data: { big: 'x'.repeat(70_000) } }, 'key-12345678', { fetchImpl, delays: [] });
+    expect(calls[0].keepalive).toBe(false);
+  });
+});
