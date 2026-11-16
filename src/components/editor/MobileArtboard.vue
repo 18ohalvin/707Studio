@@ -3065,19 +3065,19 @@ more</span>
             </div>
 
             <!-- 3-Column Interactive Date Picker (Day / Month / Year) -->
-            <div class="relative px-[16px] py-[12px] grid grid-cols-12 gap-2 shrink-0 h-[220px]">
+            <div class="relative px-[16px] py-[12px] grid grid-cols-12 grid-rows-1 gap-2 shrink-0 h-[220px]">
               <!-- Subtle Center Indicator Band -->
               <div class="pointer-events-none absolute left-3 right-3 top-[102px] h-[36px] border-y border-black/10 bg-neutral-100/50 z-0" />
 
               <!-- Day Column (cols 3) -->
-              <div class="relative z-10 col-span-3 flex flex-col h-full">
+              <div class="relative z-10 col-span-3 flex flex-col h-full min-h-0 overflow-hidden">
                 <span class="font-707 text-[10px] text-neutral-400 uppercase tracking-widest text-center mb-1.5 font-medium shrink-0">DAY</span>
                 <div 
                   ref="dayListRef"
                   @wheel.stop="handleDayListWheel"
                   @mousedown="handleDayListMouseDown"
                   @scroll.passive="handleDayColumnScroll"
-                  class="flex-1 overflow-y-auto overscroll-contain touch-pan-y no-scrollbar flex flex-col gap-1 pr-1 pt-[70px] pb-[70px] select-none"
+                  class="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y no-scrollbar flex flex-col gap-1 pr-1 pt-[70px] pb-[70px] select-none"
                   :class="isDayListDragging ? 'cursor-grabbing' : 'cursor-grab'"
                   style="scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch; scroll-snap-type: y proximity;"
                 >
@@ -3097,14 +3097,14 @@ more</span>
               </div>
 
               <!-- Month Column (cols 5) -->
-              <div class="relative z-10 col-span-5 flex flex-col h-full border-x border-black/5 px-2">
+              <div class="relative z-10 col-span-5 flex flex-col h-full min-h-0 overflow-hidden border-x border-black/5 px-2">
                 <span class="font-707 text-[10px] text-neutral-400 uppercase tracking-widest text-center mb-1.5 font-medium shrink-0">MONTH</span>
                 <div 
                   ref="monthListRef"
                   @wheel.stop="handleMonthListWheel"
                   @mousedown="handleMonthListMouseDown"
                   @scroll.passive="handleMonthColumnScroll"
-                  class="flex-1 overflow-y-auto overscroll-contain touch-pan-y no-scrollbar flex flex-col gap-1 pt-[70px] pb-[70px] select-none"
+                  class="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y no-scrollbar flex flex-col gap-1 pt-[70px] pb-[70px] select-none"
                   :class="isMonthListDragging ? 'cursor-grabbing' : 'cursor-grab'"
                   style="scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch; scroll-snap-type: y proximity;"
                 >
@@ -3125,14 +3125,14 @@ more</span>
               </div>
 
               <!-- Year Column (cols 4) -->
-              <div class="relative z-10 col-span-4 flex flex-col h-full">
+              <div class="relative z-10 col-span-4 flex flex-col h-full min-h-0 overflow-hidden">
                 <span class="font-707 text-[10px] text-neutral-400 uppercase tracking-widest text-center mb-1.5 font-medium shrink-0">YEAR</span>
                 <div 
                   ref="yearListRef"
                   @wheel.stop="handleYearListWheel"
                   @mousedown="handleYearListMouseDown"
                   @scroll.passive="handleYearColumnScroll"
-                  class="flex-1 overflow-y-auto overscroll-contain touch-pan-y no-scrollbar flex flex-col gap-1 pl-1 pt-[70px] pb-[70px] select-none"
+                  class="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y no-scrollbar flex flex-col gap-1 pl-1 pt-[70px] pb-[70px] select-none"
                   :class="isYearListDragging ? 'cursor-grabbing' : 'cursor-grab'"
                   style="scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch; scroll-snap-type: y proximity;"
                 >
@@ -5394,7 +5394,7 @@ function centerDayInColumn(day: number, behavior: ScrollBehavior = 'smooth') {
   if (!dayListRef.value) return;
   const target = dayListRef.value.querySelector(`[data-day="${day}"]`) as HTMLElement | null;
   if (!target) return;
-  const scrollToY = target.offsetTop - 70;
+  const scrollToY = target.offsetTop - dayListRef.value.offsetTop - 70;
   dayListRef.value.scrollTo({ top: Math.max(0, scrollToY), behavior });
 }
 
@@ -5402,7 +5402,7 @@ function centerMonthInColumn(month: number, behavior: ScrollBehavior = 'smooth')
   if (!monthListRef.value) return;
   const target = monthListRef.value.querySelector(`[data-month="${month}"]`) as HTMLElement | null;
   if (!target) return;
-  const scrollToY = target.offsetTop - 70;
+  const scrollToY = target.offsetTop - monthListRef.value.offsetTop - 70;
   monthListRef.value.scrollTo({ top: Math.max(0, scrollToY), behavior });
 }
 
@@ -5410,7 +5410,7 @@ function centerYearInColumn(year: number, behavior: ScrollBehavior = 'smooth') {
   if (!yearListRef.value) return;
   const target = yearListRef.value.querySelector(`[data-year="${year}"]`) as HTMLElement | null;
   if (!target) return;
-  const scrollToY = target.offsetTop - 70;
+  const scrollToY = target.offsetTop - yearListRef.value.offsetTop - 70;
   yearListRef.value.scrollTo({ top: Math.max(0, scrollToY), behavior });
 }
 
