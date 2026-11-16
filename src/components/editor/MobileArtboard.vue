@@ -3001,28 +3001,51 @@ more</span>
           v-if="showDateSelectorSheet"
           class="absolute inset-0 z-[60] flex flex-col justify-end overflow-hidden"
           @click.stop="closeDateSelectorSheet"
+          @touchstart.stop
+          @touchmove.stop
+          @touchend.stop
+          @mousedown.stop
         >
           <!-- Frosted Dark Backdrop -->
-          <div class="absolute inset-0 bg-black/40 backdrop-blur-md transition-opacity" />
+          <div 
+            class="absolute inset-0 bg-black/40 backdrop-blur-md transition-opacity" 
+            :style="{ opacity: dateSheetDragY > 0 ? Math.max(0.2, 1 - dateSheetDragY / 260) : undefined }"
+          />
 
           <!-- Bottom Sheet Card (707 Swiss Architectural Monochrome, Sharp 0px Border Radius) -->
           <div 
             @click.stop
-            class="relative z-10 w-full bg-white border-t border-black text-black rounded-none shadow-[0px_-8px_30px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden"
+            @touchstart.stop="handleDateSheetTouchStart"
+            @touchmove="handleDateSheetTouchMove"
+            @touchend.stop="handleDateSheetTouchEnd"
+            @touchcancel.stop="handleDateSheetTouchEnd"
+            class="apple-bottom-sheet-card relative z-10 w-full bg-white border-t border-black text-black rounded-none shadow-[0px_-8px_30px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden"
+            :class="isDateSheetDragging ? 'transition-none' : 'transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]'"
+            :style="{ transform: dateSheetDragY > 0 ? `translateY(${dateSheetDragY}px)` : undefined }"
             data-name="Interactive Date Selector Bottom Sheet"
           >
-            <!-- Sheet Header -->
-            <div class="px-[20px] py-[16px] flex items-center justify-between shrink-0 border-b-[0.5px] border-black bg-white">
-              <span class="font-707 font-medium text-[14px] leading-tight text-black tracking-normal uppercase">
-                {{ dateSheetTitle || 'SELECT DATE' }}
-              </span>
-              <button 
-                type="button" 
-                @click.stop="closeDateSelectorSheet" 
-                class="font-707 text-[12px] font-medium uppercase tracking-wider text-black hover:text-neutral-500 transition-colors cursor-pointer border-none bg-transparent p-0 m-0"
-              >
-                CLOSE
-              </button>
+            <!-- Sheet Top Handle Pill -->
+            <div
+              class="shrink-0 bg-white border-b-[0.5px] border-black select-none touch-none cursor-grab active:cursor-grabbing"
+              @mousedown="handleDateHeaderMouseDown"
+            >
+              <div class="w-full flex items-center justify-center pt-2.5 pb-2">
+                <div class="w-10 h-1 rounded-full bg-neutral-300" />
+              </div>
+
+              <!-- Sheet Header -->
+              <div class="px-[20px] pb-[14px] flex items-center justify-between shrink-0">
+                <span class="font-707 font-medium text-[14px] leading-tight text-black tracking-normal uppercase">
+                  {{ dateSheetTitle || 'SELECT DATE' }}
+                </span>
+                <button 
+                  type="button" 
+                  @click.stop="closeDateSelectorSheet" 
+                  class="font-707 text-[12px] font-medium uppercase tracking-wider text-black hover:text-neutral-500 transition-colors cursor-pointer border-none bg-transparent p-0 m-0"
+                >
+                  CLOSE
+                </button>
+              </div>
             </div>
 
             <!-- Selected Date Hero Display -->
@@ -3042,18 +3065,31 @@ more</span>
             </div>
 
             <!-- 3-Column Interactive Date Picker (Day / Month / Year) -->
-            <div class="px-[16px] py-[12px] grid grid-cols-12 gap-2 shrink-0 h-[220px]">
+            <div class="relative px-[16px] py-[12px] grid grid-cols-12 gap-2 shrink-0 h-[220px]">
+              <!-- Subtle Center Indicator Band -->
+              <div class="pointer-events-none absolute left-3 right-3 top-[102px] h-[36px] border-y border-black/10 bg-neutral-100/50 z-0" />
+
               <!-- Day Column (cols 3) -->
-              <div class="col-span-3 flex flex-col h-full">
-                <span class="font-707 text-[10px] text-neutral-400 uppercase tracking-widest text-center mb-1.5 font-medium">DAY</span>
-                <div class="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-1 pr-1">
+              <div class="relative z-10 col-span-3 flex flex-col h-full">
+                <span class="font-707 text-[10px] text-neutral-400 uppercase tracking-widest text-center mb-1.5 font-medium shrink-0">DAY</span>
+                <div 
+                  ref="dayListRef"
+                  @wheel.stop="handleDayListWheel"
+                  @mousedown="handleDayListMouseDown"
+                  @scroll.passive="handleDayColumnScroll"
+                  class="flex-1 overflow-y-auto overscroll-contain touch-pan-y no-scrollbar flex flex-col gap-1 pr-1 pt-[70px] pb-[70px] select-none"
+                  :class="isDayListDragging ? 'cursor-grabbing' : 'cursor-grab'"
+                  style="scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch; scroll-snap-type: y proximity;"
+                >
                   <button
                     v-for="d in daysList"
                     :key="'d_' + d"
+                    :data-day="d"
                     type="button"
-                    @click="selectedDay = d"
+                    @click="selectDay(d)"
                     class="h-[36px] rounded-none flex items-center justify-center font-707 text-[13px] transition-all cursor-pointer shrink-0 select-none uppercase"
                     :class="selectedDay === d ? 'bg-black text-white font-medium' : 'text-neutral-700 hover:bg-neutral-100 hover:text-black'"
+                    style="scroll-snap-align: center;"
                   >
                     {{ String(d).padStart(2, '0') }}
                   </button>
@@ -3061,16 +3097,26 @@ more</span>
               </div>
 
               <!-- Month Column (cols 5) -->
-              <div class="col-span-5 flex flex-col h-full border-x border-black/5 px-2">
-                <span class="font-707 text-[10px] text-neutral-400 uppercase tracking-widest text-center mb-1.5 font-medium">MONTH</span>
-                <div class="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-1">
+              <div class="relative z-10 col-span-5 flex flex-col h-full border-x border-black/5 px-2">
+                <span class="font-707 text-[10px] text-neutral-400 uppercase tracking-widest text-center mb-1.5 font-medium shrink-0">MONTH</span>
+                <div 
+                  ref="monthListRef"
+                  @wheel.stop="handleMonthListWheel"
+                  @mousedown="handleMonthListMouseDown"
+                  @scroll.passive="handleMonthColumnScroll"
+                  class="flex-1 overflow-y-auto overscroll-contain touch-pan-y no-scrollbar flex flex-col gap-1 pt-[70px] pb-[70px] select-none"
+                  :class="isMonthListDragging ? 'cursor-grabbing' : 'cursor-grab'"
+                  style="scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch; scroll-snap-type: y proximity;"
+                >
                   <button
                     v-for="m in monthsList"
                     :key="'m_' + m.value"
+                    :data-month="m.value"
                     type="button"
-                    @click="selectedMonth = m.value"
+                    @click="selectMonth(m.value)"
                     class="h-[36px] rounded-none flex items-center justify-between px-2.5 font-707 text-[12px] transition-all cursor-pointer shrink-0 select-none uppercase"
                     :class="selectedMonth === m.value ? 'bg-black text-white font-medium' : 'text-neutral-700 hover:bg-neutral-100 hover:text-black'"
+                    style="scroll-snap-align: center;"
                   >
                     <span>{{ m.name }}</span>
                     <span class="text-[10px]" :class="selectedMonth === m.value ? 'text-white/70' : 'text-neutral-400'">{{ String(m.value).padStart(2, '0') }}</span>
@@ -3079,16 +3125,26 @@ more</span>
               </div>
 
               <!-- Year Column (cols 4) -->
-              <div class="col-span-4 flex flex-col h-full">
-                <span class="font-707 text-[10px] text-neutral-400 uppercase tracking-widest text-center mb-1.5 font-medium">YEAR</span>
-                <div class="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-1 pl-1">
+              <div class="relative z-10 col-span-4 flex flex-col h-full">
+                <span class="font-707 text-[10px] text-neutral-400 uppercase tracking-widest text-center mb-1.5 font-medium shrink-0">YEAR</span>
+                <div 
+                  ref="yearListRef"
+                  @wheel.stop="handleYearListWheel"
+                  @mousedown="handleYearListMouseDown"
+                  @scroll.passive="handleYearColumnScroll"
+                  class="flex-1 overflow-y-auto overscroll-contain touch-pan-y no-scrollbar flex flex-col gap-1 pl-1 pt-[70px] pb-[70px] select-none"
+                  :class="isYearListDragging ? 'cursor-grabbing' : 'cursor-grab'"
+                  style="scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch; scroll-snap-type: y proximity;"
+                >
                   <button
                     v-for="y in yearsList"
                     :key="'y_' + y"
+                    :data-year="y"
                     type="button"
-                    @click="selectedYear = y"
+                    @click="selectYear(y)"
                     class="h-[36px] rounded-none flex items-center justify-center font-707 text-[13px] transition-all cursor-pointer shrink-0 select-none uppercase"
                     :class="selectedYear === y ? 'bg-black text-white font-medium' : 'text-neutral-700 hover:bg-neutral-100 hover:text-black'"
+                    style="scroll-snap-align: center;"
                   >
                     {{ y }}
                   </button>
@@ -3584,7 +3640,8 @@ function isInputElement(target: EventTarget | null): boolean {
 function startDragToScroll(
   e: MouseEvent,
   targetContainer: HTMLElement | null,
-  setDragging: (val: boolean) => void
+  setDragging: (val: boolean) => void,
+  onScrollCallback?: () => void
 ) {
   if (e.button !== 0 || isInputElement(e.target) || !targetContainer) return;
 
@@ -3600,6 +3657,7 @@ function startDragToScroll(
     }
     if (hasMoved && targetContainer) {
       targetContainer.scrollTop = startScrollTop - deltaY;
+      onScrollCallback?.();
       moveEvent.preventDefault();
     }
   }
@@ -3609,6 +3667,7 @@ function startDragToScroll(
     window.removeEventListener('mouseup', onMouseUp);
     if (hasMoved) {
       markDragged();
+      onScrollCallback?.();
     }
     setTimeout(() => {
       setDragging(false);
@@ -5224,6 +5283,20 @@ function isGenderItem(field: any): boolean {
 
 // Interactive Date Selector Bottom Sheet State (Figma Node 276:4722 Token Harmonization)
 const showDateSelectorSheet = ref(false);
+const dayListRef = ref<HTMLElement | null>(null);
+const monthListRef = ref<HTMLElement | null>(null);
+const yearListRef = ref<HTMLElement | null>(null);
+
+const isDayListDragging = ref(false);
+const isMonthListDragging = ref(false);
+const isYearListDragging = ref(false);
+
+const dateSheetDragY = ref(0);
+const isDateSheetDragging = ref(false);
+let dateSheetTouchStartY = 0;
+let dateSheetCanDismiss = false;
+const isProgrammaticScrolling = ref(false);
+
 const targetDateContext = ref<{
   widgetId?: string;
   fieldId?: string;
@@ -5235,6 +5308,211 @@ const dateSheetTitle = ref('SELECT DATE');
 const selectedDay = ref(1);
 const selectedMonth = ref(1);
 const selectedYear = ref(2000);
+
+function handleDayListMouseDown(e: MouseEvent) {
+  startDragToScroll(
+    e,
+    dayListRef.value,
+    (val) => { isDayListDragging.value = val; },
+    () => updateCenterSelectionFromScroll(dayListRef.value, 'day')
+  );
+}
+
+function handleMonthListMouseDown(e: MouseEvent) {
+  startDragToScroll(
+    e,
+    monthListRef.value,
+    (val) => { isMonthListDragging.value = val; },
+    () => updateCenterSelectionFromScroll(monthListRef.value, 'month')
+  );
+}
+
+function handleYearListMouseDown(e: MouseEvent) {
+  startDragToScroll(
+    e,
+    yearListRef.value,
+    (val) => { isYearListDragging.value = val; },
+    () => updateCenterSelectionFromScroll(yearListRef.value, 'year')
+  );
+}
+
+function handleDayListWheel(e: WheelEvent) {
+  scrollContainerByWheel(e, dayListRef.value);
+  updateCenterSelectionFromScroll(dayListRef.value, 'day');
+}
+
+function handleMonthListWheel(e: WheelEvent) {
+  scrollContainerByWheel(e, monthListRef.value);
+  updateCenterSelectionFromScroll(monthListRef.value, 'month');
+}
+
+function handleYearListWheel(e: WheelEvent) {
+  scrollContainerByWheel(e, yearListRef.value);
+  updateCenterSelectionFromScroll(yearListRef.value, 'year');
+}
+
+function handleDayColumnScroll() {
+  updateCenterSelectionFromScroll(dayListRef.value, 'day');
+}
+
+function handleMonthColumnScroll() {
+  updateCenterSelectionFromScroll(monthListRef.value, 'month');
+}
+
+function handleYearColumnScroll() {
+  updateCenterSelectionFromScroll(yearListRef.value, 'year');
+}
+
+function updateCenterSelectionFromScroll(
+  container: HTMLElement | null,
+  activeType: 'day' | 'month' | 'year'
+) {
+  if (!container || isProgrammaticScrolling.value) return;
+  const scrollY = container.scrollTop;
+  // 40px item step (36px height + 4px gap)
+  const itemIndex = Math.max(0, Math.round(scrollY / 40));
+
+  if (activeType === 'day') {
+    const day = daysList.value[itemIndex];
+    if (day && selectedDay.value !== day) {
+      selectedDay.value = day;
+    }
+  } else if (activeType === 'month') {
+    const month = monthsList[itemIndex];
+    if (month && selectedMonth.value !== month.value) {
+      selectedMonth.value = month.value;
+    }
+  } else if (activeType === 'year') {
+    const year = yearsList.value[itemIndex];
+    if (year && selectedYear.value !== year) {
+      selectedYear.value = year;
+    }
+  }
+}
+
+function centerDayInColumn(day: number, behavior: ScrollBehavior = 'smooth') {
+  if (!dayListRef.value) return;
+  const target = dayListRef.value.querySelector(`[data-day="${day}"]`) as HTMLElement | null;
+  if (!target) return;
+  const scrollToY = target.offsetTop - 70;
+  dayListRef.value.scrollTo({ top: Math.max(0, scrollToY), behavior });
+}
+
+function centerMonthInColumn(month: number, behavior: ScrollBehavior = 'smooth') {
+  if (!monthListRef.value) return;
+  const target = monthListRef.value.querySelector(`[data-month="${month}"]`) as HTMLElement | null;
+  if (!target) return;
+  const scrollToY = target.offsetTop - 70;
+  monthListRef.value.scrollTo({ top: Math.max(0, scrollToY), behavior });
+}
+
+function centerYearInColumn(year: number, behavior: ScrollBehavior = 'smooth') {
+  if (!yearListRef.value) return;
+  const target = yearListRef.value.querySelector(`[data-year="${year}"]`) as HTMLElement | null;
+  if (!target) return;
+  const scrollToY = target.offsetTop - 70;
+  yearListRef.value.scrollTo({ top: Math.max(0, scrollToY), behavior });
+}
+
+function scrollToSelectedDateElements(behavior: ScrollBehavior = 'auto') {
+  centerDayInColumn(selectedDay.value, behavior);
+  centerMonthInColumn(selectedMonth.value, behavior);
+  centerYearInColumn(selectedYear.value, behavior);
+}
+
+function selectDay(d: number) {
+  if (wasDraggingRecently.value) return;
+  selectedDay.value = d;
+  isProgrammaticScrolling.value = true;
+  centerDayInColumn(d, 'smooth');
+  setTimeout(() => {
+    isProgrammaticScrolling.value = false;
+  }, 250);
+}
+
+function selectMonth(m: number) {
+  if (wasDraggingRecently.value) return;
+  selectedMonth.value = m;
+  isProgrammaticScrolling.value = true;
+  centerMonthInColumn(m, 'smooth');
+  setTimeout(() => {
+    isProgrammaticScrolling.value = false;
+  }, 250);
+}
+
+function selectYear(y: number) {
+  if (wasDraggingRecently.value) return;
+  selectedYear.value = y;
+  isProgrammaticScrolling.value = true;
+  centerYearInColumn(y, 'smooth');
+  setTimeout(() => {
+    isProgrammaticScrolling.value = false;
+  }, 250);
+}
+
+function handleDateSheetTouchStart(e: TouchEvent) {
+  if (!e.touches.length) return;
+  dateSheetTouchStartY = e.touches[0].clientY;
+  const isInsideColumn = (el: HTMLElement | null) => Boolean(el && e.target instanceof Node && el.contains(e.target));
+  const touchedInColumns = isInsideColumn(dayListRef.value) || isInsideColumn(monthListRef.value) || isInsideColumn(yearListRef.value);
+  // Allow dismiss from header or from non-column sheet areas
+  dateSheetCanDismiss = !touchedInColumns;
+}
+
+function handleDateSheetTouchMove(e: TouchEvent) {
+  if (!e.touches.length || !dateSheetCanDismiss) return;
+  const deltaY = e.touches[0].clientY - dateSheetTouchStartY;
+  if (deltaY > 6) {
+    if (e.cancelable) e.preventDefault();
+    e.stopPropagation();
+    isDateSheetDragging.value = true;
+    dateSheetDragY.value = deltaY;
+  } else if (deltaY < 0 && isDateSheetDragging.value) {
+    dateSheetDragY.value = 0;
+  }
+}
+
+function handleDateSheetTouchEnd() {
+  if (isDateSheetDragging.value && dateSheetDragY.value > 56) {
+    isDateSheetDragging.value = false;
+    closeDateSelectorSheet();
+    return;
+  }
+  isDateSheetDragging.value = false;
+  dateSheetDragY.value = 0;
+  dateSheetCanDismiss = false;
+}
+
+function handleDateHeaderMouseDown(e: MouseEvent) {
+  if (e.button !== 0) return;
+  const startY = e.clientY;
+
+  function onMouseMove(moveEvent: MouseEvent) {
+    const deltaY = moveEvent.clientY - startY;
+    if (deltaY > 3) {
+      isDateSheetDragging.value = true;
+      dateSheetDragY.value = deltaY;
+      moveEvent.preventDefault();
+    } else if (isDateSheetDragging.value) {
+      dateSheetDragY.value = 0;
+    }
+  }
+
+  function onMouseUp() {
+    window.removeEventListener('mousemove', onMouseMove);
+    window.removeEventListener('mouseup', onMouseUp);
+    if (isDateSheetDragging.value && dateSheetDragY.value > 56) {
+      isDateSheetDragging.value = false;
+      closeDateSelectorSheet();
+      return;
+    }
+    isDateSheetDragging.value = false;
+    dateSheetDragY.value = 0;
+  }
+
+  window.addEventListener('mousemove', onMouseMove);
+  window.addEventListener('mouseup', onMouseUp);
+}
 
 const monthsList = [
   { value: 1, label: 'JAN', name: 'January' },
@@ -5329,11 +5607,23 @@ function openDateSelectorSheet(widget?: any, field?: any) {
   }
 
   showDateSelectorSheet.value = true;
+  dateSheetDragY.value = 0;
+  isDateSheetDragging.value = false;
+  isProgrammaticScrolling.value = true;
+  nextTick(() => {
+    scrollToSelectedDateElements('auto');
+    setTimeout(() => {
+      isProgrammaticScrolling.value = false;
+    }, 250);
+  });
 }
 
 function closeDateSelectorSheet() {
   showDateSelectorSheet.value = false;
   targetDateContext.value = null;
+  dateSheetDragY.value = 0;
+  isDateSheetDragging.value = false;
+  isProgrammaticScrolling.value = false;
 }
 
 function confirmDateSelection() {
