@@ -350,7 +350,7 @@
                   type="button"
                   @click="handleAddPicForBrand(brand)"
                   class="h-[32px] px-3.5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11.5px] font-mono uppercase tracking-wider font-semibold transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs"
-                  :title="`Assign a new team PIC to ${brand.name}`"
+                  :title="`Assign a Team Roster member as PIC of ${brand.name}`"
                 >
                   <UserPlus class="w-3.5 h-3.5 stroke-[2]" />
                   <span>+ Add PIC</span>
@@ -1099,6 +1099,102 @@
     </Teleport>
 
     <!-- Modal 3: Add User -->
+    <!-- Assign Brand PIC from the Team Roster -->
+    <Teleport to="body">
+      <Transition name="hub-fade">
+        <div 
+          v-if="showAssignPicModal && assignPicBrand" 
+          class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 font-sans font-light tracking-normal select-none"
+          @click.self="showAssignPicModal = false"
+        >
+          <div class="w-full max-w-[480px] max-h-[85vh] bg-[#141414] rounded-[16px] shadow-[0_24px_70px_rgba(0,0,0,0.6)] border border-white/15 overflow-hidden flex flex-col animate-apple-pop text-white" data-name="Assign Brand PIC">
+            <div class="px-5 py-3.5 border-b border-white/10 flex items-center justify-between shrink-0">
+              <div class="flex flex-col">
+                <h3 class="text-[15px] font-medium text-white">Assign PIC</h3>
+                <span class="text-[11px] font-mono text-moss-300">{{ assignPicBrand.name }} · from Team Roster</span>
+              </div>
+              <button 
+                type="button" 
+                @click="showAssignPicModal = false" 
+                class="size-7 rounded-[6px] hover:bg-white/10 flex items-center justify-center text-neutral-400 hover:text-white cursor-pointer border-none bg-transparent"
+              >
+                <X class="w-4 h-4" />
+              </button>
+            </div>
+
+            <div class="px-5 pt-4 pb-2 shrink-0">
+              <div class="relative">
+                <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-neutral-500" />
+                <input 
+                  v-model="assignPicSearch" 
+                  type="text" 
+                  placeholder="Search team members..." 
+                  class="w-full h-[36px] pl-9 pr-3 rounded-[8px] bg-white/[0.05] border border-white/15 text-[12.5px] text-white outline-none focus:border-white/40 placeholder:text-neutral-500"
+                />
+              </div>
+            </div>
+
+            <div class="flex-1 min-h-0 overflow-y-auto px-5 pb-3 flex flex-col gap-1.5">
+              <div v-if="assignablePicCandidates.length === 0" class="py-10 text-center text-[12px] font-mono text-neutral-400">
+                {{ assignPicSearch.trim() ? 'No team member matches your search.' : 'No active team members yet. Invite someone or approve a pending request in Team Roster.' }}
+              </div>
+              <div
+                v-for="u in assignablePicCandidates"
+                :key="u.id"
+                class="flex items-center gap-3 p-2.5 rounded-[8px] border"
+                :class="isPicOfBrand(u, assignPicBrand) ? 'border-white/25 bg-white/[0.06]' : 'border-white/10 bg-transparent'"
+              >
+                <div class="size-8 rounded-full bg-white/10 flex items-center justify-center text-[11px] font-mono text-white shrink-0 uppercase">
+                  {{ (u.name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('') }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-[13px] text-white truncate">{{ u.name }}</div>
+                  <div class="text-[11px] font-mono text-neutral-400 truncate">
+                    {{ u.email }} · {{ u.role === 'superadmin' ? 'Superadmin' : 'Brand PIC' }}
+                  </div>
+                  <div v-if="otherBrandsOf(u, assignPicBrand).length" class="text-[10.5px] font-mono text-neutral-500 truncate">
+                    Also: {{ otherBrandsOf(u, assignPicBrand).map(formatBrandName).join(', ') }}
+                  </div>
+                </div>
+                <span v-if="hasGlobalAccess(u)" class="text-[10.5px] font-mono uppercase tracking-wider text-neutral-400 shrink-0" title="Already sees every brand. Change their access in Team Roster.">
+                  All brands
+                </span>
+                <button
+                  v-else
+                  type="button"
+                  :disabled="assignPicBusyId === u.id"
+                  @click="togglePicAssignment(u, assignPicBrand)"
+                  class="h-[30px] px-3 rounded-[8px] text-[11px] font-mono uppercase tracking-wider cursor-pointer shrink-0 disabled:opacity-40 transition-colors"
+                  :class="isPicOfBrand(u, assignPicBrand) 
+                    ? 'bg-transparent text-neutral-300 border border-white/20 hover:border-white/40 hover:text-white' 
+                    : 'bg-white text-black border-none hover:bg-neutral-200 font-semibold'"
+                >
+                  {{ isPicOfBrand(u, assignPicBrand) ? 'Remove' : 'Assign' }}
+                </button>
+              </div>
+            </div>
+
+            <div class="px-5 py-3 border-t border-white/10 flex items-center justify-between gap-2 shrink-0">
+              <button
+                type="button"
+                @click="openInviteForBrand(assignPicBrand)"
+                class="text-[11.5px] font-mono text-neutral-400 hover:text-white bg-transparent border-none cursor-pointer p-0"
+              >
+                Not on the roster? Invite new member
+              </button>
+              <button 
+                type="button" 
+                @click="showAssignPicModal = false" 
+                class="px-3.5 h-[32px] rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[12px] font-medium cursor-pointer border-none"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
     <Teleport to="body">
       <Transition name="hub-fade">
         <div 
@@ -1874,6 +1970,10 @@ async function handleDeclinePending(user: UserAccount) {
 // ESC navigation listener
 function handleGlobalKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape') {
+    if (showAssignPicModal.value) {
+      showAssignPicModal.value = false;
+      return;
+    }
     if (showAddBrandModal.value || showBrandDetailsModal.value || showAddUserModal.value || 
         showEditUserModal.value || showPasswordModal.value || showBuildTemplateModal.value || 
         showEditTemplateModal.value || showUserProfileModal.value || showWhatsNewModal.value) {
@@ -1898,12 +1998,74 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleGlobalKeydown);
 });
 
+// Brand House → "+ Add PIC": pick existing people from the Team Roster.
+const showAssignPicModal = ref(false);
+const assignPicBrand = ref<Brand | null>(null);
+const assignPicSearch = ref('');
+const assignPicBusyId = ref('');
+
 function handleAddPicForBrand(brand: Brand) {
+  assignPicBrand.value = brand;
+  assignPicSearch.value = '';
+  showAssignPicModal.value = true;
+}
+
+/** Fallback for someone who is not on the roster yet: the invite form, with this brand preselected. */
+function openInviteForBrand(brand: Brand) {
+  showAssignPicModal.value = false;
   newUserName.value = '';
   newUserEmail.value = '';
   newUserRole.value = 'editor';
   newUserBrand.value = brand.slug;
   showAddUserModal.value = true;
+}
+
+function hasGlobalAccess(u: UserAccount): boolean {
+  return u.role === 'superadmin' || (u.assignedBrands || []).includes('all');
+}
+
+/** Assigned to this brand specifically (stored by slug, or by id in older accounts). */
+function isPicOfBrand(u: UserAccount, brand: Brand): boolean {
+  return (u.assignedBrands || []).some(b => b === brand.slug || b === brand.id);
+}
+
+function otherBrandsOf(u: UserAccount, brand: Brand): string[] {
+  return (u.assignedBrands || []).filter(b => b !== 'all' && b !== brand.slug && b !== brand.id);
+}
+
+/** Active roster members who can manage a brand: Brand PICs and Superadmins (door staff are tied to one campaign). */
+const assignablePicCandidates = computed(() => {
+  const brand = assignPicBrand.value;
+  if (!brand) return [];
+  const q = assignPicSearch.value.trim().toLowerCase();
+  return teamUsers.value
+    .filter(u => u.role !== 'gate')
+    .filter(u => !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q))
+    .sort((a, b) => {
+      const rank = (u: UserAccount) => (isPicOfBrand(u, brand) ? 0 : hasGlobalAccess(u) ? 2 : 1);
+      return rank(a) - rank(b) || a.name.localeCompare(b.name);
+    });
+});
+
+async function togglePicAssignment(user: UserAccount, brand: Brand) {
+  if (hasGlobalAccess(user)) return;
+  const assigned = isPicOfBrand(user, brand);
+  const current = user.assignedBrands || [];
+  const next = assigned
+    ? current.filter(b => b !== brand.slug && b !== brand.id)
+    : [...current.filter(b => b !== 'all'), brand.slug];
+  assignPicBusyId.value = user.id;
+  try {
+    const ok = await authStore.updateUser(user.id, { assignedBrands: next });
+    if (!ok) {
+      await authStore.loadUsers();
+      editorStore.showToast(`Could not update ${user.name}. Please try again.`);
+      return;
+    }
+    editorStore.showToast(assigned ? `${user.name} removed from ${brand.name}.` : `${user.name} assigned to ${brand.name}.`);
+  } finally {
+    assignPicBusyId.value = '';
+  }
 }
 
 function handleCreateCampaignForBrand(brand: Brand) {
