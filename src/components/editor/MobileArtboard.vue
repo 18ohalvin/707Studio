@@ -3065,9 +3065,9 @@ more</span>
             </div>
 
             <!-- 3-Column Interactive Date Picker (Day / Month / Year) -->
-            <div class="relative px-[16px] py-[12px] grid grid-cols-12 grid-rows-1 gap-2 shrink-0 h-[220px]">
+            <div class="relative px-[16px] py-[12px] grid grid-cols-12 grid-rows-1 gap-2 shrink-0 h-[320px]">
               <!-- Subtle Center Indicator Band -->
-              <div class="pointer-events-none absolute left-3 right-3 top-[102px] h-[36px] border-y border-black/10 bg-neutral-100/50 z-0" />
+              <div class="pointer-events-none absolute left-3 right-3 top-[152px] h-[36px] border-y border-black/10 bg-neutral-100/50 z-0" />
 
               <!-- Day Column (cols 3) -->
               <div class="relative z-10 col-span-3 flex flex-col h-full min-h-0 overflow-hidden">
@@ -3077,7 +3077,7 @@ more</span>
                   @wheel.stop="handleDayListWheel"
                   @mousedown="handleDayListMouseDown"
                   @scroll.passive="handleDayColumnScroll"
-                  class="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y no-scrollbar flex flex-col gap-1 pr-1 pt-[70px] pb-[70px] select-none"
+                  class="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y no-scrollbar flex flex-col gap-1 pr-1 pt-[120px] pb-[120px] select-none"
                   :class="isDayListDragging ? 'cursor-grabbing' : 'cursor-grab'"
                   style="scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch; scroll-snap-type: y proximity;"
                 >
@@ -3104,7 +3104,7 @@ more</span>
                   @wheel.stop="handleMonthListWheel"
                   @mousedown="handleMonthListMouseDown"
                   @scroll.passive="handleMonthColumnScroll"
-                  class="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y no-scrollbar flex flex-col gap-1 pt-[70px] pb-[70px] select-none"
+                  class="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y no-scrollbar flex flex-col gap-1 pt-[120px] pb-[120px] select-none"
                   :class="isMonthListDragging ? 'cursor-grabbing' : 'cursor-grab'"
                   style="scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch; scroll-snap-type: y proximity;"
                 >
@@ -3132,7 +3132,7 @@ more</span>
                   @wheel.stop="handleYearListWheel"
                   @mousedown="handleYearListMouseDown"
                   @scroll.passive="handleYearColumnScroll"
-                  class="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y no-scrollbar flex flex-col gap-1 pl-1 pt-[70px] pb-[70px] select-none"
+                  class="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y no-scrollbar flex flex-col gap-1 pl-1 pt-[120px] pb-[120px] select-none"
                   :class="isYearListDragging ? 'cursor-grabbing' : 'cursor-grab'"
                   style="scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch; scroll-snap-type: y proximity;"
                 >
@@ -5282,6 +5282,9 @@ function isGenderItem(field: any): boolean {
 }
 
 // Interactive Date Selector Bottom Sheet State (Figma Node 276:4722 Token Harmonization)
+/** Top/bottom padding of the date picker lists (keep in sync with pt-/pb-[120px]): lets the first and last rows reach the center band. */
+const DATE_LIST_EDGE_PAD = 120;
+
 const showDateSelectorSheet = ref(false);
 const dayListRef = ref<HTMLElement | null>(null);
 const monthListRef = ref<HTMLElement | null>(null);
@@ -5394,7 +5397,7 @@ function centerDayInColumn(day: number, behavior: ScrollBehavior = 'smooth') {
   if (!dayListRef.value) return;
   const target = dayListRef.value.querySelector(`[data-day="${day}"]`) as HTMLElement | null;
   if (!target) return;
-  const scrollToY = target.offsetTop - dayListRef.value.offsetTop - 70;
+  const scrollToY = target.offsetTop - dayListRef.value.offsetTop - DATE_LIST_EDGE_PAD;
   dayListRef.value.scrollTo({ top: Math.max(0, scrollToY), behavior });
 }
 
@@ -5402,7 +5405,7 @@ function centerMonthInColumn(month: number, behavior: ScrollBehavior = 'smooth')
   if (!monthListRef.value) return;
   const target = monthListRef.value.querySelector(`[data-month="${month}"]`) as HTMLElement | null;
   if (!target) return;
-  const scrollToY = target.offsetTop - monthListRef.value.offsetTop - 70;
+  const scrollToY = target.offsetTop - monthListRef.value.offsetTop - DATE_LIST_EDGE_PAD;
   monthListRef.value.scrollTo({ top: Math.max(0, scrollToY), behavior });
 }
 
@@ -5410,7 +5413,7 @@ function centerYearInColumn(year: number, behavior: ScrollBehavior = 'smooth') {
   if (!yearListRef.value) return;
   const target = yearListRef.value.querySelector(`[data-year="${year}"]`) as HTMLElement | null;
   if (!target) return;
-  const scrollToY = target.offsetTop - yearListRef.value.offsetTop - 70;
+  const scrollToY = target.offsetTop - yearListRef.value.offsetTop - DATE_LIST_EDGE_PAD;
   yearListRef.value.scrollTo({ top: Math.max(0, scrollToY), behavior });
 }
 
