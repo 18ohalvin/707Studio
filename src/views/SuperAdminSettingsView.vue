@@ -148,12 +148,18 @@
             <div class="flex flex-col gap-[10px] items-center justify-center w-[96px]" data-name="Button Container">
               <button 
                 @click="router.push('/dev/roster')"
-                class="category-menu-btn apple-glass-btn flex items-center justify-center p-[8px] rounded-[12px] size-[88px] apple-press cursor-pointer transition-all duration-200 group bg-transparent hover:bg-white/[0.08] active:bg-white/[0.14]"
+                class="relative category-menu-btn apple-glass-btn flex items-center justify-center p-[8px] rounded-[12px] size-[88px] apple-press cursor-pointer transition-all duration-200 group bg-transparent hover:bg-white/[0.08] active:bg-white/[0.14]"
                 title="Team Access & Roster"
               >
                 <div class="size-[32px] relative shrink-0 flex items-center justify-center text-white/80 group-hover:text-white transition-colors">
                   <Users class="size-full stroke-[1.4] transition-transform duration-200 group-hover:scale-105" />
                 </div>
+                <span 
+                  v-if="pendingUsers.length > 0"
+                  class="absolute -top-1.5 -right-1.5 bg-white text-black font-707 text-[8.5px] tracking-wider uppercase px-1.5 py-0.5 rounded-[4px] pointer-events-none shadow-xs font-semibold"
+                >
+                  {{ pendingUsers.length }} New
+                </span>
               </button>
               <p class="font-707 text-[13px] md:text-[14px] text-white/80 group-hover:text-white text-center leading-[18px] font-normal transition-colors">
                 Team Roster
@@ -439,6 +445,57 @@
 
         <!-- SUBROUTE 4: TEAM ROSTER -->
         <div v-else-if="currentTab === 'roster'" class="flex flex-col gap-6">
+
+          <!-- 0. Pending access requests (self sign-ups from the login page) -->
+          <div v-if="pendingUsers.length > 0" class="flex flex-col gap-3 p-4 rounded-[12px] border border-white/20 bg-white/[0.04]" data-name="Pending Access Requests">
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-2">
+                <UserPlus class="w-4 h-4 text-white" />
+                <span class="text-[12px] font-mono uppercase tracking-wider text-white font-semibold">Pending access requests ({{ pendingUsers.length }})</span>
+              </div>
+              <span class="text-[11px] font-mono text-neutral-400 hidden sm:block">Approve to add them to the roster and their brand.</span>
+            </div>
+            <div
+              v-for="u in pendingUsers"
+              :key="u.id"
+              class="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-[8px] bg-[#141414] border border-white/10"
+            >
+              <div class="flex-1 min-w-0">
+                <div class="text-[13px] text-white font-medium truncate">{{ u.name }}</div>
+                <div class="text-[11.5px] font-mono text-neutral-400 truncate">{{ u.email }}</div>
+                <div class="text-[11px] font-mono text-neutral-500 mt-0.5">
+                  Requested: {{ (u.assignedBrands || []).join(', ') || '—' }}<span v-if="u.createdAt"> · {{ formatDate(u.createdAt) }}</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <select
+                  :value="pendingBrandChoice[u.id] ?? suggestBrandForRequest(u)"
+                  @change="pendingBrandChoice[u.id] = ($event.target as HTMLSelectElement).value"
+                  class="h-[32px] px-2.5 rounded-[8px] border border-white/10 bg-black text-[11.5px] text-neutral-200 font-mono outline-none focus:border-white/30 cursor-pointer max-w-[180px]"
+                  :aria-label="`Brand for ${u.name}`"
+                >
+                  <option value="all">All Brands</option>
+                  <option v-for="b in brandStore.brands" :key="b.id" :value="b.slug">{{ b.name }}</option>
+                </select>
+                <button
+                  type="button"
+                  :disabled="pendingActionId === u.id"
+                  @click="handleApprovePending(u)"
+                  class="h-[32px] px-3 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11px] font-mono uppercase tracking-wider font-semibold cursor-pointer border-none disabled:opacity-40"
+                >
+                  Approve
+                </button>
+                <button
+                  type="button"
+                  :disabled="pendingActionId === u.id"
+                  @click="handleDeclinePending(u)"
+                  class="h-[32px] px-3 rounded-[8px] bg-transparent text-neutral-300 hover:text-white border border-white/15 hover:border-white/30 text-[11px] font-mono uppercase tracking-wider cursor-pointer disabled:opacity-40"
+                >
+                  Decline
+                </button>
+              </div>
+            </div>
+          </div>
           
           <!-- 1. Executive Summary Metric Bar -->
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -1761,6 +1818,58 @@ function getBrandPics(brand: Brand): UserAccount[] {
 const teamUsers = computed(() => {
   return authStore.users.filter(u => !u.status || u.status === 'active');
 });
+
+/**
+ * People who applied from the login page. They are stored as 'pending', which the
+ * roster and brand lists leave out, so without this list nobody could ever see or
+ * approve them.
+ */
+const pendingUsers = computed(() => authStore.users.filter(u => u.status === 'pending'));
+const pendingBrandChoice = ref<Record<string, string>>({});
+const pendingActionId = ref('');
+
+/** Applicants pick a brand by display name ("On Running"); brand access is matched by slug. */
+function suggestBrandForRequest(user: UserAccount): string {
+  const norm = (v: string) => String(v || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+  for (const requested of user.assignedBrands || []) {
+    if (requested === 'all') return 'all';
+    const found = brandStore.brands.find(b => norm(b.slug) === norm(requested) || norm(b.name) === norm(requested) || b.id === requested);
+    if (found) return found.slug;
+  }
+  return 'all';
+}
+
+async function handleApprovePending(user: UserAccount) {
+  const brand = pendingBrandChoice.value[user.id] ?? suggestBrandForRequest(user);
+  pendingActionId.value = user.id;
+  try {
+    const ok = await authStore.updateUser(user.id, { status: 'active', role: 'editor', assignedBrands: [brand] });
+    if (!ok) {
+      await authStore.loadUsers();
+      editorStore.showToast(`Could not approve ${user.name}. Please try again.`);
+      return;
+    }
+    editorStore.showToast(`${user.name} approved for ${formatBrandName(brand)}.`);
+  } finally {
+    pendingActionId.value = '';
+  }
+}
+
+async function handleDeclinePending(user: UserAccount) {
+  if (!(await glassConfirm({ title: 'Decline request?', message: `${user.name} (${user.email}) will not get studio access.`, confirmLabel: 'Decline', danger: true }))) return;
+  pendingActionId.value = user.id;
+  try {
+    const ok = await authStore.removeUser(user.id);
+    if (!ok) {
+      await authStore.loadUsers();
+      editorStore.showToast(`Could not decline ${user.name}. Please try again.`);
+      return;
+    }
+    editorStore.showToast('Request declined.');
+  } finally {
+    pendingActionId.value = '';
+  }
+}
 
 // ESC navigation listener
 function handleGlobalKeydown(e: KeyboardEvent) {

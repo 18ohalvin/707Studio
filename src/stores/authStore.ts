@@ -216,20 +216,9 @@ export const useAuthStore = defineStore('auth', () => {
       }
       return { success: false, error: data?.error || 'Failed to submit registration request.' };
     } catch (e: any) {
-      console.warn('[AuthStore] registerRequest server error, creating in local state:', e);
-      const newUser: UserAccount = {
-        id: `user_${Date.now()}`,
-        name: payload.name,
-        email: payload.email.trim().toLowerCase(),
-        password: payload.password || '',
-        role: 'editor',
-        assignedBrands: payload.brand ? [payload.brand] : ['all'],
-        status: 'pending',
-        createdAt: new Date().toISOString(),
-        lastActiveAt: 'Pending review'
-      };
-      users.value.unshift(newUser);
-      return { success: true, data: newUser };
+      // Never pretend it worked: a request that only exists in this browser is never seen by the superadmin.
+      console.warn('[AuthStore] registerRequest server error:', e);
+      return { success: false, error: 'No connection — check your signal and try again.' };
     }
   }
 
@@ -268,30 +257,20 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function addUser(user: Omit<UserAccount, 'id' | 'createdAt'>): Promise<UserAccount> {
-    const newUser: UserAccount = {
-      id: `user_${Date.now()}`,
-      ...user,
-      createdAt: new Date().toISOString()
-    };
-    users.value.unshift(newUser);
-
-    try {
-      const res = await apiJson<{ success: boolean; data: UserAccount }>('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newUser)
-      });
-      if (res && res.success && res.data) {
-        const idx = users.value.findIndex(u => u.id === newUser.id);
-        if (idx !== -1) {
-          users.value[idx] = res.data;
-        }
-        return res.data;
-      }
-    } catch (e) {
-      console.error('[AuthStore] Failed to create user on cloud server:', e);
+    // Wait for the server: showing the account before it is saved made failed
+    // invites look successful until the next reload.
+    const res = await apiJson<{ success: boolean; data: UserAccount; error?: string }>('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(user)
+    });
+    if (!res?.success || !res.data) {
+      throw new Error(res?.error || 'Could not create account.');
     }
-    return newUser;
+    const saved = res.data;
+    // Inviting a pending applicant's email takes over their request: replace, don't duplicate.
+    users.value = [saved, ...users.value.filter(u => u.id !== saved.id && (u.email || '').toLowerCase() !== (saved.email || '').toLowerCase())];
+    return saved;
   }
 
   async function updateUser(id: string, updates: Partial<UserAccount>): Promise<boolean> {

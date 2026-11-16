@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
 import { testDbConnection, getDbStatus } from './db.js';
-import { authRouter, requireAuth } from './auth.js';
+import { authRouter, requireAuth, activeAccountGuard } from './auth.js';
 import { brandsRouter } from './routes/brands.js';
 import { usersRouter } from './routes/users.js';
 import { pagesRouter } from './routes/pages.js';
@@ -67,6 +67,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Gate-security accounts reach the door scanner and nothing else (checked before any route).
+app.use('/api', activeAccountGuard);
 app.use('/api', gateGuard);
 
 // Superadmin verification endpoint

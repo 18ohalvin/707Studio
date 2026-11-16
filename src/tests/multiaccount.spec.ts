@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useAuthStore } from '../stores/authStore.ts';
 import { useEditorStore } from '../stores/editorStore.ts';
@@ -131,7 +131,10 @@ describe('Multiaccount & Data Isolation Logic', () => {
     const editorStore = useEditorStore();
 
     // Register a second PIC for Atmos
-    authStore.addUser({
+    // An account the superadmin has already saved on the server.
+    authStore.users.unshift({
+      id: 'user_rian_atmos',
+      createdAt: new Date().toISOString(),
       name: 'Rian Atmos PIC',
       email: 'rian@atmos.co.id',
       password: 'rian_atmos_pass',
@@ -261,7 +264,10 @@ describe('Multiaccount & Data Isolation Logic', () => {
     const editorStore = useEditorStore();
 
     // Register User 2 (Rian)
-    authStore.addUser({
+    // An account the superadmin has already saved on the server.
+    authStore.users.unshift({
+      id: 'user_rian_atmos',
+      createdAt: new Date().toISOString(),
       name: 'Rian Atmos PIC',
       email: 'rian@atmos.co.id',
       password: 'rian_atmos_pass',
@@ -353,7 +359,10 @@ describe('Multiaccount & Data Isolation Logic', () => {
     expect(editorStore.currentProjectId).toBe('');
 
     // Teammate of the same brand can open it
-    authStore.addUser({
+    // An account the superadmin has already saved on the server.
+    authStore.users.unshift({
+      id: 'user_rian_atmos',
+      createdAt: new Date().toISOString(),
       name: 'Rian Atmos PIC',
       email: 'rian@atmos.co.id',
       password: 'rian_atmos_pass',
@@ -426,5 +435,45 @@ describe('Multiaccount & Data Isolation Logic', () => {
     expect(newProj.owner_id).toBe('user_editor_sarah');
     expect(newProj.owner_email).toBe('sarah.chen@atmos.co.id');
     expect(newProj.created_by).toBe('Sarah Chen');
+  });
+});
+
+describe('inviting a team member', () => {
+  beforeEach(() => {
+    const store: Record<string, string> = { '707_auth_token': 't' };
+    (globalThis as any).localStorage = {
+      getItem: (k: string) => store[k] || null,
+      setItem: (k: string, v: string) => { store[k] = String(v); },
+      removeItem: (k: string) => { delete store[k]; },
+      clear: () => { for (const k in store) delete store[k]; }
+    };
+    setActivePinia(createPinia());
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('shows the account only once the server has saved it', async () => {
+    const saved = { id: 'user_1', name: 'Nadia', email: 'nadia@on.com', role: 'editor', assignedBrands: ['on'], status: 'active', createdAt: '' };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ success: true, data: saved }), { status: 201 })));
+    const authStore = useAuthStore();
+    await authStore.addUser({ name: 'Nadia', email: 'nadia@on.com', role: 'editor', assignedBrands: ['on'], status: 'active' });
+    expect(authStore.users.map(u => u.id)).toEqual(['user_1']);
+  });
+
+  it('reports a refused invite instead of showing an account that was never saved', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ success: false, error: 'An account with this email already exists.' }), { status: 409 })));
+    const authStore = useAuthStore();
+    await expect(authStore.addUser({ name: 'Nadia', email: 'nadia@on.com', role: 'editor', assignedBrands: ['on'], status: 'active' }))
+      .rejects.toThrow('An account with this email already exists.');
+    expect(authStore.users).toEqual([]);
+  });
+
+  it('replaces a pending applicant with the same email instead of listing them twice', async () => {
+    const saved = { id: 'user_pending', name: 'Nadia', email: 'nadia@on.com', role: 'editor', assignedBrands: ['on'], status: 'active', createdAt: '' };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ success: true, data: saved }), { status: 201 })));
+    const authStore = useAuthStore();
+    authStore.users = [{ ...saved, status: 'pending', assignedBrands: ['On Running'] } as any];
+    await authStore.addUser({ name: 'Nadia', email: 'nadia@on.com', role: 'editor', assignedBrands: ['on'], status: 'active' });
+    expect(authStore.users).toHaveLength(1);
+    expect(authStore.users[0].status).toBe('active');
   });
 });

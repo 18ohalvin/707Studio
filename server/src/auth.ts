@@ -151,6 +151,27 @@ export function optionalClaims(req: Request): SessionClaims | null {
   return verifyToken(readBearer(req));
 }
 
+/**
+ * Runs before every /api route. Tokens are stateless, so a session issued before an
+ * account was suspended, removed, or (for older sessions) while it was still pending
+ * would keep working for up to SESSION_TTL_MS. If the account behind the token is not
+ * active any more, the token is dropped: protected routes then answer 401 (the studio
+ * signs the person out) and public routes treat the request as anonymous.
+ */
+export async function activeAccountGuard(req: Request, res: Response, next: NextFunction) {
+  const claims = optionalClaims(req);
+  // The built-in studio superadmin has no users row; gate accounts are handled by gateGuard.
+  if (!claims || claims.sub === SUPERADMIN_CLAIMS.sub || claims.role === 'gate') return next();
+  try {
+    if (!(await accountStillActive(claims.sub))) {
+      delete req.headers.authorization;
+    }
+  } catch {
+    return res.status(503).json({ success: false, error: 'Could not verify this account right now. Please try again.' });
+  }
+  next();
+}
+
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
   const claims = verifyToken(readBearer(req));
   if (!claims) {
@@ -294,7 +315,9 @@ export async function accountStillActive(id: string): Promise<boolean> {
   const hit = activeCache.get(id);
   if (hit && Date.now() - hit.at < 10_000) return hit.ok;
   const account = await findAccountById(id);
-  const ok = Boolean(account) && String(account!.status || 'active') !== 'suspended' && !accountExpired(account!);
+  // Only an approved account may act: a pending applicant, a suspended or a removed
+  // account is cut off even while its (stateless) token is still valid.
+  const ok = Boolean(account) && String(account!.status || 'active') === 'active' && !accountExpired(account!);
   activeCache.set(id, { ok, at: Date.now() });
   return ok;
 }
@@ -379,7 +402,7 @@ authRouter.post('/register-request', async (req: Request, res: Response) => {
 
   if (getDbStatus().isConnected) {
     try {
-      await pool.query(
+      const inserted = await pool.query(
         `INSERT INTO users (id, name, email, phone, password, role, assigned_brands, avatar_url, status, created_at, last_active_at)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
          ON CONFLICT (email) DO NOTHING`,
@@ -397,14 +420,19 @@ authRouter.post('/register-request', async (req: Request, res: Response) => {
           newUser.lastActiveAt
         ]
       );
+      if (!inserted.rowCount) {
+        return res.status(409).json({ success: false, error: 'An account with this email already exists. Please sign in instead.' });
+      }
     } catch (err: any) {
-      console.warn('[Auth] DB register request error:', err.message);
+      // The roster reads the database, so a request saved only to users.json would never be seen.
+      console.error('[Auth] DB register request error:', err.message);
+      return res.status(500).json({ success: false, error: 'We could not submit your application. Please try again.' });
     }
+  } else {
+    const stored = readDataFile<any[]>('users.json', []);
+    stored.unshift(newUser);
+    writeDataFile('users.json', stored);
   }
-
-  const stored = readDataFile<any[]>('users.json', []);
-  stored.unshift(newUser);
-  writeDataFile('users.json', stored);
 
   return res.status(201).json({
     success: true,
@@ -446,6 +474,22 @@ authRouter.post('/signin', async (req: Request, res: Response) => {
         return res.status(403).json({
           success: false,
           error: 'This account has been suspended. Please contact Superadmin.'
+        });
+      }
+
+      // Applied from the login page but not approved yet: no session until the superadmin approves.
+      if (String(account.status || 'active') === 'pending') {
+        return res.status(403).json({
+          success: false,
+          code: 'pending_approval',
+          error: 'Your access request is still awaiting Superadmin approval. You can sign in once it has been approved.'
+        });
+      }
+
+      if (String(account.status || 'active') !== 'active') {
+        return res.status(403).json({
+          success: false,
+          error: 'This account is not active. Please contact Superadmin.'
         });
       }
 

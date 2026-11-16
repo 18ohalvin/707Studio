@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { pool, getDbStatus } from '../db.js';
 import { readDataFile, writeDataFile } from '../fileStorage.js';
 import { hashPassword, withoutPassword } from '../password.js';
-import { getClaims, isSuperAdminClaims } from '../auth.js';
+import { getClaims, isSuperAdminClaims, forgetAccountCache } from '../auth.js';
 
 export const usersRouter = Router();
 
@@ -124,12 +124,15 @@ usersRouter.post('/', async (req: Request, res: Response) => {
          ON CONFLICT (email) DO UPDATE SET
            name = EXCLUDED.name,
            phone = EXCLUDED.phone,
-           password = EXCLUDED.password,
+           password = COALESCE(NULLIF(EXCLUDED.password, ''), users.password),
            role = EXCLUDED.role,
            assigned_brands = EXCLUDED.assigned_brands,
            status = EXCLUDED.status,
            assigned_project = EXCLUDED.assigned_project,
            expires_at = EXCLUDED.expires_at
+         -- Inviting the email of a pending applicant takes over their request;
+         -- an existing account is never silently overwritten (or its password blanked).
+         WHERE users.status = 'pending'
          RETURNING *`,
         [
           newUser.id,
@@ -147,13 +150,24 @@ usersRouter.post('/', async (req: Request, res: Response) => {
           newUser.expiresAt
         ]
       );
+      if (!result.rows[0]) {
+        return res.status(409).json({ success: false, error: 'An account with this email already exists.' });
+      }
       return res.status(201).json({ success: true, data: clientUser(result.rows[0]) });
     } catch (err: any) {
+      // Do not fall back to users.json here: with the database connected the roster
+      // reads only the database, so a file-only account would be reported as created
+      // and then never appear.
       console.error('[DB] Error saving user to DB:', err.message);
+      return res.status(500).json({ success: false, error: 'Could not save the account. Please try again.' });
     }
   }
 
   inMemoryUsers = readDataFile<any[]>('users.json', inMemoryUsers);
+  if (inMemoryUsers.some(u => String(u.email || '').toLowerCase() === newUser.email && u.status !== 'pending')) {
+    return res.status(409).json({ success: false, error: 'An account with this email already exists.' });
+  }
+  inMemoryUsers = inMemoryUsers.filter(u => String(u.email || '').toLowerCase() !== newUser.email);
   inMemoryUsers.unshift(newUser);
   writeDataFile('users.json', inMemoryUsers);
   return res.status(201).json({ success: true, data: withoutPassword(newUser) });
@@ -163,6 +177,7 @@ usersRouter.post('/', async (req: Request, res: Response) => {
 usersRouter.put('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
   const updates = req.body;
+  forgetAccountCache(String(id));
 
   // Moving an account to (or keeping it on) the gate role needs the gate fields.
   if (updates.role === 'gate') {
@@ -209,6 +224,8 @@ usersRouter.put('/:id', async (req: Request, res: Response) => {
           values
         );
         if (result.rows.length > 0) {
+          // Approving, suspending or changing an account applies to open sessions at once.
+          forgetAccountCache(String(result.rows[0].id));
           return res.json({ success: true, data: clientUser(result.rows[0]) });
         }
       }
@@ -224,6 +241,7 @@ usersRouter.put('/:id', async (req: Request, res: Response) => {
 // DELETE /api/users/:id - Delete user account
 usersRouter.delete('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
+  forgetAccountCache(String(id));
   inMemoryUsers = inMemoryUsers.filter(u => u.id !== id && u.email !== id);
   writeDataFile('users.json', inMemoryUsers);
 

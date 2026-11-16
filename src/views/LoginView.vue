@@ -372,6 +372,9 @@
               {{ b }}
             </button>
           </div>
+          <p v-if="onboardingError" class="text-[12px] text-rose-400 font-normal -mt-2 animate-apple-pop" role="alert">
+            {{ onboardingError }}
+          </p>
         </div>
 
         <!-- Bottom Action Button -->
@@ -723,19 +726,23 @@ const whatsappUrl = computed(() => {
 async function submitOnboardingApplication() {
   isLoading.value = true;
   try {
+    onboardingError.value = '';
     // Register user with pending approval state
-    await authStore.registerRequest({
+    const result = await authStore.registerRequest({
       email: email.value.trim().toLowerCase(),
       name: onboardingName.value.trim(),
       password: onboardingPassword.value.trim(),
       role: 'Brand & Marketing',
       brand: onboardingBrand.value.trim() || 'General',
     });
-
+    if (!result.success) {
+      // Stay on this step so the applicant knows the request did not go through.
+      onboardingError.value = result.error || 'We could not submit your application. Please try again.';
+      return;
+    }
     currentStep.value = 'onboarding_success';
   } catch (err: any) {
-    // If registerRequest succeeds or fallback gracefully to success screen
-    currentStep.value = 'onboarding_success';
+    onboardingError.value = err?.message || 'We could not submit your application. Please try again.';
   } finally {
     isLoading.value = false;
   }
