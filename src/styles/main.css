@@ -197,8 +197,9 @@ nav .font-707,
   font-family: var(--font-apple-ui) !important;
 }
 
-/* Codes (Access IDs, URLs) keep tabular numbers */
+/* All UI copy uses SF Apple font; numeric codes keep tabular figures */
 .font-mono {
+  font-family: var(--font-apple-ui) !important;
   font-variant-numeric: tabular-nums;
 }
 

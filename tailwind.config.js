@@ -76,12 +76,17 @@ export default {
         'page': ['"Helvetica Neue"', 'Helvetica', 'sans-serif'],
         campaign: ['"Helvetica Neue"', 'Helvetica', 'sans-serif'],
         mono: [
-          '"SF Mono"',
-          'SFMono-Regular',
-          'ui-monospace',
-          'Menlo',
-          'Consolas',
-          'monospace'
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"SF Pro Text"',
+          '"SF Pro Display"',
+          '"SF Pro"',
+          '"Inter"',
+          '"Segoe UI Variable Text"',
+          '"Segoe UI Variable"',
+          '"Segoe UI"',
+          'system-ui',
+          'sans-serif'
         ],
         display: ['"Helvetica Neue"', 'Helvetica', 'sans-serif']
       },

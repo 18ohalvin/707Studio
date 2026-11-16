@@ -16,7 +16,7 @@
             class="h-[18px] w-auto object-contain pointer-events-none brightness-0 invert" 
           />
         </router-link>
-        <span class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white/[0.08] border border-white/15 text-[10px] font-mono font-medium text-white/90 leading-none whitespace-nowrap select-none">
+        <span class="inline-flex items-center px-1.5 py-[2px] rounded-[5px] bg-white/[0.08] border border-white/15 text-[10px] font-medium text-white/90 leading-none whitespace-nowrap select-none">
           Dev
         </span>
 
@@ -25,7 +25,7 @@
           <span class="text-neutral-600">/</span>
           <router-link 
             to="/dev" 
-            class="inline-flex items-center gap-1 text-[11px] font-mono text-neutral-400 hover:text-white transition-colors px-1.5 py-0.5 rounded hover:bg-white/10"
+            class="inline-flex items-center gap-1 text-[11px] text-neutral-400 hover:text-white transition-colors px-1.5 py-0.5 rounded hover:bg-white/10"
             title="Return to Dev Home (ESC)"
           >
             <ChevronLeft class="w-3.5 h-3.5 stroke-[2]" />
@@ -187,7 +187,7 @@
             </h2>
             <span 
               v-if="subrouteMeta.count !== undefined" 
-              class="px-2 py-0.5 rounded-[5px] bg-white/[0.08] text-[11px] font-mono text-white/90 font-medium border border-white/10"
+              class="px-2 py-0.5 rounded-[5px] bg-white/[0.08] text-[11px] text-white/90 font-medium border border-white/10"
             >
               {{ subrouteMeta.count }}
             </span>
@@ -205,7 +205,7 @@
             </div>
             <div class="flex flex-col gap-1 items-center">
               <h3 class="text-[17px] font-medium text-white">All runway releases are signed off</h3>
-              <p class="text-[13px] font-mono text-neutral-400 max-w-[420px]">
+              <p class="text-[13px] text-neutral-400 max-w-[420px]">
                 No drops currently awaiting sign-off. Newly submitted brand activations will appear here immediately.
               </p>
             </div>
@@ -219,20 +219,20 @@
             >
               <div class="flex flex-col gap-2 min-w-0">
                 <div class="flex items-center gap-2">
-                  <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-white text-black font-semibold">
+                  <span class="text-[10px] uppercase px-2 py-0.5 rounded bg-white text-black font-semibold">
                     {{ p.brand_slug || 'atmos' }}
                   </span>
-                  <span class="text-[10.5px] font-mono text-amber-300 bg-amber-950/60 border border-amber-800/60 px-2 py-0.5 rounded">
+                  <span class="text-[10.5px] text-amber-300 bg-amber-950/60 border border-amber-800/60 px-2 py-0.5 rounded">
                     {{ p.pending_update_at ? 'Live Update Sign-Off' : 'New Drop Release' }}
                   </span>
-                  <span class="text-[11px] font-mono text-neutral-400">
+                  <span class="text-[11px] text-neutral-400">
                     Submitted {{ formatDate(p.pending_update_at || p.updated_at) }}
                   </span>
                 </div>
 
                 <h3 class="text-[20px] font-medium text-white truncate">{{ p.title }}</h3>
                 
-                <span class="text-[12px] font-mono text-neutral-400">
+                <span class="text-[12px] text-neutral-400">
                   Public Destination: <code class="px-1.5 py-0.5 rounded bg-white/[0.08] text-white/90">/{{ p.brand_slug || 'atmos' }}/{{ p.slug }}</code>
                 </span>
               </div>
@@ -241,7 +241,7 @@
                 <button
                   type="button"
                   @click="handleInspectProject(p)"
-                  class="h-[36px] px-4 rounded-[8px] border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-[11.5px] font-mono uppercase tracking-wider text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                  class="h-[36px] px-4 rounded-[8px] border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-[11.5px] uppercase tracking-wider text-white transition-colors cursor-pointer flex items-center gap-1.5"
                 >
                   <ExternalLink class="w-3.5 h-3.5" />
                   <span>Inspect Drop</span>
@@ -249,7 +249,7 @@
                 <button
                   type="button"
                   @click="handleApproveProject(p.id)"
-                  class="h-[36px] px-5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11.5px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 shadow-xs font-semibold"
+                  class="h-[36px] px-5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11.5px] uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 shadow-xs font-semibold"
                 >
                   <CheckCircle2 class="w-3.5 h-3.5" />
                   <span>Approve Live</span>
@@ -269,14 +269,14 @@
                 v-model="brandSearchQuery"
                 type="text" 
                 placeholder="Filter brand houses..." 
-                class="w-full h-[36px] pl-9 pr-3 rounded-[8px] border border-white/10 bg-[#141414] text-[13px] text-white placeholder:text-neutral-500 focus:outline-none focus:border-white/30 transition-colors font-mono"
+                class="w-full h-[36px] pl-9 pr-3 rounded-[8px] border border-white/10 bg-[#141414] text-[13px] text-white placeholder:text-neutral-500 focus:outline-none focus:border-white/30 transition-colors"
               />
             </div>
 
             <button 
               type="button" 
               @click="showAddBrandModal = true" 
-              class="h-[36px] px-3.5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs font-semibold shrink-0"
+              class="h-[36px] px-3.5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11px] uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs font-semibold shrink-0"
             >
               <Plus class="w-3.5 h-3.5 stroke-[2.5]" />
               <span>New Brand House</span>
@@ -297,16 +297,16 @@
                     </div>
                     <div class="flex flex-col">
                       <h3 class="text-[17px] font-medium text-white leading-tight">{{ brand.name }}</h3>
-                      <span class="text-[11.5px] font-mono text-neutral-400">/{{ brand.slug }}</span>
+                      <span class="text-[11.5px] text-neutral-400">/{{ brand.slug }}</span>
                     </div>
                   </div>
                   
-                  <span class="px-2 py-0.5 rounded-[5px] bg-white/[0.08] border border-white/10 text-[11px] font-mono text-neutral-300 font-medium">
+                  <span class="px-2 py-0.5 rounded-[5px] bg-white/[0.08] border border-white/10 text-[11px] text-neutral-300 font-medium">
                     {{ getBrandDropCount(brand) }} {{ getBrandDropCount(brand) === 1 ? 'Drop' : 'Drops' }}
                   </span>
                 </div>
 
-                <div class="flex items-center flex-wrap gap-1.5 text-[11px] font-mono">
+                <div class="flex items-center flex-wrap gap-1.5 text-[11px]">
                   <span class="text-neutral-500">Team:</span>
                   <span 
                     v-for="pic in getBrandPics(brand)" 
@@ -326,7 +326,7 @@
                   >
                     <span class="truncate max-w-[180px] text-neutral-300">{{ p.title }}</span>
                     <span 
-                      class="text-[9.5px] font-mono px-1.5 py-0.2 rounded border uppercase font-medium"
+                      class="text-[9.5px] px-1.5 py-0.2 rounded border uppercase font-medium"
                       :class="isLiveProject(p) ? 'bg-moss-950/60 text-moss-300 border-moss-700/50' : 'bg-white/[0.06] text-neutral-400 border-white/10'"
                     >
                       {{ formatProjectStatus(p) }}
@@ -339,7 +339,7 @@
                 <button
                   type="button"
                   @click="openBrandDetailsModal(brand)"
-                  class="h-[32px] px-3 rounded-[8px] border border-white/15 bg-white/[0.04] hover:bg-white/[0.08] text-[11.5px] font-mono uppercase tracking-wider text-neutral-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                  class="h-[32px] px-3 rounded-[8px] border border-white/15 bg-white/[0.04] hover:bg-white/[0.08] text-[11.5px] uppercase tracking-wider text-neutral-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
                   title="Configure brand name and slug"
                 >
                   <Settings class="w-3.5 h-3.5 text-neutral-400" />
@@ -349,7 +349,7 @@
                 <button
                   type="button"
                   @click="handleAddPicForBrand(brand)"
-                  class="h-[32px] px-3.5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11.5px] font-mono uppercase tracking-wider font-semibold transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs"
+                  class="h-[32px] px-3.5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11.5px] uppercase tracking-wider font-semibold transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs"
                   :title="`Assign a Team Roster member as PIC of ${brand.name}`"
                 >
                   <UserPlus class="w-3.5 h-3.5 stroke-[2]" />
@@ -370,7 +370,7 @@
                 :key="cat"
                 @click="selectedFoundryCategory = cat"
                 :class="selectedFoundryCategory === cat ? 'bg-white text-black font-semibold' : 'bg-[#141414] text-neutral-400 hover:text-white border border-white/10'"
-                class="px-3 py-1.5 rounded-[8px] text-[11.5px] font-mono uppercase tracking-wider transition-all cursor-pointer border-none whitespace-nowrap"
+                class="px-3 py-1.5 rounded-[8px] text-[11.5px] uppercase tracking-wider transition-all cursor-pointer border-none whitespace-nowrap"
               >
                 {{ cat === 'all' ? 'All Frameworks' : cat.replace('_', ' ') }}
               </button>
@@ -379,7 +379,7 @@
             <button 
               type="button" 
               @click="openBuildTemplateModal" 
-              class="h-[36px] px-3.5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs font-semibold shrink-0"
+              class="h-[36px] px-3.5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11px] uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs font-semibold shrink-0"
             >
               <Plus class="w-3.5 h-3.5 stroke-[2.5]" />
               <span>New Blueprint</span>
@@ -394,11 +394,11 @@
             >
               <div class="flex flex-col gap-2.5">
                 <div class="flex items-center justify-between">
-                  <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-white/[0.06] text-neutral-300 border border-white/10 font-medium">
+                  <span class="text-[10px] uppercase px-2 py-0.5 rounded bg-white/[0.06] text-neutral-300 border border-white/10 font-medium">
                     {{ tpl.category || 'raffle' }}
                   </span>
                   <span 
-                    class="text-[9.5px] font-mono px-1.5 py-0.5 rounded border uppercase font-medium"
+                    class="text-[9.5px] px-1.5 py-0.5 rounded border uppercase font-medium"
                     :class="tpl.status === 'published' ? 'bg-moss-950/60 text-moss-300 border-moss-700/50' : 'bg-white/[0.06] text-neutral-400 border-white/10'"
                   >
                     {{ tpl.status || 'published' }}
@@ -416,7 +416,7 @@
                   <button
                     type="button"
                     @click="openEditTemplateModal(tpl)"
-                    class="text-[11.5px] font-mono uppercase text-neutral-400 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0"
+                    class="text-[11.5px] uppercase text-neutral-400 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0"
                   >
                     Edit
                   </button>
@@ -424,7 +424,7 @@
                   <button
                     type="button"
                     @click="handleRemoveTemplate(tpl)"
-                    class="text-[11.5px] font-mono uppercase text-neutral-500 hover:text-red-400 transition-colors cursor-pointer bg-transparent border-none p-0"
+                    class="text-[11.5px] uppercase text-neutral-500 hover:text-red-400 transition-colors cursor-pointer bg-transparent border-none p-0"
                   >
                     Remove
                   </button>
@@ -433,7 +433,7 @@
                 <button
                   type="button"
                   @click="handleEditInStudio(tpl)"
-                  class="h-[30px] px-3 rounded-[6px] bg-white text-black hover:bg-neutral-200 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1 font-semibold"
+                  class="h-[30px] px-3 rounded-[6px] bg-white text-black hover:bg-neutral-200 text-[11px] uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1 font-semibold"
                 >
                   <span>Open in Studio</span>
                   <ExternalLink class="w-3 h-3" />
@@ -451,9 +451,9 @@
             <div class="flex items-center justify-between gap-3">
               <div class="flex items-center gap-2">
                 <UserPlus class="w-4 h-4 text-white" />
-                <span class="text-[12px] font-mono uppercase tracking-wider text-white font-semibold">Pending access requests ({{ pendingUsers.length }})</span>
+                <span class="text-[12px] uppercase tracking-wider text-white font-semibold">Pending access requests ({{ pendingUsers.length }})</span>
               </div>
-              <span class="text-[11px] font-mono text-neutral-400 hidden sm:block">Approve to add them to the roster and their brand.</span>
+              <span class="text-[11px] text-neutral-400 hidden sm:block">Approve to add them to the roster and their brand.</span>
             </div>
             <div
               v-for="u in pendingUsers"
@@ -462,8 +462,8 @@
             >
               <div class="flex-1 min-w-0">
                 <div class="text-[13px] text-white font-medium truncate">{{ u.name }}</div>
-                <div class="text-[11.5px] font-mono text-neutral-400 truncate">{{ u.email }}</div>
-                <div class="text-[11px] font-mono text-neutral-500 mt-0.5">
+                <div class="text-[11.5px] text-neutral-400 truncate">{{ u.email }}</div>
+                <div class="text-[11px] text-neutral-500 mt-0.5">
                   Requested: {{ (u.assignedBrands || []).join(', ') || '—' }}<span v-if="u.createdAt"> · {{ formatDate(u.createdAt) }}</span>
                 </div>
               </div>
@@ -471,7 +471,7 @@
                 <select
                   :value="pendingBrandChoice[u.id] ?? suggestBrandForRequest(u)"
                   @change="pendingBrandChoice[u.id] = ($event.target as HTMLSelectElement).value"
-                  class="h-[32px] px-2.5 rounded-[8px] border border-white/10 bg-black text-[11.5px] text-neutral-200 font-mono outline-none focus:border-white/30 cursor-pointer max-w-[180px]"
+                  class="h-[32px] px-2.5 rounded-[8px] border border-white/10 bg-black text-[11.5px] text-neutral-200 outline-none focus:border-white/30 cursor-pointer max-w-[180px]"
                   :aria-label="`Brand for ${u.name}`"
                 >
                   <option value="all">All Brands</option>
@@ -481,7 +481,7 @@
                   type="button"
                   :disabled="pendingActionId === u.id"
                   @click="handleApprovePending(u)"
-                  class="h-[32px] px-3 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11px] font-mono uppercase tracking-wider font-semibold cursor-pointer border-none disabled:opacity-40"
+                  class="h-[32px] px-3 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11px] uppercase tracking-wider font-semibold cursor-pointer border-none disabled:opacity-40"
                 >
                   Approve
                 </button>
@@ -489,7 +489,7 @@
                   type="button"
                   :disabled="pendingActionId === u.id"
                   @click="handleDeclinePending(u)"
-                  class="h-[32px] px-3 rounded-[8px] bg-transparent text-neutral-300 hover:text-white border border-white/15 hover:border-white/30 text-[11px] font-mono uppercase tracking-wider cursor-pointer disabled:opacity-40"
+                  class="h-[32px] px-3 rounded-[8px] bg-transparent text-neutral-300 hover:text-white border border-white/15 hover:border-white/30 text-[11px] uppercase tracking-wider cursor-pointer disabled:opacity-40"
                 >
                   Decline
                 </button>
@@ -505,9 +505,9 @@
               class="p-3.5 rounded-[12px] text-left transition-all cursor-pointer border"
               :class="selectedRoleFilter === 'all' ? 'bg-white/[0.08] border-white/30 shadow-xs' : 'bg-[#141414] border-white/10 hover:border-white/20'"
             >
-              <div class="text-[11px] font-mono uppercase tracking-wider text-neutral-400">Total Personnel</div>
+              <div class="text-[11px] uppercase tracking-wider text-neutral-400">Total Personnel</div>
               <div class="text-[22px] font-medium text-white font-707 mt-1">{{ teamUsers.length }}</div>
-              <div class="text-[11px] font-mono text-neutral-500 mt-0.5">Active studio accounts</div>
+              <div class="text-[11px] text-neutral-500 mt-0.5">Active studio accounts</div>
             </button>
 
             <button 
@@ -516,9 +516,9 @@
               class="p-3.5 rounded-[12px] text-left transition-all cursor-pointer border"
               :class="selectedRoleFilter === 'superadmin' ? 'bg-white/[0.08] border-white/30 shadow-xs' : 'bg-[#141414] border-white/10 hover:border-white/20'"
             >
-              <div class="text-[11px] font-mono uppercase tracking-wider text-neutral-400">Superadmins</div>
+              <div class="text-[11px] uppercase tracking-wider text-neutral-400">Superadmins</div>
               <div class="text-[22px] font-medium text-white font-707 mt-1">{{ superadminCount }}</div>
-              <div class="text-[11px] font-mono text-neutral-500 mt-0.5">Global Superadmin Leads</div>
+              <div class="text-[11px] text-neutral-500 mt-0.5">Global Superadmin Leads</div>
             </button>
 
             <button 
@@ -527,9 +527,9 @@
               class="p-3.5 rounded-[12px] text-left transition-all cursor-pointer border"
               :class="selectedRoleFilter === 'editor' ? 'bg-white/[0.08] border-white/30 shadow-xs' : 'bg-[#141414] border-white/10 hover:border-white/20'"
             >
-              <div class="text-[11px] font-mono uppercase tracking-wider text-neutral-400">Brand PICs</div>
+              <div class="text-[11px] uppercase tracking-wider text-neutral-400">Brand PICs</div>
               <div class="text-[22px] font-medium text-white font-707 mt-1">{{ brandPicCount }}</div>
-              <div class="text-[11px] font-mono text-neutral-500 mt-0.5">Campaign Managers</div>
+              <div class="text-[11px] text-neutral-500 mt-0.5">Campaign Managers</div>
             </button>
 
             <button 
@@ -538,9 +538,9 @@
               class="p-3.5 rounded-[12px] text-left transition-all cursor-pointer border"
               :class="selectedRoleFilter === 'gate' ? 'bg-white/[0.08] border-white/30 shadow-xs' : 'bg-[#141414] border-white/10 hover:border-white/20'"
             >
-              <div class="text-[11px] font-mono uppercase tracking-wider text-neutral-400">Door PICs</div>
+              <div class="text-[11px] uppercase tracking-wider text-neutral-400">Door PICs</div>
               <div class="text-[22px] font-medium text-white font-707 mt-1">{{ gatePicCount }}</div>
-              <div class="text-[11px] font-mono text-neutral-500 mt-0.5">Field Scanner Stations</div>
+              <div class="text-[11px] text-neutral-500 mt-0.5">Field Scanner Stations</div>
             </button>
           </div>
 
@@ -555,7 +555,7 @@
                   v-model="userSearchQuery" 
                   type="text" 
                   placeholder="Filter personnel..." 
-                  class="w-full h-[36px] pl-9 pr-3 rounded-[8px] border border-white/10 bg-[#141414] text-[13px] text-white placeholder:text-neutral-500 focus:outline-none focus:border-white/30 transition-colors font-mono"
+                  class="w-full h-[36px] pl-9 pr-3 rounded-[8px] border border-white/10 bg-[#141414] text-[13px] text-white placeholder:text-neutral-500 focus:outline-none focus:border-white/30 transition-colors"
                 />
               </div>
 
@@ -564,7 +564,7 @@
                 <button
                   type="button"
                   @click="selectedRoleFilter = 'all'"
-                  class="px-2.5 py-1 rounded-[6px] text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none"
+                  class="px-2.5 py-1 rounded-[6px] text-[11px] uppercase tracking-wider transition-colors cursor-pointer border-none"
                   :class="selectedRoleFilter === 'all' ? 'bg-white text-black font-semibold' : 'text-neutral-400 hover:text-white bg-transparent'"
                 >
                   All ({{ teamUsers.length }})
@@ -572,7 +572,7 @@
                 <button
                   type="button"
                   @click="selectedRoleFilter = 'superadmin'"
-                  class="px-2.5 py-1 rounded-[6px] text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none"
+                  class="px-2.5 py-1 rounded-[6px] text-[11px] uppercase tracking-wider transition-colors cursor-pointer border-none"
                   :class="selectedRoleFilter === 'superadmin' ? 'bg-white text-black font-semibold' : 'text-neutral-400 hover:text-white bg-transparent'"
                 >
                   Admins ({{ superadminCount }})
@@ -580,7 +580,7 @@
                 <button
                   type="button"
                   @click="selectedRoleFilter = 'editor'"
-                  class="px-2.5 py-1 rounded-[6px] text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none"
+                  class="px-2.5 py-1 rounded-[6px] text-[11px] uppercase tracking-wider transition-colors cursor-pointer border-none"
                   :class="selectedRoleFilter === 'editor' ? 'bg-white text-black font-semibold' : 'text-neutral-400 hover:text-white bg-transparent'"
                 >
                   Brand PICs ({{ brandPicCount }})
@@ -588,7 +588,7 @@
                 <button
                   type="button"
                   @click="selectedRoleFilter = 'gate'"
-                  class="px-2.5 py-1 rounded-[6px] text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none"
+                  class="px-2.5 py-1 rounded-[6px] text-[11px] uppercase tracking-wider transition-colors cursor-pointer border-none"
                   :class="selectedRoleFilter === 'gate' ? 'bg-white text-black font-semibold' : 'text-neutral-400 hover:text-white bg-transparent'"
                 >
                   Door PICs ({{ gatePicCount }})
@@ -598,7 +598,7 @@
               <!-- Brand House Scope Dropdown -->
               <select 
                 v-model="selectedBrandFilter"
-                class="h-[36px] px-3 rounded-[8px] border border-white/10 bg-[#141414] text-[11.5px] text-neutral-300 font-mono outline-none focus:border-white/30 cursor-pointer"
+                class="h-[36px] px-3 rounded-[8px] border border-white/10 bg-[#141414] text-[11.5px] text-neutral-300 outline-none focus:border-white/30 cursor-pointer"
               >
                 <option value="all">All Brands Access</option>
                 <option v-for="b in brandStore.brands" :key="b.id" :value="b.slug">{{ b.name }}</option>
@@ -633,7 +633,7 @@
               <button 
                 type="button" 
                 @click="showAddUserModal = true" 
-                class="h-[36px] px-3.5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs font-semibold shrink-0"
+                class="h-[36px] px-3.5 rounded-[8px] bg-white text-black hover:bg-neutral-200 text-[11px] uppercase tracking-wider transition-colors cursor-pointer border-none flex items-center gap-1.5 apple-press shadow-xs font-semibold shrink-0"
               >
                 <Plus class="w-3.5 h-3.5 stroke-[2.5]" />
                 <span>Invite Member</span>
@@ -644,7 +644,7 @@
           <!-- Empty State when filtered results are empty -->
           <div v-if="filteredTeamUsers.length === 0" class="py-16 text-center flex flex-col items-center justify-center gap-2 rounded-[16px] border border-white/10 bg-[#141414]">
             <p class="text-[14px] text-white font-medium">No personnel found</p>
-            <p class="text-[12px] font-mono text-neutral-400">Try adjusting your search query or role filter.</p>
+            <p class="text-[12px] text-neutral-400">Try adjusting your search query or role filter.</p>
           </div>
 
           <!-- 3A. Grouped Role Sections View (Cleaner, Better Organized) -->
@@ -655,10 +655,10 @@
               <div class="flex items-center justify-between pb-2 border-b border-white/[0.08]">
                 <div class="flex items-center gap-2">
                   <ShieldCheck class="w-4 h-4 text-white" />
-                  <h3 class="text-[14px] font-medium text-white uppercase tracking-wider font-mono">Superadmins & Leads</h3>
-                  <span class="px-2 py-0.2 rounded-full bg-white text-black text-[10px] font-mono font-bold">{{ superadminUsers.length }}</span>
+                  <h3 class="text-[14px] font-medium text-white uppercase tracking-wider">Superadmins & Leads</h3>
+                  <span class="px-2 py-0.2 rounded-full bg-white text-black text-[10px] font-bold">{{ superadminUsers.length }}</span>
                 </div>
-                <span class="text-[11px] font-mono text-neutral-400">Full Governance & Runway Sign-off</span>
+                <span class="text-[11px] text-neutral-400">Full Governance & Runway Sign-off</span>
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
@@ -675,15 +675,15 @@
                       </div>
                       <div class="flex flex-col min-w-0">
                         <span class="font-medium text-white truncate text-[14px]">{{ user.name }}</span>
-                        <span class="text-[11.5px] font-mono text-neutral-400 truncate">{{ user.email }}</span>
+                        <span class="text-[11.5px] text-neutral-400 truncate">{{ user.email }}</span>
                       </div>
                     </div>
-                    <span class="px-2 py-0.5 rounded bg-white text-black font-semibold font-mono text-[9.5px] uppercase tracking-wider shrink-0">
+                    <span class="px-2 py-0.5 rounded bg-white text-black font-semibold text-[9.5px] uppercase tracking-wider shrink-0">
                       Superadmin
                     </span>
                   </div>
 
-                  <div class="flex items-center justify-between pt-2.5 border-t border-white/[0.06] text-[11px] font-mono">
+                  <div class="flex items-center justify-between pt-2.5 border-t border-white/[0.06] text-[11px]">
                     <span class="px-2 py-0.5 rounded bg-white/[0.06] text-neutral-300 border border-white/5">
                       Global (All Brands)
                     </span>
@@ -716,10 +716,10 @@
               <div class="flex items-center justify-between pb-2 border-b border-white/[0.08]">
                 <div class="flex items-center gap-2">
                   <Building2 class="w-4 h-4 text-moss-300" />
-                  <h3 class="text-[14px] font-medium text-white uppercase tracking-wider font-mono">Brand Managers & PICs</h3>
-                  <span class="px-2 py-0.2 rounded-full bg-moss-950/60 text-moss-300 border border-moss-700/50 text-[10px] font-mono font-bold">{{ brandPicUsers.length }}</span>
+                  <h3 class="text-[14px] font-medium text-white uppercase tracking-wider">Brand Managers & PICs</h3>
+                  <span class="px-2 py-0.2 rounded-full bg-moss-950/60 text-moss-300 border border-moss-700/50 text-[10px] font-bold">{{ brandPicUsers.length }}</span>
                 </div>
-                <span class="text-[11px] font-mono text-neutral-400">Campaign Creation & Hub Operations</span>
+                <span class="text-[11px] text-neutral-400">Campaign Creation & Hub Operations</span>
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
@@ -736,15 +736,15 @@
                       </div>
                       <div class="flex flex-col min-w-0">
                         <span class="font-medium text-white truncate text-[14px]">{{ user.name }}</span>
-                        <span class="text-[11.5px] font-mono text-neutral-400 truncate">{{ user.email }}</span>
+                        <span class="text-[11.5px] text-neutral-400 truncate">{{ user.email }}</span>
                       </div>
                     </div>
-                    <span class="px-2 py-0.5 rounded bg-moss-950/60 text-moss-300 border border-moss-700/50 font-mono text-[9.5px] uppercase tracking-wider shrink-0 font-medium">
+                    <span class="px-2 py-0.5 rounded bg-moss-950/60 text-moss-300 border border-moss-700/50 text-[9.5px] uppercase tracking-wider shrink-0 font-medium">
                       Brand PIC
                     </span>
                   </div>
 
-                  <div class="flex items-center justify-between pt-2.5 border-t border-white/[0.06] text-[11px] font-mono">
+                  <div class="flex items-center justify-between pt-2.5 border-t border-white/[0.06] text-[11px]">
                     <div class="flex items-center flex-wrap gap-1">
                       <span 
                         v-for="b in user.assignedBrands" 
@@ -791,10 +791,10 @@
               <div class="flex items-center justify-between pb-2 border-b border-white/[0.08]">
                 <div class="flex items-center gap-2">
                   <ScanLine class="w-4 h-4 text-neutral-300" />
-                  <h3 class="text-[14px] font-medium text-white uppercase tracking-wider font-mono">Field Staff & Door Entrance PICs</h3>
-                  <span class="px-2 py-0.2 rounded-full bg-white/[0.08] text-neutral-300 border border-white/10 text-[10px] font-mono font-bold">{{ gateUsers.length }}</span>
+                  <h3 class="text-[14px] font-medium text-white uppercase tracking-wider">Field Staff & Door Entrance PICs</h3>
+                  <span class="px-2 py-0.2 rounded-full bg-white/[0.08] text-neutral-300 border border-white/10 text-[10px] font-bold">{{ gateUsers.length }}</span>
                 </div>
-                <span class="text-[11px] font-mono text-neutral-400">Scoped Scanner Devices & Station Shifts</span>
+                <span class="text-[11px] text-neutral-400">Scoped Scanner Devices & Station Shifts</span>
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
@@ -811,19 +811,19 @@
                       </div>
                       <div class="flex flex-col min-w-0">
                         <span class="font-medium text-white truncate text-[14px]">{{ user.name }}</span>
-                        <div class="flex items-center gap-2 text-[11px] font-mono text-neutral-400">
+                        <div class="flex items-center gap-2 text-[11px] text-neutral-400">
                           <span v-if="user.deviceLabel">{{ user.deviceLabel }}</span>
                           <span v-if="user.deviceLabel && user.stationMode">·</span>
                           <span v-if="user.stationMode" class="capitalize">{{ user.stationMode === 'both' ? 'In/Out' : user.stationMode }} Station</span>
                         </div>
                       </div>
                     </div>
-                    <span class="px-2 py-0.5 rounded bg-white/[0.08] text-neutral-300 border border-white/10 font-mono text-[9.5px] uppercase tracking-wider shrink-0 font-medium">
+                    <span class="px-2 py-0.5 rounded bg-white/[0.08] text-neutral-300 border border-white/10 text-[9.5px] uppercase tracking-wider shrink-0 font-medium">
                       Door PIC
                     </span>
                   </div>
 
-                  <div class="flex items-center justify-between pt-2.5 border-t border-white/[0.06] text-[11px] font-mono">
+                  <div class="flex items-center justify-between pt-2.5 border-t border-white/[0.06] text-[11px]">
                     <span class="text-neutral-400 text-[10.5px]">
                       {{ user.expiresAt ? 'Valid: ' + formatDate(user.expiresAt) : 'Active Shift' }}
                     </span>
@@ -865,7 +865,7 @@
           <div v-else class="bg-[#141414] rounded-[16px] border border-white/10 overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
             <table class="w-full text-left border-collapse">
               <thead>
-                <tr class="border-b border-white/[0.08] bg-white/[0.02] text-[11px] font-mono uppercase text-neutral-400 tracking-wider">
+                <tr class="border-b border-white/[0.08] bg-white/[0.02] text-[11px] uppercase text-neutral-400 tracking-wider">
                   <th class="py-3 px-5 font-normal">Member</th>
                   <th class="py-3 px-4 font-normal">Role</th>
                   <th class="py-3 px-4 font-normal">Brand Scope</th>
@@ -886,11 +886,11 @@
                       </div>
                       <div class="flex flex-col min-w-0">
                         <span class="font-medium text-white truncate">{{ user.name }}</span>
-                        <span class="text-[11.5px] font-mono text-neutral-400 truncate">{{ user.email }}</span>
+                        <span class="text-[11.5px] text-neutral-400 truncate">{{ user.email }}</span>
                       </div>
                     </div>
                   </td>
-                  <td class="py-3.5 px-4 font-mono">
+                  <td class="py-3.5 px-4">
                     <span 
                       class="px-2 py-0.5 rounded text-[10.5px] uppercase font-medium"
                       :class="user.role === 'superadmin' ? 'bg-white text-black font-semibold' : user.role === 'gate' ? 'bg-white/[0.08] text-neutral-300 border border-white/10' : 'bg-moss-950/60 text-moss-300 border border-moss-700/50'"
@@ -898,7 +898,7 @@
                       {{ user.role === 'editor' ? 'Brand PIC' : user.role === 'gate' ? 'Door PIC' : user.role }}
                     </span>
                   </td>
-                  <td class="py-3.5 px-4 font-mono text-[11px]">
+                  <td class="py-3.5 px-4 text-[11px]">
                     <div class="flex items-center flex-wrap gap-1">
                       <span 
                         v-for="b in user.assignedBrands" 
@@ -909,7 +909,7 @@
                       </span>
                     </div>
                   </td>
-                  <td class="py-3.5 px-5 text-right font-mono text-[11px]">
+                  <td class="py-3.5 px-5 text-right text-[11px]">
                     <div class="flex items-center justify-end gap-2">
                       <button
                         type="button"
@@ -943,11 +943,11 @@
           </div>
 
           <!-- Bottom Maintenance Bar -->
-          <div class="pt-2 flex items-center justify-between text-[11px] font-mono text-neutral-500">
+          <div class="pt-2 flex items-center justify-between text-[11px] text-neutral-500">
             <span>707 DEV GOVERNANCE</span>
             <button 
               @click="handleClearMediaConfirm" 
-              class="hover:text-red-400 transition-colors cursor-pointer bg-transparent border-none p-0 text-[11px] font-mono text-neutral-500"
+              class="hover:text-red-400 transition-colors cursor-pointer bg-transparent border-none p-0 text-[11px] text-neutral-500"
             >
               Purge Media Storage
             </button>
@@ -996,12 +996,12 @@
               <div class="flex flex-col gap-1">
                 <label class="text-[11px] uppercase tracking-normal text-neutral-400 font-medium">URL Slug</label>
                 <div class="flex items-center gap-1.5">
-                  <span class="text-[12px] font-mono text-neutral-500">events.707.co.id/</span>
+                  <span class="text-[12px] text-neutral-500">events.707.co.id/</span>
                   <input 
                     v-model="newBrandSlug" 
                     type="text" 
                     placeholder="atmos" 
-                    class="flex-1 h-[36px] px-3 rounded-[8px] bg-white/[0.05] border border-white/15 text-[12.5px] font-mono text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all placeholder:text-neutral-500"
+                    class="flex-1 h-[36px] px-3 rounded-[8px] bg-white/[0.05] border border-white/15 text-[12.5px] text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all placeholder:text-neutral-500"
                   />
                 </div>
               </div>
@@ -1064,7 +1064,7 @@
                   v-model="editBrandSlug" 
                   type="text" 
                   required 
-                  class="w-full h-[36px] px-3 rounded-[8px] bg-white/[0.05] border border-white/15 text-[12.5px] font-mono text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all"
+                  class="w-full h-[36px] px-3 rounded-[8px] bg-white/[0.05] border border-white/15 text-[12.5px] text-white outline-none focus:border-white/40 focus:bg-white/[0.08] transition-all"
                 />
               </div>
 
@@ -1111,7 +1111,7 @@
             <div class="px-5 py-3.5 border-b border-white/10 flex items-center justify-between shrink-0">
               <div class="flex flex-col">
                 <h3 class="text-[15px] font-medium text-white">Assign PIC</h3>
-                <span class="text-[11px] font-mono text-moss-300">{{ assignPicBrand.name }} · from Team Roster</span>
+                <span class="text-[11px] text-moss-300">{{ assignPicBrand.name }} · from Team Roster</span>
               </div>
               <button 
                 type="button" 
@@ -1135,7 +1135,7 @@
             </div>
 
             <div class="flex-1 min-h-0 overflow-y-auto px-5 pb-3 flex flex-col gap-1.5">
-              <div v-if="assignablePicCandidates.length === 0" class="py-10 text-center text-[12px] font-mono text-neutral-400">
+              <div v-if="assignablePicCandidates.length === 0" class="py-10 text-center text-[12px] text-neutral-400">
                 {{ assignPicSearch.trim() ? 'No team member matches your search.' : 'No active team members yet. Invite someone or approve a pending request in Team Roster.' }}
               </div>
               <div
@@ -1144,19 +1144,19 @@
                 class="flex items-center gap-3 p-2.5 rounded-[8px] border"
                 :class="isPicOfBrand(u, assignPicBrand) ? 'border-white/25 bg-white/[0.06]' : 'border-white/10 bg-transparent'"
               >
-                <div class="size-8 rounded-full bg-white/10 flex items-center justify-center text-[11px] font-mono text-white shrink-0 uppercase">
+                <div class="size-8 rounded-full bg-white/10 flex items-center justify-center text-[11px] text-white shrink-0 uppercase">
                   {{ (u.name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('') }}
                 </div>
                 <div class="flex-1 min-w-0">
                   <div class="text-[13px] text-white truncate">{{ u.name }}</div>
-                  <div class="text-[11px] font-mono text-neutral-400 truncate">
+                  <div class="text-[11px] text-neutral-400 truncate">
                     {{ u.email }} · {{ u.role === 'superadmin' ? 'Superadmin' : 'Brand PIC' }}
                   </div>
-                  <div v-if="otherBrandsOf(u, assignPicBrand).length" class="text-[10.5px] font-mono text-neutral-500 truncate">
+                  <div v-if="otherBrandsOf(u, assignPicBrand).length" class="text-[10.5px] text-neutral-500 truncate">
                     Also: {{ otherBrandsOf(u, assignPicBrand).map(formatBrandName).join(', ') }}
                   </div>
                 </div>
-                <span v-if="hasGlobalAccess(u)" class="text-[10.5px] font-mono uppercase tracking-wider text-neutral-400 shrink-0" title="Already sees every brand. Change their access in Team Roster.">
+                <span v-if="hasGlobalAccess(u)" class="text-[10.5px] uppercase tracking-wider text-neutral-400 shrink-0" title="Already sees every brand. Change their access in Team Roster.">
                   All brands
                 </span>
                 <button
@@ -1164,10 +1164,8 @@
                   type="button"
                   :disabled="assignPicBusyId === u.id"
                   @click="togglePicAssignment(u, assignPicBrand)"
-                  class="h-[30px] px-3 rounded-[8px] text-[11px] font-mono uppercase tracking-wider cursor-pointer shrink-0 disabled:opacity-40 transition-colors"
-                  :class="isPicOfBrand(u, assignPicBrand) 
-                    ? 'bg-transparent text-neutral-300 border border-white/20 hover:border-white/40 hover:text-white' 
-                    : 'bg-white text-black border-none hover:bg-neutral-200 font-semibold'"
+                  class="h-[30px] px-3 rounded-[8px] text-[11px] uppercase tracking-wider cursor-pointer shrink-0 disabled:opacity-40 transition-colors"
+                  :class="isPicOfBrand(u, assignPicBrand) ? 'bg-transparent text-neutral-300 border border-white/20 hover:border-white/40 hover:text-white' : 'bg-white text-black border-none hover:bg-neutral-200 font-semibold'"
                 >
                   {{ isPicOfBrand(u, assignPicBrand) ? 'Remove' : 'Assign' }}
                 </button>
@@ -1178,7 +1176,7 @@
               <button
                 type="button"
                 @click="openInviteForBrand(assignPicBrand)"
-                class="text-[11.5px] font-mono text-neutral-400 hover:text-white bg-transparent border-none cursor-pointer p-0"
+                class="text-[11.5px] text-neutral-400 hover:text-white bg-transparent border-none cursor-pointer p-0"
               >
                 Not on the roster? Invite new member
               </button>
@@ -1206,7 +1204,7 @@
             <div class="px-5 py-3.5 border-b border-white/10 flex items-center justify-between">
               <div class="flex flex-col">
                 <h3 class="text-[15px] font-medium text-white">Invite Team Member</h3>
-                <span v-if="newUserBrand !== 'all'" class="text-[11px] font-mono text-moss-300">
+                <span v-if="newUserBrand !== 'all'" class="text-[11px] text-moss-300">
                   Assigning to {{ formatBrandName(newUserBrand) }}
                 </span>
               </div>
@@ -1404,7 +1402,7 @@
                 <input 
                   v-model="updatedPasswordValue" 
                   type="text" 
-                  class="flex-1 h-[36px] px-3 rounded-[8px] bg-white/[0.05] border border-white/15 text-[13px] font-mono text-white outline-none focus:border-white/40 focus:bg-white/[0.08]"
+                  class="flex-1 h-[36px] px-3 rounded-[8px] bg-white/[0.05] border border-white/15 text-[13px] text-white outline-none focus:border-white/40 focus:bg-white/[0.08]"
                 />
                 <button 
                   type="button" 
