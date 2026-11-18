@@ -542,11 +542,12 @@
               @toast="toast"
             />
 
-            <!-- Queue & Capacity Workspace -->
+            <!-- Queue & Capacity / Rules & Alerts Workspace -->
             <QueueSettingsPanel
               v-else-if="activeTab === 'queue'"
               :page-id="selectedProjectId"
               :rows="rows"
+              :has-live-queue="hasLiveQueue"
               :dark="isDark"
               @toast="toast"
             />
@@ -903,15 +904,19 @@ const tabs = computed(() => {
   const list: Array<{ id: TabId; label: string; badge?: number }> = [
     { id: 'guests' as TabId, label: 'Guest Database', badge: rows.value.length }
   ];
-  if (hasLiveQueue.value) {
-    list.push({ id: 'queue' as TabId, label: 'Queue & Capacity', badge: undefined });
+  if (selectedProject.value) {
+    list.push({
+      id: 'queue' as TabId,
+      label: hasLiveQueue.value ? 'Queue & Capacity' : 'Rules & Alerts',
+      badge: undefined
+    });
   }
   list.push({ id: 'raffle' as TabId, label: 'Raffle & Stage Draw', badge: undefined });
   return list;
 });
 
-watch(hasLiveQueue, (active) => {
-  if (!active && activeTab.value === 'queue') {
+watch(selectedProject, (proj) => {
+  if (!proj && activeTab.value === 'queue') {
     activeTab.value = 'guests';
   }
 });

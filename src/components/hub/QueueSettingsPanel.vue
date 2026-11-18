@@ -28,7 +28,7 @@
             </div>
           </div>
         </div>
-        <h2 class="text-[20px] sm:text-[22px] font-medium tracking-tight mt-1" :class="isDark ? 'text-white' : 'text-black'">Queue & Capacity</h2>
+        <h2 class="text-[20px] sm:text-[22px] font-medium tracking-tight mt-1" :class="isDark ? 'text-white' : 'text-black'">{{ hasLiveQueue === false ? 'Rules & Notifications' : 'Queue & Capacity' }}</h2>
       </div>
 
       <div class="flex items-center gap-2">
@@ -1385,11 +1385,14 @@ interface StageDefinition {
   tags: { key: string; label: string; description: string }[];
 }
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   pageId: string;
   rows?: Submission[];
+  hasLiveQueue?: boolean;
   dark?: boolean;
-}>();
+}>(), {
+  hasLiveQueue: true
+});
 
 const emit = defineEmits<{
   (e: 'toast', msg: string): void;
@@ -1401,7 +1404,7 @@ const authStore = useAuthStore();
 const isDark = computed(() => props.dark ?? authStore.isSuperAdmin);
 const isLoading = ref(false);
 const isSaving = ref(false);
-const activePanelTab = ref<'operations' | 'settings'>('operations');
+const activePanelTab = ref<'operations' | 'settings'>(props.hasLiveQueue === false ? 'settings' : 'operations');
 const activeNotificationTab = ref<'email' | 'whatsapp'>('email');
 const activeStageId = ref<string>('ready');
 
