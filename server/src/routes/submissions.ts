@@ -8,7 +8,7 @@ import { readDataFile, writeDataFile } from '../fileStorage.js';
 import { requireAuth, getClaims, optionalClaims } from '../auth.js';
 import { accessiblePageIds, canViewPublicPage, findProjectForEntry } from '../access.js';
 import { PLACEHOLDER_EMAIL, emailKeyOf, clientKeyOf, publicEntry, stripInternal } from '../submissionHelpers.js';
-import { sendPassEmail, sendWaitlistEmail, sendPromotedEmail } from '../mailer.js';
+import { sendPassEmail, sendWaitlistEmail, sendPromotedEmail, sendApplicationReceivedEmail } from '../mailer.js';
 import { route, storeFor, unavailable } from '../routeSupport.js';
 import { slotKey, normalizePicks, decidePlaces, type SlotDef, type SlotPick } from '../slotHelpers.js';
 import { getSlotDefs, getAvailability, touchAvailability } from '../slots.js';
@@ -52,7 +52,7 @@ export const submissionsRouter = Router();
 let inMemorySubmissions: any[] = readDataFile<any[]>('submissions.json', []);
 
 /** Statuses a studio operator may assign. Check-in state lives in checked_in_at, not here. */
-const ALLOWED_STATUSES = ['registered', 'submitted', 'confirmed', 'waitlisted', 'winner', 'declined'];
+const ALLOWED_STATUSES = ['pending', 'registered', 'submitted', 'confirmed', 'waitlisted', 'winner', 'declined'];
 /** Statuses that mean the guest now holds a place. */
 const HAS_PLACE = ['registered', 'confirmed', 'winner'];
 
@@ -190,7 +190,7 @@ async function insertWithPlaces(entry: any, chosen: SlotDef[], wantsWaitlist: bo
         const r = await client.query(
           `SELECT COUNT(*)::int AS taken
              FROM submission_slots ss JOIN submissions s ON s.id = ss.submission_id
-            WHERE ss.page_id = $1 AND ss.widget_id = $2 AND ss.option_id = $3 AND s.status NOT IN ('waitlisted', 'declined')`,
+            WHERE ss.page_id = $1 AND ss.widget_id = $2 AND ss.option_id = $3 AND s.status NOT IN ('waitlisted', 'declined', 'pending')`,
           [entry.page_id, d.widget, d.option]
         );
         taken.set(slotKey(d.widget, d.option), r.rows[0].taken);
@@ -239,7 +239,7 @@ function fileTakenCounts(pageId: string): Map<string, number> {
   refreshMemory();
   const taken = new Map<string, number>();
   for (const s of inMemorySubmissions) {
-    if (s.page_id !== pageId || ['waitlisted', 'declined'].includes(s.status)) continue;
+    if (s.page_id !== pageId || ['waitlisted', 'declined', 'pending'].includes(s.status)) continue;
     for (const pick of Array.isArray(s.slot_picks) ? s.slot_picks : []) {
       const key = slotKey(pick.widget, pick.option);
       taken.set(key, (taken.get(key) || 0) + 1);
@@ -270,7 +270,7 @@ async function placesRefusal(res: Response, pageId: string, useDb: boolean, full
  * told so at once, and the PDF, already stored by then, goes out when they
  * come off the waitlist.
  */
-async function notifyGuest(row: any, kind: 'new' | 'promoted', ticketPdf?: Buffer | null) {
+async function notifyGuest(row: any, kind: 'new' | 'promoted' | 'received', ticketPdf?: Buffer | null) {
   try {
     const form = typeof row?.form_data === 'string' ? JSON.parse(row.form_data) : (row?.form_data || {});
     const email = String(form.email || '').trim();
@@ -282,6 +282,7 @@ async function notifyGuest(row: any, kind: 'new' | 'promoted', ticketPdf?: Buffe
     if (!pdf && kind === 'promoted') pdf = await storedTicket(String(row.id));
 
     const qs = await getQueueSettings(row.page_id);
+    if (qs.emailNotificationEnabled === false) return;
 
     const guest = {
       email,
@@ -294,11 +295,51 @@ async function notifyGuest(row: any, kind: 'new' | 'promoted', ticketPdf?: Buffe
       queueNumber: row.queue_number
     };
 
-    if (kind === 'promoted') await sendPromotedEmail(guest).then(r => markTicketEmailed(row.id, r));
-    else if (row.status === 'waitlisted') await sendWaitlistEmail(guest);
-    else await sendPassEmail(guest, qs.emailTemplates?.pass).then(r => markTicketEmailed(row.id, r));
+    if (kind === 'received' || row.status === 'pending') {
+      await sendApplicationReceivedEmail(guest, qs.emailTemplates?.applicationReceived);
+    } else if (kind === 'promoted') {
+      await sendPromotedEmail(guest).then(r => markTicketEmailed(row.id, r));
+    } else if (row.status === 'waitlisted') {
+      await sendWaitlistEmail(guest);
+    } else {
+      await sendPassEmail(guest, qs.emailTemplates?.pass).then(r => markTicketEmailed(row.id, r));
+    }
   } catch (err: any) {
     console.warn('[Submissions] Could not notify guest:', err?.message || err);
+  }
+}
+
+/** Sends the curated-approval WhatsApp invitation when a pending applicant is confirmed/selected. */
+async function notifyApprovedWhatsApp(row: any, baseUrl: string) {
+  try {
+    const form = typeof row?.form_data === 'string' ? JSON.parse(row.form_data) : (row?.form_data || {});
+    const phone = extractPhoneNumber(form);
+    if (!phone) return;
+    const qs = await getQueueSettings(row.page_id);
+    if (!qs.enabled || !qs.waEnabled || !qs.waTemplates?.approved) return;
+
+    const { campaign, liveUrl } = await campaignAndLiveLink(row);
+    const passUrl = liveUrl || (row.ticket_code ? `${baseUrl}/${row.brand_slug}/${row.page_id}?code=${encodeURIComponent(row.ticket_code)}` : '');
+    const text = renderTemplate(qs.waTemplates.approved, {
+      name: String(form.fullName || form.name || 'Visitor').trim(),
+      campaign: campaign || 'our event',
+      queue_number: row.queue_number || '',
+      party_size: row.party_size || 1,
+      access_id: row.ticket_code || '',
+      link: passUrl,
+      epass_link: passUrl,
+      pass_link: passUrl
+    });
+    await sendWhatsAppNotification(phone, text, {
+      pageId: row.page_id,
+      submissionId: row.id,
+      event: 'approved',
+      gatewayUrl: qs.waConnection?.gatewayUrl,
+      apiToken: qs.waConnection?.apiToken,
+      provider: qs.waConnection?.provider
+    });
+  } catch (err: any) {
+    console.warn('[Submissions] Could not send approval WhatsApp:', err?.message || err);
   }
 }
 
@@ -352,8 +393,12 @@ const TICKET_WAIT_MS = 30_000;
 /** Registrations holding a place whose email is waiting for the PDF, by entry id. */
 const awaitingTicket = new Map<string, { row: any; timer: NodeJS.Timeout }>();
 
-/** Entry point for a fresh registration: waitlist notice now, ticket email once the PDF is in (or after the wait). */
+/** Entry point for a fresh registration: pending/waitlist notice now, ticket email once the PDF is in (or after the wait). */
 function notifyNewEntry(row: any) {
+  if (row.status === 'pending') {
+    void notifyGuest(row, 'received');
+    return;
+  }
   if (row.status === 'waitlisted' || !getDbStatus().isConnected) {
     void notifyGuest(row, 'new');
     return;
@@ -628,6 +673,8 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
   }
 
   const wantsWaitlist = req.body?.waitlist === true;
+  const qs = await getQueueSettings(pageId);
+  const initialStatus = qs.requireApproval ? 'pending' : 'registered';
   const queueNumber = await getNextQueueNumber(pageId, store === 'db', eventDate);
 
   const draft = () => ({
@@ -639,7 +686,7 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
     ticket_code: generateTicketCode(),
     ip_address: req.ip || '127.0.0.1',
     user_agent: req.get('user-agent') || '',
-    status: 'registered',
+    status: initialStatus,
     created_at: new Date().toISOString(),
     email_key: emailKey,
     client_key: clientKey,
@@ -735,12 +782,13 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
         notifyNewEntry(outcome.row);
 
         // Send Welcome WhatsApp Notification if phone provided and WA notifications enabled
+        // (skipped when curated approval is required so pending applicants don't get a pass link yet)
         const phone = extractPhoneNumber(answers);
-        if (phone) {
-          void getQueueSettings(pageId).then(qs => {
-            if (qs.enabled && qs.waEnabled && qs.activeWaStage === 'welcome') {
+        if (phone && outcome.row?.status !== 'pending') {
+          void getQueueSettings(pageId).then(curQs => {
+            if (curQs.enabled && curQs.waEnabled && curQs.activeWaStage === 'welcome') {
               const passUrl = `${publicBaseUrl(req)}/${project.brand_slug}/${project.slug}?code=${outcome.row?.ticket_code || ''}`;
-              const text = renderTemplate(qs.waTemplates.welcome, {
+              const text = renderTemplate(curQs.waTemplates.welcome, {
                 name: fullName || 'Visitor',
                 queue_number: queueNumber,
                 party_size: partySize,
@@ -754,9 +802,9 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
                 pageId,
                 submissionId: outcome.row?.id,
                 event: 'welcome',
-                gatewayUrl: qs.waConnection?.gatewayUrl,
-                apiToken: qs.waConnection?.apiToken,
-                provider: qs.waConnection?.provider
+                gatewayUrl: curQs.waConnection?.gatewayUrl,
+                apiToken: curQs.waConnection?.apiToken,
+                provider: curQs.waConnection?.provider
               });
             }
           });
@@ -838,10 +886,11 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
   const decision = decidePlaces(fileChosen.filter(d => d.capacity !== null), d => fileTaken.get(slotKey(d.widget, d.option)) ?? 0, wantsWaitlist);
   if (!decision.ok) return placesRefusal(res, pageId, false, decision.full, fileTaken);
 
-  const entry = { ...draft(), status: decision.waitlisted ? 'waitlisted' : 'registered', slot_picks: fileChosen.map(d => ({ widget: d.widget, option: d.option })) };
+  const entryStatus = qs.requireApproval ? 'pending' : (decision.waitlisted ? 'waitlisted' : 'registered');
+  const entry = { ...draft(), status: entryStatus, slot_picks: fileChosen.map(d => ({ widget: d.widget, option: d.option })) };
   inMemorySubmissions.unshift(entry);
   persistMemory();
-  void notifyGuest(entry, 'new');
+  notifyNewEntry(entry);
   return res.status(201).json({ success: true, data: publicEntry(entry), message: 'Entry recorded successfully' });
 }));
 
@@ -973,11 +1022,14 @@ submissionsRouter.post('/bulk-status', requireAuth, route('update these guests',
   const scope = await scopedPageIds(req, res, store === 'db');
 
   if (store === 'db') {
-    // Who was waiting before this change, so we can tell the ones who just got
-    // a place. Read first: the update overwrites the old status.
+    // Who was waiting or pending before this change, so we can notify the ones who just got
+    // a place or got approved. Read first: the update overwrites the old status.
     const before = await pool.query('SELECT id, status FROM submissions WHERE id = ANY($1)', [ids]);
     const wasWaiting = new Set(
       before.rows.filter((r: any) => r.status === 'waitlisted').map((r: any) => String(r.id))
+    );
+    const wasPending = new Set(
+      before.rows.filter((r: any) => r.status === 'pending').map((r: any) => String(r.id))
     );
 
     const result = scope
@@ -987,8 +1039,10 @@ submissionsRouter.post('/bulk-status', requireAuth, route('update these guests',
     new Set(result.rows.map((r: any) => String(r.page_id))).forEach(touchAvailability);
 
     if (HAS_PLACE.includes(status)) {
+      const base = publicBaseUrl(req);
       for (const row of result.rows) {
         if (wasWaiting.has(String(row.id))) void notifyGuest(row, 'promoted');
+        if (wasPending.has(String(row.id))) void notifyApprovedWhatsApp(row, base);
       }
     }
 
@@ -997,12 +1051,15 @@ submissionsRouter.post('/bulk-status', requireAuth, route('update these guests',
 
   refreshMemory();
   const updated: any[] = [];
+  const base = publicBaseUrl(req);
   inMemorySubmissions = inMemorySubmissions.map(s => {
     if (!ids.includes(s.id) || !inScope(scope, s.page_id)) return s;
     const wasWaiting = s.status === 'waitlisted';
+    const wasPending = s.status === 'pending';
     const next = { ...s, status };
     updated.push(next);
     if (wasWaiting && HAS_PLACE.includes(status)) void notifyGuest(next, 'promoted');
+    if (wasPending && HAS_PLACE.includes(status)) void notifyApprovedWhatsApp(next, base);
     return next;
   });
   persistMemory();
@@ -1090,7 +1147,7 @@ submissionsRouter.post('/check-in', requireAuth, route('check this pass', async 
     const row = found.rows[0];
     if (!row) return res.json({ success: false, result: 'invalid', error: 'No pass matches this Access ID.' });
 
-    if (mode === 'in' && (row.status === 'waitlisted' || row.status === 'declined')) {
+    if (mode === 'in' && (row.status === 'waitlisted' || row.status === 'declined' || row.status === 'pending')) {
       return res.json({ success: false, result: row.status, data: normalizeRow(row) });
     }
     if (mode === 'in') {
@@ -1200,7 +1257,7 @@ submissionsRouter.post('/check-in', requireAuth, route('check this pass', async 
   if (idx < 0) return res.json({ success: false, result: 'invalid', error: 'No pass matches this Access ID.' });
   const current = inMemorySubmissions[idx];
 
-  if (mode === 'in' && (current.status === 'waitlisted' || current.status === 'declined')) {
+  if (mode === 'in' && (current.status === 'waitlisted' || current.status === 'declined' || current.status === 'pending')) {
     return res.json({ success: false, result: current.status, data: normalizeRow(current) });
   }
   if (mode === 'in') {
@@ -1552,6 +1609,8 @@ submissionsRouter.patch('/:id', requireAuth, route('update this guest', async (r
 
     if (prior?.rows[0]?.status === 'waitlisted' && HAS_PLACE.includes(status)) {
       void notifyGuest(result.rows[0], 'promoted');
+    } else if (prior?.rows[0]?.status === 'pending' && HAS_PLACE.includes(status)) {
+      void notifyApprovedWhatsApp(result.rows[0], publicBaseUrl(req));
     }
 
     return res.json({ success: true, data: normalizeRow(result.rows[0]) });
@@ -1562,8 +1621,10 @@ submissionsRouter.patch('/:id', requireAuth, route('update this guest', async (r
   if (idx < 0) return res.status(404).json({ success: false, error: 'Submission not found.' });
   const next = { ...inMemorySubmissions[idx] };
   const wasWaiting = next.status === 'waitlisted';
+  const wasPending = next.status === 'pending';
   if (status !== undefined) next.status = status;
   if (wasWaiting && status !== undefined && HAS_PLACE.includes(status)) void notifyGuest(next, 'promoted');
+  else if (wasPending && status !== undefined && HAS_PLACE.includes(status)) void notifyApprovedWhatsApp(next, publicBaseUrl(req));
   if (checked_in === true) {
     next.checked_in_at = next.checked_in_at || new Date().toISOString();
     next.checked_in_by = String(operator || 'studio').slice(0, 100);

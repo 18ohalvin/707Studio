@@ -27,9 +27,10 @@ export interface Submission {
   ticket_emailed_at?: string | null;
 }
 
-export type GuestStatus = 'registered' | 'confirmed' | 'waitlisted' | 'winner' | 'declined';
+export type GuestStatus = 'pending' | 'registered' | 'confirmed' | 'waitlisted' | 'winner' | 'declined';
 
 export const STATUS_OPTIONS: { value: GuestStatus; label: string }[] = [
+  { value: 'pending', label: 'Pending Review' },
   { value: 'registered', label: 'Registered' },
   { value: 'confirmed', label: 'Confirmed' },
   { value: 'waitlisted', label: 'Waitlisted' },
@@ -50,6 +51,7 @@ export function statusLabel(status?: string): string {
 
 export function statusBadgeClass(status?: string): string {
   switch (normalizeStatus(status)) {
+    case 'pending': return 'bg-amber-50 text-amber-800 border-amber-300';
     case 'confirmed': return 'bg-moss-50 text-moss-800 border-moss-300';
     case 'waitlisted': return 'bg-bronze-50 text-bronze-800 border-bronze-300';
     case 'winner': return 'bg-black text-white border-black';
@@ -60,6 +62,7 @@ export function statusBadgeClass(status?: string): string {
 
 export function statusDotClass(status?: string): string {
   switch (normalizeStatus(status)) {
+    case 'pending': return 'bg-amber-500';
     case 'confirmed': return 'bg-moss-500';
     case 'waitlisted': return 'bg-bronze-500';
     case 'winner': return 'bg-white';
@@ -583,9 +586,10 @@ export interface EmailTemplateConfig {
 
 export interface QueueSettingsData {
   enabled: boolean;
+  requireApproval?: boolean;
   waEnabled: boolean;
   emailNotificationEnabled?: boolean;
-  activeWaStage?: 'ready' | 'welcome' | 'approaching' | 'expired';
+  activeWaStage?: 'ready' | 'welcome' | 'approaching' | 'expired' | 'approved';
   maxCapacity: number;
   notifyThreshold: number;
   skippedTolerance: number;
@@ -593,6 +597,7 @@ export interface QueueSettingsData {
   waConnection?: WhatsAppConnection;
   waTemplates: Record<string, string>;
   emailTemplates?: {
+    applicationReceived?: EmailTemplateConfig;
     pass?: EmailTemplateConfig;
     ready?: EmailTemplateConfig;
   };

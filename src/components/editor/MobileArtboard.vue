@@ -3261,7 +3261,7 @@ import { ref, reactive, computed, watch, nextTick, onMounted, onUnmounted, injec
 import QRCode from 'qrcode';
 import { PLACES_KEY, placeStatus, placeKey, configuredLimit, type PlaceStatus } from '../../services/places.ts';
 import { LIVE_PASS_KEY, SESSIONS_ANSWER_KEY, type PassSession } from './livePass.ts';
-import { normalizeCtaAction, normalizeExternalUrl, resolveTargetPageIndex } from './ctaActions.ts';
+import { normalizeCtaAction, normalizeExternalUrl, resolveTargetPageIndex, resolveChoiceRouteOverride } from './ctaActions.ts';
 import { resolveUploadExtensions, formatUploadHelperSummary } from './uploadFieldConfig.ts';
 import { responsiveImgAttrs, placeholderStyle, sizedUrl } from '../../services/responsiveImage.ts';
 import { TICKET_CONTEXT_KEY, TICKET_SOURCE_KEY, TICKET_CANVAS, ticketFieldMeta, type TicketFieldKey } from './ticket/ticketFields.ts';
@@ -4428,9 +4428,19 @@ function handleButtonClick(widget: any, target: 'primary' | 'secondary' = 'prima
       scrollToWidget(firstInvalidWidget.id);
       return;
     }
-    const targetPageId = target === 'secondary'
+    const choiceOverride = resolveChoiceRouteOverride(activePage.value.widget_tree);
+    if (choiceOverride?.kind === 'link') {
+      if (props.isLivePage) {
+        window.location.href = choiceOverride.url;
+      } else {
+        window.open(choiceOverride.url, '_blank', 'noopener,noreferrer');
+      }
+      return;
+    }
+    const baseTargetPageId = target === 'secondary'
       ? widget.props?.secondaryTargetPageId
       : (widget.props?.targetPageId || widget.props?.ctaTargetPageId);
+    const targetPageId = choiceOverride?.kind === 'page' ? choiceOverride.targetPageId : baseTargetPageId;
     goToNextPage(props.isLivePage ? collectPageAnswers() : undefined, targetPageId);
   } else if (actionType === 'link') {
     const rawUrl = target === 'secondary'

@@ -853,7 +853,7 @@ const currentlyCalledGuests = computed(() => {
       const q = getGuestQueueNumber(r);
       const isInside = isGuestInside(r);
       const st = normalizeStatus(r.status);
-      return q > 0 && !isInside && !['declined', 'waitlisted'].includes(st) && (r.queue_status === 'called' || q === currentCalledNumber.value);
+      return q > 0 && !isInside && !['declined', 'waitlisted', 'pending'].includes(st) && (r.queue_status === 'called' || q === currentCalledNumber.value);
     })
     .sort((a, b) => getGuestQueueNumber(a) - getGuestQueueNumber(b));
 });
@@ -866,7 +866,7 @@ const waitingQueueGuests = computed(() => {
       const q = getGuestQueueNumber(r);
       const isInside = isGuestInside(r);
       const st = normalizeStatus(r.status);
-      return q > 0 && !isInside && !['declined', 'waitlisted'].includes(st) && r.queue_status !== 'called' && q > currentCalledNumber.value;
+      return q > 0 && !isInside && !['declined', 'waitlisted', 'pending'].includes(st) && r.queue_status !== 'called' && q > currentCalledNumber.value;
     })
     .sort((a, b) => getGuestQueueNumber(a) - getGuestQueueNumber(b));
 });
@@ -877,7 +877,7 @@ const upcomingQueueGuests = computed(() => {
     .filter(r => {
       const q = getGuestQueueNumber(r);
       const st = normalizeStatus(r.status);
-      return q > 0 && !['declined', 'waitlisted'].includes(st);
+      return q > 0 && !['declined', 'waitlisted', 'pending'].includes(st);
     })
     .sort((a, b) => getGuestQueueNumber(a) - getGuestQueueNumber(b))
     .filter(r => {
@@ -886,7 +886,7 @@ const upcomingQueueGuests = computed(() => {
     });
 });
 
-type ScanKind = CheckInResult | 'waitlisted' | 'declined' | 'error';
+type ScanKind = CheckInResult | 'waitlisted' | 'declined' | 'pending' | 'error';
 interface ScanResult { kind: ScanKind; name: string; detail: string; vip: boolean; tail: string; hold: number }
 const result = ref<ScanResult | null>(null);
 const isSuccessResult = computed(() => result.value?.kind === 'admitted' || result.value?.kind === 'checked_out');
@@ -895,7 +895,7 @@ const isSuccessResult = computed(() => result.value?.kind === 'admitted' || resu
 const pending = ref<Submission | null>(null);
 
 /* ---------- Stats & 707 Direction Progress Bar ---------- */
-const expectedCount = computed(() => activeRows.value.filter(r => !['declined', 'waitlisted'].includes(normalizeStatus(r.status))).length);
+const expectedCount = computed(() => activeRows.value.filter(r => !['declined', 'waitlisted', 'pending'].includes(normalizeStatus(r.status))).length);
 const insideCount = computed(() => totalInsideGuests(activeRows.value));
 const capacityPercent = computed(() => Math.min(100, Math.round((insideCount.value / Math.max(1, maxCapacity.value)) * 100)));
 const barColor = computed(() => capacityPercent.value >= 100 ? '#7e2c32' : capacityPercent.value >= 80 ? '#8f7c50' : '#7b8b67');
@@ -928,6 +928,7 @@ const candidates = computed(() => findGuestsByShortCode(activeRows.value, query.
 
 function matchChipLabel(g: Submission): string {
   const status = normalizeStatus(g.status);
+  if (status === 'pending') return 'Pending Review';
   if (status === 'waitlisted') return 'Waitlisted';
   if (status === 'declined') return 'Declined';
   if (isGuestInside(g)) return `In ${formatTime(g.checked_in_at)}`;
@@ -935,7 +936,7 @@ function matchChipLabel(g: Submission): string {
 }
 function matchChipClass(g: Submission): string {
   const status = normalizeStatus(g.status);
-  if (status === 'waitlisted' || status === 'declined') return 'bg-oxblood-50 text-oxblood-700 border-oxblood-200';
+  if (status === 'pending' || status === 'waitlisted' || status === 'declined') return 'bg-oxblood-50 text-oxblood-700 border-oxblood-200';
   if (isGuestInside(g)) return 'bg-bronze-50 text-bronze-800 border-bronze-300';
   return 'bg-moss-50 text-moss-800 border-moss-200';
 }
@@ -1011,6 +1012,7 @@ const pendingProblem = computed<{ text: string; class: string } | null>(() => {
     };
   }
   const status = normalizeStatus(g.status);
+  if (status === 'pending') return { text: 'Pending review: this application has not been approved yet.', class: 'bg-oxblood-50 text-oxblood-700' };
   if (status === 'waitlisted') return { text: 'On the waitlist: no place yet. Send them to the event team.', class: 'bg-oxblood-50 text-oxblood-700' };
   if (status === 'declined') return { text: 'This registration was declined.', class: 'bg-oxblood-50 text-oxblood-700' };
   const inside = isGuestInside(g);
@@ -1080,6 +1082,8 @@ const resultTheme = computed(() => {
       return { bg: 'bg-oxblood-800 text-white', iconWrap: 'bg-white text-oxblood-800', icon: TriangleAlert, kicker: 'Capacity Full', title: 'Admit Blocked' };
     case 'wrong_date':
       return { bg: 'bg-oxblood-800 text-white', iconWrap: 'bg-white text-oxblood-800', icon: TriangleAlert, kicker: 'Wrong Date', title: 'Invalid for Today' };
+    case 'pending':
+      return { bg: 'bg-oxblood-700 text-white', iconWrap: 'bg-white text-oxblood-700', icon: Hourglass, kicker: 'Not approved', title: 'Pending review' };
     case 'waitlisted':
       return { bg: 'bg-oxblood-700 text-white', iconWrap: 'bg-white text-oxblood-700', icon: Hourglass, kicker: 'Not admitted', title: 'On the waitlist' };
     case 'declined':
@@ -1096,6 +1100,7 @@ const frameColor = computed(() => {
     case 'capacity_exceeded':
     case 'wrong_date':
     case 'invalid':
+    case 'pending':
     case 'waitlisted':
     case 'declined':
     case 'error': return 'border-oxblood-300';
@@ -1164,6 +1169,7 @@ async function submitCode(raw: string, partySize: number = 1) {
         void triggerBatchCall();
       }
     }
+    else if (kind === 'pending') detail = 'Pending review: this application has not been approved yet.';
     else if (kind === 'waitlisted') detail = 'No place yet. Send them to the event team.';
     else if (kind === 'declined') detail = 'This registration was declined.';
     else detail = res.error || 'No pass matches this Access ID';

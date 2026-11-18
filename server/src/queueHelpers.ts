@@ -37,12 +37,16 @@ export interface EmailTemplateConfig {
   subject: string;
   heading: string;
   body: string;
+  includeLiveTrackingButton?: boolean;
+  liveTrackingButtonLabel?: string;
 }
 
 export interface QueueSettings {
   enabled: boolean;
+  /** When true, new registrations start as 'pending' and receive Application Received instead of a QR ticket. */
+  requireApproval?: boolean;
   waEnabled: boolean;
-  activeWaStage?: 'ready' | 'welcome' | 'approaching' | 'expired';
+  activeWaStage?: 'ready' | 'welcome' | 'approaching' | 'expired' | 'approved';
   emailNotificationEnabled?: boolean;
   maxCapacity: number;
   notifyThreshold: number;
@@ -53,12 +57,14 @@ export interface QueueSettings {
   emailTemplates?: {
     pass?: EmailTemplateConfig;
     ready?: EmailTemplateConfig;
+    applicationReceived?: EmailTemplateConfig;
   };
   stages?: any[];
 }
 
 export const DEFAULT_QUEUE_SETTINGS: QueueSettings = {
   enabled: true,
+  requireApproval: false,
   waEnabled: false,
   activeWaStage: 'ready',
   emailNotificationEnabled: true,
@@ -81,9 +87,15 @@ export const DEFAULT_QUEUE_SETTINGS: QueueSettings = {
     welcome: 'Hello {{name}}! You are registered in the queue with Queue Number #{{queue_number}} (Party: {{party_size}} guests). Track your live status here: {{link}}',
     approaching: 'Hello {{name}}! Your turn is approaching. The queue is currently serving near your number (#{{queue_number}}). Please proceed to the entrance area now. Live status: {{link}}',
     ready: 'Hello {{name}}! It is your turn to enter. Please present your Access ID {{access_id}} to the door staff at the entrance. Your pass: {{link}}',
-    expired: 'Notice: {{name}}, queue number #{{queue_number}} was skipped past the grace margin and has expired. You can rejoin and regenerate a new queue number on your live pass here: {{link}}'
+    expired: 'Notice: {{name}}, queue number #{{queue_number}} was skipped past the grace margin and has expired. You can rejoin and regenerate a new queue number on your live pass here: {{link}}',
+    approved: 'Hello {{name}}! Great news — your application for {{campaign}} has been approved. Present your Access ID {{access_id}} or open your official QR pass here: {{link}}'
   },
   emailTemplates: {
+    applicationReceived: {
+      subject: 'Application received — {{campaign}}',
+      heading: 'Application received.',
+      body: "Thanks for registering for {{campaign}}.\nOur team will review all submissions and curate the final participant list. If selected, you'll receive an official invitation and event details via email or WhatsApp.\n\nPlease keep an eye on your inbox."
+    },
     pass: {
       subject: 'Your 707 ticket for {{campaign}}',
       heading: 'Your ticket',

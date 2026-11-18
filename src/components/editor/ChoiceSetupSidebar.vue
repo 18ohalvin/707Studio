@@ -235,6 +235,40 @@
               </button>
             </div>
 
+            <!-- Optional Conditional Branching (Next / Go to Page / Redirect URL) -->
+            <div class="flex flex-col gap-1.5 pl-7 w-full">
+              <div class="flex items-center gap-2">
+                <span class="font-707 text-[10.5px] font-medium text-neutral-500 shrink-0">On Next</span>
+                <select
+                  :value="opt.routeAction || 'default'"
+                  @change="updateOptionField(idx, { routeAction: ($event.target as HTMLSelectElement).value as any })"
+                  class="flex-1 h-[28px] px-2 bg-white border border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] text-black focus:outline-none cursor-pointer"
+                >
+                  <option value="default">Default CTA Flow</option>
+                  <option value="page">Jump to Page</option>
+                  <option value="link">Redirect to External URL</option>
+                </select>
+              </div>
+              <select
+                v-if="opt.routeAction === 'page'"
+                :value="opt.routeTargetPageId || ''"
+                @change="updateOptionField(idx, { routeTargetPageId: ($event.target as HTMLSelectElement).value })"
+                class="w-full h-[28px] px-2 bg-white border border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] text-black focus:outline-none cursor-pointer"
+              >
+                <option value="">Select destination page...</option>
+                <option v-for="pg in funnelTargetPages" :key="pg.id" :value="pg.id" :disabled="pg.isCurrent">
+                  {{ pg.label }}{{ pg.isCurrent ? ' (Current)' : '' }}
+                </option>
+              </select>
+              <input
+                v-if="opt.routeAction === 'link'"
+                :value="opt.routeUrl || ''"
+                @input="updateOptionField(idx, { routeUrl: ($event.target as HTMLInputElement).value })"
+                placeholder="e.g. https://orpcatalog.com"
+                class="w-full h-[28px] px-2.5 bg-white border border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] text-black focus:outline-none placeholder:text-neutral-400"
+              />
+            </div>
+
             <!-- Variant Specific Fields: Detailed Card Date Field -->
             <div v-if="variant === 'detailed-card'" class="flex flex-col gap-1.5 pl-7">
               <div class="flex items-center justify-between">
@@ -614,6 +648,7 @@ import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { uploadMediaDirectly } from '../../services/mediaService.ts';
 import type { ChoiceVariant, ChoiceOption } from '../../types/editor.ts';
+import { getFunnelTargetPages } from './ctaActions.ts';
 import { useModalPopover } from '../common/modalPopover.ts';
 import InfoHint from '../common/InfoHint.vue';
 import { 
@@ -733,6 +768,10 @@ const currentWidget = computed(() => {
   }
   return editorStore.currentPage.widget_tree.find(w => w.type === 'MultipleChoice') || null;
 });
+
+const funnelTargetPages = computed(() =>
+  getFunnelTargetPages(editorStore.pages || [], editorStore.currentPage?.id)
+);
 
 const variantLabel = computed(() => {
   const match = variants.find(v => v.id === variant.value);

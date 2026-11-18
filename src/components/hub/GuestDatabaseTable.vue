@@ -1657,6 +1657,7 @@ async function applyStatus(ids: string[], status: GuestStatus) {
   if (!ids.length) return;
   // Optimistic: reflect instantly, roll back on failure
   const previous = props.rows.filter(r => ids.includes(r.id));
+  const pendingIds = new Set(previous.filter(r => normalizeStatus(r.status) === 'pending').map(r => r.id));
   emit('updated', previous.map(r => ({ ...r, status })));
   try {
     const updated = ids.length === 1
@@ -1665,6 +1666,29 @@ async function applyStatus(ids: string[], status: GuestStatus) {
     if (updated.length) emit('updated', updated);
     emit('toast', ids.length === 1 ? `Marked as ${statusLabel(status)}.` : `${ids.length} guests marked as ${statusLabel(status)}.`);
     if (ids.length > 1) selected.value = new Set();
+
+    // When approving pending applicants, offer one-click QR E-Ticket PDF dispatch right away
+    if ((status === 'confirmed' || status === 'winner') && pendingIds.size > 0) {
+      const approvedRows = (updated.length ? updated : previous.map(r => ({ ...r, status })))
+        .filter(r => pendingIds.has(r.id) && ticketSender.eligibility(r, false).ok);
+      if (approvedRows.length > 0) {
+        const who = `${approvedRows.length} approved ${approvedRows.length === 1 ? 'guest' : 'guests'}`;
+        const sendNow = await glassConfirm({
+          title: `Send QR E-Ticket to ${who}?`,
+          message: `They are now ${statusLabel(status)}. Send their official e-ticket PDF with QR code to their email now?`,
+          confirmLabel: 'Send QR Tickets Now',
+          cancelLabel: 'Later'
+        });
+        if (sendNow) {
+          const stamp = new Date().toISOString();
+          const result = await ticketSender.run(approvedRows, id => {
+            const row = props.rows.find(r => r.id === id);
+            if (row) emit('updated', [{ ...row, status, ticket_emailed_at: stamp }]);
+          }, { force: false });
+          emit('toast', `Tickets: ${result.sent} sent${result.failed ? `, ${result.failed} failed` : ''}${result.skipped ? `, ${result.skipped} skipped` : ''}.`);
+        }
+      }
+    }
   } catch (err: any) {
     emit('updated', previous);
     emit('toast', `Couldn't update status: ${err?.message || 'network error'}`);

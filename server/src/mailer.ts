@@ -65,6 +65,10 @@ function escape(value: unknown): string {
     .replace(/"/g, '&quot;');
 }
 
+function escapeMultiline(value: unknown): string {
+  return escape(value).replace(/\r?\n/g, '<br />');
+}
+
 function shell(title: string, lead: string, rows: Array<[string, string]>, footer: string, cta?: { label: string; url: string; hint?: string }): string {
   const cells = rows
     .filter(([, v]) => v)
@@ -83,7 +87,7 @@ function shell(title: string, lead: string, rows: Array<[string, string]>, foote
       <table width="100%" style="max-width:520px;background:#fff;border-radius:16px;padding:32px;" cellpadding="0" cellspacing="0">
         <tr><td style="padding-bottom:24px;"><img src="cid:logo707" alt="707" width="84" height="26" style="display:block;border:0;width:84px;height:auto;" /></td></tr>
         <tr><td style="font-size:22px;font-weight:700;color:#111;padding-bottom:8px;">${escape(title)}</td></tr>
-        <tr><td style="font-size:15px;color:#555;line-height:1.6;padding-bottom:${cells ? '24px' : '8px'};">${escape(lead)}</td></tr>
+        <tr><td style="font-size:15px;color:#555;line-height:1.6;padding-bottom:${cells ? '24px' : '8px'};">${escapeMultiline(lead)}</td></tr>
         ${cells ? `<tr><td><table width="100%" cellpadding="0" cellspacing="0">${cells}</table></td></tr>` : ''}
         ${cta ? `<tr><td style="padding-top:24px;"><a href="${escape(cta.url)}" style="display:block;background:#111;color:#fff;text-decoration:none;text-align:center;font-size:14px;font-weight:700;letter-spacing:.04em;padding:14px 20px;border-radius:10px;">${escape(cta.label)}</a>${cta.hint ? `<p style="margin:8px 0 0 0;text-align:center;font-size:12px;color:#888;">${escape(cta.hint)}</p>` : ''}</td></tr>` : ''}
         <tr><td style="padding-top:28px;border-top:1px solid #eee;margin-top:24px;font-size:13px;color:#8a8a8a;line-height:1.6;">${escape(footer)}</td></tr>
@@ -305,5 +309,39 @@ export function sendTurnReadyEmail(guest: GuestMail, template?: EmailTemplateCon
   return send(guest.email, subject, html, 'turn ready notification');
 }
 
-export default { sendPassEmail, sendWaitlistEmail, sendPromotedEmail, sendTurnReadyEmail, mailerStatus };
+/** Sent when a curated/approval-required campaign receives a new application (no QR or ticket yet). */
+export function sendApplicationReceivedEmail(guest: GuestMail, template?: EmailTemplateConfig) {
+  if (!guest.email) return Promise.resolve({ success: false, skipped: true });
+  const vars = {
+    name: guest.fullName || 'there',
+    fullName: guest.fullName || 'there',
+    campaign: eventLabel(guest)
+  };
+  const subject = template?.subject?.trim()
+    ? renderEmailText(template.subject, vars)
+    : `Application received — ${eventLabel(guest)}`;
+  const heading = template?.heading?.trim()
+    ? renderEmailText(template.heading, vars)
+    : 'Application received.';
+  const body = template?.body?.trim()
+    ? renderEmailText(template.body, vars)
+    : `Thanks for registering for ${eventLabel(guest)}.\nOur team will review all submissions and curate the final participant list. If selected, you'll receive an official invitation and event details via email or WhatsApp.\n\nPlease keep an eye on your inbox.`;
+
+  const html = shell(
+    heading,
+    body,
+    [],
+    'No ticket or QR code has been issued yet. If selected, you will receive your official pass separately.'
+  );
+  return send(guest.email, subject, html, 'application received');
+}
+
+export default {
+  sendPassEmail,
+  sendWaitlistEmail,
+  sendPromotedEmail,
+  sendTurnReadyEmail,
+  sendApplicationReceivedEmail,
+  mailerStatus
+};
 

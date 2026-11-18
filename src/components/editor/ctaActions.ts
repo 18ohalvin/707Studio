@@ -92,6 +92,37 @@ export function normalizeExternalUrl(rawUrl: string | undefined | null): string 
   return `https://${url}`;
 }
 
+export type ChoiceRouteOverride =
+  | { kind: 'link'; url: string }
+  | { kind: 'page'; targetPageId: string };
+
+/**
+ * Checks selected options on MultipleChoice widgets for an option-level route override
+ * (e.g. "No" redirects to an external catalog URL while "Yes" advances to a form page).
+ * External link redirects take precedence if multiple choices have overrides.
+ */
+export function resolveChoiceRouteOverride(
+  widgetTree: ReadonlyArray<{ type?: string; props?: Record<string, any> }> | undefined | null
+): ChoiceRouteOverride | null {
+  if (!Array.isArray(widgetTree)) return null;
+  let pageOverride: ChoiceRouteOverride | null = null;
+  for (const w of widgetTree) {
+    if (w?.type !== 'MultipleChoice') continue;
+    const selected = Array.isArray(w.props?.selectedValues) ? w.props!.selectedValues : [];
+    const options = Array.isArray(w.props?.options) ? w.props!.options : [];
+    for (const opt of options) {
+      if (!opt || (!selected.includes(opt.id) && !opt.selected)) continue;
+      if (opt.routeAction === 'link') {
+        const url = normalizeExternalUrl(opt.routeUrl);
+        if (url) return { kind: 'link', url };
+      } else if (opt.routeAction === 'page' && opt.routeTargetPageId && !pageOverride) {
+        pageOverride = { kind: 'page', targetPageId: String(opt.routeTargetPageId) };
+      }
+    }
+  }
+  return pageOverride;
+}
+
 export interface DualButtonPreset {
   id: string;
   label: string;

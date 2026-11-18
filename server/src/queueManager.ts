@@ -28,6 +28,42 @@ export {
   formatWhatsAppDisplay
 };
 
+function mergeQueueSettings(stored: Partial<QueueSettings> = {}, existing: QueueSettings = DEFAULT_QUEUE_SETTINGS): QueueSettings {
+  return {
+    ...existing,
+    ...stored,
+    requireApproval: stored.requireApproval !== undefined ? Boolean(stored.requireApproval) : Boolean(existing.requireApproval),
+    waConnection: {
+      ...DEFAULT_QUEUE_SETTINGS.waConnection,
+      ...(existing.waConnection || {}),
+      ...(stored.waConnection || {}),
+      connected: stored.waConnection?.connected ?? existing.waConnection?.connected ?? false
+    },
+    waTemplates: {
+      ...DEFAULT_QUEUE_SETTINGS.waTemplates,
+      ...(existing.waTemplates || {}),
+      ...(stored.waTemplates || {})
+    },
+    emailTemplates: {
+      applicationReceived: {
+        ...DEFAULT_QUEUE_SETTINGS.emailTemplates!.applicationReceived!,
+        ...(existing.emailTemplates?.applicationReceived || {}),
+        ...(stored.emailTemplates?.applicationReceived || {})
+      },
+      pass: {
+        ...DEFAULT_QUEUE_SETTINGS.emailTemplates!.pass!,
+        ...(existing.emailTemplates?.pass || {}),
+        ...(stored.emailTemplates?.pass || {})
+      },
+      ready: {
+        ...DEFAULT_QUEUE_SETTINGS.emailTemplates!.ready!,
+        ...(existing.emailTemplates?.ready || {}),
+        ...(stored.emailTemplates?.ready || {})
+      }
+    }
+  };
+}
+
 /** Get queue settings for a specific campaign / page */
 export async function getQueueSettings(pageId: string): Promise<QueueSettings> {
   try {
@@ -42,59 +78,23 @@ export async function getQueueSettings(pageId: string): Promise<QueueSettings> {
         const res = await pool.query('SELECT page_settings FROM pages WHERE id = $1', [pageId]);
         stored = res.rows[0]?.page_settings?.queue_settings || {};
       }
-      const settings = { queue_settings: stored };
-      return {
-        ...DEFAULT_QUEUE_SETTINGS,
-        ...(settings.queue_settings || {}),
-        waConnection: {
-          ...DEFAULT_QUEUE_SETTINGS.waConnection,
-          ...(settings.queue_settings?.waConnection || {})
-        },
-        waTemplates: {
-          ...DEFAULT_QUEUE_SETTINGS.waTemplates,
-          ...(settings.queue_settings?.waTemplates || {})
-        }
-      };
+      return mergeQueueSettings(stored || {});
     } else {
       const pages = readDataFile<any[]>('pages.json', []);
       const p = pages.find(item => item.id === pageId);
       const settings = p?.page_settings || {};
-      return {
-        ...DEFAULT_QUEUE_SETTINGS,
-        ...(settings.queue_settings || {}),
-        waConnection: {
-          ...DEFAULT_QUEUE_SETTINGS.waConnection,
-          ...(settings.queue_settings?.waConnection || {})
-        },
-        waTemplates: {
-          ...DEFAULT_QUEUE_SETTINGS.waTemplates,
-          ...(settings.queue_settings?.waTemplates || {})
-        }
-      };
+      return mergeQueueSettings(settings.queue_settings || {});
     }
   } catch (err) {
     console.warn('[QueueManager] Could not read queue settings, using defaults:', err);
-    return { ...DEFAULT_QUEUE_SETTINGS };
+    return mergeQueueSettings();
   }
 }
 
 /** Save updated queue settings */
 export async function saveQueueSettings(pageId: string, updates: Partial<QueueSettings>): Promise<QueueSettings> {
   const current = await getQueueSettings(pageId);
-  const merged: QueueSettings = {
-    ...current,
-    ...updates,
-    waConnection: {
-      ...DEFAULT_QUEUE_SETTINGS.waConnection,
-      ...(current.waConnection || {}),
-      ...(updates.waConnection || {}),
-      connected: updates.waConnection?.connected ?? current.waConnection?.connected ?? false
-    },
-    waTemplates: {
-      ...current.waTemplates,
-      ...(updates.waTemplates || {})
-    }
-  };
+  const merged = mergeQueueSettings(updates, current);
 
   try {
     if (getDbStatus().isConnected) {

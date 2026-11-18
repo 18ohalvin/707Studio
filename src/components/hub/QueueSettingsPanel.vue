@@ -413,6 +413,34 @@
             </div>
           </div>
         </div>
+
+        <!-- Rule 4: Curated / Approval-Required Registration Mode -->
+        <div
+          class="p-3.5 sm:p-4 rounded-[12px] border flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+          :class="isDark ? 'bg-white/[0.04] border-white/10' : 'bg-neutral-50/70 border-black/5'"
+        >
+          <div class="flex items-start sm:items-center gap-3">
+            <label class="relative inline-flex items-center cursor-pointer mt-0.5 sm:mt-0 shrink-0">
+              <input type="checkbox" v-model="form.requireApproval" class="sr-only peer" />
+              <div class="w-9 h-5 bg-neutral-300 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-black dark:peer-checked:bg-white dark:peer-checked:after:bg-black"></div>
+            </label>
+            <div class="flex flex-col gap-0.5">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[13px] font-medium" :class="isDark ? 'text-white' : 'text-black'">Require Approval (Curated List)</span>
+                <span
+                  v-if="form.requireApproval"
+                  class="px-2 py-0.5 rounded-full text-[10px] font-medium border"
+                  :class="isDark ? 'bg-amber-950/50 border-amber-500/30 text-amber-300' : 'bg-amber-50 border-amber-200 text-amber-800'"
+                >
+                  QR held until approved
+                </span>
+              </div>
+              <p class="text-[11.5px] font-light leading-snug" :class="isDark ? 'text-neutral-400' : 'text-neutral-500'">
+                New registrants stay <strong class="font-medium">Pending Review</strong> and receive the Application Received email (no QR/ticket). Only guests marked <strong class="font-medium">Confirmed</strong> or <strong class="font-medium">Winner</strong> get QR passes.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Card B: Notification Channels (WhatsApp vs Email Switcher) -->
@@ -516,9 +544,19 @@
 
           <!-- Email Stages Selector -->
           <div
-            class="flex items-center gap-1.5 p-1 rounded-[9px] border w-fit"
+            class="flex flex-wrap items-center gap-1.5 p-1 rounded-[9px] border w-fit"
             :class="isDark ? 'bg-white/[0.04] border-white/10' : 'bg-neutral-100 border-black/5'"
           >
+            <button
+              type="button"
+              @click="activeEmailTab = 'received'"
+              class="px-3 py-1 rounded-[6px] text-[11.5px] font-sans flex items-center gap-1.5 transition-all cursor-pointer"
+              :class="activeEmailTab === 'received' ? (isDark ? 'bg-white/15 text-white font-medium shadow-xs' : 'bg-white text-black font-medium shadow-xs') : (isDark ? 'text-neutral-400 hover:text-white font-light' : 'text-neutral-500 hover:text-black font-light')"
+            >
+              <Mail class="w-3 h-3" />
+              <span>Application Received</span>
+            </button>
+
             <button
               type="button"
               @click="activeEmailTab = 'pass'"
@@ -526,7 +564,7 @@
               :class="activeEmailTab === 'pass' ? (isDark ? 'bg-white/15 text-white font-medium shadow-xs' : 'bg-white text-black font-medium shadow-xs') : (isDark ? 'text-neutral-400 hover:text-white font-light' : 'text-neutral-500 hover:text-black font-light')"
             >
               <QrCode class="w-3 h-3" />
-              <span>1. Ticket & Pass Email</span>
+              <span>Ticket & Pass Email</span>
             </button>
 
             <button
@@ -536,7 +574,7 @@
               :class="activeEmailTab === 'ready' ? (isDark ? 'bg-white/15 text-white font-medium shadow-xs' : 'bg-white text-black font-medium shadow-xs') : (isDark ? 'text-neutral-400 hover:text-white font-light' : 'text-neutral-500 hover:text-black font-light')"
             >
               <UserCheck class="w-3 h-3" />
-              <span>2. Entry Call Email</span>
+              <span>Entry Call Email</span>
             </button>
           </div>
 
@@ -673,15 +711,15 @@
                     </p>
                   </div>
 
-                  <!-- Live CTA Button -->
-                  <div class="pt-1">
+                  <!-- Live CTA Button (hidden on Application Received) -->
+                  <div v-if="activeEmailTab !== 'received'" class="pt-1">
                     <div class="w-full h-[36px] rounded-[8px] text-[12px] font-medium flex items-center justify-center shadow-xs" :class="isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white'">
                       VIEW LIVE QUEUE PASS
                     </div>
                   </div>
 
-                  <!-- Attached Ticket Card -->
-                  <div class="p-2.5 rounded-[9px] border flex items-center justify-between text-[11px]" :class="isDark ? 'bg-white/[0.04] border-white/10' : 'bg-neutral-50 border-black/8'">
+                  <!-- Attached Ticket Card (hidden on Application Received) -->
+                  <div v-if="activeEmailTab !== 'received'" class="p-2.5 rounded-[9px] border flex items-center justify-between text-[11px]" :class="isDark ? 'bg-white/[0.04] border-white/10' : 'bg-neutral-50 border-black/8'">
                     <div class="flex items-center gap-2">
                       <span class="px-1.5 py-0.5 rounded-[4px] bg-red-100 text-red-700 font-medium text-[9px]">PDF</span>
                       <span class="font-medium truncate max-w-[170px]" :class="isDark ? 'text-neutral-200' : 'text-neutral-800'">ticket-sarah-707-K92F.pdf</span>
@@ -691,7 +729,9 @@
 
                   <!-- Footer note -->
                   <p class="text-[10.5px] font-light leading-normal pt-2 border-t text-center" :class="isDark ? 'border-white/10 text-neutral-400' : 'border-black/5 text-neutral-400'">
-                    Keep this email. Your ticket is the attached PDF. Show it at the entrance door.
+                    {{ activeEmailTab === 'received'
+                      ? 'No ticket or QR code has been issued yet. If selected, you will receive your official pass separately.'
+                      : 'Keep this email. Your ticket is the attached PDF. Show it at the entrance door.' }}
                   </p>
                 </div>
               </div>
@@ -1536,6 +1576,7 @@ const isLoadingLogs = ref(false);
 
 const form = reactive<QueueSettingsData>({
   enabled: true,
+  requireApproval: false,
   waEnabled: false,
   emailNotificationEnabled: true,
   activeWaStage: 'ready',
@@ -1554,9 +1595,15 @@ const form = reactive<QueueSettingsData>({
     welcome: 'Hello {{name}}! You are registered in the queue with Queue Number #{{queue_number}} (Party: {{party_size}} guests). Track your live status here: {{link}}',
     approaching: 'Hello {{name}}! Your turn is approaching. The queue is currently serving near your number (#{{queue_number}}). Please proceed to the entrance area now. Live status: {{link}}',
     ready: 'Hello {{name}}! It is your turn to enter. Please present your Access ID {{access_id}} to the door staff at the entrance. Your pass: {{link}}',
-    expired: 'Notice: {{name}}, queue number #{{queue_number}} was skipped past the grace margin and has expired. You can rejoin and regenerate a new queue number on your live pass here: {{link}}'
+    expired: 'Notice: {{name}}, queue number #{{queue_number}} was skipped past the grace margin and has expired. You can rejoin and regenerate a new queue number on your live pass here: {{link}}',
+    approved: 'Hello {{name}}! Great news — your application for {{campaign}} has been approved. Present your Access ID {{access_id}} or open your official QR pass here: {{link}}'
   },
   emailTemplates: {
+    applicationReceived: {
+      subject: 'Application received — {{campaign}}',
+      heading: 'Application received.',
+      body: "Thanks for registering for {{campaign}}.\nOur team will review all submissions and curate the final participant list. If selected, you'll receive an official invitation and event details via email or WhatsApp.\n\nPlease keep an eye on your inbox."
+    },
     pass: {
       subject: 'Your 707 ticket for {{campaign}}',
       heading: 'Your ticket',
@@ -1630,6 +1677,20 @@ const DEFAULT_STAGES: StageDefinition[] = [
       { key: 'skipped_tolerance', label: 'Grace Limit', description: 'Configured skipped tolerance limit' },
       { key: 'link', label: 'Pass Link', description: 'Direct link to live pass to requeue & regenerate number' }
     ]
+  },
+  {
+    id: 'approved',
+    title: 'Approved / Selected',
+    triggerSummary: 'On Approval',
+    triggerBadge: 'Trigger: Pending -> Confirmed / Winner',
+    description: 'Sent when a pending applicant is approved (Confirmed or Winner) to share their official Access ID and QR pass link.',
+    icon: Check,
+    tags: [
+      { key: 'name', label: 'Name', description: 'Visitor full name' },
+      { key: 'campaign', label: 'Campaign', description: 'Event / campaign title' },
+      { key: 'access_id', label: 'Access ID', description: 'Ticket pass code' },
+      { key: 'link', label: 'Pass Link', description: 'Direct URL to open official QR pass' }
+    ]
   }
 ];
 
@@ -1643,24 +1704,37 @@ const currentStage = computed(() => {
 });
 
 /* Email Template Configuration & Live Mockup Preview */
-const activeEmailTab = ref<'pass' | 'ready'>('pass');
+const activeEmailTab = ref<'received' | 'pass' | 'ready'>('pass');
 
-const emailVariablePills = [
-  { key: 'name', label: 'Name', description: 'Visitor full name' },
-  { key: 'queue_number', label: 'Queue No', description: 'Sequential queue number' },
-  { key: 'campaign', label: 'Campaign', description: 'Event / campaign title' },
-  { key: 'access_id', label: 'Access ID', description: 'Unique ticket pass code' },
-  { key: 'link', label: 'Live Pass Link', description: 'Direct URL to view live pass status' }
-];
+const emailVariablePills = computed(() => {
+  if (activeEmailTab.value === 'received') {
+    return [
+      { key: 'name', label: 'Name', description: 'Visitor full name' },
+      { key: 'campaign', label: 'Campaign', description: 'Event / campaign title' }
+    ];
+  }
+  return [
+    { key: 'name', label: 'Name', description: 'Visitor full name' },
+    { key: 'queue_number', label: 'Queue No', description: 'Sequential queue number' },
+    { key: 'campaign', label: 'Campaign', description: 'Event / campaign title' },
+    { key: 'access_id', label: 'Access ID', description: 'Unique ticket pass code' },
+    { key: 'link', label: 'Live Pass Link', description: 'Direct URL to view live pass status' }
+  ];
+});
 
 const currentEmailTemplate = computed(() => {
   if (!form.emailTemplates) {
     form.emailTemplates = {
+      applicationReceived: { subject: '', heading: '', body: '' },
       pass: { subject: '', heading: '', body: '', includeLiveTrackingButton: true, liveTrackingButtonLabel: 'VIEW LIVE QUEUE' },
       ready: { subject: '', heading: '', body: '' }
     };
   }
-  const tmpl = form.emailTemplates[activeEmailTab.value]!;
+  const key = activeEmailTab.value === 'received' ? 'applicationReceived' : activeEmailTab.value;
+  if (!form.emailTemplates[key]) {
+    form.emailTemplates[key] = { subject: '', heading: '', body: '' };
+  }
+  const tmpl = form.emailTemplates[key]!;
   if (activeEmailTab.value === 'pass') {
     if (tmpl.includeLiveTrackingButton === undefined) tmpl.includeLiveTrackingButton = true;
     if (!tmpl.liveTrackingButtonLabel) tmpl.liveTrackingButtonLabel = 'VIEW LIVE QUEUE';
@@ -1731,6 +1805,7 @@ const renderedPreviewText = computed(() => {
   const raw = form.waTemplates[activeStageId.value] || '';
   const sampleData: Record<string, string | number> = {
     name: 'Sarah Jenkins',
+    campaign: activeBrandName.value,
     queue_number: activeStageId.value === 'approaching' ? form.currentCalledNumber + 4 : form.currentCalledNumber,
     current_called: form.currentCalledNumber,
     party_size: 2,
@@ -1759,6 +1834,7 @@ async function loadSettings() {
     const data = await fetchQueueSettings(props.pageId);
     if (data) {
       form.enabled = data.enabled !== false;
+      form.requireApproval = Boolean(data.requireApproval);
       form.waEnabled = Boolean(data.waEnabled);
       form.emailNotificationEnabled = data.emailNotificationEnabled !== false;
       form.maxCapacity = data.maxCapacity ?? 50;
@@ -1784,6 +1860,11 @@ async function loadSettings() {
 
       if (data.emailTemplates) {
         form.emailTemplates = {
+          applicationReceived: {
+            subject: data.emailTemplates.applicationReceived?.subject || form.emailTemplates?.applicationReceived?.subject || '',
+            heading: data.emailTemplates.applicationReceived?.heading || form.emailTemplates?.applicationReceived?.heading || '',
+            body: data.emailTemplates.applicationReceived?.body || form.emailTemplates?.applicationReceived?.body || ''
+          },
           pass: {
             subject: data.emailTemplates.pass?.subject || form.emailTemplates?.pass?.subject || '',
             heading: data.emailTemplates.pass?.heading || form.emailTemplates?.pass?.heading || '',

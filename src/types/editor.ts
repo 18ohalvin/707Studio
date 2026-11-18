@@ -92,6 +92,10 @@ export interface ChoiceOption {
   slotsCapacity?: number | string;
   imageUrl?: string;
   disabled?: boolean;
+  /** Optional conditional routing when this choice is selected before tapping a submit CTA. */
+  routeAction?: 'default' | 'page' | 'link';
+  routeTargetPageId?: string;
+  routeUrl?: string;
 }
 
 export interface WidgetItem {
