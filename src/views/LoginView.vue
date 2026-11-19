@@ -760,28 +760,6 @@ async function submitOnboardingApplication() {
   user-select: none;
 }
 
-:global(html[data-theme="dark"]) .login-shell {
-  --login-bg: #000000;
-  --login-fg: #f3f4f6;
-  --login-muted: rgba(255, 255, 255, 0.68);
-  --login-subtle: rgba(255, 255, 255, 0.56);
-  --login-border: rgba(255, 255, 255, 0.36);
-  --login-border-focus: #ffffff;
-  --login-btn-bg: #ffffff;
-  --login-btn-fg: #000000;
-  --login-btn-hover: #e5e5e5;
-  --login-pill-bg: rgba(255, 255, 255, 0.1);
-  --login-pill-hover: rgba(255, 255, 255, 0.18);
-  --login-pill-border: rgba(255, 255, 255, 0.22);
-  --login-progress-track: rgba(255, 255, 255, 0.25);
-  --login-progress-fill: #ffffff;
-  --login-error: #fda4af;
-  --login-badge-bg: rgba(255, 255, 255, 0.1);
-  --login-badge-border: rgba(255, 255, 255, 0.2);
-
-  background-image: radial-gradient(circle at 50% 0%, rgba(96, 165, 250, 0.08) 0%, transparent 55%);
-}
-
 /* Bottom-edge Blue Ambience */
 .login-ambient {
   position: absolute;
@@ -847,29 +825,6 @@ async function submitOnboardingApplication() {
       transparent 82%);
   animation: loginBlobDriftB 2.6s linear infinite;
   animation-delay: -1.3s;
-}
-
-:global(html[data-theme="dark"]) .login-ambient-blob-veil {
-  background: radial-gradient(ellipse 115% 18% at 50% 100%,
-      rgba(6, 33, 68, 0.58) 0%,
-      rgba(6, 33, 68, 0.28) 42%,
-      transparent 86%);
-}
-
-:global(html[data-theme="dark"]) .login-ambient-blob-a {
-  background: radial-gradient(ellipse at center,
-      rgba(37, 99, 235, 0.58) 0%,
-      rgba(29, 78, 216, 0.34) 36%,
-      rgba(6, 33, 68, 0.16) 62%,
-      transparent 88%);
-}
-
-:global(html[data-theme="dark"]) .login-ambient-blob-b {
-  background: radial-gradient(ellipse at center,
-      rgba(96, 165, 250, 0.46) 0%,
-      rgba(37, 99, 235, 0.26) 38%,
-      rgba(6, 33, 68, 0.12) 64%,
-      transparent 90%);
 }
 
 @keyframes loginBlobDriftA {
@@ -943,10 +898,6 @@ async function submitOnboardingApplication() {
   object-fit: contain;
   pointer-events: none;
   transition: filter 0.2s ease;
-}
-
-:global(html[data-theme="dark"]) .login-logo-img {
-  filter: brightness(0) invert(1);
 }
 
 .login-beta-badge {
@@ -1227,11 +1178,6 @@ async function submitOnboardingApplication() {
   border: 2px solid rgba(255, 255, 255, 0.35);
   border-top-color: #ffffff;
   animation: loginSpin 0.7s linear infinite;
-}
-
-:global(html[data-theme="dark"]) .login-spinner {
-  border-color: rgba(0, 0, 0, 0.25);
-  border-top-color: #000000;
 }
 
 @keyframes loginSpin {
