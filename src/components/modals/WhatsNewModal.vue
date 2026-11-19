@@ -340,7 +340,7 @@
                   type="button"
                   @click="currentStep++"
                   class="h-[40px] px-7 rounded-[12px] text-[13px] font-medium transition-colors apple-press cursor-pointer shadow-xs"
-                  :class="isDark ? 'bg-white text-black hover:bg-neutral-200 font-semibold' : 'bg-black hover:bg-neutral-800 text-white'"
+                  :class="isDark ? 'bg-white text-black hover:bg-neutral-200 font-medium' : 'bg-black hover:bg-neutral-800 text-white font-medium'"
                 >
                   Next
                 </button>
@@ -349,7 +349,7 @@
                   type="button"
                   @click="handleClose"
                   class="h-[40px] px-7 rounded-[12px] text-[13px] font-medium transition-colors apple-press cursor-pointer shadow-xs"
-                  :class="isDark ? 'bg-white text-black hover:bg-neutral-200 font-semibold' : 'bg-black hover:bg-neutral-800 text-white'"
+                  :class="isDark ? 'bg-white text-black hover:bg-neutral-200 font-medium' : 'bg-black hover:bg-neutral-800 text-white font-medium'"
                 >
                   Get Started
                 </button>

@@ -26,12 +26,14 @@ import GlassDialog from './components/common/GlassDialog.vue';
 import { useAuthStore } from './stores/authStore.ts';
 import { useBrandStore } from './stores/brandStore.ts';
 import { useEditorStore } from './stores/editorStore.ts';
+import { useThemeStore, applyDocumentTheme } from './stores/themeStore.ts';
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const brandStore = useBrandStore();
 const editorStore = useEditorStore();
+const themeStore = useThemeStore();
 
 const isPublicDrop = computed(() => {
   return route.name === 'PublicDrop' || (Boolean(route.meta?.public) && route.name !== 'Login' && route.name !== 'AboutStudio');
@@ -42,18 +44,29 @@ const isDevMode = computed(() => {
 });
 
 watch(
-  isDevMode,
-  (dev) => {
-    if (typeof document !== 'undefined') {
-      if (dev) {
-        document.documentElement.classList.add('dark');
-        document.body.style.backgroundColor = '#0a0a0a';
-        document.body.style.color = '#ffffff';
-      } else {
-        document.documentElement.classList.remove('dark');
-        document.body.style.backgroundColor = isPublicDrop.value ? '#ffffff' : '#f5f5f5';
-        document.body.style.color = '#000000';
-      }
+  [isPublicDrop, isDevMode, () => route.name, () => themeStore.theme],
+  ([pub, dev, routeName, userTheme]) => {
+    if (typeof document === 'undefined') return;
+    if (pub) {
+      applyDocumentTheme('light');
+      document.body.style.backgroundColor = '#ffffff';
+      document.body.style.color = '#000000';
+      return;
+    }
+    if (routeName === 'Login') {
+      applyDocumentTheme(userTheme);
+      document.body.style.backgroundColor = userTheme === 'dark' ? '#000000' : '#f2f2f2';
+      document.body.style.color = userTheme === 'dark' ? '#f3f4f6' : '#111111';
+      return;
+    }
+    if (dev) {
+      applyDocumentTheme('dark');
+      document.body.style.backgroundColor = '#000000';
+      document.body.style.color = '#f3f4f6';
+    } else {
+      applyDocumentTheme('light');
+      document.body.style.backgroundColor = '#f2f2f2';
+      document.body.style.color = '#000000';
     }
   },
   { immediate: true }

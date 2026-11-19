@@ -2,16 +2,144 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ==========================================================================
+   THE 707 COMPANY — UNIFIED 707 STUDIO DESIGN TOKENS (v2.3.0)
+   Aligned with The 707 Company AI (`design-tokens/redesign-tokens.json`)
+   SF Pro typography (max weight 500), Light (#F2F2F2) + True Black Dark (#000000)
+   ========================================================================== */
 :root {
+  /* Brand Palette */
+  --color-brand-primary: #000000;
+  --color-brand-secondary: #111111;
+  --color-brand-muted: #737373;
+  --color-brand-border: #E5E5E5;
+  --color-brand-surface: #FAFAFA;
+  --color-brand-accent: #FFFFFF;
+
+  /* Light Surfaces */
+  --color-canvas: #F2F2F2;
+  --color-bg: #FFFFFF;
+  --color-bg-subtle: #FAFAFA;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #F5F5F5;
+  --color-surface-hover: rgba(0, 0, 0, 0.04);
+  --color-surface-active: rgba(0, 0, 0, 0.08);
+  --color-border: #E5E5E5;
+  --color-border-subtle: rgba(0, 0, 0, 0.06);
+  --color-border-hairline: rgba(0, 0, 0, 0.10);
+  --menu-highlight: #F2F2F2;
+
+  /* Primary & Highlight */
   --color-primary: #000000;
-  --color-surface: #ffffff;
-  --color-border: #e5e5e5;
-  --color-muted: #737373;
+  --color-primary-hover: #222222;
+  --color-primary-text: #FFFFFF;
   --color-accent: #000000;
+  --color-highlight: #2563EB;
+  --color-muted: #737373;
+
+  /* Status Palette (Moss, Oxblood, Bronze) */
+  --color-moss-50: #EFF1EA;
+  --color-moss-100: #E2E6D8;
+  --color-moss-500: #7B8B67;
+  --color-moss-600: #667557;
+  --color-moss-700: #55633F;
+
+  --color-oxblood-50: #F6EEED;
+  --color-oxblood-500: #7E2C32;
+  --color-oxblood-600: #64212A;
+
+  --color-bronze-50: #F5F1E7;
+  --color-bronze-500: #8F7C50;
+  --color-bronze-600: #766443;
+
+  /* Text Hierarchy */
+  --color-text-primary: #000000;
+  --color-text-secondary: #404040;
+  --color-text-muted: #737373;
+  --color-text-disabled: #A3A3A3;
+  --color-text-inverse: #FFFFFF;
+
+  /* Sidebar Tokens */
+  --sidebar-bg: #FAFAFA;
+  --sidebar-border: #E5E5E5;
+  --sidebar-text: #404040;
+  --sidebar-text-muted: #737373;
+  --sidebar-text-active: #000000;
+
+  /* Typography Weights (Default UI copy = 350, Max weight = 500) */
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-ui-default: 350;
+  --font-weight-max: 500;
+
+  /* Borders & Apple Liquid Glass */
+  --border-hairline: 0.5px;
+  --border-thin: 1px;
+  --border-focus: 2px;
+  --apple-frost: rgba(255, 255, 255, 0.96);
+  --apple-frost-blur: blur(28px) saturate(180%);
+  --apple-frost-backdrop: rgba(255, 255, 255, 0.45);
+  --liquid-glass-tail-fill: #FFFFFF;
+}
+
+html[data-theme="dark"] {
+  --color-brand-primary: #FFFFFF;
+  --color-brand-secondary: #E5E5E5;
+  --color-brand-muted: #9CA3AF;
+  --color-brand-border: #2C2F35;
+  --color-brand-surface: #16181A;
+  --color-brand-accent: #000000;
+
+  --color-canvas: #000000;
+  --color-bg: #000000;
+  --color-bg-subtle: #111114;
+  --color-surface: #141418;
+  --color-surface-2: #1C1C21;
+  --color-surface-hover: rgba(255, 255, 255, 0.08);
+  --color-surface-active: rgba(255, 255, 255, 0.14);
+  --color-border: #2C2F35;
+  --color-border-subtle: rgba(255, 255, 255, 0.08);
+  --color-border-hairline: rgba(255, 255, 255, 0.12);
+
+  --color-primary: #FFFFFF;
+  --color-primary-hover: #E5E5E5;
+  --color-primary-text: #000000;
+  --color-accent: #FFFFFF;
+  --color-highlight: #3B82F6;
+  --color-muted: #9CA3AF;
+
+  --color-moss-50: #1B2313;
+  --color-moss-500: #7B8B67;
+  --color-moss-600: #94A57F;
+
+  --color-oxblood-50: #3A1115;
+  --color-oxblood-500: #7E2C32;
+  --color-oxblood-600: #C69A96;
+
+  --color-bronze-50: #4A3E29;
+  --color-bronze-500: #8F7C50;
+  --color-bronze-600: #C4B690;
+
+  --color-text-primary: #F3F4F6;
+  --color-text-secondary: #D1D5DB;
+  --color-text-muted: #9CA3AF;
+  --color-text-disabled: #6B7280;
+  --color-text-inverse: #0C0D0E;
+
+  --sidebar-bg: #0C0D0E;
+  --sidebar-border: #2C2F35;
+  --sidebar-text: #9CA3AF;
+  --sidebar-text-muted: #6B7280;
+  --sidebar-text-active: #F3F4F6;
+
+  --apple-frost: rgba(20, 20, 24, 0.92);
+  --apple-frost-backdrop: rgba(0, 0, 0, 0.55);
+  --liquid-glass-tail-fill: #141417;
 }
 
 html, body, #app {
-  background-color: #ffffff !important;
+  background-color: var(--color-bg);
   overscroll-behavior: none !important;
   overscroll-behavior-x: none !important;
   overscroll-behavior-y: none !important;
