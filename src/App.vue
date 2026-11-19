@@ -26,14 +26,13 @@ import GlassDialog from './components/common/GlassDialog.vue';
 import { useAuthStore } from './stores/authStore.ts';
 import { useBrandStore } from './stores/brandStore.ts';
 import { useEditorStore } from './stores/editorStore.ts';
-import { useThemeStore, applyDocumentTheme } from './stores/themeStore.ts';
+import { applyDocumentTheme } from './stores/themeStore.ts';
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const brandStore = useBrandStore();
 const editorStore = useEditorStore();
-const themeStore = useThemeStore();
 
 const isPublicDrop = computed(() => {
   return route.name === 'PublicDrop' || (Boolean(route.meta?.public) && route.name !== 'Login' && route.name !== 'AboutStudio');
@@ -44,8 +43,8 @@ const isDevMode = computed(() => {
 });
 
 watch(
-  [isPublicDrop, isDevMode, () => route.name, () => themeStore.theme],
-  ([pub, dev, routeName, userTheme]) => {
+  [isPublicDrop, isDevMode, () => route.name],
+  ([pub, dev, routeName]) => {
     if (typeof document === 'undefined') return;
     if (pub) {
       applyDocumentTheme('light');
@@ -54,9 +53,9 @@ watch(
       return;
     }
     if (routeName === 'Login') {
-      applyDocumentTheme(userTheme);
-      document.body.style.backgroundColor = userTheme === 'dark' ? '#000000' : '#f2f2f2';
-      document.body.style.color = userTheme === 'dark' ? '#f3f4f6' : '#111111';
+      applyDocumentTheme('light');
+      document.body.style.backgroundColor = '#f2f2f2';
+      document.body.style.color = '#111111';
       return;
     }
     if (dev) {

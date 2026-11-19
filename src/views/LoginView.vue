@@ -423,36 +423,15 @@
       </section>
     </main>
 
-    <!-- Footer: Centered Brand Mark + Subtle Light/Dark Switcher -->
+    <!-- Footer: Centered Brand Mark -->
     <footer class="login-footer" data-name="Footer">
       <span class="login-footer-brand">707 Design Studio</span>
-
-      <div class="login-footer-controls">
-        <button
-          type="button"
-          class="login-meta-btn"
-          :class="{ 'is-active': !themeStore.isDark }"
-          aria-label="Light theme"
-          @click="themeStore.setTheme('light')"
-        >
-          Light
-        </button>
-        <button
-          type="button"
-          class="login-meta-btn"
-          :class="{ 'is-active': themeStore.isDark }"
-          aria-label="Dark theme"
-          @click="themeStore.setTheme('dark')"
-        >
-          Dark
-        </button>
-      </div>
     </footer>
 
-    <!-- What's New Tour Modal (Synced to Light/Dark Theme) -->
+    <!-- What's New Tour Modal -->
     <WhatsNewModal
       :is-open="showWhatsNewModal"
-      :dark="themeStore.isDark"
+      :dark="false"
       @close="showWhatsNewModal = false"
     />
   </div>
@@ -465,7 +444,6 @@ import { Eye, EyeOff } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/authStore.ts';
 import { useBrandStore } from '../stores/brandStore.ts';
 import { useEditorStore } from '../stores/editorStore.ts';
-import { useThemeStore } from '../stores/themeStore.ts';
 import { FIGMA_ASSETS } from '../constants/figmaAssets.ts';
 import WhatsNewModal from '../components/modals/WhatsNewModal.vue';
 
@@ -474,7 +452,6 @@ const route = useRoute();
 const authStore = useAuthStore();
 const brandStore = useBrandStore();
 const editorStore = useEditorStore();
-const themeStore = useThemeStore();
 
 // Main flow state
 type FlowStep = 'email' | 'password' | 'onboarding_name' | 'onboarding_password' | 'onboarding_brand' | 'onboarding_success';
@@ -558,7 +535,6 @@ function handleKeydown(e: KeyboardEvent) {
 }
 
 onMounted(() => {
-  themeStore.initTheme();
   emailInput.value?.focus();
   window.addEventListener('keydown', handleKeydown);
   brandStore.loadBrands();
@@ -1191,8 +1167,7 @@ async function submitOnboardingApplication() {
 .login-primary-btn:focus-visible,
 .login-pill-btn:focus-visible,
 .login-choice-pill:focus-visible,
-.login-text-btn:focus-visible,
-.login-meta-btn:focus-visible {
+.login-text-btn:focus-visible {
   outline: 2px solid #0D72CB;
   outline-offset: 2px;
 }
@@ -1498,37 +1473,6 @@ async function submitOnboardingApplication() {
   color: var(--login-subtle);
 }
 
-.login-footer-controls {
-  position: absolute;
-  right: 24px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.login-meta-btn {
-  min-height: 28px;
-  padding: 4px 10px;
-  border-radius: 9999px;
-  background: var(--login-pill-bg);
-  border: 0.5px solid var(--login-pill-border);
-  color: var(--login-muted);
-  font-size: 11px;
-  font-weight: 400;
-  cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-}
-
-.login-meta-btn:hover,
-.login-meta-btn.is-active {
-  background: var(--login-btn-bg);
-  color: var(--login-btn-fg);
-  border-color: var(--login-btn-bg);
-  font-weight: 500;
-}
-
 @media (max-width: 640px) {
   .login-title {
     font-size: 30px;
@@ -1553,13 +1497,8 @@ async function submitOnboardingApplication() {
   .login-floating-input,
   .login-pill-btn,
   .login-choice-pill,
-  .login-eye-btn,
-  .login-meta-btn {
+  .login-eye-btn {
     min-height: 44px;
-  }
-
-  .login-footer-controls {
-    right: 16px;
   }
 }
 </style>
