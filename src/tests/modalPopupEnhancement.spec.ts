@@ -4,7 +4,9 @@ import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import MobileArtboard from '../components/editor/MobileArtboard.vue';
 import ModalSetupSidebar from '../components/editor/ModalSetupSidebar.vue';
+import ChoiceSetupSidebar from '../components/editor/ChoiceSetupSidebar.vue';
 import { useEditorStore } from '../stores/editorStore.ts';
+import { resolveChoiceRouteOverride } from '../components/editor/ctaActions.ts';
 
 function makePage(id: string, title: string, widgets: any[]) {
   return {
@@ -338,5 +340,161 @@ describe('Modal Pop-up Enhancements (Dual Message/Alert Buttons, Padding, No Swi
     await confirmBtn!.element.parentElement!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await wrapper.vm.$nextTick();
     expect(store.activePageIndex).toBe(0);
+  });
+
+  it('triggers choice-bound Pop-up Modal on CONFIRM for Question 2 "No" and advances to Registration Form for "Yes"', async () => {
+    const store = useEditorStore();
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+
+    const q1 = {
+      id: 'mc_q1',
+      type: 'MultipleChoice',
+      props: {
+        title: '1. How often do you play tennis?',
+        options: [
+          { id: 'q1_a', label: 'Less than once a week', routeAction: 'default' },
+          { id: 'q1_b', label: '1-2 times a week', routeAction: 'default' }
+        ],
+        selectedValues: ['q1_a']
+      }
+    };
+    const q2 = {
+      id: 'mc_q2',
+      type: 'MultipleChoice',
+      props: {
+        title: '2. Do you currently own an On Tennis product?',
+        options: [
+          { id: 'q2_yes', label: 'Yes', routeAction: 'default' },
+          {
+            id: 'q2_no',
+            label: 'No',
+            routeAction: 'modal',
+            routeModalProps: {
+              variant: 'message-alert',
+              title: 'On Tennis Product Required',
+              subtitle: 'Visit our catalog to explore the On Tennis collection.',
+              buttonLayout: 'dual',
+              buttonText: 'Visit Shop',
+              buttonAction: 'link',
+              buttonUrl: 'https://events.707.co.id/shop',
+              buttonOpenInNewTab: true,
+              secondaryButtonText: 'Close',
+              secondaryButtonAction: 'submit-close'
+            }
+          }
+        ],
+        selectedValues: ['q2_no']
+      }
+    };
+    const stickyConfirm = {
+      id: 'btn_confirm',
+      type: 'ActionButton',
+      props: {
+        label: 'CONFIRM',
+        positionMode: 'sticky-bottom',
+        actionType: 'submit'
+      }
+    };
+
+    store.pages = [
+      makePage('page_eligibility', 'Eligibility Check', [q1, q2, stickyConfirm]),
+      makePage('page_form', 'Registration Form', [])
+    ];
+    store.activePageIndex = 0;
+
+    const wrapper = mount(MobileArtboard, {
+      props: {
+        page: store.pages[0],
+        pageIndex: 0,
+        isSelected: true,
+        isPreviewModal: true
+      }
+    });
+
+    const confirmBtn = wrapper.findAll('button').find(b => b.text().toUpperCase().includes('CONFIRM'));
+    expect(confirmBtn).toBeTruthy();
+
+    // Pick "No" on Q2 -> CONFIRM opens the Shop Catalogue modal and stays on page 0
+    await confirmBtn!.trigger('click');
+    await wrapper.vm.$nextTick();
+    expect(store.activePageIndex).toBe(0);
+    const modal = wrapper.find('[data-name="Bottom Modal Popup"]');
+    expect(modal.exists()).toBe(true);
+    expect(modal.text()).toContain('On Tennis Product Required');
+
+    // Click primary modal CTA -> opens Shop URL
+    await modal.find('[data-modal-btn="primary"]').trigger('click');
+    expect(openSpy).toHaveBeenCalledWith('https://events.707.co.id/shop', '_blank', 'noopener,noreferrer');
+    expect(store.activePageIndex).toBe(0);
+
+    // Now switch Q2 to "Yes" -> CONFIRM proceeds to Registration Form (page 1)
+    store.pages[0].widget_tree[1].props.selectedValues = ['q2_yes'];
+    await wrapper.vm.$nextTick();
+    await confirmBtn!.trigger('click');
+    await wrapper.vm.$nextTick();
+    expect(store.activePageIndex).toBe(1);
+
+    openSpy.mockRestore();
+  });
+
+  it('enforces single routing question per page in ChoiceSetupSidebar and edits option pop-up via ModalSetupSidebar', async () => {
+    const store = useEditorStore();
+    const q1 = {
+      id: 'mc_q1',
+      type: 'MultipleChoice',
+      props: {
+        title: '1. How often do you play tennis?',
+        options: [
+          { id: 'q1_a', label: 'Less than once a week', routeAction: 'default' }
+        ],
+        selectedValues: ['q1_a']
+      }
+    };
+    const q2 = {
+      id: 'mc_q2',
+      type: 'MultipleChoice',
+      props: {
+        title: '2. Do you currently own an On Tennis product?',
+        options: [
+          { id: 'q2_yes', label: 'Yes', routeAction: 'default' },
+          { id: 'q2_no', label: 'No', routeAction: 'modal', routeModalProps: { variant: 'message-alert', title: 'Shop Required' } }
+        ],
+        selectedValues: ['q2_no']
+      }
+    };
+
+    store.pages = [makePage('page_eligibility', 'Eligibility Check', [q1, q2])];
+    store.activePageIndex = 0;
+
+    // 1. Selecting Q1 shows the 1-question-per-page notice referencing Q2 and hides On Next dropdown
+    store.selectWidget('mc_q1');
+    const q1Sidebar = mount(ChoiceSetupSidebar, { props: { isOpen: true } });
+    expect(q1Sidebar.text()).toContain('2. Do you currently own an On Tennis product?');
+    expect(q1Sidebar.text()).toContain('1 question per page');
+    expect(q1Sidebar.find('option[value="modal"]').exists()).toBe(false);
+
+    // 2. Selecting Q2 shows On Next with Show Pop-up Modal and opens ModalSetupSidebar bound to q2_no
+    store.selectWidget('mc_q2');
+    const q2Sidebar = mount(ChoiceSetupSidebar, { props: { isOpen: true } });
+    expect(q2Sidebar.find('option[value="modal"]').exists()).toBe(true);
+
+    const customizeBtn = q2Sidebar.findAll('button').find(b => b.text().includes('Customize Pop-up'));
+    expect(customizeBtn).toBeTruthy();
+    await customizeBtn!.trigger('click');
+    expect(store.isModalSidebarOpen).toBe(true);
+    expect(store.activeChoiceModalOptionId).toBe('q2_no');
+
+    // 3. ModalSetupSidebar edits persist directly to q2_no.routeModalProps
+    const modalSidebar = mount(ModalSetupSidebar, { props: { isOpen: true } });
+    const titleTextarea = modalSidebar.find('textarea');
+    await titleTextarea.setValue('Explore On Tennis Gear');
+    expect(store.pages[0].widget_tree[1].props.options[1].routeModalProps.title).toBe('Explore On Tennis Gear');
+
+    // 4. resolveChoiceRouteOverride returns modal override strictly from the routing widget
+    const resolved = resolveChoiceRouteOverride(store.pages[0].widget_tree);
+    expect(resolved?.kind).toBe('modal');
+    if (resolved?.kind === 'modal') {
+      expect(resolved.modalProps.title).toBe('Explore On Tennis Gear');
+    }
   });
 });

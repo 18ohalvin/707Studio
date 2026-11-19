@@ -235,18 +235,19 @@
               </button>
             </div>
 
-            <!-- Optional Conditional Branching (Next / Go to Page / Redirect URL) -->
-            <div class="flex flex-col gap-1.5 pl-7 w-full">
+            <!-- Optional Conditional Branching (One routing question per page) -->
+            <div v-if="!otherRoutingQuestion" class="flex flex-col gap-1.5 pl-7 w-full">
               <div class="flex items-center gap-2">
                 <span class="font-707 text-[10.5px] font-medium text-neutral-500 shrink-0">On Next</span>
                 <select
                   :value="opt.routeAction || 'default'"
-                  @change="updateOptionField(idx, { routeAction: ($event.target as HTMLSelectElement).value as any })"
+                  @change="handleRouteActionChange(idx, ($event.target as HTMLSelectElement).value as any)"
                   class="flex-1 h-[28px] px-2 bg-white border border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] text-black focus:outline-none cursor-pointer"
                 >
                   <option value="default">Default CTA Flow</option>
                   <option value="page">Jump to Page</option>
                   <option value="link">Redirect to External URL</option>
+                  <option value="modal">Show Pop-up Modal</option>
                 </select>
               </div>
               <select
@@ -267,6 +268,29 @@
                 placeholder="e.g. https://orpcatalog.com"
                 class="w-full h-[28px] px-2.5 bg-white border border-[#ccc] focus:border-black rounded-[6px] font-707 text-[11px] text-black focus:outline-none placeholder:text-neutral-400"
               />
+              <button
+                v-if="opt.routeAction === 'modal'"
+                type="button"
+                @click="openOptionModalSetup(idx)"
+                class="apple-glass-btn w-full h-[30px] px-2.5 rounded-[6px] font-707 text-[11px] font-medium text-black flex items-center justify-between gap-2 cursor-pointer transition-all"
+              >
+                <span class="truncate">Customize Pop-up: {{ opt.routeModalProps?.title || 'Before You Continue' }}</span>
+                <Sliders class="size-3 shrink-0 text-neutral-600" />
+              </button>
+            </div>
+            <div v-else-if="idx === 0" class="pl-7 w-full">
+              <div class="px-2.5 py-2 rounded-[6px] bg-neutral-50 border border-black/8 flex items-center justify-between gap-2">
+                <p class="font-707 text-[10.5px] leading-[15px] text-neutral-500">
+                  Next routing is controlled by <span class="text-black font-medium">{{ otherRoutingQuestionTitle }}</span> (1 question per page).
+                </p>
+                <button
+                  type="button"
+                  @click="selectOtherRoutingQuestion"
+                  class="shrink-0 font-707 text-[10.5px] font-medium text-black underline underline-offset-2 cursor-pointer"
+                >
+                  Edit
+                </button>
+              </div>
             </div>
 
             <!-- Variant Specific Fields: Detailed Card Date Field -->
@@ -648,7 +672,7 @@ import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import { uploadMediaDirectly } from '../../services/mediaService.ts';
 import type { ChoiceVariant, ChoiceOption } from '../../types/editor.ts';
-import { getFunnelTargetPages } from './ctaActions.ts';
+import { getFunnelTargetPages, findRoutingChoiceWidget, DEFAULT_CHOICE_ROUTE_MODAL_PROPS } from './ctaActions.ts';
 import { useModalPopover } from '../common/modalPopover.ts';
 import InfoHint from '../common/InfoHint.vue';
 import { 
@@ -772,6 +796,64 @@ const currentWidget = computed(() => {
 const funnelTargetPages = computed(() =>
   getFunnelTargetPages(editorStore.pages || [], editorStore.currentPage?.id)
 );
+
+/**
+ * Only one MultipleChoice question per page can own conditional On Next routing.
+ * If another question on this page already has a non-default routeAction, return it so
+ * this widget's On Next dropdown stays locked to prevent conflicting rules.
+ */
+const otherRoutingQuestion = computed(() => {
+  const owner = findRoutingChoiceWidget(editorStore.currentPage?.widget_tree);
+  if (!owner || !currentWidget.value || owner.id === currentWidget.value.id) return null;
+  return owner;
+});
+
+const otherRoutingQuestionTitle = computed(() => {
+  const w = otherRoutingQuestion.value;
+  if (!w) return '';
+  return String(w.props?.title || w.props?.heading || w.props?.question || 'another question').trim();
+});
+
+function selectOtherRoutingQuestion() {
+  if (!otherRoutingQuestion.value) return;
+  editorStore.selectWidget(otherRoutingQuestion.value.id);
+}
+
+function handleRouteActionChange(index: number, action: 'default' | 'page' | 'link' | 'modal') {
+  if (!currentWidget.value || otherRoutingQuestion.value) return;
+  const currentOptions = [...(currentWidget.value.props.options || [])];
+  const opt = currentOptions[index];
+  if (!opt) return;
+
+  if (action === 'modal') {
+    const existingModal = opt.routeModalProps || {};
+    currentOptions[index] = {
+      ...opt,
+      routeAction: 'modal',
+      routeModalProps: {
+        ...DEFAULT_CHOICE_ROUTE_MODAL_PROPS,
+        ...existingModal
+      }
+    };
+  } else {
+    currentOptions[index] = {
+      ...opt,
+      routeAction: action
+    };
+  }
+  editorStore.updateWidgetProps(currentWidget.value.id, { options: currentOptions });
+}
+
+function openOptionModalSetup(index: number) {
+  if (!currentWidget.value) return;
+  const opt = (currentWidget.value.props.options || [])[index];
+  if (!opt?.id) return;
+  if (!opt.routeModalProps) {
+    handleRouteActionChange(index, 'modal');
+  }
+  editorStore.selectWidget(currentWidget.value.id);
+  editorStore.openChoiceOptionModalSidebar(opt.id);
+}
 
 const variantLabel = computed(() => {
   const match = variants.find(v => v.id === variant.value);

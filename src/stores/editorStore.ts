@@ -288,6 +288,7 @@ export const useEditorStore = defineStore('editor', () => {
   const isDocumentSidebarOpen = ref<boolean>(false);
   const isModalSidebarOpen = ref<boolean>(false);
   const activeModalKey = ref<'modalProps' | 'secondaryModalProps'>('modalProps');
+  const activeChoiceModalOptionId = ref<string | null>(null);
   const isEPassSidebarOpen = ref<boolean>(false);
   const isTicketSidebarOpen = ref<boolean>(false);
   const isLayersOpen = ref<boolean>(false);
@@ -1384,11 +1385,18 @@ export const useEditorStore = defineStore('editor', () => {
     isEPassSidebarOpen.value = false;
     isLayersOpen.value = false;
     isPagesOpen.value = false;
+    activeChoiceModalOptionId.value = null;
     isModalSidebarOpen.value = true;
+  }
+
+  function openChoiceOptionModalSidebar(optionId: string) {
+    openModalSidebar();
+    activeChoiceModalOptionId.value = optionId;
   }
 
   function closeModalSidebar() {
     isModalSidebarOpen.value = false;
+    activeChoiceModalOptionId.value = null;
   }
 
   function toggleModalSidebar() {
@@ -2333,6 +2341,8 @@ export const useEditorStore = defineStore('editor', () => {
     isDocumentSidebarOpen,
     isModalSidebarOpen,
     activeModalKey,
+    activeChoiceModalOptionId,
+    openChoiceOptionModalSidebar,
     isEPassSidebarOpen,
     isLayersOpen,
     isPagesOpen,

@@ -804,7 +804,7 @@ import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
 import type { ModalVariant, ModalOption, ModalImageSlot, ModalButtonAction, ModalButtonLayout, ModalButtonStyle } from '../../types/editor.ts';
 import { useModalPopover } from '../common/modalPopover.ts';
 import InfoHint from '../common/InfoHint.vue';
-import { getFunnelTargetPages } from './ctaActions.ts';
+import { getFunnelTargetPages, DEFAULT_CHOICE_ROUTE_MODAL_PROPS } from './ctaActions.ts';
 import { 
   Bell, 
   TextCursorInput, 
@@ -871,6 +871,9 @@ const sidebarRef = ref<HTMLElement | null>(null);
 
 const currentWidget = computed(() => {
   const selected = editorStore.currentPage.widget_tree.find(w => w.id === editorStore.selectedWidgetId);
+  if (selected && selected.type === 'MultipleChoice' && editorStore.activeChoiceModalOptionId) {
+    return selected;
+  }
   if (selected && (selected.type === 'ActionButton' || selected.type === 'HeroDrop' || selected.type === 'ModalOverlay' || selected.type === 'GuestEPass' || selected.type === 'LiveQueuePass')) {
     return selected;
   }
@@ -879,6 +882,14 @@ const currentWidget = computed(() => {
 
 const targetModalData = computed(() => {
   if (!currentWidget.value) return {};
+  if (currentWidget.value.type === 'MultipleChoice' && editorStore.activeChoiceModalOptionId) {
+    const opts = (currentWidget.value.props?.options || []) as any[];
+    const opt = opts.find((o: any) => o.id === editorStore.activeChoiceModalOptionId);
+    return {
+      ...DEFAULT_CHOICE_ROUTE_MODAL_PROPS,
+      ...(opt?.routeModalProps || {})
+    };
+  }
   if (currentWidget.value.props.noticeModalProps) {
     return currentWidget.value.props.noticeModalProps;
   }
@@ -894,6 +905,20 @@ const targetModalData = computed(() => {
 
 function updateModalData(propsToUpdate: Record<string, any>) {
   if (!currentWidget.value) return;
+  if (currentWidget.value.type === 'MultipleChoice' && editorStore.activeChoiceModalOptionId) {
+    const opts = [...((currentWidget.value.props?.options || []) as any[])];
+    const idx = opts.findIndex((o: any) => o.id === editorStore.activeChoiceModalOptionId);
+    if (idx >= 0) {
+      const existing = opts[idx].routeModalProps || { ...DEFAULT_CHOICE_ROUTE_MODAL_PROPS };
+      opts[idx] = {
+        ...opts[idx],
+        routeAction: 'modal',
+        routeModalProps: { ...existing, ...propsToUpdate }
+      };
+      editorStore.updateWidgetProps(currentWidget.value.id, { options: opts });
+    }
+    return;
+  }
   if (currentWidget.value.type === 'ActionButton' || currentWidget.value.type === 'HeroDrop') {
     const modalKey = editorStore.activeModalKey === 'secondaryModalProps' ? 'secondaryModalProps' : 'modalProps';
     const existing = currentWidget.value.props[modalKey] || {};
@@ -1287,7 +1312,10 @@ function handleSubtitleInput(e: Event) {
 }
 
 function handleBackToCaller() {
-  if (currentWidget.value?.type === 'HeroDrop') {
+  if (currentWidget.value?.type === 'MultipleChoice') {
+    editorStore.closeModalSidebar();
+    editorStore.openChoiceSidebar();
+  } else if (currentWidget.value?.type === 'HeroDrop') {
     editorStore.openMediaSidebar(currentWidget.value.props?.ratio);
   } else {
     editorStore.openButtonSidebar();

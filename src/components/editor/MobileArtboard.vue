@@ -3276,7 +3276,7 @@ import { ref, reactive, computed, watch, nextTick, onMounted, onUnmounted, injec
 import QRCode from 'qrcode';
 import { PLACES_KEY, placeStatus, placeKey, configuredLimit, type PlaceStatus } from '../../services/places.ts';
 import { LIVE_PASS_KEY, SESSIONS_ANSWER_KEY, type PassSession } from './livePass.ts';
-import { normalizeCtaAction, normalizeExternalUrl, resolveTargetPageIndex, resolveChoiceRouteOverride } from './ctaActions.ts';
+import { normalizeCtaAction, normalizeExternalUrl, resolveTargetPageIndex, resolveChoiceRouteOverride, DEFAULT_CHOICE_ROUTE_MODAL_PROPS } from './ctaActions.ts';
 import { resolveUploadExtensions, formatUploadHelperSummary } from './uploadFieldConfig.ts';
 import { responsiveImgAttrs, placeholderStyle, sizedUrl } from '../../services/responsiveImage.ts';
 import { TICKET_CONTEXT_KEY, TICKET_SOURCE_KEY, TICKET_CANVAS, ticketFieldMeta, type TicketFieldKey } from './ticket/ticketFields.ts';
@@ -4484,6 +4484,10 @@ function handleButtonClick(widget: any, target: 'primary' | 'secondary' = 'prima
       return;
     }
     const choiceOverride = resolveChoiceRouteOverride(activePage.value.widget_tree);
+    if (choiceOverride?.kind === 'modal') {
+      activeTriggeredModal.value = choiceOverride.modalProps;
+      return;
+    }
     if (choiceOverride?.kind === 'link') {
       if (props.isLivePage) {
         window.location.href = choiceOverride.url;
@@ -6411,6 +6415,16 @@ const modalDisplayProps = computed(() => {
     return activeTriggeredModal.value;
   }
   const selected = editorStore.selectedWidget;
+  if (selected?.type === 'MultipleChoice' && editorStore.activeChoiceModalOptionId) {
+    const opts = (selected.props?.options || []) as any[];
+    const opt = opts.find((o: any) => o.id === editorStore.activeChoiceModalOptionId);
+    if (opt) {
+      return {
+        ...DEFAULT_CHOICE_ROUTE_MODAL_PROPS,
+        ...(opt.routeModalProps || {})
+      };
+    }
+  }
   const isSecondary = editorStore.activeModalKey === 'secondaryModalProps';
   if (isSecondary && selected?.props?.secondaryModalProps) {
     return selected.props.secondaryModalProps;

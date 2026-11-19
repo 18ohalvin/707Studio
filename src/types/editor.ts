@@ -97,9 +97,10 @@ export interface ChoiceOption {
   imageUrl?: string;
   disabled?: boolean;
   /** Optional conditional routing when this choice is selected before tapping a submit CTA. */
-  routeAction?: 'default' | 'page' | 'link';
+  routeAction?: 'default' | 'page' | 'link' | 'modal';
   routeTargetPageId?: string;
   routeUrl?: string;
+  routeModalProps?: Record<string, any>;
 }
 
 export interface WidgetItem {

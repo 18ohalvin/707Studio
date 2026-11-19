@@ -94,30 +94,80 @@ export function normalizeExternalUrl(rawUrl: string | undefined | null): string 
 
 export type ChoiceRouteOverride =
   | { kind: 'link'; url: string }
-  | { kind: 'page'; targetPageId: string };
+  | { kind: 'page'; targetPageId: string }
+  | { kind: 'modal'; modalProps: Record<string, any> };
+
+export const DEFAULT_CHOICE_ROUTE_MODAL_PROPS: Record<string, any> = {
+  variant: 'message-alert',
+  title: 'Before You Continue',
+  subtitle: 'Explore our collection to qualify for this event.',
+  buttonLayout: 'dual',
+  dualOrientation: 'horizontal',
+  buttonText: 'Visit Shop',
+  buttonVariant: 'black',
+  buttonAction: 'link',
+  buttonUrl: '',
+  buttonOpenInNewTab: true,
+  secondaryButtonText: 'Close',
+  secondaryButtonVariant: 'ghost',
+  secondaryButtonAction: 'submit-close',
+  dismissible: true
+};
+
+/** Returns true if a MultipleChoice widget has any option with a non-default On Next override. */
+export function choiceWidgetHasRoutingRules(widget: { type?: string; props?: Record<string, any> } | undefined | null): boolean {
+  if (!widget || widget.type !== 'MultipleChoice') return false;
+  const options = Array.isArray(widget.props?.options) ? widget.props!.options : [];
+  return options.some(
+    (opt: any) => opt && (opt.routeAction === 'page' || opt.routeAction === 'link' || opt.routeAction === 'modal')
+  );
+}
 
 /**
- * Checks selected options on MultipleChoice widgets for an option-level route override
- * (e.g. "No" redirects to an external catalog URL while "Yes" advances to a form page).
- * External link redirects take precedence if multiple choices have overrides.
+ * Finds the single MultipleChoice widget on a page that owns conditional Next routing.
+ * Only one question per page controls conditional Next routing to avoid conflicting overrides.
+ */
+export function findRoutingChoiceWidget<T extends { id?: string; type?: string; props?: Record<string, any> }>(
+  widgetTree: ReadonlyArray<T> | undefined | null
+): T | null {
+  if (!Array.isArray(widgetTree)) return null;
+  for (const w of widgetTree) {
+    if (choiceWidgetHasRoutingRules(w)) return w;
+  }
+  return null;
+}
+
+/**
+ * Checks selected options on the page's single routing MultipleChoice widget for an option-level
+ * route override (e.g. "No" opens a Shop Catalogue pop-up modal or redirects to an external URL,
+ * while "Yes" stays on Default CTA Flow and advances to the registration form).
  */
 export function resolveChoiceRouteOverride(
-  widgetTree: ReadonlyArray<{ type?: string; props?: Record<string, any> }> | undefined | null
+  widgetTree: ReadonlyArray<{ id?: string; type?: string; props?: Record<string, any> }> | undefined | null
 ): ChoiceRouteOverride | null {
-  if (!Array.isArray(widgetTree)) return null;
+  const routingWidget = findRoutingChoiceWidget(widgetTree);
+  if (!routingWidget) return null;
+
+  const selected = Array.isArray(routingWidget.props?.selectedValues) ? routingWidget.props!.selectedValues : [];
+  const options = Array.isArray(routingWidget.props?.options) ? routingWidget.props!.options : [];
   let pageOverride: ChoiceRouteOverride | null = null;
-  for (const w of widgetTree) {
-    if (w?.type !== 'MultipleChoice') continue;
-    const selected = Array.isArray(w.props?.selectedValues) ? w.props!.selectedValues : [];
-    const options = Array.isArray(w.props?.options) ? w.props!.options : [];
-    for (const opt of options) {
-      if (!opt || (!selected.includes(opt.id) && !opt.selected)) continue;
-      if (opt.routeAction === 'link') {
-        const url = normalizeExternalUrl(opt.routeUrl);
-        if (url) return { kind: 'link', url };
-      } else if (opt.routeAction === 'page' && opt.routeTargetPageId && !pageOverride) {
-        pageOverride = { kind: 'page', targetPageId: String(opt.routeTargetPageId) };
-      }
+
+  for (const opt of options) {
+    if (!opt || (!selected.includes(opt.id) && !opt.selected)) continue;
+    if (opt.routeAction === 'modal') {
+      return {
+        kind: 'modal',
+        modalProps: {
+          ...DEFAULT_CHOICE_ROUTE_MODAL_PROPS,
+          ...(opt.routeModalProps || {})
+        }
+      };
+    }
+    if (opt.routeAction === 'link') {
+      const url = normalizeExternalUrl(opt.routeUrl);
+      if (url) return { kind: 'link', url };
+    } else if (opt.routeAction === 'page' && opt.routeTargetPageId && !pageOverride) {
+      pageOverride = { kind: 'page', targetPageId: String(opt.routeTargetPageId) };
     }
   }
   return pageOverride;
