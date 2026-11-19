@@ -45,6 +45,7 @@ describe('picks and limits', () => {
     expect(configuredLimit({ limitPlaces: true, globalSlotsCapacity: '40' }, { slotsCapacity: '10' })).toBe(10);
     expect(configuredLimit({ limitPlaces: true, capacityMode: 'per-option' }, { slotsCapacity: '50' })).toBe(50);
     expect(configuredLimit({ limitPlaces: true, capacityMode: 'per-option' }, { slotsCapacity: '' })).toBeNull();
+    expect(configuredLimit({ limitPlaces: true, capacityMode: 'per-option', globalSlotsCapacity: '50' }, { slotsCapacity: '', unlimited: true })).toBeNull();
     expect(configuredLimit({ limitPlaces: true, capacityMode: 'overall', globalSlotsCapacity: '50' }, { slotsCapacity: '10' })).toBe(50);
     expect(configuredLimit({ limitPlaces: true, capacityMode: 'overall', globalSlotsCapacity: '50' }, {})).toBe(50);
   });

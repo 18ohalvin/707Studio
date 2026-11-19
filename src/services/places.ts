@@ -89,6 +89,7 @@ export function configuredLimit(widgetProps: any, opt: any): number | null {
   if (widgetProps?.capacityMode === 'overall') {
     return parseLimit(widgetProps?.globalSlotsCapacity);
   }
+  if (opt?.unlimited === true) return null;
   return parseLimit(opt?.slotsCapacity) ?? parseLimit(widgetProps?.globalSlotsCapacity);
 }
 

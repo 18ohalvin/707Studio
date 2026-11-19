@@ -216,15 +216,28 @@
             <div v-if="limitPlaces" class="flex items-center gap-2 pl-7">
               <template v-if="capacityMode !== 'overall'">
                 <span class="font-707 text-[11px] font-medium text-neutral-600 shrink-0">Places</span>
-                <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2.5 h-[28px] flex items-center flex-1 bg-white transition-colors">
+                <div
+                  v-if="!opt.unlimited"
+                  class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2.5 h-[28px] flex items-center flex-1 bg-white transition-colors"
+                >
                   <input 
                     :value="opt.slotsCapacity ?? ''"
-                    @input="updateOptionField(idx, { slotsCapacity: ($event.target as HTMLInputElement).value.replace(/[^\d]/g, '') })"
+                    @input="updateOptionField(idx, { slotsCapacity: ($event.target as HTMLInputElement).value.replace(/[^\d]/g, ''), unlimited: false })"
                     inputmode="numeric"
                     :placeholder="globalSlotsCapacity ? `${globalSlotsCapacity} (default)` : 'Unlimited'"
                     class="w-full font-707 text-[11px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
                   />
                 </div>
+                <span v-else class="font-707 text-[11px] text-neutral-400 flex-1">Unlimited</span>
+                <button
+                  type="button"
+                  @click="toggleOptionCapacityEnabled(idx)"
+                  :class="isOptionCapacityActive(opt) ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-500 hover:text-black'"
+                  class="h-[28px] px-2 rounded-[6px] font-707 text-[10.5px] font-medium cursor-pointer transition-colors shrink-0"
+                  :title="isOptionCapacityActive(opt) ? 'Make this option unlimited' : 'Enable capacity limit for this option'"
+                >
+                  {{ isOptionCapacityActive(opt) ? 'Limited' : 'Unlimited' }}
+                </button>
               </template>
               <span v-else class="font-707 text-[11px] text-neutral-500 flex-1 truncate">
                 Shares overall pool{{ globalSlotsCapacity ? ` (${globalSlotsCapacity})` : '' }}
@@ -691,24 +704,52 @@
                   class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-[7px] bg-neutral-50/80 border border-black/8"
                 >
                   <span class="font-707 text-[11.5px] text-black truncate flex-1">{{ opt.label || `Option ${oIdx + 1}` }}</span>
-                  <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2 h-[28px] w-[108px] flex items-center bg-white transition-colors shrink-0">
+                  <div
+                    v-if="isOptionCapacityActive(opt)"
+                    class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2 h-[28px] w-[88px] flex items-center bg-white transition-colors shrink-0"
+                  >
                     <input
                       :value="opt.slotsCapacity ?? ''"
-                      @input="updateOptionField(oIdx, { slotsCapacity: ($event.target as HTMLInputElement).value.replace(/[^\d]/g, '') })"
+                      @input="updateOptionField(oIdx, { slotsCapacity: ($event.target as HTMLInputElement).value.replace(/[^\d]/g, ''), unlimited: false })"
                       inputmode="numeric"
-                      :placeholder="globalSlotsCapacity ? `${globalSlotsCapacity} (default)` : 'Unlimited'"
+                      :placeholder="globalSlotsCapacity ? `${globalSlotsCapacity}` : '50'"
                       class="w-full font-707 text-[11.5px] font-medium text-black text-right focus:outline-none placeholder:text-neutral-400"
                     />
                   </div>
+                  <span v-else class="font-707 text-[11px] text-neutral-400 pr-1 shrink-0">Unlimited</span>
+                  <button
+                    type="button"
+                    role="switch"
+                    :aria-checked="isOptionCapacityActive(opt)"
+                    @click="toggleOptionCapacityEnabled(oIdx)"
+                    :class="isOptionCapacityActive(opt) ? 'bg-black' : 'bg-neutral-200'"
+                    class="relative inline-flex h-[20px] w-[34px] shrink-0 cursor-pointer rounded-full p-[2px] transition-colors duration-200 ease-in-out focus:outline-none"
+                    :title="isOptionCapacityActive(opt) ? 'Turn off to make Unlimited' : 'Turn on to limit this option'"
+                  >
+                    <span
+                      :class="isOptionCapacityActive(opt) ? 'translate-x-[14px]' : 'translate-x-0'"
+                      class="pointer-events-none inline-block h-[16px] w-[16px] transform rounded-full bg-white shadow-[0_1px_2px_rgba(0,0,0,0.2)] ring-0 transition duration-200 ease-in-out"
+                    />
+                  </button>
                 </div>
               </div>
               <p class="font-707 text-[10.5px] text-neutral-500 leading-normal">
-                Leave any option blank for Unlimited (e.g., Option A: 50, Option B: Unlimited).
+                Toggle individual options ON to set a limit, or OFF to make them Unlimited.
               </p>
             </div>
 
             <div class="flex flex-col gap-[6px] pt-1 border-t border-black/5">
-              <span class="font-707 text-[11.5px] font-medium text-neutral-600">Default for Blank Options (Optional)</span>
+              <div class="flex items-center justify-between">
+                <span class="font-707 text-[11.5px] font-medium text-neutral-600">Default for Blank Options (Optional)</span>
+                <button
+                  v-if="globalSlotsCapacity"
+                  type="button"
+                  @click="globalSlotsCapacity = ''"
+                  class="font-707 text-[10.5px] text-neutral-500 hover:text-black underline underline-offset-2 cursor-pointer"
+                >
+                  Clear
+                </button>
+              </div>
               <div class="border border-[#aaa] focus-within:border-black rounded-[8px] px-3 h-[34px] flex items-center w-full bg-white transition-colors">
                 <input 
                   v-model="globalSlotsCapacity"
@@ -1075,6 +1116,25 @@ function updateOptionField(index: number, patch: Partial<ChoiceOption>) {
   if (!currentOptions[index]) return;
   currentOptions[index] = { ...currentOptions[index], ...patch };
   editorStore.updateWidgetProps(currentWidget.value.id, { options: currentOptions });
+}
+
+function isOptionCapacityActive(opt: ChoiceOption): boolean {
+  if (opt.unlimited === true) return false;
+  const hasOwn = String(opt.slotsCapacity ?? '').trim().length > 0;
+  const hasDefault = String(globalSlotsCapacity.value ?? '').trim().length > 0;
+  return hasOwn || hasDefault;
+}
+
+function toggleOptionCapacityEnabled(index: number) {
+  if (!currentWidget.value) return;
+  const opt = (currentWidget.value.props.options || [])[index];
+  if (!opt) return;
+  if (isOptionCapacityActive(opt)) {
+    updateOptionField(index, { unlimited: true, slotsCapacity: '' });
+  } else {
+    const fallback = String(globalSlotsCapacity.value ?? '').trim() || '50';
+    updateOptionField(index, { unlimited: false, slotsCapacity: fallback });
+  }
 }
 
 const options = computed<ChoiceOption[]>({

@@ -94,6 +94,8 @@ export interface ChoiceOption {
   sublabel?: string;
   description?: string;
   slotsCapacity?: number | string;
+  /** Explicitly disables capacity limit for this option even when a default capacity is set. */
+  unlimited?: boolean;
   imageUrl?: string;
   disabled?: boolean;
   /** Optional conditional routing when this choice is selected before tapping a submit CTA. */

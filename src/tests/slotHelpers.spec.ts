@@ -27,9 +27,9 @@ describe('reading limits from a design', () => {
   });
 
   it('supports single-option cap (Option A: 50, Option B: Unlimited) in per-option mode', () => {
-    const defs = slotDefsFromDesign(design(choice({ limitPlaces: true, capacityMode: 'per-option' }, [
-      { id: 'a', label: 'Option A', slotsCapacity: '50' },
-      { id: 'b', label: 'Option B', slotsCapacity: '' }
+    const defs = slotDefsFromDesign(design(choice({ limitPlaces: true, capacityMode: 'per-option', globalSlotsCapacity: '50' }, [
+      { id: 'a', label: 'Yes', slotsCapacity: '50', unlimited: false },
+      { id: 'b', label: 'No', slotsCapacity: '', unlimited: true }
     ])));
     expect(defs.get(slotKey('mc1', 'a'))).toMatchObject({ capacity: 50, pooled: false });
     expect(defs.get(slotKey('mc1', 'b'))).toMatchObject({ capacity: null, pooled: false });

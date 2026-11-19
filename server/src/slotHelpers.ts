@@ -59,7 +59,9 @@ export function slotDefsFromDesign(design: any): Map<string, SlotDef> {
     for (const opt of options) {
       if (!opt?.id) continue;
       const own = parseCapacity(opt.slotsCapacity);
-      const capacity = limited ? (isOverall ? shared : (own ?? shared)) : null;
+      const capacity = limited
+        ? (isOverall ? shared : (opt.unlimited === true ? null : (own ?? shared)))
+        : null;
       defs.set(slotKey(String(w.id), String(opt.id)), {
         widget: String(w.id),
         option: String(opt.id),
