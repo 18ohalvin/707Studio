@@ -29,6 +29,44 @@ export function clientKeyOf(value: unknown): string | null {
   return /^[A-Za-z0-9_-]{8,100}$/.test(key) ? key : null;
 }
 
+const PHONE_FIELD_KEY_RE = /whats\s?app|phone|telp|telepon|\bwa\b|mobile|hp\b/i;
+
+/**
+ * Normalised digits-only WhatsApp / phone key for per-campaign deduplication
+ * (stops burner-email multi-submissions using the same WhatsApp number).
+ * Normalises local Indonesian variants (08..., 8..., +62 08..., +62 8...) to 628...
+ * Returns null when no valid phone number (8–15 digits) is present.
+ */
+export function phoneKeyOf(input: unknown): string | null {
+  let raw = '';
+  if (typeof input === 'string' || typeof input === 'number') {
+    raw = String(input);
+  } else if (input && typeof input === 'object') {
+    const obj = input as Record<string, any>;
+    if (obj.whatsapp) raw = String(obj.whatsapp);
+    else if (obj.phone) raw = String(obj.phone);
+    else {
+      for (const [k, v] of Object.entries(obj)) {
+        if (v && (typeof v === 'string' || typeof v === 'number') && PHONE_FIELD_KEY_RE.test(k)) {
+          raw = String(v);
+          break;
+        }
+      }
+    }
+  }
+  let digits = raw.replace(/\D/g, '');
+  if (!digits) return null;
+  if (digits.startsWith('620')) {
+    digits = '62' + digits.slice(3);
+  } else if (digits.startsWith('0')) {
+    digits = '62' + digits.slice(1);
+  } else if (digits.startsWith('8') && digits.length >= 9 && digits.length <= 13) {
+    digits = '62' + digits;
+  }
+  if (digits.length < 8 || digits.length > 15) return null;
+  return digits;
+}
+
 /** The only parts of an entry a guest's own page gets back — enough to print the pass, nothing else. */
 const PUBLIC_FORM_KEYS = ['fullName', 'email', 'Guest Type', SESSIONS_KEY];
 
@@ -67,8 +105,8 @@ function safeParse(text: string): Record<string, unknown> {
 }
 
 /** Columns that exist for the database's own bookkeeping and are not part of an entry. */
-export function stripInternal<T extends Record<string, any>>(row: T): Omit<T, 'email_key' | 'client_key' | 'slot_picks'> {
-  const { email_key, client_key, slot_picks, ...rest } = row;
+export function stripInternal<T extends Record<string, any>>(row: T): Omit<T, 'email_key' | 'client_key' | 'phone_key' | 'slot_picks'> {
+  const { email_key, client_key, phone_key, slot_picks, ...rest } = row;
   return rest;
 }
 

@@ -123,6 +123,8 @@ export interface Brand {
   primary_color?: string;
 }
 
+export type BackNavigationMode = 'allow' | 'block' | 'restart';
+
 export interface PageSettings {
   seoTitle: string;
   seoDescription: string;
@@ -132,6 +134,7 @@ export interface PageSettings {
   backgroundColor?: string;
   customCss?: string;
   eventConfig?: EventConfig;
+  backNavigationMode?: BackNavigationMode;
 }
 
 export type EventType = 'single' | 'daily_rolling' | 'multiday';

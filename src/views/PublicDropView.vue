@@ -58,11 +58,20 @@
         >
           <span class="flex-1">{{ livePass.error }}</span>
           <button
+            v-if="lastSubmissionErrorCode !== 'duplicate_phone'"
             type="button"
             class="shrink-0 px-2.5 py-1 rounded bg-red-900 text-white text-[11px] font-medium hover:bg-red-800"
             @click="retrySubmission()"
           >
             Retry
+          </button>
+          <button
+            v-else
+            type="button"
+            class="shrink-0 px-2.5 py-1 rounded bg-red-900/10 text-red-900 text-[11px] font-medium hover:bg-red-900/20"
+            @click="livePass.status = 'idle'; livePass.error = ''; lastSubmissionErrorCode = ''"
+          >
+            Dismiss
           </button>
         </div>
         <div
@@ -116,7 +125,7 @@ import {
   shouldSubmitAfterNavigation,
 } from '../services/submitEntry.ts';
 import { PLACES_KEY, PLACES_POLL_MS, collectPicks, fetchPlaces, wantsWaitlist, type PlacesMap } from '../services/places.ts';
-import type { ActivationPage } from '../types/editor.ts';
+import type { ActivationPage, BackNavigationMode } from '../types/editor.ts';
 import { useEditorStore } from '../stores/editorStore.ts';
 
 const route = useRoute();
@@ -132,6 +141,26 @@ const collectedFormData = ref<Record<string, any>>({});
 const submissionPageId = ref<string>('');
 const campaignBrandSlug = ref<string>('');
 const campaignStatus = ref<string>('');
+const lastSubmissionErrorCode = ref<string>('');
+
+/**
+ * Campaign back-navigation policy configured in Project Settings:
+ *  - 'allow':   guests can step back before submitting (default)
+ *  - 'block':   forward-only; back swipe & browser Back are blocked
+ *  - 'restart': pressing Back clears all answers and restarts from Page 1
+ * Back navigation is always locked automatically once registration is submitted.
+ */
+const backNavigationMode = computed<BackNavigationMode>(() => {
+  const mode =
+    projectPages.value[0]?.page_settings?.backNavigationMode ||
+    currentPageData.value?.page_settings?.backNavigationMode ||
+    'allow';
+  return mode === 'block' || mode === 'restart' ? mode : 'allow';
+});
+
+const isBackLocked = computed(() => {
+  return livePass.status === 'ready' || backNavigationMode.value === 'block';
+});
 /** Owner / superadmin looking at a campaign the public cannot see yet. */
 const isUnpublishedPreview = computed(() => Boolean(campaignStatus.value) && !['approved', 'published'].includes(campaignStatus.value));
 
@@ -166,6 +195,7 @@ async function loadPage() {
   livePass.guestType = '';
   livePass.sessions = [];
   livePass.error = '';
+  lastSubmissionErrorCode.value = '';
   campaignStatus.value = '';
   entryKeyring.reset();
 
@@ -298,6 +328,7 @@ function handleTouchEnd(e: TouchEvent) {
     // Edge swipe right (from left edge: touchStartX < 120px, swipe distance > 65px with low vertical jitter)
     if (deltaX > 65 && Math.abs(deltaY) < 50 && touchStartX < 120) {
       if (activePageIndex.value > 0) {
+        if (isBackLocked.value) return;
         handlePrevPage();
       }
     }
@@ -413,7 +444,60 @@ function campaignGuestType(): string {
   return '';
 }
 
+function clearAllFunnelAnswers() {
+  collectedFormData.value = {};
+  stripTextAnswers(projectPages.value);
+  for (const page of projectPages.value) {
+    for (const w of page.widget_tree || []) {
+      if (!w?.props) continue;
+      if (w.type === 'MultipleChoice') {
+        w.props.selectedValues = [];
+        if (Array.isArray(w.props.options)) {
+          w.props.options.forEach((opt: any) => {
+            if (opt && typeof opt === 'object') opt.selected = false;
+          });
+        }
+      } else if (w.type === 'DocumentUpload') {
+        w.props.uploadedFiles = [];
+        w.props.errorMessage = '';
+      } else if (w.type === 'RegistrationForm' && Array.isArray(w.props.fields)) {
+        w.props.fields.forEach((f: any) => {
+          if (f && typeof f === 'object') {
+            f.value = '';
+            f.uploadedFiles = [];
+            f.fileData = undefined;
+            f.errorMessage = '';
+          }
+        });
+      }
+    }
+  }
+}
+
+function restartFromBeginning() {
+  advanceAfterRecordIdx = null;
+  pageHistory.value = [];
+  clearAllFunnelAnswers();
+  entryKeyring.reset();
+  livePass.status = 'idle';
+  livePass.error = '';
+  lastSubmissionErrorCode.value = '';
+  activePageIndex.value = 0;
+  if (typeof window !== 'undefined' && window.history) {
+    window.history.replaceState({ stepIndex: 0 }, '', window.location.href);
+  }
+  if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  editorStore.showToast('Restarted from the beginning.', 2600);
+}
+
 function handlePrevPage() {
+  if (isBackLocked.value) return;
+  if (backNavigationMode.value === 'restart') {
+    if (activePageIndex.value > 0) restartFromBeginning();
+    return;
+  }
   advanceAfterRecordIdx = null;
   const prev = pageHistory.value.pop();
   if (typeof prev === 'number' && prev >= 0 && prev < projectPages.value.length) {
@@ -426,6 +510,18 @@ function handlePrevPage() {
 }
 
 function handlePopState() {
+  if (isBackLocked.value) {
+    if (typeof window !== 'undefined' && window.history) {
+      window.history.pushState({ stepIndex: activePageIndex.value }, '', window.location.href);
+    }
+    return;
+  }
+  if (backNavigationMode.value === 'restart') {
+    if (activePageIndex.value > 0) {
+      restartFromBeginning();
+    }
+    return;
+  }
   const prev = pageHistory.value.pop();
   if (typeof prev === 'number' && prev >= 0 && prev < projectPages.value.length) {
     activePageIndex.value = prev;
@@ -586,6 +682,7 @@ async function sendSubmission(): Promise<boolean> {
 
   livePass.status = 'pending';
   livePass.error = '';
+  lastSubmissionErrorCode.value = '';
 
   // Transient failures (signal drop, server briefly without its database) are retried
   // here, with the pass still showing "Issuing…", before the guest sees an error.
@@ -632,6 +729,7 @@ async function sendSubmission(): Promise<boolean> {
     livePass.status = 'error';
     return false;
   }
+  lastSubmissionErrorCode.value = outcome.code || '';
   livePass.error = outcome.message;
   livePass.status = 'error';
   return false;
@@ -641,6 +739,7 @@ async function handleRequeue() {
   if (livePass.status === 'pending') return;
   livePass.status = 'pending';
   livePass.error = '';
+  lastSubmissionErrorCode.value = '';
 
   const answers: Record<string, any> = {
     ...collectedFormData.value,

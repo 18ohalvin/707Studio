@@ -142,6 +142,59 @@
             </div>
           </div>
 
+          <!-- 2b. Back Navigation Guard -->
+          <div class="flex flex-col gap-1.5 w-full">
+            <label class="font-707 text-[11px] font-semibold text-neutral-700 tracking-wider uppercase">
+              Back Navigation Guard
+            </label>
+            <div class="grid grid-cols-3 gap-1.5 w-full">
+              <button
+                type="button"
+                @click="backNavigationMode = 'allow'"
+                class="h-[42px] rounded-[8px] border text-[12px] font-707 flex flex-col items-center justify-center cursor-pointer transition-all px-1"
+                :class="backNavigationMode === 'allow'
+                  ? 'bg-black text-white border-black font-medium shadow-2xs'
+                  : 'bg-white/70 hover:bg-white text-neutral-700 border-neutral-300 hover:border-black/50'"
+              >
+                <span class="leading-none">Allow Back</span>
+                <span class="text-[9.5px] mt-0.5 opacity-75 font-normal">Standard flow</span>
+              </button>
+              <button
+                type="button"
+                @click="backNavigationMode = 'block'"
+                class="h-[42px] rounded-[8px] border text-[12px] font-707 flex flex-col items-center justify-center cursor-pointer transition-all px-1"
+                :class="backNavigationMode === 'block'
+                  ? 'bg-black text-white border-black font-medium shadow-2xs'
+                  : 'bg-white/70 hover:bg-white text-neutral-700 border-neutral-300 hover:border-black/50'"
+              >
+                <span class="leading-none">Block Back</span>
+                <span class="text-[9.5px] mt-0.5 opacity-75 font-normal">Forward-only</span>
+              </button>
+              <button
+                type="button"
+                @click="backNavigationMode = 'restart'"
+                class="h-[42px] rounded-[8px] border text-[12px] font-707 flex flex-col items-center justify-center cursor-pointer transition-all px-1"
+                :class="backNavigationMode === 'restart'
+                  ? 'bg-black text-white border-black font-medium shadow-2xs'
+                  : 'bg-white/70 hover:bg-white text-neutral-700 border-neutral-300 hover:border-black/50'"
+              >
+                <span class="leading-none">Restart Flow</span>
+                <span class="text-[9.5px] mt-0.5 opacity-75 font-normal">Reset to Page 1</span>
+              </button>
+            </div>
+            <p class="font-707 text-[11px] text-neutral-500 leading-tight px-1">
+              <template v-if="backNavigationMode === 'block'">
+                Prevents guests from swiping or tapping Back to previous steps. Back is always locked after submission.
+              </template>
+              <template v-else-if="backNavigationMode === 'restart'">
+                Pressing Back clears entered answers and restarts the guest from Page 1. Back is always locked after submission.
+              </template>
+              <template v-else>
+                Guests can step back before submitting. Back is automatically locked once registration is submitted.
+              </template>
+            </p>
+          </div>
+
           <!-- 3. Project Slug -->
           <div class="flex flex-col gap-1.5">
             <label class="font-707 text-[11px] font-semibold text-neutral-700 tracking-wider uppercase">
@@ -210,7 +263,7 @@ import { isProjectLive, liveLinkFor, absoluteLink, campaignPath, useCopiedFlag }
 import { useEditorStore } from '../../../stores/editorStore.ts';
 import { useBrandStore } from '../../../stores/brandStore.ts';
 import { useAuthStore } from '../../../stores/authStore.ts';
-import type { EventConfig, EventType } from '../../../types/editor.ts';
+import type { BackNavigationMode, EventConfig, EventType } from '../../../types/editor.ts';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -230,6 +283,7 @@ const eventType = ref<EventType>('daily_rolling');
 const eventDate = ref('16 October 2026');
 const startDate = ref('16 October 2026');
 const endDate = ref('1 November 2026');
+const backNavigationMode = ref<BackNavigationMode>('allow');
 
 const currentProject = computed(() => editorStore.projects.find(p => p.id === editorStore.currentProjectId) || null);
 const projectIsLive = computed(() => isProjectLive(currentProject.value));
@@ -277,6 +331,11 @@ watch(
       eventDate.value = cfg.eventDate || '16 October 2026';
       startDate.value = cfg.startDate || '16 October 2026';
       endDate.value = cfg.endDate || '1 November 2026';
+      backNavigationMode.value =
+        editorStore.pages[0]?.page_settings?.backNavigationMode ||
+        editorStore.currentPage?.page_settings?.backNavigationMode ||
+        proj?.page_settings?.backNavigationMode ||
+        'allow';
     }
   },
   { immediate: true }
@@ -301,19 +360,21 @@ function handleSave() {
     dailyQueueReset: eventType.value === 'daily_rolling'
   };
 
-  // Always keep master landing page slug aligned with project slug and sync eventConfig
+  // Always keep master landing page slug aligned with project slug and sync eventConfig + backNavigationMode
   if (editorStore.pages[0]) {
     editorStore.pages[0].slug = cleanSlug;
     if (editorStore.pages[0].page_settings) {
       editorStore.pages[0].page_settings.seoTitle = title.value.trim();
       editorStore.pages[0].page_settings.eventConfig = eventConfig;
+      editorStore.pages[0].page_settings.backNavigationMode = backNavigationMode.value;
     }
   }
 
-  // Sync eventConfig across all pages in the project
+  // Sync eventConfig & backNavigationMode across all pages in the project
   editorStore.pages.forEach(p => {
     if (p.page_settings) {
       p.page_settings.eventConfig = eventConfig;
+      p.page_settings.backNavigationMode = backNavigationMode.value;
     }
   });
 
@@ -323,6 +384,9 @@ function handleSave() {
     proj.title = title.value.trim();
     proj.slug = cleanSlug;
     proj.event_config = eventConfig;
+    if (proj.page_settings) {
+      proj.page_settings.backNavigationMode = backNavigationMode.value;
+    }
     proj.updated_at = new Date().toISOString();
   }
 

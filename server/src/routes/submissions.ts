@@ -7,7 +7,7 @@ import { pool, getDbStatus } from '../db.js';
 import { readDataFile, writeDataFile } from '../fileStorage.js';
 import { requireAuth, getClaims, optionalClaims } from '../auth.js';
 import { accessiblePageIds, canViewPublicPage, findProjectForEntry } from '../access.js';
-import { PLACEHOLDER_EMAIL, emailKeyOf, clientKeyOf, publicEntry, stripInternal } from '../submissionHelpers.js';
+import { PLACEHOLDER_EMAIL, emailKeyOf, clientKeyOf, phoneKeyOf, publicEntry, stripInternal } from '../submissionHelpers.js';
 import { sendPassEmail, sendWaitlistEmail, sendPromotedEmail, sendApplicationReceivedEmail } from '../mailer.js';
 import { route, storeFor, unavailable } from '../routeSupport.js';
 import { slotKey, normalizePicks, decidePlaces, type SlotDef, type SlotPick } from '../slotHelpers.js';
@@ -159,9 +159,25 @@ async function findExisting(pageId: string, clientKey: string | null, emailKey: 
   return result.rows[0] || null;
 }
 
+/** Checks whether an active registration on this campaign already uses the same normalised WhatsApp number. */
+async function findExistingByPhone(pageId: string, phoneKey: string | null) {
+  if (!phoneKey) return null;
+  const result = await pool.query(
+    `SELECT * FROM submissions
+      WHERE page_id = $1
+        AND phone_key = $2::text
+        AND duplicate_of IS NULL
+      ORDER BY created_at ASC, id ASC
+      LIMIT 1`,
+    [pageId, phoneKey]
+  );
+  return result.rows[0] || null;
+}
+
 type InsertOutcome =
   | { kind: 'inserted'; row: any }
   | { kind: 'conflict' }
+  | { kind: 'duplicate_phone' }
   | { kind: 'full'; full: SlotDef[] };
 
 /**
@@ -203,14 +219,26 @@ async function insertWithPlaces(entry: any, chosen: SlotDef[], wantsWaitlist: bo
       if (decision.waitlisted) status = 'waitlisted';
     }
 
+    if (entry.phone_key) {
+      await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [`phone:${entry.page_id}:${entry.phone_key}`]);
+      const phoneTaken = await client.query(
+        `SELECT id FROM submissions WHERE page_id = $1 AND phone_key = $2 AND duplicate_of IS NULL AND COALESCE(queue_status, 'waiting') <> 'expired' LIMIT 1`,
+        [entry.page_id, entry.phone_key]
+      );
+      if (phoneTaken.rows.length > 0) {
+        await client.query('ROLLBACK');
+        return { kind: 'duplicate_phone' };
+      }
+    }
+
     const inserted = await client.query(
       `INSERT INTO submissions
-         (id, page_id, brand_slug, submission_type, form_data, ticket_code, ip_address, user_agent, status, created_at, email_key, client_key, party_size, queue_number, queue_status)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+         (id, page_id, brand_slug, submission_type, form_data, ticket_code, ip_address, user_agent, status, created_at, email_key, client_key, phone_key, party_size, queue_number, queue_status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
        ON CONFLICT DO NOTHING
        RETURNING *`,
       [entry.id, entry.page_id, entry.brand_slug, entry.submission_type, JSON.stringify(entry.form_data), entry.ticket_code,
-        entry.ip_address, entry.user_agent, status, entry.created_at, entry.email_key, entry.client_key,
+        entry.ip_address, entry.user_agent, status, entry.created_at, entry.email_key, entry.client_key, entry.phone_key,
         entry.party_size || 1, entry.queue_number || null, entry.queue_status || 'waiting']
     );
     if (!inserted.rows[0]) {
@@ -644,6 +672,7 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
   const emailKey = emailKeyOf(email);
   const clientKey = clientKeyOf(req.body?.client_key);
   const answers = { ...form_data, fullName, email };
+  const phoneKey = phoneKeyOf(answers);
   const picks: SlotPick[] = normalizePicks(req.body?.slot_picks);
   const partySize = Math.max(1, Math.min(10, Number(answers.party_size || answers['Jumlah Tamu'] || answers['Party Size'] || answers.guests) || 1));
   const eventDate = String(answers.event_date || answers['Access Valid For'] || answers.eventDate || '');
@@ -690,6 +719,7 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
     created_at: new Date().toISOString(),
     email_key: emailKey,
     client_key: clientKey,
+    phone_key: phoneKey,
     party_size: partySize,
     queue_number: queueNumber,
     queue_status: 'waiting'
@@ -697,6 +727,13 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
 
   const alreadyRecorded = (row: any) =>
     res.status(200).json({ success: true, data: publicEntry(row), duplicate: true, message: 'Entry already recorded' });
+
+  const duplicatePhoneRefusal = () =>
+    res.status(409).json({
+      success: false,
+      code: 'duplicate_phone',
+      error: 'This WhatsApp number is already registered for this event.'
+    });
 
   if (store === 'db') {
     const isRequeue = req.body?.requeue === true;
@@ -761,6 +798,13 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
       return alreadyRecorded(existing);
     }
 
+    if (phoneKey) {
+      const existingByPhone = await findExistingByPhone(pageId, phoneKey);
+      if (existingByPhone && existingByPhone.queue_status !== 'expired' && !isRequeue) {
+        return duplicatePhoneRefusal();
+      }
+    }
+
     // Which of the guest's picks are options of this campaign, and which of those are limited or closed.
     const defs = picks.length ? slotDefs : new Map<string, SlotDef>();
     const chosen = picks.map(p => defs.get(slotKey(p.widget, p.option))).filter((d): d is SlotDef => !!d);
@@ -813,6 +857,7 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
         return res.status(201).json({ success: true, data: publicEntry(outcome.row), message: 'Entry recorded successfully' });
       }
       if (outcome.kind === 'full') return placesRefusal(res, pageId, true, outcome.full);
+      if (outcome.kind === 'duplicate_phone') return duplicatePhoneRefusal();
       // Nothing inserted: either a simultaneous request for the same guest won (return its entry),
       // or the id / Access ID was taken (draw new ones and go again).
       const raced = await findExisting(pageId, clientKey, emailKey);
@@ -875,6 +920,15 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
       return res.status(200).json({ success: true, data: publicEntry(existing), requeued: true, message: 'New queue number generated successfully' });
     }
     return alreadyRecorded(existing);
+  }
+
+  if (phoneKey) {
+    const existingByPhone = inMemorySubmissions.find(
+      s => s.page_id === pageId && !s.duplicate_of && (s.phone_key || phoneKeyOf(s.form_data)) === phoneKey
+    );
+    if (existingByPhone && existingByPhone.queue_status !== 'expired' && req.body?.requeue !== true) {
+      return duplicatePhoneRefusal();
+    }
   }
 
   const fileDefs = picks.length ? slotDefs : new Map<string, SlotDef>();

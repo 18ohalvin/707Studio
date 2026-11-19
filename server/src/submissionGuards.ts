@@ -1,6 +1,6 @@
 import type { Pool, PoolClient } from 'pg';
 import { readDataFile, archiveDataFile } from './fileStorage.js';
-import { PLACEHOLDER_EMAIL, emailKeyOf } from './submissionHelpers.js';
+import { PLACEHOLDER_EMAIL, emailKeyOf, phoneKeyOf } from './submissionHelpers.js';
 import { withClient } from './dbClient.js';
 import { slotDefsFromDesign, picksFromLabels, type SlotDef } from './slotHelpers.js';
 
@@ -22,10 +22,11 @@ import { slotDefsFromDesign, picksFromLabels, type SlotDef } from './slotHelpers
 
 const EMAIL_INDEX = 'submissions_page_email_key_uq';
 const CLIENT_INDEX = 'submissions_page_client_key_uq';
+const PHONE_INDEX = 'submissions_page_phone_key_idx';
 const TICKET_INDEX = 'submissions_ticket_code_uq';
 const LIST_INDEX = 'submissions_page_created_idx';
 const TRIGGER = 'submissions_fill_email_key_trg';
-const COLUMNS = ['email_key', 'client_key', 'duplicate_of'];
+const COLUMNS = ['email_key', 'client_key', 'phone_key', 'duplicate_of'];
 
 async function inTransaction<T>(pool: Pool, work: (client: PoolClient) => Promise<T>): Promise<T> {
   return withClient(pool, async (client) => {
@@ -58,6 +59,8 @@ export async function ensureSubmissionColumns(pool: Pool): Promise<void> {
       WHERE table_schema = current_schema() AND table_name = 'submissions' AND column_name = ANY($1)`,
     [COLUMNS]
   );
+  const existingCols = new Set(have.rows.map((r: any) => r.column_name));
+  const needsPhoneBackfill = !existingCols.has('phone_key');
   const slotTable = await pool.query(`SELECT to_regclass('submission_slots') AS t`);
   if (have.rows.length === COLUMNS.length && slotTable.rows[0].t) return;
   await inTransaction(pool, async (client) => {
@@ -65,8 +68,20 @@ export async function ensureSubmissionColumns(pool: Pool): Promise<void> {
       ALTER TABLE submissions
         ADD COLUMN IF NOT EXISTS email_key VARCHAR(320),
         ADD COLUMN IF NOT EXISTS client_key VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS phone_key VARCHAR(32),
         ADD COLUMN IF NOT EXISTS duplicate_of VARCHAR(100)
     `);
+    await client.query(`CREATE INDEX IF NOT EXISTS ${PHONE_INDEX} ON submissions (page_id, phone_key) WHERE phone_key IS NOT NULL`);
+    if (needsPhoneBackfill) {
+      const rows = await client.query(`SELECT id, form_data FROM submissions WHERE phone_key IS NULL AND duplicate_of IS NULL`);
+      for (const row of rows.rows) {
+        const form = typeof row.form_data === 'string' ? (() => { try { return JSON.parse(row.form_data); } catch { return {}; } })() : (row.form_data || {});
+        const pk = phoneKeyOf(form);
+        if (pk) {
+          await client.query(`UPDATE submissions SET phone_key = $1 WHERE id = $2`, [pk, row.id]);
+        }
+      }
+    }
     await client.query(`
       CREATE TABLE IF NOT EXISTS submission_slots (
         submission_id VARCHAR(100) NOT NULL REFERENCES submissions(id) ON DELETE CASCADE,
