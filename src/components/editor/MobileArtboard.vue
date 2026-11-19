@@ -4521,8 +4521,29 @@ function handleButtonClick(widget: any, target: 'primary' | 'secondary' = 'prima
       window.location.href = destination;
     }
   } else if (actionType === 'modal') {
-    if (modalRequiresFormValidation(widget, target) && !validateActivePageRequiredFields()) {
+    const requiresValidation = modalRequiresFormValidation(widget, target);
+    if (requiresValidation && !validateActivePageRequiredFields()) {
       return;
+    }
+    // Respect option-level conditional routing (e.g. Yes -> Jump to Page 3, No -> Default CTA Flow / Modal)
+    if (target === 'primary' || requiresValidation) {
+      const choiceOverride = resolveChoiceRouteOverride(activePage.value.widget_tree);
+      if (choiceOverride?.kind === 'modal') {
+        activeTriggeredModal.value = choiceOverride.modalProps;
+        return;
+      }
+      if (choiceOverride?.kind === 'link') {
+        if (props.isLivePage) {
+          window.location.href = choiceOverride.url;
+        } else {
+          window.open(choiceOverride.url, '_blank', 'noopener,noreferrer');
+        }
+        return;
+      }
+      if (choiceOverride?.kind === 'page') {
+        goToNextPage(props.isLivePage ? collectPageAnswers() : undefined, choiceOverride.targetPageId);
+        return;
+      }
     }
     const defaultAlert = target === 'secondary'
       ? {

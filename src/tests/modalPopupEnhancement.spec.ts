@@ -497,4 +497,80 @@ describe('Modal Pop-up Enhancements (Dual Message/Alert Buttons, Padding, No Swi
       expect(resolved.modalProps.title).toBe('Explore On Tennis Gear');
     }
   });
+
+  it('respects choice Jump to Page override even when sticky CONFIRM button itself is set to Popup Modal', async () => {
+    const store = useEditorStore();
+    const q1 = {
+      id: 'mc_q1',
+      type: 'MultipleChoice',
+      props: {
+        title: '1. How often do you play tennis?',
+        options: [{ id: 'q1_a', label: 'Less than once a week', routeAction: 'default' }],
+        selectedValues: ['q1_a']
+      }
+    };
+    const q2 = {
+      id: 'mc_q2',
+      type: 'MultipleChoice',
+      props: {
+        title: '2. Do you currently own an On Tennis product?',
+        options: [
+          { id: 'q2_yes', label: 'Yes', routeAction: 'page', routeTargetPageId: 'page_form' },
+          { id: 'q2_no', label: 'No', routeAction: 'default' }
+        ],
+        selectedValues: ['q2_yes']
+      }
+    };
+    const stickyConfirmModal = {
+      id: 'btn_confirm_modal',
+      type: 'ActionButton',
+      props: {
+        label: 'CONFIRM',
+        positionMode: 'sticky-bottom',
+        actionType: 'modal',
+        modalProps: {
+          variant: 'message-alert',
+          title: 'Shop On Tennis Catalogue',
+          subtitle: 'Visit our catalog first.',
+          buttonText: 'Visit Shop',
+          buttonAction: 'link',
+          buttonUrl: 'https://events.707.co.id/shop'
+        }
+      }
+    };
+
+    store.pages = [
+      makePage('page_eligibility', 'Eligibility Check', [q1, q2, stickyConfirmModal]),
+      makePage('page_form', 'Registration Form', [])
+    ];
+    store.activePageIndex = 0;
+
+    const wrapper = mount(MobileArtboard, {
+      props: {
+        page: store.pages[0],
+        pageIndex: 0,
+        isSelected: true,
+        isPreviewModal: true
+      }
+    });
+
+    const confirmBtn = wrapper.findAll('button').find(b => b.text().toUpperCase().includes('CONFIRM'));
+    expect(confirmBtn).toBeTruthy();
+
+    // When Q2 = "Yes" (Jump to Page -> page_form), CONFIRM jumps directly to Page 2 and does NOT open the modal
+    await confirmBtn!.trigger('click');
+    await wrapper.vm.$nextTick();
+    expect(store.activePageIndex).toBe(1);
+    expect(wrapper.find('[data-name="Bottom Modal Popup"]').exists()).toBe(false);
+
+    // Back to page 0, pick Q2 = "No" (Default CTA Flow) -> CONFIRM opens the sticky button's Popup Modal
+    store.activePageIndex = 0;
+    store.pages[0].widget_tree[1].props.selectedValues = ['q2_no'];
+    await wrapper.vm.$nextTick();
+    await confirmBtn!.trigger('click');
+    await wrapper.vm.$nextTick();
+    expect(store.activePageIndex).toBe(0);
+    expect(wrapper.find('[data-name="Bottom Modal Popup"]').exists()).toBe(true);
+    expect(wrapper.find('[data-name="Bottom Modal Popup"]').text()).toContain('Shop On Tennis Catalogue');
+  });
 });
