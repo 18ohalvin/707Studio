@@ -1926,15 +1926,23 @@ export const useEditorStore = defineStore('editor', () => {
     
     const brandStore = useBrandStore();
     const authStore = useAuthStore();
-    const userBrand = authStore.currentUser?.assignedBrands?.[0];
+    const assignedBrands = (authStore.currentUser?.assignedBrands || [])
+      .map(b => String(b || '').toLowerCase().replace(/[^a-z0-9_-]/g, ''))
+      .filter(Boolean);
+    const hasAllBrands = authStore.isSuperAdmin || assignedBrands.includes('all');
+    const userBrand = assignedBrands[0];
 
-    let resolvedBrandSlug = currentPage.value?.brand_slug;
-    if (!authStore.isSuperAdmin && userBrand && userBrand !== 'all') {
-      resolvedBrandSlug = userBrand.toLowerCase().replace(/[^a-z0-9_-]/g, '');
-    } else if (!resolvedBrandSlug || (resolvedBrandSlug === 'atmos' && userBrand && userBrand !== 'atmos')) {
-      if (userBrand && userBrand !== 'all') {
-        resolvedBrandSlug = userBrand.toLowerCase().replace(/[^a-z0-9_-]/g, '');
-      } else if (brandStore.activeBrand?.slug) {
+    const pageBrandSlug = String(pages.value[0]?.brand_slug || currentPage.value?.brand_slug || '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    let resolvedBrandSlug = pageBrandSlug;
+
+    if (!hasAllBrands && userBrand) {
+      // Allow keeping an explicitly assigned brand when the user belongs to multiple brands;
+      // otherwise lock single-brand users to their assigned brand.
+      if (!resolvedBrandSlug || !assignedBrands.includes(resolvedBrandSlug)) {
+        resolvedBrandSlug = userBrand;
+      }
+    } else if (!resolvedBrandSlug) {
+      if (brandStore.activeBrand?.slug) {
         resolvedBrandSlug = brandStore.activeBrand.slug.toLowerCase().replace(/[^a-z0-9_-]/g, '');
       } else if (existingProj?.brand_slug) {
         resolvedBrandSlug = existingProj.brand_slug.toLowerCase().replace(/[^a-z0-9_-]/g, '');
@@ -1943,6 +1951,9 @@ export const useEditorStore = defineStore('editor', () => {
       }
     }
 
+    pages.value.forEach(p => {
+      p.brand_slug = resolvedBrandSlug;
+    });
     if (currentPage.value) {
       currentPage.value.brand_slug = resolvedBrandSlug;
     }

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { createRouter, createMemoryHistory } from 'vue-router';
@@ -7,6 +7,8 @@ import { phoneKeyOf, stripInternal } from '../../server/src/submissionHelpers.ts
 import ProjectInfoSettingsModal from '../components/editor/Modals/ProjectInfoSettingsModal.vue';
 import PublicDropView from '../views/PublicDropView.vue';
 import { useEditorStore } from '../stores/editorStore.ts';
+import { useBrandStore } from '../stores/brandStore.ts';
+import { useAuthStore } from '../stores/authStore.ts';
 
 describe('WhatsApp / Phone Deduplication Helper (phoneKeyOf)', () => {
   it('normalizes all Indonesian WhatsApp variants to the same canonical 628... key', () => {
@@ -46,6 +48,11 @@ describe('WhatsApp / Phone Deduplication Helper (phoneKeyOf)', () => {
 describe('Back-Navigation Guard (Project Settings & PublicDropView)', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+    vi.stubGlobal('BroadcastChannel', undefined);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it('persists backNavigationMode across all pages in ProjectInfoSettingsModal', async () => {
@@ -64,6 +71,58 @@ describe('Back-Navigation Guard (Project Settings & PublicDropView)', () => {
     await wrapper.find('form').trigger('submit');
     for (const page of store.pages) {
       expect(page.page_settings.backNavigationMode).toBe('restart');
+    }
+  });
+
+  it('moves an existing campaign from general to atmos via Brand Workspace selector in ProjectInfoSettingsModal', async () => {
+    const store = useEditorStore();
+    const brandStore = useBrandStore();
+    const authStore = useAuthStore();
+
+    authStore.isSuperAdmin = true;
+    brandStore.brands = [
+      { id: 'b_gen', name: 'General', slug: 'general' },
+      { id: 'b_atmos', name: 'atmos Indonesia', slug: 'atmos' }
+    ];
+
+    store.pages[0].brand_slug = 'general';
+    store.pages[0].slug = 'clubhouse';
+    store.addPage();
+    store.pages[1].brand_slug = 'general';
+    store.projects = [
+      {
+        id: store.currentProjectId || 'proj_move_1',
+        brand_id: 'b_gen',
+        brand_slug: 'general',
+        title: 'Clubhouse',
+        slug: 'clubhouse',
+        status: 'published',
+        live_version: 1,
+        current_version: 1,
+        widget_tree: [],
+        pages: store.pages,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ];
+    store.currentProjectId = store.projects[0].id;
+
+    const wrapper = mount(ProjectInfoSettingsModal, {
+      props: { isOpen: true }
+    });
+
+    const brandSelect = wrapper.find('select');
+    expect(brandSelect.exists()).toBe(true);
+    await brandSelect.setValue('atmos');
+    await wrapper.vm.$nextTick();
+
+    // Live campaign warning should appear when moving brand slug
+    expect(wrapper.text()).toContain('/atmos/clubhouse');
+
+    await wrapper.find('form').trigger('submit');
+    expect(store.projects[0].brand_slug).toBe('atmos');
+    for (const page of store.pages) {
+      expect(page.brand_slug).toBe('atmos');
     }
   });
 

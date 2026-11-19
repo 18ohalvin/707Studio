@@ -10,6 +10,16 @@ import { SessionClaims, isSuperAdminClaims } from './auth.js';
 
 const normalizeBrand = (s: string) => String(s || '').toLowerCase().replace(/_/g, '-').trim();
 
+/** Whether this account may assign or move a campaign to the given brand slug. */
+export function canUseBrandSlug(claims: SessionClaims, targetSlug: string): boolean {
+  if (isSuperAdminClaims(claims)) return true;
+  const brands = claims.brands.map(normalizeBrand);
+  if (brands.includes('all')) return true;
+  const target = normalizeBrand(targetSlug);
+  if (!target) return false;
+  return brands.includes(target);
+}
+
 export function canAccessProject(claims: SessionClaims, project: any): boolean {
   if (!project) return false;
   if (isSuperAdminClaims(claims)) return true;

@@ -3,7 +3,7 @@ import { pool, getDbStatus } from '../db.js';
 import { readDataFile, writeDataFile } from '../fileStorage.js';
 import { externalizeInlineImages } from '../inlineImages.js';
 import { requireAuth, getClaims, isSuperAdminClaims, optionalClaims } from '../auth.js';
-import { canAccessProject, findProject } from '../access.js';
+import { canAccessProject, canUseBrandSlug, findProject } from '../access.js';
 import { clearSlotCache } from '../slots.js';
 import {
   rowToProject, forClient, liveView, isLive, listHistory,
@@ -203,10 +203,16 @@ pagesRouter.post('/', requireAuth, async (req: Request, res: Response) => {
 
   const now = new Date().toISOString();
   const pageId = id || `page-${Date.now()}`;
-  const targetBrandSlug = brand_slug || 'atmos';
+  const existingDbRow = id ? await findProject(pageId) : null;
+  const cleanRequestedBrand = String(brand_slug || '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+  const previousBrandSlug = String(existingDbRow?.brand_slug || '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+  const targetBrandSlug = cleanRequestedBrand || previousBrandSlug || 'atmos';
   const pageTitle = title || 'Untitled Activation Drop';
   const pageSlug = slug || pageTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   if (await denyIfForeign(res, pageId)) return;
+  if (previousBrandSlug && targetBrandSlug !== previousBrandSlug && !canUseBrandSlug(claims, targetBrandSlug)) {
+    return res.status(403).json({ success: false, error: 'You do not have permission to move this campaign to that brand.' });
+  }
   // Refuse to resurrect a project someone deleted. An older client that does
   // not know about tombstones still cannot bring it back this way.
   if (getDbStatus().isConnected) {
@@ -285,6 +291,10 @@ pagesRouter.post('/', requireAuth, async (req: Request, res: Response) => {
           pageData.created_at
         ]
       );
+      // When a campaign moves to a different brand slug, keep its recorded submissions aligned too.
+      if (previousBrandSlug && targetBrandSlug !== previousBrandSlug) {
+        await pool.query(`UPDATE submissions SET brand_slug = $1 WHERE page_id = $2`, [targetBrandSlug, pageId]).catch(() => {});
+      }
       // The saved row tells the editor whether it now differs from the live version.
       return res.json({ success: true, data: forClient(rowToProject(result.rows[0])) });
     } catch (err: any) {
@@ -320,8 +330,20 @@ pagesRouter.put('/:id', requireAuth, async (req: Request, res: Response) => {
   const now = new Date().toISOString();
   if (await denyIfForeign(res, id)) return;
 
-  const allowed = ['title', 'slug', 'widget_tree', 'pages', 'page_settings'];
+  const allowed = ['title', 'slug', 'brand_slug', 'widget_tree', 'pages', 'page_settings'];
   const fields = Object.fromEntries(Object.entries(updates).filter(([k]) => allowed.includes(k)));
+  if (fields.brand_slug !== undefined) {
+    const cleanBrand = String(fields.brand_slug || '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    if (!cleanBrand) {
+      delete fields.brand_slug;
+    } else {
+      const claims = getClaims(res);
+      if (!canUseBrandSlug(claims, cleanBrand)) {
+        return res.status(403).json({ success: false, error: 'You do not have permission to move this campaign to that brand.' });
+      }
+      fields.brand_slug = cleanBrand;
+    }
+  }
 
   if (getDbStatus().isConnected) {
     try {
@@ -330,6 +352,9 @@ pagesRouter.put('/:id', requireAuth, async (req: Request, res: Response) => {
       const set = [...keys.map((k, i) => `${k} = $${i + 1}`), `updated_at = $${keys.length + 1}`].join(', ');
       const result = await pool.query(`UPDATE pages SET ${set} WHERE id = $${keys.length + 2} RETURNING *`, [...values, now, id]);
       if (!result.rows[0]) return res.status(404).json({ success: false, error: 'Project not found.' });
+      if (fields.brand_slug) {
+        await pool.query(`UPDATE submissions SET brand_slug = $1 WHERE page_id = $2`, [fields.brand_slug, id]).catch(() => {});
+      }
       return res.json({ success: true, data: forClient(rowToProject(result.rows[0])) });
     } catch (err: any) {
       console.error('[DB] Error updating page in DB:', err.message);

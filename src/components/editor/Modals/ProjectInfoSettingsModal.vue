@@ -195,21 +195,48 @@
             </p>
           </div>
 
-          <!-- 3. Project Slug -->
-          <div class="flex flex-col gap-1.5">
-            <label class="font-707 text-[11px] font-semibold text-neutral-700 tracking-wider uppercase">
-              Custom URL Slug
-            </label>
-            <div class="flex items-center w-full h-[40px] rounded-[8px] bg-black/[0.03] border border-black/15 px-3 focus-within:border-black focus-within:bg-white transition-all">
-              <span class="text-neutral-400 font-mono text-[12px] shrink-0">/{{ brandSlug }}/</span>
-              <input 
-                v-model="slug"
-                type="text"
-                required
-                placeholder="project-slug"
-                class="w-full h-full bg-transparent border-none outline-none text-[13px] font-707 text-black font-mono px-1 placeholder:text-neutral-400"
-                @input="handleSlugInput"
-              />
+          <!-- 3. Brand & Project Slug -->
+          <div class="flex flex-col gap-2">
+            <!-- Brand Slug Transfer (shown when account has access to multiple brands) -->
+            <div v-if="canChangeBrand" class="flex flex-col gap-1.5">
+              <label class="font-707 text-[11px] font-semibold text-neutral-700 tracking-wider uppercase">
+                Brand Workspace
+              </label>
+              <select
+                v-model="selectedBrandSlug"
+                class="w-full h-[40px] px-3 rounded-[8px] bg-black/[0.03] border border-black/15 text-[13px] font-707 text-black focus:border-black focus:bg-white outline-none transition-all cursor-pointer"
+              >
+                <option
+                  v-for="b in availableBrandOptions"
+                  :key="b.slug"
+                  :value="b.slug"
+                >
+                  {{ b.name }} (/{{ b.slug }})
+                </option>
+              </select>
+              <p
+                v-if="projectIsLive && selectedBrandSlug !== initialBrandSlug"
+                class="font-707 text-[11px] text-amber-800 bg-amber-50 border border-amber-200/80 rounded-[6px] px-2.5 py-1.5 leading-snug"
+              >
+                Moving a live campaign changes its public URL from <strong>/{{ initialBrandSlug }}/{{ slug }}</strong> to <strong>/{{ selectedBrandSlug }}/{{ slug }}</strong>. Existing guest submissions will move with it, but previously shared links will need to be updated.
+              </p>
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="font-707 text-[11px] font-semibold text-neutral-700 tracking-wider uppercase">
+                Custom URL Slug
+              </label>
+              <div class="flex items-center w-full h-[40px] rounded-[8px] bg-black/[0.03] border border-black/15 px-3 focus-within:border-black focus-within:bg-white transition-all">
+                <span class="text-neutral-400 font-mono text-[12px] shrink-0">/{{ brandSlug }}/</span>
+                <input 
+                  v-model="slug"
+                  type="text"
+                  required
+                  placeholder="project-slug"
+                  class="w-full h-full bg-transparent border-none outline-none text-[13px] font-707 text-black font-mono px-1 placeholder:text-neutral-400"
+                  @input="handleSlugInput"
+                />
+              </div>
             </div>
             <!-- The real public link, copyable once the campaign is live -->
             <div class="flex items-center gap-2 w-full rounded-[8px] bg-black/[0.04] border border-black/5 px-3 py-2">
@@ -258,6 +285,7 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { Sliders, Check, Link as LinkIcon, Repeat, Calendar, CalendarRange } from 'lucide-vue-next';
 import { isProjectLive, liveLinkFor, absoluteLink, campaignPath, useCopiedFlag } from '../../../services/campaignLink.ts';
 import { useEditorStore } from '../../../stores/editorStore.ts';
@@ -276,9 +304,19 @@ const emit = defineEmits<{
 const editorStore = useEditorStore();
 const brandStore = useBrandStore();
 const authStore = useAuthStore();
+let router: ReturnType<typeof useRouter> | null = null;
+let route: ReturnType<typeof useRoute> | null = null;
+try {
+  router = useRouter();
+  route = useRoute();
+} catch {
+  // Mounted outside a router in unit tests
+}
 
 const title = ref('');
 const slug = ref('');
+const selectedBrandSlug = ref('');
+const initialBrandSlug = ref('');
 const eventType = ref<EventType>('daily_rolling');
 const eventDate = ref('16 October 2026');
 const startDate = ref('16 October 2026');
@@ -287,30 +325,67 @@ const backNavigationMode = ref<BackNavigationMode>('allow');
 
 const currentProject = computed(() => editorStore.projects.find(p => p.id === editorStore.currentProjectId) || null);
 const projectIsLive = computed(() => isProjectLive(currentProject.value));
-// Live: the address visitors use today. Not yet live: where it will be.
-const publicLink = computed(() =>
-  projectIsLive.value && currentProject.value
-    ? liveLinkFor(currentProject.value)
-    : absoluteLink(campaignPath(currentProject.value?.brand_slug || brandSlug.value, slug.value || 'your-slug'))
-);
-const { copiedKey, copy } = useCopiedFlag();
+
+const cleanSlugStr = (raw: string) => String(raw || '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+
+const availableBrandOptions = computed(() => {
+  const assigned = (authStore.currentUser?.assignedBrands || []).map(cleanSlugStr).filter(Boolean);
+  const unrestricted = authStore.isSuperAdmin || assigned.includes('all');
+  const map = new Map<string, { id?: string; name: string; slug: string }>();
+
+  for (const b of brandStore.brands || []) {
+    const s = cleanSlugStr(b.slug || b.name);
+    if (!s) continue;
+    if (!unrestricted && !assigned.includes(s)) continue;
+    if (!map.has(s)) map.set(s, { id: b.id, name: b.name || s, slug: s });
+  }
+
+  for (const s of assigned) {
+    if (s !== 'all' && !map.has(s)) {
+      map.set(s, { name: s.toUpperCase(), slug: s });
+    }
+  }
+
+  const currentSlug = cleanSlugStr(
+    currentProject.value?.brand_slug || editorStore.pages[0]?.brand_slug || editorStore.currentPage?.brand_slug || ''
+  );
+  if (currentSlug && !map.has(currentSlug)) {
+    map.set(currentSlug, { name: currentSlug === 'general' ? 'General' : currentSlug, slug: currentSlug });
+  }
+
+  return Array.from(map.values());
+});
+
+const canChangeBrand = computed(() => availableBrandOptions.value.length > 1);
 
 const brandSlug = computed(() => {
+  if (selectedBrandSlug.value) return cleanSlugStr(selectedBrandSlug.value) || 'events';
   const userBrand = authStore.currentUser?.assignedBrands?.[0];
   let raw = '';
   if (!authStore.isSuperAdmin && userBrand && userBrand !== 'all') {
     raw = userBrand;
-  } else if (editorStore.currentPage?.brand_slug && editorStore.currentPage.brand_slug !== 'atmos') {
+  } else if (currentProject.value?.brand_slug) {
+    raw = currentProject.value.brand_slug;
+  } else if (editorStore.currentPage?.brand_slug) {
     raw = editorStore.currentPage.brand_slug;
   } else if (brandStore.activeBrand?.slug) {
     raw = brandStore.activeBrand.slug;
-  } else if (editorStore.currentPage?.brand_slug) {
-    raw = editorStore.currentPage.brand_slug;
   } else {
     raw = userBrand || 'events';
   }
-  return raw.toLowerCase().replace(/[^a-z0-9_-]/g, '') || 'events';
+  return cleanSlugStr(raw) || 'events';
 });
+
+// Live: the address visitors use today (reflects pending brand/slug edits).
+const publicLink = computed(() => {
+  const activeBrandSlug = brandSlug.value;
+  const activePageSlug = slug.value || currentProject.value?.slug || 'your-slug';
+  if (projectIsLive.value && currentProject.value && activeBrandSlug === cleanSlugStr(currentProject.value.brand_slug) && activePageSlug === currentProject.value.slug) {
+    return liveLinkFor(currentProject.value);
+  }
+  return absoluteLink(campaignPath(activeBrandSlug, activePageSlug));
+});
+const { copiedKey, copy } = useCopiedFlag();
 
 watch(
   () => props.isOpen,
@@ -319,6 +394,11 @@ watch(
       title.value = editorStore.projectTitle;
       const proj = editorStore.projects.find(p => p.id === editorStore.currentProjectId);
       slug.value = proj?.slug || editorStore.pages[0]?.slug || editorStore.currentPage?.slug || '';
+      const resolvedCurrentBrand = cleanSlugStr(
+        proj?.brand_slug || editorStore.pages[0]?.brand_slug || editorStore.currentPage?.brand_slug || brandStore.activeBrand?.slug || 'general'
+      ) || 'general';
+      selectedBrandSlug.value = resolvedCurrentBrand;
+      initialBrandSlug.value = resolvedCurrentBrand;
 
       const cfg: EventConfig = proj?.event_config || editorStore.currentPage?.page_settings?.eventConfig || {
         eventType: 'daily_rolling',
@@ -350,6 +430,9 @@ function handleSave() {
   if (!title.value.trim()) return;
 
   const cleanSlug = slug.value.trim() || 'drop';
+  const cleanBrand = cleanSlugStr(selectedBrandSlug.value || brandSlug.value) || 'atmos';
+  const matchedBrand = availableBrandOptions.value.find(b => b.slug === cleanBrand);
+  const brandChanged = Boolean(initialBrandSlug.value && cleanBrand !== initialBrandSlug.value);
   editorStore.projectTitle = title.value.trim();
 
   const eventConfig: EventConfig = {
@@ -360,9 +443,11 @@ function handleSave() {
     dailyQueueReset: eventType.value === 'daily_rolling'
   };
 
-  // Always keep master landing page slug aligned with project slug and sync eventConfig + backNavigationMode
+  // Always keep master landing page slug aligned with project slug and sync brand + eventConfig + backNavigationMode
   if (editorStore.pages[0]) {
     editorStore.pages[0].slug = cleanSlug;
+    editorStore.pages[0].brand_slug = cleanBrand;
+    if (matchedBrand?.id) editorStore.pages[0].brand_id = matchedBrand.id;
     if (editorStore.pages[0].page_settings) {
       editorStore.pages[0].page_settings.seoTitle = title.value.trim();
       editorStore.pages[0].page_settings.eventConfig = eventConfig;
@@ -370,8 +455,10 @@ function handleSave() {
     }
   }
 
-  // Sync eventConfig & backNavigationMode across all pages in the project
+  // Sync brand_slug, eventConfig & backNavigationMode across all pages in the project
   editorStore.pages.forEach(p => {
+    p.brand_slug = cleanBrand;
+    if (matchedBrand?.id) p.brand_id = matchedBrand.id;
     if (p.page_settings) {
       p.page_settings.eventConfig = eventConfig;
       p.page_settings.backNavigationMode = backNavigationMode.value;
@@ -383,6 +470,8 @@ function handleSave() {
   if (proj) {
     proj.title = title.value.trim();
     proj.slug = cleanSlug;
+    proj.brand_slug = cleanBrand;
+    if (matchedBrand?.id) proj.brand_id = matchedBrand.id;
     proj.event_config = eventConfig;
     if (proj.page_settings) {
       proj.page_settings.backNavigationMode = backNavigationMode.value;
@@ -391,7 +480,14 @@ function handleSave() {
   }
 
   editorStore.saveCurrentProject();
-  editorStore.showToast('Project settings & event activation mode saved.');
+  if (brandChanged && router && route?.name === 'EditorProject' && editorStore.currentProjectId) {
+    router.replace(`/editor/${encodeURIComponent(cleanBrand)}/${encodeURIComponent(editorStore.currentProjectId)}`);
+  }
+  editorStore.showToast(
+    brandChanged
+      ? `Campaign moved to /${cleanBrand}/${cleanSlug} and saved.`
+      : 'Project settings & event activation mode saved.'
+  );
   emit('close');
 }
 </script>
