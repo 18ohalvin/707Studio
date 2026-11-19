@@ -1,6 +1,6 @@
 import { pool } from './db.js';
 import { readDataFile } from './fileStorage.js';
-import { slotDefsFromDesign, availabilityOf, slotKey, type SlotDef, type Availability } from './slotHelpers.js';
+import { slotDefsFromDesign, availabilityOf, slotKey, poolKey, type SlotDef, type Availability } from './slotHelpers.js';
 
 /**
  * Live places for a campaign.
@@ -61,17 +61,33 @@ export async function getSlotDefs(pageId: string, useDb: boolean): Promise<Map<s
   return defs;
 }
 
-/** Places taken per option: every entry except waitlisted and declined ones. */
+/** Places taken per option (and per widget pool): every entry except waitlisted and declined ones. */
 export async function takenCounts(pageId: string): Promise<Map<string, number>> {
-  const r = await pool.query(
-    `SELECT ss.widget_id, ss.option_id, COUNT(*)::int AS taken
-       FROM submission_slots ss
-       JOIN submissions s ON s.id = ss.submission_id
-      WHERE ss.page_id = $1 AND s.status NOT IN ('waitlisted', 'declined')
-      GROUP BY ss.widget_id, ss.option_id`,
-    [pageId]
+  const [byOption, byWidget] = await Promise.all([
+    pool.query(
+      `SELECT ss.widget_id, ss.option_id, COUNT(*)::int AS taken
+         FROM submission_slots ss
+         JOIN submissions s ON s.id = ss.submission_id
+        WHERE ss.page_id = $1 AND s.status NOT IN ('waitlisted', 'declined', 'pending')
+        GROUP BY ss.widget_id, ss.option_id`,
+      [pageId]
+    ),
+    pool.query(
+      `SELECT ss.widget_id, COUNT(DISTINCT ss.submission_id)::int AS taken
+         FROM submission_slots ss
+         JOIN submissions s ON s.id = ss.submission_id
+        WHERE ss.page_id = $1 AND s.status NOT IN ('waitlisted', 'declined', 'pending')
+        GROUP BY ss.widget_id`,
+      [pageId]
+    )
+  ]);
+  const counts = new Map<string, number>(
+    byOption.rows.map((row: any) => [slotKey(row.widget_id, row.option_id), Number(row.taken)])
   );
-  return new Map(r.rows.map((row: any) => [slotKey(row.widget_id, row.option_id), Number(row.taken)]));
+  for (const row of byWidget.rows) {
+    counts.set(poolKey(row.widget_id), Number(row.taken));
+  }
+  return counts;
 }
 
 function describe(defs: Map<string, SlotDef>, taken: Map<string, number>): Record<string, Availability> {
@@ -79,7 +95,8 @@ function describe(defs: Map<string, SlotDef>, taken: Map<string, number>): Recor
   for (const [key, def] of defs) {
     // Only options a guest's page has something to say about.
     if (def.capacity === null && !def.closed) continue;
-    out[key] = availabilityOf(def, taken.get(key) ?? 0);
+    const used = def.pooled ? (taken.get(poolKey(def.widget)) ?? 0) : (taken.get(key) ?? 0);
+    out[key] = availabilityOf(def, used);
   }
   return out;
 }

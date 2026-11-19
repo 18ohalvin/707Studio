@@ -83,9 +83,12 @@ export function parseLimit(value: unknown): number | null {
   return Number.isFinite(n) && n >= 0 ? Math.floor(n) : null;
 }
 
-/** The limit the editor configured for one option (its own, else the block's shared one) — only if limiting is on. */
+/** The limit the editor configured for one option (overall pool if pooled, else its own or the block's shared fallback) — only if limiting is on. */
 export function configuredLimit(widgetProps: any, opt: any): number | null {
   if (widgetProps?.limitPlaces !== true) return null;
+  if (widgetProps?.capacityMode === 'overall') {
+    return parseLimit(widgetProps?.globalSlotsCapacity);
+  }
   return parseLimit(opt?.slotsCapacity) ?? parseLimit(widgetProps?.globalSlotsCapacity);
 }
 

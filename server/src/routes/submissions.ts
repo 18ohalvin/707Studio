@@ -10,7 +10,7 @@ import { accessiblePageIds, canViewPublicPage, findProjectForEntry } from '../ac
 import { PLACEHOLDER_EMAIL, emailKeyOf, clientKeyOf, phoneKeyOf, publicEntry, stripInternal } from '../submissionHelpers.js';
 import { sendPassEmail, sendWaitlistEmail, sendPromotedEmail, sendApplicationReceivedEmail } from '../mailer.js';
 import { route, storeFor, unavailable } from '../routeSupport.js';
-import { slotKey, normalizePicks, decidePlaces, type SlotDef, type SlotPick } from '../slotHelpers.js';
+import { slotKey, poolKey, normalizePicks, decidePlaces, type SlotDef, type SlotPick } from '../slotHelpers.js';
 import { getSlotDefs, getAvailability, touchAvailability } from '../slots.js';
 import { withClient } from '../dbClient.js';
 import {
@@ -198,18 +198,41 @@ async function insertWithPlaces(entry: any, chosen: SlotDef[], wantsWaitlist: bo
     let status: string = entry.status;
 
     if (limited.length) {
-      for (const d of limited) {
-        await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [`places:${entry.page_id}:${slotKey(d.widget, d.option)}`]);
+      const lockKeys = Array.from(
+        new Set(
+          limited.map(d =>
+            d.pooled
+              ? `places:${entry.page_id}:pool:${d.widget}`
+              : `places:${entry.page_id}:${slotKey(d.widget, d.option)}`
+          )
+        )
+      ).sort();
+      for (const lockKey of lockKeys) {
+        await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [lockKey]);
       }
       const taken = new Map<string, number>();
+      const pooledWidgetCounts = new Map<string, number>();
       for (const d of limited) {
-        const r = await client.query(
-          `SELECT COUNT(*)::int AS taken
-             FROM submission_slots ss JOIN submissions s ON s.id = ss.submission_id
-            WHERE ss.page_id = $1 AND ss.widget_id = $2 AND ss.option_id = $3 AND s.status NOT IN ('waitlisted', 'declined', 'pending')`,
-          [entry.page_id, d.widget, d.option]
-        );
-        taken.set(slotKey(d.widget, d.option), r.rows[0].taken);
+        if (d.pooled) {
+          if (!pooledWidgetCounts.has(d.widget)) {
+            const r = await client.query(
+              `SELECT COUNT(DISTINCT ss.submission_id)::int AS taken
+                 FROM submission_slots ss JOIN submissions s ON s.id = ss.submission_id
+                WHERE ss.page_id = $1 AND ss.widget_id = $2 AND s.status NOT IN ('waitlisted', 'declined', 'pending')`,
+              [entry.page_id, d.widget]
+            );
+            pooledWidgetCounts.set(d.widget, r.rows[0].taken);
+          }
+          taken.set(slotKey(d.widget, d.option), pooledWidgetCounts.get(d.widget) ?? 0);
+        } else {
+          const r = await client.query(
+            `SELECT COUNT(*)::int AS taken
+               FROM submission_slots ss JOIN submissions s ON s.id = ss.submission_id
+              WHERE ss.page_id = $1 AND ss.widget_id = $2 AND ss.option_id = $3 AND s.status NOT IN ('waitlisted', 'declined', 'pending')`,
+            [entry.page_id, d.widget, d.option]
+          );
+          taken.set(slotKey(d.widget, d.option), r.rows[0].taken);
+        }
       }
       const decision = decidePlaces(limited, d => taken.get(slotKey(d.widget, d.option)) ?? 0, wantsWaitlist);
       if (!decision.ok) {
@@ -262,15 +285,21 @@ async function insertWithPlaces(entry: any, chosen: SlotDef[], wantsWaitlist: bo
   });
 }
 
-/** Places taken per option in development mode (no database): from the entries held in memory. */
+/** Places taken per option (and widget pool) in development mode (no database): from the entries held in memory. */
 function fileTakenCounts(pageId: string): Map<string, number> {
   refreshMemory();
   const taken = new Map<string, number>();
   for (const s of inMemorySubmissions) {
     if (s.page_id !== pageId || ['waitlisted', 'declined', 'pending'].includes(s.status)) continue;
+    const seenWidgets = new Set<string>();
     for (const pick of Array.isArray(s.slot_picks) ? s.slot_picks : []) {
       const key = slotKey(pick.widget, pick.option);
       taken.set(key, (taken.get(key) || 0) + 1);
+      if (pick.widget && !seenWidgets.has(pick.widget)) {
+        seenWidgets.add(pick.widget);
+        const pKey = poolKey(pick.widget);
+        taken.set(pKey, (taken.get(pKey) || 0) + 1);
+      }
     }
   }
   return taken;
@@ -937,7 +966,11 @@ submissionsRouter.post('/', route('record your entry', async (req, res) => {
     return res.status(409).json({ success: false, code: 'option_closed', error: 'This option is no longer open for registration.', full: fileChosen.filter(d => d.closed).map(d => ({ widget: d.widget, option: d.option, label: d.label, waitlist: false })) });
   }
   const fileTaken = fileTakenCounts(pageId);
-  const decision = decidePlaces(fileChosen.filter(d => d.capacity !== null), d => fileTaken.get(slotKey(d.widget, d.option)) ?? 0, wantsWaitlist);
+  const decision = decidePlaces(
+    fileChosen.filter(d => d.capacity !== null),
+    d => (d.pooled ? (fileTaken.get(poolKey(d.widget)) ?? 0) : (fileTaken.get(slotKey(d.widget, d.option)) ?? 0)),
+    wantsWaitlist
+  );
   if (!decision.ok) return placesRefusal(res, pageId, false, decision.full, fileTaken);
 
   const entryStatus = qs.requireApproval ? 'pending' : (decision.waitlisted ? 'waitlisted' : 'registered');

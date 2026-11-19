@@ -12,8 +12,10 @@ export interface SlotDef {
   widget: string;
   option: string;
   label: string;
-  /** null = no limit. */
+  /** null = no limit (option limit in per-option mode, or shared pool limit when pooled). */
   capacity: number | null;
+  /** true when this option draws from a widget-wide shared pool (`capacityMode === 'overall'`). */
+  pooled?: boolean;
   /** The editor closed this option by hand. */
   closed: boolean;
   /** When full, guests may join a waitlist instead of being turned away. */
@@ -26,6 +28,7 @@ export interface SlotPick {
 }
 
 export const slotKey = (widget: string, option: string) => `${widget}::${option}`;
+export const poolKey = (widget: string) => `${widget}::__pool__`;
 
 /** "500", 500, " 40 " → the number; blank, negative or junk → null. */
 export function parseCapacity(value: unknown): number | null {
@@ -50,16 +53,19 @@ export function slotDefsFromDesign(design: any): Map<string, SlotDef> {
   for (const w of widgets) {
     if (w?.type !== 'MultipleChoice' || !w.id) continue;
     const limited = w.props?.limitPlaces === true;
+    const isOverall = w.props?.capacityMode === 'overall';
     const shared = parseCapacity(w.props?.globalSlotsCapacity);
     const options = Array.isArray(w.props?.options) ? w.props.options : [];
     for (const opt of options) {
       if (!opt?.id) continue;
       const own = parseCapacity(opt.slotsCapacity);
+      const capacity = limited ? (isOverall ? shared : (own ?? shared)) : null;
       defs.set(slotKey(String(w.id), String(opt.id)), {
         widget: String(w.id),
         option: String(opt.id),
         label: String(opt.label ?? ''),
-        capacity: limited ? (own ?? shared) : null,
+        capacity,
+        pooled: Boolean(limited && isOverall && shared !== null),
         closed: opt.disabled === true,
         waitlist: w.props?.waitlistEnabled !== false
       });

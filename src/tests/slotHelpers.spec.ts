@@ -26,6 +26,24 @@ describe('reading limits from a design', () => {
     expect(defs.get(slotKey('mc1', 'a'))?.capacity).toBeNull();
   });
 
+  it('supports single-option cap (Option A: 50, Option B: Unlimited) in per-option mode', () => {
+    const defs = slotDefsFromDesign(design(choice({ limitPlaces: true, capacityMode: 'per-option' }, [
+      { id: 'a', label: 'Option A', slotsCapacity: '50' },
+      { id: 'b', label: 'Option B', slotsCapacity: '' }
+    ])));
+    expect(defs.get(slotKey('mc1', 'a'))).toMatchObject({ capacity: 50, pooled: false });
+    expect(defs.get(slotKey('mc1', 'b'))).toMatchObject({ capacity: null, pooled: false });
+  });
+
+  it('supports Overall Pool mode sharing one total capacity across all options in a widget', () => {
+    const defs = slotDefsFromDesign(design(choice({ limitPlaces: true, capacityMode: 'overall', globalSlotsCapacity: '50' }, [
+      { id: 'a', label: 'Option A', slotsCapacity: '10' },
+      { id: 'b', label: 'Option B' }
+    ])));
+    expect(defs.get(slotKey('mc1', 'a'))).toMatchObject({ capacity: 50, pooled: true });
+    expect(defs.get(slotKey('mc1', 'b'))).toMatchObject({ capacity: 50, pooled: true });
+  });
+
   it('knows closed options and the waitlist setting', () => {
     const defs = slotDefsFromDesign(design(
       choice({ limitPlaces: true, globalSlotsCapacity: 10, waitlistEnabled: false }, [{ id: 'a', label: 'A', disabled: true }, { id: 'b', label: 'B' }])

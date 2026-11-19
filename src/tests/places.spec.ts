@@ -43,6 +43,10 @@ describe('picks and limits', () => {
     expect(configuredLimit({ globalSlotsCapacity: 25 }, {})).toBeNull();
     expect(configuredLimit({ limitPlaces: true, globalSlotsCapacity: '40' }, {})).toBe(40);
     expect(configuredLimit({ limitPlaces: true, globalSlotsCapacity: '40' }, { slotsCapacity: '10' })).toBe(10);
+    expect(configuredLimit({ limitPlaces: true, capacityMode: 'per-option' }, { slotsCapacity: '50' })).toBe(50);
+    expect(configuredLimit({ limitPlaces: true, capacityMode: 'per-option' }, { slotsCapacity: '' })).toBeNull();
+    expect(configuredLimit({ limitPlaces: true, capacityMode: 'overall', globalSlotsCapacity: '50' }, { slotsCapacity: '10' })).toBe(50);
+    expect(configuredLimit({ limitPlaces: true, capacityMode: 'overall', globalSlotsCapacity: '50' }, {})).toBe(50);
   });
 
   it('collects ticked options of every choice block, ignoring stale ids', () => {

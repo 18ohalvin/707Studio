@@ -214,16 +214,21 @@
 
             <!-- Places for this option (when limitPlaces active) -->
             <div v-if="limitPlaces" class="flex items-center gap-2 pl-7">
-              <span class="font-707 text-[11px] font-medium text-neutral-600 shrink-0">Places</span>
-              <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2.5 h-[28px] flex items-center flex-1 bg-white transition-colors">
-                <input 
-                  :value="opt.slotsCapacity ?? ''"
-                  @input="updateOptionField(idx, { slotsCapacity: ($event.target as HTMLInputElement).value.replace(/[^\d]/g, '') })"
-                  inputmode="numeric"
-                  :placeholder="globalSlotsCapacity ? `${globalSlotsCapacity} (shared)` : 'No limit'"
-                  class="w-full font-707 text-[11px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
-                />
-              </div>
+              <template v-if="capacityMode !== 'overall'">
+                <span class="font-707 text-[11px] font-medium text-neutral-600 shrink-0">Places</span>
+                <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2.5 h-[28px] flex items-center flex-1 bg-white transition-colors">
+                  <input 
+                    :value="opt.slotsCapacity ?? ''"
+                    @input="updateOptionField(idx, { slotsCapacity: ($event.target as HTMLInputElement).value.replace(/[^\d]/g, '') })"
+                    inputmode="numeric"
+                    :placeholder="globalSlotsCapacity ? `${globalSlotsCapacity} (default)` : 'Unlimited'"
+                    class="w-full font-707 text-[11px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
+                  />
+                </div>
+              </template>
+              <span v-else class="font-707 text-[11px] text-neutral-500 flex-1 truncate">
+                Shares overall pool{{ globalSlotsCapacity ? ` (${globalSlotsCapacity})` : '' }}
+              </span>
               <button 
                 type="button"
                 @click="updateOptionField(idx, { disabled: !opt.disabled })"
@@ -632,20 +637,90 @@
           </button>
         </div>
 
-        <div v-if="limitPlaces" class="flex flex-col gap-[12px] w-full pt-1 animate-in fade-in slide-in-from-top-1 duration-150">
-          <div class="flex flex-col gap-[8px]">
-            <span class="font-707 text-[12px] font-medium text-neutral-700">Max per Option</span>
+        <div v-if="limitPlaces" class="flex flex-col gap-[14px] w-full pt-1 animate-in fade-in slide-in-from-top-1 duration-150">
+          <!-- Limit Mode: Per Option vs Overall Shared Pool -->
+          <div class="flex items-center justify-between w-full">
+            <div class="flex items-center gap-1.5">
+              <span class="font-707 text-[12px] font-medium text-neutral-700">Limit Mode</span>
+              <InfoHint text="Per Option sets independent caps (leave any option blank for Unlimited). Overall Pool shares one total cap across all options combined." />
+            </div>
+            <div class="flex gap-[6px] items-center">
+              <button
+                type="button"
+                @click="capacityMode = 'per-option'"
+                :class="capacityMode === 'per-option' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                class="px-2.5 h-[30px] rounded-[6px] flex items-center justify-center font-707 text-[11.5px] cursor-pointer transition-all"
+              >
+                Per Option
+              </button>
+              <button
+                type="button"
+                @click="capacityMode = 'overall'"
+                :class="capacityMode === 'overall' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+                class="px-2.5 h-[30px] rounded-[6px] flex items-center justify-center font-707 text-[11.5px] cursor-pointer transition-all"
+              >
+                Overall Pool
+              </button>
+            </div>
+          </div>
+
+          <!-- Overall Shared Pool Input -->
+          <div v-if="capacityMode === 'overall'" class="flex flex-col gap-[6px]">
+            <span class="font-707 text-[12px] font-medium text-neutral-700">Total Shared Places</span>
             <div class="border border-[#aaa] focus-within:border-black rounded-[8px] px-3.5 h-[38px] flex items-center w-full bg-white transition-colors">
               <input 
                 v-model="globalSlotsCapacity"
                 inputmode="numeric"
-                placeholder="e.g. 500"
+                placeholder="e.g. 50"
                 class="w-full font-707 text-[13px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
               />
             </div>
+            <p class="font-707 text-[10.5px] text-neutral-500 leading-normal">
+              One combined total shared across all options in this question. Once total picks hit this number, all options become full.
+            </p>
           </div>
 
-          <div class="flex items-center justify-between w-full">
+          <!-- Per-Option Limits Inline Manager -->
+          <div v-else class="flex flex-col gap-[10px]">
+            <div class="flex flex-col gap-[6px]">
+              <span class="font-707 text-[12px] font-medium text-neutral-700">Places per Option</span>
+              <div class="flex flex-col gap-1.5 w-full">
+                <div
+                  v-for="(opt, oIdx) in options"
+                  :key="'cap_' + opt.id"
+                  class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-[7px] bg-neutral-50/80 border border-black/8"
+                >
+                  <span class="font-707 text-[11.5px] text-black truncate flex-1">{{ opt.label || `Option ${oIdx + 1}` }}</span>
+                  <div class="border border-[#ccc] focus-within:border-black rounded-[6px] px-2 h-[28px] w-[108px] flex items-center bg-white transition-colors shrink-0">
+                    <input
+                      :value="opt.slotsCapacity ?? ''"
+                      @input="updateOptionField(oIdx, { slotsCapacity: ($event.target as HTMLInputElement).value.replace(/[^\d]/g, '') })"
+                      inputmode="numeric"
+                      :placeholder="globalSlotsCapacity ? `${globalSlotsCapacity} (default)` : 'Unlimited'"
+                      class="w-full font-707 text-[11.5px] font-medium text-black text-right focus:outline-none placeholder:text-neutral-400"
+                    />
+                  </div>
+                </div>
+              </div>
+              <p class="font-707 text-[10.5px] text-neutral-500 leading-normal">
+                Leave any option blank for Unlimited (e.g., Option A: 50, Option B: Unlimited).
+              </p>
+            </div>
+
+            <div class="flex flex-col gap-[6px] pt-1 border-t border-black/5">
+              <span class="font-707 text-[11.5px] font-medium text-neutral-600">Default for Blank Options (Optional)</span>
+              <div class="border border-[#aaa] focus-within:border-black rounded-[8px] px-3 h-[34px] flex items-center w-full bg-white transition-colors">
+                <input 
+                  v-model="globalSlotsCapacity"
+                  inputmode="numeric"
+                  placeholder="Leave blank for Unlimited"
+                  class="w-full font-707 text-[12px] font-medium text-black focus:outline-none placeholder:text-neutral-400"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between w-full pt-1 border-t border-black/5">
             <span class="font-707 text-[12px] font-medium text-neutral-700">Waitlist when full</span>
             <button 
               type="button"
@@ -962,6 +1037,15 @@ const limitPlaces = computed({
         updates.required = true;
       }
       editorStore.updateWidgetProps(currentWidget.value.id, updates);
+    }
+  }
+});
+
+const capacityMode = computed<'per-option' | 'overall'>({
+  get: () => (currentWidget.value?.props.capacityMode === 'overall' ? 'overall' : 'per-option'),
+  set: (val: 'per-option' | 'overall') => {
+    if (currentWidget.value) {
+      editorStore.updateWidgetProps(currentWidget.value.id, { capacityMode: val });
     }
   }
 });
