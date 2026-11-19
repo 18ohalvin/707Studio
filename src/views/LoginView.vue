@@ -425,7 +425,7 @@
 
     <!-- Footer: Centered Brand Mark -->
     <footer class="login-footer" data-name="Footer">
-      <span class="login-footer-brand">707 Design Studio</span>
+      <span class="login-footer-brand">&copy; 2026 THE 707 COMPANY</span>
     </footer>
 
     <!-- What's New Tour Modal -->
