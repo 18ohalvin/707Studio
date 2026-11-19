@@ -630,7 +630,8 @@ async function handlePasswordSubmit() {
     if (res.success) {
       editorStore.showToast(`Welcome back, ${authStore.currentUser?.name || 'Designer'}`);
       const redirect = (route.query.redirect as string);
-      if (redirect && redirect !== '/') {
+      const isAdminOnlyRedirect = Boolean(redirect && (redirect === '/dev' || redirect.startsWith('/dev/') || redirect === '/settings' || redirect === '/admin'));
+      if (redirect && redirect !== '/' && !redirect.startsWith('/login') && (!isAdminOnlyRedirect || authStore.isSuperAdmin)) {
         router.push(redirect);
       } else if (authStore.isSuperAdmin) {
         router.push('/dev');
@@ -757,7 +758,6 @@ async function submitOnboardingApplication() {
   position: relative;
   overflow: hidden;
   user-select: none;
-  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 :global(html[data-theme="dark"]) .login-shell {
