@@ -132,10 +132,6 @@
               <span v-if="isLoading" class="login-spinner" />
               <span v-else>Continue</span>
             </button>
-
-            <p class="login-helper-hint">
-              New partner or team member? Enter your work email to get started.
-            </p>
           </div>
         </form>
 
@@ -735,7 +731,7 @@ async function submitOnboardingApplication() {
   --login-muted: #575757;
   --login-subtle: #6b6b6b;
   --login-border: rgba(17, 17, 17, 0.28);
-  --login-border-focus: #111111;
+  --login-border-focus: #000000;
   --login-btn-bg: #111111;
   --login-btn-fg: #ffffff;
   --login-btn-hover: #262626;
@@ -1101,8 +1097,8 @@ async function submitOnboardingApplication() {
 }
 
 .login-floating-input:focus {
-  border-color: var(--login-border-focus);
-  box-shadow: 0 0 0 1px var(--login-border-focus);
+  border: 0.75px solid #000000;
+  box-shadow: none;
 }
 
 .login-floating-label {
@@ -1242,14 +1238,6 @@ async function submitOnboardingApplication() {
   to { transform: rotate(360deg); }
 }
 
-.login-helper-hint {
-  margin: 0;
-  font-size: 12px;
-  color: var(--login-subtle);
-  text-align: center;
-  line-height: 1.5;
-}
-
 .login-text-btn {
   background: transparent;
   border: none;
@@ -1321,7 +1309,7 @@ async function submitOnboardingApplication() {
 }
 
 .login-big-input-wrap:focus-within {
-  border-bottom-color: var(--login-border-focus);
+  border-bottom: 0.75px solid #000000;
 }
 
 .login-big-input {
