@@ -2595,13 +2595,8 @@ more</span>
             data-node-id="276:4722"
             data-name="Bottom Modal Popup"
           >
-            <!-- Sheet Top Fixed Header (Handle Pill + Title + Subtitle) -->
-            <div class="px-[24px] pt-[16px] pb-[12px] shrink-0 flex flex-col items-start w-full">
-              <!-- Sheet Top Handle Pill -->
-              <div class="w-full flex items-center justify-center pb-2.5">
-                <div class="w-10 h-1 rounded-full bg-neutral-300" />
-              </div>
-
+            <!-- Sheet Top Fixed Header (Title + Subtitle) -->
+            <div class="px-[24px] pt-[24px] pb-[12px] shrink-0 flex flex-col items-start w-full">
               <!-- Header: Title + Subtitle -->
               <div class="flex flex-col gap-[6px] items-start w-full">
                 <h3 class="font-707 font-medium text-heading-h3 text-black tracking-tight whitespace-pre-line">
@@ -2830,11 +2825,44 @@ more</span>
               </div>
             </div>
 
-            <!-- Fixed / Sticky Bottom Action CTA Button -->
-            <div class="px-[24px] pt-[8px] pb-[20px] shrink-0 w-full bg-transparent z-20">
+            <!-- Fixed / Sticky Bottom Action CTA Button(s) -->
+            <div class="px-[24px] pt-[8px] pb-[36px] shrink-0 w-full bg-transparent z-20">
+              <!-- Dual Buttons Layout (Message / Alert only, with independent button actions) -->
+              <div
+                v-if="isModalDualButtons"
+                :class="modalDisplayProps.dualOrientation === 'vertical' ? 'flex flex-col gap-2 w-full items-stretch' : 'grid grid-cols-2 gap-2.5 w-full items-stretch'"
+                data-name="Modal Dual Buttons"
+              >
+                <button
+                  type="button"
+                  data-modal-btn="primary"
+                  @click.stop="handleModalButtonClick('primary')"
+                  :class="[
+                    getModalButtonClass(modalDisplayProps.buttonVariant || 'black'),
+                    'w-full h-[48px] px-[12px] py-[12px] rounded-none flex items-center justify-center gap-[8px] font-707 font-medium text-[13px] leading-[18px] tracking-normal cursor-pointer outline-none shadow-none transition-all'
+                  ]"
+                >
+                  <span class="truncate uppercase">{{ modalDisplayProps.buttonText || 'DONE' }}</span>
+                </button>
+                <button
+                  type="button"
+                  data-modal-btn="secondary"
+                  @click.stop="handleModalButtonClick('secondary')"
+                  :class="[
+                    getModalButtonClass(modalDisplayProps.secondaryButtonVariant || 'ghost'),
+                    'w-full h-[48px] px-[12px] py-[12px] rounded-none flex items-center justify-center gap-[8px] font-707 font-medium text-[13px] leading-[18px] tracking-normal cursor-pointer outline-none shadow-none transition-all'
+                  ]"
+                >
+                  <span class="truncate uppercase">{{ modalDisplayProps.secondaryButtonText || 'CANCEL' }}</span>
+                </button>
+              </div>
+
+              <!-- Single Button Layout -->
               <button 
+                v-else
                 type="button"
-                @click.stop="handleModalDoneClick"
+                data-modal-btn="primary"
+                @click.stop="handleModalButtonClick('primary')"
                 :disabled="isModalButtonInactive"
                 :class="[
                   isModalButtonInactive ? '!bg-[#262626] !text-[#737373] cursor-not-allowed pointer-events-none' : 'apple-cta-btn',
@@ -2865,13 +2893,8 @@ more</span>
             data-node-id="276:4722"
             data-name="Live Queue Tracking Notice Modal"
           >
-            <!-- Sheet Top Fixed Header (Handle Pill + Title + Subtitle) -->
-            <div class="px-[24px] pt-[16px] pb-[16px] shrink-0 flex flex-col items-start w-full">
-              <!-- Sheet Top Handle Pill -->
-              <div class="w-full flex items-center justify-center pb-2.5">
-                <div class="w-10 h-1 rounded-full bg-neutral-300" />
-              </div>
-
+            <!-- Sheet Top Fixed Header (Title + Subtitle) -->
+            <div class="px-[24px] pt-[24px] pb-[16px] shrink-0 flex flex-col items-start w-full">
               <!-- Header: Title + Subtitle -->
               <div class="flex flex-col gap-[8px] items-start w-full">
                 <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-black/5 text-[10px] font-mono tracking-wider text-neutral-600 uppercase">
@@ -2887,7 +2910,7 @@ more</span>
             </div>
 
             <!-- Fixed / Sticky Bottom Action CTA Buttons -->
-            <div class="px-[24px] pt-[8px] pb-[20px] shrink-0 w-full flex flex-col gap-2 bg-transparent z-20">
+            <div class="px-[24px] pt-[8px] pb-[36px] shrink-0 w-full flex flex-col gap-2 bg-transparent z-20">
               <button 
                 type="button"
                 @click.stop="resolveTrackNotice(true)"
@@ -2925,7 +2948,7 @@ more</span>
             data-name="Country Code Selector Bottom Sheet"
           >
             <!-- Sheet Header -->
-            <div class="px-[20px] py-[16px] flex items-center justify-between shrink-0 border-b-[0.5px] border-black bg-white">
+            <div class="px-[20px] pt-[24px] pb-[16px] flex items-center justify-between shrink-0 border-b-[0.5px] border-black bg-white">
               <span class="font-707 font-medium text-[14px] leading-tight text-black tracking-normal uppercase">
                 SELECT COUNTRY
               </span>
@@ -2959,7 +2982,7 @@ more</span>
             </div>
 
             <!-- Country list (Text Only with 707 Design Token Style, No Flags, No Icons) -->
-            <div class="flex-1 overflow-y-auto overscroll-contain px-0 py-0 no-scrollbar flex flex-col">
+            <div class="flex-1 overflow-y-auto overscroll-contain px-0 pt-0 pb-[16px] no-scrollbar flex flex-col">
               <div 
                 v-for="country in filteredCountries" 
                 :key="country.code + country.name"
@@ -3024,17 +3047,12 @@ more</span>
             :style="{ transform: dateSheetDragY > 0 ? `translateY(${dateSheetDragY}px)` : undefined }"
             data-name="Interactive Date Selector Bottom Sheet"
           >
-            <!-- Sheet Top Handle Pill -->
+            <!-- Sheet Header -->
             <div
               class="shrink-0 bg-white border-b-[0.5px] border-black select-none touch-none cursor-grab active:cursor-grabbing"
               @mousedown="handleDateHeaderMouseDown"
             >
-              <div class="w-full flex items-center justify-center pt-2.5 pb-2">
-                <div class="w-10 h-1 rounded-full bg-neutral-300" />
-              </div>
-
-              <!-- Sheet Header -->
-              <div class="px-[20px] pb-[14px] flex items-center justify-between shrink-0">
+              <div class="px-[20px] pt-[24px] pb-[14px] flex items-center justify-between shrink-0">
                 <span class="font-707 font-medium text-[14px] leading-tight text-black tracking-normal uppercase">
                   {{ dateSheetTitle || 'SELECT DATE' }}
                 </span>
@@ -3153,7 +3171,7 @@ more</span>
             </div>
 
             <!-- Sticky Bottom CTA Button -->
-            <div class="px-[20px] pt-2 pb-[20px] shrink-0 w-full bg-white border-t border-black/5 z-20">
+            <div class="px-[20px] pt-2 pb-[36px] shrink-0 w-full bg-white border-t border-black/5 z-20">
               <button 
                 type="button"
                 @click.stop="confirmDateSelection"
@@ -3194,15 +3212,12 @@ more</span>
             :style="{ transform: genderSheetDragY > 0 ? `translateY(${genderSheetDragY}px)` : undefined }"
             data-name="Gender Selector Bottom Sheet"
           >
-            <!-- Swipe Handle & Sheet Header -->
+            <!-- Sheet Header -->
             <div
               @mousedown="handleGenderHeaderMouseDown"
               class="shrink-0 bg-white border-b-[0.5px] border-black select-none touch-none cursor-grab active:cursor-grabbing"
             >
-              <div class="pt-[8px] pb-[2px] flex justify-center">
-                <div class="w-[36px] h-[3px] bg-black/25 rounded-none" />
-              </div>
-              <div class="px-[20px] pt-[6px] pb-[14px] flex items-center justify-between">
+              <div class="px-[20px] pt-[24px] pb-[14px] flex items-center justify-between">
                 <span class="font-707 font-medium text-[14px] leading-tight text-black tracking-normal uppercase">
                   SELECT GENDER
                 </span>
@@ -3222,7 +3237,7 @@ more</span>
               ref="genderListRef"
               @wheel.stop="handleGenderListWheel"
               @mousedown="handleGenderListMouseDown"
-              class="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y no-scrollbar flex flex-col pb-[max(16px,env(safe-area-inset-bottom))] select-none"
+              class="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y no-scrollbar flex flex-col pb-[max(32px,calc(16px+env(safe-area-inset-bottom)))] select-none"
               :class="isGenderListDragging ? 'cursor-grabbing' : 'cursor-grab'"
               style="-webkit-overflow-scrolling: touch;"
             >
@@ -6590,46 +6605,75 @@ function getDualSecondaryButtonClass(widget: any, onDarkBg = false): string {
   return 'bg-white text-black apple-cta-btn-white border border-black/10 hover:bg-neutral-50';
 }
 
-function handleModalDoneClick() {
-  if (wasDraggingRecently.value || isModalButtonInactive.value) return;
+const isModalDualButtons = computed(() => {
+  const mProps = modalDisplayProps.value;
+  const variant = mProps?.variant || 'message-alert';
+  return variant === 'message-alert' && mProps?.buttonLayout === 'dual';
+});
+
+function getModalButtonClass(style?: string): string {
+  if (style === 'white') {
+    return 'apple-cta-btn-white bg-white text-black hover:bg-neutral-50 active:bg-neutral-100 border-[0.5px] border-black/20';
+  }
+  if (style === 'ghost') {
+    return 'bg-transparent text-black border-[0.5px] border-black/25 hover:bg-black/5 active:bg-black/10';
+  }
+  return 'apple-cta-btn apple-cta-btn-dark bg-black text-white hover:bg-neutral-900 active:bg-neutral-800 border-0 border-none';
+}
+
+function handleModalButtonClick(target: 'primary' | 'secondary' = 'primary') {
+  if (wasDraggingRecently.value) return;
+  if (target === 'primary' && isModalButtonInactive.value) return;
   const mProps = modalDisplayProps.value;
 
-  // 1. Persist modal input value if filled
-  if (modalInputValue.value) {
-    const val = modalInputValue.value.trim();
-    if (val) {
+  if (target === 'primary') {
+    // 1. Persist modal input value if filled
+    if (modalInputValue.value) {
+      const val = modalInputValue.value.trim();
+      if (val) {
+        const selected = editorStore.selectedWidget;
+        if (selected && selected.props?.modalProps) {
+          editorStore.updateWidgetProps(selected.id, {
+            modalProps: { ...selected.props.modalProps, fieldValue: val }
+          });
+        }
+      }
+    }
+
+    // 2. Persist choice selections if applicable
+    if (mProps.options && mProps.options.length > 0) {
       const selected = editorStore.selectedWidget;
       if (selected && selected.props?.modalProps) {
         editorStore.updateWidgetProps(selected.id, {
-          modalProps: { ...selected.props.modalProps, fieldValue: val }
+          modalProps: { ...selected.props.modalProps, options: [...mProps.options] }
+        });
+      }
+    }
+
+    // 3. Persist image matrix slots if applicable
+    if (mProps.imageSlots && mProps.imageSlots.length > 0) {
+      const selected = editorStore.selectedWidget;
+      if (selected && selected.props?.modalProps) {
+        editorStore.updateWidgetProps(selected.id, {
+          modalProps: { ...selected.props.modalProps, imageSlots: [...mProps.imageSlots] }
         });
       }
     }
   }
 
-  // 2. Persist choice selections if applicable
-  if (mProps.options && mProps.options.length > 0) {
-    const selected = editorStore.selectedWidget;
-    if (selected && selected.props?.modalProps) {
-      editorStore.updateWidgetProps(selected.id, {
-        modalProps: { ...selected.props.modalProps, options: [...mProps.options] }
-      });
-    }
-  }
-
-  // 3. Persist image matrix slots if applicable
-  if (mProps.imageSlots && mProps.imageSlots.length > 0) {
-    const selected = editorStore.selectedWidget;
-    if (selected && selected.props?.modalProps) {
-      editorStore.updateWidgetProps(selected.id, {
-        modalProps: { ...selected.props.modalProps, imageSlots: [...mProps.imageSlots] }
-      });
-    }
-  }
-
-  const btnAction = mProps.buttonAction || 'submit-close';
-  const btnUrl = mProps.buttonUrl;
-  const openInNewTab = mProps.buttonOpenInNewTab ?? true;
+  const isSecondary = target === 'secondary';
+  const btnAction = isSecondary
+    ? (mProps.secondaryButtonAction || 'submit-close')
+    : (mProps.buttonAction || 'submit-close');
+  const btnTargetPageId = isSecondary
+    ? mProps.secondaryButtonTargetPageId
+    : mProps.buttonTargetPageId;
+  const btnUrl = isSecondary
+    ? mProps.secondaryButtonUrl
+    : mProps.buttonUrl;
+  const openInNewTab = isSecondary
+    ? (mProps.secondaryButtonOpenInNewTab ?? true)
+    : (mProps.buttonOpenInNewTab ?? true);
 
   // Close the modal bottom sheet
   if (activeTriggeredModal.value) {
@@ -6638,16 +6682,27 @@ function handleModalDoneClick() {
     editorStore.closeModalSidebar();
   }
 
-  // 4. Handle navigation or external URL
+  // 4. Handle independent navigation or external URL per button
   if (btnAction === 'next_page') {
-    goToNextPage(props.isLivePage ? collectPageAnswers() : undefined, mProps.buttonTargetPageId);
+    goToNextPage(props.isLivePage ? collectPageAnswers() : undefined, btnTargetPageId);
   } else if (btnAction === 'link' && btnUrl) {
+    const destination = normalizeExternalUrl(btnUrl);
+    if (!destination) {
+      if (!props.isLivePage) {
+        editorStore.showToast('Please configure a valid destination URL.');
+      }
+      return;
+    }
     if (openInNewTab) {
-      window.open(btnUrl, '_blank');
+      window.open(destination, '_blank', 'noopener,noreferrer');
     } else {
-      window.location.href = btnUrl;
+      window.location.href = destination;
     }
   }
+}
+
+function handleModalDoneClick() {
+  handleModalButtonClick('primary');
 }
 
 const isHeroWithButtonOnly = computed(() => {

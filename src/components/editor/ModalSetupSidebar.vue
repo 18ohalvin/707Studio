@@ -412,13 +412,71 @@
 
     <!-- TAB 3: ACTION CTA & RULES -->
     <div v-show="activeTab === 'action'" class="w-full flex flex-col">
-      <!-- Action Button CTA Setup -->
+      <!-- Button Layout Mode (Single vs Dual — Message / Alert variant) -->
+      <div
+        v-if="currentVariant === 'message-alert'"
+        class="content-stretch flex flex-col gap-[12px] items-start p-[24px] pb-[18px] shrink-0 w-full border-b border-[#f0f0f0]"
+      >
+        <div class="flex items-center justify-between w-full">
+          <div class="flex items-center gap-1.5">
+            <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+              Button Layout
+            </p>
+            <InfoHint text="Show one action button or two independent buttons (e.g. Confirm / Cancel, Yes / No)." />
+          </div>
+          <div class="flex gap-[6px] items-center">
+            <button
+              type="button"
+              @click="buttonLayout = 'single'"
+              :class="buttonLayout === 'single' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="px-3 h-[30px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer transition-all"
+            >
+              Single
+            </button>
+            <button
+              type="button"
+              @click="buttonLayout = 'dual'"
+              :class="buttonLayout === 'dual' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="px-3 h-[30px] rounded-[6px] flex items-center justify-center font-707 text-[12px] cursor-pointer transition-all"
+            >
+              Dual
+            </button>
+          </div>
+        </div>
+
+        <!-- Dual Button Orientation (Side by Side vs Stacked) -->
+        <div v-if="isDualMessageAlert" class="flex items-center justify-between w-full pt-2 border-t border-black/5">
+          <p class="font-707 font-medium text-[12px] text-neutral-800">
+            Direction
+          </p>
+          <div class="flex gap-[6px] items-center">
+            <button
+              type="button"
+              @click="dualOrientation = 'horizontal'"
+              :class="dualOrientation === 'horizontal' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer transition-all"
+            >
+              Side by Side
+            </button>
+            <button
+              type="button"
+              @click="dualOrientation = 'vertical'"
+              :class="dualOrientation === 'vertical' ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="px-2.5 h-[28px] rounded-[6px] flex items-center justify-center font-707 text-[11px] cursor-pointer transition-all"
+            >
+              Stacked
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Button 1 CTA Setup -->
       <div class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0]">
         <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
-          Button
+          {{ isDualMessageAlert ? 'Button 1 (Primary)' : 'Button' }}
         </p>
 
-        <!-- Button Label -->
+        <!-- Button 1 Label -->
         <div class="flex flex-col gap-[6px] w-full">
           <p class="font-707 text-[12px] text-neutral-600 font-medium">
             Label
@@ -426,13 +484,36 @@
           <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
             <input 
               v-model="buttonText"
-              placeholder="e.g. Done"
+              :placeholder="isDualMessageAlert ? 'e.g. Confirm' : 'e.g. Done'"
               class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 tracking-tight"
             />
           </div>
         </div>
 
-        <!-- Button Action -->
+        <!-- Button 1 Style (Dual Message/Alert Mode) -->
+        <div v-if="isDualMessageAlert" class="flex flex-col gap-[6px] w-full">
+          <p class="font-707 text-[12px] text-neutral-600 font-medium">
+            Style
+          </p>
+          <div class="grid grid-cols-3 gap-1.5 w-full">
+            <button
+              type="button"
+              v-for="st in ([
+                { label: 'Black', value: 'black' },
+                { label: 'White', value: 'white' },
+                { label: 'Outline', value: 'ghost' }
+              ] as const)"
+              :key="'p_' + st.value"
+              @click="buttonVariant = st.value"
+              :class="buttonVariant === st.value ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="h-[32px] rounded-[8px] text-[11px] font-707 flex items-center justify-center cursor-pointer transition-all"
+            >
+              {{ st.label }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Button 1 Action -->
         <div class="flex flex-col gap-[6px] w-full">
           <div class="flex items-center gap-1.5">
             <p class="font-707 text-[12px] text-neutral-600 font-medium">
@@ -444,7 +525,7 @@
             <button 
               type="button"
               v-for="act in ([
-                { label: 'Submit', value: 'submit-close' },
+                { label: currentVariant === 'message-alert' ? 'Close' : 'Submit', value: 'submit-close' },
                 { label: 'Go to Page', value: 'next_page' },
                 { label: 'Link URL', value: 'link' }
               ] as const)"
@@ -537,6 +618,157 @@
         </div>
       </div>
 
+      <!-- Action Button 2 CTA Setup (Dual Message/Alert Mode Only) -->
+      <div
+        v-if="isDualMessageAlert"
+        class="content-stretch flex flex-col gap-[14px] items-start p-[24px] pb-[20px] shrink-0 w-full border-b border-[#f0f0f0] animate-in fade-in duration-150"
+      >
+        <p class="font-707 font-medium text-[13px] leading-[18px] text-black">
+          Button 2 (Secondary)
+        </p>
+
+        <!-- Button 2 Label -->
+        <div class="flex flex-col gap-[6px] w-full">
+          <p class="font-707 text-[12px] text-neutral-600 font-medium">
+            Label
+          </p>
+          <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+            <input 
+              v-model="secondaryButtonText"
+              placeholder="e.g. Cancel"
+              class="w-full text-[13px] font-707 text-black focus:outline-none placeholder:text-neutral-400 tracking-tight"
+            />
+          </div>
+        </div>
+
+        <!-- Button 2 Style -->
+        <div class="flex flex-col gap-[6px] w-full">
+          <p class="font-707 text-[12px] text-neutral-600 font-medium">
+            Style
+          </p>
+          <div class="grid grid-cols-3 gap-1.5 w-full">
+            <button
+              type="button"
+              v-for="st in ([
+                { label: 'Outline', value: 'ghost' },
+                { label: 'White', value: 'white' },
+                { label: 'Black', value: 'black' }
+              ] as const)"
+              :key="'s_' + st.value"
+              @click="secondaryButtonVariant = st.value"
+              :class="secondaryButtonVariant === st.value ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="h-[32px] rounded-[8px] text-[11px] font-707 flex items-center justify-center cursor-pointer transition-all"
+            >
+              {{ st.label }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Button 2 Action -->
+        <div class="flex flex-col gap-[6px] w-full">
+          <div class="flex items-center gap-1.5">
+            <p class="font-707 text-[12px] text-neutral-600 font-medium">
+              On Click
+            </p>
+            <InfoHint text="Independent action triggered when the guest clicks the secondary button." />
+          </div>
+          <div class="grid grid-cols-3 gap-1.5 w-full">
+            <button 
+              type="button"
+              v-for="act in ([
+                { label: 'Close', value: 'submit-close' },
+                { label: 'Go to Page', value: 'next_page' },
+                { label: 'Link URL', value: 'link' }
+              ] as const)"
+              :key="'sec_' + act.value"
+              @click="secondaryButtonAction = act.value"
+              :class="secondaryButtonAction === act.value ? 'apple-glass-btn-dark font-medium shadow-sm' : 'apple-glass-btn'"
+              class="h-[34px] rounded-[8px] text-[11px] font-707 flex items-center justify-center text-center px-1 cursor-pointer transition-all"
+            >
+              {{ act.label }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Target Page selector if Button 2 Go to Page is selected -->
+        <div v-if="secondaryButtonAction === 'next_page'" class="flex flex-col gap-[6px] w-full animate-in fade-in duration-150">
+          <div class="flex items-center gap-1.5">
+            <p class="font-707 text-[12px] text-neutral-600 font-medium">
+              Target Page
+            </p>
+            <InfoHint text="Choose which page opens after Button 2 is clicked." />
+          </div>
+          <div class="relative" ref="secondaryTargetPageBtnRef">
+            <button
+              type="button"
+              @click="isSecondaryTargetPageDropdownOpen = !isSecondaryTargetPageDropdownOpen"
+              class="apple-glass-btn flex h-[38px] items-center justify-between px-[14px] py-[6px] rounded-[8px] w-full cursor-pointer text-left"
+            >
+              <span class="font-707 text-[12.5px] text-black truncate">{{ selectedSecondaryTargetPageLabel }}</span>
+              <ChevronDown 
+                class="size-[14px] text-black transition-transform duration-200 shrink-0 ml-1.5" 
+                :class="isSecondaryTargetPageDropdownOpen ? 'rotate-180' : ''"
+              />
+            </button>
+            <Teleport to="body">
+              <div 
+                v-if="isSecondaryTargetPageDropdownOpen" 
+                ref="secondaryTargetPageMenuRef"
+                :style="secondaryTargetPagePopoverStyle"
+                class="bg-white/95 backdrop-blur-xl border border-black/10 rounded-[8px] shadow-[0px_8px_30px_rgba(0,0,0,0.15)] py-1 z-50 flex flex-col overflow-y-auto animate-in fade-in duration-150 select-none"
+              >
+                <button
+                  type="button"
+                  @click="selectSecondaryTargetPage('')"
+                  class="flex items-center justify-between px-[14px] py-[8px] text-left hover:bg-black/5 transition-colors cursor-pointer"
+                  :class="!secondaryButtonTargetPageId ? 'font-medium text-black bg-black/5' : 'text-neutral-700'"
+                >
+                  <span class="font-707 text-[12.5px]">Next Page (Default)</span>
+                  <Check v-if="!secondaryButtonTargetPageId" class="size-[14px] text-black" />
+                </button>
+                <button
+                  v-for="p in funnelTargetPages"
+                  :key="'sec_p_' + p.id"
+                  type="button"
+                  :disabled="p.isCurrent"
+                  @click="selectSecondaryTargetPage(p.id)"
+                  class="flex items-center justify-between px-[14px] py-[8px] text-left transition-colors"
+                  :class="[
+                    p.isCurrent ? 'opacity-40 cursor-not-allowed text-neutral-400' : 'hover:bg-black/5 cursor-pointer',
+                    secondaryButtonTargetPageId === p.id ? 'font-medium text-black bg-black/5' : 'text-neutral-700'
+                  ]"
+                >
+                  <span class="font-707 text-[12.5px] truncate pr-2">{{ p.label }}<span v-if="p.isCurrent"> (Current)</span></span>
+                  <Check v-if="secondaryButtonTargetPageId === p.id" class="size-[14px] text-black shrink-0" />
+                </button>
+              </div>
+            </Teleport>
+          </div>
+        </div>
+
+        <!-- External URL input if Button 2 Link is active -->
+        <div v-if="secondaryButtonAction === 'link'" class="flex flex-col gap-[6px] w-full animate-in fade-in duration-150">
+          <p class="font-707 text-[12px] text-neutral-600 font-medium">
+            URL
+          </p>
+          <div class="border-[0.5px] border-[#aaa] focus-within:border-black border-solid flex h-[38px] items-center px-[14px] rounded-[8px] w-full bg-white transition-colors">
+            <input 
+              v-model="secondaryButtonUrl" 
+              placeholder="https://..." 
+              class="w-full text-[12px] font-707 text-black focus:outline-none placeholder:text-neutral-400 font-mono"
+            />
+          </div>
+          <label class="flex items-center gap-2 text-[11px] font-707 text-neutral-600 cursor-pointer pt-1">
+            <input 
+              type="checkbox" 
+              v-model="secondaryButtonOpenInNewTab" 
+              class="rounded accent-black scale-95"
+            />
+            <span>Open in New Tab</span>
+          </label>
+        </div>
+      </div>
+
       <!-- Modal Dismiss Behavior -->
       <div class="content-stretch flex items-center justify-between p-[24px] shrink-0 w-full">
         <div class="flex items-center gap-1.5">
@@ -569,7 +801,7 @@ import { sizedUrl } from '../../services/responsiveImage.ts';
 import { ref, computed } from 'vue';
 import { useEditorStore } from '../../stores/editorStore.ts';
 import { FIGMA_ASSETS } from '../../constants/figmaAssets.ts';
-import type { ModalVariant, ModalOption, ModalImageSlot } from '../../types/editor.ts';
+import type { ModalVariant, ModalOption, ModalImageSlot, ModalButtonAction, ModalButtonLayout, ModalButtonStyle } from '../../types/editor.ts';
 import { useModalPopover } from '../common/modalPopover.ts';
 import InfoHint from '../common/InfoHint.vue';
 import { getFunnelTargetPages } from './ctaActions.ts';
@@ -757,6 +989,36 @@ function setFieldType(val: 'email' | 'tel' | 'text') {
   }
 }
 
+const buttonLayout = computed<ModalButtonLayout>({
+  get: () => (targetModalData.value.buttonLayout === 'dual' ? 'dual' : 'single'),
+  set: (val: ModalButtonLayout) => {
+    if (val === 'dual') {
+      updateModalData({
+        buttonLayout: 'dual',
+        dualOrientation: targetModalData.value.dualOrientation || 'horizontal',
+        buttonVariant: targetModalData.value.buttonVariant || 'black',
+        secondaryButtonText: targetModalData.value.secondaryButtonText || 'Cancel',
+        secondaryButtonVariant: targetModalData.value.secondaryButtonVariant || 'ghost',
+        secondaryButtonAction: targetModalData.value.secondaryButtonAction || 'submit-close',
+        secondaryButtonOpenInNewTab: targetModalData.value.secondaryButtonOpenInNewTab ?? true
+      });
+    } else {
+      updateModalData({ buttonLayout: 'single' });
+    }
+  }
+});
+
+const isDualMessageAlert = computed(() => {
+  return currentVariant.value === 'message-alert' && buttonLayout.value === 'dual';
+});
+
+const dualOrientation = computed<'horizontal' | 'vertical'>({
+  get: () => (targetModalData.value.dualOrientation === 'vertical' ? 'vertical' : 'horizontal'),
+  set: (val) => {
+    updateModalData({ dualOrientation: val });
+  }
+});
+
 const buttonText = computed({
   get: () => targetModalData.value.buttonText || 'DONE',
   set: (val: string) => {
@@ -764,7 +1026,14 @@ const buttonText = computed({
   }
 });
 
-const buttonAction = computed<'submit-close' | 'next_page' | 'link'>({
+const buttonVariant = computed<ModalButtonStyle>({
+  get: () => (targetModalData.value.buttonVariant as ModalButtonStyle) || 'black',
+  set: (val) => {
+    updateModalData({ buttonVariant: val });
+  }
+});
+
+const buttonAction = computed<ModalButtonAction>({
   get: () => targetModalData.value.buttonAction || 'submit-close',
   set: (val) => {
     updateModalData({ buttonAction: val });
@@ -809,6 +1078,64 @@ const selectedModalTargetPageLabel = computed(() => {
 function selectModalTargetPage(id: string) {
   buttonTargetPageId.value = id;
   isModalTargetPageDropdownOpen.value = false;
+}
+
+// Button 2 (Secondary) — independent label, style, and action for Message/Alert dual mode
+const secondaryButtonText = computed({
+  get: () => targetModalData.value.secondaryButtonText ?? 'Cancel',
+  set: (val: string) => {
+    updateModalData({ secondaryButtonText: val });
+  }
+});
+
+const secondaryButtonVariant = computed<ModalButtonStyle>({
+  get: () => (targetModalData.value.secondaryButtonVariant as ModalButtonStyle) || 'ghost',
+  set: (val) => {
+    updateModalData({ secondaryButtonVariant: val });
+  }
+});
+
+const secondaryButtonAction = computed<ModalButtonAction>({
+  get: () => targetModalData.value.secondaryButtonAction || 'submit-close',
+  set: (val) => {
+    updateModalData({ secondaryButtonAction: val });
+  }
+});
+
+const secondaryButtonUrl = computed({
+  get: () => targetModalData.value.secondaryButtonUrl || '',
+  set: (val: string) => {
+    updateModalData({ secondaryButtonUrl: val });
+  }
+});
+
+const secondaryButtonOpenInNewTab = computed({
+  get: () => targetModalData.value.secondaryButtonOpenInNewTab ?? true,
+  set: (val: boolean) => {
+    updateModalData({ secondaryButtonOpenInNewTab: val });
+  }
+});
+
+const isSecondaryTargetPageDropdownOpen = ref(false);
+const secondaryTargetPageBtnRef = ref<HTMLElement | null>(null);
+const { style: secondaryTargetPagePopoverStyle, menuRef: secondaryTargetPageMenuRef } = useModalPopover(secondaryTargetPageBtnRef, isSecondaryTargetPageDropdownOpen, { matchWidth: true });
+
+const secondaryButtonTargetPageId = computed({
+  get: () => targetModalData.value.secondaryButtonTargetPageId || '',
+  set: (val: string) => {
+    updateModalData({ secondaryButtonTargetPageId: val });
+  }
+});
+
+const selectedSecondaryTargetPageLabel = computed(() => {
+  if (!secondaryButtonTargetPageId.value) return 'Next Page (Default)';
+  const match = funnelTargetPages.value.find(p => p.id === secondaryButtonTargetPageId.value);
+  return match ? match.label : 'Next Page (Default)';
+});
+
+function selectSecondaryTargetPage(id: string) {
+  secondaryButtonTargetPageId.value = id;
+  isSecondaryTargetPageDropdownOpen.value = false;
 }
 
 const dismissible = computed({

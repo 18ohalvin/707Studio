@@ -68,6 +68,10 @@ export type ChoiceVariant = 'detailed-card' | 'simple-row' | 'horizontal-block' 
 
 export type ModalVariant = 'message-alert' | 'message-field' | 'choice-detailed' | 'choice-simple' | 'image-matrix';
 
+export type ModalButtonAction = 'submit-close' | 'next_page' | 'link';
+export type ModalButtonLayout = 'single' | 'dual';
+export type ModalButtonStyle = 'black' | 'white' | 'ghost';
+
 export interface ModalOption {
   id: string;
   label: string;
