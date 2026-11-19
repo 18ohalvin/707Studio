@@ -207,4 +207,136 @@ describe('Modal Pop-up Enhancements (Dual Message/Alert Buttons, Padding, No Swi
     expect(wrapper.text()).toContain('Button 1 (Primary)');
     expect(wrapper.text()).toContain('Button 2 (Secondary)');
   });
+
+  it('keeps sticky modal submit button disabled until required RegistrationForm fields are complete and prevents skipping', async () => {
+    const store = useEditorStore();
+    const regForm = {
+      id: 'reg_form_1',
+      type: 'RegistrationForm',
+      props: {
+        heading: 'REGISTRATION FORM',
+        fields: [
+          { id: 'f_name', name: 'Full Name', type: 'text', required: true, value: '' },
+          { id: 'f_email', name: 'E-Mail', type: 'email', required: true, value: '' },
+          { id: 'f_phone', name: 'WhatsApp Number', type: 'tel', required: true, value: '' }
+        ]
+      }
+    };
+    const stickyModalBtn = {
+      id: 'btn_sticky_submit',
+      type: 'ActionButton',
+      props: {
+        label: 'SUBMIT APPLICATION',
+        positionMode: 'sticky-bottom',
+        actionType: 'modal',
+        modalProps: {
+          variant: 'message-alert',
+          title: 'Confirm Submission',
+          subtitle: 'Submit your application now?',
+          buttonLayout: 'dual',
+          buttonText: 'Yes, Submit',
+          buttonAction: 'next_page',
+          buttonTargetPageId: 'page_2',
+          secondaryButtonText: 'Cancel',
+          secondaryButtonAction: 'submit-close'
+        }
+      }
+    };
+
+    store.pages = [
+      makePage('page_1', 'Registration Form', [regForm, stickyModalBtn]),
+      makePage('page_2', 'Thank You', [])
+    ];
+    store.activePageIndex = 0;
+
+    const wrapper = mount(MobileArtboard, {
+      props: {
+        page: store.pages[0],
+        pageIndex: 0,
+        isSelected: true,
+        isPreviewModal: true
+      }
+    });
+
+    // 1. With empty fields, sticky button MUST be disabled and inactive
+    const stickyBtn = wrapper.findAll('button').find(b => b.text().toUpperCase().includes('SUBMIT APPLICATION'));
+    expect(stickyBtn).toBeTruthy();
+    expect(stickyBtn!.attributes('disabled')).toBeDefined();
+
+    // 2. Clicking the sticky wrapper MUST NOT open the modal or skip the form; it should set field errors
+    await stickyBtn!.element.parentElement!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-name="Bottom Modal Popup"]').exists()).toBe(false);
+    expect(store.activePageIndex).toBe(0);
+    const reactiveFields = store.pages[0].widget_tree[0].props.fields as any[];
+    expect(reactiveFields[0].errorMessage).toBeTruthy();
+
+    // 3. Fill all fields via reactive store state with an invalid email -> still disabled
+    reactiveFields[0].value = 'Alvin';
+    reactiveFields[1].value = 'not-an-email';
+    reactiveFields[2].value = '081234567890';
+    await wrapper.vm.$nextTick();
+    expect(stickyBtn!.attributes('disabled')).toBeDefined();
+
+    // 4. Fix email -> sticky button becomes enabled, opens modal, and Button 1 advances to page_2
+    reactiveFields[1].value = 'alvin@707.co.id';
+    await wrapper.vm.$nextTick();
+    expect(stickyBtn!.attributes('disabled')).toBeUndefined();
+
+    await stickyBtn!.trigger('click');
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-name="Bottom Modal Popup"]').exists()).toBe(true);
+
+    await wrapper.find('[data-modal-btn="primary"]').trigger('click');
+    expect(store.activePageIndex).toBe(1);
+  });
+
+  it('prevents disabled sticky submit button from skipping a required MultipleChoice page when clicking wrapper', async () => {
+    const store = useEditorStore();
+    const choiceWidget = {
+      id: 'mc_1',
+      type: 'MultipleChoice',
+      props: {
+        heading: 'How often do you play tennis?',
+        options: [
+          { id: 'opt_1', label: 'Less than once a week' },
+          { id: 'opt_2', label: '1-2 times a week' }
+        ],
+        selectedValues: []
+      }
+    };
+    const stickySubmitBtn = {
+      id: 'btn_sticky_mc',
+      type: 'ActionButton',
+      props: {
+        label: 'CONFIRM',
+        positionMode: 'sticky-bottom',
+        actionType: 'submit'
+      }
+    };
+
+    store.pages = [
+      makePage('page_1', 'Questions', [choiceWidget, stickySubmitBtn]),
+      makePage('page_2', 'Registration', [])
+    ];
+    store.activePageIndex = 0;
+
+    const wrapper = mount(MobileArtboard, {
+      props: {
+        page: store.pages[0],
+        pageIndex: 0,
+        isSelected: true,
+        isPreviewModal: true
+      }
+    });
+
+    const confirmBtn = wrapper.findAll('button').find(b => b.text().toUpperCase().includes('CONFIRM'));
+    expect(confirmBtn).toBeTruthy();
+    expect(confirmBtn!.attributes('disabled')).toBeDefined();
+
+    // Clicking parent wrapper must NOT advance past unselected MultipleChoice
+    await confirmBtn!.element.parentElement!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await wrapper.vm.$nextTick();
+    expect(store.activePageIndex).toBe(0);
+  });
 });

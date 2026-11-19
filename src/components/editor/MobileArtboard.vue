@@ -2483,7 +2483,7 @@ more</span>
       <!-- Floating Viewport Sticky Bottom Button (Figma Node 244:11560) -->
       <div 
         v-if="stickyButtonForThisPage"
-        @click.stop="handleActionButtonClick(stickyButtonForThisPage)"
+        @click.stop="handleStickyWrapperClick(stickyButtonForThisPage)"
         @mouseenter="hoveredWidgetId = stickyButtonForThisPage.id"
         @mouseleave="hoveredWidgetId = null"
         class="absolute bottom-0 inset-x-0 z-30 w-full p-0 transition-all select-none group/sticky cursor-pointer"
@@ -3788,7 +3788,7 @@ function scrollToWidget(id: string) {
     if (el && scrollContainerRef.value) {
       const container = scrollContainerRef.value;
       if (activePage.value.widget_tree[0]?.id === id) {
-        container.scrollTo({ top: 0, behavior: 'smooth' });
+        container.scrollTo?.({ top: 0, behavior: 'smooth' });
       } else {
         const containerRect = container.getBoundingClientRect();
         const elRect = el.getBoundingClientRect();
@@ -4178,6 +4178,22 @@ function handleAdjustWidget(widget: any) {
   }
 }
 
+function handleStickyWrapperClick(widget: any) {
+  if (wasDraggingRecently.value) return;
+  if (props.isPreviewModal || props.isLivePage) {
+    // In preview/live mode, clicking a disabled single sticky button surfaces validation errors
+    // instead of letting the click fall through and skip required form fields.
+    if (widget?.props?.layoutMode !== 'dual' && isButtonInactive(widget, 'primary')) {
+      validateActivePageRequiredFields();
+    }
+    return;
+  }
+  if (props.isMiniPreview) return;
+  handleSelectThisPage();
+  editorStore.selectWidget(widget.id);
+  handleAdjustWidget(widget);
+}
+
 function handleActionButtonClick(widget: any, target: 'primary' | 'secondary' = 'primary') {
   if (wasDraggingRecently.value) return;
   if (props.isPreviewModal || props.isLivePage) {
@@ -4383,48 +4399,56 @@ function collectPageAnswers(): Record<string, any> {
   return formData;
 }
 
-function handleButtonClick(widget: any, target: 'primary' | 'secondary' = 'primary') {
-  if (widget.props?.disabled) return;
-  const rawAction = target === 'secondary'
-    ? (widget.props?.secondaryActionType || 'link')
-    : (widget.props?.actionType || widget.props?.ctaActionType || 'submit');
-  const actionType = normalizeCtaAction(rawAction) || (target === 'secondary' ? 'link' : 'submit');
+function validateActivePageRequiredFields(): boolean {
+  let allValid = true;
+  let firstInvalidWidget: any = null;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  if (actionType === 'submit') {
-    let allValid = true;
-    let firstInvalidWidget: any = null;
-    activePage.value.widget_tree.forEach((w) => {
-      if (w.type === 'FieldInput') {
-        const isValid = validateField(w, true);
-        if (!isValid && !firstInvalidWidget) {
-          firstInvalidWidget = w;
-          allValid = false;
-        }
-      } else if (w.type === 'RegistrationForm') {
-        const fields = (w.props?.fields || []) as any[];
-        fields.forEach((f: any) => {
-          if (f.required !== false) {
-            if (f.type === 'file' && !f.value && !f.fileData) {
+  activePage.value.widget_tree.forEach((w) => {
+    if (w.type === 'FieldInput') {
+      const isValid = validateField(w, true);
+      if (!isValid) {
+        allValid = false;
+        if (!firstInvalidWidget) firstInvalidWidget = w;
+      }
+    } else if (w.type === 'RegistrationForm') {
+      const fields = (w.props?.fields || []) as any[];
+      fields.forEach((f: any) => {
+        if (f.required !== false) {
+          if (f.type === 'file') {
+            const uploaded = Array.isArray(f.uploadedFiles) ? f.uploadedFiles.length : 0;
+            if (!uploaded && !f.value && !f.fileData) {
               f.errorMessage = `Please upload ${(f.name || 'the document').toLowerCase()}.`;
               allValid = false;
               if (!firstInvalidWidget) firstInvalidWidget = w;
               triggerFieldShake(`${w.id}_${f.id}`);
-            } else if (f.type !== 'file' && (!f.value || !String(f.value).trim())) {
+            }
+          } else {
+            const val = String(f.value || '').trim();
+            if (!val) {
               f.errorMessage = `Please enter your ${(f.name || 'details').toLowerCase()}.`;
+              allValid = false;
+              if (!firstInvalidWidget) firstInvalidWidget = w;
+              triggerFieldShake(`${w.id}_${f.id}`);
+            } else if ((f.type === 'email' || /e-?mail/i.test(f.name || '')) && !emailRegex.test(val)) {
+              f.errorMessage = 'Please enter a valid email address.';
               allValid = false;
               if (!firstInvalidWidget) firstInvalidWidget = w;
               triggerFieldShake(`${w.id}_${f.id}`);
             }
           }
-        });
-      } else if (w.type === 'DocumentUpload') {
-        if (w.props?.required && (!w.props.uploadedFiles || !w.props.uploadedFiles.length)) {
-          w.props.errorMessage = `Please upload ${w.props.title || 'the required document'}.`;
-          allValid = false;
-          if (!firstInvalidWidget) firstInvalidWidget = w;
-          triggerFieldShake(w.id);
         }
-      } else if (w.type === 'MultipleChoice' && (w.props?.required || w.props?.limitPlaces)) {
+      });
+    } else if (w.type === 'DocumentUpload') {
+      if (w.props?.required && (!w.props.uploadedFiles || !w.props.uploadedFiles.length)) {
+        w.props.errorMessage = `Please upload ${w.props.title || 'the required document'}.`;
+        allValid = false;
+        if (!firstInvalidWidget) firstInvalidWidget = w;
+        triggerFieldShake(w.id);
+      }
+    } else if (w.type === 'MultipleChoice') {
+      const isReq = w.props?.required !== false || Boolean(w.props?.limitPlaces);
+      if (isReq) {
         const options = (w.props?.options || []) as any[];
         let selected = (w.props?.selectedValues || []) as string[];
         // Auto-select single option if limited and unselected
@@ -4433,14 +4457,30 @@ function handleButtonClick(widget: any, target: 'primary' | 'secondary' = 'prima
           setWidgetProps(w, { selectedValues: [onlyId] });
           selected = [onlyId];
         }
-        if (selected.length === 0 && !firstInvalidWidget) {
-          firstInvalidWidget = w;
+        const hasSelected = selected.length > 0 || options.some((o: any) => o.selected);
+        if (!hasSelected) {
           allValid = false;
+          if (!firstInvalidWidget) firstInvalidWidget = w;
         }
       }
-    });
-    if (!allValid && firstInvalidWidget) {
-      scrollToWidget(firstInvalidWidget.id);
+    }
+  });
+
+  if (!allValid && firstInvalidWidget) {
+    scrollToWidget(firstInvalidWidget.id);
+  }
+  return allValid;
+}
+
+function handleButtonClick(widget: any, target: 'primary' | 'secondary' = 'primary') {
+  if (widget.props?.disabled) return;
+  const rawAction = target === 'secondary'
+    ? (widget.props?.secondaryActionType || 'link')
+    : (widget.props?.actionType || widget.props?.ctaActionType || 'submit');
+  const actionType = normalizeCtaAction(rawAction) || (target === 'secondary' ? 'link' : 'submit');
+
+  if (actionType === 'submit') {
+    if (!validateActivePageRequiredFields()) {
       return;
     }
     const choiceOverride = resolveChoiceRouteOverride(activePage.value.widget_tree);
@@ -4477,6 +4517,9 @@ function handleButtonClick(widget: any, target: 'primary' | 'secondary' = 'prima
       window.location.href = destination;
     }
   } else if (actionType === 'modal') {
+    if (modalRequiresFormValidation(widget, target) && !validateActivePageRequiredFields()) {
+      return;
+    }
     const defaultAlert = target === 'secondary'
       ? {
           variant: 'message-alert',
@@ -6562,6 +6605,41 @@ const isPageRequiredFieldsComplete = computed(() => {
   return true;
 });
 
+function modalRequiresFormValidation(widget: any, target: 'primary' | 'secondary' = 'primary'): boolean {
+  const modalCfg = target === 'secondary'
+    ? widget?.props?.secondaryModalProps
+    : widget?.props?.modalProps;
+
+  const primaryAdvances = modalCfg?.buttonAction === 'next_page';
+  const secondaryAdvances =
+    (modalCfg?.variant || 'message-alert') === 'message-alert' &&
+    modalCfg?.buttonLayout === 'dual' &&
+    modalCfg?.secondaryButtonAction === 'next_page';
+
+  if (primaryAdvances || secondaryAdvances) {
+    return true;
+  }
+
+  // If this is the primary CTA on a page with form/choice fields and no other submit button exists,
+  // it acts as the page's submit gate and must respect required form fields.
+  if (target === 'primary') {
+    const hasOtherSubmitCta = activePage.value.widget_tree.some((w: any) => {
+      if (!w || w.id === widget?.id) return false;
+      if (w.type !== 'ActionButton' && w.type !== 'HeroDrop') return false;
+      const primaryAct = normalizeCtaAction(w.props?.actionType || w.props?.ctaActionType || 'submit') || 'submit';
+      const secondaryAct = w.props?.layoutMode === 'dual'
+        ? (normalizeCtaAction(w.props?.secondaryActionType || 'link') || 'link')
+        : '';
+      return primaryAct === 'submit' || secondaryAct === 'submit';
+    });
+    if (!hasOtherSubmitCta) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function isButtonInactive(widget: any, target: 'primary' | 'secondary' = 'primary'): boolean {
   if (!widget) return false;
   if (widget.props?.disabled) return true;
@@ -6569,7 +6647,10 @@ function isButtonInactive(widget: any, target: 'primary' | 'secondary' = 'primar
     ? (widget.props?.secondaryActionType || 'link')
     : (widget.props?.actionType || widget.props?.ctaActionType || 'submit');
   const action = normalizeCtaAction(rawAction) || (target === 'secondary' ? 'link' : 'submit');
-  if (action === 'link' || action === 'modal') {
+  if (action === 'link') {
+    return false;
+  }
+  if (action === 'modal' && !modalRequiresFormValidation(widget, target)) {
     return false;
   }
   if (!isPageRequiredFieldsComplete.value) {
@@ -6684,6 +6765,9 @@ function handleModalButtonClick(target: 'primary' | 'secondary' = 'primary') {
 
   // 4. Handle independent navigation or external URL per button
   if (btnAction === 'next_page') {
+    if (!validateActivePageRequiredFields()) {
+      return;
+    }
     goToNextPage(props.isLivePage ? collectPageAnswers() : undefined, btnTargetPageId);
   } else if (btnAction === 'link' && btnUrl) {
     const destination = normalizeExternalUrl(btnUrl);
